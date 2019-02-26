@@ -1,0 +1,33 @@
+sudo: false
+
+language: java
+
+matrix:
+  fast_finish: true
+  include:
+  - jdk: oraclejdk8
+    env: TASK=BUILD
+    os: linux
+
+  - jdk: oraclejdk9
+    env: TASK=BUILD
+    os: linux
+
+before_install:
+  - git log --oneline --decorate --graph -30
+
+# Skip Travis' default Gradle install step. See http://stackoverflow.com/a/26575080.
+install: true
+
+script:
+  - ./gradlew verGJF
+  - ./gradlew clean assemble check --stacktrace
+
+before_cache:
+  - rm -fr $HOME/.gradle/caches/modules-2/modules-2.lock
+
+cache:
+  directories:
+    - $HOME/.gradle
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
