@@ -1,0 +1,7 @@
+rootProject.name = "openconsensus"
+
+include ":openconsensus-api"
+include ":openconsensus-context"
+
+project(':openconsensus-api').projectDir = "$rootDir/api" as File
+project(':openconsensus-context').projectDir = "$rootDir/context" as File

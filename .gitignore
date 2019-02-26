@@ -1,0 +1,40 @@
+# Gradle
+build
+gradle.properties
+.gradle
+local.properties
+out/
+
+# Maven (proto)
+target
+
+# IntelliJ IDEA
+.idea
+*.iml
+.editorconfig
+
+# Eclipse
+.classpath
+.project
+.settings
+bin
+
+# NetBeans
+/.nb-gradle
+/.nb-gradle-properties
+
+# VS Code
+.vscode
+
+# OS X
+.DS_Store
+
+# Emacs
+*~
+\#*\#
+
+# Vim
+.swp
+
+# Other
+TAGS
