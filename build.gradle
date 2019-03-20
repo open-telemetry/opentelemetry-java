@@ -104,8 +104,10 @@ subprojects {
         findBugsJsr305Version = '3.0.2'
         errorProneVersion = '2.3.2'
         grpcVersion = '1.19.0'
+        autoValueVersion = '1.5.3'
 
         libraries = [
+                auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
                 errorprone: "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
                 grpc_context: "io.grpc:grpc-context:${grpcVersion}",
                 jsr305: "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
