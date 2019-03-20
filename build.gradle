@@ -31,7 +31,6 @@ subprojects {
     apply plugin: "jacoco"
     // The plugin only has an effect if a signature is specified
     apply plugin: 'ru.vyarus.animalsniffer'
-    apply plugin: 'findbugs'
     apply plugin: 'net.ltgt.apt'
     apply plugin: 'net.ltgt.apt-idea'
     apply plugin: "me.champeau.gradle.jmh"
@@ -102,25 +101,16 @@ subprojects {
     }
 
     ext {
-        autoValueVersion = '1.4'
-        findBugsAnnotationsVersion = '3.0.1'
         findBugsJsr305Version = '3.0.2'
         errorProneVersion = '2.3.2'
-        grpcVersion = '1.18.0'
-        guavaVersion = '26.0-android'
+        grpcVersion = '1.19.0'
 
         libraries = [
-                auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
-                auto_service: 'com.google.auto.service:auto-service:1.0-rc3',
-                config: 'com.typesafe:config:1.2.1',
                 errorprone: "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
-                findbugs_annotations: "com.google.code.findbugs:annotations:${findBugsAnnotationsVersion}",
                 grpc_context: "io.grpc:grpc-context:${grpcVersion}",
-                guava: "com.google.guava:guava:${guavaVersion}",
                 jsr305: "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
 
                 // Test dependencies.
-                guava_testlib: "com.google.guava:guava-testlib:${guavaVersion}",
                 junit: 'junit:junit:4.12',
                 mockito: 'org.mockito:mockito-core:1.9.5',
                 truth: 'com.google.truth:truth:0.42',
@@ -139,42 +129,13 @@ subprojects {
         compileOnly libraries.errorprone,
                 libraries.jsr305
 
-        testCompile libraries.guava_testlib,
-                libraries.junit,
+        testCompile libraries.junit,
                 libraries.mockito,
                 libraries.truth
 
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check
         errorprone "com.google.errorprone:error_prone_core:${errorProneVersion}"
-    }
-
-    findbugs {
-        toolVersion = findBugsAnnotationsVersion
-        ignoreFailures = false   // bug free or it doesn't ship!
-        effort = 'max'
-        reportLevel = 'low'      // low = sensitive to even minor mistakes
-        omitVisitors = []        // bugs that we want to ignore
-        excludeFilter = file("$rootDir/findbugs-exclude.xml")
-    }
-    // Generate html report for findbugs.
-    findbugsMain {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
-    }
-    findbugsTest {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
-    }
-    findbugsJmh {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
     }
 
     checkstyle {
