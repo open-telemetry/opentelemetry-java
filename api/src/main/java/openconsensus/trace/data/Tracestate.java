@@ -36,7 +36,7 @@ import openconsensus.internal.Utils;
  * <p>Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the
  * range 0x20 to 0x7E) except comma , and =.
  *
- * @since 0.16
+ * @since 0.1
  */
 @Immutable
 @AutoValue
@@ -52,7 +52,7 @@ public abstract class Tracestate {
    * @param key with which the specified value is to be associated
    * @return the value to which the specified key is mapped, or null if this map contains no mapping
    *     for the key.
-   * @since 0.16
+   * @since 0.1
    */
   @javax.annotation.Nullable
   public String get(String key) {
@@ -68,7 +68,7 @@ public abstract class Tracestate {
    * Returns a {@link List} view of the mappings contained in this {@code TraceState}.
    *
    * @return a {@link List} view of the mappings contained in this {@code TraceState}.
-   * @since 0.16
+   * @since 0.1
    */
   public abstract List<Entry> getEntries();
 
@@ -76,7 +76,7 @@ public abstract class Tracestate {
    * Returns a {@code Builder} based on an empty {@code Tracestate}.
    *
    * @return a {@code Builder} based on an empty {@code Tracestate}.
-   * @since 0.16
+   * @since 0.1
    */
   public static Builder builder() {
     return new Builder(Builder.EMPTY);
@@ -86,7 +86,7 @@ public abstract class Tracestate {
    * Returns a {@code Builder} based on this {@code Tracestate}.
    *
    * @return a {@code Builder} based on this {@code Tracestate}.
-   * @since 0.16
+   * @since 0.1
    */
   public Builder toBuilder() {
     return new Builder(this);
@@ -95,7 +95,7 @@ public abstract class Tracestate {
   /**
    * Builder class for {@link MessageEvent}.
    *
-   * @since 0.16
+   * @since 0.1
    */
   public static final class Builder {
     private final Tracestate parent;
@@ -118,7 +118,7 @@ public abstract class Tracestate {
      * @param key the key for the {@code Entry} to be added.
      * @param value the value for the {@code Entry} to be added.
      * @return this.
-     * @since 0.16
+     * @since 0.1
      */
     @SuppressWarnings("nullness")
     public Builder set(String key, String value) {
@@ -145,7 +145,7 @@ public abstract class Tracestate {
      *
      * @param key the key for the {@code Entry} to be removed.
      * @return this.
-     * @since 0.16
+     * @since 0.1
      */
     @SuppressWarnings("nullness")
     public Builder remove(String key) {
@@ -169,7 +169,7 @@ public abstract class Tracestate {
      * and removing duplicate entries.
      *
      * @return a TraceState with the new entries.
-     * @since 0.16
+     * @since 0.1
      */
     public Tracestate build() {
       if (entries == null) {
@@ -182,7 +182,7 @@ public abstract class Tracestate {
   /**
    * Immutable key-value pair for {@code Tracestate}.
    *
-   * @since 0.16
+   * @since 0.1
    */
   @Immutable
   @AutoValue
@@ -192,7 +192,8 @@ public abstract class Tracestate {
      *
      * @param key the Entry's key.
      * @param value the Entry's value.
-     * @since 0.16
+     * @return the new {@code Entry}.
+     * @since 0.1
      */
     public static Entry create(String key, String value) {
       Utils.checkNotNull(key, "key");
@@ -206,7 +207,7 @@ public abstract class Tracestate {
      * Returns the key {@code String}.
      *
      * @return the key {@code String}.
-     * @since 0.16
+     * @since 0.1
      */
     public abstract String getKey();
 
@@ -214,7 +215,7 @@ public abstract class Tracestate {
      * Returns the value {@code String}.
      *
      * @return the value {@code String}.
-     * @since 0.16
+     * @since 0.1
      */
     public abstract String getValue();
 

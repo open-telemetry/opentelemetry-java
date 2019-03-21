@@ -28,7 +28,7 @@ import openconsensus.internal.Utils;
  * <p>It requires a {@link Type type} and a message id that serves to uniquely identify each
  * message. It can optionally have information about the message size.
  *
- * @since 0.12
+ * @since 0.1
  */
 @Immutable
 @AutoValue
@@ -36,19 +36,19 @@ public abstract class MessageEvent {
   /**
    * Available types for a {@code MessageEvent}.
    *
-   * @since 0.12
+   * @since 0.1
    */
   public enum Type {
     /**
      * When the message was sent.
      *
-     * @since 0.12
+     * @since 0.1
      */
     SENT,
     /**
      * When the message was received.
      *
-     * @since 0.12
+     * @since 0.1
      */
     RECEIVED,
   }
@@ -60,7 +60,7 @@ public abstract class MessageEvent {
    * @param messageId serves to uniquely identify each message.
    * @return a new {@code Builder} with default values.
    * @throws NullPointerException if {@code type} is {@code null}.
-   * @since 0.12
+   * @since 0.1
    */
   public static Builder builder(Type type, long messageId) {
     return new AutoValue_MessageEvent.Builder()
@@ -76,7 +76,7 @@ public abstract class MessageEvent {
    * Returns the type of the {@code MessageEvent}.
    *
    * @return the type of the {@code MessageEvent}.
-   * @since 0.12
+   * @since 0.1
    */
   public abstract Type getType();
 
@@ -84,7 +84,7 @@ public abstract class MessageEvent {
    * Returns the message id argument that serves to uniquely identify each message.
    *
    * @return the message id of the {@code MessageEvent}.
-   * @since 0.12
+   * @since 0.1
    */
   public abstract long getMessageId();
 
@@ -92,7 +92,7 @@ public abstract class MessageEvent {
    * Returns the uncompressed size in bytes of the {@code MessageEvent}.
    *
    * @return the uncompressed size in bytes of the {@code MessageEvent}.
-   * @since 0.12
+   * @since 0.1
    */
   public abstract long getUncompressedMessageSize();
 
@@ -100,14 +100,14 @@ public abstract class MessageEvent {
    * Returns the compressed size in bytes of the {@code MessageEvent}.
    *
    * @return the compressed size in bytes of the {@code MessageEvent}.
-   * @since 0.12
+   * @since 0.1
    */
   public abstract long getCompressedMessageSize();
 
   /**
    * Builder class for {@link MessageEvent}.
    *
-   * @since 0.12
+   * @since 0.1
    */
   @AutoValue.Builder
   public abstract static class Builder {
@@ -122,7 +122,7 @@ public abstract class MessageEvent {
      *
      * @param uncompressedMessageSize represents the uncompressed size in bytes of this message.
      * @return this.
-     * @since 0.12
+     * @since 0.1
      */
     public abstract Builder setUncompressedMessageSize(long uncompressedMessageSize);
 
@@ -131,7 +131,7 @@ public abstract class MessageEvent {
      *
      * @param compressedMessageSize represents the compressed size in bytes of this message.
      * @return this.
-     * @since 0.12
+     * @since 0.1
      */
     public abstract Builder setCompressedMessageSize(long compressedMessageSize);
 
@@ -139,7 +139,7 @@ public abstract class MessageEvent {
      * Builds and returns a {@code MessageEvent} with the desired values.
      *
      * @return a {@code MessageEvent} with the desired values.
-     * @since 0.12
+     * @since 0.1
      */
     public abstract MessageEvent build();
 

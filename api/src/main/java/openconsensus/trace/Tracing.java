@@ -16,15 +16,12 @@
 
 package openconsensus.trace;
 
-import java.util.logging.Logger;
-
 /**
  * Class that manages a global instance of the {@link TraceComponent}.
  *
  * @since 0.1
  */
 public final class Tracing {
-  private static final Logger logger = Logger.getLogger(Tracing.class.getName());
   private static final TraceComponent traceComponent = TraceComponent.newNoopTraceComponent();
 
   /**

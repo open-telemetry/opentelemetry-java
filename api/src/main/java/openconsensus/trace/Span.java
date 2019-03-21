@@ -96,7 +96,7 @@ public abstract class Span {
    * {@code 0.12}.
    *
    * @param messageEvent the message to add.
-   * @since 0.12
+   * @since 0.1
    */
   public abstract void addMessageEvent(MessageEvent messageEvent);
 
@@ -160,20 +160,20 @@ public abstract class Span {
    * Type of span. Can be used to specify additional relationships between spans in addition to a
    * parent/child relationship.
    *
-   * @since 0.14
+   * @since 0.1
    */
   public enum Kind {
     /**
      * Indicates that the span covers server-side handling of an RPC or other remote request.
      *
-     * @since 0.14
+     * @since 0.1
      */
     SERVER,
 
     /**
      * Indicates that the span covers the client-side wrapper around an RPC or other remote request.
      *
-     * @since 0.14
+     * @since 0.1
      */
     CLIENT
   }

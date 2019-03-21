@@ -208,7 +208,7 @@ public abstract class Tracer {
    * @param span the {@code Span} to be set as current.
    * @param runnable the {@code Runnable} to withSpan in the {@code Span}.
    * @return the {@code Runnable}.
-   * @since 0.11.0
+   * @since 0.1.0
    */
   public abstract Runnable withSpan(Span span, Runnable runnable);
 
@@ -270,10 +270,11 @@ public abstract class Tracer {
    *
    * @param span the {@code Span} to be set as current.
    * @param callable the {@code Callable} to run in the {@code Span}.
+   * @param <V> the result type of method call.
    * @return the {@code Callable}.
-   * @since 0.11.0
+   * @since 0.1.0
    */
-  public abstract <C> Callable<C> withSpan(Span span, final Callable<C> callable);
+  public abstract <V> Callable<V> withSpan(Span span, final Callable<V> callable);
 
   /**
    * Returns a {@link SpanBuilder} to create and start a new child {@link Span} as a child of to the

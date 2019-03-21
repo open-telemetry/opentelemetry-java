@@ -64,7 +64,7 @@ public final class TraceOptions {
    *
    * @param src the byte representation of the {@code TraceOptions}.
    * @return a {@code TraceOptions} whose representation is {@code src}.
-   * @since 0.16
+   * @since 0.1
    */
   public static TraceOptions fromByte(byte src) {
     return new TraceOptions(src);
@@ -80,7 +80,7 @@ public final class TraceOptions {
    * @throws NullPointerException if {@code src} is null.
    * @throws IllegalArgumentException if {@code src.length} is not {@code 2 * TraceOption.SIZE} OR
    *     if the {@code str} has invalid characters.
-   * @since 0.18
+   * @since 0.1
    */
   public static TraceOptions fromLowerBase16(CharSequence src, int srcOffset) {
     return new TraceOptions(BigendianEncoding.byteFromBase16String(src, srcOffset));
@@ -90,7 +90,7 @@ public final class TraceOptions {
    * Returns the one byte representation of the {@code TraceOptions}.
    *
    * @return the one byte representation of the {@code TraceOptions}.
-   * @since 0.16
+   * @since 0.1
    */
   public byte getByte() {
     return options;
@@ -126,7 +126,7 @@ public final class TraceOptions {
    * @param destOffset the starting offset in the destination buffer.
    * @throws IndexOutOfBoundsException if {@code destOffset + 2} is greater than {@code
    *     dest.length}.
-   * @since 0.18
+   * @since 0.1
    */
   public void copyLowerBase16To(char[] dest, int destOffset) {
     BigendianEncoding.byteToBase16String(options, dest, destOffset);
@@ -136,7 +136,7 @@ public final class TraceOptions {
    * Returns the lowercase base16 encoding of this {@code TraceOptions}.
    *
    * @return the lowercase base16 encoding of this {@code TraceOptions}.
-   * @since 0.18
+   * @since 0.1
    */
   public String toLowerBase16() {
     char[] chars = new char[BASE16_SIZE];

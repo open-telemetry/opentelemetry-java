@@ -146,7 +146,7 @@ public abstract class SpanBuilder {
    *
    * @param spanKind the kind of the newly created {@code Span}.
    * @return this.
-   * @since 0.14
+   * @since 0.1
    */
   public SpanBuilder setSpanKind(@Nullable Span.Kind spanKind) {
     return this;
@@ -274,7 +274,7 @@ public abstract class SpanBuilder {
    * </code></pre>
    *
    * @param runnable the {@code Runnable} to run in the {@code Span}.
-   * @since 0.11.0
+   * @since 0.1.0
    */
   public abstract void startSpanAndRun(final Runnable runnable);
 
@@ -303,7 +303,10 @@ public abstract class SpanBuilder {
    * </code></pre>
    *
    * @param callable the {@code Callable} to run in the {@code Span}.
-   * @since 0.11.0
+   * @param <V> the result type of method call.
+   * @return the result of the {@code Callable#call}.
+   * @throws Exception if the {@code Callable} throws an exception.
+   * @since 0.1.0
    */
   public abstract <V> V startSpanAndCall(Callable<V> callable) throws Exception;
 

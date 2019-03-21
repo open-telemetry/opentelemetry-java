@@ -70,7 +70,7 @@ public final class SpanContext {
    * @param traceOptions the trace options for the span context.
    * @param tracestate the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
-   * @since 0.16
+   * @since 0.1
    */
   public static SpanContext create(
       TraceId traceId, SpanId spanId, TraceOptions traceOptions, Tracestate tracestate) {

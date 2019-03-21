@@ -100,7 +100,7 @@ public final class TraceId implements Comparable<TraceId> {
    * @throws NullPointerException if {@code src} is null.
    * @throws IllegalArgumentException if not enough characters in the {@code src} from the {@code
    *     srcOffset}.
-   * @since 0.11
+   * @since 0.1
    */
   public static TraceId fromLowerBase16(CharSequence src, int srcOffset) {
     Utils.checkNotNull(src, "src");
@@ -117,7 +117,7 @@ public final class TraceId implements Comparable<TraceId> {
    * @param destOffset the starting offset in the destination buffer.
    * @throws IndexOutOfBoundsException if {@code destOffset + 2 * TraceId.SIZE} is greater than
    *     {@code dest.length}.
-   * @since 0.18
+   * @since 0.1
    */
   public void copyLowerBase16To(char[] dest, int destOffset) {
     BigendianEncoding.longToBase16String(idHi, dest, destOffset);
@@ -139,7 +139,7 @@ public final class TraceId implements Comparable<TraceId> {
    * Returns the lowercase base16 encoding of this {@code TraceId}.
    *
    * @return the lowercase base16 encoding of this {@code TraceId}.
-   * @since 0.11
+   * @since 0.1
    */
   public String toLowerBase16() {
     char[] chars = new char[BASE16_SIZE];

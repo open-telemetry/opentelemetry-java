@@ -68,7 +68,7 @@ public abstract class AttributeValue {
    *
    * @param doubleValue The new value.
    * @return an {@code AttributeValue} with a double value.
-   * @since 0.17
+   * @since 0.1
    */
   public static AttributeValue doubleAttributeValue(double doubleValue) {
     return AttributeValueDouble.create(doubleValue);
@@ -88,8 +88,9 @@ public abstract class AttributeValue {
    * @param defaultFunction the function that should be applied if the value has a type that was
    *     added after this {@code match} method was added to the API. See {@link
    *     openconsensus.common.Functions} for some common functions for handling unknown types.
+   * @param <T> the type of the return.
    * @return the result of the function applied to the underlying value.
-   * @since 0.17
+   * @since 0.1
    */
   public abstract <T> T match(
       Function<? super String, T> stringFunction,

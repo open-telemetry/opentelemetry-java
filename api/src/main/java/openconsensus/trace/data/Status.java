@@ -26,10 +26,6 @@ import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
 import openconsensus.trace.Span;
 
-/*>>>
-import org.checkerframework.dataflow.qual.Deterministic;
-*/
-
 /**
  * Defines the status of a {@link Span} by providing a standard {@link CanonicalCode} in conjunction
  * with an optional descriptive message. Instances of {@code Status} are created by starting with

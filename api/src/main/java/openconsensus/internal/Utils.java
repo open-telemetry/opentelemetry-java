@@ -16,12 +16,6 @@
 
 package openconsensus.internal;
 
-import java.util.List;
-
-/*>>>
-import org.checkerframework.checker.nullness.qual.NonNull;
-*/
-
 /** General internal utility methods. */
 public final class Utils {
 
@@ -34,6 +28,7 @@ public final class Utils {
    * @param isValid whether the argument check passed.
    * @param errorMessage the message to use for the exception. Will be converted to a string using
    *     {@link String#valueOf(Object)}.
+   * @throws IllegalArgumentException if condition is not {@code true}.
    */
   public static void checkArgument(
       boolean isValid, @javax.annotation.Nullable Object errorMessage) {
@@ -106,10 +101,10 @@ public final class Utils {
    * @param arg the argument to check for null.
    * @param errorMessage the message to use for the exception. Will be converted to a string using
    *     {@link String#valueOf(Object)}.
+   * @param <T> the argument type of the argument to check for null.
    * @return the argument, if it passes the null check.
    */
-  public static <T /*>>> extends @NonNull Object*/> T checkNotNull(
-      T arg, @javax.annotation.Nullable Object errorMessage) {
+  public static <T> T checkNotNull(T arg, @javax.annotation.Nullable Object errorMessage) {
     if (arg == null) {
       throw new NullPointerException(String.valueOf(errorMessage));
     }
@@ -117,24 +112,12 @@ public final class Utils {
   }
 
   /**
-   * Throws a {@link NullPointerException} if any of the list elements is null.
-   *
-   * @param list the argument list to check for null.
-   * @param errorMessage the message to use for the exception. Will be converted to a string using
-   *     {@link String#valueOf(Object)}.
-   */
-  public static <T /*>>> extends @NonNull Object*/> void checkListElementNotNull(
-      List<T> list, @javax.annotation.Nullable Object errorMessage) {
-    for (T element : list) {
-      if (element == null) {
-        throw new NullPointerException(String.valueOf(errorMessage));
-      }
-    }
-  }
-
-  /**
    * Compares two Objects for equality. This functionality is provided by {@code
    * Objects.equal(Object, Object)} in Java 7.
+   *
+   * @param x first object to compare.
+   * @param y second object to compare.
+   * @return {@code true} if the objects are equal.
    */
   public static boolean equalsObjects(
       @javax.annotation.Nullable Object x, @javax.annotation.Nullable Object y) {

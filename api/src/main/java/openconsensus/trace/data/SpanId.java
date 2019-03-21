@@ -95,7 +95,7 @@ public final class SpanId implements Comparable<SpanId> {
    * @throws NullPointerException if {@code src} is null.
    * @throws IllegalArgumentException if not enough characters in the {@code src} from the {@code
    *     srcOffset}.
-   * @since 0.11
+   * @since 0.1
    */
   public static SpanId fromLowerBase16(CharSequence src, int srcOffset) {
     Utils.checkNotNull(src, "src");
@@ -110,7 +110,7 @@ public final class SpanId implements Comparable<SpanId> {
    * @param destOffset the starting offset in the destination buffer.
    * @throws IndexOutOfBoundsException if {@code destOffset + 2 * SpanId.SIZE} is greater than
    *     {@code dest.length}.
-   * @since 0.18
+   * @since 0.1
    */
   public void copyLowerBase16To(char[] dest, int destOffset) {
     BigendianEncoding.longToBase16String(id, dest, destOffset);
@@ -131,7 +131,7 @@ public final class SpanId implements Comparable<SpanId> {
    * Returns the lowercase base16 encoding of this {@code SpanId}.
    *
    * @return the lowercase base16 encoding of this {@code SpanId}.
-   * @since 0.11
+   * @since 0.1
    */
   public String toLowerBase16() {
     char[] chars = new char[BASE16_SIZE];
