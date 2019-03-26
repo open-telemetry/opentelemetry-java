@@ -18,6 +18,8 @@ package openconsensus.trace;
 
 import java.util.List;
 import javax.annotation.Nullable;
+import openconsensus.trace.data.SpanId;
+import openconsensus.trace.data.TraceId;
 
 /**
  * Sampler is used to make decisions on {@link Span} sampling.

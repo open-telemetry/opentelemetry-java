@@ -22,6 +22,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import openconsensus.internal.Utils;
+import openconsensus.trace.data.Annotation;
+import openconsensus.trace.data.AttributeValue;
+import openconsensus.trace.data.Link;
+import openconsensus.trace.data.MessageEvent;
+import openconsensus.trace.data.Status;
 
 /**
  * An abstract class that represents a span. It has an associated {@link SpanContext} and a set of

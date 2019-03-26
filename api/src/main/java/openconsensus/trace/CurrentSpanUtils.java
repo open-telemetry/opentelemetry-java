@@ -20,6 +20,7 @@ import io.grpc.Context;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 import openconsensus.common.Scope;
+import openconsensus.trace.data.Status;
 import openconsensus.trace.unsafe.ContextUtils;
 
 /** Util methods/functionality to interact with the {@link Span} in the {@link io.grpc.Context}. */

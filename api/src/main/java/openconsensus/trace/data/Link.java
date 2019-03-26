@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package openconsensus.trace;
+package openconsensus.trace.data;
 
 import com.google.auto.value.AutoValue;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.trace.Span;
+import openconsensus.trace.SpanContext;
 
 /**
  * A link to a {@link Span} from a different trace.

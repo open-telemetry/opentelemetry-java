@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.trace;
+package openconsensus.trace.data;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;

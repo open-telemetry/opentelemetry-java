@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.trace;
+package openconsensus.trace.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +24,7 @@ import java.util.TreeMap;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
+import openconsensus.trace.Span;
 
 /*>>>
 import org.checkerframework.dataflow.qual.Deterministic;

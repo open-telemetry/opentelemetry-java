@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package openconsensus.trace;
+package openconsensus.trace.data;
 
 import java.util.Arrays;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.DefaultVisibilityForTesting;
 import openconsensus.internal.Utils;
+import openconsensus.trace.Span;
 
 /**
  * A class that represents global trace options. These options are propagated to all child {@link

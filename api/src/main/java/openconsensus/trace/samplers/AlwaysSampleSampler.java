@@ -22,8 +22,8 @@ import javax.annotation.concurrent.Immutable;
 import openconsensus.trace.Sampler;
 import openconsensus.trace.Span;
 import openconsensus.trace.SpanContext;
-import openconsensus.trace.SpanId;
-import openconsensus.trace.TraceId;
+import openconsensus.trace.data.SpanId;
+import openconsensus.trace.data.TraceId;
 
 /** Sampler that always makes a "yes" decision on {@link Span} sampling. */
 @Immutable

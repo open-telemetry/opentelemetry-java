@@ -24,8 +24,8 @@ import openconsensus.internal.Utils;
 import openconsensus.trace.Sampler;
 import openconsensus.trace.Span;
 import openconsensus.trace.SpanContext;
-import openconsensus.trace.SpanId;
-import openconsensus.trace.TraceId;
+import openconsensus.trace.data.SpanId;
+import openconsensus.trace.data.TraceId;
 
 /**
  * We assume the lower 64 bits of the traceId's are randomly distributed around the whole (long)

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.trace;
+package openconsensus.trace.data;
 
 import java.util.Random;
 import javax.annotation.Nullable;

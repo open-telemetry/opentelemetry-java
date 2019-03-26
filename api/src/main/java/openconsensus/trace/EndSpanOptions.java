@@ -19,6 +19,7 @@ package openconsensus.trace;
 import com.google.auto.value.AutoValue;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.trace.data.Status;
 
 /**
  * A class that enables overriding the default values used when ending a {@link Span}. Allows
