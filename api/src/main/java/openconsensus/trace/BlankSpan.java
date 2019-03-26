@@ -67,11 +67,6 @@ public final class BlankSpan extends Span {
     Utils.checkNotNull(annotation, "annotation");
   }
 
-  /** No-op implementation of the {@link Span#addNetworkEvent(NetworkEvent)} method. */
-  @Override
-  @Deprecated
-  public void addNetworkEvent(NetworkEvent networkEvent) {}
-
   /** No-op implementation of the {@link Span#addMessageEvent(MessageEvent)} method. */
   @Override
   public void addMessageEvent(MessageEvent messageEvent) {

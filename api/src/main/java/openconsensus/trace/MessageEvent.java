@@ -33,7 +33,7 @@ import openconsensus.internal.Utils;
 @Immutable
 @AutoValue
 @SuppressWarnings("deprecation")
-public abstract class MessageEvent extends BaseMessageEvent {
+public abstract class MessageEvent {
   /**
    * Available types for a {@code MessageEvent}.
    *

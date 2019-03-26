@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import openconsensus.internal.Utils;
-import openconsensus.trace.internal.BaseMessageEventUtils;
 
 /**
  * An abstract class that represents a span. It has an associated {@link SpanContext} and a set of
@@ -160,21 +159,6 @@ public abstract class Span {
   public abstract void addAnnotation(Annotation annotation);
 
   /**
-   * Adds a NetworkEvent to the {@code Span}.
-   *
-   * <p>This function is only intended to be used by RPC systems (either client or server), not by
-   * higher level applications.
-   *
-   * @param networkEvent the network event to add.
-   * @deprecated Use {@link #addMessageEvent}.
-   * @since 0.1.0
-   */
-  @Deprecated
-  public void addNetworkEvent(NetworkEvent networkEvent) {
-    addMessageEvent(BaseMessageEventUtils.asMessageEvent(networkEvent));
-  }
-
-  /**
    * Adds a MessageEvent to the {@code Span}.
    *
    * <p>This function can be used by higher level applications to record messaging event.
@@ -185,12 +169,7 @@ public abstract class Span {
    * @param messageEvent the message to add.
    * @since 0.1.0
    */
-  public void addMessageEvent(MessageEvent messageEvent) {
-    // Default implementation by invoking addNetworkEvent() so that any existing derived classes,
-    // including implementation and the mocked ones, do not need to override this method explicitly.
-    Utils.checkNotNull(messageEvent, "messageEvent");
-    addNetworkEvent(BaseMessageEventUtils.asNetworkEvent(messageEvent));
-  }
+  public abstract void addMessageEvent(MessageEvent messageEvent);
 
   /**
    * Adds a {@link Link} to the {@code Span}.
