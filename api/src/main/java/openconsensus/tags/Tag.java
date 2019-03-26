@@ -17,8 +17,8 @@
 package openconsensus.tags;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.tags.TagMetadata.TagTtl;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.tags.TagMetadata.TagTtl;
 
 /**
  * {@link TagKey} paired with a {@link TagValue}.

@@ -17,12 +17,12 @@
 package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.ExperimentalApi;
-import openconsensus.internal.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.ExperimentalApi;
+import openconsensus.internal.Utils;
 
 /**
  * Carries tracing-system specific context in a list of key-value pairs. TraceState allows different

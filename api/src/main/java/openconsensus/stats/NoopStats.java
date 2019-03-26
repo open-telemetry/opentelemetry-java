@@ -16,13 +16,6 @@
 
 package openconsensus.stats;
 
-import openconsensus.common.Functions;
-import openconsensus.common.Timestamp;
-import openconsensus.internal.Utils;
-import openconsensus.stats.Measure.MeasureDouble;
-import openconsensus.stats.Measure.MeasureLong;
-import openconsensus.tags.TagContext;
-import openconsensus.tags.TagValue;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +28,13 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
+import openconsensus.common.Functions;
+import openconsensus.common.Timestamp;
+import openconsensus.internal.Utils;
+import openconsensus.stats.Measure.MeasureDouble;
+import openconsensus.stats.Measure.MeasureLong;
+import openconsensus.tags.TagContext;
+import openconsensus.tags.TagValue;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;

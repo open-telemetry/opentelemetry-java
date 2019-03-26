@@ -17,21 +17,21 @@
 package openconsensus.trace.export;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.internal.Utils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
+import openconsensus.internal.Utils;
 import openconsensus.trace.Span.Options;
 
 /**
  * This class allows users to access in-process information about all running spans.
  *
  * <p>The running spans tracking is available for all the spans with the option {@link
- * Options#RECORD_EVENTS}. This functionality allows users to debug stuck
- * operations or long living operations.
+ * Options#RECORD_EVENTS}. This functionality allows users to debug stuck operations or long living
+ * operations.
  *
  * @since 0.1.0
  */

@@ -17,15 +17,15 @@
 package openconsensus.trace.samplers;
 
 import com.google.auto.value.AutoValue;
+import java.util.List;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
 import openconsensus.trace.Sampler;
 import openconsensus.trace.Span;
 import openconsensus.trace.SpanContext;
 import openconsensus.trace.SpanId;
 import openconsensus.trace.TraceId;
-import java.util.List;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * We assume the lower 64 bits of the traceId's are randomly distributed around the whole (long)

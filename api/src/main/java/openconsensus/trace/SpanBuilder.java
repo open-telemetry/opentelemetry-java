@@ -17,11 +17,11 @@
 package openconsensus.trace;
 
 import com.google.errorprone.annotations.MustBeClosed;
-import openconsensus.common.Scope;
-import openconsensus.internal.Utils;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
+import openconsensus.common.Scope;
+import openconsensus.internal.Utils;
 
 /**
  * {@link SpanBuilder} is used to construct {@link Span} instances which define arbitrary scopes of

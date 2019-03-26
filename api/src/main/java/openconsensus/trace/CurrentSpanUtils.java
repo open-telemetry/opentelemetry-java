@@ -17,10 +17,10 @@
 package openconsensus.trace;
 
 import io.grpc.Context;
-import openconsensus.common.Scope;
-import openconsensus.trace.unsafe.ContextUtils;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
+import openconsensus.common.Scope;
+import openconsensus.trace.unsafe.ContextUtils;
 
 /** Util methods/functionality to interact with the {@link Span} in the {@link io.grpc.Context}. */
 final class CurrentSpanUtils {

@@ -17,10 +17,6 @@
 package openconsensus.trace.export;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.internal.Utils;
-import openconsensus.trace.EndSpanOptions;
-import openconsensus.trace.Status;
-import openconsensus.trace.Status.CanonicalCode;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,16 +28,20 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
+import openconsensus.internal.Utils;
+import openconsensus.trace.EndSpanOptions;
 import openconsensus.trace.Span.Options;
+import openconsensus.trace.Status;
+import openconsensus.trace.Status.CanonicalCode;
 
 /**
  * This class allows users to access in-process information such as latency based sampled spans and
  * error based sampled spans.
  *
- * <p>For all completed spans with the option {@link Options#RECORD_EVENTS} the library can
- * store samples based on latency for succeeded operations or based on error code for failed
- * operations. To activate this, users MUST manually configure all the span names for which samples
- * will be collected (see {@link #registerSpanNamesForCollection(Collection)}).
+ * <p>For all completed spans with the option {@link Options#RECORD_EVENTS} the library can store
+ * samples based on latency for succeeded operations or based on error code for failed operations.
+ * To activate this, users MUST manually configure all the span names for which samples will be
+ * collected (see {@link #registerSpanNamesForCollection(Collection)}).
  *
  * @since 0.1.0
  */

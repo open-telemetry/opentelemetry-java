@@ -17,8 +17,8 @@
 package openconsensus.metrics;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.ExperimentalApi;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.ExperimentalApi;
 
 /**
  * The key of a {@code Label} associated with a {@code MetricDescriptor}.

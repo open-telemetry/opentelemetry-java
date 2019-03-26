@@ -16,15 +16,15 @@
 
 package openconsensus.trace;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import openconsensus.common.Clock;
 import openconsensus.internal.DefaultVisibilityForTesting;
 import openconsensus.internal.Provider;
 import openconsensus.trace.config.TraceConfig;
 import openconsensus.trace.export.ExportComponent;
 import openconsensus.trace.propagation.PropagationComponent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
 /**
  * Class that manages a global instance of the {@link TraceComponent}.

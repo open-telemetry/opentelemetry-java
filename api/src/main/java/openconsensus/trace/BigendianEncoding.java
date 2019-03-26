@@ -16,8 +16,8 @@
 
 package openconsensus.trace;
 
-import openconsensus.internal.Utils;
 import java.util.Arrays;
+import openconsensus.internal.Utils;
 
 final class BigendianEncoding {
   static final int LONG_BYTES = Long.SIZE / Byte.SIZE;

@@ -16,14 +16,14 @@
 
 package openconsensus.trace.samplers;
 
+import java.util.List;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.trace.Sampler;
 import openconsensus.trace.Span;
 import openconsensus.trace.SpanContext;
 import openconsensus.trace.SpanId;
 import openconsensus.trace.TraceId;
-import java.util.List;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 
 /** Sampler that always makes a "yes" decision on {@link Span} sampling. */
 @Immutable

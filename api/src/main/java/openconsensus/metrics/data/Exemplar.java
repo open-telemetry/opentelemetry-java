@@ -17,12 +17,12 @@
 package openconsensus.metrics.data;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.Timestamp;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.Timestamp;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.NonNull;

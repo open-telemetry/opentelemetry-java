@@ -17,10 +17,10 @@
 package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.ExperimentalApi;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.ExperimentalApi;
 import openconsensus.trace.export.SampledSpanStore;
 
 /**
@@ -51,8 +51,7 @@ public abstract class EndSpanOptions {
 
   /**
    * If {@code true} this is equivalent with calling the {@link
-   * SampledSpanStore#registerSpanNamesForCollection(Collection)} in
-   * advance for this span name.
+   * SampledSpanStore#registerSpanNamesForCollection(Collection)} in advance for this span name.
    *
    * @return {@code true} if the name of the {@code Span} should be registered to the {@code
    *     SampledSpanStore}.
@@ -93,15 +92,14 @@ public abstract class EndSpanOptions {
 
     /**
      * If set to {@code true} this is equivalent with calling the {@link
-     * SampledSpanStore#registerSpanNamesForCollection(Collection)} in
-     * advance for the given span name.
+     * SampledSpanStore#registerSpanNamesForCollection(Collection)} in advance for the given span
+     * name.
      *
      * <p>WARNING: setting this option to a randomly generated span name can OOM your process
      * because the library will save samples for each name.
      *
      * <p>It is strongly recommended to use the {@link
-     * SampledSpanStore#registerSpanNamesForCollection(Collection)} API
-     * instead.
+     * SampledSpanStore#registerSpanNamesForCollection(Collection)} API instead.
      *
      * @return this.
      * @since 0.1.0

@@ -16,12 +16,12 @@
 
 package openconsensus.trace.propagation;
 
-import openconsensus.common.ExperimentalApi;
-import openconsensus.internal.Utils;
-import openconsensus.trace.SpanContext;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
+import openconsensus.common.ExperimentalApi;
+import openconsensus.internal.Utils;
+import openconsensus.trace.SpanContext;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.NonNull;

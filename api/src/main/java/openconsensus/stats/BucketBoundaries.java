@@ -17,13 +17,13 @@
 package openconsensus.stats;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.internal.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.internal.Utils;
 
 /**
  * The bucket boundaries for a histogram.

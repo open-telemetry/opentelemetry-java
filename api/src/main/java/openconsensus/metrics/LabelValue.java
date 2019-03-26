@@ -17,9 +17,9 @@
 package openconsensus.metrics;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.ExperimentalApi;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.ExperimentalApi;
 
 /**
  * The value of a {@code Label} associated with a {@code TimeSeries}.

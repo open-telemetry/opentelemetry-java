@@ -16,11 +16,11 @@
 
 package openconsensus.trace;
 
-import openconsensus.common.Internal;
-import openconsensus.internal.Utils;
 import java.util.Random;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.Internal;
+import openconsensus.internal.Utils;
 
 /**
  * A class that represents a trace identifier. A valid trace identifier is a 16-byte array with at

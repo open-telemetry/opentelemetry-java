@@ -16,10 +16,10 @@
 
 package openconsensus.trace;
 
-import openconsensus.internal.Utils;
 import java.util.Random;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.internal.Utils;
 
 /**
  * A class that represents a span identifier. A valid span identifier is an 8-byte array with at

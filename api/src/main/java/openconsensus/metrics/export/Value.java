@@ -17,9 +17,9 @@
 package openconsensus.metrics.export;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.common.Function;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * The actual point value for a {@link Point}.

@@ -17,11 +17,11 @@
 package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.internal.Utils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.internal.Utils;
 
 /**
  * A text annotation with a set of attributes.

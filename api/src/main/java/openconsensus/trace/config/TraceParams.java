@@ -17,16 +17,16 @@
 package openconsensus.trace.config;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
 import openconsensus.trace.Annotation;
 import openconsensus.trace.Link;
 import openconsensus.trace.MessageEvent;
+import openconsensus.trace.NetworkEvent;
 import openconsensus.trace.Sampler;
 import openconsensus.trace.Span;
-import openconsensus.trace.samplers.Samplers;
-import javax.annotation.concurrent.Immutable;
-import openconsensus.trace.NetworkEvent;
 import openconsensus.trace.SpanBuilder;
+import openconsensus.trace.samplers.Samplers;
 
 /**
  * Class that holds global trace parameters.
@@ -92,8 +92,7 @@ public abstract class TraceParams {
   public abstract int getMaxNumberOfMessageEvents();
 
   /**
-   * Returns the global default max number of {@link NetworkEvent} events per
-   * {@link Span}.
+   * Returns the global default max number of {@link NetworkEvent} events per {@link Span}.
    *
    * @return the global default max number of {@code NetworkEvent} events per {@code Span}.
    * @deprecated Use {@link getMaxNumberOfMessageEvents}.
@@ -173,12 +172,10 @@ public abstract class TraceParams {
     public abstract Builder setMaxNumberOfMessageEvents(int maxNumberOfMessageEvents);
 
     /**
-     * Sets the global default max number of {@link NetworkEvent} events per
-     * {@link Span}.
+     * Sets the global default max number of {@link NetworkEvent} events per {@link Span}.
      *
-     * @param maxNumberOfNetworkEvents the global default max number of {@link
-     *     NetworkEvent} events per {@link Span}. It must be positive otherwise
-     *     {@link #build()} will throw an exception.
+     * @param maxNumberOfNetworkEvents the global default max number of {@link NetworkEvent} events
+     *     per {@link Span}. It must be positive otherwise {@link #build()} will throw an exception.
      * @return this.
      * @deprecated Use {@link setMaxNumberOfMessageEvents}.
      * @since 0.1.0

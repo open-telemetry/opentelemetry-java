@@ -17,16 +17,16 @@
 package openconsensus.metrics.export;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.ExperimentalApi;
-import openconsensus.common.Timestamp;
-import openconsensus.internal.Utils;
-import openconsensus.metrics.LabelKey;
-import openconsensus.metrics.LabelValue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.ExperimentalApi;
+import openconsensus.common.Timestamp;
+import openconsensus.internal.Utils;
+import openconsensus.metrics.LabelKey;
+import openconsensus.metrics.LabelValue;
 
 /**
  * A collection of data points that describes the time-varying values of a {@code Metric}.

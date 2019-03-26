@@ -17,11 +17,11 @@
 package openconsensus.stats;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Function;
 import openconsensus.internal.DefaultVisibilityForTesting;
 import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * The definition of the {@link Measurement} that is taken by OpenCensus library.

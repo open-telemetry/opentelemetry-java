@@ -17,13 +17,13 @@
 package openconsensus.stats;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.Function;
-import openconsensus.internal.Utils;
-import openconsensus.metrics.data.Exemplar;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.Function;
+import openconsensus.internal.Utils;
+import openconsensus.metrics.data.Exemplar;
 
 /**
  * {@link AggregationData} is the result of applying a given {@link Aggregation} to a set of {@code

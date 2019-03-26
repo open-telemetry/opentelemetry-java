@@ -17,9 +17,9 @@
 package openconsensus.metrics.export;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.common.Timestamp;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * A timestamped measurement of a {@code TimeSeries}.

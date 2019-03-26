@@ -17,17 +17,17 @@
 package openconsensus.tags.unsafe;
 
 import io.grpc.Context;
-import openconsensus.tags.Tag;
-import openconsensus.tags.TagContext;
 import java.util.Collections;
 import java.util.Iterator;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.tags.Tag;
+import openconsensus.tags.TagContext;
 
 /**
  * Utility methods for accessing the {@link TagContext} contained in the {@link io.grpc.Context}.
  *
- * <p>Most code should interact with the current context via the public APIs in {@link
- * TagContext} and avoid accessing {@link #TAG_CONTEXT_KEY} directly.
+ * <p>Most code should interact with the current context via the public APIs in {@link TagContext}
+ * and avoid accessing {@link #TAG_CONTEXT_KEY} directly.
  *
  * @since 0.1.0
  */

@@ -17,10 +17,10 @@
 package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Function;
 import openconsensus.common.Functions;
 import openconsensus.internal.Utils;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * A class that represents all the possible values for an attribute. An attribute can have 3 types
@@ -86,8 +86,8 @@ public abstract class AttributeValue {
    * @param booleanFunction the function that should be applied if the value has type {@code
    *     Boolean}.
    * @param defaultFunction the function that should be applied if the value has a type that was
-   *     added after this {@code match} method was added to the API. See {@link
-   *     Functions} for some common functions for handling unknown types.
+   *     added after this {@code match} method was added to the API. See {@link Functions} for some
+   *     common functions for handling unknown types.
    * @return the result of the function applied to the underlying value.
    * @since 0.1.0
    * @deprecated in favor of {@link #match(Function, Function, Function, Function, Function)}.
@@ -109,8 +109,8 @@ public abstract class AttributeValue {
    *     Boolean}.
    * @param doubleFunction the function that should be applied if the value has type {@code Double}.
    * @param defaultFunction the function that should be applied if the value has a type that was
-   *     added after this {@code match} method was added to the API. See {@link
-   *     Functions} for some common functions for handling unknown types.
+   *     added after this {@code match} method was added to the API. See {@link Functions} for some
+   *     common functions for handling unknown types.
    * @return the result of the function applied to the underlying value.
    * @since 0.1.0
    */

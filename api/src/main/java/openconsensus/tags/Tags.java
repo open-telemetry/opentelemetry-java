@@ -16,12 +16,12 @@
 
 package openconsensus.tags;
 
-import openconsensus.internal.DefaultVisibilityForTesting;
-import openconsensus.internal.Provider;
-import openconsensus.tags.propagation.TagPropagationComponent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import openconsensus.internal.DefaultVisibilityForTesting;
+import openconsensus.internal.Provider;
+import openconsensus.tags.propagation.TagPropagationComponent;
 
 /**
  * Class for accessing the default {@link TagsComponent}.

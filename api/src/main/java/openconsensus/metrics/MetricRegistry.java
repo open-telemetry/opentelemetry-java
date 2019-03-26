@@ -16,18 +16,17 @@
 
 package openconsensus.metrics;
 
+import java.util.List;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.common.ToDoubleFunction;
 import openconsensus.common.ToLongFunction;
 import openconsensus.internal.Utils;
-import java.util.List;
 import openconsensus.metrics.export.MetricProducer;
 import openconsensus.metrics.export.MetricProducerManager;
 
 /**
  * Creates and manages your application's set of metrics. The default implementation of this creates
- * a {@link MetricProducer} and registers it to the global {@link
- * MetricProducerManager}.
+ * a {@link MetricProducer} and registers it to the global {@link MetricProducerManager}.
  *
  * @since 0.1.0
  */

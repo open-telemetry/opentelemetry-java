@@ -16,9 +16,9 @@
 
 package openconsensus.trace.propagation;
 
+import java.text.ParseException;
 import openconsensus.internal.Utils;
 import openconsensus.trace.SpanContext;
-import java.text.ParseException;
 
 /**
  * This is a helper class for {@link SpanContext} propagation on the wire using binary encoding.

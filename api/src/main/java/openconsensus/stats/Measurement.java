@@ -17,10 +17,10 @@
 package openconsensus.stats;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Function;
 import openconsensus.stats.Measure.MeasureDouble;
 import openconsensus.stats.Measure.MeasureLong;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * Immutable representation of a Measurement.

@@ -17,9 +17,9 @@
 package openconsensus.stats;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Function;
 import openconsensus.internal.Utils;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * {@link Aggregation} is the process of combining a certain set of {@code MeasureValue}s for a

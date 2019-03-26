@@ -17,9 +17,9 @@
 package openconsensus.tags;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * A validated tag value.

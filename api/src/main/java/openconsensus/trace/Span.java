@@ -16,13 +16,13 @@
 
 package openconsensus.trace;
 
-import openconsensus.internal.Utils;
-import openconsensus.trace.internal.BaseMessageEventUtils;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
+import openconsensus.internal.Utils;
+import openconsensus.trace.internal.BaseMessageEventUtils;
 
 /**
  * An abstract class that represents a span. It has an associated {@link SpanContext} and a set of

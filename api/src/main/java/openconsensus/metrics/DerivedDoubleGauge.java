@@ -16,11 +16,11 @@
 
 package openconsensus.metrics;
 
-import openconsensus.common.ToDoubleFunction;
-import openconsensus.internal.Utils;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
+import openconsensus.common.ToDoubleFunction;
+import openconsensus.internal.Utils;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;

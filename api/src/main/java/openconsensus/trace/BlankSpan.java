@@ -16,9 +16,9 @@
 
 package openconsensus.trace;
 
-import openconsensus.internal.Utils;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.internal.Utils;
 
 /**
  * The {@code BlankSpan} is a singleton class, which is the default {@link Span} that is used when

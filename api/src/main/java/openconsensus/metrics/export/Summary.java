@@ -17,13 +17,13 @@
 package openconsensus.metrics.export;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.ExperimentalApi;
-import openconsensus.internal.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.ExperimentalApi;
+import openconsensus.internal.Utils;
 
 /**
  * Implementation of the {@link Distribution} as a summary of observations.

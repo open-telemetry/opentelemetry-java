@@ -17,8 +17,8 @@
 package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.internal.Utils;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.internal.Utils;
 
 /**
  * A class that represents a generic messaging event. This class can represent messaging happened in

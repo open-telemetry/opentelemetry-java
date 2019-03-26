@@ -16,13 +16,13 @@
 
 package openconsensus.metrics;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.internal.DefaultVisibilityForTesting;
 import openconsensus.internal.Provider;
 import openconsensus.metrics.export.ExportComponent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.Nullable;
 import openconsensus.metrics.export.MetricProducerManager;
 
 /**
@@ -49,8 +49,7 @@ public final class Metrics {
   /**
    * Returns the global {@link MetricRegistry}.
    *
-   * <p>This {@code MetricRegistry} is already added to the global {@link
-   * MetricProducerManager}.
+   * <p>This {@code MetricRegistry} is already added to the global {@link MetricProducerManager}.
    *
    * @return the global {@code MetricRegistry}.
    * @since 0.1.0

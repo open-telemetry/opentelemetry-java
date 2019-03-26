@@ -22,25 +22,20 @@ import openconsensus.trace.BaseMessageEvent;
 import openconsensus.trace.MessageEvent;
 import openconsensus.trace.NetworkEvent;
 
-/**
- * Helper class to convert/cast between for {@link MessageEvent} and {@link
- * NetworkEvent}.
- */
+/** Helper class to convert/cast between for {@link MessageEvent} and {@link NetworkEvent}. */
 @Internal
 @SuppressWarnings("deprecation")
 public final class BaseMessageEventUtils {
   /**
-   * Cast or convert a {@link BaseMessageEvent} to {@link
-   * MessageEvent}.
+   * Cast or convert a {@link BaseMessageEvent} to {@link MessageEvent}.
    *
-   * <p>Warning: if the input is a {@code NetworkEvent} and contains {@code
-   * kernelTimestamp} information, this information will be dropped.
+   * <p>Warning: if the input is a {@code NetworkEvent} and contains {@code kernelTimestamp}
+   * information, this information will be dropped.
    *
    * @param event the {@code BaseMessageEvent} that is being cast or converted.
    * @return a {@code MessageEvent} representation of the input.
    */
-  public static MessageEvent asMessageEvent(
-      BaseMessageEvent event) {
+  public static MessageEvent asMessageEvent(BaseMessageEvent event) {
     Utils.checkNotNull(event, "event");
     if (event instanceof MessageEvent) {
       return (MessageEvent) event;
@@ -57,14 +52,12 @@ public final class BaseMessageEventUtils {
   }
 
   /**
-   * Cast or convert a {@link BaseMessageEvent} to {@link
-   * NetworkEvent}.
+   * Cast or convert a {@link BaseMessageEvent} to {@link NetworkEvent}.
    *
    * @param event the {@code BaseMessageEvent} that is being cast or converted.
    * @return a {@code NetworkEvent} representation of the input.
    */
-  public static NetworkEvent asNetworkEvent(
-      BaseMessageEvent event) {
+  public static NetworkEvent asNetworkEvent(BaseMessageEvent event) {
     Utils.checkNotNull(event, "event");
     if (event instanceof NetworkEvent) {
       return (NetworkEvent) event;

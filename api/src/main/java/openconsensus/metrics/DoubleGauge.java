@@ -16,9 +16,9 @@
 
 package openconsensus.metrics;
 
-import openconsensus.internal.Utils;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
+import openconsensus.internal.Utils;
 
 /**
  * Double Gauge metric, to report instantaneous measurement of a double value. Gauges can go both up

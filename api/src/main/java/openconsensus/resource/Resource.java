@@ -17,10 +17,6 @@
 package openconsensus.resource;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.ExperimentalApi;
-import openconsensus.internal.DefaultVisibilityForTesting;
-import openconsensus.internal.StringUtils;
-import openconsensus.internal.Utils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -28,6 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.ExperimentalApi;
+import openconsensus.internal.DefaultVisibilityForTesting;
+import openconsensus.internal.StringUtils;
+import openconsensus.internal.Utils;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -45,8 +45,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 @AutoValue
 @ExperimentalApi
 public abstract class Resource {
-  @DefaultVisibilityForTesting
-  static final int MAX_LENGTH = 255;
+  @DefaultVisibilityForTesting static final int MAX_LENGTH = 255;
   private static final String OC_RESOURCE_TYPE_ENV = "OC_RESOURCE_TYPE";
   private static final String OC_RESOURCE_LABELS_ENV = "OC_RESOURCE_LABELS";
   private static final String LABEL_LIST_SPLITTER = ",";

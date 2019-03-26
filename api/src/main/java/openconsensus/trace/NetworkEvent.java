@@ -17,10 +17,10 @@
 package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.Timestamp;
-import openconsensus.internal.Utils;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.Timestamp;
+import openconsensus.internal.Utils;
 
 /**
  * A class that represents a network event. It requires a {@link Type type} and a message id that

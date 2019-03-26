@@ -17,18 +17,18 @@
 package openconsensus.stats;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.Duration;
-import openconsensus.common.Function;
-import openconsensus.internal.DefaultVisibilityForTesting;
-import openconsensus.internal.StringUtils;
-import openconsensus.internal.Utils;
-import openconsensus.tags.TagKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.Duration;
+import openconsensus.common.Function;
+import openconsensus.internal.DefaultVisibilityForTesting;
+import openconsensus.internal.StringUtils;
+import openconsensus.internal.Utils;
+import openconsensus.tags.TagKey;
 
 /**
  * A View specifies an aggregation and a set of tag keys. The aggregation will be broken down by the

@@ -16,16 +16,16 @@
 
 package openconsensus.trace;
 
-import openconsensus.internal.DefaultVisibilityForTesting;
-import openconsensus.internal.Utils;
 import java.util.Arrays;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.internal.DefaultVisibilityForTesting;
+import openconsensus.internal.Utils;
 
 /**
  * A class that represents global trace options. These options are propagated to all child {@link
- * Span spans}. These determine features such as whether a {@code Span} should
- * be traced. It is implemented as a bitmask.
+ * Span spans}. These determine features such as whether a {@code Span} should be traced. It is
+ * implemented as a bitmask.
  *
  * @since 0.1.0
  */

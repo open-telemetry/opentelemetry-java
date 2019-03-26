@@ -17,18 +17,6 @@
 package openconsensus.trace.export;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.Timestamp;
-import openconsensus.internal.Utils;
-import openconsensus.trace.Annotation;
-import openconsensus.trace.AttributeValue;
-import openconsensus.trace.Link;
-import openconsensus.trace.MessageEvent;
-import openconsensus.trace.Span;
-import openconsensus.trace.Span.Kind;
-import openconsensus.trace.SpanContext;
-import openconsensus.trace.SpanId;
-import openconsensus.trace.Status;
-import openconsensus.trace.internal.BaseMessageEventUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,8 +24,20 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.Timestamp;
+import openconsensus.internal.Utils;
+import openconsensus.trace.Annotation;
+import openconsensus.trace.AttributeValue;
 import openconsensus.trace.BaseMessageEvent;
+import openconsensus.trace.Link;
+import openconsensus.trace.MessageEvent;
 import openconsensus.trace.NetworkEvent;
+import openconsensus.trace.Span;
+import openconsensus.trace.Span.Kind;
+import openconsensus.trace.SpanContext;
+import openconsensus.trace.SpanId;
+import openconsensus.trace.Status;
+import openconsensus.trace.internal.BaseMessageEventUtils;
 
 /*>>>
 import org.checkerframework.dataflow.qual.Deterministic;
@@ -129,8 +129,7 @@ public abstract class SpanData {
       @Nullable Timestamp endTimestamp) {
     Utils.checkNotNull(messageOrNetworkEvents, "messageOrNetworkEvents");
     List<TimedEvent<MessageEvent>> messageEventsList = new ArrayList<TimedEvent<MessageEvent>>();
-    for (TimedEvent<? extends BaseMessageEvent> timedEvent :
-        messageOrNetworkEvents.getEvents()) {
+    for (TimedEvent<? extends BaseMessageEvent> timedEvent : messageOrNetworkEvents.getEvents()) {
       BaseMessageEvent event = timedEvent.getEvent();
       if (event instanceof MessageEvent) {
         @SuppressWarnings("unchecked")
@@ -242,16 +241,14 @@ public abstract class SpanData {
   @SuppressWarnings({"deprecation"})
   public TimedEvents<NetworkEvent> getNetworkEvents() {
     TimedEvents<MessageEvent> timedEvents = getMessageEvents();
-    List<TimedEvent<NetworkEvent>> networkEventsList =
-        new ArrayList<TimedEvent<NetworkEvent>>();
+    List<TimedEvent<NetworkEvent>> networkEventsList = new ArrayList<TimedEvent<NetworkEvent>>();
     for (TimedEvent<MessageEvent> timedEvent : timedEvents.getEvents()) {
       networkEventsList.add(
           TimedEvent.<NetworkEvent>create(
               timedEvent.getTimestamp(),
               BaseMessageEventUtils.asNetworkEvent(timedEvent.getEvent())));
     }
-    return TimedEvents.<NetworkEvent>create(
-        networkEventsList, timedEvents.getDroppedEventsCount());
+    return TimedEvents.<NetworkEvent>create(networkEventsList, timedEvents.getDroppedEventsCount());
   }
 
   /**

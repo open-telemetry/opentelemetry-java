@@ -16,10 +16,10 @@
 
 package openconsensus.trace.export;
 
-import openconsensus.trace.Span;
-import openconsensus.trace.TraceOptions;
 import java.util.Collection;
 import javax.annotation.concurrent.ThreadSafe;
+import openconsensus.trace.Span;
+import openconsensus.trace.TraceOptions;
 
 /**
  * A service that is used by the library to export {@code SpanData} for all the spans that are part

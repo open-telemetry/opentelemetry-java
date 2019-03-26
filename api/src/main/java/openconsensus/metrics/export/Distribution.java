@@ -17,16 +17,16 @@
 package openconsensus.metrics.export;
 
 import com.google.auto.value.AutoValue;
-import openconsensus.common.ExperimentalApi;
-import openconsensus.common.Function;
-import openconsensus.internal.Utils;
-import openconsensus.metrics.data.Exemplar;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.common.ExperimentalApi;
+import openconsensus.common.Function;
 import openconsensus.common.Functions;
+import openconsensus.internal.Utils;
+import openconsensus.metrics.data.Exemplar;
 
 /**
  * {@link Distribution} contains summary statistics for a population of values. It optionally

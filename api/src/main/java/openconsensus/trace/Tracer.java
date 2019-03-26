@@ -17,11 +17,11 @@
 package openconsensus.trace;
 
 import com.google.errorprone.annotations.MustBeClosed;
+import java.util.concurrent.Callable;
+import javax.annotation.Nullable;
 import openconsensus.common.Scope;
 import openconsensus.internal.Utils;
 import openconsensus.trace.SpanBuilder.NoopSpanBuilder;
-import java.util.concurrent.Callable;
-import javax.annotation.Nullable;
 
 /**
  * Tracer is a simple, thin class for {@link Span} creation and in-process context interaction.

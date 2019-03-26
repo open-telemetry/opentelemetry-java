@@ -16,15 +16,15 @@
 
 package openconsensus.tags;
 
+import java.util.Collections;
+import java.util.Iterator;
+import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.common.Scope;
 import openconsensus.internal.NoopScope;
 import openconsensus.internal.Utils;
 import openconsensus.tags.propagation.TagContextBinarySerializer;
 import openconsensus.tags.propagation.TagPropagationComponent;
-import java.util.Collections;
-import java.util.Iterator;
-import javax.annotation.concurrent.Immutable;
-import javax.annotation.concurrent.ThreadSafe;
 
 /** No-op implementations of tagging classes. */
 final class NoopTags {

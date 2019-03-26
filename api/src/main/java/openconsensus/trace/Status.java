@@ -16,7 +16,6 @@
 
 package openconsensus.trace;
 
-import openconsensus.internal.Utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.internal.Utils;
 
 /*>>>
 import org.checkerframework.dataflow.qual.Deterministic;

@@ -17,6 +17,13 @@
 package openconsensus.stats;
 
 import com.google.auto.value.AutoValue;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Duration;
 import openconsensus.common.Function;
 import openconsensus.common.Functions;
@@ -34,13 +41,6 @@ import openconsensus.stats.AggregationData.SumDataLong;
 import openconsensus.stats.Measure.MeasureDouble;
 import openconsensus.stats.Measure.MeasureLong;
 import openconsensus.tags.TagValue;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import javax.annotation.concurrent.Immutable;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;

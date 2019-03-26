@@ -16,11 +16,11 @@
 
 package openconsensus.stats;
 
-import openconsensus.internal.DefaultVisibilityForTesting;
-import openconsensus.internal.Provider;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import openconsensus.internal.DefaultVisibilityForTesting;
+import openconsensus.internal.Provider;
 
 /**
  * Class for accessing the default {@link StatsComponent}.

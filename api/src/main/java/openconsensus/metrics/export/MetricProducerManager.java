@@ -16,11 +16,11 @@
 
 package openconsensus.metrics.export;
 
-import openconsensus.common.ExperimentalApi;
-import openconsensus.internal.Utils;
 import java.util.Collections;
 import java.util.Set;
 import javax.annotation.concurrent.ThreadSafe;
+import openconsensus.common.ExperimentalApi;
+import openconsensus.internal.Utils;
 
 /**
  * Keeps a set of {@link MetricProducer} that is used by exporters to determine the metrics that

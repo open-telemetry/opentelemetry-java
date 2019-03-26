@@ -16,9 +16,9 @@
 
 package openconsensus.internal;
 
+import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Clock;
 import openconsensus.common.Timestamp;
-import javax.annotation.concurrent.Immutable;
 
 /** A {@link Clock} that always returns 0. */
 @Immutable
