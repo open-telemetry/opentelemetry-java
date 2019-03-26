@@ -16,15 +16,11 @@
 
 package openconsensus.trace;
 
-import openconsensus.common.Clock;
-import openconsensus.internal.ZeroTimeClock;
-import openconsensus.trace.config.TraceConfig;
-import openconsensus.trace.export.ExportComponent;
 import openconsensus.trace.propagation.PropagationComponent;
 
 /**
- * Class that holds the implementation instances for {@link Tracer}, {@link PropagationComponent},
- * {@link Clock}, {@link ExportComponent} and {@link TraceConfig}.
+ * Class that holds the implementation instances for {@link Tracer}, and {@link
+ * PropagationComponent}.
  *
  * <p>Unless otherwise noted all methods (on component) results are cacheable.
  *
@@ -51,32 +47,6 @@ public abstract class TraceComponent {
   public abstract PropagationComponent getPropagationComponent();
 
   /**
-   * Returns the {@link Clock} with the provided implementation.
-   *
-   * @return the {@code Clock} implementation.
-   * @since 0.1.0
-   */
-  public abstract Clock getClock();
-
-  /**
-   * Returns the {@link ExportComponent} with the provided implementation. If no implementation is
-   * provided then no-op implementations will be used.
-   *
-   * @return the {@link ExportComponent} implementation.
-   * @since 0.1.0
-   */
-  public abstract ExportComponent getExportComponent();
-
-  /**
-   * Returns the {@link TraceConfig} with the provided implementation. If no implementation is
-   * provided then no-op implementations will be used.
-   *
-   * @return the {@link TraceConfig} implementation.
-   * @since 0.1.0
-   */
-  public abstract TraceConfig getTraceConfig();
-
-  /**
    * Returns an instance that contains no-op implementations for all the instances.
    *
    * @return an instance that contains no-op implementations for all the instances.
@@ -86,8 +56,6 @@ public abstract class TraceComponent {
   }
 
   private static final class NoopTraceComponent extends TraceComponent {
-    private final ExportComponent noopExportComponent = ExportComponent.newNoopExportComponent();
-
     @Override
     public Tracer getTracer() {
       return Tracer.getNoopTracer();
@@ -97,22 +65,5 @@ public abstract class TraceComponent {
     public PropagationComponent getPropagationComponent() {
       return PropagationComponent.getNoopPropagationComponent();
     }
-
-    @Override
-    public Clock getClock() {
-      return ZeroTimeClock.getInstance();
-    }
-
-    @Override
-    public ExportComponent getExportComponent() {
-      return noopExportComponent;
-    }
-
-    @Override
-    public TraceConfig getTraceConfig() {
-      return TraceConfig.getNoopTraceConfig();
-    }
-
-    private NoopTraceComponent() {}
   }
 }

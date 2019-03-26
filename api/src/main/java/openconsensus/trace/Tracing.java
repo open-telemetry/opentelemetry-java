@@ -19,11 +19,8 @@ package openconsensus.trace;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
-import openconsensus.common.Clock;
 import openconsensus.internal.DefaultVisibilityForTesting;
 import openconsensus.internal.Provider;
-import openconsensus.trace.config.TraceConfig;
-import openconsensus.trace.export.ExportComponent;
 import openconsensus.trace.propagation.PropagationComponent;
 
 /**
@@ -54,36 +51,6 @@ public final class Tracing {
    */
   public static PropagationComponent getPropagationComponent() {
     return traceComponent.getPropagationComponent();
-  }
-
-  /**
-   * Returns the global {@link Clock}.
-   *
-   * @return the global {@code Clock}.
-   * @since 0.1.0
-   */
-  public static Clock getClock() {
-    return traceComponent.getClock();
-  }
-
-  /**
-   * Returns the global {@link ExportComponent}.
-   *
-   * @return the global {@code ExportComponent}.
-   * @since 0.1.0
-   */
-  public static ExportComponent getExportComponent() {
-    return traceComponent.getExportComponent();
-  }
-
-  /**
-   * Returns the global {@link TraceConfig}.
-   *
-   * @return the global {@code TraceConfig}.
-   * @since 0.1.0
-   */
-  public static TraceConfig getTraceConfig() {
-    return traceComponent.getTraceConfig();
   }
 
   // Any provider that may be used for TraceComponent can be added here.

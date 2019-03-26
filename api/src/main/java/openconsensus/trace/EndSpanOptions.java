@@ -17,11 +17,8 @@
 package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
-import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.common.ExperimentalApi;
-import openconsensus.trace.export.SampledSpanStore;
 
 /**
  * A class that enables overriding the default values used when ending a {@link Span}. Allows
@@ -46,19 +43,8 @@ public abstract class EndSpanOptions {
    * @since 0.1.0
    */
   public static Builder builder() {
-    return new AutoValue_EndSpanOptions.Builder().setSampleToLocalSpanStore(false);
+    return new AutoValue_EndSpanOptions.Builder();
   }
-
-  /**
-   * If {@code true} this is equivalent with calling the {@link
-   * SampledSpanStore#registerSpanNamesForCollection(Collection)} in advance for this span name.
-   *
-   * @return {@code true} if the name of the {@code Span} should be registered to the {@code
-   *     SampledSpanStore}.
-   * @since 0.1.0
-   */
-  @ExperimentalApi
-  public abstract boolean getSampleToLocalSpanStore();
 
   /**
    * Returns the status.
@@ -89,23 +75,6 @@ public abstract class EndSpanOptions {
      * @since 0.1.0
      */
     public abstract Builder setStatus(Status status);
-
-    /**
-     * If set to {@code true} this is equivalent with calling the {@link
-     * SampledSpanStore#registerSpanNamesForCollection(Collection)} in advance for the given span
-     * name.
-     *
-     * <p>WARNING: setting this option to a randomly generated span name can OOM your process
-     * because the library will save samples for each name.
-     *
-     * <p>It is strongly recommended to use the {@link
-     * SampledSpanStore#registerSpanNamesForCollection(Collection)} API instead.
-     *
-     * @return this.
-     * @since 0.1.0
-     */
-    @ExperimentalApi
-    public abstract Builder setSampleToLocalSpanStore(boolean sampleToLocalSpanStore);
 
     /**
      * Builds and returns a {@code EndSpanOptions} with the desired settings.
