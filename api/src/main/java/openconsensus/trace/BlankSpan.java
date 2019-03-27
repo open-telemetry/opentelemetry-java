@@ -42,43 +42,38 @@ public final class BlankSpan extends Span {
    */
   public static final BlankSpan INSTANCE = new BlankSpan();
 
-  private BlankSpan() {
-    super(SpanContext.INVALID, null);
-  }
+  private BlankSpan() {}
 
-  /** No-op implementation of the {@link Span#putAttribute(String, AttributeValue)} method. */
   @Override
   public void putAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
     Utils.checkNotNull(value, "value");
   }
 
-  /** No-op implementation of the {@link Span#putAttributes(Map)} method. */
   @Override
   public void putAttributes(Map<String, AttributeValue> attributes) {
     Utils.checkNotNull(attributes, "attributes");
   }
 
-  /** No-op implementation of the {@link Span#addAnnotation(String, Map)} method. */
+  @Override
+  public void addAnnotation(String description) {}
+
   @Override
   public void addAnnotation(String description, Map<String, AttributeValue> attributes) {
     Utils.checkNotNull(description, "description");
     Utils.checkNotNull(attributes, "attributes");
   }
 
-  /** No-op implementation of the {@link Span#addAnnotation(Annotation)} method. */
   @Override
   public void addAnnotation(Annotation annotation) {
     Utils.checkNotNull(annotation, "annotation");
   }
 
-  /** No-op implementation of the {@link Span#addMessageEvent(MessageEvent)} method. */
   @Override
   public void addMessageEvent(MessageEvent messageEvent) {
     Utils.checkNotNull(messageEvent, "messageEvent");
   }
 
-  /** No-op implementation of the {@link Span#addLink(Link)} method. */
   @Override
   public void addLink(Link link) {
     Utils.checkNotNull(link, "link");
@@ -89,10 +84,22 @@ public final class BlankSpan extends Span {
     Utils.checkNotNull(status, "status");
   }
 
-  /** No-op implementation of the {@link Span#end(EndSpanOptions)} method. */
   @Override
   public void end(EndSpanOptions options) {
     Utils.checkNotNull(options, "options");
+  }
+
+  @Override
+  public void end() {}
+
+  @Override
+  public SpanContext getContext() {
+    return SpanContext.INVALID;
+  }
+
+  @Override
+  public boolean isRecordingEvents() {
+    return false;
   }
 
   @Override

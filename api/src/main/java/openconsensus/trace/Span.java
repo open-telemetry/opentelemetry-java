@@ -16,12 +16,7 @@
 
 package openconsensus.trace;
 
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Map;
-import java.util.Set;
-import javax.annotation.Nullable;
-import openconsensus.internal.Utils;
 import openconsensus.trace.data.Annotation;
 import openconsensus.trace.data.AttributeValue;
 import openconsensus.trace.data.Link;
@@ -29,8 +24,7 @@ import openconsensus.trace.data.MessageEvent;
 import openconsensus.trace.data.Status;
 
 /**
- * An abstract class that represents a span. It has an associated {@link SpanContext} and a set of
- * {@link Options}.
+ * An abstract class that represents a span. It has an associated {@link SpanContext}.
  *
  * <p>Spans are created by the {@link SpanBuilder#startSpan} method.
  *
@@ -39,55 +33,6 @@ import openconsensus.trace.data.Status;
  * @since 0.1.0
  */
 public abstract class Span {
-  private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES = Collections.emptyMap();
-
-  // Contains the identifiers associated with this Span.
-  private final SpanContext context;
-
-  // Contains the options associated with this Span. This object is immutable.
-  private final Set<Options> options;
-
-  /**
-   * {@code Span} options. These options are NOT propagated to child spans. These options determine
-   * features such as whether a {@code Span} should record any annotations or events.
-   *
-   * @since 0.1.0
-   */
-  public enum Options {
-    /**
-     * This option is set if the Span is part of a sampled distributed trace OR {@link
-     * SpanBuilder#setRecordEvents(boolean)} was called with true.
-     *
-     * @since 0.1.0
-     */
-    RECORD_EVENTS;
-  }
-
-  private static final Set<Options> DEFAULT_OPTIONS =
-      Collections.unmodifiableSet(EnumSet.noneOf(Options.class));
-
-  /**
-   * Creates a new {@code Span}.
-   *
-   * @param context the context associated with this {@code Span}.
-   * @param options the options associated with this {@code Span}. If {@code null} then default
-   *     options will be set.
-   * @throws NullPointerException if context is {@code null}.
-   * @throws IllegalArgumentException if the {@code SpanContext} is sampled but no RECORD_EVENTS
-   *     options.
-   * @since 0.1.0
-   */
-  protected Span(SpanContext context, @Nullable EnumSet<Options> options) {
-    this.context = Utils.checkNotNull(context, "context");
-    this.options =
-        options == null
-            ? DEFAULT_OPTIONS
-            : Collections.<Options>unmodifiableSet(EnumSet.copyOf(options));
-    Utils.checkArgument(
-        !context.getTraceOptions().isSampled() || this.options.contains(Options.RECORD_EVENTS),
-        "Span is sampled, but does not have RECORD_EVENTS set.");
-  }
-
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
@@ -96,14 +41,7 @@ public abstract class Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public void putAttribute(String key, AttributeValue value) {
-    // Not final because for performance reasons we want to override this in the implementation.
-    // Also a default implementation is needed to not break the compatibility (users may extend this
-    // for testing).
-    Utils.checkNotNull(key, "key");
-    Utils.checkNotNull(value, "value");
-    putAttributes(Collections.singletonMap(key, value));
-  }
+  public abstract void putAttribute(String key, AttributeValue value);
 
   /**
    * Sets a set of attributes to the {@code Span}. The effect of this call is equivalent to that of
@@ -113,26 +51,7 @@ public abstract class Span {
    * @param attributes the attributes that will be added and associated with the {@code Span}.
    * @since 0.1.0
    */
-  public void putAttributes(Map<String, AttributeValue> attributes) {
-    // Not final because we want to start overriding this method from the beginning, this will
-    // allow us to remove the addAttributes faster. All implementations MUST override this method.
-    Utils.checkNotNull(attributes, "attributes");
-    addAttributes(attributes);
-  }
-
-  /**
-   * Sets a set of attributes to the {@code Span}. The effect of this call is equivalent to that of
-   * calling {@link #putAttribute(String, AttributeValue)} once for each element in the specified
-   * map.
-   *
-   * @deprecated Use {@link #putAttributes(Map)}
-   * @param attributes the attributes that will be added and associated with the {@code Span}.
-   * @since 0.1.0
-   */
-  @Deprecated
-  public void addAttributes(Map<String, AttributeValue> attributes) {
-    putAttributes(attributes);
-  }
+  public abstract void putAttributes(Map<String, AttributeValue> attributes);
 
   /**
    * Adds an annotation to the {@code Span}.
@@ -140,10 +59,7 @@ public abstract class Span {
    * @param description the description of the annotation time event.
    * @since 0.1.0
    */
-  public final void addAnnotation(String description) {
-    Utils.checkNotNull(description, "description");
-    addAnnotation(description, EMPTY_ATTRIBUTES);
-  }
+  public abstract void addAnnotation(String description);
 
   /**
    * Adds an annotation to the {@code Span}.
@@ -199,11 +115,7 @@ public abstract class Span {
    * @param status the {@link Status} to set.
    * @since 0.1.0
    */
-  public void setStatus(Status status) {
-    // Implemented as no-op for backwards compatibility (for example gRPC extends Span in tests).
-    // Implementation must override this method.
-    Utils.checkNotNull(status, "status");
-  }
+  public abstract void setStatus(Status status);
 
   /**
    * Marks the end of {@code Span} execution with the given options.
@@ -224,9 +136,7 @@ public abstract class Span {
    *
    * @since 0.1.0
    */
-  public final void end() {
-    end(EndSpanOptions.DEFAULT);
-  }
+  public abstract void end();
 
   /**
    * Returns the {@code SpanContext} associated with this {@code Span}.
@@ -234,19 +144,15 @@ public abstract class Span {
    * @return the {@code SpanContext} associated with this {@code Span}.
    * @since 0.1.0
    */
-  public final SpanContext getContext() {
-    return context;
-  }
+  public abstract SpanContext getContext();
 
   /**
-   * Returns the options associated with this {@code Span}.
+   * Returns {@code true} if this {@code Span} records events (e.g, {@link #addAnnotation(String)}.
    *
-   * @return the options associated with this {@code Span}.
+   * @return {@code true} if this {@code Span} records events.
    * @since 0.1.0
    */
-  public final Set<Options> getOptions() {
-    return options;
-  }
+  public abstract boolean isRecordingEvents();
 
   /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a
