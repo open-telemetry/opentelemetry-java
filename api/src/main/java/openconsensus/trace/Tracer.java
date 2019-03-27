@@ -20,7 +20,7 @@ import com.google.errorprone.annotations.MustBeClosed;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 import openconsensus.common.Scope;
-import openconsensus.internal.Utils;
+import openconsensus.internal.NoopScope;
 import openconsensus.trace.SpanBuilder.NoopSpanBuilder;
 import openconsensus.trace.data.Status;
 
@@ -95,10 +95,7 @@ public abstract class Tracer {
    *     from the Context.
    * @since 0.1.0
    */
-  public final Span getCurrentSpan() {
-    Span currentSpan = CurrentSpanUtils.getCurrentSpan();
-    return currentSpan != null ? currentSpan : BlankSpan.INSTANCE;
-  }
+  public abstract Span getCurrentSpan();
 
   /**
    * Enters the scope of code where the given {@link Span} is in the current Context, and returns an
@@ -151,9 +148,7 @@ public abstract class Tracer {
    * @since 0.1.0
    */
   @MustBeClosed
-  public final Scope withSpan(Span span) {
-    return CurrentSpanUtils.withSpan(Utils.checkNotNull(span, "span"), /* endSpan= */ false);
-  }
+  public abstract Scope withSpan(Span span);
 
   /**
    * Returns a {@link Runnable} that runs the given task with the given {@code Span} in the current
@@ -216,9 +211,7 @@ public abstract class Tracer {
    * @return the {@code Runnable}.
    * @since 0.1.0
    */
-  public final Runnable withSpan(Span span, Runnable runnable) {
-    return CurrentSpanUtils.withSpan(span, /* endSpan= */ false, runnable);
-  }
+  public abstract Runnable withSpan(Span span, Runnable runnable);
 
   /**
    * Returns a {@link Callable} that runs the given task with the given {@code Span} in the current
@@ -278,12 +271,11 @@ public abstract class Tracer {
    *
    * @param span the {@code Span} to be set as current.
    * @param callable the {@code Callable} to run in the {@code Span}.
+   * @param <V> the result type of method call.
    * @return the {@code Callable}.
    * @since 0.1.0
    */
-  public final <C> Callable<C> withSpan(Span span, final Callable<C> callable) {
-    return CurrentSpanUtils.withSpan(span, /* endSpan= */ false, callable);
-  }
+  public abstract <V> Callable<V> withSpan(Span span, final Callable<V> callable);
 
   /**
    * Returns a {@link SpanBuilder} to create and start a new child {@link Span} as a child of to the
@@ -305,9 +297,7 @@ public abstract class Tracer {
    * @throws NullPointerException if {@code spanName} is {@code null}.
    * @since 0.1.0
    */
-  public final SpanBuilder spanBuilder(String spanName) {
-    return spanBuilderWithExplicitParent(spanName, CurrentSpanUtils.getCurrentSpan());
-  }
+  public abstract SpanBuilder spanBuilder(String spanName);
 
   /**
    * Returns a {@link SpanBuilder} to create and start a new child {@link Span} (or root if parent
@@ -352,6 +342,31 @@ public abstract class Tracer {
 
   // No-Op implementation of the Tracer.
   private static final class NoopTracer extends Tracer {
+
+    @Override
+    public Span getCurrentSpan() {
+      return BlankSpan.INSTANCE;
+    }
+
+    @Override
+    public Scope withSpan(Span span) {
+      return NoopScope.getInstance();
+    }
+
+    @Override
+    public Runnable withSpan(Span span, Runnable runnable) {
+      return runnable;
+    }
+
+    @Override
+    public <C> Callable<C> withSpan(Span span, Callable<C> callable) {
+      return callable;
+    }
+
+    @Override
+    public SpanBuilder spanBuilder(String spanName) {
+      return spanBuilderWithExplicitParent(spanName, getCurrentSpan());
+    }
 
     @Override
     public SpanBuilder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {
