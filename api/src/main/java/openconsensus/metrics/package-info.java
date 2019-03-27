@@ -19,7 +19,7 @@
  * take as input. This data model may eventually become the wire format for metrics.
  *
  * <p>WARNING: Currently all the public classes under this package are marked as {@link
- * openconsensus.common.ExperimentalApi}. The classes and APIs under {@link io.opencensus.metrics}
+ * openconsensus.common.ExperimentalApi}. The classes and APIs under {@link openconsensus.metrics}
  * are likely to get backwards-incompatible updates in the future. DO NOT USE except for
  * experimental purposes.
  *
