@@ -16,7 +16,6 @@
 
 package openconsensus.trace.propagation;
 
-import java.text.ParseException;
 import openconsensus.internal.Utils;
 import openconsensus.trace.SpanContext;
 
@@ -68,48 +67,12 @@ public abstract class BinaryFormat {
   /**
    * Serializes a {@link SpanContext} into a byte array using the binary format.
    *
-   * @deprecated use {@link #toByteArray(SpanContext)}.
    * @param spanContext the {@code SpanContext} to serialize.
    * @return the serialized binary value.
    * @throws NullPointerException if the {@code spanContext} is {@code null}.
    * @since 0.1.0
    */
-  @Deprecated
-  public byte[] toBinaryValue(SpanContext spanContext) {
-    return toByteArray(spanContext);
-  }
-
-  /**
-   * Serializes a {@link SpanContext} into a byte array using the binary format.
-   *
-   * @param spanContext the {@code SpanContext} to serialize.
-   * @return the serialized binary value.
-   * @throws NullPointerException if the {@code spanContext} is {@code null}.
-   * @since 0.1.0
-   */
-  public byte[] toByteArray(SpanContext spanContext) {
-    // Implementation must override this method.
-    return toBinaryValue(spanContext);
-  }
-
-  /**
-   * Parses the {@link SpanContext} from a byte array using the binary format.
-   *
-   * @deprecated use {@link #fromByteArray(byte[])}.
-   * @param bytes a binary encoded buffer from which the {@code SpanContext} will be parsed.
-   * @return the parsed {@code SpanContext}.
-   * @throws NullPointerException if the {@code input} is {@code null}.
-   * @throws ParseException if the version is not supported or the input is invalid
-   * @since 0.1.0
-   */
-  @Deprecated
-  public SpanContext fromBinaryValue(byte[] bytes) throws ParseException {
-    try {
-      return fromByteArray(bytes);
-    } catch (SpanContextParseException e) {
-      throw new ParseException(e.toString(), 0);
-    }
-  }
+  public abstract byte[] toByteArray(SpanContext spanContext);
 
   /**
    * Parses the {@link SpanContext} from a byte array using the binary format.
@@ -120,14 +83,7 @@ public abstract class BinaryFormat {
    * @throws SpanContextParseException if the version is not supported or the input is invalid
    * @since 0.1.0
    */
-  public SpanContext fromByteArray(byte[] bytes) throws SpanContextParseException {
-    // Implementation must override this method. If it doesn't, the below will StackOverflowError.
-    try {
-      return fromBinaryValue(bytes);
-    } catch (ParseException e) {
-      throw new SpanContextParseException("Error while parsing.", e);
-    }
-  }
+  public abstract SpanContext fromByteArray(byte[] bytes) throws SpanContextParseException;
 
   /**
    * Returns the no-op implementation of the {@code BinaryFormat}.

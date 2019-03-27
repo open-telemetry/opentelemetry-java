@@ -213,18 +213,6 @@ public final class TraceOptions {
     }
 
     /**
-     * Sets the sampling bit in the options to true.
-     *
-     * @deprecated Use {@code Builder.setIsSampled(true)}.
-     * @return this.
-     * @since 0.1.0
-     */
-    @Deprecated
-    public Builder setIsSampled() {
-      return setIsSampled(true);
-    }
-
-    /**
      * Sets the sampling bit in the options.
      *
      * @param isSampled the sampling bit.
@@ -250,11 +238,6 @@ public final class TraceOptions {
     public TraceOptions build() {
       return fromByte(options);
     }
-  }
-
-  // Returns the current set of options bitmask.
-  byte getOptions() {
-    return options;
   }
 
   private boolean hasOption(int mask) {
