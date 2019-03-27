@@ -18,10 +18,6 @@ package openconsensus.internal;
 
 import java.util.List;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.NonNull;
-*/
-
 /** General internal utility methods. */
 public final class Utils {
 
@@ -108,8 +104,7 @@ public final class Utils {
    *     {@link String#valueOf(Object)}.
    * @return the argument, if it passes the null check.
    */
-  public static <T /*>>> extends @NonNull Object*/> T checkNotNull(
-      T arg, @javax.annotation.Nullable Object errorMessage) {
+  public static <T> T checkNotNull(T arg, @javax.annotation.Nullable Object errorMessage) {
     if (arg == null) {
       throw new NullPointerException(String.valueOf(errorMessage));
     }
@@ -123,7 +118,7 @@ public final class Utils {
    * @param errorMessage the message to use for the exception. Will be converted to a string using
    *     {@link String#valueOf(Object)}.
    */
-  public static <T /*>>> extends @NonNull Object*/> void checkListElementNotNull(
+  public static <T> void checkListElementNotNull(
       List<T> list, @javax.annotation.Nullable Object errorMessage) {
     for (T element : list) {
       if (element == null) {

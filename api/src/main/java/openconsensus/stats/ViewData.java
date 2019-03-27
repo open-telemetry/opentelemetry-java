@@ -42,10 +42,6 @@ import openconsensus.stats.Measure.MeasureDouble;
 import openconsensus.stats.Measure.MeasureLong;
 import openconsensus.tags.TagValue;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 /**
  * The aggregated data for a particular {@link View}.
  *
@@ -73,7 +69,7 @@ public abstract class ViewData {
    *
    * @since 0.1.0
    */
-  public abstract Map<List</*@Nullable*/ TagValue>, AggregationData> getAggregationMap();
+  public abstract Map<List<TagValue>, AggregationData> getAggregationMap();
 
   /**
    * Returns the {@link AggregationWindowData} associated with this {@link ViewData}.
@@ -120,17 +116,15 @@ public abstract class ViewData {
   @Deprecated
   public static ViewData create(
       final View view,
-      Map<? extends List</*@Nullable*/ TagValue>, ? extends AggregationData> map,
+      Map<? extends List<TagValue>, ? extends AggregationData> map,
       final AggregationWindowData windowData) {
     checkWindow(view.getWindow(), windowData);
-    final Map<List</*@Nullable*/ TagValue>, AggregationData> deepCopy =
-        new HashMap<List</*@Nullable*/ TagValue>, AggregationData>();
-    for (Entry<? extends List</*@Nullable*/ TagValue>, ? extends AggregationData> entry :
-        map.entrySet()) {
+    final Map<List<TagValue>, AggregationData> deepCopy =
+        new HashMap<List<TagValue>, AggregationData>();
+    for (Entry<? extends List<TagValue>, ? extends AggregationData> entry : map.entrySet()) {
       checkAggregation(view.getAggregation(), entry.getValue(), view.getMeasure());
       deepCopy.put(
-          Collections.unmodifiableList(new ArrayList</*@Nullable*/ TagValue>(entry.getKey())),
-          entry.getValue());
+          Collections.unmodifiableList(new ArrayList<TagValue>(entry.getKey())), entry.getValue());
     }
     return windowData.match(
         new Function<ViewData.AggregationWindowData.CumulativeData, ViewData>() {
@@ -170,17 +164,14 @@ public abstract class ViewData {
    */
   public static ViewData create(
       View view,
-      Map<? extends List</*@Nullable*/ TagValue>, ? extends AggregationData> map,
+      Map<? extends List<TagValue>, ? extends AggregationData> map,
       Timestamp start,
       Timestamp end) {
-    Map<List</*@Nullable*/ TagValue>, AggregationData> deepCopy =
-        new HashMap<List</*@Nullable*/ TagValue>, AggregationData>();
-    for (Entry<? extends List</*@Nullable*/ TagValue>, ? extends AggregationData> entry :
-        map.entrySet()) {
+    Map<List<TagValue>, AggregationData> deepCopy = new HashMap<List<TagValue>, AggregationData>();
+    for (Entry<? extends List<TagValue>, ? extends AggregationData> entry : map.entrySet()) {
       checkAggregation(view.getAggregation(), entry.getValue(), view.getMeasure());
       deepCopy.put(
-          Collections.unmodifiableList(new ArrayList</*@Nullable*/ TagValue>(entry.getKey())),
-          entry.getValue());
+          Collections.unmodifiableList(new ArrayList<TagValue>(entry.getKey())), entry.getValue());
     }
     return createInternal(
         view,
@@ -194,7 +185,7 @@ public abstract class ViewData {
   // constructor does not have the @Nullable annotation on TagValue.
   private static ViewData createInternal(
       View view,
-      Map<List</*@Nullable*/ TagValue>, AggregationData> aggregationMap,
+      Map<List<TagValue>, AggregationData> aggregationMap,
       AggregationWindowData window,
       Timestamp start,
       Timestamp end) {
@@ -222,7 +213,7 @@ public abstract class ViewData {
             return null;
           }
         },
-        Functions.</*@Nullable*/ Void>throwAssertionError());
+        Functions.<Void>throwAssertionError());
   }
 
   private static void throwIfWindowMismatch(
@@ -264,7 +255,7 @@ public abstract class ViewData {
                     return null;
                   }
                 },
-                Functions.</*@Nullable*/ Void>throwAssertionError());
+                Functions.<Void>throwAssertionError());
             return null;
           }
         },
@@ -306,7 +297,7 @@ public abstract class ViewData {
                     return null;
                   }
                 },
-                Functions.</*@Nullable*/ Void>throwAssertionError());
+                Functions.<Void>throwAssertionError());
             return null;
           }
         },

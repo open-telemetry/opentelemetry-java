@@ -23,10 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Timestamp;
-
-/*>>>
-import org.checkerframework.checker.nullness.qual.NonNull;
-*/
+import openconsensus.internal.Utils;
 
 /**
  * An example point that may be used to annotate aggregated distribution values, associated with a
@@ -75,22 +72,13 @@ public abstract class Exemplar {
    */
   public static Exemplar create(
       double value, Timestamp timestamp, Map<String, AttachmentValue> attachments) {
-    checkNotNull(attachments, "attachments");
+    Utils.checkNotNull(attachments, "attachments");
     Map<String, AttachmentValue> attachmentsCopy =
         Collections.unmodifiableMap(new HashMap<String, AttachmentValue>(attachments));
     for (Entry<String, AttachmentValue> entry : attachmentsCopy.entrySet()) {
-      checkNotNull(entry.getKey(), "key of attachments");
-      checkNotNull(entry.getValue(), "value of attachments");
+      Utils.checkNotNull(entry.getKey(), "key of attachments");
+      Utils.checkNotNull(entry.getValue(), "value of attachments");
     }
     return new AutoValue_Exemplar(value, timestamp, attachmentsCopy);
-  }
-
-  // TODO(songy23): shade the internal Utils jar and remove this duplicated method.
-  private static <T /*>>> extends @NonNull Object*/> T checkNotNull(
-      T arg, @javax.annotation.Nullable Object errorMessage) {
-    if (arg == null) {
-      throw new NullPointerException(String.valueOf(errorMessage));
-    }
-    return arg;
   }
 }

@@ -16,10 +16,6 @@
 
 package openconsensus.common;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import openconsensus.metrics.MetricRegistry;
 
 /**
@@ -31,12 +27,12 @@ import openconsensus.metrics.MetricRegistry;
  *
  * @since 0.1.0
  */
-public interface ToLongFunction</*@Nullable*/ T> {
+public interface ToLongFunction<T> {
   /**
    * Applies this function to the given argument.
    *
    * @param value the function argument.
    * @return the function result.
    */
-  long applyAsLong(/*@Nullable*/ T value);
+  long applyAsLong(T value);
 }

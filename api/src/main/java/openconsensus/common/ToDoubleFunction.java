@@ -16,10 +16,6 @@
 
 package openconsensus.common;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import openconsensus.metrics.MetricRegistry;
 
 /**
@@ -31,7 +27,7 @@ import openconsensus.metrics.MetricRegistry;
  *
  * @since 0.1.0
  */
-public interface ToDoubleFunction</*@Nullable*/ T> {
+public interface ToDoubleFunction<T> {
 
   /**
    * Applies this function to the given argument.
@@ -39,5 +35,5 @@ public interface ToDoubleFunction</*@Nullable*/ T> {
    * @param value the function argument.
    * @return the function result.
    */
-  double applyAsDouble(/*@Nullable*/ T value);
+  double applyAsDouble(T value);
 }

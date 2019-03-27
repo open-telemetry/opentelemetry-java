@@ -29,10 +29,6 @@ import openconsensus.internal.DefaultVisibilityForTesting;
 import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 /**
  * {@link Resource} represents a resource, which capture identifying information about the entities
  * for which signals (stats or traces) are reported. It further provides a framework for detection

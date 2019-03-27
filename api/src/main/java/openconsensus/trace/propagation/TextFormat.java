@@ -23,10 +23,6 @@ import openconsensus.common.ExperimentalApi;
 import openconsensus.internal.Utils;
 import openconsensus.trace.SpanContext;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.NonNull;
-*/
-
 /**
  * Injects and extracts {@link SpanContext trace identifiers} as text into carriers that travel
  * in-band across process boundaries. Identifiers are often encoded as messaging or RPC request
@@ -106,8 +102,7 @@ public abstract class TextFormat {
    * @param setter invoked for each propagation key to add or remove.
    * @since 0.1.0
    */
-  public abstract <C /*>>> extends @NonNull Object*/> void inject(
-      SpanContext spanContext, C carrier, Setter<C> setter);
+  public abstract <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter);
 
   /**
    * Class that allows a {@code TextFormat} to set propagated fields into a carrier.
@@ -142,8 +137,8 @@ public abstract class TextFormat {
    * @throws SpanContextParseException if the input is invalid
    * @since 0.1.0
    */
-  public abstract <C /*>>> extends @NonNull Object*/> SpanContext extract(
-      C carrier, Getter<C> getter) throws SpanContextParseException;
+  public abstract <C> SpanContext extract(C carrier, Getter<C> getter)
+      throws SpanContextParseException;
 
   /**
    * Class that allows a {@code TextFormat} to read propagated fields from a carrier.
@@ -187,15 +182,14 @@ public abstract class TextFormat {
     }
 
     @Override
-    public <C /*>>> extends @NonNull Object*/> void inject(
-        SpanContext spanContext, C carrier, Setter<C> setter) {
+    public <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter) {
       Utils.checkNotNull(spanContext, "spanContext");
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(setter, "setter");
     }
 
     @Override
-    public <C /*>>> extends @NonNull Object*/> SpanContext extract(C carrier, Getter<C> getter) {
+    public <C> SpanContext extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
       return SpanContext.INVALID;

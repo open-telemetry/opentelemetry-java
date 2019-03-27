@@ -20,10 +20,6 @@ import io.grpc.Context;
 import openconsensus.trace.Span;
 import openconsensus.trace.Tracer;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 /**
  * Util methods/functionality to interact with the {@link io.grpc.Context}.
  *
@@ -41,6 +37,5 @@ public final class ContextUtils {
    *
    * @since 0.1.0
    */
-  public static final Context.Key</*@Nullable*/ Span> CONTEXT_SPAN_KEY =
-      Context.key("opencensus-trace-span-key");
+  public static final Context.Key<Span> CONTEXT_SPAN_KEY = Context.key("opencensus-trace-span-key");
 }
