@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 import openconsensus.common.Scope;
+import openconsensus.internal.NoopScope;
 import openconsensus.internal.Utils;
 import openconsensus.trace.data.Status;
 
@@ -131,7 +132,7 @@ public abstract class SpanBuilder {
   public abstract SpanBuilder setParentLinks(List<Span> parentLinks);
 
   /**
-   * Sets the option {@link Span.Options#RECORD_EVENTS} for the newly created {@code Span}. If not
+   * Sets the option to record events even if not sampled for the newly created {@code Span}. If not
    * called, the implementation will provide a default.
    *
    * @param recordEvents new value determining if this {@code Span} should have events recorded.
@@ -249,9 +250,7 @@ public abstract class SpanBuilder {
    * @since 0.1.0
    */
   @MustBeClosed
-  public final Scope startScopedSpan() {
-    return CurrentSpanUtils.withSpan(startSpan(), /* endSpan= */ true);
-  }
+  public abstract Scope startScopedSpan();
 
   /**
    * Starts a new span and runs the given {@code Runnable} with the newly created {@code Span} as
@@ -278,10 +277,7 @@ public abstract class SpanBuilder {
    * @param runnable the {@code Runnable} to run in the {@code Span}.
    * @since 0.1.0
    */
-  public final void startSpanAndRun(final Runnable runnable) {
-    final Span span = startSpan();
-    CurrentSpanUtils.withSpan(span, /* endSpan= */ true, runnable).run();
-  }
+  public abstract void startSpanAndRun(final Runnable runnable);
 
   /**
    * Starts a new span and calls the given {@code Callable} with the newly created {@code Span} as
@@ -308,12 +304,12 @@ public abstract class SpanBuilder {
    * </code></pre>
    *
    * @param callable the {@code Callable} to run in the {@code Span}.
+   * @param <V> the result type of method call.
+   * @return the result of the {@code Callable#call}.
+   * @throws Exception if the {@code Callable} throws an exception.
    * @since 0.1.0
    */
-  public final <V> V startSpanAndCall(Callable<V> callable) throws Exception {
-    final Span span = startSpan();
-    return CurrentSpanUtils.withSpan(span, /* endSpan= */ true, callable).call();
-  }
+  public abstract <V> V startSpanAndCall(Callable<V> callable) throws Exception;
 
   static final class NoopSpanBuilder extends SpanBuilder {
     static NoopSpanBuilder createWithParent(String spanName, @Nullable Span parent) {
@@ -328,6 +324,21 @@ public abstract class SpanBuilder {
     @Override
     public Span startSpan() {
       return BlankSpan.INSTANCE;
+    }
+
+    @Override
+    public Scope startScopedSpan() {
+      return NoopScope.getInstance();
+    }
+
+    @Override
+    public void startSpanAndRun(Runnable runnable) {
+      runnable.run();
+    }
+
+    @Override
+    public <V> V startSpanAndCall(Callable<V> callable) throws Exception {
+      return callable.call();
     }
 
     @Override
