@@ -16,10 +16,6 @@
 
 package openconsensus.common;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 /**
  * Commonly used {@link Function} instances.
  *
@@ -28,8 +24,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public final class Functions {
   private Functions() {}
 
-  private static final Function<Object, /*@Nullable*/ Void> RETURN_NULL =
-      new Function<Object, /*@Nullable*/ Void>() {
+  private static final Function<Object, Void> RETURN_NULL =
+      new Function<Object, Void>() {
         @Override
         @javax.annotation.Nullable
         public Void apply(Object ignored) {
@@ -53,10 +49,12 @@ public final class Functions {
         }
       };
 
-  private static final Function<Object, /*@Nullable*/ String> RETURN_TO_STRING =
-      new Function<Object, /*@Nullable*/ String>() {
+  @javax.annotation.Nullable
+  private static final Function<Object, String> RETURN_TO_STRING =
+      new Function<Object, String>() {
         @Override
-        public /*@Nullable*/ String apply(Object input) {
+        @javax.annotation.Nullable
+        public String apply(Object input) {
           return input == null ? null : input.toString();
         }
       };
@@ -64,19 +62,22 @@ public final class Functions {
   /**
    * A {@code Function} that always ignores its argument and returns {@code null}.
    *
+   * @param <T> the type of the return.
    * @return a {@code Function} that always ignores its argument and returns {@code null}.
    * @since 0.1.0
    */
-  public static <T> Function<Object, /*@Nullable*/ T> returnNull() {
+  public static <T> Function<Object, T> returnNull() {
     // It is safe to cast a producer of Void to anything, because Void is always null.
     @SuppressWarnings("unchecked")
-    Function<Object, /*@Nullable*/ T> function = (Function<Object, /*@Nullable*/ T>) RETURN_NULL;
+    Function<Object, T> function = (Function<Object, T>) RETURN_NULL;
     return function;
   }
 
   /**
    * A {@code Function} that always ignores its argument and returns a constant value.
    *
+   * @param constant ignored argument.
+   * @param <T> the type of the return.
    * @return a {@code Function} that always ignores its argument and returns a constant value.
    * @since 0.1.0
    */
@@ -95,7 +96,8 @@ public final class Functions {
    * @return a {@code Function} that always returns the {@link #toString()} value of the input.
    * @since 0.1.0
    */
-  public static Function<Object, /*@Nullable*/ String> returnToString() {
+  @javax.annotation.Nullable
+  public static Function<Object, String> returnToString() {
     return RETURN_TO_STRING;
   }
 
@@ -103,6 +105,7 @@ public final class Functions {
    * A {@code Function} that always ignores its argument and throws an {@link
    * IllegalArgumentException}.
    *
+   * @param <T> the type of the return.
    * @return a {@code Function} that always ignores its argument and throws an {@link
    *     IllegalArgumentException}.
    * @since 0.1.0
@@ -117,6 +120,7 @@ public final class Functions {
   /**
    * A {@code Function} that always ignores its argument and throws an {@link AssertionError}.
    *
+   * @param <T> the type of the return.
    * @return a {@code Function} that always ignores its argument and throws an {@code
    *     AssertionError}.
    * @since 0.1.0
