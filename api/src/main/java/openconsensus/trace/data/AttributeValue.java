@@ -19,7 +19,6 @@ package openconsensus.trace.data;
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Function;
-import openconsensus.common.Functions;
 import openconsensus.internal.Utils;
 
 /**
@@ -85,36 +84,14 @@ public abstract class AttributeValue {
    * @param longFunction the function that should be applied if the value has type {@code Long}.
    * @param booleanFunction the function that should be applied if the value has type {@code
    *     Boolean}.
-   * @param defaultFunction the function that should be applied if the value has a type that was
-   *     added after this {@code match} method was added to the API. See {@link Functions} for some
-   *     common functions for handling unknown types.
-   * @return the result of the function applied to the underlying value.
-   * @since 0.1.0
-   * @deprecated in favor of {@link #match(Function, Function, Function, Function, Function)}.
-   */
-  @Deprecated
-  public abstract <T> T match(
-      Function<? super String, T> stringFunction,
-      Function<? super Boolean, T> booleanFunction,
-      Function<? super Long, T> longFunction,
-      Function<Object, T> defaultFunction);
-
-  /**
-   * Applies a function to the underlying value. The function that is called depends on the value's
-   * type, which can be {@code String}, {@code Long}, or {@code Boolean}.
-   *
-   * @param stringFunction the function that should be applied if the value has type {@code String}.
-   * @param longFunction the function that should be applied if the value has type {@code Long}.
-   * @param booleanFunction the function that should be applied if the value has type {@code
-   *     Boolean}.
    * @param doubleFunction the function that should be applied if the value has type {@code Double}.
    * @param defaultFunction the function that should be applied if the value has a type that was
-   *     added after this {@code match} method was added to the API. See {@link Functions} for some
-   *     common functions for handling unknown types.
+   *     added after this {@code match} method was added to the API. See {@link
+   *     openconsensus.common.Functions} for some common functions for handling unknown types.
+   * @param <T> the type of the return.
    * @return the result of the function applied to the underlying value.
    * @since 0.1.0
    */
-  @SuppressWarnings("InconsistentOverloads")
   public abstract <T> T match(
       Function<? super String, T> stringFunction,
       Function<? super Boolean, T> booleanFunction,
@@ -131,15 +108,6 @@ public abstract class AttributeValue {
     static AttributeValue create(String stringValue) {
       return new AutoValue_AttributeValue_AttributeValueString(
           Utils.checkNotNull(stringValue, "stringValue"));
-    }
-
-    @Override
-    public final <T> T match(
-        Function<? super String, T> stringFunction,
-        Function<? super Boolean, T> booleanFunction,
-        Function<? super Long, T> longFunction,
-        Function<Object, T> defaultFunction) {
-      return stringFunction.apply(getStringValue());
     }
 
     @Override
@@ -171,15 +139,6 @@ public abstract class AttributeValue {
         Function<? super String, T> stringFunction,
         Function<? super Boolean, T> booleanFunction,
         Function<? super Long, T> longFunction,
-        Function<Object, T> defaultFunction) {
-      return booleanFunction.apply(getBooleanValue());
-    }
-
-    @Override
-    public final <T> T match(
-        Function<? super String, T> stringFunction,
-        Function<? super Boolean, T> booleanFunction,
-        Function<? super Long, T> longFunction,
         Function<? super Double, T> doubleFunction,
         Function<Object, T> defaultFunction) {
       return booleanFunction.apply(getBooleanValue());
@@ -204,15 +163,6 @@ public abstract class AttributeValue {
         Function<? super String, T> stringFunction,
         Function<? super Boolean, T> booleanFunction,
         Function<? super Long, T> longFunction,
-        Function<Object, T> defaultFunction) {
-      return longFunction.apply(getLongValue());
-    }
-
-    @Override
-    public final <T> T match(
-        Function<? super String, T> stringFunction,
-        Function<? super Boolean, T> booleanFunction,
-        Function<? super Long, T> longFunction,
         Function<? super Double, T> doubleFunction,
         Function<Object, T> defaultFunction) {
       return longFunction.apply(getLongValue());
@@ -230,15 +180,6 @@ public abstract class AttributeValue {
     static AttributeValue create(Double doubleValue) {
       return new AutoValue_AttributeValue_AttributeValueDouble(
           Utils.checkNotNull(doubleValue, "doubleValue"));
-    }
-
-    @Override
-    public final <T> T match(
-        Function<? super String, T> stringFunction,
-        Function<? super Boolean, T> booleanFunction,
-        Function<? super Long, T> longFunction,
-        Function<Object, T> defaultFunction) {
-      return defaultFunction.apply(getDoubleValue());
     }
 
     @Override

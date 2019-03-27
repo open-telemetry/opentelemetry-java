@@ -16,7 +16,6 @@
 
 package openconsensus.trace.data;
 
-import java.util.Random;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
@@ -54,22 +53,6 @@ public final class SpanId implements Comparable<SpanId> {
   }
 
   /**
-   * Returns a {@code SpanId} built from a byte representation.
-   *
-   * @param src the representation of the {@code SpanId}.
-   * @return a {@code SpanId} whose representation is given by the {@code src} parameter.
-   * @throws NullPointerException if {@code src} is null.
-   * @throws IllegalArgumentException if {@code src.length} is not {@link SpanId#SIZE}.
-   * @since 0.1.0
-   */
-  public static SpanId fromBytes(byte[] src) {
-    Utils.checkNotNull(src, "src");
-    // TODO: Remove this extra condition.
-    Utils.checkArgument(src.length == SIZE, "Invalid size: expected %s, got %s", SIZE, src.length);
-    return fromBytes(src, 0);
-  }
-
-  /**
    * Returns a {@code SpanId} whose representation is copied from the {@code src} beginning at the
    * {@code srcOffset} offset.
    *
@@ -88,24 +71,18 @@ public final class SpanId implements Comparable<SpanId> {
   }
 
   /**
-   * Returns a {@code SpanId} built from a lowercase base16 representation.
+   * Copies the byte array representations of the {@code SpanId} into the {@code dest} beginning at
+   * the {@code destOffset} offset.
    *
-   * @param src the lowercase base16 representation.
-   * @return a {@code SpanId} built from a lowercase base16 representation.
-   * @throws NullPointerException if {@code src} is null.
-   * @throws IllegalArgumentException if {@code src.length} is not {@code 2 * SpanId.SIZE} OR if the
-   *     {@code str} has invalid characters.
+   * @param dest the destination buffer.
+   * @param destOffset the starting offset in the destination buffer.
+   * @throws NullPointerException if {@code dest} is null.
+   * @throws IndexOutOfBoundsException if {@code destOffset+SpanId.SIZE} is greater than {@code
+   *     dest.length}.
    * @since 0.1.0
    */
-  public static SpanId fromLowerBase16(CharSequence src) {
-    Utils.checkNotNull(src, "src");
-    // TODO: Remove this extra condition.
-    Utils.checkArgument(
-        src.length() == BASE16_SIZE,
-        "Invalid size: expected %s, got %s",
-        BASE16_SIZE,
-        src.length());
-    return fromLowerBase16(src, 0);
+  public void copyBytesTo(byte[] dest, int destOffset) {
+    BigendianEncoding.longToByteArray(id, dest, destOffset);
   }
 
   /**
@@ -123,48 +100,6 @@ public final class SpanId implements Comparable<SpanId> {
   public static SpanId fromLowerBase16(CharSequence src, int srcOffset) {
     Utils.checkNotNull(src, "src");
     return new SpanId(BigendianEncoding.longFromBase16String(src, srcOffset));
-  }
-
-  /**
-   * Generates a new random {@code SpanId}.
-   *
-   * @param random The random number generator.
-   * @return a valid new {@code SpanId}.
-   * @since 0.1.0
-   */
-  public static SpanId generateRandomId(Random random) {
-    long id;
-    do {
-      id = random.nextLong();
-    } while (id == INVALID_ID);
-    return new SpanId(id);
-  }
-
-  /**
-   * Returns the byte representation of the {@code SpanId}.
-   *
-   * @return the byte representation of the {@code SpanId}.
-   * @since 0.1.0
-   */
-  public byte[] getBytes() {
-    byte[] bytes = new byte[SIZE];
-    BigendianEncoding.longToByteArray(id, bytes, 0);
-    return bytes;
-  }
-
-  /**
-   * Copies the byte array representations of the {@code SpanId} into the {@code dest} beginning at
-   * the {@code destOffset} offset.
-   *
-   * @param dest the destination buffer.
-   * @param destOffset the starting offset in the destination buffer.
-   * @throws NullPointerException if {@code dest} is null.
-   * @throws IndexOutOfBoundsException if {@code destOffset+SpanId.SIZE} is greater than {@code
-   *     dest.length}.
-   * @since 0.1.0
-   */
-  public void copyBytesTo(byte[] dest, int destOffset) {
-    BigendianEncoding.longToByteArray(id, dest, destOffset);
   }
 
   /**

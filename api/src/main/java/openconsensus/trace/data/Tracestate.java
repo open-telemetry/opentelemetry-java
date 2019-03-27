@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.common.ExperimentalApi;
 import openconsensus.internal.Utils;
 
 /**
@@ -41,7 +40,6 @@ import openconsensus.internal.Utils;
  */
 @Immutable
 @AutoValue
-@ExperimentalApi
 public abstract class Tracestate {
   private static final int KEY_MAX_SIZE = 256;
   private static final int VALUE_MAX_SIZE = 256;
@@ -99,7 +97,6 @@ public abstract class Tracestate {
    *
    * @since 0.1.0
    */
-  @ExperimentalApi
   public static final class Builder {
     private final Tracestate parent;
     @javax.annotation.Nullable private ArrayList<Entry> entries;
@@ -189,13 +186,13 @@ public abstract class Tracestate {
    */
   @Immutable
   @AutoValue
-  @ExperimentalApi
   public abstract static class Entry {
     /**
      * Creates a new {@code Entry} for the {@code Tracestate}.
      *
      * @param key the Entry's key.
      * @param value the Entry's value.
+     * @return the new {@code Entry}.
      * @since 0.1.0
      */
     public static Entry create(String key, String value) {
