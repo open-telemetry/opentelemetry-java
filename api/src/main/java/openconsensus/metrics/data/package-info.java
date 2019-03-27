@@ -18,7 +18,7 @@
  * This package describes common data models in Metrics that are shared across multiple packages.
  *
  * <p>WARNING: Currently all the public classes under this package are marked as {@link
- * openconsensus.common.ExperimentalApi}. The classes and APIs under {@link io.opencensus.metrics}
+ * openconsensus.common.ExperimentalApi}. The classes and APIs under {@link openconsensus.metrics}
  * are likely to get backwards-incompatible updates in the future. DO NOT USE except for
  * experimental purposes.
  */
