@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -28,13 +27,10 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.common.Functions;
-import openconsensus.common.Timestamp;
 import openconsensus.internal.Utils;
 import openconsensus.stats.Measure.MeasureDouble;
 import openconsensus.stats.Measure.MeasureLong;
 import openconsensus.tags.TagMap;
-import openconsensus.tags.TagValue;
 
 /** No-op implementations of stats classes. */
 final class NoopStats {
@@ -69,11 +65,9 @@ final class NoopStats {
   }
 
   /**
-   * Returns a {@code ViewManager} that maintains a map of views, but always returns empty {@link
-   * ViewData}s.
+   * Returns a {@code ViewManager} that maintains a map of views..
    *
-   * @return a {@code ViewManager} that maintains a map of views, but always returns empty {@code
-   *     ViewData}s.
+   * @return a {@code ViewManager} that maintains a map of views..
    */
   static ViewManager newNoopViewManager() {
     return new NoopViewManager();
@@ -82,7 +76,6 @@ final class NoopStats {
   @ThreadSafe
   private static final class NoopStatsComponent extends StatsComponent {
     private final ViewManager viewManager = newNoopViewManager();
-    private volatile boolean isRead;
 
     @Override
     public ViewManager getViewManager() {
@@ -92,19 +85,6 @@ final class NoopStats {
     @Override
     public StatsRecorder getStatsRecorder() {
       return getNoopStatsRecorder();
-    }
-
-    @Override
-    public StatsCollectionState getState() {
-      isRead = true;
-      return StatsCollectionState.DISABLED;
-    }
-
-    @Override
-    @Deprecated
-    public void setState(StatsCollectionState state) {
-      Utils.checkNotNull(state, "state");
-      Utils.checkState(!isRead, "State was already read, cannot set state.");
     }
   }
 
@@ -154,8 +134,6 @@ final class NoopStats {
 
   @ThreadSafe
   private static final class NoopViewManager extends ViewManager {
-    private static final Timestamp ZERO_TIMESTAMP = Timestamp.create(0, 0);
-
     @GuardedBy("registeredViews")
     private final Map<View.Name, View> registeredViews = new HashMap<View.Name, View>();
 
@@ -179,32 +157,7 @@ final class NoopStats {
     }
 
     @Override
-    @javax.annotation.Nullable
-    @SuppressWarnings("deprecation")
-    public ViewData getView(View.Name name) {
-      Utils.checkNotNull(name, "name");
-      synchronized (registeredViews) {
-        View view = registeredViews.get(name);
-        if (view == null) {
-          return null;
-        } else {
-          return ViewData.create(
-              view,
-              Collections.<List<TagValue>, AggregationData>emptyMap(),
-              view.getWindow()
-                  .match(
-                      Functions.<ViewData.AggregationWindowData>returnConstant(
-                          ViewData.AggregationWindowData.CumulativeData.create(
-                              ZERO_TIMESTAMP, ZERO_TIMESTAMP)),
-                      Functions.<ViewData.AggregationWindowData>returnConstant(
-                          ViewData.AggregationWindowData.IntervalData.create(ZERO_TIMESTAMP)),
-                      Functions.<ViewData.AggregationWindowData>throwAssertionError()));
-        }
-      }
-    }
-
-    @Override
-    public Set<View> getAllExportedViews() {
+    public Set<View> getAllRegisteredViews() {
       Set<View> views = exportedViews;
       if (views == null) {
         synchronized (registeredViews) {

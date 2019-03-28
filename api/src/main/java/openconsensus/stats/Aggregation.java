@@ -23,7 +23,7 @@ import openconsensus.internal.Utils;
 
 /**
  * {@link Aggregation} is the process of combining a certain set of {@code MeasureValue}s for a
- * given {@code Measure} into an {@link AggregationData}.
+ * given {@code Measure} into the equivalent {@code Metric}.
  *
  * <p>{@link Aggregation} currently supports 4 types of basic aggregation:
  *
