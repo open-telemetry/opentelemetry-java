@@ -16,12 +16,7 @@
 
 package openconsensus.metrics;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.Nullable;
 import openconsensus.common.ExperimentalApi;
-import openconsensus.internal.DefaultVisibilityForTesting;
-import openconsensus.internal.Provider;
 import openconsensus.metrics.export.ExportComponent;
 import openconsensus.metrics.export.MetricProducerManager;
 
@@ -32,9 +27,7 @@ import openconsensus.metrics.export.MetricProducerManager;
  */
 @ExperimentalApi
 public final class Metrics {
-  private static final Logger logger = Logger.getLogger(Metrics.class.getName());
-  private static final MetricsComponent metricsComponent =
-      loadMetricsComponent(MetricsComponent.class.getClassLoader());
+  private static final MetricsComponent metricsComponent =MetricsComponent.newNoopMetricsComponent();
 
   /**
    * Returns the global {@link ExportComponent}.
@@ -56,40 +49,6 @@ public final class Metrics {
    */
   public static MetricRegistry getMetricRegistry() {
     return metricsComponent.getMetricRegistry();
-  }
-
-  // Any provider that may be used for MetricsComponent can be added here.
-  @DefaultVisibilityForTesting
-  static MetricsComponent loadMetricsComponent(@Nullable ClassLoader classLoader) {
-    try {
-      // Call Class.forName with literal string name of the class to help shading tools.
-      return Provider.createInstance(
-          Class.forName(
-              "io.opencensus.impl.metrics.MetricsComponentImpl", /*initialize=*/ true, classLoader),
-          MetricsComponent.class);
-    } catch (ClassNotFoundException e) {
-      logger.log(
-          Level.FINE,
-          "Couldn't load full implementation for MetricsComponent, now trying to load lite "
-              + "implementation.",
-          e);
-    }
-    try {
-      // Call Class.forName with literal string name of the class to help shading tools.
-      return Provider.createInstance(
-          Class.forName(
-              "io.opencensus.impllite.metrics.MetricsComponentImplLite",
-              /*initialize=*/ true,
-              classLoader),
-          MetricsComponent.class);
-    } catch (ClassNotFoundException e) {
-      logger.log(
-          Level.FINE,
-          "Couldn't load lite implementation for MetricsComponent, now using default "
-              + "implementation for MetricsComponent.",
-          e);
-    }
-    return MetricsComponent.newNoopMetricsComponent();
   }
 
   private Metrics() {}

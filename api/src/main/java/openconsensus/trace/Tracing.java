@@ -16,11 +16,6 @@
 
 package openconsensus.trace;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.Nullable;
-import openconsensus.internal.DefaultVisibilityForTesting;
-import openconsensus.internal.Provider;
 import openconsensus.trace.propagation.PropagationComponent;
 
 /**
@@ -29,9 +24,7 @@ import openconsensus.trace.propagation.PropagationComponent;
  * @since 0.1.0
  */
 public final class Tracing {
-  private static final Logger logger = Logger.getLogger(Tracing.class.getName());
-  private static final TraceComponent traceComponent =
-      loadTraceComponent(TraceComponent.class.getClassLoader());
+  private static final TraceComponent traceComponent = TraceComponent.newNoopTraceComponent();
 
   /**
    * Returns the global {@link Tracer}.
@@ -51,40 +44,6 @@ public final class Tracing {
    */
   public static PropagationComponent getPropagationComponent() {
     return traceComponent.getPropagationComponent();
-  }
-
-  // Any provider that may be used for TraceComponent can be added here.
-  @DefaultVisibilityForTesting
-  static TraceComponent loadTraceComponent(@Nullable ClassLoader classLoader) {
-    try {
-      // Call Class.forName with literal string name of the class to help shading tools.
-      return Provider.createInstance(
-          Class.forName(
-              "io.opencensus.impl.trace.TraceComponentImpl", /*initialize=*/ true, classLoader),
-          TraceComponent.class);
-    } catch (ClassNotFoundException e) {
-      logger.log(
-          Level.FINE,
-          "Couldn't load full implementation for TraceComponent, now trying to load lite "
-              + "implementation.",
-          e);
-    }
-    try {
-      // Call Class.forName with literal string name of the class to help shading tools.
-      return Provider.createInstance(
-          Class.forName(
-              "io.opencensus.impllite.trace.TraceComponentImplLite",
-              /*initialize=*/ true,
-              classLoader),
-          TraceComponent.class);
-    } catch (ClassNotFoundException e) {
-      logger.log(
-          Level.FINE,
-          "Couldn't load lite implementation for TraceComponent, now using "
-              + "default implementation for TraceComponent.",
-          e);
-    }
-    return TraceComponent.newNoopTraceComponent();
   }
 
   // No instance of this class.

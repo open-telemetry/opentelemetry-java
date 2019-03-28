@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.ExperimentalApi;
-import openconsensus.internal.DefaultVisibilityForTesting;
 import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
 
@@ -41,7 +40,7 @@ import openconsensus.internal.Utils;
 @AutoValue
 @ExperimentalApi
 public abstract class Resource {
-  @DefaultVisibilityForTesting static final int MAX_LENGTH = 255;
+  static final int MAX_LENGTH = 255;
   private static final String OC_RESOURCE_TYPE_ENV = "OC_RESOURCE_TYPE";
   private static final String OC_RESOURCE_LABELS_ENV = "OC_RESOURCE_LABELS";
   private static final String LABEL_LIST_SPLITTER = ",";

@@ -16,11 +16,6 @@
 
 package openconsensus.tags;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.Nullable;
-import openconsensus.internal.DefaultVisibilityForTesting;
-import openconsensus.internal.Provider;
 import openconsensus.tags.propagation.TagPropagationComponent;
 
 /**
@@ -29,10 +24,7 @@ import openconsensus.tags.propagation.TagPropagationComponent;
  * @since 0.1.0
  */
 public final class Tags {
-  private static final Logger logger = Logger.getLogger(Tags.class.getName());
-
-  private static final TagsComponent tagsComponent =
-      loadTagsComponent(TagsComponent.class.getClassLoader());
+  private static final TagsComponent tagsComponent = NoopTags.newNoopTagsComponent();
 
   private Tags() {}
 
@@ -54,39 +46,5 @@ public final class Tags {
    */
   public static TagPropagationComponent getTagPropagationComponent() {
     return tagsComponent.getTagPropagationComponent();
-  }
-
-  // Any provider that may be used for TagsComponent can be added here.
-  @DefaultVisibilityForTesting
-  static TagsComponent loadTagsComponent(@Nullable ClassLoader classLoader) {
-    try {
-      // Call Class.forName with literal string name of the class to help shading tools.
-      return Provider.createInstance(
-          Class.forName(
-              "io.opencensus.impl.tags.TagsComponentImpl", /*initialize=*/ true, classLoader),
-          TagsComponent.class);
-    } catch (ClassNotFoundException e) {
-      logger.log(
-          Level.FINE,
-          "Couldn't load full implementation for TagsComponent, now trying to load lite "
-              + "implementation.",
-          e);
-    }
-    try {
-      // Call Class.forName with literal string name of the class to help shading tools.
-      return Provider.createInstance(
-          Class.forName(
-              "io.opencensus.impllite.tags.TagsComponentImplLite",
-              /*initialize=*/ true,
-              classLoader),
-          TagsComponent.class);
-    } catch (ClassNotFoundException e) {
-      logger.log(
-          Level.FINE,
-          "Couldn't load lite implementation for TagsComponent, now using "
-              + "default implementation for TagsComponent.",
-          e);
-    }
-    return NoopTags.newNoopTagsComponent();
   }
 }
