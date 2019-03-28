@@ -116,10 +116,10 @@ public abstract class Span {
    *
    * <p>If used, this will override the name provided via {@code SpanBuilder}.
    *
-   * @param spanName the {@code Span} name.
+   * @param name the {@code Span} name.
    * @since 0.1
    */
-  public abstract void setSpanName(String spanName);
+  public abstract void setName(String name);
 
   /**
    * Sets the {@link Status} to the {@code Span}.

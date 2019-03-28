@@ -90,8 +90,8 @@ public final class BlankSpan extends Span {
   }
 
   @Override
-  public void setSpanName(String spanName) {
-    Utils.checkNotNull(spanName, "spanName");
+  public void setName(String name) {
+    Utils.checkNotNull(name, "name");
   }
 
   @Override
