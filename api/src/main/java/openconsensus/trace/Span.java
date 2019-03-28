@@ -137,6 +137,18 @@ public abstract class Span {
   public abstract void end(openconsensus.trace.EndSpanOptions options);
 
   /**
+   * Marks the end of {@code Span} execution with the given options.
+   *
+   * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
+   * implementations are free to ignore all further calls.
+   *
+   * @param options the options to be used for the end of the {@code Span}.
+   * @param endMicros the timestamp in microseconds to be used for the end of the {@code Span}.
+   * @since 0.1
+   */
+  public abstract void end(openconsensus.trace.EndSpanOptions options, long endMicros);
+
+  /**
    * Marks the end of {@code Span} execution with the default options.
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and

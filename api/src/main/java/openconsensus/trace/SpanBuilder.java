@@ -141,6 +141,16 @@ public abstract class SpanBuilder {
   public abstract SpanBuilder setRecordEvents(boolean recordEvents);
 
   /**
+   * Sets the start timestamp for this {@code Span}. If not called, the implementation will provide
+   * a default.
+   *
+   * @param startMicros the timestamp in microseconds to be used for start of the {@code Span}.
+   * @return this.
+   * @since 0.1
+   */
+  public abstract SpanBuilder setStartTimestamp(long startMicros);
+
+  /**
    * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the
    * implementation will provide a default.
    *
@@ -357,6 +367,11 @@ public abstract class SpanBuilder {
 
     @Override
     public SpanBuilder setRecordEvents(boolean recordEvents) {
+      return this;
+    }
+
+    @Override
+    public SpanBuilder setStartTimestamp(long startMicros) {
       return this;
     }
 

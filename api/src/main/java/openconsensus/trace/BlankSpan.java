@@ -100,6 +100,13 @@ public final class BlankSpan extends Span {
     Utils.checkNotNull(options, "options");
   }
 
+  /** No-op implementation of the {@link Span#end(EndSpanOptions,long)} method. */
+  @Override
+  public void end(EndSpanOptions options, long endMicros) {
+    Utils.checkNotNull(options, "options");
+    Utils.checkArgument(endMicros > 0, "endMicros");
+  }
+
   @Override
   public SpanContext getContext() {
     return SpanContext.INVALID;
