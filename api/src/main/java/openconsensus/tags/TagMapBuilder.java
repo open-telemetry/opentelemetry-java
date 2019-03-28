@@ -17,6 +17,10 @@
 package openconsensus.tags;
 
 import openconsensus.common.Scope;
+import openconsensus.tags.data.Tag;
+import openconsensus.tags.data.TagKey;
+import openconsensus.tags.data.TagMetadata;
+import openconsensus.tags.data.TagValue;
 
 /**
  * Builder for the {@link TagMap} class.

@@ -21,6 +21,9 @@ import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.common.Scope;
 import openconsensus.internal.NoopScope;
 import openconsensus.internal.Utils;
+import openconsensus.tags.data.TagKey;
+import openconsensus.tags.data.TagMetadata;
+import openconsensus.tags.data.TagValue;
 import openconsensus.tags.propagation.TagContextBinarySerializer;
 import openconsensus.tags.propagation.TagPropagationComponent;
 

@@ -21,9 +21,9 @@
  * label anything that is associated with a specific operation. For example, the {@code
  * io.opencensus.stats} package labels all stats with the current tags.
  *
- * <p>{@link openconsensus.tags.Tag Tags} are key-value pairs. The {@link openconsensus.tags.TagKey
- * keys} and {@link openconsensus.tags.TagValue values} are wrapped {@code String}s. They are stored
- * as a map in a {@link openconsensus.tags.TagMap}.
+ * <p>{@link openconsensus.tags.data.Tag Tags} are key-value pairs. The {@link
+ * openconsensus.tags.data.TagKey keys} and {@link openconsensus.tags.data.TagValue values} are
+ * wrapped {@code String}s. They are stored as a map in a {@link openconsensus.tags.TagMap}.
  *
  * <p>Note that tags are independent of the tracing data that is propagated in the {@code
  * io.grpc.Context}, such as trace ID.

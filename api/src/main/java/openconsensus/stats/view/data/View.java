@@ -24,7 +24,7 @@ import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
 import openconsensus.stats.data.Measure;
-import openconsensus.tags.TagKey;
+import openconsensus.tags.data.TagKey;
 
 /**
  * A View specifies an aggregation and a set of tag keys. The aggregation will be broken down by the

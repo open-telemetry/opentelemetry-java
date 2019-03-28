@@ -16,10 +16,10 @@
 
 package openconsensus.tags.propagation;
 
-import openconsensus.tags.Tag;
 import openconsensus.tags.TagMap;
-import openconsensus.tags.TagMetadata;
-import openconsensus.tags.TagMetadata.TagTtl;
+import openconsensus.tags.data.Tag;
+import openconsensus.tags.data.TagMetadata;
+import openconsensus.tags.data.TagMetadata.TagTtl;
 
 /**
  * Object for serializing and deserializing {@link TagMap}s with the binary format.

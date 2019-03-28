@@ -17,6 +17,8 @@
 package openconsensus.tags;
 
 import javax.annotation.concurrent.Immutable;
+import openconsensus.tags.data.TagKey;
+import openconsensus.tags.data.TagValue;
 
 /**
  * A map from {@link TagKey} to {@link TagValue} that can be used to label anything that is
