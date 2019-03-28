@@ -92,5 +92,9 @@ public abstract class TagMetadata {
     private TagTtl(int hops) {
       this.hops = hops;
     }
+
+    int getHops() {
+      return hops;
+    }
   }
 }

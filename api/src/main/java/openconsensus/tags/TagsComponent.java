@@ -30,6 +30,7 @@ public abstract class TagsComponent {
   /**
    * Returns the {@link Tagger} for this implementation.
    *
+   * @return the {@link Tagger} for this implementation.
    * @since 0.1.0
    */
   public abstract Tagger getTagger();
@@ -37,6 +38,7 @@ public abstract class TagsComponent {
   /**
    * Returns the {@link TagPropagationComponent} for this implementation.
    *
+   * @return the {@link TagPropagationComponent} for this implementation.
    * @since 0.1.0
    */
   public abstract TagPropagationComponent getTagPropagationComponent();

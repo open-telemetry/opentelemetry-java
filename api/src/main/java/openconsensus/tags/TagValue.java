@@ -51,6 +51,7 @@ public abstract class TagValue {
    * </ol>
    *
    * @param value the tag value.
+   * @return a {@code TagValue} from the given string.
    * @throws IllegalArgumentException if the {@code String} is not valid.
    * @since 0.1.0
    */

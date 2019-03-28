@@ -59,6 +59,7 @@ public abstract class Tagger {
   /**
    * Returns a builder based on this {@code TagMap}.
    *
+   * @param tags the {@code TagMap} that the builder is based on.
    * @return a builder based on this {@code TagMap}.
    * @since 0.1.0
    */
