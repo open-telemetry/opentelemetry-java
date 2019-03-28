@@ -18,6 +18,7 @@ package openconsensus.metrics.export;
 
 import java.util.Collection;
 import openconsensus.common.ExperimentalApi;
+import openconsensus.metrics.data.Metric;
 
 /**
  * A {@link Metric} producer that can be registered for exporting using {@link

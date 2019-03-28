@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.metrics.export;
+package openconsensus.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
@@ -26,7 +26,6 @@ import openconsensus.common.ExperimentalApi;
 import openconsensus.common.Function;
 import openconsensus.common.Functions;
 import openconsensus.internal.Utils;
-import openconsensus.metrics.data.Exemplar;
 
 /**
  * {@link Distribution} contains summary statistics for a population of values. It optionally

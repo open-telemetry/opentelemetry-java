@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.metrics.export;
+package openconsensus.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
@@ -23,10 +23,10 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.internal.Utils;
-import openconsensus.metrics.export.Value.ValueDistribution;
-import openconsensus.metrics.export.Value.ValueDouble;
-import openconsensus.metrics.export.Value.ValueLong;
-import openconsensus.metrics.export.Value.ValueSummary;
+import openconsensus.metrics.data.Value.ValueDistribution;
+import openconsensus.metrics.data.Value.ValueDouble;
+import openconsensus.metrics.data.Value.ValueLong;
+import openconsensus.metrics.data.Value.ValueSummary;
 
 /**
  * A {@link Metric} with one or more {@link TimeSeries}.

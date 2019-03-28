@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.metrics.export;
+package openconsensus.metrics.data;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
