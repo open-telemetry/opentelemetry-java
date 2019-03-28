@@ -16,10 +16,10 @@
 
 package openconsensus.tags.propagation;
 
-import openconsensus.tags.TagContext;
+import openconsensus.tags.TagMap;
 
 /**
- * Object containing all supported {@link TagContext} propagation formats.
+ * Object containing all supported {@link TagMap} propagation formats.
  *
  * @since 0.1.0
  */

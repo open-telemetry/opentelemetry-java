@@ -22,7 +22,7 @@ import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
 
 /**
- * A key to a value stored in a {@link TagContext}.
+ * A key to a value stored in a {@link TagMap}.
  *
  * <p>Each {@code TagKey} has a {@code String} name. Names have a maximum length of {@link
  * #MAX_LENGTH} and contain only printable ASCII characters.

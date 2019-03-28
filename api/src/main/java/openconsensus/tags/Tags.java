@@ -56,40 +56,6 @@ public final class Tags {
     return tagsComponent.getTagPropagationComponent();
   }
 
-  /**
-   * Returns the current {@code TaggingState}.
-   *
-   * <p>When no implementation is available, {@code getState} always returns {@link
-   * TaggingState#DISABLED}.
-   *
-   * <p>Once {@link #getState()} is called, subsequent calls to {@link #setState(TaggingState)} will
-   * throw an {@code IllegalStateException}.
-   *
-   * @return the current {@code TaggingState}.
-   * @since 0.1.0
-   */
-  public static TaggingState getState() {
-    return tagsComponent.getState();
-  }
-
-  /**
-   * Sets the current {@code TaggingState}.
-   *
-   * <p>When no implementation is available, {@code setState} does not change the state.
-   *
-   * @param state the new {@code TaggingState}.
-   * @throws IllegalStateException if {@link #getState()} was previously called.
-   * @deprecated This method is deprecated because other libraries could cache the result of {@link
-   *     #getState()}, use a stale value, and behave incorrectly. It is only safe to call early in
-   *     initialization. This method throws {@link IllegalStateException} after {@link #getState()}
-   *     has been called, in order to limit changes to the result of {@code getState()}.
-   * @since 0.1.0
-   */
-  @Deprecated
-  public static void setState(TaggingState state) {
-    tagsComponent.setState(state);
-  }
-
   // Any provider that may be used for TagsComponent can be added here.
   @DefaultVisibilityForTesting
   static TagsComponent loadTagsComponent(@Nullable ClassLoader classLoader) {

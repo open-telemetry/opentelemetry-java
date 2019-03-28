@@ -22,7 +22,7 @@ import openconsensus.metrics.data.AttachmentValue;
 import openconsensus.metrics.data.AttachmentValue.AttachmentValueString;
 import openconsensus.stats.Measure.MeasureDouble;
 import openconsensus.stats.Measure.MeasureLong;
-import openconsensus.tags.TagContext;
+import openconsensus.tags.TagMap;
 
 /**
  * A map from {@link Measure}s to measured values to be recorded at the same time.
@@ -90,7 +90,7 @@ public abstract class MeasureMap {
   }
 
   /**
-   * Records all of the measures at the same time, with the current {@link TagContext}.
+   * Records all of the measures at the same time, with the current {@link TagMap}.
    *
    * <p>This method records all of the stats in the {@code MeasureMap} every time it is called.
    *
@@ -99,12 +99,12 @@ public abstract class MeasureMap {
   public abstract void record();
 
   /**
-   * Records all of the measures at the same time, with an explicit {@link TagContext}.
+   * Records all of the measures at the same time, with an explicit {@link TagMap}.
    *
    * <p>This method records all of the stats in the {@code MeasureMap} every time it is called.
    *
    * @param tags the tags associated with the measurements.
    * @since 0.1.0
    */
-  public abstract void record(TagContext tags);
+  public abstract void record(TagMap tags);
 }

@@ -16,10 +16,10 @@
 
 package openconsensus.tags.propagation;
 
-import openconsensus.tags.TagContext;
+import openconsensus.tags.TagMap;
 
 /**
- * Exception thrown when a {@link TagContext} cannot be serialized.
+ * Exception thrown when a {@link TagMap} cannot be serialized.
  *
  * @since 0.1.0
  */

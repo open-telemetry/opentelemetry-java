@@ -16,8 +16,6 @@
 
 package openconsensus.tags;
 
-import java.util.Collections;
-import java.util.Iterator;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.common.Scope;
@@ -41,30 +39,30 @@ final class NoopTags {
   }
 
   /**
-   * Returns a {@code Tagger} that only produces {@link TagContext}s with no tags.
+   * Returns a {@code Tagger} that only produces {@link TagMap}s with no tags.
    *
-   * @return a {@code Tagger} that only produces {@code TagContext}s with no tags.
+   * @return a {@code Tagger} that only produces {@code TagMap}s with no tags.
    */
   static Tagger getNoopTagger() {
     return NoopTagger.INSTANCE;
   }
 
   /**
-   * Returns a {@code TagContextBuilder} that ignores all calls to {@link TagContextBuilder#put}.
+   * Returns a {@code TagMapBuilder} that ignores all calls to {@link TagMapBuilder#put}.
    *
-   * @return a {@code TagContextBuilder} that ignores all calls to {@link TagContextBuilder#put}.
+   * @return a {@code TagMapBuilder} that ignores all calls to {@link TagMapBuilder#put}.
    */
-  static TagContextBuilder getNoopTagContextBuilder() {
-    return NoopTagContextBuilder.INSTANCE;
+  static TagMapBuilder getNoopTagContextBuilder() {
+    return NoopTagMapBuilder.INSTANCE;
   }
 
   /**
-   * Returns a {@code TagContext} that does not contain any tags.
+   * Returns a {@code TagMap} that does not contain any tags.
    *
-   * @return a {@code TagContext} that does not contain any tags.
+   * @return a {@code TagMap} that does not contain any tags.
    */
-  static TagContext getNoopTagContext() {
-    return NoopTagContext.INSTANCE;
+  static TagMap getNoopTagContext() {
+    return NoopTagMap.INSTANCE;
   }
 
   /** Returns a {@code TagPropagationComponent} that contains no-op serializers. */
@@ -73,8 +71,8 @@ final class NoopTags {
   }
 
   /**
-   * Returns a {@code TagContextBinarySerializer} that serializes all {@code TagContext}s to zero
-   * bytes and deserializes all inputs to empty {@code TagContext}s.
+   * Returns a {@code TagContextBinarySerializer} that serializes all {@code TagMap}s to zero bytes
+   * and deserializes all inputs to empty {@code TagMap}s.
    */
   static TagContextBinarySerializer getNoopTagContextBinarySerializer() {
     return NoopTagContextBinarySerializer.INSTANCE;
@@ -82,8 +80,6 @@ final class NoopTags {
 
   @ThreadSafe
   private static final class NoopTagsComponent extends TagsComponent {
-    private volatile boolean isRead;
-
     @Override
     public Tagger getTagger() {
       return getNoopTagger();
@@ -93,19 +89,6 @@ final class NoopTags {
     public TagPropagationComponent getTagPropagationComponent() {
       return getNoopTagPropagationComponent();
     }
-
-    @Override
-    public TaggingState getState() {
-      isRead = true;
-      return TaggingState.DISABLED;
-    }
-
-    @Override
-    @Deprecated
-    public void setState(TaggingState state) {
-      Utils.checkNotNull(state, "state");
-      Utils.checkState(!isRead, "State was already read, cannot set state.");
-    }
   }
 
   @Immutable
@@ -113,52 +96,44 @@ final class NoopTags {
     static final Tagger INSTANCE = new NoopTagger();
 
     @Override
-    public TagContext empty() {
+    public TagMap empty() {
       return getNoopTagContext();
     }
 
     @Override
-    public TagContext getCurrentTagContext() {
+    public TagMap getCurrentTagContext() {
       return getNoopTagContext();
     }
 
     @Override
-    public TagContextBuilder emptyBuilder() {
+    public TagMapBuilder emptyBuilder() {
       return getNoopTagContextBuilder();
     }
 
     @Override
-    public TagContextBuilder toBuilder(TagContext tags) {
+    public TagMapBuilder toBuilder(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
       return getNoopTagContextBuilder();
     }
 
     @Override
-    public TagContextBuilder currentBuilder() {
+    public TagMapBuilder currentBuilder() {
       return getNoopTagContextBuilder();
     }
 
     @Override
-    public Scope withTagContext(TagContext tags) {
+    public Scope withTagContext(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
       return NoopScope.getInstance();
     }
   }
 
   @Immutable
-  private static final class NoopTagContextBuilder extends TagContextBuilder {
-    static final TagContextBuilder INSTANCE = new NoopTagContextBuilder();
+  private static final class NoopTagMapBuilder extends TagMapBuilder {
+    static final TagMapBuilder INSTANCE = new NoopTagMapBuilder();
 
     @Override
-    @SuppressWarnings("deprecation")
-    public TagContextBuilder put(TagKey key, TagValue value) {
-      Utils.checkNotNull(key, "key");
-      Utils.checkNotNull(value, "value");
-      return this;
-    }
-
-    @Override
-    public TagContextBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
+    public TagMapBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");
       Utils.checkNotNull(tagMetadata, "tagMetadata");
@@ -166,13 +141,13 @@ final class NoopTags {
     }
 
     @Override
-    public TagContextBuilder remove(TagKey key) {
+    public TagMapBuilder remove(TagKey key) {
       Utils.checkNotNull(key, "key");
       return this;
     }
 
     @Override
-    public TagContext build() {
+    public TagMap build() {
       return getNoopTagContext();
     }
 
@@ -183,14 +158,8 @@ final class NoopTags {
   }
 
   @Immutable
-  private static final class NoopTagContext extends TagContext {
-    static final TagContext INSTANCE = new NoopTagContext();
-
-    // TODO(sebright): Is there any way to let the user know that their tags were ignored?
-    @Override
-    protected Iterator<Tag> getIterator() {
-      return Collections.<Tag>emptySet().iterator();
-    }
+  private static final class NoopTagMap extends TagMap {
+    static final TagMap INSTANCE = new NoopTagMap();
   }
 
   @Immutable
@@ -209,13 +178,13 @@ final class NoopTags {
     static final byte[] EMPTY_BYTE_ARRAY = {};
 
     @Override
-    public byte[] toByteArray(TagContext tags) {
+    public byte[] toByteArray(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
       return EMPTY_BYTE_ARRAY;
     }
 
     @Override
-    public TagContext fromByteArray(byte[] bytes) {
+    public TagMap fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
       return getNoopTagContext();
     }

@@ -16,10 +16,10 @@
 
 package openconsensus.tags.propagation;
 
-import openconsensus.tags.TagContext;
+import openconsensus.tags.TagMap;
 
 /**
- * Exception thrown when a {@link TagContext} cannot be parsed.
+ * Exception thrown when a {@link TagMap} cannot be parsed.
  *
  * @since 0.1.0
  */

@@ -33,7 +33,7 @@ import openconsensus.common.Timestamp;
 import openconsensus.internal.Utils;
 import openconsensus.stats.Measure.MeasureDouble;
 import openconsensus.stats.Measure.MeasureLong;
-import openconsensus.tags.TagContext;
+import openconsensus.tags.TagMap;
 import openconsensus.tags.TagValue;
 
 /** No-op implementations of stats classes. */
@@ -142,7 +142,7 @@ final class NoopStats {
     public void record() {}
 
     @Override
-    public void record(TagContext tags) {
+    public void record(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
 
       if (hasUnsupportedValues) {
