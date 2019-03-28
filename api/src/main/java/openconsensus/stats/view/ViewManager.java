@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package openconsensus.stats;
+package openconsensus.stats.view;
 
-import java.util.Set;
+import java.util.List;
+import openconsensus.stats.view.data.View;
 
 /**
  * Provides facilities to register {@link View}s for aggregating stats and exporting {@code
@@ -34,7 +35,7 @@ public abstract class ViewManager {
   public abstract void registerView(View view);
 
   /**
-   * Returns all registered views that should be exported.
+   * Returns all registered views.
    *
    * <p>This method should be used by any stats exporter that automatically exports data for views
    * registered with the {@link ViewManager}.
@@ -42,5 +43,5 @@ public abstract class ViewManager {
    * @return all registered views that should be exported.
    * @since 0.1.0
    */
-  public abstract Set<View> getAllRegisteredViews();
+  public abstract List<View> getAllRegisteredViews();
 }

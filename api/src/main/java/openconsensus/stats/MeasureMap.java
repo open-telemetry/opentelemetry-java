@@ -20,8 +20,9 @@ import javax.annotation.concurrent.NotThreadSafe;
 import openconsensus.internal.Utils;
 import openconsensus.metrics.data.AttachmentValue;
 import openconsensus.metrics.data.AttachmentValue.AttachmentValueString;
-import openconsensus.stats.Measure.MeasureDouble;
-import openconsensus.stats.Measure.MeasureLong;
+import openconsensus.stats.data.Measure;
+import openconsensus.stats.data.Measure.MeasureDouble;
+import openconsensus.stats.data.Measure.MeasureLong;
 import openconsensus.tags.TagMap;
 
 /**

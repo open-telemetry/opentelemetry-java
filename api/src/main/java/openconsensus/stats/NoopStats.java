@@ -16,20 +16,16 @@
 
 package openconsensus.stats;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.concurrent.GuardedBy;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.internal.Utils;
-import openconsensus.stats.Measure.MeasureDouble;
-import openconsensus.stats.Measure.MeasureLong;
+import openconsensus.stats.data.Measure.MeasureDouble;
+import openconsensus.stats.data.Measure.MeasureLong;
+import openconsensus.stats.view.ViewComponent;
+import openconsensus.stats.view.ViewManager;
+import openconsensus.stats.view.data.View;
 import openconsensus.tags.TagMap;
 
 /** No-op implementations of stats classes. */
@@ -47,12 +43,21 @@ final class NoopStats {
   }
 
   /**
+   * Returns a {@code ViewComponent} that has a no-op implementation for {@link ViewManager}.
+   *
+   * @return a {@code ViewComponent} that has a no-op implementation for {@code ViewManager}.
+   */
+  static ViewComponent newNoopViewComponent() {
+    return new NoopViewComponent();
+  }
+
+  /**
    * Returns a {@code StatsRecorder} that does not record any data.
    *
    * @return a {@code StatsRecorder} that does not record any data.
    */
-  static StatsRecorder getNoopStatsRecorder() {
-    return NoopStatsRecorder.INSTANCE;
+  static StatsRecorder newNoopStatsRecorder() {
+    return new NoopStatsRecorder();
   }
 
   /**
@@ -74,24 +79,27 @@ final class NoopStats {
   }
 
   @ThreadSafe
-  private static final class NoopStatsComponent extends StatsComponent {
+  private static final class NoopViewComponent extends ViewComponent {
     private final ViewManager viewManager = newNoopViewManager();
 
     @Override
     public ViewManager getViewManager() {
       return viewManager;
     }
+  }
+
+  @ThreadSafe
+  private static final class NoopStatsComponent extends StatsComponent {
+    private final StatsRecorder statsRecorder = newNoopStatsRecorder();
 
     @Override
     public StatsRecorder getStatsRecorder() {
-      return getNoopStatsRecorder();
+      return statsRecorder;
     }
   }
 
   @Immutable
   private static final class NoopStatsRecorder extends StatsRecorder {
-    static final StatsRecorder INSTANCE = new NoopStatsRecorder();
-
     @Override
     public MeasureMap newMeasureMap() {
       return newNoopMeasureMap();
@@ -99,22 +107,15 @@ final class NoopStats {
   }
 
   private static final class NoopMeasureMap extends MeasureMap {
-    private static final Logger logger = Logger.getLogger(NoopMeasureMap.class.getName());
-    private boolean hasUnsupportedValues;
-
     @Override
     public MeasureMap put(MeasureDouble measure, double value) {
-      if (value < 0) {
-        hasUnsupportedValues = true;
-      }
+      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
       return this;
     }
 
     @Override
     public MeasureMap put(MeasureLong measure, long value) {
-      if (value < 0) {
-        hasUnsupportedValues = true;
-      }
+      Utils.checkArgument(value >= 0, "Unsupported negative values.");
       return this;
     }
 
@@ -124,60 +125,19 @@ final class NoopStats {
     @Override
     public void record(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
-
-      if (hasUnsupportedValues) {
-        // drop all the recorded values
-        logger.log(Level.WARNING, "Dropping values, value to record must be non-negative.");
-      }
     }
   }
 
   @ThreadSafe
   private static final class NoopViewManager extends ViewManager {
-    @GuardedBy("registeredViews")
-    private final Map<View.Name, View> registeredViews = new HashMap<View.Name, View>();
-
-    // Cached set of exported views. It must be set to null whenever a view is registered or
-    // unregistered.
-    @javax.annotation.Nullable private volatile Set<View> exportedViews;
-
     @Override
     public void registerView(View newView) {
       Utils.checkNotNull(newView, "newView");
-      synchronized (registeredViews) {
-        exportedViews = null;
-        View existing = registeredViews.get(newView.getName());
-        Utils.checkArgument(
-            existing == null || newView.equals(existing),
-            "A different view with the same name already exists.");
-        if (existing == null) {
-          registeredViews.put(newView.getName(), newView);
-        }
-      }
     }
 
     @Override
-    public Set<View> getAllRegisteredViews() {
-      Set<View> views = exportedViews;
-      if (views == null) {
-        synchronized (registeredViews) {
-          exportedViews = views = filterExportedViews(registeredViews.values());
-        }
-      }
-      return views;
-    }
-
-    // Returns the subset of the given views that should be exported
-    @SuppressWarnings("deprecation")
-    private static Set<View> filterExportedViews(Collection<View> allViews) {
-      Set<View> views = new HashSet<View>();
-      for (View view : allViews) {
-        if (view.getWindow() instanceof View.AggregationWindow.Interval) {
-          continue;
-        }
-        views.add(view);
-      }
-      return Collections.unmodifiableSet(views);
+    public List<View> getAllRegisteredViews() {
+      return Collections.emptyList();
     }
   }
 }

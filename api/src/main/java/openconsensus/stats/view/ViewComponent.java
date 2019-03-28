@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package openconsensus.stats;
+package openconsensus.stats.view;
 
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.stats.view.ViewManager;
+import openconsensus.stats.StatsRecorder;
 
 /**
  * Class that holds the implementations for {@link ViewManager} and {@link StatsRecorder}.
@@ -27,12 +27,12 @@ import openconsensus.stats.view.ViewManager;
  * @since 0.1.0
  */
 @ThreadSafe
-public abstract class StatsComponent {
+public abstract class ViewComponent {
 
   /**
-   * Returns the default {@link StatsRecorder}.
+   * Returns the default {@link ViewManager}.
    *
    * @since 0.1.0
    */
-  public abstract StatsRecorder getStatsRecorder();
+  public abstract ViewManager getViewManager();
 }

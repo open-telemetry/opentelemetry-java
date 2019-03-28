@@ -16,11 +16,8 @@
 
 package openconsensus.stats;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.Nullable;
-import openconsensus.internal.DefaultVisibilityForTesting;
-import openconsensus.internal.Provider;
+import openconsensus.stats.view.ViewComponent;
+import openconsensus.stats.view.ViewManager;
 
 /**
  * Class for accessing the default {@link StatsComponent}.
@@ -28,10 +25,8 @@ import openconsensus.internal.Provider;
  * @since 0.1.0
  */
 public final class Stats {
-  private static final Logger logger = Logger.getLogger(Stats.class.getName());
-
-  private static final StatsComponent statsComponent =
-      loadStatsComponent(StatsComponent.class.getClassLoader());
+  private static final StatsComponent statsComponent = NoopStats.newNoopStatsComponent();
+  private static final ViewComponent viewComponent = NoopStats.newNoopViewComponent();
 
   /**
    * Returns the default {@link StatsRecorder}.
@@ -48,41 +43,7 @@ public final class Stats {
    * @since 0.1.0
    */
   public static ViewManager getViewManager() {
-    return statsComponent.getViewManager();
-  }
-
-  // Any provider that may be used for StatsComponent can be added here.
-  @DefaultVisibilityForTesting
-  static StatsComponent loadStatsComponent(@Nullable ClassLoader classLoader) {
-    try {
-      // Call Class.forName with literal string name of the class to help shading tools.
-      return Provider.createInstance(
-          Class.forName(
-              "io.opencensus.impl.stats.StatsComponentImpl", /*initialize=*/ true, classLoader),
-          StatsComponent.class);
-    } catch (ClassNotFoundException e) {
-      logger.log(
-          Level.FINE,
-          "Couldn't load full implementation for StatsComponent, now trying to load lite "
-              + "implementation.",
-          e);
-    }
-    try {
-      // Call Class.forName with literal string name of the class to help shading tools.
-      return Provider.createInstance(
-          Class.forName(
-              "io.opencensus.impllite.stats.StatsComponentImplLite",
-              /*initialize=*/ true,
-              classLoader),
-          StatsComponent.class);
-    } catch (ClassNotFoundException e) {
-      logger.log(
-          Level.FINE,
-          "Couldn't load lite implementation for StatsComponent, now using "
-              + "default implementation for StatsComponent.",
-          e);
-    }
-    return NoopStats.newNoopStatsComponent();
+    return viewComponent.getViewManager();
   }
 
   private Stats() {}

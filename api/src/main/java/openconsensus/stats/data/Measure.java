@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package openconsensus.stats;
+package openconsensus.stats.data;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.common.Function;
-import openconsensus.internal.DefaultVisibilityForTesting;
 import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
 
@@ -30,21 +28,11 @@ import openconsensus.internal.Utils;
  */
 @Immutable
 public abstract class Measure {
-  @DefaultVisibilityForTesting static final int NAME_MAX_LENGTH = 255;
+  static final int NAME_MAX_LENGTH = 255;
   private static final String ERROR_MESSAGE_INVALID_NAME =
       "Name should be a ASCII string with a length no greater than "
           + NAME_MAX_LENGTH
           + " characters.";
-
-  /**
-   * Applies the given match function to the underlying data type.
-   *
-   * @since 0.1.0
-   */
-  public abstract <T> T match(
-      Function<? super MeasureDouble, T> p0,
-      Function<? super MeasureLong, T> p1,
-      Function<? super Measure, T> defaultFunction);
 
   /**
    * Name of measure, as a {@code String}. Should be a ASCII string with a length no greater than
@@ -79,7 +67,6 @@ public abstract class Measure {
    *
    * @since 0.1.0
    */
-  // TODO(songya): determine whether we want to check the grammar on string unit.
   public abstract String getUnit();
 
   // Prevents this class from being subclassed anywhere else.
@@ -110,14 +97,6 @@ public abstract class Measure {
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
       return new AutoValue_Measure_MeasureDouble(name, description, unit);
-    }
-
-    @Override
-    public <T> T match(
-        Function<? super MeasureDouble, T> p0,
-        Function<? super MeasureLong, T> p1,
-        Function<? super Measure, T> defaultFunction) {
-      return p0.apply(this);
     }
 
     @Override
@@ -155,14 +134,6 @@ public abstract class Measure {
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
       return new AutoValue_Measure_MeasureLong(name, description, unit);
-    }
-
-    @Override
-    public <T> T match(
-        Function<? super MeasureDouble, T> p0,
-        Function<? super MeasureLong, T> p1,
-        Function<? super Measure, T> defaultFunction) {
-      return p1.apply(this);
     }
 
     @Override

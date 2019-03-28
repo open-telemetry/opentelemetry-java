@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package openconsensus.stats;
+package openconsensus.stats.data;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Function;
-import openconsensus.stats.Measure.MeasureDouble;
-import openconsensus.stats.Measure.MeasureLong;
+import openconsensus.stats.data.Measure.MeasureDouble;
+import openconsensus.stats.data.Measure.MeasureLong;
 
 /**
  * Immutable representation of a Measurement.

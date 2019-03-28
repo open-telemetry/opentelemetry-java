@@ -22,7 +22,7 @@ package openconsensus.stats;
  * @since 0.1.0
  */
 public abstract class StatsRecorder {
-  // TODO(sebright): Should we provide convenience methods for only recording one measure?
+  // TODO: Should we provide convenience methods for only recording one measure?
 
   /**
    * Returns an object for recording multiple measurements.
