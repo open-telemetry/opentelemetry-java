@@ -14,44 +14,49 @@
  * limitations under the License.
  */
 
-package openconsensus.metrics;
+package openconsensus.metrics.data;
 
 import com.google.auto.value.AutoValue;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.ExperimentalApi;
 
 /**
- * The value of a {@code Label} associated with a {@code TimeSeries}.
+ * The key of a {@code Label} associated with a {@code MetricDescriptor}.
  *
  * @since 0.1.0
  */
 @ExperimentalApi
 @Immutable
 @AutoValue
-public abstract class LabelValue {
+public abstract class LabelKey {
 
-  LabelValue() {}
+  LabelKey() {}
 
   /**
-   * Creates a {@link LabelValue}.
+   * Creates a {@link LabelKey}.
    *
-   * @param value the value of a {@code Label}. {@code null} value indicates an unset {@code
-   *     LabelValue}.
-   * @return a {@code LabelValue}.
+   * @param key the key of a {@code Label}.
+   * @param description a human-readable description of what this label key represents.
+   * @return a {@code LabelKey}.
    * @since 0.1.0
    */
-  public static LabelValue create(@Nullable String value) {
-    return new AutoValue_LabelValue(value);
+  public static LabelKey create(String key, String description) {
+    return new AutoValue_LabelKey(key, description);
   }
 
   /**
-   * Returns the value of this {@link LabelValue}. Returns {@code null} if the value is unset and
-   * supposed to be ignored.
+   * Returns the key of this {@link LabelKey}.
    *
-   * @return the value.
+   * @return the key.
    * @since 0.1.0
    */
-  @Nullable
-  public abstract String getValue();
+  public abstract String getKey();
+
+  /**
+   * Returns the description of this {@link LabelKey}.
+   *
+   * @return the description.
+   * @since 0.1.0
+   */
+  public abstract String getDescription();
 }

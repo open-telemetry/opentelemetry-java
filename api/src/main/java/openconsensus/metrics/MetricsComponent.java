@@ -17,25 +17,14 @@
 package openconsensus.metrics;
 
 import openconsensus.common.ExperimentalApi;
-import openconsensus.metrics.export.ExportComponent;
 
 /**
- * Class that holds the implementation instance for {@link ExportComponent}.
+ * Class that holds the implementation instance for {@link MetricRegistry}.
  *
  * @since 0.1.0
  */
 @ExperimentalApi
 public abstract class MetricsComponent {
-
-  /**
-   * Returns the {@link ExportComponent} with the provided implementation. If no implementation is
-   * provided then no-op implementations will be used.
-   *
-   * @return the {@link ExportComponent} implementation.
-   * @since 0.1.0
-   */
-  public abstract ExportComponent getExportComponent();
-
   /**
    * Returns the {@link MetricRegistry} with the provided implementation.
    *
@@ -54,14 +43,7 @@ public abstract class MetricsComponent {
   }
 
   private static final class NoopMetricsComponent extends MetricsComponent {
-    private static final ExportComponent EXPORT_COMPONENT =
-        ExportComponent.newNoopExportComponent();
     private static final MetricRegistry METRIC_REGISTRY = MetricRegistry.newNoopMetricRegistry();
-
-    @Override
-    public ExportComponent getExportComponent() {
-      return EXPORT_COMPONENT;
-    }
 
     @Override
     public MetricRegistry getMetricRegistry() {

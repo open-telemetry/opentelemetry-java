@@ -23,7 +23,6 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.internal.Utils;
-import openconsensus.metrics.LabelKey;
 
 /**
  * {@link MetricDescriptor} defines a {@code Metric} type and its schema.

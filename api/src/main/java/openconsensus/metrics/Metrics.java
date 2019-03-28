@@ -17,8 +17,6 @@
 package openconsensus.metrics;
 
 import openconsensus.common.ExperimentalApi;
-import openconsensus.metrics.export.ExportComponent;
-import openconsensus.metrics.export.MetricProducerManager;
 
 /**
  * Class for accessing the default {@link MetricsComponent}.
@@ -27,22 +25,11 @@ import openconsensus.metrics.export.MetricProducerManager;
  */
 @ExperimentalApi
 public final class Metrics {
-  private static final MetricsComponent metricsComponent =MetricsComponent.newNoopMetricsComponent();
-
-  /**
-   * Returns the global {@link ExportComponent}.
-   *
-   * @return the global {@code ExportComponent}.
-   * @since 0.1.0
-   */
-  public static ExportComponent getExportComponent() {
-    return metricsComponent.getExportComponent();
-  }
+  private static final MetricsComponent metricsComponent =
+      MetricsComponent.newNoopMetricsComponent();
 
   /**
    * Returns the global {@link MetricRegistry}.
-   *
-   * <p>This {@code MetricRegistry} is already added to the global {@link MetricProducerManager}.
    *
    * @return the global {@code MetricRegistry}.
    * @since 0.1.0

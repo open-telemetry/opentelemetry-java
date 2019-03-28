@@ -25,8 +25,6 @@ import javax.annotation.concurrent.Immutable;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.common.Timestamp;
 import openconsensus.internal.Utils;
-import openconsensus.metrics.LabelKey;
-import openconsensus.metrics.LabelValue;
 
 /**
  * A collection of data points that describes the time-varying values of a {@code Metric}.

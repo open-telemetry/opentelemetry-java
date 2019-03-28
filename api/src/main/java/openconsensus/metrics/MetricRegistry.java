@@ -16,22 +16,24 @@
 
 package openconsensus.metrics;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.common.ToDoubleFunction;
 import openconsensus.common.ToLongFunction;
 import openconsensus.internal.Utils;
-import openconsensus.metrics.export.MetricProducer;
-import openconsensus.metrics.export.MetricProducerManager;
+import openconsensus.metrics.data.LabelKey;
+import openconsensus.metrics.data.Metric;
+import openconsensus.metrics.producer.MetricProducer;
 
 /**
- * Creates and manages your application's set of metrics. The default implementation of this creates
- * a {@link MetricProducer} and registers it to the global {@link MetricProducerManager}.
+ * Creates and manages your application's set of metrics.
  *
  * @since 0.1.0
  */
 @ExperimentalApi
-public abstract class MetricRegistry {
+public abstract class MetricRegistry extends MetricProducer {
   /**
    * Builds a new long gauge to be added to the registry. This is more convenient form when you want
    * to manually increase and decrease values as per your service requirements.
@@ -152,6 +154,11 @@ public abstract class MetricRegistry {
           Utils.checkNotNull(description, "description"),
           Utils.checkNotNull(unit, "unit"),
           labelKeys);
+    }
+
+    @Override
+    public Collection<Metric> getMetrics() {
+      return Collections.emptyList();
     }
   }
 }

@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package openconsensus.metrics.export;
+package openconsensus.metrics.producer;
 
 import java.util.Collection;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.metrics.data.Metric;
 
 /**
- * A {@link Metric} producer that can be registered for exporting using {@link
- * MetricProducerManager}.
+ * A {@link Metric} producer that can be registered for exporting.
  *
  * <p>All implementation MUST be thread-safe.
  *
