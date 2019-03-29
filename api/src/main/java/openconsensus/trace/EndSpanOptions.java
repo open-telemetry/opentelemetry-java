@@ -25,7 +25,7 @@ import openconsensus.trace.data.Status;
  * A class that enables overriding the default values used when ending a {@link Span}. Allows
  * overriding the {@link Status status}.
  *
- * @since 0.1.0
+ * @since 0.1
  */
 @Immutable
 @AutoValue
@@ -33,7 +33,7 @@ public abstract class EndSpanOptions {
   /**
    * The default {@code EndSpanOptions}.
    *
-   * @since 0.1.0
+   * @since 0.1
    */
   public static final EndSpanOptions DEFAULT = builder().build();
 
@@ -41,7 +41,7 @@ public abstract class EndSpanOptions {
    * Returns a new {@link Builder} with default options.
    *
    * @return a new {@code Builder} with default options.
-   * @since 0.1.0
+   * @since 0.1
    */
   public static Builder builder() {
     return new AutoValue_EndSpanOptions.Builder();
@@ -54,7 +54,7 @@ public abstract class EndSpanOptions {
    * Span#setStatus(Status)} or the default {@link Status#OK} if no status was set.
    *
    * @return the status.
-   * @since 0.1.0
+   * @since 0.1
    */
   @Nullable
   public abstract Status getStatus();
@@ -62,7 +62,7 @@ public abstract class EndSpanOptions {
   /**
    * Builder class for {@link EndSpanOptions}.
    *
-   * @since 0.1.0
+   * @since 0.1
    */
   @AutoValue.Builder
   public abstract static class Builder {
@@ -73,7 +73,7 @@ public abstract class EndSpanOptions {
      *
      * @param status the status.
      * @return this.
-     * @since 0.1.0
+     * @since 0.1
      */
     public abstract Builder setStatus(Status status);
 
@@ -81,7 +81,7 @@ public abstract class EndSpanOptions {
      * Builds and returns a {@code EndSpanOptions} with the desired settings.
      *
      * @return a {@code EndSpanOptions} with the desired settings.
-     * @since 0.1.0
+     * @since 0.1
      */
     public abstract EndSpanOptions build();
 

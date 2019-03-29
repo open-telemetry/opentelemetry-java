@@ -17,8 +17,8 @@
 package openconsensus.trace;
 
 import java.util.Map;
-import openconsensus.trace.data.Annotation;
 import openconsensus.trace.data.AttributeValue;
+import openconsensus.trace.data.Event;
 import openconsensus.trace.data.Link;
 import openconsensus.trace.data.MessageEvent;
 import openconsensus.trace.data.Status;
@@ -54,30 +54,30 @@ public abstract class Span {
   public abstract void putAttributes(Map<String, AttributeValue> attributes);
 
   /**
-   * Adds an annotation to the {@code Span}.
+   * Adds an event to the {@code Span}.
    *
-   * @param description the description of the annotation time event.
+   * @param name the name of the event.
    * @since 0.1.0
    */
-  public abstract void addAnnotation(String description);
+  public abstract void addEvent(String name);
 
   /**
-   * Adds an annotation to the {@code Span}.
+   * Adds an event to the {@code Span}.
    *
-   * @param description the description of the annotation time event.
-   * @param attributes the attributes that will be added; these are associated with this annotation,
-   *     not the {@code Span} as for {@link #putAttributes(Map)}.
+   * @param name the name of the event.
+   * @param attributes the attributes that will be added; these are associated with this event, not
+   *     the {@code Span} as for {@link #putAttributes(Map)}.
    * @since 0.1.0
    */
-  public abstract void addAnnotation(String description, Map<String, AttributeValue> attributes);
+  public abstract void addEvent(String name, Map<String, AttributeValue> attributes);
 
   /**
-   * Adds an annotation to the {@code Span}.
+   * Adds an event to the {@code Span}.
    *
-   * @param annotation the annotations to add.
+   * @param event the event to add.
    * @since 0.1.0
    */
-  public abstract void addAnnotation(Annotation annotation);
+  public abstract void addEvent(Event event);
 
   /**
    * Adds a MessageEvent to the {@code Span}.
@@ -147,7 +147,7 @@ public abstract class Span {
   public abstract SpanContext getContext();
 
   /**
-   * Returns {@code true} if this {@code Span} records events (e.g, {@link #addAnnotation(String)}.
+   * Returns {@code true} if this {@code Span} records events (e.g, {@link #addEvent(String)}.
    *
    * @return {@code true} if this {@code Span} records events.
    * @since 0.1.0
