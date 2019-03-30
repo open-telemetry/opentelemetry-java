@@ -90,13 +90,13 @@ public final class BlankSpan extends Span {
   }
 
   @Override
-  public void setName(String name) {
-    Utils.checkNotNull(name, "name");
+  public void setStatus(Status status) {
+    Utils.checkNotNull(status, "status");
   }
 
   @Override
-  public void setStatus(Status status) {
-    Utils.checkNotNull(status, "status");
+  public void updateName(String name) {
+    Utils.checkNotNull(name, "name");
   }
 
   /** No-op implementation of the {@link Span#end(EndSpanOptions)} method. */

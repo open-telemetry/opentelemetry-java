@@ -112,16 +112,6 @@ public abstract class Span {
   public abstract void addLink(Link link);
 
   /**
-   * Sets the {@code Span} name.
-   *
-   * <p>If used, this will override the name provided via {@code SpanBuilder}.
-   *
-   * @param name the {@code Span} name.
-   * @since 0.1
-   */
-  public abstract void setName(String name);
-
-  /**
    * Sets the {@link Status} to the {@code Span}.
    *
    * <p>If used, this will override the default {@code Span} status. Default is {@link Status#OK}.
@@ -134,6 +124,16 @@ public abstract class Span {
    * @since 0.1
    */
   public abstract void setStatus(Status status);
+
+  /**
+   * Updates the {@code Span} name.
+   *
+   * <p>If used, this will override the name provided via {@code SpanBuilder}.
+   *
+   * @param name the {@code Span} name.
+   * @since 0.1
+   */
+  public abstract void updateName(String name);
 
   /**
    * Marks the end of {@code Span} execution with the given options.
