@@ -118,6 +118,16 @@ public abstract class Span {
   public abstract void setStatus(Status status);
 
   /**
+   * Updates the {@code Span} name.
+   *
+   * <p>If used, this will override the name provided via {@code SpanBuilder}.
+   *
+   * @param name the {@code Span} name.
+   * @since 0.1
+   */
+  public abstract void updateName(String name);
+
+  /**
    * Marks the end of {@code Span} execution with the given options.
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
