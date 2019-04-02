@@ -22,8 +22,9 @@ import openconsensus.common.Function;
 import openconsensus.internal.Utils;
 
 /**
- * A class that represents all the possible values for an attribute. An attribute can have 3 types
- * of values: {@code String}, {@code Boolean} or {@code Long}.
+ * A class that represents all the possible values for an attribute. An attribute can have 4 types
+ * of values: {@code String}, {@code Boolean}, {@code Long} or {@code Double}, represented through
+ * {@code AttributeValueType}.
  *
  * @since 0.1.0
  */
@@ -99,6 +100,59 @@ public abstract class AttributeValue {
       Function<? super Double, T> doubleFunction,
       Function<Object, T> defaultFunction);
 
+  /**
+   * Returns the string value of this {@code AttributeValue}. An UnsupportedOperationException will
+   * be thrown if getType() is not AttributeValueType.STRING.
+   *
+   * @return the string value of this {@code AttributeValueType}.
+   * @since 0.1.0
+   */
+  public String getStringValue() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the boolean value of this {@code AttributeValue}. An UnsupportedOperationException will
+   * be thrown if getType() is not AttributeValueType.BOOLEAN.
+   *
+   * @return the boolean value of this {@code AttributeValueType}.
+   * @since 0.1.0
+   */
+  public Boolean getBooleanValue() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the long value of this {@code AttributeValue}. An UnsupportedOperationException will be
+   * thrown if getType() is not AttributeValueType.LONG.
+   *
+   * @return the long value of this {@code AttributeValueType}.
+   * @since 0.1.0
+   */
+  public Long getLongValue() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the double value of this {@code AttributeValue}. An UnsupportedOperationException will
+   * be thrown if getType() is not AttributeValueType.DOUBLE.
+   *
+   * @return the double value of this {@code AttributeValueType}.
+   * @since 0.1.0
+   */
+  public Double getDoubleValue() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns a {@code AttributeValueType} corresponding to the underlying value of this {@code
+   * AttributeValue}.
+   *
+   * @return the {@code AttributeValueType} for the value of this {@code AttributeValue}.
+   * @since 0.1.0
+   */
+  public abstract AttributeValueType getType();
+
   @Immutable
   @AutoValue
   abstract static class AttributeValueString extends AttributeValue {
@@ -120,7 +174,13 @@ public abstract class AttributeValue {
       return stringFunction.apply(getStringValue());
     }
 
-    abstract String getStringValue();
+    @Override
+    public AttributeValueType getType() {
+      return AttributeValueType.STRING;
+    }
+
+    @Override
+    public abstract String getStringValue();
   }
 
   @Immutable
@@ -144,7 +204,13 @@ public abstract class AttributeValue {
       return booleanFunction.apply(getBooleanValue());
     }
 
-    abstract Boolean getBooleanValue();
+    @Override
+    public AttributeValueType getType() {
+      return AttributeValueType.BOOLEAN;
+    }
+
+    @Override
+    public abstract Boolean getBooleanValue();
   }
 
   @Immutable
@@ -168,7 +234,13 @@ public abstract class AttributeValue {
       return longFunction.apply(getLongValue());
     }
 
-    abstract Long getLongValue();
+    @Override
+    public AttributeValueType getType() {
+      return AttributeValueType.LONG;
+    }
+
+    @Override
+    public abstract Long getLongValue();
   }
 
   @Immutable
@@ -192,6 +264,12 @@ public abstract class AttributeValue {
       return doubleFunction.apply(getDoubleValue());
     }
 
-    abstract Double getDoubleValue();
+    @Override
+    public AttributeValueType getType() {
+      return AttributeValueType.DOUBLE;
+    }
+
+    @Override
+    public abstract Double getDoubleValue();
   }
 }
