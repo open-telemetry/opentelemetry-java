@@ -60,7 +60,7 @@ public final class BlankSpan extends Span {
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes) {
-    Utils.checkNotNull(name, "description");
+    Utils.checkNotNull(name, "name");
     Utils.checkNotNull(attributes, "attributes");
   }
 

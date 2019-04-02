@@ -42,7 +42,7 @@ public abstract class Event {
    * @throws NullPointerException if {@code name} is {@code null}.
    * @since 0.1.0
    */
-  public static Event fromDescription(String name) {
+  public static Event fromName(String name) {
     return new AutoValue_Event(name, EMPTY_ATTRIBUTES);
   }
 
@@ -55,8 +55,7 @@ public abstract class Event {
    * @throws NullPointerException if {@code name} or {@code attributes} are {@code null}.
    * @since 0.1.0
    */
-  public static Event fromDescriptionAndAttributes(
-      String name, Map<String, AttributeValue> attributes) {
+  public static Event fromNameAndAttributes(String name, Map<String, AttributeValue> attributes) {
     return new AutoValue_Event(
         name,
         Collections.unmodifiableMap(
@@ -64,12 +63,12 @@ public abstract class Event {
   }
 
   /**
-   * Return the description of the {@code Event}.
+   * Return the name of the {@code Event}.
    *
-   * @return the description of the {@code Event}.
+   * @return the name of the {@code Event}.
    * @since 0.1.0
    */
-  public abstract String getDescription();
+  public abstract String getName();
 
   /**
    * Return the attributes of the {@code Event}.
