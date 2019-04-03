@@ -88,19 +88,17 @@ final class SpanBuilderShim implements SpanBuilder {
   }
 
   @Override
-  public Span startManual() {
-    return start();
-  }
-
-  @Override
   public Span start() {
     return new SpanShim(builder.startSpan());
   }
 
-  @SuppressWarnings("MustBeClosedChecker")
+  @Override
+  public Span startManual() {
+    throw new UnsupportedOperationException();
+  }
+
   @Override
   public Scope startActive(boolean finishSpanOnClose) {
-    openconsensus.trace.Span span = builder.startSpan();
-    return new ScopeShim(tracer.withSpan(span), span, finishSpanOnClose);
+    throw new UnsupportedOperationException();
   }
 }

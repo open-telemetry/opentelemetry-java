@@ -22,32 +22,18 @@ import io.opentracing.Span;
 @SuppressWarnings("deprecation")
 final class ScopeShim implements Scope {
   final openconsensus.common.Scope scope;
-  final SpanShim spanShim;
-  final boolean finishSpanOnClose;
 
-  public ScopeShim(
-      openconsensus.common.Scope scope, openconsensus.trace.Span span, boolean finishSpanOnClose) {
+  public ScopeShim(openconsensus.common.Scope scope) {
     this.scope = scope;
-    this.spanShim = new SpanShim(span);
-    this.finishSpanOnClose = finishSpanOnClose;
   }
 
   @Override
   public Span span() {
-    return spanShim;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void close() {
-    if (scope != null) {
-      // In case we are using a no-op Scope.
-      scope.close();
-    }
-
-    // TODO - Make sure this is indeed the active Span (Tracer.getCurrentSpan())
-    // else do not finish it.
-    if (finishSpanOnClose) {
-      spanShim.getSpan().end();
-    }
+    scope.close();
   }
 }

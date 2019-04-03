@@ -30,34 +30,24 @@ final class ScopeManagerShim implements ScopeManager {
 
   @Override
   public Span activeSpan() {
-    // TODO - getCurrentSpan() returns a no-op instance
-    // if there's no actual active Span, so we need to
-    // handle this case when building new ones (as they
-    // will try to become children from this no-op Span).
     return new SpanShim(tracer.getCurrentSpan());
   }
 
   @Override
   public Scope active() {
-    // TODO - If we decide to bridge against an OT version that
-    // still has this Deprecated API, we have to keep track of the
-    // actual Scope objects we create.
-    openconsensus.trace.Span span = tracer.getCurrentSpan();
-    return new ScopeShim(null, span, /* finishSpanOnClose= */ false);
-  }
-
-  @Override
-  @SuppressWarnings("MustBeClosedChecker")
-  public Scope activate(Span span, boolean finishSpanOnClose) {
-    openconsensus.trace.Span actualSpan = getActualSpan(span);
-    return new ScopeShim(tracer.withSpan(actualSpan), actualSpan, finishSpanOnClose);
+    throw new UnsupportedOperationException();
   }
 
   @Override
   @SuppressWarnings("MustBeClosedChecker")
   public Scope activate(Span span) {
     openconsensus.trace.Span actualSpan = getActualSpan(span);
-    return new ScopeShim(tracer.withSpan(actualSpan), actualSpan, /* finishSpanOnClose= */ false);
+    return new ScopeShim(tracer.withSpan(actualSpan));
+  }
+
+  @Override
+  public Scope activate(Span span, boolean finishSpanOnClose) {
+    throw new UnsupportedOperationException();
   }
 
   static openconsensus.trace.Span getActualSpan(Span span) {
