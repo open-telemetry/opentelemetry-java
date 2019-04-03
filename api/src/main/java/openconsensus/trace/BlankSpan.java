@@ -19,8 +19,8 @@ package openconsensus.trace;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
-import openconsensus.trace.data.Annotation;
 import openconsensus.trace.data.AttributeValue;
+import openconsensus.trace.data.Event;
 import openconsensus.trace.data.Link;
 import openconsensus.trace.data.MessageEvent;
 import openconsensus.trace.data.Status;
@@ -56,17 +56,17 @@ public final class BlankSpan extends Span {
   }
 
   @Override
-  public void addAnnotation(String description) {}
+  public void addEvent(String name) {}
 
   @Override
-  public void addAnnotation(String description, Map<String, AttributeValue> attributes) {
-    Utils.checkNotNull(description, "description");
+  public void addEvent(String name, Map<String, AttributeValue> attributes) {
+    Utils.checkNotNull(name, "name");
     Utils.checkNotNull(attributes, "attributes");
   }
 
   @Override
-  public void addAnnotation(Annotation annotation) {
-    Utils.checkNotNull(annotation, "annotation");
+  public void addEvent(Event event) {
+    Utils.checkNotNull(event, "event");
   }
 
   @Override

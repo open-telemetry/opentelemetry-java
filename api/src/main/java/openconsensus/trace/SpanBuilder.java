@@ -38,7 +38,7 @@ import openconsensus.trace.data.Status;
  *   void doWork {
  *     // Create a Span as a child of the current Span.
  *     try (Scope ss = tracer.spanBuilder("MyChildSpan").startScopedSpan()) {
- *       tracer.getCurrentSpan().addAnnotation("my annotation");
+ *       tracer.getCurrentSpan().addEvent("my event");
  *       doSomeWork();  // Here the new span is in the current Context, so it can be used
  *                      // implicitly anywhere down the stack.
  *     }
@@ -64,7 +64,7 @@ import openconsensus.trace.data.Status;
  *
  *   public void onExecuteHandler(ServerCallHandler serverCallHandler) {
  *     try (Scope ws = tracer.withSpan(mySpan)) {
- *       tracer.getCurrentSpan().addAnnotation("Start rpc execution.");
+ *       tracer.getCurrentSpan().addEvent("Start rpc execution.");
  *       serverCallHandler.run();  // Here the new span is in the current Context, so it can be
  *                                 // used implicitly anywhere down the stack.
  *     }
@@ -92,7 +92,7 @@ import openconsensus.trace.data.Status;
  *   private static final Tracer tracer = Tracing.getTracer();
  *   void DoWork(Span parent) {
  *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
- *     childSpan.addAnnotation("my annotation");
+ *     childSpan.addEvent("my event");
  *     try {
  *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
  *     } finally {
@@ -168,7 +168,7 @@ public abstract class SpanBuilder {
    *   private static final Tracer tracer = Tracing.getTracer();
    *   void DoWork(Span parent) {
    *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
-   *     childSpan.addAnnotation("my annotation");
+   *     childSpan.addEvent("my event");
    *     try {
    *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
    *     } finally {
@@ -202,7 +202,7 @@ public abstract class SpanBuilder {
    *   void doWork {
    *     // Create a Span as a child of the current Span.
    *     try (Scope ss = tracer.spanBuilder("MyChildSpan").startScopedSpan()) {
-   *       tracer.getCurrentSpan().addAnnotation("my annotation");
+   *       tracer.getCurrentSpan().addEvent("my event");
    *       doSomeWork();  // Here the new span is in the current Context, so it can be used
    *                      // implicitly anywhere down the stack. Anytime in this closure the span
    *                      // can be accessed via tracer.getCurrentSpan().
@@ -224,7 +224,7 @@ public abstract class SpanBuilder {
    *     // Create a Span as a child of the current Span.
    *     Scope ss = tracer.spanBuilder("MyChildSpan").startScopedSpan();
    *     try {
-   *       tracer.getCurrentSpan().addAnnotation("my annotation");
+   *       tracer.getCurrentSpan().addEvent("my event");
    *       doSomeWork();  // Here the new span is in the current Context, so it can be used
    *                      // implicitly anywhere down the stack. Anytime in this closure the span
    *                      // can be accessed via tracer.getCurrentSpan().
