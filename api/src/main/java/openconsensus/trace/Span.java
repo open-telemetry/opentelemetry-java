@@ -162,6 +162,13 @@ public abstract class Span {
    */
   public enum Kind {
     /**
+     * Undefined span kind.
+     *
+     * @since 0.1.0
+     */
+    UNDEFINED,
+
+    /**
      * Indicates that the span covers server-side handling of an RPC or other remote request.
      *
      * @since 0.1.0
@@ -173,6 +180,24 @@ public abstract class Span {
      *
      * @since 0.1.0
      */
-    CLIENT
+    CLIENT,
+
+    /**
+     * Indicates that the span describes producer sending a message to a broker. Unlike client and
+     * server, there is no direct critical path latency relationship between producer and consumer
+     * spans.
+     *
+     * @since 0.1.0
+     */
+    PRODUCER,
+
+    /**
+     * Indicates that the span describes consumer recieving a message from a broker. Unlike client
+     * and server, there is no direct critical path latency relationship between producer and
+     * consumer spans.
+     *
+     * @since 0.1.0
+     */
+    CONSUMER
   }
 }
