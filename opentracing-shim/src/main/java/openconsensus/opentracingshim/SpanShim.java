@@ -42,13 +42,13 @@ final class SpanShim implements Span {
 
   @Override
   public Span setTag(String key, String value) {
-    span.putAttribute(key, AttributeValue.stringAttributeValue(value));
+    span.setAttribute(key, AttributeValue.stringAttributeValue(value));
     return this;
   }
 
   @Override
   public Span setTag(String key, boolean value) {
-    span.putAttribute(key, AttributeValue.booleanAttributeValue(value));
+    span.setAttribute(key, AttributeValue.booleanAttributeValue(value));
     return this;
   }
 
@@ -56,9 +56,9 @@ final class SpanShim implements Span {
   public Span setTag(String key, Number value) {
     // TODO - Verify only the 'basic' types are supported/used.
     if (value instanceof Integer || value instanceof Long) {
-      span.putAttribute(key, AttributeValue.longAttributeValue(value.longValue()));
+      span.setAttribute(key, AttributeValue.longAttributeValue(value.longValue()));
     } else if (value instanceof Float || value instanceof Double) {
-      span.putAttribute(key, AttributeValue.doubleAttributeValue(value.doubleValue()));
+      span.setAttribute(key, AttributeValue.doubleAttributeValue(value.doubleValue()));
     } else {
       throw new IllegalArgumentException("Number type not supported");
     }
