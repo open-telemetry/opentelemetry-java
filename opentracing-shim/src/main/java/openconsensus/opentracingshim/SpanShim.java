@@ -144,8 +144,7 @@ final class SpanShim implements Span {
 
       if (value instanceof Short || value instanceof Integer || value instanceof Long) {
         attrMap.put(key, AttributeValue.longAttributeValue(((Number) value).longValue()));
-      }
-      if (value instanceof Float || value instanceof Double) {
+      } else if (value instanceof Float || value instanceof Double) {
         attrMap.put(key, AttributeValue.doubleAttributeValue(((Number) value).doubleValue()));
       } else if (value instanceof Boolean) {
         attrMap.put(key, AttributeValue.booleanAttributeValue((Boolean) value));
