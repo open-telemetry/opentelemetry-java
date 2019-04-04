@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OpenCensus Authors
+ * Copyright 2017, OpenConsensus Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,10 +36,6 @@ import openconsensus.trace.data.MessageEvent;
 import openconsensus.trace.data.SpanId;
 import openconsensus.trace.data.Status;
 
-/*>>>
-import org.checkerframework.dataflow.qual.Deterministic;
-*/
-
 /**
  * Immutable representation of all data collected by the {@link Span} class.
  *
@@ -48,42 +44,6 @@ import org.checkerframework.dataflow.qual.Deterministic;
 @Immutable
 @AutoValue
 public abstract class SpanData {
-
-  /**
-   * Returns a new immutable {@code SpanData}.
-   *
-   * @deprecated Use {@link #create(SpanContext, SpanId, Boolean, String, Kind, Timestamp,
-   *     Attributes, TimedEvents, TimedEvents, Links, Integer, Status, Timestamp)}.
-   */
-  @Deprecated
-  public static SpanData create(
-      SpanContext context,
-      @Nullable SpanId parentSpanId,
-      @Nullable Boolean hasRemoteParent,
-      String name,
-      Timestamp startTimestamp,
-      Attributes attributes,
-      TimedEvents<Event> annotations,
-      TimedEvents<MessageEvent> messageEvents,
-      Links links,
-      @Nullable Integer childSpanCount,
-      @Nullable Status status,
-      @Nullable Timestamp endTimestamp) {
-    return create(
-        context,
-        parentSpanId,
-        hasRemoteParent,
-        name,
-        null,
-        startTimestamp,
-        attributes,
-        annotations,
-        messageEvents,
-        links,
-        childSpanCount,
-        status,
-        endTimestamp);
-  }
 
   /**
    * Returns a new immutable {@code SpanData}.
@@ -109,7 +69,6 @@ public abstract class SpanData {
    * @return a new immutable {@code SpanData}.
    * @since 0.14
    */
-  @SuppressWarnings({"deprecation", "InconsistentOverloads"})
   public static SpanData create(
       SpanContext context,
       @Nullable SpanId parentSpanId,
