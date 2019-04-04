@@ -19,6 +19,7 @@ package openconsensus.opentracingshim;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.tag.Tag;
+import java.util.HashMap;
 import java.util.Map;
 import openconsensus.trace.data.AttributeValue;
 
@@ -74,25 +75,28 @@ final class SpanShim implements Span {
 
   @Override
   public Span log(Map<String, ?> fields) {
-    // TODO
+    // TODO - verify 'null' for 'event' is valid.
+    span.addEvent(null, convertToAttributes(fields));
     return this;
   }
 
   @Override
   public Span log(long timestampMicroseconds, Map<String, ?> fields) {
-    // TODO
+    // TODO - use timestampMicroseconds
+    span.addEvent(null, convertToAttributes(fields));
     return this;
   }
 
   @Override
   public Span log(String event) {
-    // TODO
+    span.addEvent(event);
     return this;
   }
 
   @Override
   public Span log(long timestampMicroseconds, String event) {
-    // TODO
+    // TODO - use timestampMicroseconds
+    span.addEvent(event);
     return this;
   }
 
@@ -124,5 +128,32 @@ final class SpanShim implements Span {
   public void finish(long finishMicros) {
     // TODO: Take finishMicros into account
     span.end();
+  }
+
+  static Map<String, AttributeValue> convertToAttributes(Map<String, ?> fields) {
+    Map<String, AttributeValue> attrMap = new HashMap<String, AttributeValue>();
+
+    for (Map.Entry<String, ?> entry : fields.entrySet()) {
+      String key = entry.getKey();
+      Object value = entry.getValue();
+
+      // TODO - verify null values are NOT allowed.
+      if (value == null) {
+        continue;
+      }
+
+      if (value instanceof Short || value instanceof Integer || value instanceof Long) {
+        attrMap.put(key, AttributeValue.longAttributeValue(((Number) value).longValue()));
+      }
+      if (value instanceof Float || value instanceof Double) {
+        attrMap.put(key, AttributeValue.doubleAttributeValue(((Number) value).doubleValue()));
+      } else if (value instanceof Boolean) {
+        attrMap.put(key, AttributeValue.booleanAttributeValue((Boolean) value));
+      } else {
+        attrMap.put(key, AttributeValue.stringAttributeValue(value.toString()));
+      }
+    }
+
+    return attrMap;
   }
 }
