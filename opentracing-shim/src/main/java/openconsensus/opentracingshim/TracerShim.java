@@ -22,14 +22,43 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
+import io.opentracing.propagation.TextMap;
+import java.util.HashMap;
+import java.util.Map;
+import openconsensus.trace.propagation.PropagationComponent;
+import openconsensus.trace.propagation.SpanContextParseException;
 
 @SuppressWarnings("ReturnMissingNullable")
 public final class TracerShim implements Tracer {
   private final openconsensus.trace.Tracer tracer;
+  private final PropagationComponent propagation;
   private final ScopeManager scopeManagerShim;
 
-  public TracerShim(openconsensus.trace.Tracer tracer) {
+  /**
+   * Creates a {@code io.opentracing.Tracer} shim out of the {@code openconsensus.trace.Tracer} and
+   * the {@code openconsensus.trace.propagation.PropagationComponent} exposed by {@code
+   * openconsensus.trace.Tracing}.
+   *
+   * @since 0.1.0
+   */
+  public TracerShim() {
+    this(
+        openconsensus.trace.Tracing.getTracer(),
+        openconsensus.trace.Tracing.getPropagationComponent());
+  }
+
+  /**
+   * Creates a {@code io.opentracing.Tracer} shim out of a {@code openconsensus.trace.Tracer} and a
+   * {@code openconsensus.trace.propagation.PropagationComponent}.
+   *
+   * @param tracer the {@code openconsensus.trace.Tracer} used by this shim.
+   * @param propagation the {@code openconsensus.trace.propagation.PropagationComponent} used for
+   *     injection and extraction.
+   * @since 0.1.0
+   */
+  public TracerShim(openconsensus.trace.Tracer tracer, PropagationComponent propagation) {
     this.tracer = tracer;
+    this.propagation = propagation;
     this.scopeManagerShim = new ScopeManagerShim(tracer);
   }
 
@@ -54,15 +83,74 @@ public final class TracerShim implements Tracer {
   }
 
   @Override
-  public <C> void inject(SpanContext context, Format<C> format, C carrier) {}
+  public <C> void inject(SpanContext context, Format<C> format, C carrier) {
+    openconsensus.trace.SpanContext actualContext = getActualContext(context);
+
+    if (format == Format.Builtin.TEXT_MAP || format == Format.Builtin.HTTP_HEADERS) {
+      propagation
+          .getTraceContextFormat()
+          .inject(actualContext, (TextMap) carrier, TextMapSetter.INSTANCE);
+      return;
+    }
+
+    // TODO - Add support for B3/Binary formats.
+  }
 
   @Override
   public <C> SpanContext extract(Format<C> format, C carrier) {
+    Map<String, String> carrierMap = new HashMap<String, String>();
+    for (Map.Entry<String, String> entry : (TextMap) carrier) {
+      carrierMap.put(entry.getKey(), entry.getValue());
+    }
+
+    if (format == Format.Builtin.TEXT_MAP || format == Format.Builtin.HTTP_HEADERS) {
+      try {
+        openconsensus.trace.SpanContext context =
+            propagation.getTraceContextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
+        return new SpanContextShim(context);
+      } catch (SpanContextParseException e) {
+        return null;
+      }
+    }
+
+    // TODO - Add support for Binary/B3 formats.
     return null;
   }
 
   @Override
   public void close() {
     // TODO
+  }
+
+  static final class TextMapSetter
+      extends openconsensus.trace.propagation.TextFormat.Setter<TextMap> {
+    private TextMapSetter() {}
+
+    public static final TextMapSetter INSTANCE = new TextMapSetter();
+
+    @Override
+    public void put(TextMap carrier, String key, String value) {
+      carrier.put(key, value);
+    }
+  }
+
+  static final class TextMapGetter
+      extends openconsensus.trace.propagation.TextFormat.Getter<Map<String, String>> {
+    private TextMapGetter() {}
+
+    public static final TextMapGetter INSTANCE = new TextMapGetter();
+
+    @Override
+    public String get(Map<String, String> carrier, String key) {
+      return carrier.get(key);
+    }
+  }
+
+  static openconsensus.trace.SpanContext getActualContext(SpanContext context) {
+    if (!(context instanceof SpanContextShim)) {
+      throw new IllegalArgumentException("context is not a valid SpanContextShim object");
+    }
+
+    return ((SpanContextShim) context).getSpanContext();
   }
 }
