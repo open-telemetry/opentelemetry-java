@@ -45,13 +45,13 @@ public final class BlankSpan extends Span {
   private BlankSpan() {}
 
   @Override
-  public void putAttribute(String key, AttributeValue value) {
+  public void setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
     Utils.checkNotNull(value, "value");
   }
 
   @Override
-  public void putAttributes(Map<String, AttributeValue> attributes) {
+  public void setAttributes(Map<String, AttributeValue> attributes) {
     Utils.checkNotNull(attributes, "attributes");
   }
 

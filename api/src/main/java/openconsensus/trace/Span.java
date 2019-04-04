@@ -41,17 +41,17 @@ public abstract class Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public abstract void putAttribute(String key, AttributeValue value);
+  public abstract void setAttribute(String key, AttributeValue value);
 
   /**
    * Sets a set of attributes to the {@code Span}. The effect of this call is equivalent to that of
-   * calling {@link #putAttribute(String, AttributeValue)} once for each element in the specified
+   * calling {@link #setAttribute(String, AttributeValue)} once for each element in the specified
    * map.
    *
    * @param attributes the attributes that will be added and associated with the {@code Span}.
    * @since 0.1.0
    */
-  public abstract void putAttributes(Map<String, AttributeValue> attributes);
+  public abstract void setAttributes(Map<String, AttributeValue> attributes);
 
   /**
    * Adds an event to the {@code Span}.
@@ -66,7 +66,7 @@ public abstract class Span {
    *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
-   *     the {@code Span} as for {@link #putAttributes(Map)}.
+   *     the {@code Span} as for {@link #setAttributes(Map)}.
    * @since 0.1.0
    */
   public abstract void addEvent(String name, Map<String, AttributeValue> attributes);
