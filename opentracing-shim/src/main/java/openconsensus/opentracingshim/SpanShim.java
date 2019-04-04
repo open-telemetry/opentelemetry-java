@@ -18,12 +18,15 @@ package openconsensus.opentracingshim;
 
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
+import io.opentracing.log.Fields;
 import io.opentracing.tag.Tag;
 import java.util.HashMap;
 import java.util.Map;
 import openconsensus.trace.data.AttributeValue;
 
 final class SpanShim implements Span {
+  private static final String DEFAULT_EVENT_NAME = "log";
+
   private final openconsensus.trace.Span span;
   private final SpanContextShim contextShim;
 
@@ -75,15 +78,13 @@ final class SpanShim implements Span {
 
   @Override
   public Span log(Map<String, ?> fields) {
-    // TODO - verify 'null' for 'event' is valid.
-    span.addEvent(null, convertToAttributes(fields));
+    span.addEvent(getEventNameFromFields(fields), convertToAttributes(fields));
     return this;
   }
 
   @Override
   public Span log(long timestampMicroseconds, Map<String, ?> fields) {
-    // TODO - use timestampMicroseconds
-    span.addEvent(null, convertToAttributes(fields));
+    span.addEvent(getEventNameFromFields(fields), convertToAttributes(fields));
     return this;
   }
 
@@ -95,7 +96,6 @@ final class SpanShim implements Span {
 
   @Override
   public Span log(long timestampMicroseconds, String event) {
-    // TODO - use timestampMicroseconds
     span.addEvent(event);
     return this;
   }
@@ -130,6 +130,15 @@ final class SpanShim implements Span {
     span.end();
   }
 
+  static String getEventNameFromFields(Map<String, ?> fields) {
+    Object eventValue = fields == null ? null : fields.get(Fields.EVENT);
+    if (eventValue != null) {
+      return eventValue.toString();
+    }
+
+    return DEFAULT_EVENT_NAME;
+  }
+
   static Map<String, AttributeValue> convertToAttributes(Map<String, ?> fields) {
     Map<String, AttributeValue> attrMap = new HashMap<String, AttributeValue>();
 
@@ -142,7 +151,10 @@ final class SpanShim implements Span {
         continue;
       }
 
-      if (value instanceof Short || value instanceof Integer || value instanceof Long) {
+      if (value instanceof Byte
+          || value instanceof Short
+          || value instanceof Integer
+          || value instanceof Long) {
         attrMap.put(key, AttributeValue.longAttributeValue(((Number) value).longValue()));
       } else if (value instanceof Float || value instanceof Double) {
         attrMap.put(key, AttributeValue.doubleAttributeValue(((Number) value).doubleValue()));
