@@ -21,8 +21,10 @@ import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import openconsensus.trace.propagation.PropagationComponent;
@@ -93,7 +95,13 @@ public final class TracerShim implements Tracer {
       return;
     }
 
-    // TODO - Add support for B3/Binary formats.
+    if (format == Format.Builtin.BINARY) {
+      byte[] buff = propagation.getBinaryFormat().toByteArray(actualContext);
+      Binary binaryCarrier = (Binary) carrier;
+      ByteBuffer byteBuff = binaryCarrier.injectionBuffer(buff.length);
+      byteBuff.put(buff);
+      return;
+    }
   }
 
   @Override
@@ -113,7 +121,18 @@ public final class TracerShim implements Tracer {
       }
     }
 
-    // TODO - Add support for Binary/B3 formats.
+    if (format == Format.Builtin.BINARY) {
+      ByteBuffer byteBuff = ((Binary) carrier).extractionBuffer();
+      byte[] buff = new byte[byteBuff.remaining()];
+      byteBuff.get(buff);
+      try {
+        openconsensus.trace.SpanContext context = propagation.getBinaryFormat().fromByteArray(buff);
+        return new SpanContextShim(context);
+      } catch (SpanContextParseException e) {
+        return null;
+      }
+    }
+
     return null;
   }
 
