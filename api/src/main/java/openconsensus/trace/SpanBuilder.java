@@ -20,8 +20,8 @@ import com.google.errorprone.annotations.MustBeClosed;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
-import openconsensus.context.Scope;
 import openconsensus.context.NoopScope;
+import openconsensus.context.Scope;
 import openconsensus.internal.Utils;
 import openconsensus.trace.data.Status;
 
