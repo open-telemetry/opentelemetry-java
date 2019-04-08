@@ -21,6 +21,7 @@ import io.opentracing.SpanContext;
 import io.opentracing.tag.Tag;
 import java.util.Map;
 import openconsensus.trace.data.AttributeValue;
+import openconsensus.trace.data.Status;
 
 final class SpanShim implements Span {
   private final openconsensus.trace.Span span;
@@ -42,20 +43,36 @@ final class SpanShim implements Span {
 
   @Override
   public Span setTag(String key, String value) {
-    span.setAttribute(key, AttributeValue.stringAttributeValue(value));
+    if ("span.kind".equals(key)) {
+      // TODO: confirm we can safely ignore span.kind after Span was created
+      // https://github.com/bogdandrutu/openconsensus/issues/42
+    } else if ("error".equals(key) && value.equalsIgnoreCase("true")) {
+      this.span.setStatus(Status.UNKNOWN);
+    } else {
+      span.setAttribute(key, AttributeValue.stringAttributeValue(value));
+    }
+
     return this;
   }
 
   @Override
   public Span setTag(String key, boolean value) {
-    span.setAttribute(key, AttributeValue.booleanAttributeValue(value));
+    if ("error".equals(key) && (value == true)) {
+      this.span.setStatus(Status.UNKNOWN);
+    } else {
+      span.setAttribute(key, AttributeValue.booleanAttributeValue(value));
+    }
+
     return this;
   }
 
   @Override
   public Span setTag(String key, Number value) {
     // TODO - Verify only the 'basic' types are supported/used.
-    if (value instanceof Integer || value instanceof Long) {
+    if (value instanceof Integer
+        || value instanceof Long
+        || value instanceof Short
+        || value instanceof Byte) {
       span.setAttribute(key, AttributeValue.longAttributeValue(value.longValue()));
     } else if (value instanceof Float || value instanceof Double) {
       span.setAttribute(key, AttributeValue.doubleAttributeValue(value.doubleValue()));
