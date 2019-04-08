@@ -21,11 +21,20 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.tag.Tag;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import openconsensus.trace.Span.Kind;
+import openconsensus.trace.data.AttributeValue;
 
 @SuppressWarnings("deprecation")
 final class SpanBuilderShim implements SpanBuilder {
   openconsensus.trace.Tracer tracer;
   openconsensus.trace.SpanBuilder builder;
+
+  // TODO: should it be any of concurrent maps?
+  Map<String, AttributeValue> spanBuilderAttributes = new HashMap<String, AttributeValue>();
 
   public SpanBuilderShim(
       openconsensus.trace.Tracer tracer, openconsensus.trace.SpanBuilder builder) {
@@ -59,37 +68,95 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, String value) {
-    // TODO
+    if ("span.kind".equals(key)) {
+      switch (value) {
+        case "CLIENT":
+          this.builder.setSpanKind(Kind.CLIENT);
+          break;
+        case "SERVER":
+          this.builder.setSpanKind(Kind.SERVER);
+          break;
+        case "PRODUCER":
+          this.builder.setSpanKind(Kind.PRODUCER);
+          break;
+        case "CONSUMER":
+          this.builder.setSpanKind(Kind.CONSUMER);
+          break;
+        default:
+          this.builder.setSpanKind(Kind.UNDEFINED);
+          break;
+      }
+    } else if ("error".equals(key)) {
+      // TODO: confirm we can ignore it
+      // https://github.com/bogdandrutu/openconsensus/issues/41
+    } else {
+      this.spanBuilderAttributes.put(key, AttributeValue.stringAttributeValue(value));
+    }
+
     return this;
   }
 
   @Override
   public SpanBuilder withTag(String key, boolean value) {
-    // TODO
+    if ("error".equals(key) && (value == true)) {
+      // TODO: confirm we can ignore it
+      // https://github.com/bogdandrutu/openconsensus/issues/41
+    } else {
+      this.spanBuilderAttributes.put(key, AttributeValue.booleanAttributeValue(value));
+    }
     return this;
   }
 
   @Override
   public SpanBuilder withTag(String key, Number value) {
-    // TODO
+    // TODO - Verify only the 'basic' types are supported/used.
+    if (value instanceof Integer
+        || value instanceof Long
+        || value instanceof Short
+        || value instanceof Byte) {
+      this.spanBuilderAttributes.put(key, AttributeValue.longAttributeValue(value.longValue()));
+    } else if (value instanceof Float || value instanceof Double) {
+      this.spanBuilderAttributes.put(key, AttributeValue.doubleAttributeValue(value.doubleValue()));
+    } else {
+      throw new IllegalArgumentException("Number type not supported");
+    }
+
     return this;
   }
 
   @Override
   public <T> SpanBuilder withTag(Tag<T> tag, T value) {
-    // TODO
+    if (value instanceof String) {
+      this.withTag(tag.getKey(), (String) value);
+    } else if (value instanceof Boolean) {
+      this.withTag(tag.getKey(), ((Boolean) value).booleanValue());
+    } else if (value instanceof Number) {
+      this.withTag(tag.getKey(), (Number) value);
+    } else {
+      this.withTag(tag.getKey(), value.toString());
+    }
+
     return this;
   }
 
   @Override
   public SpanBuilder withStartTimestamp(long microseconds) {
-    // TODO
+    this.spanBuilderAttributes.put(
+        "ot.start_timestamp", AttributeValue.longAttributeValue(microseconds));
     return this;
   }
 
   @Override
   public Span start() {
-    return new SpanShim(builder.startSpan());
+    openconsensus.trace.Span span = builder.startSpan();
+
+    Iterator<Entry<String, AttributeValue>> entries =
+        this.spanBuilderAttributes.entrySet().iterator();
+    while (entries.hasNext()) {
+      Map.Entry<String, AttributeValue> entry = entries.next();
+      span.setAttribute(entry.getKey(), entry.getValue());
+    }
+    return new SpanShim(span);
   }
 
   @Override
