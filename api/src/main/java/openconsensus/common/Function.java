@@ -16,8 +16,6 @@
 
 package openconsensus.common;
 
-import openconsensus.trace.data.AttributeValue;
-
 /**
  * Used to specify matching functions for use encoding tagged unions (i.e. sum types) in Java.
  *
