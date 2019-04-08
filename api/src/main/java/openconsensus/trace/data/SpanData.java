@@ -33,7 +33,7 @@ import openconsensus.trace.SpanContext;
 /**
  * Immutable representation of all data collected by the {@link Span} class.
  *
- * @since 0.5
+ * @since 0.1.0
  */
 @Immutable
 @AutoValue
