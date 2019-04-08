@@ -16,7 +16,7 @@
 
 package openconsensus.tags;
 
-import openconsensus.common.Scope;
+import openconsensus.context.Scope;
 
 /**
  * Object for creating new {@link TagMap}s and {@code TagMap}s based on the current context.

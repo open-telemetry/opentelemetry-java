@@ -19,8 +19,8 @@ package openconsensus.trace;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
-import openconsensus.common.Scope;
-import openconsensus.internal.NoopScope;
+import openconsensus.context.Scope;
+import openconsensus.context.NoopScope;
 import openconsensus.trace.SpanBuilder.NoopSpanBuilder;
 import openconsensus.trace.data.Status;
 

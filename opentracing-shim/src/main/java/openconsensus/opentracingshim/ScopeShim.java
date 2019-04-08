@@ -21,9 +21,9 @@ import io.opentracing.Span;
 
 @SuppressWarnings("deprecation")
 final class ScopeShim implements Scope {
-  final openconsensus.common.Scope scope;
+  final openconsensus.context.Scope scope;
 
-  public ScopeShim(openconsensus.common.Scope scope) {
+  public ScopeShim(openconsensus.context.Scope scope) {
     this.scope = scope;
   }
 

@@ -19,7 +19,7 @@ package openconsensus.trace;
 import io.grpc.Context;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
-import openconsensus.common.Scope;
+import openconsensus.context.Scope;
 import openconsensus.trace.data.Status;
 import openconsensus.trace.unsafe.ContextUtils;
 

@@ -16,7 +16,7 @@
 
 package openconsensus.tags;
 
-import openconsensus.common.Scope;
+import openconsensus.context.Scope;
 import openconsensus.tags.data.Tag;
 import openconsensus.tags.data.TagKey;
 import openconsensus.tags.data.TagMetadata;
