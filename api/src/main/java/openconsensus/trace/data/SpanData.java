@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.trace.export;
+package openconsensus.trace.data;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
@@ -29,12 +29,6 @@ import openconsensus.internal.Utils;
 import openconsensus.trace.Span;
 import openconsensus.trace.Span.Kind;
 import openconsensus.trace.SpanContext;
-import openconsensus.trace.data.AttributeValue;
-import openconsensus.trace.data.Event;
-import openconsensus.trace.data.Link;
-import openconsensus.trace.data.MessageEvent;
-import openconsensus.trace.data.SpanId;
-import openconsensus.trace.data.Status;
 
 /**
  * Immutable representation of all data collected by the {@link Span} class.
