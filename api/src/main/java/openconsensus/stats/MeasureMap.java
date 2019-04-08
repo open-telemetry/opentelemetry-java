@@ -19,7 +19,6 @@ package openconsensus.stats;
 import javax.annotation.concurrent.NotThreadSafe;
 import openconsensus.internal.Utils;
 import openconsensus.metrics.data.AttachmentValue;
-import openconsensus.metrics.data.AttachmentValue.AttachmentValueString;
 import openconsensus.stats.data.Measure;
 import openconsensus.stats.data.Measure.MeasureDouble;
 import openconsensus.stats.data.Measure.MeasureLong;
@@ -54,23 +53,6 @@ public abstract class MeasureMap {
    * @since 0.1.0
    */
   public abstract MeasureMap put(MeasureLong measure, long value);
-
-  /**
-   * Associate the contextual information of an {@code Exemplar} to this {@link MeasureMap}.
-   * Contextual information is represented as {@code String} key-value pairs.
-   *
-   * <p>If this method is called multiple times with the same key, only the last value will be kept.
-   *
-   * @param key the key of contextual information of an {@code Exemplar}.
-   * @param value the string representation of contextual information of an {@code Exemplar}.
-   * @return this
-   * @since 0.1.0
-   * @deprecated in favor of {@link #putAttachment(String, AttachmentValue)}.
-   */
-  @Deprecated
-  public MeasureMap putAttachment(String key, String value) {
-    return putAttachment(key, AttachmentValueString.create(value));
-  }
 
   /**
    * Associate the contextual information of an {@code Exemplar} to this {@link MeasureMap}.
