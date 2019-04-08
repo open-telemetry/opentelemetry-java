@@ -23,12 +23,25 @@ import openconsensus.internal.Utils;
 /**
  * A class that represents all the possible values for an attribute. An attribute can have 4 types
  * of values: {@code String}, {@code Boolean}, {@code Long} or {@code Double}, represented through
- * {@code AttributeValueType}.
+ * {@code AttributeValue.Type}.
  *
  * @since 0.1.0
  */
 @Immutable
 public abstract class AttributeValue {
+
+  /**
+   * An enum that represents all the possible value types for an {@code AttributeValue}.
+   *
+   * @since 0.1.0
+   */
+  public enum Type {
+    STRING,
+    BOOLEAN,
+    LONG,
+    DOUBLE
+  }
+
   /**
    * Returns an {@code AttributeValue} with a string value.
    *
@@ -78,9 +91,9 @@ public abstract class AttributeValue {
 
   /**
    * Returns the string value of this {@code AttributeValue}. An UnsupportedOperationException will
-   * be thrown if getType() is not AttributeValueType.STRING.
+   * be thrown if getType() is not {@link Type#STRING}.
    *
-   * @return the string value of this {@code AttributeValueType}.
+   * @return the string value of this {@code AttributeValue}.
    * @since 0.1.0
    */
   public String getStringValue() {
@@ -89,9 +102,9 @@ public abstract class AttributeValue {
 
   /**
    * Returns the boolean value of this {@code AttributeValue}. An UnsupportedOperationException will
-   * be thrown if getType() is not AttributeValueType.BOOLEAN.
+   * be thrown if getType() is not {@link Type#BOOLEAN}.
    *
-   * @return the boolean value of this {@code AttributeValueType}.
+   * @return the boolean value of this {@code AttributeValue}.
    * @since 0.1.0
    */
   public Boolean getBooleanValue() {
@@ -100,9 +113,9 @@ public abstract class AttributeValue {
 
   /**
    * Returns the long value of this {@code AttributeValue}. An UnsupportedOperationException will be
-   * thrown if getType() is not AttributeValueType.LONG.
+   * thrown if getType() is not {@link Type#LONG}.
    *
-   * @return the long value of this {@code AttributeValueType}.
+   * @return the long value of this {@code AttributeValue}.
    * @since 0.1.0
    */
   public Long getLongValue() {
@@ -111,9 +124,9 @@ public abstract class AttributeValue {
 
   /**
    * Returns the double value of this {@code AttributeValue}. An UnsupportedOperationException will
-   * be thrown if getType() is not AttributeValueType.DOUBLE.
+   * be thrown if getType() is not {@link Type#DOUBLE}.
    *
-   * @return the double value of this {@code AttributeValueType}.
+   * @return the double value of this {@code AttributeValue}.
    * @since 0.1.0
    */
   public Double getDoubleValue() {
@@ -121,13 +134,12 @@ public abstract class AttributeValue {
   }
 
   /**
-   * Returns a {@code AttributeValueType} corresponding to the underlying value of this {@code
-   * AttributeValue}.
+   * Returns a {@code Type} corresponding to the underlying value of this {@code AttributeValue}.
    *
-   * @return the {@code AttributeValueType} for the value of this {@code AttributeValue}.
+   * @return the {@code Type} for the value of this {@code AttributeValue}.
    * @since 0.1.0
    */
-  public abstract AttributeValueType getType();
+  public abstract Type getType();
 
   @Immutable
   @AutoValue
@@ -141,8 +153,8 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public AttributeValueType getType() {
-      return AttributeValueType.STRING;
+    public Type getType() {
+      return Type.STRING;
     }
 
     @Override
@@ -161,8 +173,8 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public AttributeValueType getType() {
-      return AttributeValueType.BOOLEAN;
+    public Type getType() {
+      return Type.BOOLEAN;
     }
 
     @Override
@@ -181,8 +193,8 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public AttributeValueType getType() {
-      return AttributeValueType.LONG;
+    public Type getType() {
+      return Type.LONG;
     }
 
     @Override
@@ -201,8 +213,8 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public AttributeValueType getType() {
-      return AttributeValueType.DOUBLE;
+    public Type getType() {
+      return Type.DOUBLE;
     }
 
     @Override
