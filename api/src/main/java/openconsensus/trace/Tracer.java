@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
 import openconsensus.trace.SpanBuilder.NoopSpanBuilder;
+import openconsensus.trace.data.SpanData;
 import openconsensus.trace.data.Status;
 
 /**
@@ -340,6 +341,16 @@ public abstract class Tracer {
   public abstract SpanBuilder spanBuilderWithRemoteParent(
       String spanName, @Nullable SpanContext remoteParentSpanContext);
 
+  /**
+   * Records a {@link SpanData}. This API allows to send a pre-populated span object to the
+   * exporter. Sampling and recording decisions as well as other collection optimizations is a
+   * responsibility of a caller. Note, the {@link SpanContext} object on the span population with
+   * the values that will allow correlation of telemetry is also a caller responsibility.
+   *
+   * @param span Span Data to be reported to all exporters.
+   */
+  public abstract void recordSpanData(SpanData span);
+
   // No-Op implementation of the Tracer.
   private static final class NoopTracer extends Tracer {
 
@@ -377,6 +388,11 @@ public abstract class Tracer {
     public SpanBuilder spanBuilderWithRemoteParent(
         String spanName, @Nullable SpanContext remoteParentSpanContext) {
       return NoopSpanBuilder.createWithRemoteParent(spanName, remoteParentSpanContext);
+    }
+
+    @Override
+    public void recordSpanData(SpanData span) {
+      // Do nothing
     }
 
     private NoopTracer() {}
