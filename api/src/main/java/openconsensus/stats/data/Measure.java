@@ -69,6 +69,14 @@ public abstract class Measure {
    */
   public abstract String getUnit();
 
+  /**
+   * Returns a {@code MeasureType} corresponding to the underlying value of this {@code Measure}.
+   *
+   * @return the {@code MeasureType} for the value of this {@code Measure}.
+   * @since 0.1.0
+   */
+  public abstract MeasureType getType();
+
   // Prevents this class from being subclassed anywhere else.
   private Measure() {}
 
@@ -96,7 +104,7 @@ public abstract class Measure {
       Utils.checkArgument(
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
-      return new AutoValue_Measure_MeasureDouble(name, description, unit);
+      return new AutoValue_Measure_MeasureDouble(name, description, unit, MeasureType.DOUBLE);
     }
 
     @Override
@@ -107,6 +115,9 @@ public abstract class Measure {
 
     @Override
     public abstract String getUnit();
+
+    @Override
+    public abstract MeasureType getType();
   }
 
   /**
@@ -133,7 +144,7 @@ public abstract class Measure {
       Utils.checkArgument(
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
-      return new AutoValue_Measure_MeasureLong(name, description, unit);
+      return new AutoValue_Measure_MeasureLong(name, description, unit, MeasureType.LONG);
     }
 
     @Override
@@ -144,5 +155,8 @@ public abstract class Measure {
 
     @Override
     public abstract String getUnit();
+
+    @Override
+    public abstract MeasureType getType();
   }
 }

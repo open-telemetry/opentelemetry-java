@@ -18,7 +18,6 @@ package openconsensus.stats.data;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.common.Function;
 import openconsensus.stats.data.Measure.MeasureDouble;
 import openconsensus.stats.data.Measure.MeasureLong;
 
@@ -31,21 +30,20 @@ import openconsensus.stats.data.Measure.MeasureLong;
 public abstract class Measurement {
 
   /**
-   * Applies the given match function to the underlying data type.
-   *
-   * @since 0.1.0
-   */
-  public abstract <T> T match(
-      Function<? super MeasurementDouble, T> p0,
-      Function<? super MeasurementLong, T> p1,
-      Function<? super Measurement, T> defaultFunction);
-
-  /**
    * Extracts the measured {@link Measure}.
    *
    * @since 0.1.0
    */
   public abstract Measure getMeasure();
+
+  /**
+   * Returns a {@code MeasureType} corresponding to the underlying value of this {@code
+   * Measurement}.
+   *
+   * @return the {@code MeasureType} for the value of this {@code Measurement}.
+   * @since 0.1.0
+   */
+  public abstract MeasureType getType();
 
   // Prevents this class from being subclassed anywhere else.
   private Measurement() {}
@@ -66,7 +64,7 @@ public abstract class Measurement {
      * @since 0.1.0
      */
     public static MeasurementDouble create(MeasureDouble measure, double value) {
-      return new AutoValue_Measurement_MeasurementDouble(measure, value);
+      return new AutoValue_Measurement_MeasurementDouble(measure, value, MeasureType.DOUBLE);
     }
 
     @Override
@@ -81,12 +79,7 @@ public abstract class Measurement {
     public abstract double getValue();
 
     @Override
-    public <T> T match(
-        Function<? super MeasurementDouble, T> p0,
-        Function<? super MeasurementLong, T> p1,
-        Function<? super Measurement, T> defaultFunction) {
-      return p0.apply(this);
-    }
+    public abstract MeasureType getType();
   }
 
   /**
@@ -105,7 +98,7 @@ public abstract class Measurement {
      * @since 0.1.0
      */
     public static MeasurementLong create(MeasureLong measure, long value) {
-      return new AutoValue_Measurement_MeasurementLong(measure, value);
+      return new AutoValue_Measurement_MeasurementLong(measure, value, MeasureType.LONG);
     }
 
     @Override
@@ -120,11 +113,6 @@ public abstract class Measurement {
     public abstract long getValue();
 
     @Override
-    public <T> T match(
-        Function<? super MeasurementDouble, T> p0,
-        Function<? super MeasurementLong, T> p1,
-        Function<? super Measurement, T> defaultFunction) {
-      return p1.apply(this);
-    }
+    public abstract MeasureType getType();
   }
 }
