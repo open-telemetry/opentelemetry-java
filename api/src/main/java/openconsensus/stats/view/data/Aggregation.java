@@ -44,13 +44,12 @@ public abstract class Aggregation {
   private Aggregation() {}
 
   /**
-   * Returns a {@code AggregationType} corresponding to the underlying value of this {@code
-   * Aggregation}.
+   * Returns a {@code Type} corresponding to the underlying value of this {@code Aggregation}.
    *
-   * @return the {@code AggregationType} for the value of this {@code Aggregation}.
+   * @return the {@code Type} for the value of this {@code Aggregation}.
    * @since 0.1.0
    */
-  public abstract AggregationType getType();
+  public abstract Type getType();
 
   /**
    * Calculate sum on aggregated {@code MeasureValue}s.
@@ -63,7 +62,7 @@ public abstract class Aggregation {
 
     Sum() {}
 
-    private static final Sum INSTANCE = new AutoValue_Aggregation_Sum(AggregationType.SUM);
+    private static final Sum INSTANCE = new AutoValue_Aggregation_Sum(Type.SUM);
 
     /**
      * Construct a {@code Sum}.
@@ -76,7 +75,7 @@ public abstract class Aggregation {
     }
 
     @Override
-    public abstract AggregationType getType();
+    public abstract Type getType();
   }
 
   /**
@@ -90,7 +89,7 @@ public abstract class Aggregation {
 
     Count() {}
 
-    private static final Count INSTANCE = new AutoValue_Aggregation_Count(AggregationType.COUNT);
+    private static final Count INSTANCE = new AutoValue_Aggregation_Count(Type.COUNT);
 
     /**
      * Construct a {@code Count}.
@@ -103,7 +102,7 @@ public abstract class Aggregation {
     }
 
     @Override
-    public abstract AggregationType getType();
+    public abstract Type getType();
   }
 
   /**
@@ -127,7 +126,7 @@ public abstract class Aggregation {
      */
     public static Distribution create(BucketBoundaries bucketBoundaries) {
       Utils.checkNotNull(bucketBoundaries, "bucketBoundaries");
-      return new AutoValue_Aggregation_Distribution(bucketBoundaries, AggregationType.DISTRIBUTION);
+      return new AutoValue_Aggregation_Distribution(bucketBoundaries, Type.DISTRIBUTION);
     }
 
     /**
@@ -139,7 +138,7 @@ public abstract class Aggregation {
     public abstract BucketBoundaries getBucketBoundaries();
 
     @Override
-    public abstract AggregationType getType();
+    public abstract Type getType();
   }
 
   /**
@@ -153,8 +152,7 @@ public abstract class Aggregation {
 
     LastValue() {}
 
-    private static final LastValue INSTANCE =
-        new AutoValue_Aggregation_LastValue(AggregationType.LASTVALUE);
+    private static final LastValue INSTANCE = new AutoValue_Aggregation_LastValue(Type.LASTVALUE);
 
     /**
      * Construct a {@code LastValue}.
@@ -167,7 +165,7 @@ public abstract class Aggregation {
     }
 
     @Override
-    public abstract AggregationType getType();
+    public abstract Type getType();
   }
 
   /**
@@ -175,7 +173,7 @@ public abstract class Aggregation {
    *
    * @since 0.1.0
    */
-  public enum AggregationType {
+  public enum Type {
     SUM,
     COUNT,
     DISTRIBUTION,
