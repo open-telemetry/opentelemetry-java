@@ -87,6 +87,7 @@ public abstract class TextFormat {
    * clear fields as they couldn't have been set before. If it is a mutable, retryable object,
    * successive calls should clear these fields first.
    *
+   * @return list of fields that will be used by this formatter.
    * @since 0.1.0
    */
   // The use cases of this are:
@@ -100,6 +101,7 @@ public abstract class TextFormat {
    * @param spanContext possibly not sampled.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param setter invoked for each propagation key to add or remove.
+   * @param <C> carrier of propagation fields, such as an http request
    * @since 0.1.0
    */
   public abstract <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter);
@@ -134,6 +136,8 @@ public abstract class TextFormat {
    *
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param getter invoked for each propagation key to get.
+   * @param <C> carrier of propagation fields, such as an http request.
+   * @return carrier of propagated fields.
    * @throws SpanContextParseException if the input is invalid
    * @since 0.1.0
    */
@@ -146,7 +150,7 @@ public abstract class TextFormat {
    * <p>{@code Getter} is stateless and allows to be saved as a constant to avoid runtime
    * allocations.
    *
-   * @param <C> carrier of propagation fields, such as an http request
+   * @param <C> carrier of propagation fields, such as an http request.
    * @since 0.1.0
    */
   public abstract static class Getter<C> {
@@ -154,7 +158,7 @@ public abstract class TextFormat {
     /**
      * Returns the first value of the given propagation {@code key} or returns {@code null}.
      *
-     * @param carrier carrier of propagation fields, such as an http request
+     * @param carrier carrier of propagation fields, such as an http request.
      * @param key the key of the field.
      * @return the first value of the given propagation {@code key} or returns {@code null}.
      * @since 0.1.0
