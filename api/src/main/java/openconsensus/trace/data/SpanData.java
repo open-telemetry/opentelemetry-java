@@ -110,7 +110,6 @@ public abstract class SpanData {
    * @since 0.1.0
    */
   @Nullable
-  /*@Deterministic*/
   public abstract SpanId getParentSpanId();
 
   /**
@@ -200,7 +199,6 @@ public abstract class SpanData {
    * @since 0.1.0
    */
   @Nullable
-  /*@Deterministic*/
   public abstract Status getStatus();
 
   /**
@@ -210,7 +208,6 @@ public abstract class SpanData {
    * @since 0.1.0
    */
   @Nullable
-  /*@Deterministic*/
   public abstract Timestamp getEndTimestamp();
 
   SpanData() {}
@@ -251,7 +248,6 @@ public abstract class SpanData {
      * @return the event.
      * @since 0.1.0
      */
-    /*@Deterministic*/
     public abstract T getEvent();
 
     TimedEvent() {}
