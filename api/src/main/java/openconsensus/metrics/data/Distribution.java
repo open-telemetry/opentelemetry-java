@@ -159,19 +159,21 @@ public abstract class Distribution {
     }
 
     /**
-     * Applies the given match function to the underlying BucketOptions.
+     * Returns a {@code Type} corresponding to the underlying representation of this {@code BucketOptions}.
      *
-     * @param explicitFunction the function that should be applied if the BucketOptions has type
-     *     {@code ExplicitOptions}.
-     * @param defaultFunction the function that should be applied if the BucketOptions has a type
-     *     that was added after this {@code match} method was added to the API. See {@link
-     *     Functions} for some common functions for handling unknown types.
-     * @return the result of the function applied to the underlying BucketOptions.
+     * @return a {@code Type} corresponding to the underlying representation of this {@code BucketOptions}.
      * @since 0.1.0
      */
-    public abstract <T> T match(
-        Function<? super ExplicitOptions, T> explicitFunction,
-        Function<? super BucketOptions, T> defaultFunction);
+    public abstract Type getType();
+
+    /**
+     * An enum that represents all the possible value types for a {@code BucketOptions}.
+     *
+     * @since 0.1.0
+     */
+    public enum Type {
+      EXPLICIT_OPTIONS,
+    }
 
     /** A Bucket with explicit bounds {@link BucketOptions}. */
     @AutoValue
@@ -179,13 +181,6 @@ public abstract class Distribution {
     public abstract static class ExplicitOptions extends BucketOptions {
 
       ExplicitOptions() {}
-
-      @Override
-      public final <T> T match(
-          Function<? super ExplicitOptions, T> explicitFunction,
-          Function<? super BucketOptions, T> defaultFunction) {
-        return explicitFunction.apply(this);
-      }
 
       /**
        * Creates a {@link ExplicitOptions}.
@@ -222,6 +217,11 @@ public abstract class Distribution {
        * @since 0.1.0
        */
       public abstract List<Double> getBucketBoundaries();
+
+      @Override
+      public final Type getType() {
+        return Type.EXPLICIT_OPTIONS;
+      }
     }
   }
 
