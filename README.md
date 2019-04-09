@@ -12,7 +12,7 @@ gitter](https://gitter.im/opentracing/public) or file [an
 issue](/issues). As we continue to
 make progress, we will post updates to the OpenCensus and OpenTracing blogs.
 
-##Plan
+## Plan
 
 In the coming months [we plan to merge the OpenCensus and OpenTracing
 projects](https://medium.com/opentracing/merging-opentracing-and-opencensus-f0fe9c7ca6f0).
