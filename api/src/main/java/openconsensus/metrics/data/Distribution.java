@@ -23,8 +23,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.ExperimentalApi;
-import openconsensus.common.Function;
-import openconsensus.common.Functions;
 import openconsensus.internal.Utils;
 
 /**
@@ -159,9 +157,11 @@ public abstract class Distribution {
     }
 
     /**
-     * Returns a {@code Type} corresponding to the underlying representation of this {@code BucketOptions}.
+     * Returns a {@code Type} corresponding to the underlying representation of this {@code
+     * BucketOptions}.
      *
-     * @return a {@code Type} corresponding to the underlying representation of this {@code BucketOptions}.
+     * @return a {@code Type} corresponding to the underlying representation of this {@code
+     *     BucketOptions}.
      * @since 0.1.0
      */
     public abstract Type getType();
