@@ -66,6 +66,12 @@ public final class BlankSpan extends Span {
   }
 
   @Override
+  public void setAttribute(String key, AttributeValue value) {
+    Utils.checkNotNull(key, "key");
+    Utils.checkNotNull(value, "value");
+  }
+
+  @Override
   public void addEvent(String name) {}
 
   @Override

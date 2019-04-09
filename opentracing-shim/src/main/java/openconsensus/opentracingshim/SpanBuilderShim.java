@@ -152,20 +152,7 @@ final class SpanBuilderShim implements SpanBuilder {
     for (int i = 0; i < this.spanBuilderAttributeKeys.size(); i++) {
       String key = this.spanBuilderAttributeKeys.get(i);
       AttributeValue value = this.spanBuilderAttributeValues.get(i);
-      switch (value.getType()) {
-        case STRING:
-          span.setAttribute(key, value.getStringValue());
-          break;
-        case LONG:
-          span.setAttribute(key, value.getLongValue());
-          break;
-        case DOUBLE:
-          span.setAttribute(key, value.getDoubleValue());
-          break;
-        case BOOLEAN:
-          span.setAttribute(key, value.getBooleanValue());
-          break;
-      }
+      span.setAttribute(key, value);
     }
     return new SpanShim(span);
   }

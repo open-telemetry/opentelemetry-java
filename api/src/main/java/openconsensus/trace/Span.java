@@ -74,6 +74,16 @@ public abstract class Span {
   public abstract void setAttribute(String key, boolean value);
 
   /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
+  public abstract void setAttribute(String key, AttributeValue value);
+
+  /**
    * Adds an event to the {@code Span}.
    *
    * @param name the name of the event.

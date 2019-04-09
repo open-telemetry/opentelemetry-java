@@ -22,6 +22,7 @@ import io.opentracing.log.Fields;
 import io.opentracing.tag.Tag;
 import java.util.HashMap;
 import java.util.Map;
+import openconsensus.trace.data.AttributeValue;
 import openconsensus.trace.data.Status;
 
 final class SpanShim implements Span {
@@ -156,7 +157,7 @@ final class SpanShim implements Span {
   }
 
   static Map<String, AttributeValue> convertToAttributes(Map<String, ?> fields) {
-    Map<String, AttributeValue> attrMap = new HashMap<String, AttributeValue>();
+    Map<String, AttributeValue> attrMap = new HashMap<>();
 
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
       String key = entry.getKey();
