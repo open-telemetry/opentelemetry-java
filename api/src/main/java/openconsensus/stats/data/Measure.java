@@ -69,6 +69,14 @@ public abstract class Measure {
    */
   public abstract String getUnit();
 
+  /**
+   * Returns a {@code Type} corresponding to the underlying value of this {@code Measure}.
+   *
+   * @return the {@code Type} for the value of this {@code Measure}.
+   * @since 0.1.0
+   */
+  public abstract Type getType();
+
   // Prevents this class from being subclassed anywhere else.
   private Measure() {}
 
@@ -96,7 +104,7 @@ public abstract class Measure {
       Utils.checkArgument(
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
-      return new AutoValue_Measure_MeasureDouble(name, description, unit);
+      return new AutoValue_Measure_MeasureDouble(name, description, unit, Type.DOUBLE);
     }
 
     @Override
@@ -107,6 +115,9 @@ public abstract class Measure {
 
     @Override
     public abstract String getUnit();
+
+    @Override
+    public abstract Type getType();
   }
 
   /**
@@ -133,7 +144,7 @@ public abstract class Measure {
       Utils.checkArgument(
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
-      return new AutoValue_Measure_MeasureLong(name, description, unit);
+      return new AutoValue_Measure_MeasureLong(name, description, unit, Type.LONG);
     }
 
     @Override
@@ -144,5 +155,19 @@ public abstract class Measure {
 
     @Override
     public abstract String getUnit();
+
+    @Override
+    public abstract Type getType();
+  }
+
+  /**
+   * An enum that represents all the possible value types for a {@code Measure} or a {@code
+   * Measurement}.
+   *
+   * @since 0.1.0
+   */
+  public enum Type {
+    LONG,
+    DOUBLE
   }
 }

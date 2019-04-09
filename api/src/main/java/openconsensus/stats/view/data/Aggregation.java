@@ -18,7 +18,6 @@ package openconsensus.stats.view.data;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.common.Function;
 import openconsensus.internal.Utils;
 
 /**
@@ -45,16 +44,12 @@ public abstract class Aggregation {
   private Aggregation() {}
 
   /**
-   * Applies the given match function to the underlying data type.
+   * Returns a {@code Type} corresponding to the underlying value of this {@code Aggregation}.
    *
+   * @return the {@code Type} for the value of this {@code Aggregation}.
    * @since 0.1.0
    */
-  public abstract <T> T match(
-      Function<? super Sum, T> p0,
-      Function<? super Count, T> p1,
-      Function<? super Distribution, T> p2,
-      Function<? super LastValue, T> p3,
-      Function<? super Aggregation, T> defaultFunction);
+  public abstract Type getType();
 
   /**
    * Calculate sum on aggregated {@code MeasureValue}s.
@@ -67,7 +62,7 @@ public abstract class Aggregation {
 
     Sum() {}
 
-    private static final Sum INSTANCE = new AutoValue_Aggregation_Sum();
+    private static final Sum INSTANCE = new AutoValue_Aggregation_Sum(Type.SUM);
 
     /**
      * Construct a {@code Sum}.
@@ -80,14 +75,7 @@ public abstract class Aggregation {
     }
 
     @Override
-    public final <T> T match(
-        Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Distribution, T> p2,
-        Function<? super LastValue, T> p3,
-        Function<? super Aggregation, T> defaultFunction) {
-      return p0.apply(this);
-    }
+    public abstract Type getType();
   }
 
   /**
@@ -101,7 +89,7 @@ public abstract class Aggregation {
 
     Count() {}
 
-    private static final Count INSTANCE = new AutoValue_Aggregation_Count();
+    private static final Count INSTANCE = new AutoValue_Aggregation_Count(Type.COUNT);
 
     /**
      * Construct a {@code Count}.
@@ -114,14 +102,7 @@ public abstract class Aggregation {
     }
 
     @Override
-    public final <T> T match(
-        Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Distribution, T> p2,
-        Function<? super LastValue, T> p3,
-        Function<? super Aggregation, T> defaultFunction) {
-      return p1.apply(this);
-    }
+    public abstract Type getType();
   }
 
   /**
@@ -145,7 +126,7 @@ public abstract class Aggregation {
      */
     public static Distribution create(BucketBoundaries bucketBoundaries) {
       Utils.checkNotNull(bucketBoundaries, "bucketBoundaries");
-      return new AutoValue_Aggregation_Distribution(bucketBoundaries);
+      return new AutoValue_Aggregation_Distribution(bucketBoundaries, Type.DISTRIBUTION);
     }
 
     /**
@@ -157,14 +138,7 @@ public abstract class Aggregation {
     public abstract BucketBoundaries getBucketBoundaries();
 
     @Override
-    public final <T> T match(
-        Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Distribution, T> p2,
-        Function<? super LastValue, T> p3,
-        Function<? super Aggregation, T> defaultFunction) {
-      return p2.apply(this);
-    }
+    public abstract Type getType();
   }
 
   /**
@@ -178,7 +152,7 @@ public abstract class Aggregation {
 
     LastValue() {}
 
-    private static final LastValue INSTANCE = new AutoValue_Aggregation_LastValue();
+    private static final LastValue INSTANCE = new AutoValue_Aggregation_LastValue(Type.LASTVALUE);
 
     /**
      * Construct a {@code LastValue}.
@@ -191,13 +165,18 @@ public abstract class Aggregation {
     }
 
     @Override
-    public final <T> T match(
-        Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Distribution, T> p2,
-        Function<? super LastValue, T> p3,
-        Function<? super Aggregation, T> defaultFunction) {
-      return p3.apply(this);
-    }
+    public abstract Type getType();
+  }
+
+  /**
+   * An enum that represents all the possible value types for an {@code Aggregation}.
+   *
+   * @since 0.1.0
+   */
+  public enum Type {
+    SUM,
+    COUNT,
+    DISTRIBUTION,
+    LASTVALUE
   }
 }
