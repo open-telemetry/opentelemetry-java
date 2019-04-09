@@ -23,6 +23,8 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.trace.Span;
 import openconsensus.trace.SpanContext;
+import openconsensus.trace.SpanId;
+import openconsensus.trace.TraceId;
 
 /**
  * A link to a {@link Span} from a different trace.
