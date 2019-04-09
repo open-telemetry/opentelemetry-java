@@ -94,7 +94,7 @@ public abstract class Value {
    * @return the double {@code Value}.
    * @since 0.1.0
    */
-  public double getDouble() {
+  public double getDoubleValue() {
     throw new UnsupportedOperationException("Not implemented.");
   }
 
@@ -106,7 +106,7 @@ public abstract class Value {
    * @return the long {@code Value}.
    * @since 0.1.0
    */
-  public long getLong() {
+  public long getLongValue() {
     throw new UnsupportedOperationException("Not implemented.");
   }
 
@@ -118,7 +118,7 @@ public abstract class Value {
    * @return the distribution {@code Value}.
    * @since 0.1.0
    */
-  public Distribution getDistribution() {
+  public Distribution getDistributionValue() {
     throw new UnsupportedOperationException("Not implemented.");
   }
 
@@ -130,7 +130,7 @@ public abstract class Value {
    * @return the summary {@code Value}.
    * @since 0.1.0
    */
-  public Summary getSummary() {
+  public Summary getSummaryValue() {
     throw new UnsupportedOperationException("Not implemented.");
   }
 
@@ -160,7 +160,7 @@ public abstract class Value {
     }
 
     @Override
-    public abstract double getDouble();
+    public abstract double getDoubleValue();
 
     @Override
     public final Type getType() {
@@ -186,7 +186,7 @@ public abstract class Value {
     }
 
     @Override
-    public abstract long getLong();
+    public abstract long getLongValue();
 
     @Override
     public final Type getType() {
@@ -215,7 +215,7 @@ public abstract class Value {
     }
 
     @Override
-    public abstract Distribution getDistribution();
+    public abstract Distribution getDistributionValue();
 
     @Override
     public final Type getType() {
@@ -244,7 +244,7 @@ public abstract class Value {
     }
 
     @Override
-    public abstract Summary getSummary();
+    public abstract Summary getSummaryValue();
 
     @Override
     public final Type getType() {
