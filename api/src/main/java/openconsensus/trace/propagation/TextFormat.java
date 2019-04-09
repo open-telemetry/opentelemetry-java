@@ -133,12 +133,10 @@ public abstract class TextFormat {
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param getter invoked for each propagation key to get.
    * @param <C> carrier of propagation fields, such as an http request.
-   * @return carrier of propagated fields.
-   * @throws SpanContextParseException if the input is invalid
+   * @return carrier of propagated fields or {@code SpanContext.INVALID} if it could not be parsed.
    * @since 0.1.0
    */
-  public abstract <C> SpanContext extract(C carrier, Getter<C> getter)
-      throws SpanContextParseException;
+  public abstract <C> SpanContext extract(C carrier, Getter<C> getter);
 
   /**
    * Class that allows a {@code TextFormat} to read propagated fields from a carrier.
