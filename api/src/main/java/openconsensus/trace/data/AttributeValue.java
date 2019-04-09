@@ -22,7 +22,7 @@ import openconsensus.internal.Utils;
 
 /**
  * A class that represents all the possible values for an attribute. An attribute can have 4 types
- * of values: {@code String}, {@code Boolean}, {@code Long} or {@code Double}, represented through
+ * of values: {@code String}, {@code boolean}, {@code long} or {@code double}, represented through
  * {@code AttributeValue.Type}.
  *
  * @since 0.1.0
@@ -107,7 +107,7 @@ public abstract class AttributeValue {
    * @return the boolean value of this {@code AttributeValue}.
    * @since 0.1.0
    */
-  public Boolean getBooleanValue() {
+  public boolean getBooleanValue() {
     throw new UnsupportedOperationException();
   }
 
@@ -118,7 +118,7 @@ public abstract class AttributeValue {
    * @return the long value of this {@code AttributeValue}.
    * @since 0.1.0
    */
-  public Long getLongValue() {
+  public long getLongValue() {
     throw new UnsupportedOperationException();
   }
 
@@ -129,7 +129,7 @@ public abstract class AttributeValue {
    * @return the double value of this {@code AttributeValue}.
    * @since 0.1.0
    */
-  public Double getDoubleValue() {
+  public double getDoubleValue() {
     throw new UnsupportedOperationException();
   }
 
@@ -167,9 +167,8 @@ public abstract class AttributeValue {
 
     AttributeValueBoolean() {}
 
-    static AttributeValue create(Boolean booleanValue) {
-      return new AutoValue_AttributeValue_AttributeValueBoolean(
-          Utils.checkNotNull(booleanValue, "booleanValue"));
+    static AttributeValue create(boolean booleanValue) {
+      return new AutoValue_AttributeValue_AttributeValueBoolean(booleanValue);
     }
 
     @Override
@@ -178,7 +177,7 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public abstract Boolean getBooleanValue();
+    public abstract boolean getBooleanValue();
   }
 
   @Immutable
@@ -187,9 +186,8 @@ public abstract class AttributeValue {
 
     AttributeValueLong() {}
 
-    static AttributeValue create(Long longValue) {
-      return new AutoValue_AttributeValue_AttributeValueLong(
-          Utils.checkNotNull(longValue, "longValue"));
+    static AttributeValue create(long longValue) {
+      return new AutoValue_AttributeValue_AttributeValueLong(longValue);
     }
 
     @Override
@@ -198,7 +196,7 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public abstract Long getLongValue();
+    public abstract long getLongValue();
   }
 
   @Immutable
@@ -207,9 +205,8 @@ public abstract class AttributeValue {
 
     AttributeValueDouble() {}
 
-    static AttributeValue create(Double doubleValue) {
-      return new AutoValue_AttributeValue_AttributeValueDouble(
-          Utils.checkNotNull(doubleValue, "doubleValue"));
+    static AttributeValue create(double doubleValue) {
+      return new AutoValue_AttributeValue_AttributeValueDouble(doubleValue);
     }
 
     @Override
@@ -218,6 +215,6 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public abstract Double getDoubleValue();
+    public abstract double getDoubleValue();
   }
 }
