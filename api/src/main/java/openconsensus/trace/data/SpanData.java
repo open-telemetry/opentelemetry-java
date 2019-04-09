@@ -29,6 +29,7 @@ import openconsensus.internal.Utils;
 import openconsensus.trace.Span;
 import openconsensus.trace.Span.Kind;
 import openconsensus.trace.SpanContext;
+import openconsensus.trace.SpanId;
 
 /**
  * Immutable representation of all data collected by the {@link Span} class.
