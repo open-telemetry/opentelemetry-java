@@ -73,13 +73,15 @@ import openconsensus.trace.data.Status;
  *   // Called when the RPC is canceled and guaranteed onComplete will not be called.
  *   public void onCancel() {
  *     // IMPORTANT: DO NOT forget to ended the Span here as the work is done.
- *     mySpan.end(EndSpanOptions.builder().setStatus(Status.CANCELLED));
+ *     mySpan.setStatus(Status.CANCELLED);
+ *     mySpan.end();
  *   }
  *
  *   // Called when the RPC is done and guaranteed onCancel will not be called.
  *   public void onComplete(RpcStatus rpcStatus) {
  *     // IMPORTANT: DO NOT forget to ended the Span here as the work is done.
- *     mySpan.end(EndSpanOptions.builder().setStatus(rpcStatusToCanonicalTraceStatus(status));
+ *     mySpan.setStatus(rpcStatusToCanonicalTraceStatus(status);
+ *     mySpan.end();
  *   }
  * }
  * }</pre>
@@ -156,8 +158,7 @@ public abstract class SpanBuilder {
   /**
    * Starts a new {@link Span}.
    *
-   * <p>Users <b>must</b> manually call {@link Span#end()} or {@link Span#end(EndSpanOptions)} to
-   * end this {@code Span}.
+   * <p>Users <b>must</b> manually call {@link Span#end()} to end this {@code Span}.
    *
    * <p>Does not install the newly created {@code Span} to the current Context.
    *

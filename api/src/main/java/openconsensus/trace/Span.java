@@ -28,7 +28,7 @@ import openconsensus.trace.data.Status;
  *
  * <p>Spans are created by the {@link SpanBuilder#startSpan} method.
  *
- * <p>{@code Span} <b>must</b> be ended by calling {@link #end()} or {@link #end(EndSpanOptions)}
+ * <p>{@code Span} <b>must</b> be ended by calling {@link #end()}.
  *
  * @since 0.1.0
  */
@@ -109,24 +109,12 @@ public abstract class Span {
    * <p>If used, this will override the default {@code Span} status. Default is {@link Status#OK}.
    *
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
-   * previous calls. If the status is set via {@link EndSpanOptions.Builder#setStatus(Status)} that
-   * will always be the last call.
+   * previous calls.
    *
    * @param status the {@link Status} to set.
    * @since 0.1.0
    */
   public abstract void setStatus(Status status);
-
-  /**
-   * Marks the end of {@code Span} execution with the given options.
-   *
-   * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
-   * implementations are free to ignore all further calls.
-   *
-   * @param options the options to be used for the end of the {@code Span}.
-   * @since 0.1.0
-   */
-  public abstract void end(EndSpanOptions options);
 
   /**
    * Marks the end of {@code Span} execution with the default options.
