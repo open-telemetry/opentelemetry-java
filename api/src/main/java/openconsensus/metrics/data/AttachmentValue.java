@@ -27,7 +27,7 @@ import javax.annotation.concurrent.Immutable;
  * APIs.
  *
  * <p>Other packages are free to extend this class to hold specific information. As an example, see
- * {@code io.opencensus.contrib.exemplar.util.AttachmentValueSpanContext}.
+ * {@code io.openconsensus.contrib.exemplar.util.AttachmentValueSpanContext}.
  *
  * @since 0.1.0
  */

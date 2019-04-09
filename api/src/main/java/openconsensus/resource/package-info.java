@@ -38,10 +38,6 @@
  *
  * <p>WARNING: Currently all the public classes under this package are marked as {@link
  * openconsensus.common.ExperimentalApi}. DO NOT USE except for experimental purposes.
- *
- * <p>Please see
- * https://github.com/census-instrumentation/opencensus-specs/blob/master/resource/Resource.md for
- * more details.
  */
 @ExperimentalApi
 package openconsensus.resource;

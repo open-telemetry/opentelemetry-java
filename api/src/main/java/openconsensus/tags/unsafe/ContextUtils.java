@@ -40,7 +40,7 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static final Context.Key<TagMap> TAG_CONTEXT_KEY =
-      Context.keyWithDefault("opencensus-tag-context-key", EMPTY_TAG_CONTEXT);
+      Context.keyWithDefault("openconsensus-tag-context-key", EMPTY_TAG_CONTEXT);
 
   @Immutable
   private static final class EmptyTagMap extends TagMap {}

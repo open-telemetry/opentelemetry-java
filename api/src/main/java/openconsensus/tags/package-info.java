@@ -19,7 +19,7 @@
  *
  * <p>This package manages a set of tags in the {@code io.grpc.Context}. The tags can be used to
  * label anything that is associated with a specific operation. For example, the {@code
- * io.opencensus.stats} package labels all stats with the current tags.
+ * io.openconsensus.stats} package labels all stats with the current tags.
  *
  * <p>{@link openconsensus.tags.data.Tag Tags} are key-value pairs. The {@link
  * openconsensus.tags.data.TagKey keys} and {@link openconsensus.tags.data.TagValue values} are
@@ -28,5 +28,5 @@
  * <p>Note that tags are independent of the tracing data that is propagated in the {@code
  * io.grpc.Context}, such as trace ID.
  */
-// TODO(sebright): Add code examples.
+// TODO: Add code examples.
 package openconsensus.tags;

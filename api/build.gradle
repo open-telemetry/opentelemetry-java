@@ -1,4 +1,4 @@
-description = 'OpenCensus API'
+description = 'OpenConsensus API'
 
 dependencies {
     compile libraries.grpc_context
@@ -10,6 +10,6 @@ dependencies {
 }
 
 javadoc {
-    exclude 'io/opencensus/internal/**'
-    exclude 'io/opencensus/trace/internal/**'
+    exclude 'io/openconsensus/internal/**'
+    exclude 'io/openconsensus/trace/internal/**'
 }
