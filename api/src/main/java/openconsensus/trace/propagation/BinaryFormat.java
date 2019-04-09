@@ -29,9 +29,12 @@ import openconsensus.trace.SpanContext;
  * private static final BinaryFormat binaryFormat =
  *     Tracing.getPropagationComponent().getBinaryFormat();
  * void onSendRequest() {
- *   try (Scope ss = tracer.spanBuilder("Sent.MyRequest").startScopedSpan()) {
+ *   Span span = tracer.spanBuilder("Sent.MyRequest").startSpan();
+ *   try (Scope ss = tracer.withSpan(span)) {
  *     byte[] binaryValue = binaryFormat.toByteArray(tracer.getCurrentContext().context());
  *     // Send the request including the binaryValue and wait for the response.
+ *   } finally {
+ *     span.end();
  *   }
  * }
  * }</pre>
@@ -52,9 +55,11 @@ import openconsensus.trace.SpanContext;
  *   } catch (SpanContextParseException e) {
  *     // Maybe log the exception.
  *   }
- *   try (Scope ss =
- *            tracer.spanBuilderWithRemoteParent("Recv.MyRequest", spanContext).startScopedSpan()) {
+ *   Span span = tracer.spanBuilderWithRemoteParent("Recv.MyRequest", spanContext).startSpan();
+ *   try (Scope ss = tracer.withSpan(span)) {
  *     // Handle request and send response back.
+ *   } finally {
+ *     span.end();
  *   }
  * }
  * }</pre>
