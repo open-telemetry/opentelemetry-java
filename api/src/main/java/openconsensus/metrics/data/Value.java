@@ -19,17 +19,17 @@ package openconsensus.metrics.data;
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.ExperimentalApi;
-import openconsensus.common.Function;
 
 /**
  * The actual point value for a {@link Point}.
  *
- * <p>Currently there are three types of {@link Value}:
+ * <p>Currently there are four types of {@link Value}:
  *
  * <ul>
  *   <li>{@code double}
  *   <li>{@code long}
  *   <li>{@link Distribution}
+ *   <li>{@link Summary}
  * </ul>
  *
  * <p>Each {@link Point} contains exactly one of the three {@link Value} types.
@@ -87,16 +87,12 @@ public abstract class Value {
   }
 
   /**
-   * Applies the given match function to the underlying data type.
+   * Returns a {@code Type} corresponding to the underlying value of this {@code Value}.
    *
+   * @return a {@code Type} corresponding to the underlying value of this {@code Value}.
    * @since 0.1.0
    */
-  public abstract <T> T match(
-      Function<? super Double, T> doubleFunction,
-      Function<? super Long, T> longFunction,
-      Function<? super Distribution, T> distributionFunction,
-      Function<? super Summary, T> summaryFunction,
-      Function<? super Value, T> defaultFunction);
+  public abstract Type getType();
 
   /** A 64-bit double-precision floating-point {@link Value}. */
   @AutoValue
@@ -105,16 +101,6 @@ public abstract class Value {
 
     ValueDouble() {}
 
-    @Override
-    public final <T> T match(
-        Function<? super Double, T> doubleFunction,
-        Function<? super Long, T> longFunction,
-        Function<? super Distribution, T> distributionFunction,
-        Function<? super Summary, T> summaryFunction,
-        Function<? super Value, T> defaultFunction) {
-      return doubleFunction.apply(getValue());
-    }
-
     /**
      * Creates a {@link ValueDouble}.
      *
@@ -122,7 +108,7 @@ public abstract class Value {
      * @return a {@code ValueDouble}.
      */
     static ValueDouble create(double value) {
-      return new AutoValue_Value_ValueDouble(value);
+      return new AutoValue_Value_ValueDouble(value, Type.DISTRIBUTION);
     }
 
     /**
@@ -131,6 +117,9 @@ public abstract class Value {
      * @return the double value.
      */
     abstract double getValue();
+
+    @Override
+    public abstract Type getType();
   }
 
   /** A 64-bit integer {@link Value}. */
@@ -140,16 +129,6 @@ public abstract class Value {
 
     ValueLong() {}
 
-    @Override
-    public final <T> T match(
-        Function<? super Double, T> doubleFunction,
-        Function<? super Long, T> longFunction,
-        Function<? super Distribution, T> distributionFunction,
-        Function<? super Summary, T> summaryFunction,
-        Function<? super Value, T> defaultFunction) {
-      return longFunction.apply(getValue());
-    }
-
     /**
      * Creates a {@link ValueLong}.
      *
@@ -157,7 +136,7 @@ public abstract class Value {
      * @return a {@code ValueLong}.
      */
     static ValueLong create(long value) {
-      return new AutoValue_Value_ValueLong(value);
+      return new AutoValue_Value_ValueLong(value, Type.LONG);
     }
 
     /**
@@ -166,6 +145,9 @@ public abstract class Value {
      * @return the long value.
      */
     abstract long getValue();
+
+    @Override
+    public abstract Type getType();
   }
 
   /**
@@ -178,16 +160,6 @@ public abstract class Value {
 
     ValueDistribution() {}
 
-    @Override
-    public final <T> T match(
-        Function<? super Double, T> doubleFunction,
-        Function<? super Long, T> longFunction,
-        Function<? super Distribution, T> distributionFunction,
-        Function<? super Summary, T> summaryFunction,
-        Function<? super Value, T> defaultFunction) {
-      return distributionFunction.apply(getValue());
-    }
-
     /**
      * Creates a {@link ValueDistribution}.
      *
@@ -195,7 +167,7 @@ public abstract class Value {
      * @return a {@code ValueDistribution}.
      */
     static ValueDistribution create(Distribution value) {
-      return new AutoValue_Value_ValueDistribution(value);
+      return new AutoValue_Value_ValueDistribution(value, Type.DISTRIBUTION);
     }
 
     /**
@@ -204,6 +176,9 @@ public abstract class Value {
      * @return the {@code Distribution} value.
      */
     abstract Distribution getValue();
+
+    @Override
+    public abstract Type getType();
   }
 
   /**
@@ -216,16 +191,6 @@ public abstract class Value {
 
     ValueSummary() {}
 
-    @Override
-    public final <T> T match(
-        Function<? super Double, T> doubleFunction,
-        Function<? super Long, T> longFunction,
-        Function<? super Distribution, T> distributionFunction,
-        Function<? super Summary, T> summaryFunction,
-        Function<? super Value, T> defaultFunction) {
-      return summaryFunction.apply(getValue());
-    }
-
     /**
      * Creates a {@link ValueSummary}.
      *
@@ -233,7 +198,7 @@ public abstract class Value {
      * @return a {@code ValueSummary}.
      */
     static ValueSummary create(Summary value) {
-      return new AutoValue_Value_ValueSummary(value);
+      return new AutoValue_Value_ValueSummary(value, Type.SUMMARY);
     }
 
     /**
@@ -242,5 +207,20 @@ public abstract class Value {
      * @return the {@code Summary} value.
      */
     abstract Summary getValue();
+
+    @Override
+    public abstract Type getType();
+  }
+
+  /**
+   * An enum that represents all the possible value types for a {@code Value}.
+   *
+   * @since 0.1.0
+   */
+  public enum Type {
+    LONG,
+    DOUBLE,
+    DISTRIBUTION,
+    SUMMARY
   }
 }
