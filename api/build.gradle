@@ -10,6 +10,6 @@ dependencies {
 }
 
 javadoc {
-    exclude 'io/openconsensus/internal/**'
-    exclude 'io/openconsensus/trace/internal/**'
+    exclude 'openconsensus/internal/**'
+    exclude 'openconsensus/trace/internal/**'
 }

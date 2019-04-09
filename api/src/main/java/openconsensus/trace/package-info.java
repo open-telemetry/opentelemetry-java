@@ -27,7 +27,7 @@
  *
  * <p>{@link openconsensus.trace.Span Spans} are propagated in-process in the {@code
  * io.grpc.Context} and between process using one of the wire propagation formats supported in the
- * {@code io.openconsensus.trace.propagation} package.
+ * {@code openconsensus.trace.propagation} package.
  */
 // TODO: Add code examples.
 package openconsensus.trace;
