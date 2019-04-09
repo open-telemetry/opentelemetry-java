@@ -85,11 +85,6 @@ public final class BlankSpan extends Span {
   }
 
   @Override
-  public void end(EndSpanOptions options) {
-    Utils.checkNotNull(options, "options");
-  }
-
-  @Override
   public void end() {}
 
   @Override
