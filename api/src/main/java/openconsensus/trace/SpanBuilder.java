@@ -18,8 +18,6 @@ package openconsensus.trace;
 
 import java.util.List;
 import java.util.concurrent.Callable;
-import javax.annotation.Nullable;
-import openconsensus.internal.Utils;
 import openconsensus.trace.data.Status;
 
 /**
@@ -243,54 +241,4 @@ public abstract class SpanBuilder {
    * @since 0.1.0
    */
   public abstract <V> V startSpanAndCall(Callable<V> callable) throws Exception;
-
-  static final class NoopSpanBuilder extends SpanBuilder {
-    static NoopSpanBuilder createWithParent(String spanName, @Nullable Span parent) {
-      return new NoopSpanBuilder(spanName);
-    }
-
-    static NoopSpanBuilder createWithRemoteParent(
-        String spanName, @Nullable SpanContext remoteParentSpanContext) {
-      return new NoopSpanBuilder(spanName);
-    }
-
-    @Override
-    public Span startSpan() {
-      return BlankSpan.INSTANCE;
-    }
-
-    @Override
-    public void startSpanAndRun(Runnable runnable) {
-      runnable.run();
-    }
-
-    @Override
-    public <V> V startSpanAndCall(Callable<V> callable) throws Exception {
-      return callable.call();
-    }
-
-    @Override
-    public SpanBuilder setSampler(@Nullable Sampler sampler) {
-      return this;
-    }
-
-    @Override
-    public SpanBuilder setParentLinks(List<Span> parentLinks) {
-      return this;
-    }
-
-    @Override
-    public SpanBuilder setRecordEvents(boolean recordEvents) {
-      return this;
-    }
-
-    @Override
-    public SpanBuilder setSpanKind(Span.Kind spanKind) {
-      return this;
-    }
-
-    private NoopSpanBuilder(String name) {
-      Utils.checkNotNull(name, "name");
-    }
-  }
 }

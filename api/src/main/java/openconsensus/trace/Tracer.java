@@ -19,9 +19,7 @@ package openconsensus.trace;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
-import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
-import openconsensus.trace.SpanBuilder.NoopSpanBuilder;
 import openconsensus.trace.data.SpanData;
 import openconsensus.trace.data.Status;
 
@@ -75,17 +73,6 @@ import openconsensus.trace.data.Status;
  * @since 0.1.0
  */
 public abstract class Tracer {
-  private static final NoopTracer noopTracer = new NoopTracer();
-
-  /**
-   * Returns the no-op implementation of the {@code Tracer}.
-   *
-   * @return the no-op implementation of the {@code Tracer}.
-   */
-  static Tracer getNoopTracer() {
-    return noopTracer;
-  }
-
   /**
    * Gets the current Span from the current Context.
    *
@@ -352,53 +339,6 @@ public abstract class Tracer {
    * @param span Span Data to be reported to all exporters.
    */
   public abstract void recordSpanData(SpanData span);
-
-  // No-Op implementation of the Tracer.
-  private static final class NoopTracer extends Tracer {
-
-    @Override
-    public Span getCurrentSpan() {
-      return BlankSpan.INSTANCE;
-    }
-
-    @Override
-    public Scope withSpan(Span span) {
-      return NoopScope.getInstance();
-    }
-
-    @Override
-    public Runnable withSpan(Span span, Runnable runnable) {
-      return runnable;
-    }
-
-    @Override
-    public <C> Callable<C> withSpan(Span span, Callable<C> callable) {
-      return callable;
-    }
-
-    @Override
-    public SpanBuilder spanBuilder(String spanName) {
-      return spanBuilderWithExplicitParent(spanName, getCurrentSpan());
-    }
-
-    @Override
-    public SpanBuilder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {
-      return NoopSpanBuilder.createWithParent(spanName, parent);
-    }
-
-    @Override
-    public SpanBuilder spanBuilderWithRemoteParent(
-        String spanName, @Nullable SpanContext remoteParentSpanContext) {
-      return NoopSpanBuilder.createWithRemoteParent(spanName, remoteParentSpanContext);
-    }
-
-    @Override
-    public void recordSpanData(SpanData span) {
-      // Do nothing
-    }
-
-    private NoopTracer() {}
-  }
 
   protected Tracer() {}
 }
