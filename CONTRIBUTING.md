@@ -49,7 +49,7 @@ We also follow these project-specific guidelines:
   constructors to all AutoValue classes to prevent classes in other packages
   from extending them.
 
-## Building opencensus-java
+## Building openconsensus-java
 
 Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.
