@@ -1,4 +1,4 @@
-OpenCensus API
+OpenConsensus API
 ======================================================
 
 * Java 7 and Android 14 compatible.

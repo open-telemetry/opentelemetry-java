@@ -22,7 +22,7 @@ import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
 
 /**
- * The definition of the {@link Measurement} that is taken by OpenCensus library.
+ * The definition of the {@link Measurement} that is taken by OpenConsensus library.
  *
  * @since 0.1.0
  */

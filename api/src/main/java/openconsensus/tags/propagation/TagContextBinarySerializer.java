@@ -24,10 +24,6 @@ import openconsensus.tags.data.TagMetadata.TagTtl;
 /**
  * Object for serializing and deserializing {@link TagMap}s with the binary format.
  *
- * <p>See <a
- * href="https://github.com/census-instrumentation/opencensus-specs/blob/master/encodings/BinaryEncoding.md#tag-context">opencensus-specs</a>
- * for the specification of the cross-language binary serialization format.
- *
  * @since 0.1.0
  */
 public abstract class TagContextBinarySerializer {

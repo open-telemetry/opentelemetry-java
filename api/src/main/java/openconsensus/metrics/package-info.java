@@ -22,11 +22,6 @@
  * openconsensus.common.ExperimentalApi}. The classes and APIs under {@link openconsensus.metrics}
  * are likely to get backwards-incompatible updates in the future. DO NOT USE except for
  * experimental purposes.
- *
- * <p>Please see
- * https://github.com/census-instrumentation/opencensus-specs/blob/master/stats/Metrics.md and
- * https://github.com/census-instrumentation/opencensus-proto/blob/master/opencensus/proto/stats/metrics/metrics.proto
- * for more details.
  */
 @ExperimentalApi
 package openconsensus.metrics;
