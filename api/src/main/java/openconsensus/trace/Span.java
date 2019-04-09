@@ -17,8 +17,6 @@
 package openconsensus.trace;
 
 import java.util.Map;
-import openconsensus.trace.data.Event;
-import openconsensus.trace.data.MessageEvent;
 
 /**
  * An abstract class that represents a span. It has an associated {@link SpanContext}.
@@ -105,19 +103,6 @@ public abstract class Span {
    * @since 0.1.0
    */
   public abstract void addEvent(Event event);
-
-  /**
-   * Adds a MessageEvent to the {@code Span}.
-   *
-   * <p>This function can be used by higher level applications to record messaging event.
-   *
-   * <p>This method should always be overridden by users whose API versions are larger or equal to
-   * {@code 0.12}.
-   *
-   * @param messageEvent the message to add.
-   * @since 0.1.0
-   */
-  public abstract void addMessageEvent(MessageEvent messageEvent);
 
   /**
    * Adds a {@link Link} to the {@code Span}.
