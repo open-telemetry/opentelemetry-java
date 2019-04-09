@@ -153,7 +153,7 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public Type getType() {
+    public final Type getType() {
       return Type.STRING;
     }
 
@@ -172,7 +172,7 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public Type getType() {
+    public final Type getType() {
       return Type.BOOLEAN;
     }
 
@@ -191,7 +191,7 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public Type getType() {
+    public final Type getType() {
       return Type.LONG;
     }
 
@@ -210,7 +210,7 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public Type getType() {
+    public final Type getType() {
       return Type.DOUBLE;
     }
 

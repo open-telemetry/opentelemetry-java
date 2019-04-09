@@ -108,7 +108,7 @@ public abstract class Value {
      * @return a {@code ValueDouble}.
      */
     static ValueDouble create(double value) {
-      return new AutoValue_Value_ValueDouble(value, Type.DISTRIBUTION);
+      return new AutoValue_Value_ValueDouble(value);
     }
 
     /**
@@ -119,7 +119,9 @@ public abstract class Value {
     abstract double getValue();
 
     @Override
-    public abstract Type getType();
+    public final Type getType() {
+      return Type.DISTRIBUTION;
+    }
   }
 
   /** A 64-bit integer {@link Value}. */
@@ -136,7 +138,7 @@ public abstract class Value {
      * @return a {@code ValueLong}.
      */
     static ValueLong create(long value) {
-      return new AutoValue_Value_ValueLong(value, Type.LONG);
+      return new AutoValue_Value_ValueLong(value);
     }
 
     /**
@@ -147,7 +149,9 @@ public abstract class Value {
     abstract long getValue();
 
     @Override
-    public abstract Type getType();
+    public final Type getType() {
+      return Type.LONG;
+    }
   }
 
   /**
@@ -167,7 +171,7 @@ public abstract class Value {
      * @return a {@code ValueDistribution}.
      */
     static ValueDistribution create(Distribution value) {
-      return new AutoValue_Value_ValueDistribution(value, Type.DISTRIBUTION);
+      return new AutoValue_Value_ValueDistribution(value);
     }
 
     /**
@@ -178,7 +182,9 @@ public abstract class Value {
     abstract Distribution getValue();
 
     @Override
-    public abstract Type getType();
+    public final Type getType() {
+      return Type.DISTRIBUTION;
+    }
   }
 
   /**
@@ -198,7 +204,7 @@ public abstract class Value {
      * @return a {@code ValueSummary}.
      */
     static ValueSummary create(Summary value) {
-      return new AutoValue_Value_ValueSummary(value, Type.SUMMARY);
+      return new AutoValue_Value_ValueSummary(value);
     }
 
     /**
@@ -209,7 +215,9 @@ public abstract class Value {
     abstract Summary getValue();
 
     @Override
-    public abstract Type getType();
+    public final Type getType() {
+      return Type.SUMMARY;
+    }
   }
 
   /**

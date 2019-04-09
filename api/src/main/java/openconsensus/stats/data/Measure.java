@@ -104,7 +104,7 @@ public abstract class Measure {
       Utils.checkArgument(
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
-      return new AutoValue_Measure_MeasureDouble(name, description, unit, Type.DOUBLE);
+      return new AutoValue_Measure_MeasureDouble(name, description, unit);
     }
 
     @Override
@@ -117,7 +117,9 @@ public abstract class Measure {
     public abstract String getUnit();
 
     @Override
-    public abstract Type getType();
+    public final Type getType() {
+      return Type.DOUBLE;
+    }
   }
 
   /**
@@ -144,7 +146,7 @@ public abstract class Measure {
       Utils.checkArgument(
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
-      return new AutoValue_Measure_MeasureLong(name, description, unit, Type.LONG);
+      return new AutoValue_Measure_MeasureLong(name, description, unit);
     }
 
     @Override
@@ -157,7 +159,9 @@ public abstract class Measure {
     public abstract String getUnit();
 
     @Override
-    public abstract Type getType();
+    public final Type getType() {
+      return Type.LONG;
+    }
   }
 
   /**
