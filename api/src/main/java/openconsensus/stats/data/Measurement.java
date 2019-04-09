@@ -37,13 +37,13 @@ public abstract class Measurement {
   public abstract Measure getMeasure();
 
   /**
-   * Returns a {@code MeasureType} corresponding to the underlying value of this {@code
+   * Returns a {@code Measure.Type} corresponding to the underlying value of this {@code
    * Measurement}.
    *
-   * @return the {@code MeasureType} for the value of this {@code Measurement}.
+   * @return the {@code Measure.Type} for the value of this {@code Measurement}.
    * @since 0.1.0
    */
-  public abstract MeasureType getType();
+  public abstract Measure.Type getType();
 
   // Prevents this class from being subclassed anywhere else.
   private Measurement() {}
@@ -64,7 +64,7 @@ public abstract class Measurement {
      * @since 0.1.0
      */
     public static MeasurementDouble create(MeasureDouble measure, double value) {
-      return new AutoValue_Measurement_MeasurementDouble(measure, value, MeasureType.DOUBLE);
+      return new AutoValue_Measurement_MeasurementDouble(measure, value, Measure.Type.DOUBLE);
     }
 
     @Override
@@ -79,7 +79,7 @@ public abstract class Measurement {
     public abstract double getValue();
 
     @Override
-    public abstract MeasureType getType();
+    public abstract Measure.Type getType();
   }
 
   /**
@@ -98,7 +98,7 @@ public abstract class Measurement {
      * @since 0.1.0
      */
     public static MeasurementLong create(MeasureLong measure, long value) {
-      return new AutoValue_Measurement_MeasurementLong(measure, value, MeasureType.LONG);
+      return new AutoValue_Measurement_MeasurementLong(measure, value, Measure.Type.LONG);
     }
 
     @Override
@@ -113,6 +113,6 @@ public abstract class Measurement {
     public abstract long getValue();
 
     @Override
-    public abstract MeasureType getType();
+    public abstract Measure.Type getType();
   }
 }
