@@ -42,10 +42,13 @@ import openconsensus.trace.data.Status;
  * class MyClass {
  *   private static final Tracer tracer = Tracing.getTracer();
  *   void doWork() {
- *     try(Scope ss = tracer.spanBuilder("MyClass.DoWork").startScopedSpan()) {
+ *     Span span = tracer.spanBuilder("MyClass.DoWork").startSpan();
+ *     try(Scope ss = tracer.withSpan(span)) {
  *       tracer.getCurrentSpan().addAnnotation("Starting the work.");
  *       doWorkInternal();
  *       tracer.getCurrentSpan().addAnnotation("Finished working.");
+ *     } finally {
+ *       span.end();
  *     }
  *   }
  * }
@@ -86,8 +89,7 @@ public abstract class Tracer {
   /**
    * Gets the current Span from the current Context.
    *
-   * <p>To install a {@link Span} to the current Context use {@link #withSpan(Span)} OR use {@link
-   * SpanBuilder#startScopedSpan} methods to start a new {@code Span}.
+   * <p>To install a {@link Span} to the current Context use {@link #withSpan(Span)}.
    *
    * <p>startSpan methods do NOT modify the current Context {@code Span}.
    *
