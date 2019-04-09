@@ -78,7 +78,6 @@ public abstract class SpanData {
       @Nullable Status status,
       @Nullable Timestamp endTimestamp) {
     Utils.checkNotNull(messageEvents, "messageEvents");
-    List<TimedEvent<MessageEvent>> messageEventsList = new ArrayList<TimedEvent<MessageEvent>>();
     return new AutoValue_SpanData(
         context,
         parentSpanId,
