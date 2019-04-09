@@ -167,6 +167,18 @@ public abstract class Distribution {
     public abstract Type getType();
 
     /**
+     * Returns the bucket boundaries of this distribution.
+     *
+     * <p>Currently only {@link ExplicitOptions} implements this method.
+     *
+     * @return the bucket boundaries of this distribution.
+     * @since 0.1.0
+     */
+    public List<Double> getBucketBoundaries() {
+      throw new UnsupportedOperationException("Not implemented.");
+    }
+
+    /**
      * An enum that represents all the possible value types for a {@code BucketOptions}.
      *
      * @since 0.1.0
@@ -210,12 +222,7 @@ public abstract class Distribution {
         }
       }
 
-      /**
-       * Returns the bucket boundaries of this distribution.
-       *
-       * @return the bucket boundaries of this distribution.
-       * @since 0.1.0
-       */
+      @Override
       public abstract List<Double> getBucketBoundaries();
 
       @Override

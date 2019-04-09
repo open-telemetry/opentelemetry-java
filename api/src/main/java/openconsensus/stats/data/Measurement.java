@@ -37,6 +37,30 @@ public abstract class Measurement {
   public abstract Measure getMeasure();
 
   /**
+   * Returns the double value for the {@link Measurement}.
+   *
+   * <p>This method should only be called with {@link MeasurementDouble}.
+   *
+   * @return the double value.
+   * @since 0.1.0
+   */
+  public double getDoubleValue() {
+    throw new UnsupportedOperationException("Not implemented.");
+  }
+
+  /**
+   * Returns the long value for the {@link Measurement}.
+   *
+   * <p>This method should only be called with {@link MeasurementLong}.
+   *
+   * @return the long value.
+   * @since 0.1.0
+   */
+  public long getLongValue() {
+    throw new UnsupportedOperationException("Not implemented.");
+  }
+
+  /**
    * Returns a {@code Measure.Type} corresponding to the underlying value of this {@code
    * Measurement}.
    *
@@ -70,13 +94,8 @@ public abstract class Measurement {
     @Override
     public abstract MeasureDouble getMeasure();
 
-    /**
-     * Returns the value for the measure.
-     *
-     * @return the value for the measure.
-     * @since 0.1.0
-     */
-    public abstract double getValue();
+    @Override
+    public abstract double getDoubleValue();
 
     @Override
     public abstract Measure.Type getType();
@@ -104,13 +123,8 @@ public abstract class Measurement {
     @Override
     public abstract MeasureLong getMeasure();
 
-    /**
-     * Returns the value for the measure.
-     *
-     * @return the value for the measure.
-     * @since 0.1.0
-     */
-    public abstract long getValue();
+    @Override
+    public abstract long getLongValue();
 
     @Override
     public abstract Measure.Type getType();

@@ -87,6 +87,54 @@ public abstract class Value {
   }
 
   /**
+   * Returns the double value of this {@link Value}.
+   *
+   * <p>This method should only be called with {@link Type#DOUBLE} {@link Value}.
+   *
+   * @return the double {@code Value}.
+   * @since 0.1.0
+   */
+  public double getDouble() {
+    throw new UnsupportedOperationException("Not implemented.");
+  }
+
+  /**
+   * Returns the long value of this {@link Value}.
+   *
+   * <p>This method should only be called with {@link Type#LONG} {@link Value}.
+   *
+   * @return the long {@code Value}.
+   * @since 0.1.0
+   */
+  public long getLong() {
+    throw new UnsupportedOperationException("Not implemented.");
+  }
+
+  /**
+   * Returns the distribution value of this {@link Value}.
+   *
+   * <p>This method should only be called with {@link Type#DISTRIBUTION} {@link Value}.
+   *
+   * @return the distribution {@code Value}.
+   * @since 0.1.0
+   */
+  public Distribution getDistribution() {
+    throw new UnsupportedOperationException("Not implemented.");
+  }
+
+  /**
+   * Returns the summary value of this {@link Value}.
+   *
+   * <p>This method should only be called with {@link Type#SUMMARY} {@link Value}.
+   *
+   * @return the summary {@code Value}.
+   * @since 0.1.0
+   */
+  public Summary getSummary() {
+    throw new UnsupportedOperationException("Not implemented.");
+  }
+
+  /**
    * Returns a {@code Type} corresponding to the underlying value of this {@code Value}.
    *
    * @return a {@code Type} corresponding to the underlying value of this {@code Value}.
@@ -111,12 +159,8 @@ public abstract class Value {
       return new AutoValue_Value_ValueDouble(value);
     }
 
-    /**
-     * Returns the double value.
-     *
-     * @return the double value.
-     */
-    abstract double getValue();
+    @Override
+    public abstract double getDouble();
 
     @Override
     public final Type getType() {
@@ -141,12 +185,8 @@ public abstract class Value {
       return new AutoValue_Value_ValueLong(value);
     }
 
-    /**
-     * Returns the long value.
-     *
-     * @return the long value.
-     */
-    abstract long getValue();
+    @Override
+    public abstract long getLong();
 
     @Override
     public final Type getType() {
@@ -174,12 +214,8 @@ public abstract class Value {
       return new AutoValue_Value_ValueDistribution(value);
     }
 
-    /**
-     * Returns the {@link Distribution} value.
-     *
-     * @return the {@code Distribution} value.
-     */
-    abstract Distribution getValue();
+    @Override
+    public abstract Distribution getDistribution();
 
     @Override
     public final Type getType() {
@@ -207,12 +243,8 @@ public abstract class Value {
       return new AutoValue_Value_ValueSummary(value);
     }
 
-    /**
-     * Returns the {@link Summary} value.
-     *
-     * @return the {@code Summary} value.
-     */
-    abstract Summary getValue();
+    @Override
+    public abstract Summary getSummary();
 
     @Override
     public final Type getType() {
