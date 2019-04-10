@@ -16,8 +16,6 @@
 
 package openconsensus.trace.propagation;
 
-import openconsensus.common.ExperimentalApi;
-
 /**
  * Container class for all the supported propagation formats. Currently supports only Binary format
  * (see {@link BinaryFormat}) and B3 Text format (see {@link TextFormat}) but more formats will be
@@ -43,7 +41,6 @@ public abstract class PropagationComponent {
    * @since 0.1.0
    * @return the B3 {@code TextFormat} implementation.
    */
-  @ExperimentalApi
   public abstract TextFormat getB3Format();
 
   /**
@@ -54,6 +51,5 @@ public abstract class PropagationComponent {
    * @since 0.1.0
    * @return the TraceContext {@code TextFormat} implementation.
    */
-  @ExperimentalApi
   public abstract TextFormat getTraceContextFormat();
 }
