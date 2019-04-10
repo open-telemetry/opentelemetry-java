@@ -101,6 +101,7 @@ public abstract class BinaryFormat {
   }
 
   private static final class NoopBinaryFormat extends BinaryFormat {
+    private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.wrap(new byte[0]);
 
     @Override
     public ByteBuffer toByteBuffer(SpanContext spanContext) {
@@ -113,8 +114,6 @@ public abstract class BinaryFormat {
       Utils.checkNotNull(bytes, "bytes");
       return SpanContext.INVALID;
     }
-
-    private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.wrap(new byte[0]);
 
     private NoopBinaryFormat() {}
   }
