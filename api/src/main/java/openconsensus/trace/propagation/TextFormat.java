@@ -74,7 +74,7 @@ import openconsensus.trace.SpanContext;
  * @since 0.1.0
  */
 @ExperimentalApi
-public abstract class TextFormat {
+public interface TextFormat {
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
    * before calling {@link #inject(SpanContext, Object, Setter)}.
@@ -89,7 +89,7 @@ public abstract class TextFormat {
   // The use cases of this are:
   // * allow pre-allocation of fields, especially in systems like gRPC Metadata
   // * allow a single-pass over an iterator (ex OpenTracing has no getter in TextMap)
-  public abstract List<String> fields();
+  List<String> fields();
 
   /**
    * Injects the span context downstream. For example, as http headers.
@@ -100,7 +100,7 @@ public abstract class TextFormat {
    * @param <C> carrier of propagation fields, such as an http request
    * @since 0.1.0
    */
-  public abstract <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter);
+  <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter);
 
   /**
    * Class that allows a {@code TextFormat} to set propagated fields into a carrier.
@@ -137,8 +137,7 @@ public abstract class TextFormat {
    * @throws SpanContextParseException if the input is invalid
    * @since 0.1.0
    */
-  public abstract <C> SpanContext extract(C carrier, Getter<C> getter)
-      throws SpanContextParseException;
+  <C> SpanContext extract(C carrier, Getter<C> getter) throws SpanContextParseException;
 
   /**
    * Class that allows a {@code TextFormat} to read propagated fields from a carrier.

@@ -24,6 +24,9 @@ import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
 import openconsensus.internal.Utils;
 import openconsensus.trace.data.SpanData;
+import openconsensus.trace.propagation.BaseBinaryFormat;
+import openconsensus.trace.propagation.BasePropagationComponent;
+import openconsensus.trace.propagation.BaseTextFormat;
 import openconsensus.trace.propagation.BinaryFormat;
 import openconsensus.trace.propagation.PropagationComponent;
 import openconsensus.trace.propagation.TextFormat;
@@ -43,7 +46,7 @@ final class NoopTrace {
     return new NoopTraceComponent();
   }
 
-  private static final class NoopTraceComponent extends TraceComponent {
+  private static final class NoopTraceComponent extends BaseTraceComponent {
     @Override
     public Tracer getTracer() {
       return getNoopTracer();
@@ -65,7 +68,7 @@ final class NoopTrace {
   }
 
   // No-Op implementation of the Tracer.
-  private static final class NoopTracer extends Tracer {
+  private static final class NoopTracer extends BaseTracer {
 
     @Override
     public Span getCurrentSpan() {
@@ -112,7 +115,7 @@ final class NoopTrace {
   }
 
   // Noop implementation of SpanBuilder.
-  private static final class NoopSpanBuilder extends SpanBuilder {
+  private static final class NoopSpanBuilder extends BaseSpanBuilder {
     static NoopSpanBuilder createWithParent(String spanName, @Nullable Span parent) {
       return new NoopSpanBuilder(spanName);
     }
@@ -171,7 +174,7 @@ final class NoopTrace {
     return new NoopPropagationComponent();
   }
 
-  private static final class NoopPropagationComponent extends PropagationComponent {
+  private static final class NoopPropagationComponent extends BasePropagationComponent {
 
     @Override
     public BinaryFormat getBinaryFormat() {
@@ -198,7 +201,7 @@ final class NoopTrace {
     return new NoopBinaryFormat();
   }
 
-  private static final class NoopBinaryFormat extends BinaryFormat {
+  private static final class NoopBinaryFormat extends BaseBinaryFormat {
 
     @Override
     public byte[] toByteArray(SpanContext spanContext) {
@@ -224,7 +227,7 @@ final class NoopTrace {
     return new NoopTextFormat();
   }
 
-  private static final class NoopTextFormat extends TextFormat {
+  private static final class NoopTextFormat extends BaseTextFormat {
 
     private NoopTextFormat() {}
 

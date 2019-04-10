@@ -34,7 +34,7 @@ import openconsensus.trace.data.Status;
  * @since 0.1.0
  */
 @Immutable
-public final class BlankSpan extends Span {
+public final class BlankSpan extends BaseSpan {
   /**
    * Singleton instance of this class.
    *

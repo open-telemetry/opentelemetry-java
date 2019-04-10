@@ -25,7 +25,7 @@ import openconsensus.common.ExperimentalApi;
  *
  * @since 0.1.0
  */
-public abstract class PropagationComponent {
+public interface PropagationComponent {
   /**
    * Returns the {@link BinaryFormat} with the provided implementations. If no implementation is
    * provided then no-op implementation will be used.
@@ -33,7 +33,7 @@ public abstract class PropagationComponent {
    * @return the {@code BinaryFormat} implementation.
    * @since 0.1.0
    */
-  public abstract BinaryFormat getBinaryFormat();
+  BinaryFormat getBinaryFormat();
 
   /**
    * Returns the B3 {@link TextFormat} with the provided implementations. See <a
@@ -44,7 +44,7 @@ public abstract class PropagationComponent {
    * @return the B3 {@code TextFormat} implementation.
    */
   @ExperimentalApi
-  public abstract TextFormat getB3Format();
+  TextFormat getB3Format();
 
   /**
    * Returns the TraceContext {@link TextFormat} with the provided implementations. See <a
@@ -55,5 +55,5 @@ public abstract class PropagationComponent {
    * @return the TraceContext {@code TextFormat} implementation.
    */
   @ExperimentalApi
-  public abstract TextFormat getTraceContextFormat();
+  TextFormat getTraceContextFormat();
 }

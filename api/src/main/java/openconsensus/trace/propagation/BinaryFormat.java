@@ -65,7 +65,7 @@ import openconsensus.trace.SpanContext;
  *
  * @since 0.1.0
  */
-public abstract class BinaryFormat {
+public interface BinaryFormat {
   /**
    * Serializes a {@link SpanContext} into a byte array using the binary format.
    *
@@ -74,7 +74,7 @@ public abstract class BinaryFormat {
    * @throws NullPointerException if the {@code spanContext} is {@code null}.
    * @since 0.1.0
    */
-  public abstract byte[] toByteArray(SpanContext spanContext);
+  byte[] toByteArray(SpanContext spanContext);
 
   /**
    * Parses the {@link SpanContext} from a byte array using the binary format.
@@ -85,5 +85,5 @@ public abstract class BinaryFormat {
    * @throws SpanContextParseException if the version is not supported or the input is invalid
    * @since 0.1.0
    */
-  public abstract SpanContext fromByteArray(byte[] bytes) throws SpanContextParseException;
+  SpanContext fromByteArray(byte[] bytes) throws SpanContextParseException;
 }

@@ -26,7 +26,7 @@ import openconsensus.trace.propagation.PropagationComponent;
  *
  * @since 0.1.0
  */
-public abstract class TraceComponent {
+public interface TraceComponent {
 
   /**
    * Returns the {@link Tracer} with the provided implementations. If no implementation is provided
@@ -35,7 +35,7 @@ public abstract class TraceComponent {
    * @return the {@code Tracer} implementation.
    * @since 0.1.0
    */
-  public abstract Tracer getTracer();
+  Tracer getTracer();
 
   /**
    * Returns the {@link PropagationComponent} with the provided implementation. If no implementation
@@ -44,5 +44,5 @@ public abstract class TraceComponent {
    * @return the {@code PropagationComponent} implementation.
    * @since 0.1.0
    */
-  public abstract PropagationComponent getPropagationComponent();
+  PropagationComponent getPropagationComponent();
 }
