@@ -61,12 +61,11 @@ final class NoopTrace {
    * @return the no-op implementation of the {@code Tracer}.
    */
   private static Tracer getNoopTracer() {
-    return NoopTracer.INSTANCE;
+    return new NoopTracer();
   }
 
   // No-Op implementation of the Tracer.
   private static final class NoopTracer extends Tracer {
-    private static final NoopTracer INSTANCE = new NoopTracer();
 
     @Override
     public Span getCurrentSpan() {
@@ -169,12 +168,10 @@ final class NoopTrace {
    * @return an instance that contains no-op implementations for all the instances.
    */
   private static PropagationComponent getNoopPropagationComponent() {
-    return NoopPropagationComponent.INSTANCE;
+    return new NoopPropagationComponent();
   }
 
   private static final class NoopPropagationComponent extends PropagationComponent {
-
-    private static final PropagationComponent INSTANCE = new NoopPropagationComponent();
 
     @Override
     public BinaryFormat getBinaryFormat() {
@@ -198,12 +195,10 @@ final class NoopTrace {
    * @return the no-op implementation of the {@code BinaryFormat}.
    */
   private static BinaryFormat getNoopBinaryFormat() {
-    return NoopBinaryFormat.INSTANCE;
+    return new NoopBinaryFormat();
   }
 
   private static final class NoopBinaryFormat extends BinaryFormat {
-
-    private static final NoopBinaryFormat INSTANCE = new NoopBinaryFormat();
 
     @Override
     public byte[] toByteArray(SpanContext spanContext) {
@@ -226,11 +221,10 @@ final class NoopTrace {
    * @return the no-op implementation of the {@code TextFormat}.
    */
   private static TextFormat getNoopTextFormat() {
-    return NoopTextFormat.INSTANCE;
+    return new NoopTextFormat();
   }
 
   private static final class NoopTextFormat extends TextFormat {
-    private static final NoopTextFormat INSTANCE = new NoopTextFormat();
 
     private NoopTextFormat() {}
 
