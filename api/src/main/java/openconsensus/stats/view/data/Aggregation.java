@@ -18,7 +18,6 @@ package openconsensus.stats.view.data;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.common.Function;
 import openconsensus.internal.Utils;
 
 /**
@@ -45,16 +44,25 @@ public abstract class Aggregation {
   private Aggregation() {}
 
   /**
-   * Applies the given match function to the underlying data type.
+   * Returns the {@code Distribution}'s bucket boundaries.
    *
+   * <p>This method should only be called with {@link Distribution}.
+   *
+   * @return the {@code Distribution}'s bucket boundaries.
    * @since 0.1.0
    */
-  public abstract <T> T match(
-      Function<? super Sum, T> p0,
-      Function<? super Count, T> p1,
-      Function<? super Distribution, T> p2,
-      Function<? super LastValue, T> p3,
-      Function<? super Aggregation, T> defaultFunction);
+  public BucketBoundaries getBucketBoundaries() {
+    throw new UnsupportedOperationException(
+        "Only Distribution Aggregation implements this method.");
+  }
+
+  /**
+   * Returns a {@code Type} corresponding to the underlying value of this {@code Aggregation}.
+   *
+   * @return the {@code Type} for the value of this {@code Aggregation}.
+   * @since 0.1.0
+   */
+  public abstract Type getType();
 
   /**
    * Calculate sum on aggregated {@code MeasureValue}s.
@@ -80,13 +88,8 @@ public abstract class Aggregation {
     }
 
     @Override
-    public final <T> T match(
-        Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Distribution, T> p2,
-        Function<? super LastValue, T> p3,
-        Function<? super Aggregation, T> defaultFunction) {
-      return p0.apply(this);
+    public final Type getType() {
+      return Type.SUM;
     }
   }
 
@@ -114,50 +117,8 @@ public abstract class Aggregation {
     }
 
     @Override
-    public final <T> T match(
-        Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Distribution, T> p2,
-        Function<? super LastValue, T> p3,
-        Function<? super Aggregation, T> defaultFunction) {
-      return p1.apply(this);
-    }
-  }
-
-  /**
-   * Calculate mean on aggregated {@code MeasureValue}s.
-   *
-   * @since 0.1.0
-   * @deprecated since 0.13, use {@link Distribution} instead.
-   */
-  @Immutable
-  @AutoValue
-  @Deprecated
-  @AutoValue.CopyAnnotations
-  public abstract static class Mean extends Aggregation {
-
-    Mean() {}
-
-    private static final Mean INSTANCE = new AutoValue_Aggregation_Mean();
-
-    /**
-     * Construct a {@code Mean}.
-     *
-     * @return a new {@code Mean}.
-     * @since 0.1.0
-     */
-    public static Mean create() {
-      return INSTANCE;
-    }
-
-    @Override
-    public final <T> T match(
-        Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Distribution, T> p2,
-        Function<? super LastValue, T> p3,
-        Function<? super Aggregation, T> defaultFunction) {
-      return defaultFunction.apply(this);
+    public final Type getType() {
+      return Type.COUNT;
     }
   }
 
@@ -176,6 +137,7 @@ public abstract class Aggregation {
     /**
      * Construct a {@code Distribution}.
      *
+     * @param bucketBoundaries bucket boundaries to use for distribution.
      * @return a new {@code Distribution}.
      * @since 0.1.0
      */
@@ -184,22 +146,12 @@ public abstract class Aggregation {
       return new AutoValue_Aggregation_Distribution(bucketBoundaries);
     }
 
-    /**
-     * Returns the {@code Distribution}'s bucket boundaries.
-     *
-     * @return the {@code Distribution}'s bucket boundaries.
-     * @since 0.1.0
-     */
+    @Override
     public abstract BucketBoundaries getBucketBoundaries();
 
     @Override
-    public final <T> T match(
-        Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Distribution, T> p2,
-        Function<? super LastValue, T> p3,
-        Function<? super Aggregation, T> defaultFunction) {
-      return p2.apply(this);
+    public final Type getType() {
+      return Type.DISTRIBUTION;
     }
   }
 
@@ -227,13 +179,20 @@ public abstract class Aggregation {
     }
 
     @Override
-    public final <T> T match(
-        Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Distribution, T> p2,
-        Function<? super LastValue, T> p3,
-        Function<? super Aggregation, T> defaultFunction) {
-      return p3.apply(this);
+    public final Type getType() {
+      return Type.LASTVALUE;
     }
+  }
+
+  /**
+   * An enum that represents all the possible value types for an {@code Aggregation}.
+   *
+   * @since 0.1.0
+   */
+  public enum Type {
+    SUM,
+    COUNT,
+    DISTRIBUTION,
+    LASTVALUE
   }
 }

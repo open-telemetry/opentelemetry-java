@@ -14,25 +14,32 @@
  * limitations under the License.
  */
 
-package openconsensus.internal;
+package openconsensus.opentracingshim;
 
-import openconsensus.common.Scope;
+import io.opentracing.SpanContext;
+import java.util.Map;
 
-/** A {@link Scope} that does nothing when it is created or closed. */
-public final class NoopScope implements Scope {
-  private static final Scope INSTANCE = new NoopScope();
+final class SpanContextShim implements SpanContext {
+  openconsensus.trace.SpanContext context;
 
-  private NoopScope() {}
-
-  /**
-   * Returns a {@code NoopScope}.
-   *
-   * @return a {@code NoopScope}.
-   */
-  public static Scope getInstance() {
-    return INSTANCE;
+  public SpanContextShim(openconsensus.trace.SpanContext context) {
+    this.context = context;
   }
 
   @Override
-  public void close() {}
+  public String toTraceId() {
+    return context.getTraceId().toString();
+  }
+
+  @Override
+  public String toSpanId() {
+    return context.getSpanId().toString();
+  }
+
+  @SuppressWarnings("ReturnMissingNullable")
+  @Override
+  public Iterable<Map.Entry<String, String>> baggageItems() {
+    // TODO
+    return null;
+  }
 }

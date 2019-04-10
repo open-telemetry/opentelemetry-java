@@ -43,6 +43,7 @@ public abstract class View {
   /**
    * Name of view. Must be unique.
    *
+   * @return name of the view.
    * @since 0.1.0
    */
   public abstract Name getName();
@@ -50,6 +51,7 @@ public abstract class View {
   /**
    * More detailed description, for documentation purposes.
    *
+   * @return description of the view.
    * @since 0.1.0
    */
   public abstract String getDescription();
@@ -57,6 +59,7 @@ public abstract class View {
   /**
    * Measure type of this view.
    *
+   * @return measure type of this view.
    * @since 0.1.0
    */
   public abstract Measure getMeasure();
@@ -64,6 +67,7 @@ public abstract class View {
   /**
    * The {@link Aggregation} associated with this {@link View}.
    *
+   * @return the {@link Aggregation} associated with this {@link View}.
    * @since 0.1.0
    */
   public abstract Aggregation getAggregation();
@@ -74,6 +78,7 @@ public abstract class View {
    * <p>{@link Measure} will be recorded in a "greedy" way. That is, every view aggregates every
    * measure. This is similar to doing a GROUPBY on view’s columns. Columns must be unique.
    *
+   * @return columns (a.k.a Tag Keys) to match with the associated {@link Measure}.
    * @since 0.1.0
    */
   public abstract List<TagKey> getColumns();

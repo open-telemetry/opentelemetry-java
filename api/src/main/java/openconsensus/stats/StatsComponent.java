@@ -32,6 +32,7 @@ public abstract class StatsComponent {
   /**
    * Returns the default {@link StatsRecorder}.
    *
+   * @return stats recorder.
    * @since 0.1.0
    */
   public abstract StatsRecorder getStatsRecorder();

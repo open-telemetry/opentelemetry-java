@@ -18,17 +18,30 @@ package openconsensus.trace.data;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.common.Function;
 import openconsensus.internal.Utils;
 
 /**
- * A class that represents all the possible values for an attribute. An attribute can have 3 types
- * of values: {@code String}, {@code Boolean} or {@code Long}.
+ * A class that represents all the possible values for an attribute. An attribute can have 4 types
+ * of values: {@code String}, {@code boolean}, {@code long} or {@code double}, represented through
+ * {@code AttributeValue.Type}.
  *
  * @since 0.1.0
  */
 @Immutable
 public abstract class AttributeValue {
+
+  /**
+   * An enum that represents all the possible value types for an {@code AttributeValue}.
+   *
+   * @since 0.1.0
+   */
+  public enum Type {
+    STRING,
+    BOOLEAN,
+    LONG,
+    DOUBLE
+  }
+
   /**
    * Returns an {@code AttributeValue} with a string value.
    *
@@ -77,27 +90,60 @@ public abstract class AttributeValue {
   AttributeValue() {}
 
   /**
-   * Applies a function to the underlying value. The function that is called depends on the value's
-   * type, which can be {@code String}, {@code Long}, or {@code Boolean}.
+   * Returns the string value of this {@code AttributeValue}. An UnsupportedOperationException will
+   * be thrown if getType() is not {@link Type#STRING}.
    *
-   * @param stringFunction the function that should be applied if the value has type {@code String}.
-   * @param longFunction the function that should be applied if the value has type {@code Long}.
-   * @param booleanFunction the function that should be applied if the value has type {@code
-   *     Boolean}.
-   * @param doubleFunction the function that should be applied if the value has type {@code Double}.
-   * @param defaultFunction the function that should be applied if the value has a type that was
-   *     added after this {@code match} method was added to the API. See {@link
-   *     openconsensus.common.Functions} for some common functions for handling unknown types.
-   * @param <T> the type of the return.
-   * @return the result of the function applied to the underlying value.
+   * @return the string value of this {@code AttributeValue}.
    * @since 0.1.0
    */
-  public abstract <T> T match(
-      Function<? super String, T> stringFunction,
-      Function<? super Boolean, T> booleanFunction,
-      Function<? super Long, T> longFunction,
-      Function<? super Double, T> doubleFunction,
-      Function<Object, T> defaultFunction);
+  public String getStringValue() {
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
+  }
+
+  /**
+   * Returns the boolean value of this {@code AttributeValue}. An UnsupportedOperationException will
+   * be thrown if getType() is not {@link Type#BOOLEAN}.
+   *
+   * @return the boolean value of this {@code AttributeValue}.
+   * @since 0.1.0
+   */
+  public boolean getBooleanValue() {
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
+  }
+
+  /**
+   * Returns the long value of this {@code AttributeValue}. An UnsupportedOperationException will be
+   * thrown if getType() is not {@link Type#LONG}.
+   *
+   * @return the long value of this {@code AttributeValue}.
+   * @since 0.1.0
+   */
+  public long getLongValue() {
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
+  }
+
+  /**
+   * Returns the double value of this {@code AttributeValue}. An UnsupportedOperationException will
+   * be thrown if getType() is not {@link Type#DOUBLE}.
+   *
+   * @return the double value of this {@code AttributeValue}.
+   * @since 0.1.0
+   */
+  public double getDoubleValue() {
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
+  }
+
+  /**
+   * Returns a {@code Type} corresponding to the underlying value of this {@code AttributeValue}.
+   *
+   * @return the {@code Type} for the value of this {@code AttributeValue}.
+   * @since 0.1.0
+   */
+  public abstract Type getType();
 
   @Immutable
   @AutoValue
@@ -111,16 +157,12 @@ public abstract class AttributeValue {
     }
 
     @Override
-    public final <T> T match(
-        Function<? super String, T> stringFunction,
-        Function<? super Boolean, T> booleanFunction,
-        Function<? super Long, T> longFunction,
-        Function<? super Double, T> doubleFunction,
-        Function<Object, T> defaultFunction) {
-      return stringFunction.apply(getStringValue());
+    public final Type getType() {
+      return Type.STRING;
     }
 
-    abstract String getStringValue();
+    @Override
+    public abstract String getStringValue();
   }
 
   @Immutable
@@ -129,22 +171,17 @@ public abstract class AttributeValue {
 
     AttributeValueBoolean() {}
 
-    static AttributeValue create(Boolean booleanValue) {
-      return new AutoValue_AttributeValue_AttributeValueBoolean(
-          Utils.checkNotNull(booleanValue, "booleanValue"));
+    static AttributeValue create(boolean booleanValue) {
+      return new AutoValue_AttributeValue_AttributeValueBoolean(booleanValue);
     }
 
     @Override
-    public final <T> T match(
-        Function<? super String, T> stringFunction,
-        Function<? super Boolean, T> booleanFunction,
-        Function<? super Long, T> longFunction,
-        Function<? super Double, T> doubleFunction,
-        Function<Object, T> defaultFunction) {
-      return booleanFunction.apply(getBooleanValue());
+    public final Type getType() {
+      return Type.BOOLEAN;
     }
 
-    abstract Boolean getBooleanValue();
+    @Override
+    public abstract boolean getBooleanValue();
   }
 
   @Immutable
@@ -153,22 +190,17 @@ public abstract class AttributeValue {
 
     AttributeValueLong() {}
 
-    static AttributeValue create(Long longValue) {
-      return new AutoValue_AttributeValue_AttributeValueLong(
-          Utils.checkNotNull(longValue, "longValue"));
+    static AttributeValue create(long longValue) {
+      return new AutoValue_AttributeValue_AttributeValueLong(longValue);
     }
 
     @Override
-    public final <T> T match(
-        Function<? super String, T> stringFunction,
-        Function<? super Boolean, T> booleanFunction,
-        Function<? super Long, T> longFunction,
-        Function<? super Double, T> doubleFunction,
-        Function<Object, T> defaultFunction) {
-      return longFunction.apply(getLongValue());
+    public final Type getType() {
+      return Type.LONG;
     }
 
-    abstract Long getLongValue();
+    @Override
+    public abstract long getLongValue();
   }
 
   @Immutable
@@ -177,21 +209,16 @@ public abstract class AttributeValue {
 
     AttributeValueDouble() {}
 
-    static AttributeValue create(Double doubleValue) {
-      return new AutoValue_AttributeValue_AttributeValueDouble(
-          Utils.checkNotNull(doubleValue, "doubleValue"));
+    static AttributeValue create(double doubleValue) {
+      return new AutoValue_AttributeValue_AttributeValueDouble(doubleValue);
     }
 
     @Override
-    public final <T> T match(
-        Function<? super String, T> stringFunction,
-        Function<? super Boolean, T> booleanFunction,
-        Function<? super Long, T> longFunction,
-        Function<? super Double, T> doubleFunction,
-        Function<Object, T> defaultFunction) {
-      return doubleFunction.apply(getDoubleValue());
+    public final Type getType() {
+      return Type.DOUBLE;
     }
 
-    abstract Double getDoubleValue();
+    @Override
+    public abstract double getDoubleValue();
   }
 }

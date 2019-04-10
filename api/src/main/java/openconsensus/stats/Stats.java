@@ -31,6 +31,7 @@ public final class Stats {
   /**
    * Returns the default {@link StatsRecorder}.
    *
+   * @return stats recorder.
    * @since 0.1.0
    */
   public static StatsRecorder getStatsRecorder() {
@@ -40,6 +41,7 @@ public final class Stats {
   /**
    * Returns the default {@link ViewManager}.
    *
+   * @return view manager.
    * @since 0.1.0
    */
   public static ViewManager getViewManager() {

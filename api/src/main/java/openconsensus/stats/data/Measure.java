@@ -22,7 +22,7 @@ import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
 
 /**
- * The definition of the {@link Measurement} that is taken by OpenCensus library.
+ * The definition of the {@link Measurement} that is taken by OpenConsensus library.
  *
  * @since 0.1.0
  */
@@ -69,6 +69,14 @@ public abstract class Measure {
    */
   public abstract String getUnit();
 
+  /**
+   * Returns a {@code Type} corresponding to the underlying value of this {@code Measure}.
+   *
+   * @return the {@code Type} for the value of this {@code Measure}.
+   * @since 0.1.0
+   */
+  public abstract Type getType();
+
   // Prevents this class from being subclassed anywhere else.
   private Measure() {}
 
@@ -107,6 +115,11 @@ public abstract class Measure {
 
     @Override
     public abstract String getUnit();
+
+    @Override
+    public final Type getType() {
+      return Type.DOUBLE;
+    }
   }
 
   /**
@@ -144,5 +157,21 @@ public abstract class Measure {
 
     @Override
     public abstract String getUnit();
+
+    @Override
+    public final Type getType() {
+      return Type.LONG;
+    }
+  }
+
+  /**
+   * An enum that represents all the possible value types for a {@code Measure} or a {@code
+   * Measurement}.
+   *
+   * @since 0.1.0
+   */
+  public enum Type {
+    LONG,
+    DOUBLE
   }
 }

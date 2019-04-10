@@ -18,8 +18,8 @@ package openconsensus.tags;
 
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.common.Scope;
-import openconsensus.internal.NoopScope;
+import openconsensus.context.NoopScope;
+import openconsensus.context.Scope;
 import openconsensus.internal.Utils;
 import openconsensus.tags.data.TagKey;
 import openconsensus.tags.data.TagMetadata;

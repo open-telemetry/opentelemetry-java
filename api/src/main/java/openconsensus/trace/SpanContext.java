@@ -19,10 +19,6 @@ package openconsensus.trace;
 import java.util.Arrays;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.trace.data.SpanId;
-import openconsensus.trace.data.TraceId;
-import openconsensus.trace.data.TraceOptions;
-import openconsensus.trace.data.Tracestate;
 
 /**
  * A class that represents a span context. A span context contains the state that must propagate to

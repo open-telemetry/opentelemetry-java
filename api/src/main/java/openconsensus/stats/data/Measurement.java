@@ -18,7 +18,6 @@ package openconsensus.stats.data;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.common.Function;
 import openconsensus.stats.data.Measure.MeasureDouble;
 import openconsensus.stats.data.Measure.MeasureLong;
 
@@ -31,21 +30,46 @@ import openconsensus.stats.data.Measure.MeasureLong;
 public abstract class Measurement {
 
   /**
-   * Applies the given match function to the underlying data type.
-   *
-   * @since 0.1.0
-   */
-  public abstract <T> T match(
-      Function<? super MeasurementDouble, T> p0,
-      Function<? super MeasurementLong, T> p1,
-      Function<? super Measurement, T> defaultFunction);
-
-  /**
    * Extracts the measured {@link Measure}.
    *
    * @since 0.1.0
    */
   public abstract Measure getMeasure();
+
+  /**
+   * Returns the double value for the {@link Measurement}.
+   *
+   * <p>This method should only be called with {@link MeasurementDouble}.
+   *
+   * @return the double value.
+   * @since 0.1.0
+   */
+  public double getDoubleValue() {
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
+  }
+
+  /**
+   * Returns the long value for the {@link Measurement}.
+   *
+   * <p>This method should only be called with {@link MeasurementLong}.
+   *
+   * @return the long value.
+   * @since 0.1.0
+   */
+  public long getLongValue() {
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
+  }
+
+  /**
+   * Returns a {@code Measure.Type} corresponding to the underlying value of this {@code
+   * Measurement}.
+   *
+   * @return the {@code Measure.Type} for the value of this {@code Measurement}.
+   * @since 0.1.0
+   */
+  public abstract Measure.Type getType();
 
   // Prevents this class from being subclassed anywhere else.
   private Measurement() {}
@@ -66,27 +90,17 @@ public abstract class Measurement {
      * @since 0.1.0
      */
     public static MeasurementDouble create(MeasureDouble measure, double value) {
-      return new AutoValue_Measurement_MeasurementDouble(measure, value);
+      return new AutoValue_Measurement_MeasurementDouble(measure, value, Measure.Type.DOUBLE);
     }
 
     @Override
     public abstract MeasureDouble getMeasure();
 
-    /**
-     * Returns the value for the measure.
-     *
-     * @return the value for the measure.
-     * @since 0.1.0
-     */
-    public abstract double getValue();
+    @Override
+    public abstract double getDoubleValue();
 
     @Override
-    public <T> T match(
-        Function<? super MeasurementDouble, T> p0,
-        Function<? super MeasurementLong, T> p1,
-        Function<? super Measurement, T> defaultFunction) {
-      return p0.apply(this);
-    }
+    public abstract Measure.Type getType();
   }
 
   /**
@@ -105,26 +119,16 @@ public abstract class Measurement {
      * @since 0.1.0
      */
     public static MeasurementLong create(MeasureLong measure, long value) {
-      return new AutoValue_Measurement_MeasurementLong(measure, value);
+      return new AutoValue_Measurement_MeasurementLong(measure, value, Measure.Type.LONG);
     }
 
     @Override
     public abstract MeasureLong getMeasure();
 
-    /**
-     * Returns the value for the measure.
-     *
-     * @return the value for the measure.
-     * @since 0.1.0
-     */
-    public abstract long getValue();
+    @Override
+    public abstract long getLongValue();
 
     @Override
-    public <T> T match(
-        Function<? super MeasurementDouble, T> p0,
-        Function<? super MeasurementLong, T> p1,
-        Function<? super Measurement, T> defaultFunction) {
-      return p1.apply(this);
-    }
+    public abstract Measure.Type getType();
   }
 }

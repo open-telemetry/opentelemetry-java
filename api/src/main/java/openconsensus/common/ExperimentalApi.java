@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  *
  * <ol>
  *   <li>This annotation is used only on public API. Internal interfaces should not use it.
- *   <li>After OpenCensus has gained API stability, this annotation can only be added to new API.
+ *   <li>After OpenConsensus has gained API stability, this annotation can only be added to new API.
  *       Adding it to an existing API is considered API-breaking.
  *   <li>Removing this annotation from an API gives it stable status.
  * </ol>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.common;
+package openconsensus.context;
 
 import java.io.Closeable;
 

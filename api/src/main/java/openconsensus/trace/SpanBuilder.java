@@ -16,12 +16,9 @@
 
 package openconsensus.trace;
 
-import com.google.errorprone.annotations.MustBeClosed;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
-import openconsensus.common.Scope;
-import openconsensus.internal.NoopScope;
 import openconsensus.internal.Utils;
 import openconsensus.trace.data.Status;
 
@@ -37,10 +34,13 @@ import openconsensus.trace.data.Status;
  *   private static final Tracer tracer = Tracing.getTracer();
  *   void doWork {
  *     // Create a Span as a child of the current Span.
- *     try (Scope ss = tracer.spanBuilder("MyChildSpan").startScopedSpan()) {
- *       tracer.getCurrentSpan().addAnnotation("my annotation");
+ *     Span span = tracer.spanBuilder("MyChildSpan").startSpan();
+ *     try (Scope ss = tracer.withSpan(span)) {
+ *       tracer.getCurrentSpan().addEvent("my event");
  *       doSomeWork();  // Here the new span is in the current Context, so it can be used
  *                      // implicitly anywhere down the stack.
+ *     } finally {
+ *       span.end();
  *     }
  *   }
  * }
@@ -64,7 +64,7 @@ import openconsensus.trace.data.Status;
  *
  *   public void onExecuteHandler(ServerCallHandler serverCallHandler) {
  *     try (Scope ws = tracer.withSpan(mySpan)) {
- *       tracer.getCurrentSpan().addAnnotation("Start rpc execution.");
+ *       tracer.getCurrentSpan().addEvent("Start rpc execution.");
  *       serverCallHandler.run();  // Here the new span is in the current Context, so it can be
  *                                 // used implicitly anywhere down the stack.
  *     }
@@ -73,13 +73,15 @@ import openconsensus.trace.data.Status;
  *   // Called when the RPC is canceled and guaranteed onComplete will not be called.
  *   public void onCancel() {
  *     // IMPORTANT: DO NOT forget to ended the Span here as the work is done.
- *     mySpan.end(EndSpanOptions.builder().setStatus(Status.CANCELLED));
+ *     mySpan.setStatus(Status.CANCELLED);
+ *     mySpan.end();
  *   }
  *
  *   // Called when the RPC is done and guaranteed onCancel will not be called.
  *   public void onComplete(RpcStatus rpcStatus) {
  *     // IMPORTANT: DO NOT forget to ended the Span here as the work is done.
- *     mySpan.end(EndSpanOptions.builder().setStatus(rpcStatusToCanonicalTraceStatus(status));
+ *     mySpan.setStatus(rpcStatusToCanonicalTraceStatus(status);
+ *     mySpan.end();
  *   }
  * }
  * }</pre>
@@ -92,7 +94,7 @@ import openconsensus.trace.data.Status;
  *   private static final Tracer tracer = Tracing.getTracer();
  *   void DoWork(Span parent) {
  *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
- *     childSpan.addAnnotation("my annotation");
+ *     childSpan.addEvent("my event");
  *     try {
  *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
  *     } finally {
@@ -103,8 +105,8 @@ import openconsensus.trace.data.Status;
  * }
  * }</pre>
  *
- * <p>If your Java version is less than Java SE 7, see {@link SpanBuilder#startSpan} and {@link
- * SpanBuilder#startScopedSpan} for usage examples.
+ * <p>If your Java version is less than Java SE 7, see {@link SpanBuilder#startSpan} for usage
+ * examples.
  *
  * @since 0.1.0
  */
@@ -149,15 +151,14 @@ public abstract class SpanBuilder {
    * @return this.
    * @since 0.1.0
    */
-  public SpanBuilder setSpanKind(@Nullable Span.Kind spanKind) {
+  public SpanBuilder setSpanKind(Span.Kind spanKind) {
     return this;
   }
 
   /**
    * Starts a new {@link Span}.
    *
-   * <p>Users <b>must</b> manually call {@link Span#end()} or {@link Span#end(EndSpanOptions)} to
-   * end this {@code Span}.
+   * <p>Users <b>must</b> manually call {@link Span#end()} to end this {@code Span}.
    *
    * <p>Does not install the newly created {@code Span} to the current Context.
    *
@@ -168,7 +169,7 @@ public abstract class SpanBuilder {
    *   private static final Tracer tracer = Tracing.getTracer();
    *   void DoWork(Span parent) {
    *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
-   *     childSpan.addAnnotation("my annotation");
+   *     childSpan.addEvent("my event");
    *     try {
    *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
    *     } finally {
@@ -183,74 +184,6 @@ public abstract class SpanBuilder {
    * @since 0.1.0
    */
   public abstract Span startSpan();
-
-  /**
-   * Starts a new span and sets it as the {@link Tracer#getCurrentSpan current span}.
-   *
-   * <p>Enters the scope of code where the newly created {@code Span} is in the current Context, and
-   * returns an object that represents that scope. When the returned object is closed, the scope is
-   * exited, the previous Context is restored, and the newly created {@code Span} is ended using
-   * {@link Span#end}.
-   *
-   * <p>Supports try-with-resource idiom.
-   *
-   * <p>Example of usage:
-   *
-   * <pre>{@code
-   * class MyClass {
-   *   private static final Tracer tracer = Tracing.getTracer();
-   *   void doWork {
-   *     // Create a Span as a child of the current Span.
-   *     try (Scope ss = tracer.spanBuilder("MyChildSpan").startScopedSpan()) {
-   *       tracer.getCurrentSpan().addAnnotation("my annotation");
-   *       doSomeWork();  // Here the new span is in the current Context, so it can be used
-   *                      // implicitly anywhere down the stack. Anytime in this closure the span
-   *                      // can be accessed via tracer.getCurrentSpan().
-   *     }
-   *   }
-   * }
-   * }</pre>
-   *
-   * <p>Prior to Java SE 7, you can use a finally block to ensure that a resource is closed (the
-   * {@code Span} is ended and removed from the Context) regardless of whether the try statement
-   * completes normally or abruptly.
-   *
-   * <p>Example of usage prior to Java SE7:
-   *
-   * <pre>{@code
-   * class MyClass {
-   *   private static Tracer tracer = Tracing.getTracer();
-   *   void doWork {
-   *     // Create a Span as a child of the current Span.
-   *     Scope ss = tracer.spanBuilder("MyChildSpan").startScopedSpan();
-   *     try {
-   *       tracer.getCurrentSpan().addAnnotation("my annotation");
-   *       doSomeWork();  // Here the new span is in the current Context, so it can be used
-   *                      // implicitly anywhere down the stack. Anytime in this closure the span
-   *                      // can be accessed via tracer.getCurrentSpan().
-   *     } finally {
-   *       ss.close();
-   *     }
-   *   }
-   * }
-   * }</pre>
-   *
-   * <p>WARNING: The try-with-resources feature to auto-close spans as described above can sound
-   * very tempting due to its convenience, but it comes with an important and easy-to-miss
-   * trade-off: the span will be closed before any {@code catch} or {@code finally} blocks get a
-   * chance to execute. So if you need to catch any exceptions and log information about them (for
-   * example), then you do not want to use the try-with-resources shortcut because that logging will
-   * not be tagged with the span info of the span it logically falls under, and if you try to
-   * retrieve {@code Tracer.getCurrentSpan()} then you'll either get the parent span if one exists
-   * or {@code BlankSpan} if there was no parent span. This can be confusing and seem
-   * counter-intuitive, but it's the way try-with-resources works.
-   *
-   * @return an object that defines a scope where the newly created {@code Span} will be set to the
-   *     current Context.
-   * @since 0.1.0
-   */
-  @MustBeClosed
-  public abstract Scope startScopedSpan();
 
   /**
    * Starts a new span and runs the given {@code Runnable} with the newly created {@code Span} as
@@ -327,11 +260,6 @@ public abstract class SpanBuilder {
     }
 
     @Override
-    public Scope startScopedSpan() {
-      return NoopScope.getInstance();
-    }
-
-    @Override
     public void startSpanAndRun(Runnable runnable) {
       runnable.run();
     }
@@ -357,7 +285,7 @@ public abstract class SpanBuilder {
     }
 
     @Override
-    public SpanBuilder setSpanKind(@Nullable Span.Kind spanKind) {
+    public SpanBuilder setSpanKind(Span.Kind spanKind) {
       return this;
     }
 

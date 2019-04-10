@@ -1,0 +1,6 @@
+description = 'OpenConsensus OpenTracing Bridge'
+
+dependencies {
+    compile project(':openconsensus-api')
+    compileOnly libraries.opentracing
+}
