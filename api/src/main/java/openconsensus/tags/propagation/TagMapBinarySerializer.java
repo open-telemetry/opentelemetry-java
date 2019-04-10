@@ -51,8 +51,8 @@ public abstract class TagMapBinarySerializer {
    *
    * @param bytes on-the-wire representation of a {@code TagMap}.
    * @return a {@code TagMap} deserialized from {@code bytes}.
-   * @throws TagMapDeserializationException if there is a parse error, the input contains
-   *     invalid tags, or the input is larger than the maximum allowed serialized size.
+   * @throws TagMapDeserializationException if there is a parse error, the input contains invalid
+   *     tags, or the input is larger than the maximum allowed serialized size.
    * @since 0.1.0
    */
   public abstract TagMap fromByteArray(byte[] bytes) throws TagMapDeserializationException;

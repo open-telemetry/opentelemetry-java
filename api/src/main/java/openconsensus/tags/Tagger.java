@@ -25,8 +25,8 @@ import openconsensus.context.Scope;
  * implementation-dependent {@link TagMap}s.
  *
  * <p>Implementations may have different constraints and are free to convert tag contexts to their
- * own subtypes. This means callers cannot assume the {@link #getCurrentTagMap() current
- * context} is the same instance as the one {@link #withTagMap(TagMap) placed into scope}.
+ * own subtypes. This means callers cannot assume the {@link #getCurrentTagMap() current context} is
+ * the same instance as the one {@link #withTagMap(TagMap) placed into scope}.
  *
  * @since 0.1.0
  */

@@ -74,8 +74,8 @@ final class NoopTags {
   }
 
   /**
-   * Returns a {@code TagMapBinarySerializer} that serializes all {@code TagMap}s to zero bytes
-   * and deserializes all inputs to empty {@code TagMap}s.
+   * Returns a {@code TagMapBinarySerializer} that serializes all {@code TagMap}s to zero bytes and
+   * deserializes all inputs to empty {@code TagMap}s.
    */
   static TagMapBinarySerializer getNoopTagMapBinarySerializer() {
     return NoopTagMapBinarySerializer.INSTANCE;
