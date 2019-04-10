@@ -26,7 +26,7 @@ import openconsensus.tags.data.TagMetadata.TagTtl;
  *
  * @since 0.1.0
  */
-public abstract class TagMapBinarySerializer {
+public abstract class BinaryFormat {
 
   /**
    * Serializes the {@code TagMap} into the on-the-wire representation.
@@ -38,11 +38,11 @@ public abstract class TagMapBinarySerializer {
    *
    * @param tags the {@code TagMap} to serialize.
    * @return the on-the-wire representation of a {@code TagMap}.
-   * @throws TagMapSerializationException if the result would be larger than the maximum allowed
+   * @throws SerializationException if the result would be larger than the maximum allowed
    *     serialized size.
    * @since 0.1.0
    */
-  public abstract byte[] toByteArray(TagMap tags) throws TagMapSerializationException;
+  public abstract byte[] toByteArray(TagMap tags) throws SerializationException;
 
   /**
    * Creates a {@code TagMap} from the given on-the-wire encoded representation.
@@ -51,9 +51,9 @@ public abstract class TagMapBinarySerializer {
    *
    * @param bytes on-the-wire representation of a {@code TagMap}.
    * @return a {@code TagMap} deserialized from {@code bytes}.
-   * @throws TagMapDeserializationException if there is a parse error, the input contains invalid
-   *     tags, or the input is larger than the maximum allowed serialized size.
+   * @throws DeserializationException if there is a parse error, the input contains invalid tags, or
+   *     the input is larger than the maximum allowed serialized size.
    * @since 0.1.0
    */
-  public abstract TagMap fromByteArray(byte[] bytes) throws TagMapDeserializationException;
+  public abstract TagMap fromByteArray(byte[] bytes) throws DeserializationException;
 }

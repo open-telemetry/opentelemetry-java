@@ -26,11 +26,9 @@ import openconsensus.internal.Utils;
 import openconsensus.tags.data.TagKey;
 import openconsensus.tags.data.TagMetadata;
 import openconsensus.tags.data.TagValue;
-import openconsensus.tags.propagation.TagMapBinarySerializer;
-import openconsensus.tags.propagation.TagMapDeserializationException;
-import openconsensus.tags.propagation.TagMapSerializationException;
-import openconsensus.tags.propagation.TagMapTextFormat;
-import openconsensus.tags.propagation.TagPropagationComponent;
+import openconsensus.tags.propagation.BinaryFormat;
+import openconsensus.tags.propagation.PropagationComponent;
+import openconsensus.tags.propagation.TextFormat;
 
 /** No-op implementations of tagging classes. */
 final class NoopTags {
@@ -48,8 +46,8 @@ final class NoopTags {
 
   @ThreadSafe
   private static final class NoopTagsComponent extends TagsComponent {
-    private static final TagPropagationComponent TAG_PROPAGATION_COMPONENT =
-        new NoopTagPropagationComponent();
+    private static final PropagationComponent PROPAGATION_COMPONENT =
+        new NoopPropagationComponent();
     private static final Tagger TAGGER = new NoopTagger();
 
     @Override
@@ -58,8 +56,8 @@ final class NoopTags {
     }
 
     @Override
-    public TagPropagationComponent getTagPropagationComponent() {
-      return TAG_PROPAGATION_COMPONENT;
+    public PropagationComponent getTagPropagationComponent() {
+      return PROPAGATION_COMPONENT;
     }
   }
 
@@ -133,25 +131,23 @@ final class NoopTags {
   private static final class NoopTagMap extends TagMap {}
 
   @Immutable
-  private static final class NoopTagPropagationComponent extends TagPropagationComponent {
-    private static final TagMapBinarySerializer TAG_MAP_BINARY_SERIALIZER =
-        new NoopTagMapBinarySerializer();
-
-    private static final TagMapTextFormat TAG_MAP_TEXT_FORMAT = new NoopTagMapTextFormat();
+  private static final class NoopPropagationComponent extends PropagationComponent {
+    private static final BinaryFormat BINARY_FORMAT = new NoopBinaryFormat();
+    private static final TextFormat TEXT_FORMAT = new NoopTextFormat();
 
     @Override
-    public TagMapBinarySerializer getBinarySerializer() {
-      return TAG_MAP_BINARY_SERIALIZER;
+    public BinaryFormat getBinaryFormat() {
+      return BINARY_FORMAT;
     }
 
     @Override
-    public TagMapTextFormat getCorrelationContextFormat() {
-      return TAG_MAP_TEXT_FORMAT;
+    public TextFormat getTextFormat() {
+      return TEXT_FORMAT;
     }
   }
 
   @Immutable
-  private static final class NoopTagMapBinarySerializer extends TagMapBinarySerializer {
+  private static final class NoopBinaryFormat extends BinaryFormat {
     private static final TagMap EMPTY = new NoopTagMap();
     static final byte[] EMPTY_BYTE_ARRAY = {};
 
@@ -169,7 +165,8 @@ final class NoopTags {
   }
 
   @Immutable
-  private static final class NoopTagMapTextFormat extends TagMapTextFormat {
+  private static final class NoopTextFormat extends TextFormat {
+    private static final TagMap EMPTY = new NoopTagMap();
 
     @Override
     public List<String> fields() {
@@ -177,18 +174,17 @@ final class NoopTags {
     }
 
     @Override
-    public <C> void inject(TagMap tagContext, C carrier, Setter<C> setter)
-        throws TagMapSerializationException {
+    public <C> void inject(TagMap tagContext, C carrier, Setter<C> setter) {
       Utils.checkNotNull(tagContext, "tagContext");
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(setter, "setter");
     }
 
     @Override
-    public <C> TagMap extract(C carrier, Getter<C> getter) throws TagMapDeserializationException {
+    public <C> TagMap extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
-      return getNoopTagMap();
+      return EMPTY;
     }
   }
 }

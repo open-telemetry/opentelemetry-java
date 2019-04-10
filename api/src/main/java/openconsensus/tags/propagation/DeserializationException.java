@@ -23,7 +23,7 @@ import openconsensus.tags.TagMap;
  *
  * @since 0.1.0
  */
-public final class TagMapDeserializationException extends Exception {
+public final class DeserializationException extends Exception {
   private static final long serialVersionUID = 0L;
 
   /**
@@ -32,7 +32,7 @@ public final class TagMapDeserializationException extends Exception {
    * @param message a message describing the error.
    * @since 0.1.0
    */
-  public TagMapDeserializationException(String message) {
+  public DeserializationException(String message) {
     super(message);
   }
 
@@ -43,7 +43,7 @@ public final class TagMapDeserializationException extends Exception {
    * @param cause the cause of the error.
    * @since 0.1.0
    */
-  public TagMapDeserializationException(String message, Throwable cause) {
+  public DeserializationException(String message, Throwable cause) {
     super(message, cause);
   }
 }
