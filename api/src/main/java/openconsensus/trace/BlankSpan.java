@@ -84,10 +84,12 @@ public final class BlankSpan extends Span {
     Utils.checkNotNull(status, "status");
   }
 
+  @Override
   public void updateName(String name) {
     Utils.checkNotNull(name, "name");
   }
 
+  @Override
   public void end() {}
 
   @Override

@@ -126,6 +126,7 @@ public abstract class Span {
    */
   public abstract void updateName(String name);
 
+  /**
    * Marks the end of {@code Span} execution with the default options.
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
