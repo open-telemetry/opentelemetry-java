@@ -16,6 +16,7 @@
 
 package openconsensus.trace.propagation;
 
+import java.nio.ByteBuffer;
 import openconsensus.internal.Utils;
 import openconsensus.trace.SpanContext;
 
@@ -31,7 +32,7 @@ import openconsensus.trace.SpanContext;
  * void onSendRequest() {
  *   Span span = tracer.spanBuilder("Sent.MyRequest").startSpan();
  *   try (Scope ss = tracer.withSpan(span)) {
- *     byte[] binaryValue = binaryFormat.toByteArray(tracer.getCurrentContext().context());
+ *     ByteBuffer binaryValue = binaryFormat.toByteBuffer(tracer.getCurrentContext().context());
  *     // Send the request including the binaryValue and wait for the response.
  *   } finally {
  *     span.end();
@@ -50,7 +51,7 @@ import openconsensus.trace.SpanContext;
  *   SpanContext spanContext = SpanContext.INVALID;
  *   try {
  *     if (binaryValue != null) {
- *       spanContext = binaryFormat.fromByteArray(binaryValue);
+ *       spanContext = binaryFormat.fromByteBuffer(binaryValue);
  *     }
  *   } catch (SpanContextParseException e) {
  *     // Maybe log the exception.
@@ -70,17 +71,17 @@ public abstract class BinaryFormat {
   static final NoopBinaryFormat NOOP_BINARY_FORMAT = new NoopBinaryFormat();
 
   /**
-   * Serializes a {@link SpanContext} into a byte array using the binary format.
+   * Serializes a {@link SpanContext} into a {@code ByteBuffer} using the binary format.
    *
    * @param spanContext the {@code SpanContext} to serialize.
    * @return the serialized binary value.
    * @throws NullPointerException if the {@code spanContext} is {@code null}.
    * @since 0.1.0
    */
-  public abstract byte[] toByteArray(SpanContext spanContext);
+  public abstract ByteBuffer toByteBuffer(SpanContext spanContext);
 
   /**
-   * Parses the {@link SpanContext} from a byte array using the binary format.
+   * Parses the {@link SpanContext} from a {@code ByteBuffer} using the binary format.
    *
    * @param bytes a binary encoded buffer from which the {@code SpanContext} will be parsed.
    * @return the parsed {@code SpanContext}.
@@ -88,7 +89,7 @@ public abstract class BinaryFormat {
    * @throws SpanContextParseException if the version is not supported or the input is invalid
    * @since 0.1.0
    */
-  public abstract SpanContext fromByteArray(byte[] bytes) throws SpanContextParseException;
+  public abstract SpanContext fromByteBuffer(ByteBuffer bytes) throws SpanContextParseException;
 
   /**
    * Returns the no-op implementation of the {@code BinaryFormat}.
@@ -100,17 +101,20 @@ public abstract class BinaryFormat {
   }
 
   private static final class NoopBinaryFormat extends BinaryFormat {
+
     @Override
-    public byte[] toByteArray(SpanContext spanContext) {
+    public ByteBuffer toByteBuffer(SpanContext spanContext) {
       Utils.checkNotNull(spanContext, "spanContext");
-      return new byte[0];
+      return EMPTY_BUFFER;
     }
 
     @Override
-    public SpanContext fromByteArray(byte[] bytes) {
+    public SpanContext fromByteBuffer(ByteBuffer bytes) {
       Utils.checkNotNull(bytes, "bytes");
       return SpanContext.INVALID;
     }
+
+    private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.wrap(new byte[0]);
 
     private NoopBinaryFormat() {}
   }
