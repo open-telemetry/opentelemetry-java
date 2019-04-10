@@ -18,8 +18,6 @@ package openconsensus.metrics;
 
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.internal.Utils;
-import openconsensus.metrics.data.LabelKey;
 import openconsensus.metrics.data.LabelValue;
 
 /**
@@ -125,17 +123,6 @@ public abstract class DoubleGauge {
   public abstract void clear();
 
   /**
-   * Returns the no-op implementation of the {@code DoubleGauge}.
-   *
-   * @return the no-op implementation of the {@code DoubleGauge}.
-   * @since 0.1.0
-   */
-  static DoubleGauge newNoopDoubleGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return NoopDoubleGauge.create(name, description, unit, labelKeys);
-  }
-
-  /**
    * The value of a single point in the Gauge.TimeSeries.
    *
    * @since 0.1.0
@@ -157,58 +144,5 @@ public abstract class DoubleGauge {
      * @since 0.1.0
      */
     public abstract void set(double val);
-  }
-
-  /** No-op implementations of DoubleGauge class. */
-  private static final class NoopDoubleGauge extends DoubleGauge {
-    private final int labelKeysSize;
-
-    static NoopDoubleGauge create(
-        String name, String description, String unit, List<LabelKey> labelKeys) {
-      return new NoopDoubleGauge(name, description, unit, labelKeys);
-    }
-
-    /** Creates a new {@code NoopDoublePoint}. */
-    NoopDoubleGauge(String name, String description, String unit, List<LabelKey> labelKeys) {
-      Utils.checkNotNull(name, "name");
-      Utils.checkNotNull(description, "description");
-      Utils.checkNotNull(unit, "unit");
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-      labelKeysSize = labelKeys.size();
-    }
-
-    @Override
-    public NoopDoublePoint getOrCreateTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
-      Utils.checkArgument(
-          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      return NoopDoublePoint.INSTANCE;
-    }
-
-    @Override
-    public NoopDoublePoint getDefaultTimeSeries() {
-      return NoopDoublePoint.INSTANCE;
-    }
-
-    @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
-    @Override
-    public void clear() {}
-
-    /** No-op implementations of DoublePoint class. */
-    private static final class NoopDoublePoint extends DoublePoint {
-      private static final NoopDoublePoint INSTANCE = new NoopDoublePoint();
-
-      private NoopDoublePoint() {}
-
-      @Override
-      public void add(double amt) {}
-
-      @Override
-      public void set(double val) {}
-    }
   }
 }
