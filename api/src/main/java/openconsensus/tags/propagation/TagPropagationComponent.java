@@ -23,7 +23,6 @@ import openconsensus.tags.TagMap;
  *
  * @since 0.1.0
  */
-// TODO(sebright): Add an HTTP serializer.
 public abstract class TagPropagationComponent {
 
   /**

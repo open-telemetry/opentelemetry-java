@@ -299,8 +299,6 @@ public abstract class SpanData {
      */
     public static Attributes create(
         Map<String, AttributeValue> attributeMap, int droppedAttributesCount) {
-      // TODO(bdrutu): Consider to use LinkedHashMap here and everywhere else, less test flakes
-      // for others on account of determinism.
       return new AutoValue_SpanData_Attributes(
           Collections.unmodifiableMap(
               new HashMap<String, AttributeValue>(
