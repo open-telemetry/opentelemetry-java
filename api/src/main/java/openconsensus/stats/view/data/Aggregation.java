@@ -44,6 +44,19 @@ public abstract class Aggregation {
   private Aggregation() {}
 
   /**
+   * Returns the {@code Distribution}'s bucket boundaries.
+   *
+   * <p>This method should only be called with {@link Distribution}.
+   *
+   * @return the {@code Distribution}'s bucket boundaries.
+   * @since 0.1.0
+   */
+  public BucketBoundaries getBucketBoundaries() {
+    throw new UnsupportedOperationException(
+        "Only Distribution Aggregation implements this method.");
+  }
+
+  /**
    * Returns a {@code Type} corresponding to the underlying value of this {@code Aggregation}.
    *
    * @return the {@code Type} for the value of this {@code Aggregation}.
@@ -62,7 +75,7 @@ public abstract class Aggregation {
 
     Sum() {}
 
-    private static final Sum INSTANCE = new AutoValue_Aggregation_Sum(Type.SUM);
+    private static final Sum INSTANCE = new AutoValue_Aggregation_Sum();
 
     /**
      * Construct a {@code Sum}.
@@ -75,7 +88,9 @@ public abstract class Aggregation {
     }
 
     @Override
-    public abstract Type getType();
+    public final Type getType() {
+      return Type.SUM;
+    }
   }
 
   /**
@@ -89,7 +104,7 @@ public abstract class Aggregation {
 
     Count() {}
 
-    private static final Count INSTANCE = new AutoValue_Aggregation_Count(Type.COUNT);
+    private static final Count INSTANCE = new AutoValue_Aggregation_Count();
 
     /**
      * Construct a {@code Count}.
@@ -102,7 +117,9 @@ public abstract class Aggregation {
     }
 
     @Override
-    public abstract Type getType();
+    public final Type getType() {
+      return Type.COUNT;
+    }
   }
 
   /**
@@ -126,19 +143,16 @@ public abstract class Aggregation {
      */
     public static Distribution create(BucketBoundaries bucketBoundaries) {
       Utils.checkNotNull(bucketBoundaries, "bucketBoundaries");
-      return new AutoValue_Aggregation_Distribution(bucketBoundaries, Type.DISTRIBUTION);
+      return new AutoValue_Aggregation_Distribution(bucketBoundaries);
     }
 
-    /**
-     * Returns the {@code Distribution}'s bucket boundaries.
-     *
-     * @return the {@code Distribution}'s bucket boundaries.
-     * @since 0.1.0
-     */
+    @Override
     public abstract BucketBoundaries getBucketBoundaries();
 
     @Override
-    public abstract Type getType();
+    public final Type getType() {
+      return Type.DISTRIBUTION;
+    }
   }
 
   /**
@@ -152,7 +166,7 @@ public abstract class Aggregation {
 
     LastValue() {}
 
-    private static final LastValue INSTANCE = new AutoValue_Aggregation_LastValue(Type.LASTVALUE);
+    private static final LastValue INSTANCE = new AutoValue_Aggregation_LastValue();
 
     /**
      * Construct a {@code LastValue}.
@@ -165,7 +179,9 @@ public abstract class Aggregation {
     }
 
     @Override
-    public abstract Type getType();
+    public final Type getType() {
+      return Type.LASTVALUE;
+    }
   }
 
   /**
