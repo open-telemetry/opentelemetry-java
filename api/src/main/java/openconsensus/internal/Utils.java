@@ -17,6 +17,7 @@
 package openconsensus.internal;
 
 import java.util.List;
+import java.util.Map;
 
 /** General internal utility methods. */
 public final class Utils {
@@ -124,6 +125,22 @@ public final class Utils {
       List<T> list, @javax.annotation.Nullable Object errorMessage) {
     for (T element : list) {
       if (element == null) {
+        throw new NullPointerException(String.valueOf(errorMessage));
+      }
+    }
+  }
+
+  /**
+   * Throws a {@link NullPointerException} if any of the map elements is null.
+   *
+   * @param map the argument map to check for null.
+   * @param errorMessage the message to use for the exception. Will be converted to a string using
+   *     {@link String#valueOf(Object)}.
+   */
+  public static <K, V> void checkMapElementNotNull(
+      Map<K, V> map, @javax.annotation.Nullable Object errorMessage) {
+    for (Map.Entry<K, V> entry : map.entrySet()) {
+      if (entry.getKey() == null || entry.getValue() == null) {
         throw new NullPointerException(String.valueOf(errorMessage));
       }
     }
