@@ -46,8 +46,6 @@ public abstract class SpanData {
    * @param context the {@code SpanContext} of the {@code Span}.
    * @param parentSpanId the parent {@code SpanId} of the {@code Span}. {@code null} if the {@code
    *     Span} is a root.
-   * @param hasRemoteParent {@code true} if the parent {@code Span} is remote. {@code null} if this
-   *     is a root span.
    * @param name the name of the {@code Span}.
    * @param kind the kind of the {@code Span}.
    * @param startTimestamp the start {@code Timestamp} of the {@code Span}.
@@ -67,7 +65,6 @@ public abstract class SpanData {
   public static SpanData create(
       SpanContext context,
       @Nullable SpanId parentSpanId,
-      @Nullable Boolean hasRemoteParent,
       String name,
       @Nullable Kind kind,
       Timestamp startTimestamp,
@@ -82,7 +79,6 @@ public abstract class SpanData {
     return new AutoValue_SpanData(
         context,
         parentSpanId,
-        hasRemoteParent,
         name,
         kind,
         startTimestamp,
@@ -111,17 +107,6 @@ public abstract class SpanData {
    */
   @Nullable
   public abstract SpanId getParentSpanId();
-
-  /**
-   * Returns {@code true} if the parent is on a different process. {@code null} if this is a root
-   * span.
-   *
-   * @return {@code true} if the parent is on a different process. {@code null} if this is a root
-   *     span.
-   * @since 0.1.0
-   */
-  @Nullable
-  public abstract Boolean getHasRemoteParent();
 
   /**
    * Returns the name of this {@code Span}.
