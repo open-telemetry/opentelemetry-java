@@ -16,6 +16,7 @@
 
 package openconsensus.trace;
 
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -199,15 +200,16 @@ final class NoopTrace {
   }
 
   private static final class NoopBinaryFormat extends BinaryFormat {
+    private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.wrap(new byte[0]);
 
     @Override
-    public byte[] toByteArray(SpanContext spanContext) {
+    public ByteBuffer toByteBuffer(SpanContext spanContext) {
       Utils.checkNotNull(spanContext, "spanContext");
-      return new byte[0];
+      return EMPTY_BUFFER;
     }
 
     @Override
-    public SpanContext fromByteArray(byte[] bytes) {
+    public SpanContext fromByteBuffer(ByteBuffer bytes) {
       Utils.checkNotNull(bytes, "bytes");
       return SpanContext.INVALID;
     }
