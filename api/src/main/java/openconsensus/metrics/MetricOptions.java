@@ -71,8 +71,7 @@ public abstract class MetricOptions {
    *
    * @return the map of constant labels for the Metric.
    */
-  // TODO: add support for this and make it public.
-  abstract Map<LabelKey, LabelValue> getConstantLabels();
+  public abstract Map<LabelKey, LabelValue> getConstantLabels();
 
   /**
    * Returns a new {@link Builder} with default options.
@@ -121,8 +120,7 @@ public abstract class MetricOptions {
      * @param constantLabels the map of constant labels for the Metric.
      * @return this.
      */
-    // TODO: add support for this and make it public.
-    abstract Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels);
+    public abstract Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels);
 
     abstract Map<LabelKey, LabelValue> getConstantLabels();
 
