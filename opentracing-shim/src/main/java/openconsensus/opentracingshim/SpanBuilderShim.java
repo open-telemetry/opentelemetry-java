@@ -79,7 +79,7 @@ final class SpanBuilderShim implements SpanBuilder {
           this.builder.setSpanKind(Kind.CONSUMER);
           break;
         default:
-          this.builder.setSpanKind(Kind.UNDEFINED);
+          this.builder.setSpanKind(Kind.INTERNAL);
           break;
       }
     } else if ("error".equals(key)) {

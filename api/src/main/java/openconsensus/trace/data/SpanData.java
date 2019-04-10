@@ -66,7 +66,7 @@ public abstract class SpanData {
       SpanContext context,
       @Nullable SpanId parentSpanId,
       String name,
-      @Nullable Kind kind,
+      Kind kind,
       Timestamp startTimestamp,
       Attributes attributes,
       TimedEvents<Event> events,
@@ -122,7 +122,6 @@ public abstract class SpanData {
    * @return the kind of this {@code Span}.
    * @since 0.1.0
    */
-  @Nullable
   public abstract Kind getKind();
 
   /**
