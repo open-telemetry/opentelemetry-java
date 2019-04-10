@@ -97,7 +97,8 @@ public abstract class AttributeValue {
    * @since 0.1.0
    */
   public String getStringValue() {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
   }
 
   /**
@@ -108,7 +109,8 @@ public abstract class AttributeValue {
    * @since 0.1.0
    */
   public boolean getBooleanValue() {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
   }
 
   /**
@@ -119,7 +121,8 @@ public abstract class AttributeValue {
    * @since 0.1.0
    */
   public long getLongValue() {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
   }
 
   /**
@@ -130,7 +133,8 @@ public abstract class AttributeValue {
    * @since 0.1.0
    */
   public double getDoubleValue() {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
   }
 
   /**
