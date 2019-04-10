@@ -16,13 +16,9 @@
 
 package openconsensus.metrics;
 
-import java.util.Collection;
-import java.util.Collections;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.common.ToDoubleFunction;
 import openconsensus.common.ToLongFunction;
-import openconsensus.internal.Utils;
-import openconsensus.metrics.data.Metric;
 import openconsensus.metrics.producer.MetricProducer;
 
 /**
@@ -88,52 +84,4 @@ public abstract class MetricRegistry extends MetricProducer {
    */
   @ExperimentalApi
   public abstract DerivedDoubleGauge addDerivedDoubleGauge(String name, MetricOptions options);
-
-  static MetricRegistry newNoopMetricRegistry() {
-    return new NoopMetricRegistry();
-  }
-
-  private static final class NoopMetricRegistry extends MetricRegistry {
-
-    @Override
-    public LongGauge addLongGauge(String name, MetricOptions options) {
-      return LongGauge.newNoopLongGauge(
-          Utils.checkNotNull(name, "name"),
-          options.getDescription(),
-          options.getUnit(),
-          options.getLabelKeys());
-    }
-
-    @Override
-    public DoubleGauge addDoubleGauge(String name, MetricOptions options) {
-      return DoubleGauge.newNoopDoubleGauge(
-          Utils.checkNotNull(name, "name"),
-          options.getDescription(),
-          options.getUnit(),
-          options.getLabelKeys());
-    }
-
-    @Override
-    public DerivedLongGauge addDerivedLongGauge(String name, MetricOptions options) {
-      return DerivedLongGauge.newNoopDerivedLongGauge(
-          Utils.checkNotNull(name, "name"),
-          options.getDescription(),
-          options.getUnit(),
-          options.getLabelKeys());
-    }
-
-    @Override
-    public DerivedDoubleGauge addDerivedDoubleGauge(String name, MetricOptions options) {
-      return DerivedDoubleGauge.newNoopDerivedDoubleGauge(
-          Utils.checkNotNull(name, "name"),
-          options.getDescription(),
-          options.getUnit(),
-          options.getLabelKeys());
-    }
-
-    @Override
-    public Collection<Metric> getMetrics() {
-      return Collections.emptyList();
-    }
-  }
 }

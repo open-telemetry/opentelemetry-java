@@ -18,8 +18,6 @@ package openconsensus.metrics;
 
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.internal.Utils;
-import openconsensus.metrics.data.LabelKey;
 import openconsensus.metrics.data.LabelValue;
 
 /**
@@ -122,17 +120,6 @@ public abstract class LongGauge {
   public abstract void clear();
 
   /**
-   * Returns the no-op implementation of the {@code LongGauge}.
-   *
-   * @return the no-op implementation of the {@code LongGauge}.
-   * @since 0.1.0
-   */
-  static LongGauge newNoopLongGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return NoopLongGauge.create(name, description, unit, labelKeys);
-  }
-
-  /**
    * The value of a single point in the Gauge.TimeSeries.
    *
    * @since 0.1.0
@@ -154,54 +141,5 @@ public abstract class LongGauge {
      * @since 0.1.0
      */
     public abstract void set(long val);
-  }
-
-  /** No-op implementations of LongGauge class. */
-  private static final class NoopLongGauge extends LongGauge {
-    private final int labelKeysSize;
-
-    static NoopLongGauge create(
-        String name, String description, String unit, List<LabelKey> labelKeys) {
-      return new NoopLongGauge(name, description, unit, labelKeys);
-    }
-
-    /** Creates a new {@code NoopLongPoint}. */
-    NoopLongGauge(String name, String description, String unit, List<LabelKey> labelKeys) {
-      labelKeysSize = labelKeys.size();
-    }
-
-    @Override
-    public NoopLongPoint getOrCreateTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
-      Utils.checkArgument(
-          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      return NoopLongPoint.INSTANCE;
-    }
-
-    @Override
-    public NoopLongPoint getDefaultTimeSeries() {
-      return NoopLongPoint.INSTANCE;
-    }
-
-    @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
-    @Override
-    public void clear() {}
-
-    /** No-op implementations of LongPoint class. */
-    private static final class NoopLongPoint extends LongPoint {
-      private static final NoopLongPoint INSTANCE = new NoopLongPoint();
-
-      private NoopLongPoint() {}
-
-      @Override
-      public void add(long amt) {}
-
-      @Override
-      public void set(long val) {}
-    }
   }
 }

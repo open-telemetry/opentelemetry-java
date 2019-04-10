@@ -25,8 +25,7 @@ import openconsensus.common.ExperimentalApi;
  */
 @ExperimentalApi
 public final class Metrics {
-  private static final MetricsComponent metricsComponent =
-      MetricsComponent.newNoopMetricsComponent();
+  private static final MetricsComponent metricsComponent = NoopMetrics.newNoopMetricsComponent();
 
   /**
    * Returns the global {@link MetricRegistry}.
