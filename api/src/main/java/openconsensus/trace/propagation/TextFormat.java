@@ -16,11 +16,9 @@
 
 package openconsensus.trace.propagation;
 
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import openconsensus.common.ExperimentalApi;
-import openconsensus.internal.Utils;
 import openconsensus.trace.SpanContext;
 
 /**
@@ -77,8 +75,6 @@ import openconsensus.trace.SpanContext;
  */
 @ExperimentalApi
 public abstract class TextFormat {
-  private static final NoopTextFormat NOOP_TEXT_FORMAT = new NoopTextFormat();
-
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
    * before calling {@link #inject(SpanContext, Object, Setter)}.
@@ -165,38 +161,5 @@ public abstract class TextFormat {
      */
     @Nullable
     public abstract String get(C carrier, String key);
-  }
-
-  /**
-   * Returns the no-op implementation of the {@code TextFormat}.
-   *
-   * @return the no-op implementation of the {@code TextFormat}.
-   */
-  static TextFormat getNoopTextFormat() {
-    return NOOP_TEXT_FORMAT;
-  }
-
-  private static final class NoopTextFormat extends TextFormat {
-
-    private NoopTextFormat() {}
-
-    @Override
-    public List<String> fields() {
-      return Collections.emptyList();
-    }
-
-    @Override
-    public <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter) {
-      Utils.checkNotNull(spanContext, "spanContext");
-      Utils.checkNotNull(carrier, "carrier");
-      Utils.checkNotNull(setter, "setter");
-    }
-
-    @Override
-    public <C> SpanContext extract(C carrier, Getter<C> getter) {
-      Utils.checkNotNull(carrier, "carrier");
-      Utils.checkNotNull(getter, "getter");
-      return SpanContext.INVALID;
-    }
   }
 }

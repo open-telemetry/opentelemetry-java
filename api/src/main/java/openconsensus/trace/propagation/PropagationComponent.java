@@ -26,9 +26,6 @@ import openconsensus.common.ExperimentalApi;
  * @since 0.1.0
  */
 public abstract class PropagationComponent {
-  private static final PropagationComponent NOOP_PROPAGATION_COMPONENT =
-      new NoopPropagationComponent();
-
   /**
    * Returns the {@link BinaryFormat} with the provided implementations. If no implementation is
    * provided then no-op implementation will be used.
@@ -59,31 +56,4 @@ public abstract class PropagationComponent {
    */
   @ExperimentalApi
   public abstract TextFormat getTraceContextFormat();
-
-  /**
-   * Returns an instance that contains no-op implementations for all the instances.
-   *
-   * @return an instance that contains no-op implementations for all the instances.
-   * @since 0.1.0
-   */
-  public static PropagationComponent getNoopPropagationComponent() {
-    return NOOP_PROPAGATION_COMPONENT;
-  }
-
-  private static final class NoopPropagationComponent extends PropagationComponent {
-    @Override
-    public BinaryFormat getBinaryFormat() {
-      return BinaryFormat.getNoopBinaryFormat();
-    }
-
-    @Override
-    public TextFormat getB3Format() {
-      return TextFormat.getNoopTextFormat();
-    }
-
-    @Override
-    public TextFormat getTraceContextFormat() {
-      return TextFormat.getNoopTextFormat();
-    }
-  }
 }
