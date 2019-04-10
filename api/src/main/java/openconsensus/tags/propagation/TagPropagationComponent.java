@@ -27,10 +27,10 @@ import openconsensus.tags.TagMap;
 public abstract class TagPropagationComponent {
 
   /**
-   * Returns the {@link TagContextBinarySerializer} for this implementation.
+   * Returns the {@link TagMapBinarySerializer} for this implementation.
    *
-   * @return the {@code TagContextBinarySerializer} for this implementation.
+   * @return the {@code TagMapBinarySerializer} for this implementation.
    * @since 0.1.0
    */
-  public abstract TagContextBinarySerializer getBinarySerializer();
+  public abstract TagMapBinarySerializer getBinarySerializer();
 }

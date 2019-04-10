@@ -24,7 +24,7 @@ import openconsensus.internal.Utils;
 import openconsensus.tags.data.TagKey;
 import openconsensus.tags.data.TagMetadata;
 import openconsensus.tags.data.TagValue;
-import openconsensus.tags.propagation.TagContextBinarySerializer;
+import openconsensus.tags.propagation.TagMapBinarySerializer;
 import openconsensus.tags.propagation.TagPropagationComponent;
 
 /** No-op implementations of tagging classes. */
@@ -55,7 +55,7 @@ final class NoopTags {
    *
    * @return a {@code TagMapBuilder} that ignores all calls to {@link TagMapBuilder#put}.
    */
-  static TagMapBuilder getNoopTagContextBuilder() {
+  static TagMapBuilder getNoopTagMapBuilder() {
     return NoopTagMapBuilder.INSTANCE;
   }
 
@@ -64,7 +64,7 @@ final class NoopTags {
    *
    * @return a {@code TagMap} that does not contain any tags.
    */
-  static TagMap getNoopTagContext() {
+  static TagMap getNoopTagMap() {
     return NoopTagMap.INSTANCE;
   }
 
@@ -74,11 +74,11 @@ final class NoopTags {
   }
 
   /**
-   * Returns a {@code TagContextBinarySerializer} that serializes all {@code TagMap}s to zero bytes
-   * and deserializes all inputs to empty {@code TagMap}s.
+   * Returns a {@code TagMapBinarySerializer} that serializes all {@code TagMap}s to zero bytes and
+   * deserializes all inputs to empty {@code TagMap}s.
    */
-  static TagContextBinarySerializer getNoopTagContextBinarySerializer() {
-    return NoopTagContextBinarySerializer.INSTANCE;
+  static TagMapBinarySerializer getNoopTagMapBinarySerializer() {
+    return NoopTagMapBinarySerializer.INSTANCE;
   }
 
   @ThreadSafe
@@ -100,32 +100,32 @@ final class NoopTags {
 
     @Override
     public TagMap empty() {
-      return getNoopTagContext();
+      return getNoopTagMap();
     }
 
     @Override
-    public TagMap getCurrentTagContext() {
-      return getNoopTagContext();
+    public TagMap getCurrentTagMap() {
+      return getNoopTagMap();
     }
 
     @Override
     public TagMapBuilder emptyBuilder() {
-      return getNoopTagContextBuilder();
+      return getNoopTagMapBuilder();
     }
 
     @Override
     public TagMapBuilder toBuilder(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
-      return getNoopTagContextBuilder();
+      return getNoopTagMapBuilder();
     }
 
     @Override
     public TagMapBuilder currentBuilder() {
-      return getNoopTagContextBuilder();
+      return getNoopTagMapBuilder();
     }
 
     @Override
-    public Scope withTagContext(TagMap tags) {
+    public Scope withTagMap(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
       return NoopScope.getInstance();
     }
@@ -151,7 +151,7 @@ final class NoopTags {
 
     @Override
     public TagMap build() {
-      return getNoopTagContext();
+      return getNoopTagMap();
     }
 
     @Override
@@ -170,14 +170,14 @@ final class NoopTags {
     static final TagPropagationComponent INSTANCE = new NoopTagPropagationComponent();
 
     @Override
-    public TagContextBinarySerializer getBinarySerializer() {
-      return getNoopTagContextBinarySerializer();
+    public TagMapBinarySerializer getBinarySerializer() {
+      return getNoopTagMapBinarySerializer();
     }
   }
 
   @Immutable
-  private static final class NoopTagContextBinarySerializer extends TagContextBinarySerializer {
-    static final TagContextBinarySerializer INSTANCE = new NoopTagContextBinarySerializer();
+  private static final class NoopTagMapBinarySerializer extends TagMapBinarySerializer {
+    static final TagMapBinarySerializer INSTANCE = new NoopTagMapBinarySerializer();
     static final byte[] EMPTY_BYTE_ARRAY = {};
 
     @Override
@@ -189,7 +189,7 @@ final class NoopTags {
     @Override
     public TagMap fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return getNoopTagContext();
+      return getNoopTagMap();
     }
   }
 }
