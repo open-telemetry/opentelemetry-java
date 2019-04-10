@@ -66,7 +66,7 @@ public abstract class SpanData {
       SpanContext context,
       @Nullable SpanId parentSpanId,
       String name,
-      @Nullable Kind kind,
+      Kind kind,
       Timestamp startTimestamp,
       Attributes attributes,
       TimedEvents<Event> events,
@@ -76,7 +76,6 @@ public abstract class SpanData {
       @Nullable Status status,
       @Nullable Timestamp endTimestamp) {
     Utils.checkNotNull(messageEvents, "messageEvents");
-    kind = kind == null ? Kind.INTERNAL : kind;
     return new AutoValue_SpanData(
         context,
         parentSpanId,
