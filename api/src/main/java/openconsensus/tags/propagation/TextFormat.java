@@ -33,10 +33,10 @@ import openconsensus.tags.TagMap;
  *
  * <pre>{@code
  * private static final Tagger tagger = Tags.getTagger();
- * private static final TagMapTextFormat textFormat =
- *     Tags.getPropagationComponent().getCorrelationContextFormat();
- * private static final TagMapTextFormat.Setter setter =
- *     new TagMapTextFormat.Setter<HttpURLConnection>() {
+ * private static final TextFormat textFormat =
+ *     Tags.getPropagationComponent().getTextFormat();
+ * private static final TextFormat.Setter setter =
+ *     new TextFormat.Setter<HttpURLConnection>() {
  *       public void put(HttpURLConnection carrier, String key, String value) {
  *         carrier.setRequestProperty(field, value);
  *       }
@@ -57,9 +57,9 @@ import openconsensus.tags.TagMap;
  *
  * <pre>{@code
  * private static final Tagger tagger = Tags.getTagger();
- * private static final TagMapTextFormat textFormat =
- *     Tags.getPropagationComponent().getCorrelationContextFormat();
- * private static final TagMapTextFormat.Getter<HttpRequest> getter = ...;
+ * private static final TextFormat textFormat =
+ *     Tags.getPropagationComponent().getTextFormat();
+ * private static final TextFormat.Getter<HttpRequest> getter = ...;
  *
  * void onRequestReceived(HttpRequest request) {
  *   TagMap tagMap = textFormat.extract(request, getter);
@@ -71,7 +71,7 @@ import openconsensus.tags.TagMap;
  *
  * @since 0.1.0
  */
-public abstract class TagMapTextFormat {
+public abstract class TextFormat {
 
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
@@ -94,14 +94,14 @@ public abstract class TagMapTextFormat {
    * @param tagMap the tag context.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param setter invoked for each propagation key to add or remove.
-   * @throws TagMapSerializationException if the given tag context cannot be serialized.
+   * @throws SerializationException if the given tag context cannot be serialized.
    * @since 0.1.0
    */
   public abstract <C> void inject(TagMap tagMap, C carrier, Setter<C> setter)
-      throws TagMapSerializationException;
+      throws SerializationException;
 
   /**
-   * Class that allows a {@code TagMapTextFormat} to set propagated fields into a carrier.
+   * Class that allows a {@code TextFormat} to set propagated fields into a carrier.
    *
    * <p>{@code Setter} is stateless and allows to be saved as a constant to avoid runtime
    * allocations.
@@ -130,14 +130,13 @@ public abstract class TagMapTextFormat {
    *
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param getter invoked for each propagation key to get.
-   * @throws TagMapDeserializationException if the input is invalid
+   * @throws DeserializationException if the input is invalid
    * @since 0.1.0
    */
-  public abstract <C> TagMap extract(C carrier, Getter<C> getter)
-      throws TagMapDeserializationException;
+  public abstract <C> TagMap extract(C carrier, Getter<C> getter) throws DeserializationException;
 
   /**
-   * Class that allows a {@code TagMapTextFormat} to read propagated fields from a carrier.
+   * Class that allows a {@code TextFormat} to read propagated fields from a carrier.
    *
    * <p>{@code Getter} is stateless and allows to be saved as a constant to avoid runtime
    * allocations.

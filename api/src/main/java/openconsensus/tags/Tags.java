@@ -16,7 +16,7 @@
 
 package openconsensus.tags;
 
-import openconsensus.tags.propagation.TagPropagationComponent;
+import openconsensus.tags.propagation.PropagationComponent;
 
 /**
  * Class for accessing the default {@link TagsComponent}.
@@ -39,12 +39,12 @@ public final class Tags {
   }
 
   /**
-   * Returns the default {@code TagPropagationComponent}.
+   * Returns the default {@code PropagationComponent}.
    *
-   * @return the default {@code TagPropagationComponent}.
+   * @return the default {@code PropagationComponent}.
    * @since 0.1.0
    */
-  public static TagPropagationComponent getTagPropagationComponent() {
+  public static PropagationComponent getTagPropagationComponent() {
     return tagsComponent.getTagPropagationComponent();
   }
 }

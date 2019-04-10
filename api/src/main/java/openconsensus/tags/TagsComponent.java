@@ -16,10 +16,10 @@
 
 package openconsensus.tags;
 
-import openconsensus.tags.propagation.TagPropagationComponent;
+import openconsensus.tags.propagation.PropagationComponent;
 
 /**
- * Class that holds the implementation for {@link Tagger} and {@link TagPropagationComponent}.
+ * Class that holds the implementation for {@link Tagger} and {@link PropagationComponent}.
  *
  * <p>All objects returned by methods on {@code TagsComponent} are cacheable.
  *
@@ -36,10 +36,10 @@ public abstract class TagsComponent {
   public abstract Tagger getTagger();
 
   /**
-   * Returns the {@link TagPropagationComponent} for this implementation.
+   * Returns the {@link PropagationComponent} for this implementation.
    *
-   * @return the {@link TagPropagationComponent} for this implementation.
+   * @return the {@link PropagationComponent} for this implementation.
    * @since 0.1.0
    */
-  public abstract TagPropagationComponent getTagPropagationComponent();
+  public abstract PropagationComponent getTagPropagationComponent();
 }
