@@ -19,31 +19,31 @@ package openconsensus.tags.propagation;
 import openconsensus.tags.TagMap;
 
 /**
- * Exception thrown when a {@link TagMap} cannot be serialized.
+ * Exception thrown when a {@link TagMap} cannot be parsed.
  *
  * @since 0.1.0
  */
-public final class TagMapSerializationException extends Exception {
+public final class DeserializationException extends Exception {
   private static final long serialVersionUID = 0L;
 
   /**
-   * Constructs a new {@code TagMapSerializationException} with the given message.
+   * Constructs a new {@code TagMapParseException} with the given message.
    *
    * @param message a message describing the error.
    * @since 0.1.0
    */
-  public TagMapSerializationException(String message) {
+  public DeserializationException(String message) {
     super(message);
   }
 
   /**
-   * Constructs a new {@code TagMapSerializationException} with the given message and cause.
+   * Constructs a new {@code TagMapParseException} with the given message and cause.
    *
    * @param message a message describing the error.
    * @param cause the cause of the error.
    * @since 0.1.0
    */
-  public TagMapSerializationException(String message, Throwable cause) {
+  public DeserializationException(String message, Throwable cause) {
     super(message, cause);
   }
 }

@@ -20,8 +20,6 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.common.ToDoubleFunction;
-import openconsensus.internal.Utils;
-import openconsensus.metrics.data.LabelKey;
 import openconsensus.metrics.data.LabelValue;
 
 /**
@@ -95,51 +93,4 @@ public abstract class DerivedDoubleGauge {
    * @since 0.1.0
    */
   public abstract void clear();
-
-  /**
-   * Returns the no-op implementation of the {@code DerivedDoubleGauge}.
-   *
-   * @return the no-op implementation of the {@code DerivedDoubleGauge}.
-   * @since 0.1.0
-   */
-  static DerivedDoubleGauge newNoopDerivedDoubleGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return NoopDerivedDoubleGauge.create(name, description, unit, labelKeys);
-  }
-
-  /** No-op implementations of DerivedDoubleGauge class. */
-  private static final class NoopDerivedDoubleGauge extends DerivedDoubleGauge {
-    private final int labelKeysSize;
-
-    static NoopDerivedDoubleGauge create(
-        String name, String description, String unit, List<LabelKey> labelKeys) {
-      return new NoopDerivedDoubleGauge(name, description, unit, labelKeys);
-    }
-
-    /** Creates a new {@code NoopDerivedDoubleGauge}. */
-    NoopDerivedDoubleGauge(String name, String description, String unit, List<LabelKey> labelKeys) {
-      Utils.checkNotNull(name, "name");
-      Utils.checkNotNull(description, "description");
-      Utils.checkNotNull(unit, "unit");
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-      labelKeysSize = labelKeys.size();
-    }
-
-    @Override
-    public <T> void createTimeSeries(
-        List<LabelValue> labelValues, T obj, ToDoubleFunction<T> function) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
-      Utils.checkArgument(
-          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      Utils.checkNotNull(function, "function");
-    }
-
-    @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
-    @Override
-    public void clear() {}
-  }
 }

@@ -19,18 +19,31 @@ package openconsensus.tags.propagation;
 import openconsensus.tags.TagMap;
 
 /**
- * Object containing all supported {@link TagMap} propagation formats.
+ * Exception thrown when a {@link TagMap} cannot be serialized.
  *
  * @since 0.1.0
  */
-// TODO(sebright): Add an HTTP serializer.
-public abstract class TagPropagationComponent {
+public final class SerializationException extends Exception {
+  private static final long serialVersionUID = 0L;
 
   /**
-   * Returns the {@link TagMapBinarySerializer} for this implementation.
+   * Constructs a new {@code SerializationException} with the given message.
    *
-   * @return the {@code TagMapBinarySerializer} for this implementation.
+   * @param message a message describing the error.
    * @since 0.1.0
    */
-  public abstract TagMapBinarySerializer getBinarySerializer();
+  public SerializationException(String message) {
+    super(message);
+  }
+
+  /**
+   * Constructs a new {@code SerializationException} with the given message and cause.
+   *
+   * @param message a message describing the error.
+   * @param cause the cause of the error.
+   * @since 0.1.0
+   */
+  public SerializationException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

@@ -46,30 +46,22 @@ final class NoopTrace {
     return new NoopTraceComponent();
   }
 
-  private static final class NoopTraceComponent extends BaseTraceComponent {
+    private static final Tracer TRACER = new NoopTracer();
+    private static final PropagationComponent PROPAGATION_COMPONENT =
+        new NoopPropagationComponent();
+
     @Override
     public Tracer getTracer() {
-      return getNoopTracer();
+      return TRACER;
     }
 
     @Override
     public PropagationComponent getPropagationComponent() {
-      return getNoopPropagationComponent();
+      return PROPAGATION_COMPONENT;
     }
   }
 
-  /**
-   * Returns the no-op implementation of the {@code Tracer}.
-   *
-   * @return the no-op implementation of the {@code Tracer}.
-   */
-  private static Tracer getNoopTracer() {
-    return new NoopTracer();
-  }
-
-  // No-Op implementation of the Tracer.
   private static final class NoopTracer extends BaseTracer {
-
     @Override
     public Span getCurrentSpan() {
       return BlankSpan.INSTANCE;
@@ -165,40 +157,24 @@ final class NoopTrace {
     }
   }
 
-  /**
-   * Returns an instance that contains no-op implementations for all the instances.
-   *
-   * @return an instance that contains no-op implementations for all the instances.
-   */
-  private static PropagationComponent getNoopPropagationComponent() {
-    return new NoopPropagationComponent();
-  }
-
   private static final class NoopPropagationComponent extends BasePropagationComponent {
+    private static final BinaryFormat BINARY_FORMAT = new NoopBinaryFormat();
+    private static final TextFormat TEXT_FORMAT = new NoopTextFormat();
 
     @Override
     public BinaryFormat getBinaryFormat() {
-      return getNoopBinaryFormat();
+      return BINARY_FORMAT;
     }
 
     @Override
     public TextFormat getB3Format() {
-      return getNoopTextFormat();
+      return TEXT_FORMAT;
     }
 
     @Override
     public TextFormat getTraceContextFormat() {
-      return getNoopTextFormat();
+      return TEXT_FORMAT;
     }
-  }
-
-  /**
-   * Returns the no-op implementation of the {@code BinaryFormat}.
-   *
-   * @return the no-op implementation of the {@code BinaryFormat}.
-   */
-  private static BinaryFormat getNoopBinaryFormat() {
-    return new NoopBinaryFormat();
   }
 
   private static final class NoopBinaryFormat extends BaseBinaryFormat {
@@ -216,15 +192,6 @@ final class NoopTrace {
     }
 
     private NoopBinaryFormat() {}
-  }
-
-  /**
-   * Returns the no-op implementation of the {@code TextFormat}.
-   *
-   * @return the no-op implementation of the {@code TextFormat}.
-   */
-  private static TextFormat getNoopTextFormat() {
-    return new NoopTextFormat();
   }
 
   private static final class NoopTextFormat extends BaseTextFormat {

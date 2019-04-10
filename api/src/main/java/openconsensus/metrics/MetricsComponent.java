@@ -32,22 +32,4 @@ public abstract class MetricsComponent {
    * @since 0.1.0
    */
   public abstract MetricRegistry getMetricRegistry();
-
-  /**
-   * Returns an instance that contains no-op implementations for all the instances.
-   *
-   * @return an instance that contains no-op implementations for all the instances.
-   */
-  static MetricsComponent newNoopMetricsComponent() {
-    return new NoopMetricsComponent();
-  }
-
-  private static final class NoopMetricsComponent extends MetricsComponent {
-    private static final MetricRegistry METRIC_REGISTRY = MetricRegistry.newNoopMetricRegistry();
-
-    @Override
-    public MetricRegistry getMetricRegistry() {
-      return METRIC_REGISTRY;
-    }
-  }
 }
