@@ -16,6 +16,8 @@
 
 package openconsensus.tags;
 
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.context.NoopScope;
@@ -25,6 +27,9 @@ import openconsensus.tags.data.TagKey;
 import openconsensus.tags.data.TagMetadata;
 import openconsensus.tags.data.TagValue;
 import openconsensus.tags.propagation.TagMapBinarySerializer;
+import openconsensus.tags.propagation.TagMapDeserializationException;
+import openconsensus.tags.propagation.TagMapSerializationException;
+import openconsensus.tags.propagation.TagMapTextFormat;
 import openconsensus.tags.propagation.TagPropagationComponent;
 
 /** No-op implementations of tagging classes. */
@@ -164,9 +169,16 @@ final class NoopTags {
   @Immutable
   private static final class NoopTagPropagationComponent extends TagPropagationComponent {
 
+    private static final TagMapTextFormat TAG_MAP_TEXT_FORMAT = new NoopTagMapTextFormat();
+
     @Override
     public TagMapBinarySerializer getBinarySerializer() {
       return getNoopTagMapBinarySerializer();
+    }
+
+    @Override
+    public TagMapTextFormat getCorrelationContextFormat() {
+      return TAG_MAP_TEXT_FORMAT;
     }
   }
 
@@ -183,6 +195,30 @@ final class NoopTags {
     @Override
     public TagMap fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
+      return getNoopTagMap();
+    }
+  }
+
+  @Immutable
+  private static final class NoopTagMapTextFormat extends TagMapTextFormat {
+
+    @Override
+    public List<String> fields() {
+      return Collections.<String>emptyList();
+    }
+
+    @Override
+    public <C> void inject(TagMap tagContext, C carrier, Setter<C> setter)
+        throws TagMapSerializationException {
+      Utils.checkNotNull(tagContext, "tagContext");
+      Utils.checkNotNull(carrier, "carrier");
+      Utils.checkNotNull(setter, "setter");
+    }
+
+    @Override
+    public <C> TagMap extract(C carrier, Getter<C> getter) throws TagMapDeserializationException {
+      Utils.checkNotNull(carrier, "carrier");
+      Utils.checkNotNull(getter, "getter");
       return getNoopTagMap();
     }
   }
