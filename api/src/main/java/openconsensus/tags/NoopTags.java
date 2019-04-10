@@ -47,7 +47,7 @@ final class NoopTags {
    * @return a {@code Tagger} that only produces {@code TagMap}s with no tags.
    */
   static Tagger getNoopTagger() {
-    return NoopTagger.INSTANCE;
+    return new NoopTagger();
   }
 
   /**
@@ -56,7 +56,7 @@ final class NoopTags {
    * @return a {@code TagMapBuilder} that ignores all calls to {@link TagMapBuilder#put}.
    */
   static TagMapBuilder getNoopTagMapBuilder() {
-    return NoopTagMapBuilder.INSTANCE;
+    return new NoopTagMapBuilder();
   }
 
   /**
@@ -65,12 +65,12 @@ final class NoopTags {
    * @return a {@code TagMap} that does not contain any tags.
    */
   static TagMap getNoopTagMap() {
-    return NoopTagMap.INSTANCE;
+    return new NoopTagMap();
   }
 
   /** Returns a {@code TagPropagationComponent} that contains no-op serializers. */
   static TagPropagationComponent getNoopTagPropagationComponent() {
-    return NoopTagPropagationComponent.INSTANCE;
+    return new NoopTagPropagationComponent();
   }
 
   /**
@@ -78,7 +78,7 @@ final class NoopTags {
    * deserializes all inputs to empty {@code TagMap}s.
    */
   static TagMapBinarySerializer getNoopTagMapBinarySerializer() {
-    return NoopTagMapBinarySerializer.INSTANCE;
+    return new NoopTagMapBinarySerializer();
   }
 
   @ThreadSafe
@@ -96,7 +96,6 @@ final class NoopTags {
 
   @Immutable
   private static final class NoopTagger extends Tagger {
-    static final Tagger INSTANCE = new NoopTagger();
 
     @Override
     public TagMap empty() {
@@ -133,7 +132,6 @@ final class NoopTags {
 
   @Immutable
   private static final class NoopTagMapBuilder extends TagMapBuilder {
-    static final TagMapBuilder INSTANCE = new NoopTagMapBuilder();
 
     @Override
     public TagMapBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
@@ -161,13 +159,10 @@ final class NoopTags {
   }
 
   @Immutable
-  private static final class NoopTagMap extends TagMap {
-    static final TagMap INSTANCE = new NoopTagMap();
-  }
+  private static final class NoopTagMap extends TagMap {}
 
   @Immutable
   private static final class NoopTagPropagationComponent extends TagPropagationComponent {
-    static final TagPropagationComponent INSTANCE = new NoopTagPropagationComponent();
 
     @Override
     public TagMapBinarySerializer getBinarySerializer() {
@@ -177,7 +172,6 @@ final class NoopTags {
 
   @Immutable
   private static final class NoopTagMapBinarySerializer extends TagMapBinarySerializer {
-    static final TagMapBinarySerializer INSTANCE = new NoopTagMapBinarySerializer();
     static final byte[] EMPTY_BYTE_ARRAY = {};
 
     @Override
