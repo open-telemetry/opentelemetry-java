@@ -23,14 +23,24 @@ import openconsensus.tags.TagMap;
  *
  * @since 0.1.0
  */
-// TODO(sebright): Add an HTTP serializer.
 public abstract class TagPropagationComponent {
 
   /**
-   * Returns the {@link TagContextBinarySerializer} for this implementation.
+   * Returns the {@link TagMapBinarySerializer} for this implementation.
    *
-   * @return the {@code TagContextBinarySerializer} for this implementation.
+   * @return the {@code TagMapBinarySerializer} for this implementation.
    * @since 0.1.0
    */
-  public abstract TagContextBinarySerializer getBinarySerializer();
+  public abstract TagMapBinarySerializer getBinarySerializer();
+
+  /**
+   * Returns the {@link TagMapTextFormat} for this implementation.
+   *
+   * <p>OpenConsensus uses W3C Correlation Context as the HTTP text format. For more details, see <a
+   * href="https://github.com/w3c/correlation-context">correlation-context</a>.
+   *
+   * @return the {@code TagMapTextFormat} for this implementation.
+   * @since 0.1.0
+   */
+  public abstract TagMapTextFormat getCorrelationContextFormat();
 }

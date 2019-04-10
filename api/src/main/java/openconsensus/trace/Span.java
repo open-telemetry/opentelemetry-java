@@ -41,17 +41,47 @@ public abstract class Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public abstract void setAttribute(String key, AttributeValue value);
+  public abstract void setAttribute(String key, String value);
 
   /**
-   * Sets a set of attributes to the {@code Span}. The effect of this call is equivalent to that of
-   * calling {@link #setAttribute(String, AttributeValue)} once for each element in the specified
-   * map.
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
    *
-   * @param attributes the attributes that will be added and associated with the {@code Span}.
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public abstract void setAttributes(Map<String, AttributeValue> attributes);
+  public abstract void setAttribute(String key, long value);
+
+  /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
+  public abstract void setAttribute(String key, double value);
+
+  /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
+  public abstract void setAttribute(String key, boolean value);
+
+  /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
+  public abstract void setAttribute(String key, AttributeValue value);
 
   /**
    * Adds an event to the {@code Span}.
@@ -66,7 +96,7 @@ public abstract class Span {
    *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
-   *     the {@code Span} as for {@link #setAttributes(Map)}.
+   *     the {@code Span} as for {@code setAttributes()}.
    * @since 0.1.0
    */
   public abstract void addEvent(String name, Map<String, AttributeValue> attributes);
@@ -150,11 +180,11 @@ public abstract class Span {
    */
   public enum Kind {
     /**
-     * Undefined span kind.
+     * Default value. Indicates that the span is used internally.
      *
      * @since 0.1.0
      */
-    UNDEFINED,
+    INTERNAL,
 
     /**
      * Indicates that the span covers server-side handling of an RPC or other remote request.

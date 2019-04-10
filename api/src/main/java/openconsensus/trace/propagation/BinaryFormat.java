@@ -17,7 +17,6 @@
 package openconsensus.trace.propagation;
 
 import java.nio.ByteBuffer;
-import openconsensus.internal.Utils;
 import openconsensus.trace.SpanContext;
 
 /**
@@ -68,8 +67,6 @@ import openconsensus.trace.SpanContext;
  * @since 0.1.0
  */
 public abstract class BinaryFormat {
-  static final NoopBinaryFormat NOOP_BINARY_FORMAT = new NoopBinaryFormat();
-
   /**
    * Serializes a {@link SpanContext} into a {@code ByteBuffer} using the binary format.
    *
@@ -90,31 +87,4 @@ public abstract class BinaryFormat {
    * @since 0.1.0
    */
   public abstract SpanContext fromByteBuffer(ByteBuffer bytes) throws SpanContextParseException;
-
-  /**
-   * Returns the no-op implementation of the {@code BinaryFormat}.
-   *
-   * @return the no-op implementation of the {@code BinaryFormat}.
-   */
-  static BinaryFormat getNoopBinaryFormat() {
-    return NOOP_BINARY_FORMAT;
-  }
-
-  private static final class NoopBinaryFormat extends BinaryFormat {
-    private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.wrap(new byte[0]);
-
-    @Override
-    public ByteBuffer toByteBuffer(SpanContext spanContext) {
-      Utils.checkNotNull(spanContext, "spanContext");
-      return EMPTY_BUFFER;
-    }
-
-    @Override
-    public SpanContext fromByteBuffer(ByteBuffer bytes) {
-      Utils.checkNotNull(bytes, "bytes");
-      return SpanContext.INVALID;
-    }
-
-    private NoopBinaryFormat() {}
-  }
 }
