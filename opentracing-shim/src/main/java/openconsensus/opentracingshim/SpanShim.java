@@ -53,7 +53,7 @@ final class SpanShim implements Span {
     } else if ("error".equals(key) && value.equalsIgnoreCase("true")) {
       this.span.setStatus(Status.UNKNOWN);
     } else {
-      span.setAttribute(key, AttributeValue.stringAttributeValue(value));
+      span.setAttribute(key, value);
     }
 
     return this;
@@ -61,10 +61,10 @@ final class SpanShim implements Span {
 
   @Override
   public Span setTag(String key, boolean value) {
-    if ("error".equals(key) && (value == true)) {
+    if ("error".equals(key) && value) {
       this.span.setStatus(Status.UNKNOWN);
     } else {
-      span.setAttribute(key, AttributeValue.booleanAttributeValue(value));
+      span.setAttribute(key, value);
     }
 
     return this;
@@ -77,9 +77,9 @@ final class SpanShim implements Span {
         || value instanceof Long
         || value instanceof Short
         || value instanceof Byte) {
-      span.setAttribute(key, AttributeValue.longAttributeValue(value.longValue()));
+      span.setAttribute(key, value.longValue());
     } else if (value instanceof Float || value instanceof Double) {
-      span.setAttribute(key, AttributeValue.doubleAttributeValue(value.doubleValue()));
+      span.setAttribute(key, value.doubleValue());
     } else {
       throw new IllegalArgumentException("Number type not supported");
     }
@@ -157,7 +157,7 @@ final class SpanShim implements Span {
   }
 
   static Map<String, AttributeValue> convertToAttributes(Map<String, ?> fields) {
-    Map<String, AttributeValue> attrMap = new HashMap<String, AttributeValue>();
+    Map<String, AttributeValue> attrMap = new HashMap<>();
 
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
       String key = entry.getKey();

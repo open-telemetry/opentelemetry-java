@@ -21,24 +21,20 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.tag.Tag;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.List;
 import openconsensus.trace.Span.Kind;
 import openconsensus.trace.data.AttributeValue;
 
 @SuppressWarnings("deprecation")
 final class SpanBuilderShim implements SpanBuilder {
-  openconsensus.trace.Tracer tracer;
-  openconsensus.trace.SpanBuilder builder;
+  private final openconsensus.trace.SpanBuilder builder;
 
   // TODO: should it be any of concurrent maps?
-  Map<String, AttributeValue> spanBuilderAttributes = new HashMap<String, AttributeValue>();
+  private final List<String> spanBuilderAttributeKeys = new ArrayList<>();
+  private final List<AttributeValue> spanBuilderAttributeValues = new ArrayList<>();
 
-  public SpanBuilderShim(
-      openconsensus.trace.Tracer tracer, openconsensus.trace.SpanBuilder builder) {
-    this.tracer = tracer;
+  public SpanBuilderShim(openconsensus.trace.SpanBuilder builder) {
     this.builder = builder;
   }
 
@@ -90,7 +86,8 @@ final class SpanBuilderShim implements SpanBuilder {
       // TODO: confirm we can ignore it
       // https://github.com/bogdandrutu/openconsensus/issues/41
     } else {
-      this.spanBuilderAttributes.put(key, AttributeValue.stringAttributeValue(value));
+      this.spanBuilderAttributeKeys.add(key);
+      this.spanBuilderAttributeValues.add(AttributeValue.stringAttributeValue(value));
     }
 
     return this;
@@ -98,11 +95,12 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, boolean value) {
-    if ("error".equals(key) && (value == true)) {
+    if ("error".equals(key)) {
       // TODO: confirm we can ignore it
       // https://github.com/bogdandrutu/openconsensus/issues/41
     } else {
-      this.spanBuilderAttributes.put(key, AttributeValue.booleanAttributeValue(value));
+      this.spanBuilderAttributeKeys.add(key);
+      this.spanBuilderAttributeValues.add(AttributeValue.booleanAttributeValue(value));
     }
     return this;
   }
@@ -114,9 +112,11 @@ final class SpanBuilderShim implements SpanBuilder {
         || value instanceof Long
         || value instanceof Short
         || value instanceof Byte) {
-      this.spanBuilderAttributes.put(key, AttributeValue.longAttributeValue(value.longValue()));
+      this.spanBuilderAttributeKeys.add(key);
+      this.spanBuilderAttributeValues.add(AttributeValue.longAttributeValue(value.longValue()));
     } else if (value instanceof Float || value instanceof Double) {
-      this.spanBuilderAttributes.put(key, AttributeValue.doubleAttributeValue(value.doubleValue()));
+      this.spanBuilderAttributeKeys.add(key);
+      this.spanBuilderAttributeValues.add(AttributeValue.doubleAttributeValue(value.doubleValue()));
     } else {
       throw new IllegalArgumentException("Number type not supported");
     }
@@ -129,7 +129,7 @@ final class SpanBuilderShim implements SpanBuilder {
     if (value instanceof String) {
       this.withTag(tag.getKey(), (String) value);
     } else if (value instanceof Boolean) {
-      this.withTag(tag.getKey(), ((Boolean) value).booleanValue());
+      this.withTag(tag.getKey(), (Boolean) value);
     } else if (value instanceof Number) {
       this.withTag(tag.getKey(), (Number) value);
     } else {
@@ -141,20 +141,18 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withStartTimestamp(long microseconds) {
-    this.spanBuilderAttributes.put(
-        "ot.start_timestamp", AttributeValue.longAttributeValue(microseconds));
+    this.spanBuilderAttributeKeys.add("ot.start_timestamp");
+    this.spanBuilderAttributeValues.add(AttributeValue.longAttributeValue(microseconds));
     return this;
   }
 
   @Override
   public Span start() {
     openconsensus.trace.Span span = builder.startSpan();
-
-    Iterator<Entry<String, AttributeValue>> entries =
-        this.spanBuilderAttributes.entrySet().iterator();
-    while (entries.hasNext()) {
-      Map.Entry<String, AttributeValue> entry = entries.next();
-      span.setAttribute(entry.getKey(), entry.getValue());
+    for (int i = 0; i < this.spanBuilderAttributeKeys.size(); i++) {
+      String key = this.spanBuilderAttributeKeys.get(i);
+      AttributeValue value = this.spanBuilderAttributeValues.get(i);
+      span.setAttribute(key, value);
     }
     return new SpanShim(span);
   }
