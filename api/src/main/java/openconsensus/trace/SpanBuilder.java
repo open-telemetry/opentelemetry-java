@@ -145,7 +145,7 @@ public abstract class SpanBuilder {
 
   /**
    * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the
-   * implementation will provide a default.
+   * implementation will provide a default value {@link Span.Kind#INTERNAL}.
    *
    * @param spanKind the kind of the newly created {@code Span}.
    * @return this.
