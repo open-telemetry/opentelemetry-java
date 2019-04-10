@@ -51,50 +51,23 @@ final class NoopStats {
     return new NoopViewComponent();
   }
 
-  /**
-   * Returns a {@code StatsRecorder} that does not record any data.
-   *
-   * @return a {@code StatsRecorder} that does not record any data.
-   */
-  static StatsRecorder newNoopStatsRecorder() {
-    return new NoopStatsRecorder();
-  }
-
-  /**
-   * Returns a {@code MeasureMap} that ignores all calls to {@link MeasureMap#put}.
-   *
-   * @return a {@code MeasureMap} that ignores all calls to {@code MeasureMap#put}.
-   */
-  static MeasureMap newNoopMeasureMap() {
-    return new NoopMeasureMap();
-  }
-
-  /**
-   * Returns a {@code ViewManager} that maintains a map of views..
-   *
-   * @return a {@code ViewManager} that maintains a map of views..
-   */
-  static ViewManager newNoopViewManager() {
-    return new NoopViewManager();
-  }
-
   @ThreadSafe
   private static final class NoopViewComponent extends ViewComponent {
-    private final ViewManager viewManager = newNoopViewManager();
+    private static final ViewManager VIEW_MANAGER = new NoopViewManager();
 
     @Override
     public ViewManager getViewManager() {
-      return viewManager;
+      return VIEW_MANAGER;
     }
   }
 
   @ThreadSafe
   private static final class NoopStatsComponent extends StatsComponent {
-    private final StatsRecorder statsRecorder = newNoopStatsRecorder();
+    private static final StatsRecorder STATS_RECORDER = new NoopStatsRecorder();
 
     @Override
     public StatsRecorder getStatsRecorder() {
-      return statsRecorder;
+      return STATS_RECORDER;
     }
   }
 
@@ -102,7 +75,7 @@ final class NoopStats {
   private static final class NoopStatsRecorder extends StatsRecorder {
     @Override
     public MeasureMap newMeasureMap() {
-      return newNoopMeasureMap();
+      return new NoopMeasureMap();
     }
   }
 

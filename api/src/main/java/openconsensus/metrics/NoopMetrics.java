@@ -28,6 +28,7 @@ import openconsensus.metrics.data.Metric;
 
 /** No-op implementations of metrics classes. */
 final class NoopMetrics {
+  private NoopMetrics() {}
 
   /**
    * Returns an instance that contains no-op implementations for all the instances.
@@ -39,21 +40,18 @@ final class NoopMetrics {
   }
 
   private static final class NoopMetricsComponent extends MetricsComponent {
+    private static final MetricRegistry METRIC_REGISTRY = new NoopMetricRegistry();
+
     @Override
     public MetricRegistry getMetricRegistry() {
-      return newNoopMetricRegistry();
+      return METRIC_REGISTRY;
     }
   }
 
-  static MetricRegistry newNoopMetricRegistry() {
-    return new NoopMetricRegistry();
-  }
-
   private static final class NoopMetricRegistry extends MetricRegistry {
-
     @Override
     public LongGauge addLongGauge(String name, MetricOptions options) {
-      return newNoopLongGauge(
+      return NoopLongGauge.create(
           Utils.checkNotNull(name, "name"),
           options.getDescription(),
           options.getUnit(),
@@ -62,7 +60,7 @@ final class NoopMetrics {
 
     @Override
     public DoubleGauge addDoubleGauge(String name, MetricOptions options) {
-      return newNoopDoubleGauge(
+      return NoopDoubleGauge.create(
           Utils.checkNotNull(name, "name"),
           options.getDescription(),
           options.getUnit(),
@@ -71,7 +69,7 @@ final class NoopMetrics {
 
     @Override
     public DerivedLongGauge addDerivedLongGauge(String name, MetricOptions options) {
-      return newNoopDerivedLongGauge(
+      return NoopDerivedLongGauge.create(
           Utils.checkNotNull(name, "name"),
           options.getDescription(),
           options.getUnit(),
@@ -80,7 +78,7 @@ final class NoopMetrics {
 
     @Override
     public DerivedDoubleGauge addDerivedDoubleGauge(String name, MetricOptions options) {
-      return newNoopDerivedDoubleGauge(
+      return NoopDerivedDoubleGauge.create(
           Utils.checkNotNull(name, "name"),
           options.getDescription(),
           options.getUnit(),
@@ -91,16 +89,6 @@ final class NoopMetrics {
     public Collection<Metric> getMetrics() {
       return Collections.emptyList();
     }
-  }
-
-  /**
-   * Returns the no-op implementation of the {@code LongGauge}.
-   *
-   * @return the no-op implementation of the {@code LongGauge}.
-   */
-  static LongGauge newNoopLongGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return NoopLongGauge.create(name, description, unit, labelKeys);
   }
 
   /** No-op implementations of LongGauge class. */
@@ -148,17 +136,6 @@ final class NoopMetrics {
       @Override
       public void set(long val) {}
     }
-  }
-
-  /**
-   * Returns the no-op implementation of the {@code DoubleGauge}.
-   *
-   * @return the no-op implementation of the {@code DoubleGauge}.
-   * @since 0.1.0
-   */
-  static DoubleGauge newNoopDoubleGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return NoopDoubleGauge.create(name, description, unit, labelKeys);
   }
 
   /** No-op implementations of DoubleGauge class. */
@@ -212,17 +189,6 @@ final class NoopMetrics {
     }
   }
 
-  /**
-   * Returns the no-op implementation of the {@code DerivedLongGauge}.
-   *
-   * @return the no-op implementation of the {@code DerivedLongGauge}.
-   * @since 0.1.0
-   */
-  static DerivedLongGauge newNoopDerivedLongGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return NoopDerivedLongGauge.create(name, description, unit, labelKeys);
-  }
-
   /** No-op implementations of DerivedLongGauge class. */
   private static final class NoopDerivedLongGauge extends DerivedLongGauge {
     private final int labelKeysSize;
@@ -257,17 +223,6 @@ final class NoopMetrics {
 
     @Override
     public void clear() {}
-  }
-
-  /**
-   * Returns the no-op implementation of the {@code DerivedDoubleGauge}.
-   *
-   * @return the no-op implementation of the {@code DerivedDoubleGauge}.
-   * @since 0.1.0
-   */
-  static DerivedDoubleGauge newNoopDerivedDoubleGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return NoopDerivedDoubleGauge.create(name, description, unit, labelKeys);
   }
 
   /** No-op implementations of DerivedDoubleGauge class. */

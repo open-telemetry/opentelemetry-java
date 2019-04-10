@@ -41,86 +41,51 @@ final class NoopTags {
     return new NoopTagsComponent();
   }
 
-  /**
-   * Returns a {@code Tagger} that only produces {@link TagMap}s with no tags.
-   *
-   * @return a {@code Tagger} that only produces {@code TagMap}s with no tags.
-   */
-  static Tagger getNoopTagger() {
-    return new NoopTagger();
-  }
-
-  /**
-   * Returns a {@code TagMapBuilder} that ignores all calls to {@link TagMapBuilder#put}.
-   *
-   * @return a {@code TagMapBuilder} that ignores all calls to {@link TagMapBuilder#put}.
-   */
-  static TagMapBuilder getNoopTagMapBuilder() {
-    return new NoopTagMapBuilder();
-  }
-
-  /**
-   * Returns a {@code TagMap} that does not contain any tags.
-   *
-   * @return a {@code TagMap} that does not contain any tags.
-   */
-  static TagMap getNoopTagMap() {
-    return new NoopTagMap();
-  }
-
-  /** Returns a {@code TagPropagationComponent} that contains no-op serializers. */
-  static TagPropagationComponent getNoopTagPropagationComponent() {
-    return new NoopTagPropagationComponent();
-  }
-
-  /**
-   * Returns a {@code TagMapBinarySerializer} that serializes all {@code TagMap}s to zero bytes and
-   * deserializes all inputs to empty {@code TagMap}s.
-   */
-  static TagMapBinarySerializer getNoopTagMapBinarySerializer() {
-    return new NoopTagMapBinarySerializer();
-  }
-
   @ThreadSafe
   private static final class NoopTagsComponent extends TagsComponent {
+    private static final TagPropagationComponent TAG_PROPAGATION_COMPONENT =
+        new NoopTagPropagationComponent();
+    private static final Tagger TAGGER = new NoopTagger();
+
     @Override
     public Tagger getTagger() {
-      return getNoopTagger();
+      return TAGGER;
     }
 
     @Override
     public TagPropagationComponent getTagPropagationComponent() {
-      return getNoopTagPropagationComponent();
+      return TAG_PROPAGATION_COMPONENT;
     }
   }
 
   @Immutable
   private static final class NoopTagger extends Tagger {
+    private static final TagMap EMPTY = new NoopTagMap();
 
     @Override
     public TagMap empty() {
-      return getNoopTagMap();
+      return EMPTY;
     }
 
     @Override
     public TagMap getCurrentTagMap() {
-      return getNoopTagMap();
+      return EMPTY;
     }
 
     @Override
     public TagMapBuilder emptyBuilder() {
-      return getNoopTagMapBuilder();
+      return new NoopTagMapBuilder();
     }
 
     @Override
     public TagMapBuilder toBuilder(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
-      return getNoopTagMapBuilder();
+      return new NoopTagMapBuilder();
     }
 
     @Override
     public TagMapBuilder currentBuilder() {
-      return getNoopTagMapBuilder();
+      return new NoopTagMapBuilder();
     }
 
     @Override
@@ -132,6 +97,7 @@ final class NoopTags {
 
   @Immutable
   private static final class NoopTagMapBuilder extends TagMapBuilder {
+    private static final TagMap EMPTY = new NoopTagMap();
 
     @Override
     public TagMapBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
@@ -149,7 +115,7 @@ final class NoopTags {
 
     @Override
     public TagMap build() {
-      return getNoopTagMap();
+      return EMPTY;
     }
 
     @Override
@@ -163,15 +129,18 @@ final class NoopTags {
 
   @Immutable
   private static final class NoopTagPropagationComponent extends TagPropagationComponent {
+    private static final TagMapBinarySerializer TAG_MAP_BINARY_SERIALIZER =
+        new NoopTagMapBinarySerializer();
 
     @Override
     public TagMapBinarySerializer getBinarySerializer() {
-      return getNoopTagMapBinarySerializer();
+      return TAG_MAP_BINARY_SERIALIZER;
     }
   }
 
   @Immutable
   private static final class NoopTagMapBinarySerializer extends TagMapBinarySerializer {
+    private static final TagMap EMPTY = new NoopTagMap();
     static final byte[] EMPTY_BYTE_ARRAY = {};
 
     @Override
@@ -183,7 +152,7 @@ final class NoopTags {
     @Override
     public TagMap fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return getNoopTagMap();
+      return EMPTY;
     }
   }
 }
