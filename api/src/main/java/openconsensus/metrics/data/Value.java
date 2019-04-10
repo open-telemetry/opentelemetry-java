@@ -95,7 +95,8 @@ public abstract class Value {
    * @since 0.1.0
    */
   public double getDoubleValue() {
-    throw new UnsupportedOperationException("Not implemented.");
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
   }
 
   /**
@@ -107,7 +108,8 @@ public abstract class Value {
    * @since 0.1.0
    */
   public long getLongValue() {
-    throw new UnsupportedOperationException("Not implemented.");
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
   }
 
   /**
@@ -119,7 +121,8 @@ public abstract class Value {
    * @since 0.1.0
    */
   public Distribution getDistributionValue() {
-    throw new UnsupportedOperationException("Not implemented.");
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
   }
 
   /**
@@ -131,7 +134,8 @@ public abstract class Value {
    * @since 0.1.0
    */
   public Summary getSummaryValue() {
-    throw new UnsupportedOperationException("Not implemented.");
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
   }
 
   /**

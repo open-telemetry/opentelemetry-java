@@ -52,7 +52,8 @@ public abstract class Aggregation {
    * @since 0.1.0
    */
   public BucketBoundaries getBucketBoundaries() {
-    throw new UnsupportedOperationException("Not implemented.");
+    throw new UnsupportedOperationException(
+        "Only Distribution Aggregation implements this method.");
   }
 
   /**

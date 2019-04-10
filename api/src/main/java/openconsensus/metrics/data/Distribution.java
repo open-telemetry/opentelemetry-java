@@ -175,7 +175,7 @@ public abstract class Distribution {
      * @since 0.1.0
      */
     public List<Double> getBucketBoundaries() {
-      throw new UnsupportedOperationException("Not implemented.");
+      throw new UnsupportedOperationException("Only ExplicitOptions implements this method.");
     }
 
     /**
