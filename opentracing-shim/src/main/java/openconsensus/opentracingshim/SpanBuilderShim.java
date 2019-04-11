@@ -21,10 +21,12 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.tag.Tag;
+import io.opentracing.tag.Tags;
 import java.util.ArrayList;
 import java.util.List;
 import openconsensus.trace.Span.Kind;
 import openconsensus.trace.data.AttributeValue;
+import openconsensus.trace.data.Status;
 
 @SuppressWarnings("deprecation")
 final class SpanBuilderShim implements SpanBuilder {
@@ -33,6 +35,7 @@ final class SpanBuilderShim implements SpanBuilder {
   // TODO: should it be any of concurrent maps?
   private final List<String> spanBuilderAttributeKeys = new ArrayList<>();
   private final List<AttributeValue> spanBuilderAttributeValues = new ArrayList<>();
+  private boolean error;
 
   public SpanBuilderShim(openconsensus.trace.SpanBuilder builder) {
     this.builder = builder;
@@ -82,9 +85,10 @@ final class SpanBuilderShim implements SpanBuilder {
           this.builder.setSpanKind(Kind.INTERNAL);
           break;
       }
-    } else if ("error".equals(key)) {
-      // TODO: confirm we can ignore it
-      // https://github.com/bogdandrutu/openconsensus/issues/41
+    } else if (Tags.ERROR.getKey().equals(key)) {
+      if (Boolean.parseBoolean(value)) {
+        error = true;
+      }
     } else {
       this.spanBuilderAttributeKeys.add(key);
       this.spanBuilderAttributeValues.add(AttributeValue.stringAttributeValue(value));
@@ -95,9 +99,10 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, boolean value) {
-    if ("error".equals(key)) {
-      // TODO: confirm we can ignore it
-      // https://github.com/bogdandrutu/openconsensus/issues/41
+    if (Tags.ERROR.getKey().equals(key)) {
+      if (value) {
+        error = true;
+      }
     } else {
       this.spanBuilderAttributeKeys.add(key);
       this.spanBuilderAttributeValues.add(AttributeValue.booleanAttributeValue(value));
@@ -154,6 +159,10 @@ final class SpanBuilderShim implements SpanBuilder {
       AttributeValue value = this.spanBuilderAttributeValues.get(i);
       span.setAttribute(key, value);
     }
+    if (error) {
+      span.setStatus(Status.UNKNOWN);
+    }
+
     return new SpanShim(span);
   }
 
