@@ -46,6 +46,7 @@ final class NoopTrace {
     return new NoopTraceComponent();
   }
 
+  private static final class NoopTraceComponent extends BaseTraceComponent {
     private static final Tracer TRACER = new NoopTracer();
     private static final PropagationComponent PROPAGATION_COMPONENT =
         new NoopPropagationComponent();
