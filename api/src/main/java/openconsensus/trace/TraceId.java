@@ -16,6 +16,7 @@
 
 package openconsensus.trace;
 
+import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
@@ -55,39 +56,33 @@ public final class TraceId implements Comparable<TraceId> {
   }
 
   /**
-   * Returns a {@code TraceId} whose representation is copied from the {@code src} beginning at the
-   * {@code srcOffset} offset.
+   * Returns a {@code TraceId} whose representation is copied from the {@code src}.
    *
    * @param src the buffer where the representation of the {@code TraceId} is copied.
-   * @param srcOffset the offset in the buffer where the representation of the {@code TraceId}
-   *     begins.
    * @return a {@code TraceId} whose representation is copied from the buffer.
    * @throws NullPointerException if {@code src} is null.
-   * @throws IndexOutOfBoundsException if {@code srcOffset+TraceId.SIZE} is greater than {@code
-   *     src.length}.
+   * @throws IndexOutOfBoundsException if {@code TraceId.SIZE} is greater than {@code
+   *     src.remaining()}.
    * @since 0.1.0
    */
-  public static TraceId fromBytes(byte[] src, int srcOffset) {
+  public static TraceId fromBytes(ByteBuffer src) {
     Utils.checkNotNull(src, "src");
     return new TraceId(
-        BigendianEncoding.longFromByteArray(src, srcOffset),
-        BigendianEncoding.longFromByteArray(src, srcOffset + BigendianEncoding.LONG_BYTES));
+        BigendianEncoding.longFromByteBuffer(src), BigendianEncoding.longFromByteBuffer(src));
   }
 
   /**
-   * Copies the byte array representations of the {@code TraceId} into the {@code dest} beginning at
-   * the {@code destOffset} offset.
+   * Copies the byte array representations of the {@code TraceId} into the {@code dest}.
    *
    * @param dest the destination buffer.
-   * @param destOffset the starting offset in the destination buffer.
    * @throws NullPointerException if {@code dest} is null.
-   * @throws IndexOutOfBoundsException if {@code destOffset+TraceId.SIZE} is greater than {@code
-   *     dest.length}.
+   * @throws IndexOutOfBoundsException if {@code TraceId.SIZE} is greater than {@code
+   *     dest.remaining()}.
    * @since 0.1.0
    */
-  public void copyBytesTo(byte[] dest, int destOffset) {
-    BigendianEncoding.longToByteArray(idHi, dest, destOffset);
-    BigendianEncoding.longToByteArray(idLo, dest, destOffset + BigendianEncoding.LONG_BYTES);
+  public void copyBytesTo(ByteBuffer dest) {
+    BigendianEncoding.longToByteBuffer(idHi, dest);
+    BigendianEncoding.longToByteBuffer(idLo, dest);
   }
 
   /**

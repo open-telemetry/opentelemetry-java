@@ -16,6 +16,7 @@
 
 package openconsensus.trace;
 
+import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
@@ -53,36 +54,31 @@ public final class SpanId implements Comparable<SpanId> {
   }
 
   /**
-   * Returns a {@code SpanId} whose representation is copied from the {@code src} beginning at the
-   * {@code srcOffset} offset.
+   * Returns a {@code SpanId} whose representation is copied from the {@code src}.
    *
    * @param src the buffer where the representation of the {@code SpanId} is copied.
-   * @param srcOffset the offset in the buffer where the representation of the {@code SpanId}
-   *     begins.
    * @return a {@code SpanId} whose representation is copied from the buffer.
    * @throws NullPointerException if {@code src} is null.
-   * @throws IndexOutOfBoundsException if {@code srcOffset+SpanId.SIZE} is greater than {@code
-   *     src.length}.
+   * @throws IndexOutOfBoundsException if {@code SpanId.SIZE} is greater than {@code
+   *     src.remaining()}.
    * @since 0.1.0
    */
-  public static SpanId fromBytes(byte[] src, int srcOffset) {
+  public static SpanId fromBytes(ByteBuffer src) {
     Utils.checkNotNull(src, "src");
-    return new SpanId(BigendianEncoding.longFromByteArray(src, srcOffset));
+    return new SpanId(BigendianEncoding.longFromByteBuffer(src));
   }
 
   /**
-   * Copies the byte array representations of the {@code SpanId} into the {@code dest} beginning at
-   * the {@code destOffset} offset.
+   * Copies the byte array representations of the {@code SpanId} into the {@code dest}.
    *
    * @param dest the destination buffer.
-   * @param destOffset the starting offset in the destination buffer.
    * @throws NullPointerException if {@code dest} is null.
-   * @throws IndexOutOfBoundsException if {@code destOffset+SpanId.SIZE} is greater than {@code
-   *     dest.length}.
+   * @throws IndexOutOfBoundsException if {@code SpanId.SIZE} is greater than {@code
+   *     dest.remaining()}.
    * @since 0.1.0
    */
-  public void copyBytesTo(byte[] dest, int destOffset) {
-    BigendianEncoding.longToByteArray(id, dest, destOffset);
+  public void copyBytesTo(ByteBuffer dest) {
+    BigendianEncoding.longToByteBuffer(id, dest);
   }
 
   /**
