@@ -113,7 +113,9 @@ public abstract class SpanBuilder {
   /**
    * Sets the {@link Sampler} to use. If not set, the implementation will provide a default.
    *
-   * @param sampler the {@code Sampler} to use when determining sampling for a {@code Span}.
+   * @param sampler the {@code Sampler} to use when determining sampling for a {@code Span}. Observe
+   *     this is used only as a hint for the underlying implementation, which will decide whether to
+   *     sample or not this {@code Span}.
    * @return this.
    * @since 0.1.0
    */
