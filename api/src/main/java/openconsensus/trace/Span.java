@@ -121,6 +121,9 @@ public abstract class Span {
    *
    * <p>If used, this will override the name provided via {@code SpanBuilder}.
    *
+   * <p>Upon this update, any sampling behavior based on {@code Span} name will depend on the
+   * implementation.
+   *
    * @param name the {@code Span} name.
    * @since 0.1
    */
