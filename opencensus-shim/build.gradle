@@ -2,5 +2,5 @@ description = 'OpenConsensus OpenCensus Bridge'
 
 dependencies {
     compile project(':openconsensus-api')
-    compileOnly libraries.opentracing
+    compileOnly libraries.opencensus
 }
