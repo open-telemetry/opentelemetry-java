@@ -25,31 +25,28 @@ package openconsensus.trace.propagation;
  */
 public abstract class PropagationComponent {
   /**
-   * Returns the {@link BinaryFormat} with the provided implementations. If no implementation is
-   * provided then no-op implementation will be used.
+   * Returns the {@link BinaryFormat} for this implementation.
    *
-   * @return the {@code BinaryFormat} implementation.
+   * <p>If no implementation is provided then no-op implementation will be used.
+   *
+   * <p>Usually this will be the W3C Trace Context as the binary format. For more details,
+   * see <a href="https://github.com/w3c/trace-context">trace-context</a>.
+   *
+   * @return the {@code BinaryFormat} for this implementation.
    * @since 0.1.0
    */
   public abstract BinaryFormat getBinaryFormat();
 
   /**
-   * Returns the B3 {@link TextFormat} with the provided implementations. See <a
-   * href="https://github.com/openzipkin/b3-propagation">b3-propagation</a> for more information. If
-   * no implementation is provided then no-op implementation will be used.
+   * Returns the {@link TextFormat} for this implementation.
    *
-   * @since 0.1.0
-   * @return the B3 {@code TextFormat} implementation.
-   */
-  public abstract TextFormat getB3Format();
-
-  /**
-   * Returns the TraceContext {@link TextFormat} with the provided implementations. See <a
-   * href="https://github.com/w3c/distributed-tracing">w3c/distributed-tracing</a> for more
-   * information. If no implementation is provided then no-op implementation will be used.
+   * <p>If no implementation is provided then no-op implementation will be used.
    *
+   * <p>Usually this will be the W3C Trace Context as the HTTP text format. For more details,
+   * see <a href="https://github.com/w3c/trace-context">trace-context</a>.
+   *
+   * @return the {@code TextFormat} for this implementation.
    * @since 0.1.0
-   * @return the TraceContext {@code TextFormat} implementation.
    */
-  public abstract TextFormat getTraceContextFormat();
+  public abstract TextFormat getTextFormat();
 }
