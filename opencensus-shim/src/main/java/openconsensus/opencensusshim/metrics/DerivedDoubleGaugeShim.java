@@ -24,8 +24,8 @@ import java.util.List;
 public final class DerivedDoubleGaugeShim extends DerivedDoubleGauge {
 
   @Override
-  public <T> void createTimeSeries(List<LabelValue> labelValues, T obj,
-      ToDoubleFunction<T> function) {
+  public <T> void createTimeSeries(
+      List<LabelValue> labelValues, T obj, ToDoubleFunction<T> function) {
     throw new UnsupportedOperationException();
   }
 

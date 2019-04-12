@@ -24,8 +24,8 @@ import java.util.List;
 public final class DerivedLongGaugeShim extends DerivedLongGauge {
 
   @Override
-  public <T> void createTimeSeries(List<LabelValue> labelValues, T obj,
-      ToLongFunction<T> function) {
+  public <T> void createTimeSeries(
+      List<LabelValue> labelValues, T obj, ToLongFunction<T> function) {
     throw new UnsupportedOperationException();
   }
 
