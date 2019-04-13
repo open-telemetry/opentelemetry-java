@@ -29,8 +29,8 @@ public abstract class PropagationComponent {
    *
    * <p>If no implementation is provided then no-op implementation will be used.
    *
-   * <p>Usually this will be the W3C Trace Context as the binary format. For more details,
-   * see <a href="https://github.com/w3c/trace-context">trace-context</a>.
+   * <p>Usually this will be the W3C Trace Context as the binary format. For more details, see <a
+   * href="https://github.com/w3c/trace-context">trace-context</a>.
    *
    * @return the {@code BinaryFormat} for this implementation.
    * @since 0.1.0
@@ -42,8 +42,8 @@ public abstract class PropagationComponent {
    *
    * <p>If no implementation is provided then no-op implementation will be used.
    *
-   * <p>Usually this will be the W3C Trace Context as the HTTP text format. For more details,
-   * see <a href="https://github.com/w3c/trace-context">trace-context</a>.
+   * <p>Usually this will be the W3C Trace Context as the HTTP text format. For more details, see <a
+   * href="https://github.com/w3c/trace-context">trace-context</a>.
    *
    * @return the {@code TextFormat} for this implementation.
    * @since 0.1.0
