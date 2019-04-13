@@ -19,7 +19,6 @@ package openconsensus.tags;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
-import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
 import openconsensus.internal.Utils;
@@ -27,7 +26,6 @@ import openconsensus.tags.data.TagKey;
 import openconsensus.tags.data.TagMetadata;
 import openconsensus.tags.data.TagValue;
 import openconsensus.tags.propagation.BinaryFormat;
-import openconsensus.tags.propagation.PropagationComponent;
 import openconsensus.tags.propagation.TextFormat;
 
 /** No-op implementations of tagging classes. */
@@ -36,33 +34,18 @@ final class NoopTags {
   private NoopTags() {}
 
   /**
-   * Returns a {@code TagsComponent} that has a no-op implementation for {@link Tagger}.
+   * Returns a {@code Tagger} that is a no-op implementation for {@link Tagger}.
    *
-   * @return a {@code TagsComponent} that has a no-op implementation for {@code Tagger}.
+   * @return a {@code Tagger} that is a no-op implementation for {@link Tagger}.
    */
-  static TagsComponent newNoopTagsComponent() {
-    return new NoopTagsComponent();
-  }
-
-  @ThreadSafe
-  private static final class NoopTagsComponent extends TagsComponent {
-    private static final PropagationComponent PROPAGATION_COMPONENT =
-        new NoopPropagationComponent();
-    private static final Tagger TAGGER = new NoopTagger();
-
-    @Override
-    public Tagger getTagger() {
-      return TAGGER;
-    }
-
-    @Override
-    public PropagationComponent getTagPropagationComponent() {
-      return PROPAGATION_COMPONENT;
-    }
+  static Tagger newNoopTagger() {
+    return new NoopTagger();
   }
 
   @Immutable
   private static final class NoopTagger extends Tagger {
+    private static final BinaryFormat BINARY_FORMAT = new NoopBinaryFormat();
+    private static final TextFormat TEXT_FORMAT = new NoopTextFormat();
     private static final TagMap EMPTY = new NoopTagMap();
 
     @Override
@@ -95,6 +78,16 @@ final class NoopTags {
     public Scope withTagMap(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
       return NoopScope.getInstance();
+    }
+
+    @Override
+    public BinaryFormat getBinaryFormat() {
+      return BINARY_FORMAT;
+    }
+
+    @Override
+    public TextFormat getTextFormat() {
+      return TEXT_FORMAT;
     }
   }
 
@@ -131,22 +124,6 @@ final class NoopTags {
   private static final class NoopTagMap extends TagMap {}
 
   @Immutable
-  private static final class NoopPropagationComponent extends PropagationComponent {
-    private static final BinaryFormat BINARY_FORMAT = new NoopBinaryFormat();
-    private static final TextFormat TEXT_FORMAT = new NoopTextFormat();
-
-    @Override
-    public BinaryFormat getBinaryFormat() {
-      return BINARY_FORMAT;
-    }
-
-    @Override
-    public TextFormat getTextFormat() {
-      return TEXT_FORMAT;
-    }
-  }
-
-  @Immutable
   private static final class NoopBinaryFormat extends BinaryFormat {
     private static final TagMap EMPTY = new NoopTagMap();
     static final byte[] EMPTY_BYTE_ARRAY = {};
@@ -170,7 +147,7 @@ final class NoopTags {
 
     @Override
     public List<String> fields() {
-      return Collections.<String>emptyList();
+      return Collections.emptyList();
     }
 
     @Override

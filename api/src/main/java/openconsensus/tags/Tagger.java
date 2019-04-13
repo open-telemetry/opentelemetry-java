@@ -17,6 +17,8 @@
 package openconsensus.tags;
 
 import openconsensus.context.Scope;
+import openconsensus.tags.propagation.BinaryFormat;
+import openconsensus.tags.propagation.TextFormat;
 
 /**
  * Object for creating new {@link TagMap}s and {@code TagMap}s based on the current context.
@@ -84,4 +86,23 @@ public abstract class Tagger {
    * @since 0.1.0
    */
   public abstract Scope withTagMap(TagMap tags);
+
+  /**
+   * Returns the {@link BinaryFormat} for this implementation.
+   *
+   * @return the {@code BinaryFormat} for this implementation.
+   * @since 0.1.0
+   */
+  public abstract BinaryFormat getBinaryFormat();
+
+  /**
+   * Returns the {@link TextFormat} for this implementation.
+   *
+   * <p>Usually this will be the W3C Correlation Context as the HTTP text format. For more details,
+   * see <a href="https://github.com/w3c/correlation-context">correlation-context</a>.
+   *
+   * @return the {@code TextFormat} for this implementation.
+   * @since 0.1.0
+   */
+  public abstract TextFormat getTextFormat();
 }
