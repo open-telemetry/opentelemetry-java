@@ -24,9 +24,9 @@ import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
 import openconsensus.internal.Utils;
 import openconsensus.trace.data.SpanData;
-import openconsensus.trace.propagation.BaseBinaryFormat;
-import openconsensus.trace.propagation.BasePropagationComponent;
-import openconsensus.trace.propagation.BaseTextFormat;
+import openconsensus.trace.propagation.AbstractBinaryFormat;
+import openconsensus.trace.propagation.AbstractPropagationComponent;
+import openconsensus.trace.propagation.AbstractTextFormat;
 import openconsensus.trace.propagation.BinaryFormat;
 import openconsensus.trace.propagation.PropagationComponent;
 import openconsensus.trace.propagation.TextFormat;
@@ -46,7 +46,7 @@ final class NoopTrace {
     return new NoopTraceComponent();
   }
 
-  private static final class NoopTraceComponent extends BaseTraceComponent {
+  private static final class NoopTraceComponent extends AbstractTraceComponent {
     private static final Tracer TRACER = new NoopTracer();
     private static final PropagationComponent PROPAGATION_COMPONENT =
         new NoopPropagationComponent();
@@ -62,7 +62,7 @@ final class NoopTrace {
     }
   }
 
-  private static final class NoopTracer extends BaseTracer {
+  private static final class NoopTracer extends AbstractTracer {
     @Override
     public Span getCurrentSpan() {
       return BlankSpan.INSTANCE;
@@ -108,7 +108,7 @@ final class NoopTrace {
   }
 
   // Noop implementation of SpanBuilder.
-  private static final class NoopSpanBuilder extends BaseSpanBuilder {
+  private static final class NoopSpanBuilder extends AbstractSpanBuilder {
     static NoopSpanBuilder createWithParent(String spanName, @Nullable Span parent) {
       return new NoopSpanBuilder(spanName);
     }
@@ -158,7 +158,7 @@ final class NoopTrace {
     }
   }
 
-  private static final class NoopPropagationComponent extends BasePropagationComponent {
+  private static final class NoopPropagationComponent extends AbstractPropagationComponent {
     private static final BinaryFormat BINARY_FORMAT = new NoopBinaryFormat();
     private static final TextFormat TEXT_FORMAT = new NoopTextFormat();
 
@@ -178,7 +178,7 @@ final class NoopTrace {
     }
   }
 
-  private static final class NoopBinaryFormat extends BaseBinaryFormat {
+  private static final class NoopBinaryFormat extends AbstractBinaryFormat {
 
     @Override
     public byte[] toByteArray(SpanContext spanContext) {
@@ -195,7 +195,7 @@ final class NoopTrace {
     private NoopBinaryFormat() {}
   }
 
-  private static final class NoopTextFormat extends BaseTextFormat {
+  private static final class NoopTextFormat extends AbstractTextFormat {
 
     private NoopTextFormat() {}
 

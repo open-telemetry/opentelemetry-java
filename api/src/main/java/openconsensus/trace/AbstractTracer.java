@@ -28,7 +28,7 @@ import openconsensus.trace.data.SpanData;
  *
  * @since 0.1.0
  */
-public abstract class BaseTracer implements Tracer {
+public abstract class AbstractTracer implements Tracer {
   @Override
   public abstract Span getCurrentSpan();
 
@@ -54,5 +54,5 @@ public abstract class BaseTracer implements Tracer {
   @Override
   public abstract void recordSpanData(SpanData span);
 
-  protected BaseTracer() {}
+  protected AbstractTracer() {}
 }

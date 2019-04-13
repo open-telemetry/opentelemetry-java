@@ -16,21 +16,23 @@
 
 package openconsensus.trace.propagation;
 
-import openconsensus.trace.SpanContext;
-
 /**
- * An abstract class that implements {@code BinaryFormat}.
+ * An abstract class that implements {@code PropagationComponent}.
  *
  * <p>Users are encouraged to extend this class for convenience.
  *
  * @since 0.1.0
  */
-public abstract class BaseBinaryFormat implements BinaryFormat {
-  @Override
-  public abstract byte[] toByteArray(SpanContext spanContext);
+public abstract class AbstractPropagationComponent implements PropagationComponent {
 
   @Override
-  public abstract SpanContext fromByteArray(byte[] bytes) throws SpanContextParseException;
+  public abstract BinaryFormat getBinaryFormat();
 
-  protected BaseBinaryFormat() {}
+  @Override
+  public abstract TextFormat getB3Format();
+
+  @Override
+  public abstract TextFormat getTraceContextFormat();
+
+  protected AbstractPropagationComponent() {}
 }

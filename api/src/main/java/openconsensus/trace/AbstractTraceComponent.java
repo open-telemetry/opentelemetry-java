@@ -25,7 +25,7 @@ import openconsensus.trace.propagation.PropagationComponent;
  *
  * @since 0.1.0
  */
-public abstract class BaseTraceComponent implements TraceComponent {
+public abstract class AbstractTraceComponent implements TraceComponent {
 
   @Override
   public abstract Tracer getTracer();
@@ -33,5 +33,5 @@ public abstract class BaseTraceComponent implements TraceComponent {
   @Override
   public abstract PropagationComponent getPropagationComponent();
 
-  protected BaseTraceComponent() {}
+  protected AbstractTraceComponent() {}
 }

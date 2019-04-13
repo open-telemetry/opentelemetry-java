@@ -30,7 +30,7 @@ import openconsensus.trace.data.Status;
  *
  * @since 0.1.0
  */
-public abstract class BaseSpan implements Span {
+public abstract class AbstractSpan implements Span {
   @Override
   public abstract void setAttribute(String key, String value);
 
@@ -73,5 +73,5 @@ public abstract class BaseSpan implements Span {
   @Override
   public abstract boolean isRecordingEvents();
 
-  protected BaseSpan() {}
+  protected AbstractSpan() {}
 }

@@ -14,39 +14,28 @@
  * limitations under the License.
  */
 
-package openconsensus.trace;
+package openconsensus.trace.propagation;
 
 import java.util.List;
-import java.util.concurrent.Callable;
+import openconsensus.trace.SpanContext;
 
 /**
- * An abstract class that implements {@code SpanBuilder}.
+ * An abstract class that implements {@code TextFormat}.
  *
  * <p>Users are encouraged to extend this class for convenience.
  *
  * @since 0.1.0
  */
-public abstract class BaseSpanBuilder implements SpanBuilder {
+public abstract class AbstractTextFormat implements TextFormat {
   @Override
-  public abstract SpanBuilder setSampler(Sampler sampler);
+  public abstract List<String> fields();
 
   @Override
-  public abstract SpanBuilder setParentLinks(List<Span> parentLinks);
+  public abstract <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter);
 
   @Override
-  public abstract SpanBuilder setRecordEvents(boolean recordEvents);
+  public abstract <C> SpanContext extract(C carrier, Getter<C> getter)
+      throws SpanContextParseException;
 
-  @Override
-  public SpanBuilder setSpanKind(Span.Kind spanKind) {
-    return this;
-  }
-
-  @Override
-  public abstract Span startSpan();
-
-  @Override
-  public abstract void startSpanAndRun(final Runnable runnable);
-
-  @Override
-  public abstract <V> V startSpanAndCall(Callable<V> callable) throws Exception;
+  protected AbstractTextFormat() {}
 }
