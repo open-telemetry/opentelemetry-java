@@ -21,8 +21,7 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.internal.Utils;
-import openconsensus.stats.data.Measure.MeasureDouble;
-import openconsensus.stats.data.Measure.MeasureLong;
+import openconsensus.stats.data.Measure;
 import openconsensus.stats.view.ViewComponent;
 import openconsensus.stats.view.ViewManager;
 import openconsensus.stats.view.data.View;
@@ -81,14 +80,8 @@ final class NoopStats {
 
   private static final class NoopMeasureMap extends MeasureMap {
     @Override
-    public MeasureMap put(MeasureDouble measure, double value) {
+    public MeasureMap put(Measure measure, double value) {
       Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-      return this;
-    }
-
-    @Override
-    public MeasureMap put(MeasureLong measure, long value) {
-      Utils.checkArgument(value >= 0, "Unsupported negative values.");
       return this;
     }
 
