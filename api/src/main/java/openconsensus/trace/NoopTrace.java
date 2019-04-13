@@ -137,7 +137,12 @@ final class NoopTrace {
     }
 
     @Override
-    public SpanBuilder setParentLinks(List<Span> parentLinks) {
+    public SpanBuilder addLink(Link link) {
+      return this;
+    }
+
+    @Override
+    public SpanBuilder addLinks(List<Link> links) {
       return this;
     }
 
