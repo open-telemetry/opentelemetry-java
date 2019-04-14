@@ -140,10 +140,8 @@ public abstract class Resource {
    * Returns a new, merged {@link Resource} by merging two resources. In case of a collision, first
    * resource takes precedence.
    */
-  @javax.annotation.Nullable
-  private static Resource merge(
-      @javax.annotation.Nullable Resource resource,
-      @javax.annotation.Nullable Resource otherResource) {
+  @Nullable
+  private static Resource merge(@Nullable Resource resource, @Nullable Resource otherResource) {
     if (otherResource == null) {
       return resource;
     }
