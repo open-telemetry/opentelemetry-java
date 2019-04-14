@@ -166,12 +166,7 @@ final class NoopTrace {
     }
 
     @Override
-    public TextFormat getB3Format() {
-      return TEXT_FORMAT;
-    }
-
-    @Override
-    public TextFormat getTraceContextFormat() {
+    public TextFormat getTextFormat() {
       return TEXT_FORMAT;
     }
   }
