@@ -18,7 +18,6 @@ package openconsensus.metrics;
 
 import openconsensus.common.ExperimentalApi;
 import openconsensus.common.ToDoubleFunction;
-import openconsensus.common.ToLongFunction;
 import openconsensus.metrics.producer.MetricProducer;
 
 /**
@@ -30,22 +29,8 @@ import openconsensus.metrics.producer.MetricProducer;
 public abstract class MetricRegistry extends MetricProducer {
 
   /**
-   * Builds a new long gauge to be added to the registry. This is more convenient form when you want
-   * to manually increase and decrease values as per your service requirements.
-   *
-   * @param name the name of the metric.
-   * @param options the options for the metric.
-   * @return a {@code LongGauge}.
-   * @throws NullPointerException if {@code name} is null.
-   * @throws IllegalArgumentException if different metric with the same name already registered.
-   * @since 0.1.0
-   */
-  @ExperimentalApi
-  public abstract LongGauge addLongGauge(String name, MetricOptions options);
-
-  /**
-   * Builds a new double gauge to be added to the registry. This is more convenient form when you
-   * want to manually increase and decrease values as per your service requirements.
+   * Builds a new gauge to be added to the registry. This is more convenient form when you want to
+   * manually increase and decrease values as per your service requirements.
    *
    * @param name the name of the metric.
    * @param options the options for the metric.
@@ -55,25 +40,11 @@ public abstract class MetricRegistry extends MetricProducer {
    * @since 0.1.0
    */
   @ExperimentalApi
-  public abstract DoubleGauge addDoubleGauge(String name, MetricOptions options);
+  public abstract Gauge addGauge(String name, MetricOptions options);
 
   /**
-   * Builds a new derived long gauge to be added to the registry. This is more convenient form when
-   * you want to define a gauge by executing a {@link ToLongFunction} on an object.
-   *
-   * @param name the name of the metric.
-   * @param options the options for the metric.
-   * @return a {@code DerivedLongGauge}.
-   * @throws NullPointerException if {@code name} is null.
-   * @throws IllegalArgumentException if different metric with the same name already registered.
-   * @since 0.1.0
-   */
-  @ExperimentalApi
-  public abstract DerivedLongGauge addDerivedLongGauge(String name, MetricOptions options);
-
-  /**
-   * Builds a new derived double gauge to be added to the registry. This is more convenient form
-   * when you want to define a gauge by executing a {@link ToDoubleFunction} on an object.
+   * Builds a new derived gauge to be added to the registry. This is more convenient form when you
+   * want to define a gauge by executing a {@link ToDoubleFunction} on an object.
    *
    * @param name the name of the metric.
    * @param options the options for the metric.
@@ -83,5 +54,5 @@ public abstract class MetricRegistry extends MetricProducer {
    * @since 0.1.0
    */
   @ExperimentalApi
-  public abstract DerivedDoubleGauge addDerivedDoubleGauge(String name, MetricOptions options);
+  public abstract DerivedGauge addDerivedGauge(String name, MetricOptions options);
 }

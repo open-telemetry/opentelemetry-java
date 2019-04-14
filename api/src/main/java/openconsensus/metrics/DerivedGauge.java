@@ -23,8 +23,8 @@ import openconsensus.common.ToDoubleFunction;
 import openconsensus.metrics.data.LabelValue;
 
 /**
- * Derived Double Gauge metric, to report instantaneous measurement of a double value. Gauges can go
- * both up and down. The gauges values can be negative.
+ * Derived Gauge metric, to report instantaneous measurement of a value. Gauges can go both up and
+ * down. The gauges values can be negative.
  *
  * <p>Example: Create a Gauge with an object and a callback function.
  *
@@ -36,7 +36,7 @@ import openconsensus.metrics.data.LabelValue;
  *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
  *   List<LabelValue> labelValues = Arrays.asList(LabelValue.create("Inbound"));
  *
- *   DerivedDoubleGauge gauge = metricRegistry.addDerivedDoubleGauge(
+ *   DerivedGauge gauge = metricRegistry.addDerivedGauge(
  *       "queue_size", "Pending jobs in a queue", "1", labelKeys);
  *
  *   QueueManager queueManager = new QueueManager();
@@ -58,7 +58,7 @@ import openconsensus.metrics.data.LabelValue;
  * @since 0.1.0
  */
 @ThreadSafe
-public abstract class DerivedDoubleGauge {
+public abstract class DerivedGauge {
   /**
    * Creates a {@code TimeSeries}. The value of a single point in the TimeSeries is observed from a
    * callback function. This function is invoked whenever metrics are collected, meaning the

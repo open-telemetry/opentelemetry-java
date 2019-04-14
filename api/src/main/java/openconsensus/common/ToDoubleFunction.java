@@ -23,7 +23,7 @@ import openconsensus.metrics.MetricRegistry;
  * example of its use.
  *
  * <p>Note: This class is based on the java.util.ToDoubleFunction class added in Java 1.8. We cannot
- * use the Function from Java 1.8 because this library is Java 1.6 compatible.
+ * use the Function from Java 1.8 because this library is Java 1.7 compatible.
  *
  * @since 0.1.0
  */

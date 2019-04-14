@@ -21,8 +21,8 @@ import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.metrics.data.LabelValue;
 
 /**
- * Long Gauge metric, to report instantaneous measurement of an int64 value. Gauges can go both up
- * and down. The gauges values can be negative.
+ * Gauge metric, to report instantaneous measurement of a value. Gauges can go both up and down. The
+ * gauges values can be negative.
  *
  * <p>Example 1: Create a Gauge with default labels.
  *
@@ -33,10 +33,11 @@ import openconsensus.metrics.data.LabelValue;
  *
  *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
  *
- *   LongGauge gauge = metricRegistry.addLongGauge("queue_size", "Pending jobs", "1", labelKeys);
+ *   Gauge gauge = metricRegistry.addGauge("queue_size",
+ *                       "Pending jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a point for manual operations.
- *   LongPoint defaultPoint = gauge.getDefaultTimeSeries();
+ *   Point defaultPoint = gauge.getDefaultTimeSeries();
  *
  *   void doWork() {
  *      // Your code here.
@@ -56,10 +57,11 @@ import openconsensus.metrics.data.LabelValue;
  *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
  *   List<LabelValue> labelValues = Arrays.asList(LabelValue.create("Inbound"));
  *
- *   LongGauge gauge = metricRegistry.addLongGauge("queue_size", "Pending jobs", "1", labelKeys);
+ *   DoubleGauge gauge = metricRegistry.addDoubleGauge("queue_size",
+ *                       "Pending jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a point for manual operations.
- *   LongPoint inboundPoint = gauge.getOrCreateTimeSeries(labelValues);
+ *   DoublePoint inboundPoint = gauge.getOrCreateTimeSeries(labelValues);
  *
  *   void doSomeWork() {
  *      // Your code here.
@@ -72,48 +74,48 @@ import openconsensus.metrics.data.LabelValue;
  * @since 0.1.0
  */
 @ThreadSafe
-public abstract class LongGauge {
+public abstract class Gauge {
 
   /**
-   * Creates a {@code TimeSeries} and returns a {@code LongPoint} if the specified {@code
-   * labelValues} is not already associated with this gauge, else returns an existing {@code
-   * LongPoint}.
+   * Creates a {@code TimeSeries} and returns a {@code Point} if the specified {@code labelValues}
+   * is not already associated with this gauge, else returns an existing {@code Point}.
    *
-   * <p>It is recommended to keep a reference to the LongPoint instead of always calling this method
-   * for manual operations.
+   * <p>It is recommended to keep a reference to the {@code Point} instead of always calling this
+   * method for manual operations.
    *
    * @param labelValues the list of label values. The number of label values must be the same to
-   *     that of the label keys passed to {@link MetricRegistry#addLongGauge}.
-   * @return a {@code LongPoint} the value of single gauge.
+   *     that of the label keys passed to {@link MetricRegistry#addGauge}.
+   * @return a {@code Point} the value of single gauge.
    * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
    *     labelValues} is null.
    * @throws IllegalArgumentException if number of {@code labelValues}s are not equal to the label
-   *     keys passed to {@link MetricRegistry#addLongGauge}.
+   *     keys.
    * @since 0.1.0
    */
-  public abstract LongPoint getOrCreateTimeSeries(List<LabelValue> labelValues);
+  public abstract Point getOrCreateTimeSeries(List<LabelValue> labelValues);
 
   /**
-   * Returns a {@code LongPoint} for a gauge with all labels not set, or default labels.
+   * Returns a {@code Point} for a gauge with all labels not set, or default labels.
    *
-   * @return a {@code LongPoint} for a gauge with all labels not set, or default labels.
+   * @return a {@code Point} for a gauge with all labels not set, or default labels.
    * @since 0.1.0
    */
-  public abstract LongPoint getDefaultTimeSeries();
+  public abstract Point getDefaultTimeSeries();
 
   /**
    * Removes the {@code TimeSeries} from the gauge metric, if it is present. i.e. references to
-   * previous {@code LongPoint} objects are invalid (not part of the metric).
+   * previous {@code Point} objects are invalid (not part of the metric).
    *
    * @param labelValues the list of label values.
-   * @throws NullPointerException if {@code labelValues} is null.
+   * @throws NullPointerException if {@code labelValues} is null or any element of {@code
+   *     labelValues} is null.
    * @since 0.1.0
    */
   public abstract void removeTimeSeries(List<LabelValue> labelValues);
 
   /**
    * Removes all {@code TimeSeries} from the gauge metric. i.e. references to all previous {@code
-   * LongPoint} objects are invalid (not part of the metric).
+   * Point} objects are invalid (not part of the metric).
    *
    * @since 0.1.0
    */
@@ -124,7 +126,7 @@ public abstract class LongGauge {
    *
    * @since 0.1.0
    */
-  public abstract static class LongPoint {
+  public abstract static class Point {
 
     /**
      * Adds the given value to the current value. The values can be negative.
@@ -132,7 +134,7 @@ public abstract class LongGauge {
      * @param amt the value to add
      * @since 0.1.0
      */
-    public abstract void add(long amt);
+    public abstract void add(double amt);
 
     /**
      * Sets the given value.
@@ -140,6 +142,6 @@ public abstract class LongGauge {
      * @param val the new value.
      * @since 0.1.0
      */
-    public abstract void set(long val);
+    public abstract void set(double val);
   }
 }
