@@ -26,6 +26,10 @@ final class SpanContextShim implements SpanContext {
     this.context = context;
   }
 
+  openconsensus.trace.SpanContext getSpanContext() {
+    return context;
+  }
+
   @Override
   public String toTraceId() {
     return context.getTraceId().toString();
