@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package openconsensus.trace.data;
+package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.trace.Span;
-import openconsensus.trace.SpanContext;
+import openconsensus.trace.data.AttributeValue;
 
 /**
  * A link to a {@link Span} from a different trace.
@@ -44,7 +43,7 @@ public abstract class Link {
    * @return a new {@code Link}.
    * @since 0.1.0
    */
-  public static Link fromSpanContext(SpanContext context) {
+  public static Link create(SpanContext context) {
     return new AutoValue_Link(context, EMPTY_ATTRIBUTES);
   }
 
@@ -56,7 +55,7 @@ public abstract class Link {
    * @return a new {@code Link}.
    * @since 0.1.0
    */
-  public static Link fromSpanContext(SpanContext context, Map<String, AttributeValue> attributes) {
+  public static Link create(SpanContext context, Map<String, AttributeValue> attributes) {
     return new AutoValue_Link(
         context, Collections.unmodifiableMap(new HashMap<String, AttributeValue>(attributes)));
   }

@@ -123,16 +123,28 @@ public abstract class SpanBuilder {
   public abstract SpanBuilder setSampler(Sampler sampler);
 
   /**
-   * Sets the {@code List} of parent links. Links are used to link {@link Span}s in different
-   * traces. Used (for example) in batching operations, where a single batch handler processes
-   * multiple requests from different traces.
+   * Adds a {@link Link} to the newly created {@code Span}.
    *
-   * @param parentLinks new links to be added.
+   * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
+   * operations, where a single batch handler processes multiple requests from different traces.
+   *
+   * @param link the {@link Link} to be added.
    * @return this.
-   * @throws NullPointerException if {@code parentLinks} is {@code null}.
+   * @throws NullPointerException if {@code link} is {@code null}.
    * @since 0.1.0
    */
-  public abstract SpanBuilder setParentLinks(List<Span> parentLinks);
+  public abstract SpanBuilder addLink(Link link);
+
+  /**
+   * Adds a {@code List} of {@link Link}s to the newly created {@code Span}.
+   *
+   * @param links the {@code List} of {@link Link}s to be added.
+   * @return this.
+   * @throws NullPointerException if {@code link} is {@code null}.
+   * @since 0.1.0
+   * @see #addLink(Link)
+   */
+  public abstract SpanBuilder addLinks(List<Link> links);
 
   /**
    * Sets the option to record events even if not sampled for the newly created {@code Span}. If not
@@ -152,9 +164,7 @@ public abstract class SpanBuilder {
    * @return this.
    * @since 0.1.0
    */
-  public SpanBuilder setSpanKind(Span.Kind spanKind) {
-    return this;
-  }
+  public abstract SpanBuilder setSpanKind(Span.Kind spanKind);
 
   /**
    * Starts a new {@link Span}.

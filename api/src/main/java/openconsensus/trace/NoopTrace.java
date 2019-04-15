@@ -25,7 +25,6 @@ import openconsensus.context.Scope;
 import openconsensus.internal.Utils;
 import openconsensus.trace.data.SpanData;
 import openconsensus.trace.propagation.BinaryFormat;
-import openconsensus.trace.propagation.PropagationComponent;
 import openconsensus.trace.propagation.TextFormat;
 
 /** No-op implementations of trace classes. */
@@ -35,32 +34,19 @@ final class NoopTrace {
   private NoopTrace() {}
 
   /**
-   * Returns an instance that contains no-op implementations for all the instances.
+   * Returns a {@code Tracer} instance that is no-op implementations.
    *
-   * @return an instance that contains no-op implementations for all the instances.
+   * @return a {@code Tracer} instance that is no-op implementations.
    */
-  static TraceComponent newNoopTraceComponent() {
-    return new NoopTraceComponent();
-  }
-
-  private static final class NoopTraceComponent extends TraceComponent {
-    private static final Tracer TRACER = new NoopTracer();
-    private static final PropagationComponent PROPAGATION_COMPONENT =
-        new NoopPropagationComponent();
-
-    @Override
-    public Tracer getTracer() {
-      return TRACER;
-    }
-
-    @Override
-    public PropagationComponent getPropagationComponent() {
-      return PROPAGATION_COMPONENT;
-    }
+  static Tracer newNoopTracer() {
+    return new NoopTracer();
   }
 
   // No-Op implementation of the Tracer.
   private static final class NoopTracer extends Tracer {
+    private static final BinaryFormat BINARY_FORMAT = new NoopBinaryFormat();
+    private static final TextFormat TEXT_FORMAT = new NoopTextFormat();
+
     @Override
     public Span getCurrentSpan() {
       return BlankSpan.INSTANCE;
@@ -98,8 +84,18 @@ final class NoopTrace {
     }
 
     @Override
-    public void recordSpanData(SpanData span) {
-      // Do nothing
+    public void recordSpanData(SpanData spanData) {
+      Utils.checkNotNull(spanData, "spanData");
+    }
+
+    @Override
+    public BinaryFormat getBinaryFormat() {
+      return BINARY_FORMAT;
+    }
+
+    @Override
+    public TextFormat getTextFormat() {
+      return TEXT_FORMAT;
     }
 
     private NoopTracer() {}
@@ -137,7 +133,12 @@ final class NoopTrace {
     }
 
     @Override
-    public SpanBuilder setParentLinks(List<Span> parentLinks) {
+    public SpanBuilder addLink(Link link) {
+      return this;
+    }
+
+    @Override
+    public SpanBuilder addLinks(List<Link> links) {
       return this;
     }
 
@@ -153,21 +154,6 @@ final class NoopTrace {
 
     private NoopSpanBuilder(String name) {
       Utils.checkNotNull(name, "name");
-    }
-  }
-
-  private static final class NoopPropagationComponent extends PropagationComponent {
-    private static final BinaryFormat BINARY_FORMAT = new NoopBinaryFormat();
-    private static final TextFormat TEXT_FORMAT = new NoopTextFormat();
-
-    @Override
-    public BinaryFormat getBinaryFormat() {
-      return BINARY_FORMAT;
-    }
-
-    @Override
-    public TextFormat getTextFormat() {
-      return TEXT_FORMAT;
     }
   }
 

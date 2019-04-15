@@ -20,22 +20,22 @@ import openconsensus.stats.view.ViewComponent;
 import openconsensus.stats.view.ViewManager;
 
 /**
- * Class for accessing the default {@link StatsComponent}.
+ * Class for accessing the global {@link StatsRecorder}.
  *
  * @since 0.1.0
  */
 public final class Stats {
-  private static final StatsComponent statsComponent = NoopStats.newNoopStatsComponent();
+  private static final StatsRecorder STATS_RECORDER = NoopStats.newNoopStatsRecorder();
   private static final ViewComponent viewComponent = NoopStats.newNoopViewComponent();
 
   /**
-   * Returns the default {@link StatsRecorder}.
+   * Returns the global {@link StatsRecorder}.
    *
    * @return stats recorder.
    * @since 0.1.0
    */
   public static StatsRecorder getStatsRecorder() {
-    return statsComponent.getStatsRecorder();
+    return STATS_RECORDER;
   }
 
   /**

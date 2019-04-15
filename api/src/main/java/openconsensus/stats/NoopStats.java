@@ -33,12 +33,12 @@ final class NoopStats {
   private NoopStats() {}
 
   /**
-   * Returns a {@code StatsComponent} that has a no-op implementation for {@link StatsRecorder}.
+   * Returns a {@code StatsRecorder} that is no-op implementation for {@link StatsRecorder}.
    *
-   * @return a {@code StatsComponent} that has a no-op implementation for {@code StatsRecorder}.
+   * @return a {@code StatsRecorder} that is no-op implementation for {@code StatsRecorder}.
    */
-  static StatsComponent newNoopStatsComponent() {
-    return new NoopStatsComponent();
+  static StatsRecorder newNoopStatsRecorder() {
+    return new NoopStatsRecorder();
   }
 
   /**
@@ -57,16 +57,6 @@ final class NoopStats {
     @Override
     public ViewManager getViewManager() {
       return VIEW_MANAGER;
-    }
-  }
-
-  @ThreadSafe
-  private static final class NoopStatsComponent extends StatsComponent {
-    private static final StatsRecorder STATS_RECORDER = new NoopStatsRecorder();
-
-    @Override
-    public StatsRecorder getStatsRecorder() {
-      return STATS_RECORDER;
     }
   }
 
