@@ -26,11 +26,13 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Timestamp;
 import openconsensus.internal.Utils;
+import openconsensus.trace.AttributeValue;
 import openconsensus.trace.Link;
 import openconsensus.trace.Span;
 import openconsensus.trace.Span.Kind;
 import openconsensus.trace.SpanContext;
 import openconsensus.trace.SpanId;
+import openconsensus.trace.Status;
 
 /**
  * Immutable representation of all data collected by the {@link Span} class.

@@ -24,9 +24,9 @@ import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
 import java.util.ArrayList;
 import java.util.List;
+import openconsensus.trace.AttributeValue;
 import openconsensus.trace.Span.Kind;
-import openconsensus.trace.data.AttributeValue;
-import openconsensus.trace.data.Status;
+import openconsensus.trace.Status;
 
 @SuppressWarnings("deprecation")
 final class SpanBuilderShim implements SpanBuilder {

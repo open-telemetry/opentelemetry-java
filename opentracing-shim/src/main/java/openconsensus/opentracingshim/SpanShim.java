@@ -22,8 +22,8 @@ import io.opentracing.log.Fields;
 import io.opentracing.tag.Tag;
 import java.util.HashMap;
 import java.util.Map;
-import openconsensus.trace.data.AttributeValue;
-import openconsensus.trace.data.Status;
+import openconsensus.trace.AttributeValue;
+import openconsensus.trace.Status;
 
 final class SpanShim implements Span {
   private static final String DEFAULT_EVENT_NAME = "log";
