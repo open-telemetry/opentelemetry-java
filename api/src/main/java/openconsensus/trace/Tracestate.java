@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.trace.data;
+package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
@@ -93,7 +93,7 @@ public abstract class Tracestate {
   }
 
   /**
-   * Builder class for {@link MessageEvent}.
+   * Builder class for {@link Tracestate}.
    *
    * @since 0.1.0
    */

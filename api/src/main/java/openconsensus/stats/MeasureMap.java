@@ -19,10 +19,7 @@ package openconsensus.stats;
 import javax.annotation.concurrent.NotThreadSafe;
 import openconsensus.internal.Utils;
 import openconsensus.metrics.data.AttachmentValue;
-import openconsensus.metrics.data.AttachmentValue.AttachmentValueString;
 import openconsensus.stats.data.Measure;
-import openconsensus.stats.data.Measure.MeasureDouble;
-import openconsensus.stats.data.Measure.MeasureLong;
 import openconsensus.tags.TagMap;
 
 /**
@@ -34,43 +31,15 @@ import openconsensus.tags.TagMap;
 public abstract class MeasureMap {
 
   /**
-   * Associates the {@link MeasureDouble} with the given value. Subsequent updates to the same
-   * {@link MeasureDouble} will overwrite the previous value.
+   * Associates the {@link Measure} with the given value. Subsequent updates to the same {@link
+   * Measure} will overwrite the previous value.
    *
-   * @param measure the {@link MeasureDouble}
+   * @param measure the {@link Measure}
    * @param value the value to be associated with {@code measure}
    * @return this
    * @since 0.1.0
    */
-  public abstract MeasureMap put(MeasureDouble measure, double value);
-
-  /**
-   * Associates the {@link MeasureLong} with the given value. Subsequent updates to the same {@link
-   * MeasureLong} will overwrite the previous value.
-   *
-   * @param measure the {@link MeasureLong}
-   * @param value the value to be associated with {@code measure}
-   * @return this
-   * @since 0.1.0
-   */
-  public abstract MeasureMap put(MeasureLong measure, long value);
-
-  /**
-   * Associate the contextual information of an {@code Exemplar} to this {@link MeasureMap}.
-   * Contextual information is represented as {@code String} key-value pairs.
-   *
-   * <p>If this method is called multiple times with the same key, only the last value will be kept.
-   *
-   * @param key the key of contextual information of an {@code Exemplar}.
-   * @param value the string representation of contextual information of an {@code Exemplar}.
-   * @return this
-   * @since 0.1.0
-   * @deprecated in favor of {@link #putAttachment(String, AttachmentValue)}.
-   */
-  @Deprecated
-  public MeasureMap putAttachment(String key, String value) {
-    return putAttachment(key, AttachmentValueString.create(value));
-  }
+  public abstract MeasureMap put(Measure measure, double value);
 
   /**
    * Associate the contextual information of an {@code Exemplar} to this {@link MeasureMap}.

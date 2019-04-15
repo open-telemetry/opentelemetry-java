@@ -16,7 +16,7 @@
 
 package openconsensus.tags;
 
-import openconsensus.common.Scope;
+import openconsensus.context.Scope;
 
 /**
  * Object for creating new {@link TagMap}s and {@code TagMap}s based on the current context.
@@ -25,8 +25,8 @@ import openconsensus.common.Scope;
  * implementation-dependent {@link TagMap}s.
  *
  * <p>Implementations may have different constraints and are free to convert tag contexts to their
- * own subtypes. This means callers cannot assume the {@link #getCurrentTagContext() current
- * context} is the same instance as the one {@link #withTagContext(TagMap) placed into scope}.
+ * own subtypes. This means callers cannot assume the {@link #getCurrentTagMap() current context} is
+ * the same instance as the one {@link #withTagMap(TagMap) placed into scope}.
  *
  * @since 0.1.0
  */
@@ -46,7 +46,7 @@ public abstract class Tagger {
    * @return the current {@code TagMap}.
    * @since 0.1.0
    */
-  public abstract TagMap getCurrentTagContext();
+  public abstract TagMap getCurrentTagMap();
 
   /**
    * Returns a new empty {@code Builder}.
@@ -83,5 +83,5 @@ public abstract class Tagger {
    *     context.
    * @since 0.1.0
    */
-  public abstract Scope withTagContext(TagMap tags);
+  public abstract Scope withTagMap(TagMap tags);
 }

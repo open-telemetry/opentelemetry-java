@@ -28,7 +28,7 @@ import openconsensus.trace.data.Status;
  *
  * <p>Spans are created by the {@link SpanBuilder#startSpan} method.
  *
- * <p>{@code Span} <b>must</b> be ended by calling {@link #end()} or {@link #end(EndSpanOptions)}
+ * <p>{@code Span} <b>must</b> be ended by calling {@link #end()}.
  *
  * @since 0.1.0
  */
@@ -41,17 +41,47 @@ public abstract class Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public abstract void putAttribute(String key, AttributeValue value);
+  public abstract void setAttribute(String key, String value);
 
   /**
-   * Sets a set of attributes to the {@code Span}. The effect of this call is equivalent to that of
-   * calling {@link #putAttribute(String, AttributeValue)} once for each element in the specified
-   * map.
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
    *
-   * @param attributes the attributes that will be added and associated with the {@code Span}.
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public abstract void putAttributes(Map<String, AttributeValue> attributes);
+  public abstract void setAttribute(String key, long value);
+
+  /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
+  public abstract void setAttribute(String key, double value);
+
+  /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
+  public abstract void setAttribute(String key, boolean value);
+
+  /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
+  public abstract void setAttribute(String key, AttributeValue value);
 
   /**
    * Adds an event to the {@code Span}.
@@ -66,7 +96,7 @@ public abstract class Span {
    *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
-   *     the {@code Span} as for {@link #putAttributes(Map)}.
+   *     the {@code Span} as for {@code setAttributes()}.
    * @since 0.1.0
    */
   public abstract void addEvent(String name, Map<String, AttributeValue> attributes);
@@ -109,8 +139,7 @@ public abstract class Span {
    * <p>If used, this will override the default {@code Span} status. Default is {@link Status#OK}.
    *
    * <p>Only the value of the last call will be recorded, and implementations are free to ignore
-   * previous calls. If the status is set via {@link EndSpanOptions.Builder#setStatus(Status)} that
-   * will always be the last call.
+   * previous calls.
    *
    * @param status the {@link Status} to set.
    * @since 0.1.0
@@ -118,15 +147,17 @@ public abstract class Span {
   public abstract void setStatus(Status status);
 
   /**
-   * Marks the end of {@code Span} execution with the given options.
+   * Updates the {@code Span} name.
    *
-   * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
-   * implementations are free to ignore all further calls.
+   * <p>If used, this will override the name provided via {@code SpanBuilder}.
    *
-   * @param options the options to be used for the end of the {@code Span}.
-   * @since 0.1.0
+   * <p>Upon this update, any sampling behavior based on {@code Span} name will depend on the
+   * implementation.
+   *
+   * @param name the {@code Span} name.
+   * @since 0.1
    */
-  public abstract void end(EndSpanOptions options);
+  public abstract void updateName(String name);
 
   /**
    * Marks the end of {@code Span} execution with the default options.
@@ -162,11 +193,11 @@ public abstract class Span {
    */
   public enum Kind {
     /**
-     * Undefined span kind.
+     * Default value. Indicates that the span is used internally.
      *
      * @since 0.1.0
      */
-    UNDEFINED,
+    INTERNAL,
 
     /**
      * Indicates that the span covers server-side handling of an RPC or other remote request.

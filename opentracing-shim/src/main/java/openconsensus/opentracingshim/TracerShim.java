@@ -97,7 +97,7 @@ public final class TracerShim implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(String operationName) {
-    return new SpanBuilderShim(tracer, tracer.spanBuilder(operationName));
+    return new SpanBuilderShim(tracer.spanBuilder(operationName));
   }
 
   @Override

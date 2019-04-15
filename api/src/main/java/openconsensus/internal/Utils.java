@@ -17,6 +17,7 @@
 package openconsensus.internal;
 
 import java.util.List;
+import java.util.Map;
 
 /** General internal utility methods. */
 public final class Utils {
@@ -102,6 +103,7 @@ public final class Utils {
    * @param arg the argument to check for null.
    * @param errorMessage the message to use for the exception. Will be converted to a string using
    *     {@link String#valueOf(Object)}.
+   * @param <T> type of an argument to check.
    * @return the argument, if it passes the null check.
    */
   public static <T> T checkNotNull(T arg, @javax.annotation.Nullable Object errorMessage) {
@@ -117,6 +119,7 @@ public final class Utils {
    * @param list the argument list to check for null.
    * @param errorMessage the message to use for the exception. Will be converted to a string using
    *     {@link String#valueOf(Object)}.
+   * @param <T> type of an argument to check.
    */
   public static <T> void checkListElementNotNull(
       List<T> list, @javax.annotation.Nullable Object errorMessage) {
@@ -128,8 +131,28 @@ public final class Utils {
   }
 
   /**
+   * Throws a {@link NullPointerException} if any of the map elements is null.
+   *
+   * @param map the argument map to check for null.
+   * @param errorMessage the message to use for the exception. Will be converted to a string using
+   *     {@link String#valueOf(Object)}.
+   */
+  public static <K, V> void checkMapElementNotNull(
+      Map<K, V> map, @javax.annotation.Nullable Object errorMessage) {
+    for (Map.Entry<K, V> entry : map.entrySet()) {
+      if (entry.getKey() == null || entry.getValue() == null) {
+        throw new NullPointerException(String.valueOf(errorMessage));
+      }
+    }
+  }
+
+  /**
    * Compares two Objects for equality. This functionality is provided by {@code
    * Objects.equal(Object, Object)} in Java 7.
+   *
+   * @param x object to compare with.
+   * @param y object to compare to.
+   * @return {@code true} if x is the same as the y; {@code false} otherwise.
    */
   public static boolean equalsObjects(
       @javax.annotation.Nullable Object x, @javax.annotation.Nullable Object y) {

@@ -24,13 +24,9 @@ import openconsensus.tags.data.TagMetadata.TagTtl;
 /**
  * Object for serializing and deserializing {@link TagMap}s with the binary format.
  *
- * <p>See <a
- * href="https://github.com/census-instrumentation/opencensus-specs/blob/master/encodings/BinaryEncoding.md#tag-context">opencensus-specs</a>
- * for the specification of the cross-language binary serialization format.
- *
  * @since 0.1.0
  */
-public abstract class TagContextBinarySerializer {
+public abstract class BinaryFormat {
 
   /**
    * Serializes the {@code TagMap} into the on-the-wire representation.
@@ -42,11 +38,11 @@ public abstract class TagContextBinarySerializer {
    *
    * @param tags the {@code TagMap} to serialize.
    * @return the on-the-wire representation of a {@code TagMap}.
-   * @throws TagContextSerializationException if the result would be larger than the maximum allowed
+   * @throws SerializationException if the result would be larger than the maximum allowed
    *     serialized size.
    * @since 0.1.0
    */
-  public abstract byte[] toByteArray(TagMap tags) throws TagContextSerializationException;
+  public abstract byte[] toByteArray(TagMap tags) throws SerializationException;
 
   /**
    * Creates a {@code TagMap} from the given on-the-wire encoded representation.
@@ -55,9 +51,9 @@ public abstract class TagContextBinarySerializer {
    *
    * @param bytes on-the-wire representation of a {@code TagMap}.
    * @return a {@code TagMap} deserialized from {@code bytes}.
-   * @throws TagContextDeserializationException if there is a parse error, the input contains
-   *     invalid tags, or the input is larger than the maximum allowed serialized size.
+   * @throws DeserializationException if there is a parse error, the input contains invalid tags, or
+   *     the input is larger than the maximum allowed serialized size.
    * @since 0.1.0
    */
-  public abstract TagMap fromByteArray(byte[] bytes) throws TagContextDeserializationException;
+  public abstract TagMap fromByteArray(byte[] bytes) throws DeserializationException;
 }

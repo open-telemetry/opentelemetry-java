@@ -26,8 +26,7 @@ import javax.annotation.concurrent.Immutable;
  * are added because we don't want to introduce dependencies on other libraries, for example Tracing
  * APIs.
  *
- * <p>Other packages are free to extend this class to hold specific information. As an example, see
- * {@code io.opencensus.contrib.exemplar.util.AttachmentValueSpanContext}.
+ * <p>Other packages are free to extend this class to hold specific information.
  *
  * @since 0.1.0
  */

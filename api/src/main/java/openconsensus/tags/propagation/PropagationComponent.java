@@ -19,31 +19,28 @@ package openconsensus.tags.propagation;
 import openconsensus.tags.TagMap;
 
 /**
- * Exception thrown when a {@link TagMap} cannot be parsed.
+ * Object containing all supported {@link TagMap} propagation formats.
  *
  * @since 0.1.0
  */
-public final class TagContextDeserializationException extends Exception {
-  private static final long serialVersionUID = 0L;
+public abstract class PropagationComponent {
 
   /**
-   * Constructs a new {@code TagContextParseException} with the given message.
+   * Returns the {@link BinaryFormat} for this implementation.
    *
-   * @param message a message describing the error.
+   * @return the {@code BinaryFormat} for this implementation.
    * @since 0.1.0
    */
-  public TagContextDeserializationException(String message) {
-    super(message);
-  }
+  public abstract BinaryFormat getBinaryFormat();
 
   /**
-   * Constructs a new {@code TagContextParseException} with the given message and cause.
+   * Returns the {@link TextFormat} for this implementation.
    *
-   * @param message a message describing the error.
-   * @param cause the cause of the error.
+   * <p>Usually this will be the W3C Correlation Context as the HTTP text format. For more details,
+   * see <a href="https://github.com/w3c/correlation-context">correlation-context</a>.
+   *
+   * @return the {@code TextFormat} for this implementation.
    * @since 0.1.0
    */
-  public TagContextDeserializationException(String message, Throwable cause) {
-    super(message, cause);
-  }
+  public abstract TextFormat getTextFormat();
 }

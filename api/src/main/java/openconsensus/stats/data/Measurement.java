@@ -18,27 +18,15 @@ package openconsensus.stats.data;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.common.Function;
-import openconsensus.stats.data.Measure.MeasureDouble;
-import openconsensus.stats.data.Measure.MeasureLong;
 
 /**
- * Immutable representation of a Measurement.
+ * Immutable representation of a measurement.
  *
  * @since 0.1.0
  */
 @Immutable
+@AutoValue
 public abstract class Measurement {
-
-  /**
-   * Applies the given match function to the underlying data type.
-   *
-   * @since 0.1.0
-   */
-  public abstract <T> T match(
-      Function<? super MeasurementDouble, T> p0,
-      Function<? super MeasurementLong, T> p1,
-      Function<? super Measurement, T> defaultFunction);
 
   /**
    * Extracts the measured {@link Measure}.
@@ -47,84 +35,23 @@ public abstract class Measurement {
    */
   public abstract Measure getMeasure();
 
+  /**
+   * Returns the value for the {@link Measurement}.
+   *
+   * @return the value.
+   * @since 0.1.0
+   */
+  public abstract double getValue();
+
   // Prevents this class from being subclassed anywhere else.
-  private Measurement() {}
+  Measurement() {}
 
   /**
-   * {@code Double} typed {@link Measurement}.
+   * Constructs a new {@link Measurement}.
    *
    * @since 0.1.0
    */
-  @Immutable
-  @AutoValue
-  public abstract static class MeasurementDouble extends Measurement {
-    MeasurementDouble() {}
-
-    /**
-     * Constructs a new {@link MeasurementDouble}.
-     *
-     * @since 0.1.0
-     */
-    public static MeasurementDouble create(MeasureDouble measure, double value) {
-      return new AutoValue_Measurement_MeasurementDouble(measure, value);
-    }
-
-    @Override
-    public abstract MeasureDouble getMeasure();
-
-    /**
-     * Returns the value for the measure.
-     *
-     * @return the value for the measure.
-     * @since 0.1.0
-     */
-    public abstract double getValue();
-
-    @Override
-    public <T> T match(
-        Function<? super MeasurementDouble, T> p0,
-        Function<? super MeasurementLong, T> p1,
-        Function<? super Measurement, T> defaultFunction) {
-      return p0.apply(this);
-    }
-  }
-
-  /**
-   * {@code Long} typed {@link Measurement}.
-   *
-   * @since 0.1.0
-   */
-  @Immutable
-  @AutoValue
-  public abstract static class MeasurementLong extends Measurement {
-    MeasurementLong() {}
-
-    /**
-     * Constructs a new {@link MeasurementLong}.
-     *
-     * @since 0.1.0
-     */
-    public static MeasurementLong create(MeasureLong measure, long value) {
-      return new AutoValue_Measurement_MeasurementLong(measure, value);
-    }
-
-    @Override
-    public abstract MeasureLong getMeasure();
-
-    /**
-     * Returns the value for the measure.
-     *
-     * @return the value for the measure.
-     * @since 0.1.0
-     */
-    public abstract long getValue();
-
-    @Override
-    public <T> T match(
-        Function<? super MeasurementDouble, T> p0,
-        Function<? super MeasurementLong, T> p1,
-        Function<? super Measurement, T> defaultFunction) {
-      return p1.apply(this);
-    }
+  public static Measurement create(Measure measure, double value) {
+    return new AutoValue_Measurement(measure, value);
   }
 }

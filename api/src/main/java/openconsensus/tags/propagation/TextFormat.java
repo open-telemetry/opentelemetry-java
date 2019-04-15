@@ -14,76 +14,73 @@
  * limitations under the License.
  */
 
-package openconsensus.trace.propagation;
+package openconsensus.tags.propagation;
 
 import java.util.List;
 import javax.annotation.Nullable;
-import openconsensus.common.ExperimentalApi;
-import openconsensus.trace.SpanContext;
+import openconsensus.tags.TagMap;
 
 /**
- * Injects and extracts {@link SpanContext trace identifiers} as text into carriers that travel
- * in-band across process boundaries. Identifiers are often encoded as messaging or RPC request
- * headers.
+ * Object for injecting and extracting {@link TagMap} as text into carriers that travel in-band
+ * across process boundaries. Tags are often encoded as messaging or RPC request headers.
  *
  * <p>When using http, the carrier of propagated data on both the client (injector) and server
  * (extractor) side is usually an http request. Propagation is usually implemented via library-
- * specific request interceptors, where the client-side injects span identifiers and the server-side
- * extracts them.
+ * specific request interceptors, where the client-side injects tags and the server-side extracts
+ * them.
  *
  * <p>Example of usage on the client:
  *
  * <pre>{@code
- * private static final Tracer tracer = Tracing.getTracer();
- * private static final TextFormat textFormat = Tracing.getPropagationComponent().getTextFormat();
- * private static final TextFormat.Setter setter = new TextFormat.Setter<HttpURLConnection>() {
- *   public void put(HttpURLConnection carrier, String key, String value) {
- *     carrier.setRequestProperty(field, value);
- *   }
- * }
+ * private static final Tagger tagger = Tags.getTagger();
+ * private static final TextFormat textFormat =
+ *     Tags.getPropagationComponent().getTextFormat();
+ * private static final TextFormat.Setter setter =
+ *     new TextFormat.Setter<HttpURLConnection>() {
+ *       public void put(HttpURLConnection carrier, String key, String value) {
+ *         carrier.setRequestProperty(field, value);
+ *       }
+ *     };
  *
  * void makeHttpRequest() {
- *   Span span = tracer.spanBuilder("Sent.MyRequest").startSpan();
- *   try (Scope s = tracer.withSpan(span)) {
+ *   TagMap tagMap = tagger.emptyBuilder().put(K, V).build();
+ *   try (Scope s = tagger.withTagMap(tagMap)) {
  *     HttpURLConnection connection =
  *         (HttpURLConnection) new URL("http://myserver").openConnection();
- *     textFormat.inject(span.getContext(), connection, httpURLConnectionSetter);
+ *     textFormat.inject(tagMap, connection, httpURLConnectionSetter);
  *     // Send the request, wait for response and maybe set the status if not ok.
  *   }
- *   span.end();  // Can set a status.
  * }
  * }</pre>
  *
  * <p>Example of usage on the server:
  *
  * <pre>{@code
- * private static final Tracer tracer = Tracing.getTracer();
- * private static final TextFormat textFormat = Tracing.getPropagationComponent().getTextFormat();
+ * private static final Tagger tagger = Tags.getTagger();
+ * private static final TextFormat textFormat =
+ *     Tags.getPropagationComponent().getTextFormat();
  * private static final TextFormat.Getter<HttpRequest> getter = ...;
  *
  * void onRequestReceived(HttpRequest request) {
- *   SpanContext spanContext = textFormat.extract(request, getter);
- *   Span span = tracer.spanBuilderWithRemoteParent("Recv.MyRequest", spanContext).startSpan();
- *   try (Scope s = tracer.withSpan(span)) {
+ *   TagMap tagMap = textFormat.extract(request, getter);
+ *   try (Scope s = tagger.withTagMap(tagMap)) {
  *     // Handle request and send response back.
  *   }
- *   span.end()
  * }
  * }</pre>
  *
  * @since 0.1.0
  */
-@ExperimentalApi
 public abstract class TextFormat {
+
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
-   * before calling {@link #inject(SpanContext, Object, Setter)}.
+   * before calling {@link #inject(TagMap, Object, Setter)}.
    *
    * <p>For example, if the carrier is a single-use or immutable request object, you don't need to
    * clear fields as they couldn't have been set before. If it is a mutable, retryable object,
    * successive calls should clear these fields first.
    *
-   * @return list of fields that will be used by this formatter.
    * @since 0.1.0
    */
   // The use cases of this are:
@@ -92,15 +89,16 @@ public abstract class TextFormat {
   public abstract List<String> fields();
 
   /**
-   * Injects the span context downstream. For example, as http headers.
+   * Injects the tag context downstream. For example, as http headers.
    *
-   * @param spanContext possibly not sampled.
+   * @param tagMap the tag context.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param setter invoked for each propagation key to add or remove.
-   * @param <C> carrier of propagation fields, such as an http request
+   * @throws SerializationException if the given tag context cannot be serialized.
    * @since 0.1.0
    */
-  public abstract <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter);
+  public abstract <C> void inject(TagMap tagMap, C carrier, Setter<C> setter)
+      throws SerializationException;
 
   /**
    * Class that allows a {@code TextFormat} to set propagated fields into a carrier.
@@ -128,17 +126,14 @@ public abstract class TextFormat {
   }
 
   /**
-   * Extracts the span context from upstream. For example, as http headers.
+   * Extracts the tag context from upstream. For example, as http headers.
    *
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param getter invoked for each propagation key to get.
-   * @param <C> carrier of propagation fields, such as an http request.
-   * @return carrier of propagated fields.
-   * @throws SpanContextParseException if the input is invalid
+   * @throws DeserializationException if the input is invalid
    * @since 0.1.0
    */
-  public abstract <C> SpanContext extract(C carrier, Getter<C> getter)
-      throws SpanContextParseException;
+  public abstract <C> TagMap extract(C carrier, Getter<C> getter) throws DeserializationException;
 
   /**
    * Class that allows a {@code TextFormat} to read propagated fields from a carrier.
@@ -146,7 +141,7 @@ public abstract class TextFormat {
    * <p>{@code Getter} is stateless and allows to be saved as a constant to avoid runtime
    * allocations.
    *
-   * @param <C> carrier of propagation fields, such as an http request.
+   * @param <C> carrier of propagation fields, such as an http request
    * @since 0.1.0
    */
   public abstract static class Getter<C> {
@@ -154,7 +149,7 @@ public abstract class TextFormat {
     /**
      * Returns the first value of the given propagation {@code key} or returns {@code null}.
      *
-     * @param carrier carrier of propagation fields, such as an http request.
+     * @param carrier carrier of propagation fields, such as an http request
      * @param key the key of the field.
      * @return the first value of the given propagation {@code key} or returns {@code null}.
      * @since 0.1.0

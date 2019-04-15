@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package openconsensus.internal;
+package openconsensus.context;
 
-import openconsensus.common.Scope;
+import java.io.Closeable;
 
-/** A {@link Scope} that does nothing when it is created or closed. */
-public final class NoopScope implements Scope {
-  private static final Scope INSTANCE = new NoopScope();
-
-  private NoopScope() {}
-
-  /**
-   * Returns a {@code NoopScope}.
-   *
-   * @return a {@code NoopScope}.
-   */
-  public static Scope getInstance() {
-    return INSTANCE;
-  }
-
+/**
+ * A {@link java.io.Closeable} that represents a change to the current context over a scope of code.
+ * {@link Scope#close} cannot throw a checked exception.
+ *
+ * <p>Example of usage:
+ *
+ * <pre>
+ *   try (Scope ctx = tryEnter()) {
+ *     ...
+ *   }
+ * </pre>
+ *
+ * @since 0.1.0
+ */
+public interface Scope extends Closeable {
   @Override
-  public void close() {}
+  void close();
 }

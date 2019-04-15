@@ -21,15 +21,23 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.tag.Tag;
+import io.opentracing.tag.Tags;
+import java.util.ArrayList;
+import java.util.List;
+import openconsensus.trace.Span.Kind;
+import openconsensus.trace.data.AttributeValue;
+import openconsensus.trace.data.Status;
 
 @SuppressWarnings("deprecation")
 final class SpanBuilderShim implements SpanBuilder {
-  openconsensus.trace.Tracer tracer;
-  openconsensus.trace.SpanBuilder builder;
+  private final openconsensus.trace.SpanBuilder builder;
 
-  public SpanBuilderShim(
-      openconsensus.trace.Tracer tracer, openconsensus.trace.SpanBuilder builder) {
-    this.tracer = tracer;
+  // TODO: should it be any of concurrent maps?
+  private final List<String> spanBuilderAttributeKeys = new ArrayList<>();
+  private final List<AttributeValue> spanBuilderAttributeValues = new ArrayList<>();
+  private boolean error;
+
+  public SpanBuilderShim(openconsensus.trace.SpanBuilder builder) {
     this.builder = builder;
   }
 
@@ -59,37 +67,103 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, String value) {
-    // TODO
+    if ("span.kind".equals(key)) {
+      switch (value) {
+        case "CLIENT":
+          this.builder.setSpanKind(Kind.CLIENT);
+          break;
+        case "SERVER":
+          this.builder.setSpanKind(Kind.SERVER);
+          break;
+        case "PRODUCER":
+          this.builder.setSpanKind(Kind.PRODUCER);
+          break;
+        case "CONSUMER":
+          this.builder.setSpanKind(Kind.CONSUMER);
+          break;
+        default:
+          this.builder.setSpanKind(Kind.INTERNAL);
+          break;
+      }
+    } else if (Tags.ERROR.getKey().equals(key)) {
+      if (Boolean.parseBoolean(value)) {
+        error = true;
+      }
+    } else {
+      this.spanBuilderAttributeKeys.add(key);
+      this.spanBuilderAttributeValues.add(AttributeValue.stringAttributeValue(value));
+    }
+
     return this;
   }
 
   @Override
   public SpanBuilder withTag(String key, boolean value) {
-    // TODO
+    if (Tags.ERROR.getKey().equals(key)) {
+      if (value) {
+        error = true;
+      }
+    } else {
+      this.spanBuilderAttributeKeys.add(key);
+      this.spanBuilderAttributeValues.add(AttributeValue.booleanAttributeValue(value));
+    }
     return this;
   }
 
   @Override
   public SpanBuilder withTag(String key, Number value) {
-    // TODO
+    // TODO - Verify only the 'basic' types are supported/used.
+    if (value instanceof Integer
+        || value instanceof Long
+        || value instanceof Short
+        || value instanceof Byte) {
+      this.spanBuilderAttributeKeys.add(key);
+      this.spanBuilderAttributeValues.add(AttributeValue.longAttributeValue(value.longValue()));
+    } else if (value instanceof Float || value instanceof Double) {
+      this.spanBuilderAttributeKeys.add(key);
+      this.spanBuilderAttributeValues.add(AttributeValue.doubleAttributeValue(value.doubleValue()));
+    } else {
+      throw new IllegalArgumentException("Number type not supported");
+    }
+
     return this;
   }
 
   @Override
   public <T> SpanBuilder withTag(Tag<T> tag, T value) {
-    // TODO
+    if (value instanceof String) {
+      this.withTag(tag.getKey(), (String) value);
+    } else if (value instanceof Boolean) {
+      this.withTag(tag.getKey(), (Boolean) value);
+    } else if (value instanceof Number) {
+      this.withTag(tag.getKey(), (Number) value);
+    } else {
+      this.withTag(tag.getKey(), value.toString());
+    }
+
     return this;
   }
 
   @Override
   public SpanBuilder withStartTimestamp(long microseconds) {
-    // TODO
+    this.spanBuilderAttributeKeys.add("ot.start_timestamp");
+    this.spanBuilderAttributeValues.add(AttributeValue.longAttributeValue(microseconds));
     return this;
   }
 
   @Override
   public Span start() {
-    return new SpanShim(builder.startSpan());
+    openconsensus.trace.Span span = builder.startSpan();
+    for (int i = 0; i < this.spanBuilderAttributeKeys.size(); i++) {
+      String key = this.spanBuilderAttributeKeys.get(i);
+      AttributeValue value = this.spanBuilderAttributeValues.get(i);
+      span.setAttribute(key, value);
+    }
+    if (error) {
+      span.setStatus(Status.UNKNOWN);
+    }
+
+    return new SpanShim(span);
   }
 
   @Override

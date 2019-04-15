@@ -24,7 +24,7 @@ import openconsensus.trace.propagation.PropagationComponent;
  * @since 0.1.0
  */
 public final class Tracing {
-  private static final TraceComponent traceComponent = TraceComponent.newNoopTraceComponent();
+  private static final TraceComponent traceComponent = NoopTrace.newNoopTraceComponent();
 
   /**
    * Returns the global {@link Tracer}.

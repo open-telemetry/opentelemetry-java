@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.trace.data;
+package openconsensus.trace;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;

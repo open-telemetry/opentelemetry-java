@@ -24,12 +24,12 @@ import openconsensus.tags.TagMap;
  * Utility methods for accessing the {@link TagMap} contained in the {@link io.grpc.Context}.
  *
  * <p>Most code should interact with the current context via the public APIs in {@link TagMap} and
- * avoid accessing {@link #TAG_CONTEXT_KEY} directly.
+ * avoid accessing {@link #TAG_MAP_KEY} directly.
  *
  * @since 0.1.0
  */
 public final class ContextUtils {
-  private static final TagMap EMPTY_TAG_CONTEXT = new EmptyTagMap();
+  private static final TagMap EMPTY_TAG_MAP = new EmptyTagMap();
 
   private ContextUtils() {}
 
@@ -39,8 +39,8 @@ public final class ContextUtils {
    *
    * @since 0.1.0
    */
-  public static final Context.Key<TagMap> TAG_CONTEXT_KEY =
-      Context.keyWithDefault("opencensus-tag-context-key", EMPTY_TAG_CONTEXT);
+  public static final Context.Key<TagMap> TAG_MAP_KEY =
+      Context.keyWithDefault("openconsensus-tag-map-key", EMPTY_TAG_MAP);
 
   @Immutable
   private static final class EmptyTagMap extends TagMap {}

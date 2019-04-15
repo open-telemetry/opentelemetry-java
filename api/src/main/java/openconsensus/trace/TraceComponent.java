@@ -45,25 +45,4 @@ public abstract class TraceComponent {
    * @since 0.1.0
    */
   public abstract PropagationComponent getPropagationComponent();
-
-  /**
-   * Returns an instance that contains no-op implementations for all the instances.
-   *
-   * @return an instance that contains no-op implementations for all the instances.
-   */
-  static TraceComponent newNoopTraceComponent() {
-    return new NoopTraceComponent();
-  }
-
-  private static final class NoopTraceComponent extends TraceComponent {
-    @Override
-    public Tracer getTracer() {
-      return Tracer.getNoopTracer();
-    }
-
-    @Override
-    public PropagationComponent getPropagationComponent() {
-      return PropagationComponent.getNoopPropagationComponent();
-    }
-  }
 }

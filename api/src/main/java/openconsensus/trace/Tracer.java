@@ -19,9 +19,8 @@ package openconsensus.trace;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
-import openconsensus.common.Scope;
-import openconsensus.internal.NoopScope;
-import openconsensus.trace.SpanBuilder.NoopSpanBuilder;
+import openconsensus.context.Scope;
+import openconsensus.trace.data.SpanData;
 import openconsensus.trace.data.Status;
 
 /**
@@ -41,10 +40,13 @@ import openconsensus.trace.data.Status;
  * class MyClass {
  *   private static final Tracer tracer = Tracing.getTracer();
  *   void doWork() {
- *     try(Scope ss = tracer.spanBuilder("MyClass.DoWork").startScopedSpan()) {
+ *     Span span = tracer.spanBuilder("MyClass.DoWork").startSpan();
+ *     try(Scope ss = tracer.withSpan(span)) {
  *       tracer.getCurrentSpan().addAnnotation("Starting the work.");
  *       doWorkInternal();
  *       tracer.getCurrentSpan().addAnnotation("Finished working.");
+ *     } finally {
+ *       span.end();
  *     }
  *   }
  * }
@@ -71,22 +73,10 @@ import openconsensus.trace.data.Status;
  * @since 0.1.0
  */
 public abstract class Tracer {
-  private static final NoopTracer noopTracer = new NoopTracer();
-
-  /**
-   * Returns the no-op implementation of the {@code Tracer}.
-   *
-   * @return the no-op implementation of the {@code Tracer}.
-   */
-  static Tracer getNoopTracer() {
-    return noopTracer;
-  }
-
   /**
    * Gets the current Span from the current Context.
    *
-   * <p>To install a {@link Span} to the current Context use {@link #withSpan(Span)} OR use {@link
-   * SpanBuilder#startScopedSpan} methods to start a new {@code Span}.
+   * <p>To install a {@link Span} to the current Context use {@link #withSpan(Span)}.
    *
    * <p>startSpan methods do NOT modify the current Context {@code Span}.
    *
@@ -340,47 +330,15 @@ public abstract class Tracer {
   public abstract SpanBuilder spanBuilderWithRemoteParent(
       String spanName, @Nullable SpanContext remoteParentSpanContext);
 
-  // No-Op implementation of the Tracer.
-  private static final class NoopTracer extends Tracer {
-
-    @Override
-    public Span getCurrentSpan() {
-      return BlankSpan.INSTANCE;
-    }
-
-    @Override
-    public Scope withSpan(Span span) {
-      return NoopScope.getInstance();
-    }
-
-    @Override
-    public Runnable withSpan(Span span, Runnable runnable) {
-      return runnable;
-    }
-
-    @Override
-    public <C> Callable<C> withSpan(Span span, Callable<C> callable) {
-      return callable;
-    }
-
-    @Override
-    public SpanBuilder spanBuilder(String spanName) {
-      return spanBuilderWithExplicitParent(spanName, getCurrentSpan());
-    }
-
-    @Override
-    public SpanBuilder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {
-      return NoopSpanBuilder.createWithParent(spanName, parent);
-    }
-
-    @Override
-    public SpanBuilder spanBuilderWithRemoteParent(
-        String spanName, @Nullable SpanContext remoteParentSpanContext) {
-      return NoopSpanBuilder.createWithRemoteParent(spanName, remoteParentSpanContext);
-    }
-
-    private NoopTracer() {}
-  }
+  /**
+   * Records a {@link SpanData}. This API allows to send a pre-populated span object to the
+   * exporter. Sampling and recording decisions as well as other collection optimizations is a
+   * responsibility of a caller. Note, the {@link SpanContext} object on the span population with
+   * the values that will allow correlation of telemetry is also a caller responsibility.
+   *
+   * @param span Span Data to be reported to all exporters.
+   */
+  public abstract void recordSpanData(SpanData span);
 
   protected Tracer() {}
 }

@@ -16,8 +16,6 @@
 
 package openconsensus.trace.propagation;
 
-import openconsensus.common.ExperimentalApi;
-
 /**
  * Container class for all the supported propagation formats. Currently supports only Binary format
  * (see {@link BinaryFormat}) and B3 Text format (see {@link TextFormat}) but more formats will be
@@ -26,64 +24,29 @@ import openconsensus.common.ExperimentalApi;
  * @since 0.1.0
  */
 public abstract class PropagationComponent {
-  private static final PropagationComponent NOOP_PROPAGATION_COMPONENT =
-      new NoopPropagationComponent();
-
   /**
-   * Returns the {@link BinaryFormat} with the provided implementations. If no implementation is
-   * provided then no-op implementation will be used.
+   * Returns the {@link BinaryFormat} for this implementation.
    *
-   * @return the {@code BinaryFormat} implementation.
+   * <p>If no implementation is provided then no-op implementation will be used.
+   *
+   * <p>Usually this will be the W3C Trace Context as the binary format. For more details, see <a
+   * href="https://github.com/w3c/trace-context">trace-context</a>.
+   *
+   * @return the {@code BinaryFormat} for this implementation.
    * @since 0.1.0
    */
   public abstract BinaryFormat getBinaryFormat();
 
   /**
-   * Returns the B3 {@link TextFormat} with the provided implementations. See <a
-   * href="https://github.com/openzipkin/b3-propagation">b3-propagation</a> for more information. If
-   * no implementation is provided then no-op implementation will be used.
+   * Returns the {@link TextFormat} for this implementation.
    *
-   * @since 0.1.0
-   * @return the B3 {@code TextFormat} implementation.
-   */
-  @ExperimentalApi
-  public abstract TextFormat getB3Format();
-
-  /**
-   * Returns the TraceContext {@link TextFormat} with the provided implementations. See <a
-   * href="https://github.com/w3c/distributed-tracing">w3c/distributed-tracing</a> for more
-   * information. If no implementation is provided then no-op implementation will be used.
+   * <p>If no implementation is provided then no-op implementation will be used.
    *
-   * @since 0.1.0
-   * @return the TraceContext {@code TextFormat} implementation.
-   */
-  @ExperimentalApi
-  public abstract TextFormat getTraceContextFormat();
-
-  /**
-   * Returns an instance that contains no-op implementations for all the instances.
+   * <p>Usually this will be the W3C Trace Context as the HTTP text format. For more details, see <a
+   * href="https://github.com/w3c/trace-context">trace-context</a>.
    *
-   * @return an instance that contains no-op implementations for all the instances.
+   * @return the {@code TextFormat} for this implementation.
    * @since 0.1.0
    */
-  public static PropagationComponent getNoopPropagationComponent() {
-    return NOOP_PROPAGATION_COMPONENT;
-  }
-
-  private static final class NoopPropagationComponent extends PropagationComponent {
-    @Override
-    public BinaryFormat getBinaryFormat() {
-      return BinaryFormat.getNoopBinaryFormat();
-    }
-
-    @Override
-    public TextFormat getB3Format() {
-      return TextFormat.getNoopTextFormat();
-    }
-
-    @Override
-    public TextFormat getTraceContextFormat() {
-      return TextFormat.getNoopTextFormat();
-    }
-  }
+  public abstract TextFormat getTextFormat();
 }

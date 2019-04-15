@@ -414,7 +414,6 @@ public final class Status {
    * @since 0.1.0
    */
   @Nullable
-  /*@Deterministic*/
   public String getDescription() {
     return description;
   }
