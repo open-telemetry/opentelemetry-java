@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
+import openconsensus.trace.AttributeValue;
 
 /**
  * A text annotation with a set of attributes.

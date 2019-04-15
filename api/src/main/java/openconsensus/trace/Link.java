@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.trace.data.AttributeValue;
 
 /**
  * A link to a {@link Span} from a different trace.

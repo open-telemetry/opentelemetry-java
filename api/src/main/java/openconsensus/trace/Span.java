@@ -17,10 +17,8 @@
 package openconsensus.trace;
 
 import java.util.Map;
-import openconsensus.trace.data.AttributeValue;
 import openconsensus.trace.data.Event;
 import openconsensus.trace.data.MessageEvent;
-import openconsensus.trace.data.Status;
 
 /**
  * An abstract class that represents a span. It has an associated {@link SpanContext}.
