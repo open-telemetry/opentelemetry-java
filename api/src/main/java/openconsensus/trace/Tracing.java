@@ -16,15 +16,13 @@
 
 package openconsensus.trace;
 
-import openconsensus.trace.propagation.PropagationComponent;
-
 /**
- * Class that manages a global instance of the {@link TraceComponent}.
+ * Class that manages a global instance of the {@link Tracer}.
  *
  * @since 0.1.0
  */
 public final class Tracing {
-  private static final TraceComponent traceComponent = NoopTrace.newNoopTraceComponent();
+  private static final Tracer TRACER = NoopTrace.newNoopTracer();
 
   /**
    * Returns the global {@link Tracer}.
@@ -33,17 +31,7 @@ public final class Tracing {
    * @since 0.1.0
    */
   public static Tracer getTracer() {
-    return traceComponent.getTracer();
-  }
-
-  /**
-   * Returns the global {@link PropagationComponent}.
-   *
-   * @return the global {@code PropagationComponent}.
-   * @since 0.1.0
-   */
-  public static PropagationComponent getPropagationComponent() {
-    return traceComponent.getPropagationComponent();
+    return TRACER;
   }
 
   // No instance of this class.

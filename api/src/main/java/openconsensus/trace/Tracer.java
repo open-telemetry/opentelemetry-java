@@ -22,6 +22,8 @@ import javax.annotation.Nullable;
 import openconsensus.context.Scope;
 import openconsensus.trace.data.SpanData;
 import openconsensus.trace.data.Status;
+import openconsensus.trace.propagation.BinaryFormat;
+import openconsensus.trace.propagation.TextFormat;
 
 /**
  * Tracer is a simple, thin class for {@link Span} creation and in-process context interaction.
@@ -339,6 +341,32 @@ public abstract class Tracer {
    * @param span Span Data to be reported to all exporters.
    */
   public abstract void recordSpanData(SpanData span);
+
+  /**
+   * Returns the {@link BinaryFormat} for this implementation.
+   *
+   * <p>If no implementation is provided then no-op implementation will be used.
+   *
+   * <p>Usually this will be the W3C Trace Context as the binary format. For more details, see <a
+   * href="https://github.com/w3c/trace-context">trace-context</a>.
+   *
+   * @return the {@code BinaryFormat} for this implementation.
+   * @since 0.1.0
+   */
+  public abstract BinaryFormat getBinaryFormat();
+
+  /**
+   * Returns the {@link TextFormat} for this implementation.
+   *
+   * <p>If no implementation is provided then no-op implementation will be used.
+   *
+   * <p>Usually this will be the W3C Trace Context as the HTTP text format. For more details, see <a
+   * href="https://github.com/w3c/trace-context">trace-context</a>.
+   *
+   * @return the {@code TextFormat} for this implementation.
+   * @since 0.1.0
+   */
+  public abstract TextFormat getTextFormat();
 
   protected Tracer() {}
 }
