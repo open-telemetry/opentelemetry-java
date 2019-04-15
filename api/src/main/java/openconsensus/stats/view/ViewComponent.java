@@ -22,7 +22,7 @@ import openconsensus.stats.StatsRecorder;
 /**
  * Class that holds the implementations for {@link ViewManager} and {@link StatsRecorder}.
  *
- * <p>All objects returned by methods on {@code StatsComponent} are cacheable.
+ * <p>All objects returned by methods on {@code ViewComponent} are cacheable.
  *
  * @since 0.1.0
  */
