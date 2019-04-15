@@ -19,8 +19,6 @@ package openconsensus.trace;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
-import openconsensus.trace.data.Event;
-import openconsensus.trace.data.MessageEvent;
 
 /**
  * The {@code BlankSpan} is a singleton class, which is the default {@link Span} that is used when
@@ -80,11 +78,6 @@ public final class BlankSpan extends Span {
   @Override
   public void addEvent(Event event) {
     Utils.checkNotNull(event, "event");
-  }
-
-  @Override
-  public void addMessageEvent(MessageEvent messageEvent) {
-    Utils.checkNotNull(messageEvent, "messageEvent");
   }
 
   @Override

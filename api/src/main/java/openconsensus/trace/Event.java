@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.trace.data;
+package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
 import java.util.Collections;
@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
-import openconsensus.trace.AttributeValue;
 
 /**
  * A text annotation with a set of attributes.
@@ -30,38 +29,9 @@ import openconsensus.trace.AttributeValue;
  * @since 0.1.0
  */
 @Immutable
-@AutoValue
 public abstract class Event {
   private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES =
       Collections.unmodifiableMap(Collections.<String, AttributeValue>emptyMap());
-
-  /**
-   * Returns a new {@code Event} with the given name.
-   *
-   * @param name the text name of the {@code Event}.
-   * @return a new {@code Event} with the given name.
-   * @throws NullPointerException if {@code name} is {@code null}.
-   * @since 0.1.0
-   */
-  public static Event fromName(String name) {
-    return new AutoValue_Event(name, EMPTY_ATTRIBUTES);
-  }
-
-  /**
-   * Returns a new {@code Event} with the given name and set of attributes.
-   *
-   * @param name the text name of the {@code Event}.
-   * @param attributes the attributes of the {@code Event}.
-   * @return a new {@code Event} with the given name and set of attributes.
-   * @throws NullPointerException if {@code name} or {@code attributes} are {@code null}.
-   * @since 0.1.0
-   */
-  public static Event fromNameAndAttributes(String name, Map<String, AttributeValue> attributes) {
-    return new AutoValue_Event(
-        name,
-        Collections.unmodifiableMap(
-            new HashMap<String, AttributeValue>(Utils.checkNotNull(attributes, "attributes"))));
-  }
 
   /**
    * Return the name of the {@code Event}.
@@ -79,5 +49,44 @@ public abstract class Event {
    */
   public abstract Map<String, AttributeValue> getAttributes();
 
-  Event() {}
+  /** Protected constructor to allow subclassing this class. */
+  protected Event() {}
+
+  /**
+   * Returns a new {@code Event} with the given name.
+   *
+   * @param name the text name of the {@code Event}.
+   * @return a new {@code Event} with the given name.
+   * @throws NullPointerException if {@code name} is {@code null}.
+   * @since 0.1.0
+   */
+  public static Event create(String name) {
+    return new AutoValue_Event_ImmutableEvent(name, EMPTY_ATTRIBUTES);
+  }
+
+  /**
+   * Returns a new {@code Event} with the given name and set of attributes.
+   *
+   * @param name the text name of the {@code Event}.
+   * @param attributes the attributes of the {@code Event}.
+   * @return a new {@code Event} with the given name and set of attributes.
+   * @throws NullPointerException if {@code name} or {@code attributes} are {@code null}.
+   * @since 0.1.0
+   */
+  public static Event create(String name, Map<String, AttributeValue> attributes) {
+    return new AutoValue_Event_ImmutableEvent(
+        name,
+        Collections.unmodifiableMap(new HashMap<>(Utils.checkNotNull(attributes, "attributes"))));
+  }
+
+  /**
+   * A text annotation with a set of attributes.
+   *
+   * @since 0.1.0
+   */
+  @Immutable
+  @AutoValue
+  abstract static class ImmutableEvent extends Event {
+    ImmutableEvent() {}
+  }
 }
