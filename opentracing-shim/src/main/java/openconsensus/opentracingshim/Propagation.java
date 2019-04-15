@@ -28,32 +28,28 @@ final class Propagation {
   private Propagation() {}
 
   public static void injectTextFormat(
-      openconsensus.trace.propagation.TextFormat[] formats,
+      openconsensus.trace.propagation.TextFormat format,
       openconsensus.trace.SpanContext context,
       TextMap carrier) {
-    for (int i = 0; i < formats.length; i++) {
-      formats[i].inject(context, carrier, TextMapSetter.INSTANCE);
-    }
+    format.inject(context, carrier, TextMapSetter.INSTANCE);
   }
 
-  @SuppressWarnings({"EmptyCatchBlock", "ReturnMissingNullable"})
+  @SuppressWarnings("ReturnMissingNullable")
   public static SpanContext extractTextFormat(
-      openconsensus.trace.propagation.TextFormat[] formats, TextMap carrier) {
+      openconsensus.trace.propagation.TextFormat format, TextMap carrier) {
     Map<String, String> carrierMap = new HashMap<String, String>();
     for (Map.Entry<String, String> entry : carrier) {
       carrierMap.put(entry.getKey(), entry.getValue());
     }
 
-    for (int i = 0; i < formats.length; i++) {
-      try {
-        openconsensus.trace.SpanContext context =
-            formats[i].extract(carrierMap, TextMapGetter.INSTANCE);
-        return new SpanContextShim(context);
-      } catch (SpanContextParseException e) {
-      }
+    openconsensus.trace.SpanContext context = null;
+    try {
+      context = format.extract(carrierMap, TextMapGetter.INSTANCE);
+    } catch (SpanContextParseException e) {
+      return null;
     }
 
-    return null;
+    return new SpanContextShim(context);
   }
 
   static final class TextMapSetter
@@ -92,7 +88,7 @@ final class Propagation {
     byteBuff.put(buff);
   }
 
-  @SuppressWarnings({"EmptyCatchBlock", "ReturnMissingNullable"})
+  @SuppressWarnings("ReturnMissingNullable")
   public static SpanContext extractBinaryFormat(
       openconsensus.trace.propagation.BinaryFormat format, Binary carrier) {
 
@@ -100,13 +96,13 @@ final class Propagation {
     byte[] buff = new byte[byteBuff.remaining()];
     byteBuff.get(buff);
 
-    SpanContext contextShim = null;
+    openconsensus.trace.SpanContext context = null;
     try {
-      openconsensus.trace.SpanContext context = format.fromByteArray(buff);
-      contextShim = new SpanContextShim(context);
+      context = format.fromByteArray(buff);
     } catch (SpanContextParseException e) {
+      return null;
     }
 
-    return contextShim;
+    return new SpanContextShim(context);
   }
 }
