@@ -19,7 +19,6 @@ package openconsensus.trace;
 import java.util.Map;
 import openconsensus.trace.data.AttributeValue;
 import openconsensus.trace.data.Event;
-import openconsensus.trace.data.Link;
 import openconsensus.trace.data.MessageEvent;
 import openconsensus.trace.data.Status;
 

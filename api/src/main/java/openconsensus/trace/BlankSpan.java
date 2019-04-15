@@ -21,7 +21,6 @@ import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
 import openconsensus.trace.data.AttributeValue;
 import openconsensus.trace.data.Event;
-import openconsensus.trace.data.Link;
 import openconsensus.trace.data.MessageEvent;
 import openconsensus.trace.data.Status;
 
