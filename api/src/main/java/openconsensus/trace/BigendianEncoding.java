@@ -17,6 +17,7 @@
 package openconsensus.trace;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 import openconsensus.internal.Utils;
 
@@ -50,7 +51,10 @@ final class BigendianEncoding {
 
   /**
    * Returns the {@code long} value whose big-endian representation is stored in the first 8 bytes
-   * of {@code bytes} starting from the {@code offset}.
+   * of {@code bytes}.
+   *
+   * <p>The returned value will be read as big-endian independently of the value of {@code
+   * byte.order()}.
    *
    * @param bytes the byte buffer representation of the {@code long}.
    * @return the {@code long} value whose big-endian representation is given.
@@ -58,18 +62,38 @@ final class BigendianEncoding {
    */
   static long longFromByteBuffer(ByteBuffer bytes) {
     Utils.checkArgument(bytes.remaining() >= LONG_BYTES, "array too small");
-    return bytes.getLong();
+
+    ByteOrder origOrder = bytes.order();
+    long value = 0;
+    try {
+      bytes.order(ByteOrder.BIG_ENDIAN);
+      value = bytes.getLong();
+    } finally {
+      bytes.order(origOrder);
+    }
+
+    return value;
   }
 
   /**
    * Stores the big-endian representation of {@code value} in the {@code dest}.
+   *
+   * <p>This {@code value} will be stored as big-endian independently of the value of {@code
+   * dest.order()}.
    *
    * @param value the value to be converted.
    * @param dest the destination byte buffer.
    */
   static void longToByteBuffer(long value, ByteBuffer dest) {
     Utils.checkArgument(dest.remaining() >= LONG_BYTES, "array too small");
-    dest.putLong(value);
+
+    ByteOrder origOrder = dest.order();
+    try {
+      dest.order(ByteOrder.BIG_ENDIAN);
+      dest.putLong(value);
+    } finally {
+      dest.order(origOrder);
+    }
   }
 
   /**
