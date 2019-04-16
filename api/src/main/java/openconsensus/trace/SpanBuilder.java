@@ -166,6 +166,18 @@ public abstract class SpanBuilder {
   public abstract SpanBuilder setSpanKind(Span.Kind spanKind);
 
   /**
+   * Sets this {@code Span} as asynchronous. The default value is {@code false}.
+   *
+   * <p>A {@code Span} is considered asynchronous if its parent {@code Span} does not depend in any
+   * way on its result, hence having independent lifetime.
+   *
+   * @param isAsynchronous new value determining if this {@code Span} is asynchronous.
+   * @return this.
+   * @since 0.1.0
+   */
+  public abstract SpanBuilder setIsAsynchronous(boolean isAsynchronous);
+
+  /**
    * Starts a new {@link Span}.
    *
    * <p>Users <b>must</b> manually call {@link Span#end()} to end this {@code Span}.

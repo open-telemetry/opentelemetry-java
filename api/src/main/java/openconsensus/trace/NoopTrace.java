@@ -152,6 +152,11 @@ final class NoopTrace {
       return this;
     }
 
+    @Override
+    public SpanBuilder setIsAsynchronous(boolean isAsynchronous) {
+      return this;
+    }
+
     private NoopSpanBuilder(String name) {
       Utils.checkNotNull(name, "name");
     }

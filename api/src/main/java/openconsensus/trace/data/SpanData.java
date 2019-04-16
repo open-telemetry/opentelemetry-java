@@ -73,6 +73,7 @@ public abstract class SpanData {
       Attributes attributes,
       TimedEvents<Event> events,
       Links links,
+      boolean isAsynchronous,
       @Nullable Integer childSpanCount,
       @Nullable Status status,
       @Nullable Timestamp endTimestamp) {
@@ -86,6 +87,7 @@ public abstract class SpanData {
         attributes,
         events,
         links,
+        isAsynchronous,
         childSpanCount,
         status,
         endTimestamp);
@@ -155,6 +157,13 @@ public abstract class SpanData {
    * @since 0.1.0
    */
   public abstract Links getLinks();
+
+  /**
+   * Returns true if this {@code Span} represents an asynchronous operation.
+   *
+   * @return true if this {@code Span} represent an asynchronous operation.
+   */
+  public abstract boolean getIsAsynchronous();
 
   /**
    * Returns the number of child spans that were generated while the {@code Span} was running. If
