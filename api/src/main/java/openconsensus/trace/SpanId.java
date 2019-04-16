@@ -17,6 +17,7 @@
 package openconsensus.trace;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
@@ -56,6 +57,9 @@ public final class SpanId implements Comparable<SpanId> {
   /**
    * Returns a {@code SpanId} whose representation is copied from the {@code src}.
    *
+   * <p>The returned value will be read as big-endian independently of the value of {@code
+   * src.order()}.
+   *
    * @param src the buffer where the representation of the {@code SpanId} is copied.
    * @return a {@code SpanId} whose representation is copied from the buffer.
    * @throws NullPointerException if {@code src} is null.
@@ -65,11 +69,24 @@ public final class SpanId implements Comparable<SpanId> {
    */
   public static SpanId fromBytes(ByteBuffer src) {
     Utils.checkNotNull(src, "src");
-    return new SpanId(BigendianEncoding.longFromByteBuffer(src));
+    Utils.checkArgument(src.remaining() >= SIZE, "buffer too small");
+
+    ByteOrder origOrder = src.order();
+    long value = 0;
+    try {
+      src.order(ByteOrder.BIG_ENDIAN);
+      value = src.getLong();
+    } finally {
+      src.order(origOrder);
+    }
+
+    return new SpanId(value);
   }
 
   /**
-   * Copies the byte array representations of the {@code SpanId} into the {@code dest}.
+   * Copies the byte array representation of the {@code SpanId} into the {@code dest}.
+   *
+   * <p>The value will be stored as big-endian independently of the value of {@code dest.order()}.
    *
    * @param dest the destination buffer.
    * @throws NullPointerException if {@code dest} is null.
@@ -78,7 +95,16 @@ public final class SpanId implements Comparable<SpanId> {
    * @since 0.1.0
    */
   public void copyBytesTo(ByteBuffer dest) {
-    BigendianEncoding.longToByteBuffer(id, dest);
+    Utils.checkNotNull(dest, "dest");
+    Utils.checkArgument(dest.remaining() >= SIZE, "buffer too small");
+
+    ByteOrder origOrder = dest.order();
+    try {
+      dest.order(ByteOrder.BIG_ENDIAN);
+      dest.putLong(id);
+    } finally {
+      dest.order(origOrder);
+    }
   }
 
   /**
