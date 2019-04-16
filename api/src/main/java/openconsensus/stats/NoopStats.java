@@ -27,8 +27,12 @@ import openconsensus.stats.view.ViewManager;
 import openconsensus.stats.view.data.View;
 import openconsensus.tags.TagMap;
 
-/** No-op implementations of stats classes. */
-final class NoopStats {
+/**
+ * No-op implementations of stats classes.
+ *
+ * @since 0.1.0
+ */
+public final class NoopStats {
 
   private NoopStats() {}
 
@@ -36,8 +40,9 @@ final class NoopStats {
    * Returns a {@code StatsRecorder} that is no-op implementation for {@link StatsRecorder}.
    *
    * @return a {@code StatsRecorder} that is no-op implementation for {@code StatsRecorder}.
+   * @since 0.1.0
    */
-  static StatsRecorder newNoopStatsRecorder() {
+  public static StatsRecorder newNoopStatsRecorder() {
     return new NoopStatsRecorder();
   }
 
@@ -45,8 +50,9 @@ final class NoopStats {
    * Returns a {@code ViewComponent} that has a no-op implementation for {@link ViewManager}.
    *
    * @return a {@code ViewComponent} that has a no-op implementation for {@code ViewManager}.
+   * @since 0.1.0
    */
-  static ViewComponent newNoopViewComponent() {
+  public static ViewComponent newNoopViewComponent() {
     return new NoopViewComponent();
   }
 

@@ -28,8 +28,12 @@ import openconsensus.tags.data.TagValue;
 import openconsensus.tags.propagation.BinaryFormat;
 import openconsensus.tags.propagation.TextFormat;
 
-/** No-op implementations of tagging classes. */
-final class NoopTags {
+/**
+ * No-op implementations of tagging classes.
+ *
+ * @since 0.1.0
+ */
+public final class NoopTags {
 
   private NoopTags() {}
 
@@ -37,8 +41,9 @@ final class NoopTags {
    * Returns a {@code Tagger} that is a no-op implementation for {@link Tagger}.
    *
    * @return a {@code Tagger} that is a no-op implementation for {@link Tagger}.
+   * @since 0.1.0
    */
-  static Tagger newNoopTagger() {
+  public static Tagger newNoopTagger() {
     return new NoopTagger();
   }
 
