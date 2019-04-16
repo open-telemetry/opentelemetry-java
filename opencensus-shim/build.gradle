@@ -1,0 +1,7 @@
+description = 'OpenConsensus OpenCensus Bridge'
+
+dependencies {
+    compile project(':openconsensus-api')
+
+    compileOnly libraries.auto_value
+}
