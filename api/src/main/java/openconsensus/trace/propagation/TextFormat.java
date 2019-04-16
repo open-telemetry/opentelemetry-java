@@ -34,8 +34,8 @@ import openconsensus.trace.SpanContext;
  * <p>Example of usage on the client:
  *
  * <pre>{@code
- * private static final Tracer tracer = Tracing.getTracer();
- * private static final TextFormat textFormat = Tracing.getPropagationComponent().getTextFormat();
+ * private static final Tracer tracer = Trace.getTracer();
+ * private static final TextFormat textFormat = Trace.getPropagationComponent().getTextFormat();
  * private static final TextFormat.Setter setter = new TextFormat.Setter<HttpURLConnection>() {
  *   public void put(HttpURLConnection carrier, String key, String value) {
  *     carrier.setRequestProperty(field, value);
@@ -57,8 +57,8 @@ import openconsensus.trace.SpanContext;
  * <p>Example of usage on the server:
  *
  * <pre>{@code
- * private static final Tracer tracer = Tracing.getTracer();
- * private static final TextFormat textFormat = Tracing.getPropagationComponent().getTextFormat();
+ * private static final Tracer tracer = Trace.getTracer();
+ * private static final TextFormat textFormat = Trace.getPropagationComponent().getTextFormat();
  * private static final TextFormat.Getter<HttpRequest> getter = ...;
  *
  * void onRequestReceived(HttpRequest request) {

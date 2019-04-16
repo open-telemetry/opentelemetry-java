@@ -39,7 +39,7 @@ import openconsensus.trace.propagation.TextFormat;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = Tracing.getTracer();
+ *   private static final Tracer tracer = Trace.getTracer();
  *   void doWork() {
  *     Span span = tracer.spanBuilder("MyClass.DoWork").startSpan();
  *     try(Scope ss = tracer.withSpan(span)) {
@@ -57,7 +57,7 @@ import openconsensus.trace.propagation.TextFormat;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = Tracing.getTracer();
+ *   private static final Tracer tracer = Trace.getTracer();
  *   void doWork(Span parent) {
  *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
  *     childSpan.addAnnotation("Starting the work.");
@@ -99,7 +99,7 @@ public abstract class Tracer {
    * <p>Example of usage:
    *
    * <pre>{@code
-   * private static Tracer tracer = Tracing.getTracer();
+   * private static Tracer tracer = Trace.getTracer();
    * void doWork() {
    *   // Create a Span as a child of the current Span.
    *   Span span = tracer.spanBuilder("my span").startSpan();
@@ -117,7 +117,7 @@ public abstract class Tracer {
    * <p>Example of usage prior to Java SE7:
    *
    * <pre>{@code
-   * private static Tracer tracer = Tracing.getTracer();
+   * private static Tracer tracer = Trace.getTracer();
    * void doWork() {
    *   // Create a Span as a child of the current Span.
    *   Span span = tracer.spanBuilder("my span").startSpan();
@@ -159,7 +159,7 @@ public abstract class Tracer {
    *
    * <pre><code>
    * class MyClass {
-   *   private static Tracer tracer = Tracing.getTracer();
+   *   private static Tracer tracer = Trace.getTracer();
    *   void handleRequest(Executor executor) {
    *     Span span = tracer.spanBuilder("MyRunnableSpan").startSpan();
    *     executor.execute(tracer.withSpan(span, new Runnable() {
@@ -180,7 +180,7 @@ public abstract class Tracer {
    *
    * <pre><code>
    * class MyClass {
-   *   private static Tracer tracer = Tracing.getTracer();
+   *   private static Tracer tracer = Trace.getTracer();
    *   void handleRequest(Executor executor) {
    *     Span span = tracer.spanBuilder("MyRunnableSpan").startSpan();
    *     executor.execute(Context.wrap(tracer.withSpan(span, new Runnable() {
@@ -222,7 +222,7 @@ public abstract class Tracer {
    *
    * <pre><code>
    * class MyClass {
-   *   private static Tracer tracer = Tracing.getTracer();
+   *   private static Tracer tracer = Trace.getTracer();
    *   void handleRequest(Executor executor) {
    *     Span span = tracer.spanBuilder("MyRunnableSpan").startSpan();
    *     executor.execute(tracer.withSpan(span, {@code new Callable<MyResult>()} {
@@ -243,7 +243,7 @@ public abstract class Tracer {
    *
    * <pre><code>
    * class MyClass {
-   *   private static Tracer tracer = Tracing.getTracer();
+   *   private static Tracer tracer = Trace.getTracer();
    *   void handleRequest(Executor executor) {
    *     Span span = tracer.spanBuilder("MyRunnableSpan").startSpan();
    *     executor.execute(Context.wrap(tracer.withSpan(span, {@code new Callable<MyResult>()} {

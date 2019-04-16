@@ -21,7 +21,7 @@ package openconsensus.trace;
  *
  * @since 0.1.0
  */
-public final class Tracing {
+public final class Trace {
   private static final Tracer TRACER = NoopTrace.newNoopTracer();
 
   /**
@@ -35,5 +35,5 @@ public final class Tracing {
   }
 
   // No instance of this class.
-  private Tracing() {}
+  private Trace() {}
 }
