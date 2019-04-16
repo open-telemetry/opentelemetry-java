@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
  * The value of {@link Exemplar} attachment.
  *
  * <p>In Stats API we only provide one subclass {@link AttachmentValueString}. No other subclasses
- * are added because we don't want to introduce dependencies on other libraries, for example Tracing
+ * are added because we don't want to introduce dependencies on other libraries, for example tracing
  * APIs.
  *
  * <p>Other packages are free to extend this class to hold specific information.
