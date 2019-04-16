@@ -16,9 +16,6 @@
 
 package openconsensus.trace.propagation;
 
-import java.util.List;
-import javax.annotation.Nullable;
-import openconsensus.common.ExperimentalApi;
 import openconsensus.trace.SpanContext;
 
 /**
@@ -35,7 +32,7 @@ import openconsensus.trace.SpanContext;
  *
  * <pre>{@code
  * private static final Tracer tracer = Trace.getTracer();
- * private static final TextFormat textFormat = Trace.getPropagationComponent().getTextFormat();
+ * private static final TextFormat textFormat = Trace.getTracer().getTextFormat();
  * private static final TextFormat.Setter setter = new TextFormat.Setter<HttpURLConnection>() {
  *   public void put(HttpURLConnection carrier, String key, String value) {
  *     carrier.setRequestProperty(field, value);
@@ -43,7 +40,7 @@ import openconsensus.trace.SpanContext;
  * }
  *
  * void makeHttpRequest() {
- *   Span span = tracer.spanBuilder("Sent.MyRequest").startSpan();
+ *   Span span = tracer.spanBuilder("MyRequest").setSpanKind(Span.Kind.CLIENT).startSpan();
  *   try (Scope s = tracer.withSpan(span)) {
  *     HttpURLConnection connection =
  *         (HttpURLConnection) new URL("http://myserver").openConnection();
@@ -58,12 +55,13 @@ import openconsensus.trace.SpanContext;
  *
  * <pre>{@code
  * private static final Tracer tracer = Trace.getTracer();
- * private static final TextFormat textFormat = Trace.getPropagationComponent().getTextFormat();
+ * private static final TextFormat textFormat = Trace.getTracer().getTextFormat();
  * private static final TextFormat.Getter<HttpRequest> getter = ...;
  *
  * void onRequestReceived(HttpRequest request) {
  *   SpanContext spanContext = textFormat.extract(request, getter);
- *   Span span = tracer.spanBuilderWithRemoteParent("Recv.MyRequest", spanContext).startSpan();
+ *   Span span = tracer.spanBuilderWithRemoteParent("MyRequest", spanContext)
+ *       .setSpanKind(Span.Kind.SERVER).startSpan();
  *   try (Scope s = tracer.withSpan(span)) {
  *     // Handle request and send response back.
  *   }
@@ -73,93 +71,5 @@ import openconsensus.trace.SpanContext;
  *
  * @since 0.1.0
  */
-@ExperimentalApi
-public abstract class TextFormat {
-  /**
-   * The propagation fields defined. If your carrier is reused, you should delete the fields here
-   * before calling {@link #inject(SpanContext, Object, Setter)}.
-   *
-   * <p>For example, if the carrier is a single-use or immutable request object, you don't need to
-   * clear fields as they couldn't have been set before. If it is a mutable, retryable object,
-   * successive calls should clear these fields first.
-   *
-   * @return list of fields that will be used by this formatter.
-   * @since 0.1.0
-   */
-  // The use cases of this are:
-  // * allow pre-allocation of fields, especially in systems like gRPC Metadata
-  // * allow a single-pass over an iterator (ex OpenTracing has no getter in TextMap)
-  public abstract List<String> fields();
-
-  /**
-   * Injects the span context downstream. For example, as http headers.
-   *
-   * @param spanContext possibly not sampled.
-   * @param carrier holds propagation fields. For example, an outgoing message or http request.
-   * @param setter invoked for each propagation key to add or remove.
-   * @param <C> carrier of propagation fields, such as an http request
-   * @since 0.1.0
-   */
-  public abstract <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter);
-
-  /**
-   * Class that allows a {@code TextFormat} to set propagated fields into a carrier.
-   *
-   * <p>{@code Setter} is stateless and allows to be saved as a constant to avoid runtime
-   * allocations.
-   *
-   * @param <C> carrier of propagation fields, such as an http request
-   * @since 0.1.0
-   */
-  public abstract static class Setter<C> {
-
-    /**
-     * Replaces a propagated field with the given value.
-     *
-     * <p>For example, a setter for an {@link java.net.HttpURLConnection} would be the method
-     * reference {@link java.net.HttpURLConnection#addRequestProperty(String, String)}
-     *
-     * @param carrier holds propagation fields. For example, an outgoing message or http request.
-     * @param key the key of the field.
-     * @param value the value of the field.
-     * @since 0.1.0
-     */
-    public abstract void put(C carrier, String key, String value);
-  }
-
-  /**
-   * Extracts the span context from upstream. For example, as http headers.
-   *
-   * @param carrier holds propagation fields. For example, an outgoing message or http request.
-   * @param getter invoked for each propagation key to get.
-   * @param <C> carrier of propagation fields, such as an http request.
-   * @return carrier of propagated fields.
-   * @throws SpanContextParseException if the input is invalid
-   * @since 0.1.0
-   */
-  public abstract <C> SpanContext extract(C carrier, Getter<C> getter)
-      throws SpanContextParseException;
-
-  /**
-   * Class that allows a {@code TextFormat} to read propagated fields from a carrier.
-   *
-   * <p>{@code Getter} is stateless and allows to be saved as a constant to avoid runtime
-   * allocations.
-   *
-   * @param <C> carrier of propagation fields, such as an http request.
-   * @since 0.1.0
-   */
-  public abstract static class Getter<C> {
-
-    /**
-     * Returns the first value of the given propagation {@code key} or returns {@code null}.
-     *
-     * @param carrier carrier of propagation fields, such as an http request.
-     * @param key the key of the field.
-     * @return the first value of the given propagation {@code key} or returns {@code null}.
-     * @since 0.1.0
-     */
-    @Nullable
-    public abstract String get(C carrier, String key);
-  }
-}
+public abstract class TextFormat
+    extends openconsensus.context.propagation.TextFormat<SpanContext> {}
