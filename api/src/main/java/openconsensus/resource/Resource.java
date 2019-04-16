@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.ExperimentalApi;
 import openconsensus.internal.StringUtils;
@@ -40,8 +41,7 @@ import openconsensus.internal.Utils;
 @AutoValue
 @ExperimentalApi
 public abstract class Resource {
-  static final int MAX_LENGTH = 255;
-  private static final String OC_RESOURCE_TYPE_ENV = "OC_RESOURCE_TYPE";
+  private static final int MAX_LENGTH = 255;
   private static final String OC_RESOURCE_LABELS_ENV = "OC_RESOURCE_LABELS";
   private static final String LABEL_LIST_SPLITTER = ",";
   private static final String LABEL_KEY_VALUE_SPLITTER = "=";
@@ -52,22 +52,10 @@ public abstract class Resource {
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
 
-  @javax.annotation.Nullable
-  private static final String ENV_TYPE = parseResourceType(System.getenv(OC_RESOURCE_TYPE_ENV));
-
   private static final Map<String, String> ENV_LABEL_MAP =
       parseResourceLabels(System.getenv(OC_RESOURCE_LABELS_ENV));
 
   Resource() {}
-
-  /**
-   * Returns the type identifier for the resource.
-   *
-   * @return the type identifier for the resource.
-   * @since 0.1.0
-   */
-  @javax.annotation.Nullable
-  public abstract String getType();
 
   /**
    * Returns a map of labels that describe the resource.
@@ -78,70 +66,46 @@ public abstract class Resource {
   public abstract Map<String, String> getLabels();
 
   /**
-   * Returns a {@link Resource}. This resource information is loaded from the OC_RESOURCE_TYPE and
-   * OC_RESOURCE_LABELS environment variables.
+   * Returns a {@link Resource}. This resource information is loaded from the OC_RESOURCE_LABELS
+   * environment variable.
    *
    * @return a {@code Resource}.
    * @since 0.1.0
    */
-  public static Resource createFromEnvironmentVariables() {
-    return createInternal(ENV_TYPE, ENV_LABEL_MAP);
+  public static Resource createFromEnvironmentVariable() {
+    return new AutoValue_Resource(ENV_LABEL_MAP);
   }
 
   /**
    * Returns a {@link Resource}.
    *
-   * @param type the type identifier for the resource.
    * @param labels a map of labels that describe the resource.
    * @return a {@code Resource}.
    * @throws NullPointerException if {@code labels} is null.
-   * @throws IllegalArgumentException if type or label key or label value is not a valid printable
-   *     ASCII string or exceed {@link #MAX_LENGTH} characters.
+   * @throws IllegalArgumentException if label key or label value is not a valid printable ASCII
+   *     string or exceed {@link #MAX_LENGTH} characters.
    * @since 0.1.0
    */
-  public static Resource create(
-      @javax.annotation.Nullable String type, Map<String, String> labels) {
-    return createInternal(
-        type,
-        Collections.unmodifiableMap(
-            new LinkedHashMap<String, String>(Utils.checkNotNull(labels, "labels"))));
+  public static Resource create(Map<String, String> labels) {
+    checkLabels(Utils.checkNotNull(labels, "labels"));
+    return new AutoValue_Resource(Collections.unmodifiableMap(new LinkedHashMap<>(labels)));
   }
 
   /**
    * Returns a {@link Resource} that runs all input resources sequentially and merges their results.
-   * In case a type of label key is already set, the first set value takes precedence.
+   * In case a label key is already set, the first set value takes precedence.
    *
    * @param resources a list of resources.
    * @return a {@code Resource}.
    * @since 0.1.0
    */
-  @javax.annotation.Nullable
+  @Nullable
   public static Resource mergeResources(List<Resource> resources) {
     Resource currentResource = null;
     for (Resource resource : resources) {
       currentResource = merge(currentResource, resource);
     }
     return currentResource;
-  }
-
-  private static Resource createInternal(
-      @javax.annotation.Nullable String type, Map<String, String> labels) {
-    return new AutoValue_Resource(type, labels);
-  }
-
-  /**
-   * Creates a resource type from the OC_RESOURCE_TYPE environment variable.
-   *
-   * <p>OC_RESOURCE_TYPE: A string that describes the type of the resource prefixed by a domain
-   * namespace, e.g. “kubernetes.io/container”.
-   */
-  @javax.annotation.Nullable
-  static String parseResourceType(@javax.annotation.Nullable String rawEnvType) {
-    if (rawEnvType != null && !rawEnvType.isEmpty()) {
-      Utils.checkArgument(isValidAndNotEmpty(rawEnvType), "Type" + ERROR_MESSAGE_INVALID_CHARS);
-      return rawEnvType.trim();
-    }
-    return rawEnvType;
   }
 
   /*
@@ -152,11 +116,11 @@ public abstract class Resource {
    * quoted or unquoted in general. If a value contains whitespaces, =, or " characters, it must
    * always be quoted.
    */
-  static Map<String, String> parseResourceLabels(@javax.annotation.Nullable String rawEnvLabels) {
+  private static Map<String, String> parseResourceLabels(@Nullable String rawEnvLabels) {
     if (rawEnvLabels == null) {
-      return Collections.<String, String>emptyMap();
+      return Collections.emptyMap();
     } else {
-      Map<String, String> labels = new HashMap<String, String>();
+      Map<String, String> labels = new HashMap<>();
       String[] rawLabels = rawEnvLabels.split(LABEL_LIST_SPLITTER, -1);
       for (String rawLabel : rawLabels) {
         String[] keyValuePair = rawLabel.split(LABEL_KEY_VALUE_SPLITTER, -1);
@@ -165,10 +129,9 @@ public abstract class Resource {
         }
         String key = keyValuePair[0].trim();
         String value = keyValuePair[1].trim().replaceAll("^\"|\"$", "");
-        Utils.checkArgument(isValidAndNotEmpty(key), "Label key" + ERROR_MESSAGE_INVALID_CHARS);
-        Utils.checkArgument(isValid(value), "Label value" + ERROR_MESSAGE_INVALID_VALUE);
         labels.put(key, value);
       }
+      checkLabels(labels);
       return Collections.unmodifiableMap(labels);
     }
   }
@@ -177,10 +140,8 @@ public abstract class Resource {
    * Returns a new, merged {@link Resource} by merging two resources. In case of a collision, first
    * resource takes precedence.
    */
-  @javax.annotation.Nullable
-  private static Resource merge(
-      @javax.annotation.Nullable Resource resource,
-      @javax.annotation.Nullable Resource otherResource) {
+  @Nullable
+  private static Resource merge(@Nullable Resource resource, @Nullable Resource otherResource) {
     if (otherResource == null) {
       return resource;
     }
@@ -188,15 +149,20 @@ public abstract class Resource {
       return otherResource;
     }
 
-    String mergedType = resource.getType() != null ? resource.getType() : otherResource.getType();
-    Map<String, String> mergedLabelMap =
-        new LinkedHashMap<String, String>(otherResource.getLabels());
-
+    Map<String, String> mergedLabelMap = new LinkedHashMap<>(otherResource.getLabels());
     // Labels from resource overwrite labels from otherResource.
     for (Entry<String, String> entry : resource.getLabels().entrySet()) {
       mergedLabelMap.put(entry.getKey(), entry.getValue());
     }
-    return createInternal(mergedType, Collections.unmodifiableMap(mergedLabelMap));
+    return new AutoValue_Resource(Collections.unmodifiableMap(mergedLabelMap));
+  }
+
+  private static void checkLabels(Map<String, String> labels) {
+    for (Entry<String, String> entry : labels.entrySet()) {
+      Utils.checkArgument(
+          isValidAndNotEmpty(entry.getKey()), "Label key" + ERROR_MESSAGE_INVALID_CHARS);
+      Utils.checkArgument(isValid(entry.getValue()), "Label value" + ERROR_MESSAGE_INVALID_VALUE);
+    }
   }
 
   /**

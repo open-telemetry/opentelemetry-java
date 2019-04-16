@@ -21,13 +21,30 @@ import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.Format;
+import io.opentracing.propagation.TextMap;
 
-@SuppressWarnings("ReturnMissingNullable")
 public final class TracerShim implements Tracer {
   private final openconsensus.trace.Tracer tracer;
   private final ScopeManager scopeManagerShim;
 
+  /**
+   * Creates a {@code io.opentracing.Tracer} shim out of the {@code openconsensus.trace.Tracer}
+   * exposed by {@code openconsensus.trace.Tracing}.
+   *
+   * @since 0.1.0
+   */
+  public TracerShim() {
+    this(openconsensus.trace.Tracing.getTracer());
+  }
+
+  /**
+   * Creates a {@code io.opentracing.Tracer} shim out of a {@code openconsensus.trace.Tracer}.
+   *
+   * @param tracer the {@code openconsensus.trace.Tracer} used by this shim.
+   * @since 0.1.0
+   */
   public TracerShim(openconsensus.trace.Tracer tracer) {
     this.tracer = tracer;
     this.scopeManagerShim = new ScopeManagerShim(tracer);
@@ -54,15 +71,42 @@ public final class TracerShim implements Tracer {
   }
 
   @Override
-  public <C> void inject(SpanContext context, Format<C> format, C carrier) {}
+  public <C> void inject(SpanContext context, Format<C> format, C carrier) {
+    openconsensus.trace.SpanContext actualContext = getActualContext(context);
 
+    // TODO - Shall we expect to get no-op objects if a given format is not supported at all?
+    if (format == Format.Builtin.TEXT_MAP || format == Format.Builtin.HTTP_HEADERS) {
+      Propagation.injectTextFormat(tracer.getTextFormat(), actualContext, (TextMap) carrier);
+    } else if (format == Format.Builtin.BINARY) {
+      Propagation.injectBinaryFormat(tracer.getBinaryFormat(), actualContext, (Binary) carrier);
+    }
+  }
+
+  @SuppressWarnings("ReturnMissingNullable")
   @Override
   public <C> SpanContext extract(Format<C> format, C carrier) {
-    return null;
+
+    SpanContext context = null;
+
+    if (format == Format.Builtin.TEXT_MAP || format == Format.Builtin.HTTP_HEADERS) {
+      context = Propagation.extractTextFormat(tracer.getTextFormat(), (TextMap) carrier);
+    } else if (format == Format.Builtin.BINARY) {
+      context = Propagation.extractBinaryFormat(tracer.getBinaryFormat(), (Binary) carrier);
+    }
+
+    return context;
   }
 
   @Override
   public void close() {
     // TODO
+  }
+
+  static openconsensus.trace.SpanContext getActualContext(SpanContext context) {
+    if (!(context instanceof SpanContextShim)) {
+      throw new IllegalArgumentException("context is not a valid SpanContextShim object");
+    }
+
+    return ((SpanContextShim) context).getSpanContext();
   }
 }

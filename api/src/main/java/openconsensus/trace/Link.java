@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-package openconsensus.trace.data;
+package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.trace.Span;
-import openconsensus.trace.SpanContext;
-import openconsensus.trace.SpanId;
-import openconsensus.trace.TraceId;
 
 /**
  * A link to a {@link Span} from a different trace.
- *
- * <p>It requires a {@link Type} which describes the relationship with the linked {@code Span} and
- * the identifiers of the linked {@code Span}.
  *
  * <p>Used (for example) in batching operations, where a single batch handler processes multiple
  * requests from different traces.
@@ -43,53 +36,27 @@ public abstract class Link {
   private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES = Collections.emptyMap();
 
   /**
-   * The relationship with the linked {@code Span} relative to the current {@code Span}.
-   *
-   * @since 0.1.0
-   */
-  public enum Type {
-    /**
-     * When the linked {@code Span} is a child of the current {@code Span}.
-     *
-     * @since 0.1.0
-     */
-    CHILD_LINKED_SPAN,
-    /**
-     * When the linked {@code Span} is a parent of the current {@code Span}.
-     *
-     * @since 0.1.0
-     */
-    PARENT_LINKED_SPAN
-  }
-
-  /**
    * Returns a new {@code Link}.
    *
    * @param context the context of the linked {@code Span}.
-   * @param type the type of the relationship with the linked {@code Span}.
    * @return a new {@code Link}.
    * @since 0.1.0
    */
-  public static Link fromSpanContext(SpanContext context, Type type) {
-    return new AutoValue_Link(context.getTraceId(), context.getSpanId(), type, EMPTY_ATTRIBUTES);
+  public static Link create(SpanContext context) {
+    return new AutoValue_Link(context, EMPTY_ATTRIBUTES);
   }
 
   /**
    * Returns a new {@code Link}.
    *
    * @param context the context of the linked {@code Span}.
-   * @param type the type of the relationship with the linked {@code Span}.
    * @param attributes the attributes of the {@code Link}.
    * @return a new {@code Link}.
    * @since 0.1.0
    */
-  public static Link fromSpanContext(
-      SpanContext context, Type type, Map<String, AttributeValue> attributes) {
+  public static Link create(SpanContext context, Map<String, AttributeValue> attributes) {
     return new AutoValue_Link(
-        context.getTraceId(),
-        context.getSpanId(),
-        type,
-        Collections.unmodifiableMap(new HashMap<String, AttributeValue>(attributes)));
+        context, Collections.unmodifiableMap(new HashMap<String, AttributeValue>(attributes)));
   }
 
   /**
@@ -98,23 +65,7 @@ public abstract class Link {
    * @return the {@code TraceId}.
    * @since 0.1.0
    */
-  public abstract TraceId getTraceId();
-
-  /**
-   * Returns the {@code SpanId}.
-   *
-   * @return the {@code SpanId}
-   * @since 0.1.0
-   */
-  public abstract SpanId getSpanId();
-
-  /**
-   * Returns the {@code Type}.
-   *
-   * @return the {@code Type}.
-   * @since 0.1.0
-   */
-  public abstract Type getType();
+  public abstract SpanContext getContext();
 
   /**
    * Returns the set of attributes.

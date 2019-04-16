@@ -26,10 +26,14 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Timestamp;
 import openconsensus.internal.Utils;
+import openconsensus.trace.AttributeValue;
+import openconsensus.trace.Event;
+import openconsensus.trace.Link;
 import openconsensus.trace.Span;
 import openconsensus.trace.Span.Kind;
 import openconsensus.trace.SpanContext;
 import openconsensus.trace.SpanId;
+import openconsensus.trace.Status;
 
 /**
  * Immutable representation of all data collected by the {@link Span} class.
@@ -51,8 +55,6 @@ public abstract class SpanData {
    * @param startTimestamp the start {@code Timestamp} of the {@code Span}.
    * @param attributes the attributes associated with the {@code Span}.
    * @param events the events associated with the {@code Span}.
-   * @param messageEvents the message events (or network events for backward compatibility)
-   *     associated with the {@code Span}.
    * @param links the links associated with the {@code Span}.
    * @param childSpanCount the number of child spans that were generated while the span was active.
    * @param status the {@code Status} of the {@code Span}. {@code null} if the {@code Span} is still
@@ -70,12 +72,11 @@ public abstract class SpanData {
       Timestamp startTimestamp,
       Attributes attributes,
       TimedEvents<Event> events,
-      TimedEvents<MessageEvent> messageEvents,
       Links links,
       @Nullable Integer childSpanCount,
       @Nullable Status status,
       @Nullable Timestamp endTimestamp) {
-    Utils.checkNotNull(messageEvents, "messageEvents");
+    Utils.checkNotNull(events, "events");
     return new AutoValue_SpanData(
         context,
         parentSpanId,
@@ -84,7 +85,6 @@ public abstract class SpanData {
         startTimestamp,
         attributes,
         events,
-        messageEvents,
         links,
         childSpanCount,
         status,
@@ -147,14 +147,6 @@ public abstract class SpanData {
    * @since 0.1.0
    */
   public abstract TimedEvents<Event> getEvents();
-
-  /**
-   * Returns message events recorded for this {@code Span}.
-   *
-   * @return message events recorded for this {@code Span}.
-   * @since 0.1.0
-   */
-  public abstract TimedEvents<MessageEvent> getMessageEvents();
 
   /**
    * Returns links recorded for this {@code Span}.
@@ -299,8 +291,6 @@ public abstract class SpanData {
      */
     public static Attributes create(
         Map<String, AttributeValue> attributeMap, int droppedAttributesCount) {
-      // TODO(bdrutu): Consider to use LinkedHashMap here and everywhere else, less test flakes
-      // for others on account of determinism.
       return new AutoValue_SpanData_Attributes(
           Collections.unmodifiableMap(
               new HashMap<String, AttributeValue>(

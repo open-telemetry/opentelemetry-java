@@ -23,27 +23,27 @@ import openconsensus.tags.TagMap;
  *
  * @since 0.1.0
  */
-public final class TagMapSerializationException extends Exception {
+public final class SerializationException extends Exception {
   private static final long serialVersionUID = 0L;
 
   /**
-   * Constructs a new {@code TagMapSerializationException} with the given message.
+   * Constructs a new {@code SerializationException} with the given message.
    *
    * @param message a message describing the error.
    * @since 0.1.0
    */
-  public TagMapSerializationException(String message) {
+  public SerializationException(String message) {
     super(message);
   }
 
   /**
-   * Constructs a new {@code TagMapSerializationException} with the given message and cause.
+   * Constructs a new {@code SerializationException} with the given message and cause.
    *
    * @param message a message describing the error.
    * @param cause the cause of the error.
    * @since 0.1.0
    */
-  public TagMapSerializationException(String message, Throwable cause) {
+  public SerializationException(String message, Throwable cause) {
     super(message, cause);
   }
 }

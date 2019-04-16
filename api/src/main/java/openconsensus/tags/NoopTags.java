@@ -19,18 +19,14 @@ package openconsensus.tags;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
-import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
 import openconsensus.internal.Utils;
 import openconsensus.tags.data.TagKey;
 import openconsensus.tags.data.TagMetadata;
 import openconsensus.tags.data.TagValue;
-import openconsensus.tags.propagation.TagMapBinarySerializer;
-import openconsensus.tags.propagation.TagMapDeserializationException;
-import openconsensus.tags.propagation.TagMapSerializationException;
-import openconsensus.tags.propagation.TagMapTextFormat;
-import openconsensus.tags.propagation.TagPropagationComponent;
+import openconsensus.tags.propagation.BinaryFormat;
+import openconsensus.tags.propagation.TextFormat;
 
 /** No-op implementations of tagging classes. */
 final class NoopTags {
@@ -38,94 +34,44 @@ final class NoopTags {
   private NoopTags() {}
 
   /**
-   * Returns a {@code TagsComponent} that has a no-op implementation for {@link Tagger}.
+   * Returns a {@code Tagger} that is a no-op implementation for {@link Tagger}.
    *
-   * @return a {@code TagsComponent} that has a no-op implementation for {@code Tagger}.
+   * @return a {@code Tagger} that is a no-op implementation for {@link Tagger}.
    */
-  static TagsComponent newNoopTagsComponent() {
-    return new NoopTagsComponent();
-  }
-
-  /**
-   * Returns a {@code Tagger} that only produces {@link TagMap}s with no tags.
-   *
-   * @return a {@code Tagger} that only produces {@code TagMap}s with no tags.
-   */
-  static Tagger getNoopTagger() {
+  static Tagger newNoopTagger() {
     return new NoopTagger();
-  }
-
-  /**
-   * Returns a {@code TagMapBuilder} that ignores all calls to {@link TagMapBuilder#put}.
-   *
-   * @return a {@code TagMapBuilder} that ignores all calls to {@link TagMapBuilder#put}.
-   */
-  static TagMapBuilder getNoopTagMapBuilder() {
-    return new NoopTagMapBuilder();
-  }
-
-  /**
-   * Returns a {@code TagMap} that does not contain any tags.
-   *
-   * @return a {@code TagMap} that does not contain any tags.
-   */
-  static TagMap getNoopTagMap() {
-    return new NoopTagMap();
-  }
-
-  /** Returns a {@code TagPropagationComponent} that contains no-op serializers. */
-  static TagPropagationComponent getNoopTagPropagationComponent() {
-    return new NoopTagPropagationComponent();
-  }
-
-  /**
-   * Returns a {@code TagMapBinarySerializer} that serializes all {@code TagMap}s to zero bytes and
-   * deserializes all inputs to empty {@code TagMap}s.
-   */
-  static TagMapBinarySerializer getNoopTagMapBinarySerializer() {
-    return new NoopTagMapBinarySerializer();
-  }
-
-  @ThreadSafe
-  private static final class NoopTagsComponent extends TagsComponent {
-    @Override
-    public Tagger getTagger() {
-      return getNoopTagger();
-    }
-
-    @Override
-    public TagPropagationComponent getTagPropagationComponent() {
-      return getNoopTagPropagationComponent();
-    }
   }
 
   @Immutable
   private static final class NoopTagger extends Tagger {
+    private static final BinaryFormat BINARY_FORMAT = new NoopBinaryFormat();
+    private static final TextFormat TEXT_FORMAT = new NoopTextFormat();
+    private static final TagMap EMPTY = new NoopTagMap();
 
     @Override
     public TagMap empty() {
-      return getNoopTagMap();
+      return EMPTY;
     }
 
     @Override
     public TagMap getCurrentTagMap() {
-      return getNoopTagMap();
+      return EMPTY;
     }
 
     @Override
     public TagMapBuilder emptyBuilder() {
-      return getNoopTagMapBuilder();
+      return new NoopTagMapBuilder();
     }
 
     @Override
     public TagMapBuilder toBuilder(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
-      return getNoopTagMapBuilder();
+      return new NoopTagMapBuilder();
     }
 
     @Override
     public TagMapBuilder currentBuilder() {
-      return getNoopTagMapBuilder();
+      return new NoopTagMapBuilder();
     }
 
     @Override
@@ -133,10 +79,21 @@ final class NoopTags {
       Utils.checkNotNull(tags, "tags");
       return NoopScope.getInstance();
     }
+
+    @Override
+    public BinaryFormat getBinaryFormat() {
+      return BINARY_FORMAT;
+    }
+
+    @Override
+    public TextFormat getTextFormat() {
+      return TEXT_FORMAT;
+    }
   }
 
   @Immutable
   private static final class NoopTagMapBuilder extends TagMapBuilder {
+    private static final TagMap EMPTY = new NoopTagMap();
 
     @Override
     public TagMapBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
@@ -154,7 +111,7 @@ final class NoopTags {
 
     @Override
     public TagMap build() {
-      return getNoopTagMap();
+      return EMPTY;
     }
 
     @Override
@@ -167,23 +124,8 @@ final class NoopTags {
   private static final class NoopTagMap extends TagMap {}
 
   @Immutable
-  private static final class NoopTagPropagationComponent extends TagPropagationComponent {
-
-    private static final TagMapTextFormat TAG_MAP_TEXT_FORMAT = new NoopTagMapTextFormat();
-
-    @Override
-    public TagMapBinarySerializer getBinarySerializer() {
-      return getNoopTagMapBinarySerializer();
-    }
-
-    @Override
-    public TagMapTextFormat getCorrelationContextFormat() {
-      return TAG_MAP_TEXT_FORMAT;
-    }
-  }
-
-  @Immutable
-  private static final class NoopTagMapBinarySerializer extends TagMapBinarySerializer {
+  private static final class NoopBinaryFormat extends BinaryFormat {
+    private static final TagMap EMPTY = new NoopTagMap();
     static final byte[] EMPTY_BYTE_ARRAY = {};
 
     @Override
@@ -195,31 +137,31 @@ final class NoopTags {
     @Override
     public TagMap fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return getNoopTagMap();
+      return EMPTY;
     }
   }
 
   @Immutable
-  private static final class NoopTagMapTextFormat extends TagMapTextFormat {
+  private static final class NoopTextFormat extends TextFormat {
+    private static final TagMap EMPTY = new NoopTagMap();
 
     @Override
     public List<String> fields() {
-      return Collections.<String>emptyList();
+      return Collections.emptyList();
     }
 
     @Override
-    public <C> void inject(TagMap tagContext, C carrier, Setter<C> setter)
-        throws TagMapSerializationException {
+    public <C> void inject(TagMap tagContext, C carrier, Setter<C> setter) {
       Utils.checkNotNull(tagContext, "tagContext");
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(setter, "setter");
     }
 
     @Override
-    public <C> TagMap extract(C carrier, Getter<C> getter) throws TagMapDeserializationException {
+    public <C> TagMap extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
-      return getNoopTagMap();
+      return EMPTY;
     }
   }
 }

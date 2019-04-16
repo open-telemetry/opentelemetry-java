@@ -17,11 +17,6 @@
 package openconsensus.trace;
 
 import java.util.Map;
-import openconsensus.trace.data.AttributeValue;
-import openconsensus.trace.data.Event;
-import openconsensus.trace.data.Link;
-import openconsensus.trace.data.MessageEvent;
-import openconsensus.trace.data.Status;
 
 /**
  * An abstract class that represents a span. It has an associated {@link SpanContext}.
@@ -110,19 +105,6 @@ public abstract class Span {
   public abstract void addEvent(Event event);
 
   /**
-   * Adds a MessageEvent to the {@code Span}.
-   *
-   * <p>This function can be used by higher level applications to record messaging event.
-   *
-   * <p>This method should always be overridden by users whose API versions are larger or equal to
-   * {@code 0.12}.
-   *
-   * @param messageEvent the message to add.
-   * @since 0.1.0
-   */
-  public abstract void addMessageEvent(MessageEvent messageEvent);
-
-  /**
    * Adds a {@link Link} to the {@code Span}.
    *
    * <p>Used (for example) in batching operations, where a single batch handler processes multiple
@@ -145,6 +127,19 @@ public abstract class Span {
    * @since 0.1.0
    */
   public abstract void setStatus(Status status);
+
+  /**
+   * Updates the {@code Span} name.
+   *
+   * <p>If used, this will override the name provided via {@code SpanBuilder}.
+   *
+   * <p>Upon this update, any sampling behavior based on {@code Span} name will depend on the
+   * implementation.
+   *
+   * @param name the {@code Span} name.
+   * @since 0.1
+   */
+  public abstract void updateName(String name);
 
   /**
    * Marks the end of {@code Span} execution with the default options.

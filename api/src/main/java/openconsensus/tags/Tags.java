@@ -16,15 +16,13 @@
 
 package openconsensus.tags;
 
-import openconsensus.tags.propagation.TagPropagationComponent;
-
 /**
- * Class for accessing the default {@link TagsComponent}.
+ * Class to access the global {@link Tagger}.
  *
  * @since 0.1.0
  */
 public final class Tags {
-  private static final TagsComponent tagsComponent = NoopTags.newNoopTagsComponent();
+  private static final Tagger TAGGER = NoopTags.newNoopTagger();
 
   private Tags() {}
 
@@ -35,16 +33,6 @@ public final class Tags {
    * @since 0.1.0
    */
   public static Tagger getTagger() {
-    return tagsComponent.getTagger();
-  }
-
-  /**
-   * Returns the default {@code TagPropagationComponent}.
-   *
-   * @return the default {@code TagPropagationComponent}.
-   * @since 0.1.0
-   */
-  public static TagPropagationComponent getTagPropagationComponent() {
-    return tagsComponent.getTagPropagationComponent();
+    return TAGGER;
   }
 }

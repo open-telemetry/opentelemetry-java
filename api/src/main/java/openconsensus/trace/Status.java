@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.trace.data;
+package openconsensus.trace;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +24,6 @@ import java.util.TreeMap;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
-import openconsensus.trace.Span;
 
 /**
  * Defines the status of a {@link Span} by providing a standard {@link CanonicalCode} in conjunction

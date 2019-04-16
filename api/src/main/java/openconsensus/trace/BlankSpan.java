@@ -19,11 +19,6 @@ package openconsensus.trace;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
-import openconsensus.trace.data.AttributeValue;
-import openconsensus.trace.data.Event;
-import openconsensus.trace.data.Link;
-import openconsensus.trace.data.MessageEvent;
-import openconsensus.trace.data.Status;
 
 /**
  * The {@code BlankSpan} is a singleton class, which is the default {@link Span} that is used when
@@ -86,11 +81,6 @@ public final class BlankSpan extends Span {
   }
 
   @Override
-  public void addMessageEvent(MessageEvent messageEvent) {
-    Utils.checkNotNull(messageEvent, "messageEvent");
-  }
-
-  @Override
   public void addLink(Link link) {
     Utils.checkNotNull(link, "link");
   }
@@ -98,6 +88,11 @@ public final class BlankSpan extends Span {
   @Override
   public void setStatus(Status status) {
     Utils.checkNotNull(status, "status");
+  }
+
+  @Override
+  public void updateName(String name) {
+    Utils.checkNotNull(name, "name");
   }
 
   @Override

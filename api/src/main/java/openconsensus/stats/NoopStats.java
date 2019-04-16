@@ -21,8 +21,7 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.internal.Utils;
-import openconsensus.stats.data.Measure.MeasureDouble;
-import openconsensus.stats.data.Measure.MeasureLong;
+import openconsensus.stats.data.Measure;
 import openconsensus.stats.view.ViewComponent;
 import openconsensus.stats.view.ViewManager;
 import openconsensus.stats.view.data.View;
@@ -34,12 +33,12 @@ final class NoopStats {
   private NoopStats() {}
 
   /**
-   * Returns a {@code StatsComponent} that has a no-op implementation for {@link StatsRecorder}.
+   * Returns a {@code StatsRecorder} that is no-op implementation for {@link StatsRecorder}.
    *
-   * @return a {@code StatsComponent} that has a no-op implementation for {@code StatsRecorder}.
+   * @return a {@code StatsRecorder} that is no-op implementation for {@code StatsRecorder}.
    */
-  static StatsComponent newNoopStatsComponent() {
-    return new NoopStatsComponent();
+  static StatsRecorder newNoopStatsRecorder() {
+    return new NoopStatsRecorder();
   }
 
   /**
@@ -51,50 +50,13 @@ final class NoopStats {
     return new NoopViewComponent();
   }
 
-  /**
-   * Returns a {@code StatsRecorder} that does not record any data.
-   *
-   * @return a {@code StatsRecorder} that does not record any data.
-   */
-  static StatsRecorder newNoopStatsRecorder() {
-    return new NoopStatsRecorder();
-  }
-
-  /**
-   * Returns a {@code MeasureMap} that ignores all calls to {@link MeasureMap#put}.
-   *
-   * @return a {@code MeasureMap} that ignores all calls to {@code MeasureMap#put}.
-   */
-  static MeasureMap newNoopMeasureMap() {
-    return new NoopMeasureMap();
-  }
-
-  /**
-   * Returns a {@code ViewManager} that maintains a map of views..
-   *
-   * @return a {@code ViewManager} that maintains a map of views..
-   */
-  static ViewManager newNoopViewManager() {
-    return new NoopViewManager();
-  }
-
   @ThreadSafe
   private static final class NoopViewComponent extends ViewComponent {
-    private final ViewManager viewManager = newNoopViewManager();
+    private static final ViewManager VIEW_MANAGER = new NoopViewManager();
 
     @Override
     public ViewManager getViewManager() {
-      return viewManager;
-    }
-  }
-
-  @ThreadSafe
-  private static final class NoopStatsComponent extends StatsComponent {
-    private final StatsRecorder statsRecorder = newNoopStatsRecorder();
-
-    @Override
-    public StatsRecorder getStatsRecorder() {
-      return statsRecorder;
+      return VIEW_MANAGER;
     }
   }
 
@@ -102,20 +64,14 @@ final class NoopStats {
   private static final class NoopStatsRecorder extends StatsRecorder {
     @Override
     public MeasureMap newMeasureMap() {
-      return newNoopMeasureMap();
+      return new NoopMeasureMap();
     }
   }
 
   private static final class NoopMeasureMap extends MeasureMap {
     @Override
-    public MeasureMap put(MeasureDouble measure, double value) {
+    public MeasureMap put(Measure measure, double value) {
       Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-      return this;
-    }
-
-    @Override
-    public MeasureMap put(MeasureLong measure, long value) {
-      Utils.checkArgument(value >= 0, "Unsupported negative values.");
       return this;
     }
 
