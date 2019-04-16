@@ -24,9 +24,9 @@ import openconsensus.trace.SpanContext;
  * <p>Example of usage on the client:
  *
  * <pre>{@code
- * private static final Tracer tracer = Tracing.getTracer();
+ * private static final Tracer tracer = Trace.getTracer();
  * private static final BinaryFormat binaryFormat =
- *     Tracing.getPropagationComponent().getBinaryFormat();
+ *     Trace.getPropagationComponent().getBinaryFormat();
  * void onSendRequest() {
  *   Span span = tracer.spanBuilder("Sent.MyRequest").startSpan();
  *   try (Scope ss = tracer.withSpan(span)) {
@@ -41,9 +41,9 @@ import openconsensus.trace.SpanContext;
  * <p>Example of usage on the server:
  *
  * <pre>{@code
- * private static final Tracer tracer = Tracing.getTracer();
+ * private static final Tracer tracer = Trace.getTracer();
  * private static final BinaryFormat binaryFormat =
- *     Tracing.getPropagationComponent().getBinaryFormat();
+ *     Trace.getPropagationComponent().getBinaryFormat();
  * void onRequestReceived() {
  *   // Get the binaryValue from the request.
  *   SpanContext spanContext = SpanContext.INVALID;

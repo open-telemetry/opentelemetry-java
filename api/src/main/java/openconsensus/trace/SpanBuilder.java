@@ -28,7 +28,7 @@ import java.util.concurrent.Callable;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = Tracing.getTracer();
+ *   private static final Tracer tracer = Trace.getTracer();
  *   void doWork {
  *     // Create a Span as a child of the current Span.
  *     Span span = tracer.spanBuilder("MyChildSpan").startSpan();
@@ -48,7 +48,7 @@ import java.util.concurrent.Callable;
  *
  * <pre>{@code
  * class MyRpcServerInterceptorListener implements RpcServerInterceptor.Listener {
- *   private static final Tracer tracer = Tracing.getTracer();
+ *   private static final Tracer tracer = Trace.getTracer();
  *   private Span mySpan;
  *
  *   public MyRpcInterceptor() {}
@@ -88,7 +88,7 @@ import java.util.concurrent.Callable;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = Tracing.getTracer();
+ *   private static final Tracer tracer = Trace.getTracer();
  *   void DoWork(Span parent) {
  *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
  *     childSpan.addEvent("my event");
@@ -188,7 +188,7 @@ public abstract class SpanBuilder {
    *
    * <pre>{@code
    * class MyClass {
-   *   private static final Tracer tracer = Tracing.getTracer();
+   *   private static final Tracer tracer = Trace.getTracer();
    *   void DoWork(Span parent) {
    *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
    *     childSpan.addEvent("my event");

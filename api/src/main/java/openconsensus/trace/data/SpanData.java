@@ -54,13 +54,12 @@ public abstract class SpanData {
    * @param kind the kind of the {@code Span}.
    * @param startTimestamp the start {@code Timestamp} of the {@code Span}.
    * @param attributes the attributes associated with the {@code Span}.
-   * @param events the events associated with the {@code Span}.
+   * @param timedEvents the events associated with the {@code Span}.
    * @param links the links associated with the {@code Span}.
    * @param childSpanCount the number of child spans that were generated while the span was active.
    * @param status the {@code Status} of the {@code Span}. {@code null} if the {@code Span} is still
    *     active.
-   * @param endTimestamp the end {@code Timestamp} of the {@code Span}. {@code null} if the {@code
-   *     Span} is still active.
+   * @param endTimestamp the end {@code Timestamp} of the {@code Span}.
    * @return a new immutable {@code SpanData}.
    * @since 0.1.0
    */
@@ -70,23 +69,23 @@ public abstract class SpanData {
       String name,
       Kind kind,
       Timestamp startTimestamp,
-      Attributes attributes,
-      TimedEvents<Event> events,
-      Links links,
+      Map<String, AttributeValue> attributes,
+      List<TimedEvent> timedEvents,
+      List<Link> links,
       boolean isAsynchronous,
       @Nullable Integer childSpanCount,
-      @Nullable Status status,
-      @Nullable Timestamp endTimestamp) {
-    Utils.checkNotNull(events, "events");
+      Status status,
+      Timestamp endTimestamp) {
     return new AutoValue_SpanData(
         context,
         parentSpanId,
         name,
         kind,
         startTimestamp,
-        attributes,
-        events,
-        links,
+        Collections.unmodifiableMap(new HashMap<>(Utils.checkNotNull(attributes, "attributes"))),
+        Collections.unmodifiableList(
+            new ArrayList<>(Utils.checkNotNull(timedEvents, "timedEvents"))),
+        Collections.unmodifiableList(new ArrayList<>(Utils.checkNotNull(links, "links"))),
         isAsynchronous,
         childSpanCount,
         status,
@@ -140,15 +139,15 @@ public abstract class SpanData {
    * @return the attributes recorded for this {@code Span}.
    * @since 0.1.0
    */
-  public abstract Attributes getAttributes();
+  public abstract Map<String, AttributeValue> getAttributes();
 
   /**
-   * Returns the events recorded for this {@code Span}.
+   * Returns the timed events recorded for this {@code Span}.
    *
-   * @return the events recorded for this {@code Span}.
+   * @return the timed events recorded for this {@code Span}.
    * @since 0.1.0
    */
-  public abstract TimedEvents<Event> getEvents();
+  public abstract List<TimedEvent> getTimedEvents();
 
   /**
    * Returns links recorded for this {@code Span}.
@@ -156,7 +155,7 @@ public abstract class SpanData {
    * @return links recorded for this {@code Span}.
    * @since 0.1.0
    */
-  public abstract Links getLinks();
+  public abstract List<Link> getLinks();
 
   /**
    * Returns true if this {@code Span} represents an asynchronous operation.
@@ -178,21 +177,19 @@ public abstract class SpanData {
   public abstract Integer getChildSpanCount();
 
   /**
-   * Returns the {@code Status} or {@code null} if {@code Span} is still active.
+   * Returns the {@code Status}.
    *
-   * @return the {@code Status} or {@code null} if {@code Span} is still active.
+   * @return the {@code Status}.
    * @since 0.1.0
    */
-  @Nullable
   public abstract Status getStatus();
 
   /**
-   * Returns the end {@code Timestamp} or {@code null} if the {@code Span} is still active.
+   * Returns the end {@code Timestamp}.
    *
-   * @return the end {@code Timestamp} or {@code null} if the {@code Span} is still active.
+   * @return the end {@code Timestamp}.
    * @since 0.1.0
    */
-  @Nullable
   public abstract Timestamp getEndTimestamp();
 
   SpanData() {}
@@ -200,12 +197,11 @@ public abstract class SpanData {
   /**
    * A timed event representation.
    *
-   * @param <T> the type of value that is timed.
    * @since 0.1.0
    */
   @Immutable
   @AutoValue
-  public abstract static class TimedEvent<T> {
+  public abstract static class TimedEvent {
     /**
      * Returns a new immutable {@code TimedEvent<T>}.
      *
@@ -215,8 +211,8 @@ public abstract class SpanData {
      * @return a new immutable {@code TimedEvent<T>}
      * @since 0.1.0
      */
-    public static <T> TimedEvent<T> create(Timestamp timestamp, T event) {
-      return new AutoValue_SpanData_TimedEvent<T>(timestamp, event);
+    public static <T> TimedEvent create(Timestamp timestamp, Event event) {
+      return new AutoValue_SpanData_TimedEvent(timestamp, event);
     }
 
     /**
@@ -233,137 +229,8 @@ public abstract class SpanData {
      * @return the event.
      * @since 0.1.0
      */
-    public abstract T getEvent();
+    public abstract Event getEvent();
 
     TimedEvent() {}
-  }
-
-  /**
-   * A list of timed events and the number of dropped events representation.
-   *
-   * @param <T> the type of value that is timed.
-   * @since 0.1.0
-   */
-  @Immutable
-  @AutoValue
-  public abstract static class TimedEvents<T> {
-    /**
-     * Returns a new immutable {@code TimedEvents<T>}.
-     *
-     * @param events the list of events.
-     * @param droppedEventsCount the number of dropped events.
-     * @param <T> the type of value that is timed.
-     * @return a new immutable {@code TimedEvents<T>}
-     * @since 0.1.0
-     */
-    public static <T> TimedEvents<T> create(List<TimedEvent<T>> events, int droppedEventsCount) {
-      return new AutoValue_SpanData_TimedEvents<T>(
-          Collections.unmodifiableList(
-              new ArrayList<TimedEvent<T>>(Utils.checkNotNull(events, "events"))),
-          droppedEventsCount);
-    }
-
-    /**
-     * Returns the list of events.
-     *
-     * @return the list of events.
-     * @since 0.1.0
-     */
-    public abstract List<TimedEvent<T>> getEvents();
-
-    /**
-     * Returns the number of dropped events.
-     *
-     * @return the number of dropped events.
-     * @since 0.1.0
-     */
-    public abstract int getDroppedEventsCount();
-
-    TimedEvents() {}
-  }
-
-  /**
-   * A set of attributes and the number of dropped attributes representation.
-   *
-   * @since 0.1.0
-   */
-  @Immutable
-  @AutoValue
-  public abstract static class Attributes {
-    /**
-     * Returns a new immutable {@code Attributes}.
-     *
-     * @param attributeMap the set of attributes.
-     * @param droppedAttributesCount the number of dropped attributes.
-     * @return a new immutable {@code Attributes}.
-     * @since 0.1.0
-     */
-    public static Attributes create(
-        Map<String, AttributeValue> attributeMap, int droppedAttributesCount) {
-      return new AutoValue_SpanData_Attributes(
-          Collections.unmodifiableMap(
-              new HashMap<String, AttributeValue>(
-                  Utils.checkNotNull(attributeMap, "attributeMap"))),
-          droppedAttributesCount);
-    }
-
-    /**
-     * Returns the set of attributes.
-     *
-     * @return the set of attributes.
-     * @since 0.1.0
-     */
-    public abstract Map<String, AttributeValue> getAttributeMap();
-
-    /**
-     * Returns the number of dropped attributes.
-     *
-     * @return the number of dropped attributes.
-     * @since 0.1.0
-     */
-    public abstract int getDroppedAttributesCount();
-
-    Attributes() {}
-  }
-
-  /**
-   * A list of links and the number of dropped links representation.
-   *
-   * @since 0.1.0
-   */
-  @Immutable
-  @AutoValue
-  public abstract static class Links {
-    /**
-     * Returns a new immutable {@code Links}.
-     *
-     * @param links the list of links.
-     * @param droppedLinksCount the number of dropped links.
-     * @return a new immutable {@code Links}.
-     * @since 0.1.0
-     */
-    public static Links create(List<Link> links, int droppedLinksCount) {
-      return new AutoValue_SpanData_Links(
-          Collections.unmodifiableList(new ArrayList<Link>(Utils.checkNotNull(links, "links"))),
-          droppedLinksCount);
-    }
-
-    /**
-     * Returns the list of links.
-     *
-     * @return the list of links.
-     * @since 0.1.0
-     */
-    public abstract List<Link> getLinks();
-
-    /**
-     * Returns the number of dropped links.
-     *
-     * @return the number of dropped links.
-     * @since 0.1.0
-     */
-    public abstract int getDroppedLinksCount();
-
-    Links() {}
   }
 }
