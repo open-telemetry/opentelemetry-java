@@ -83,22 +83,19 @@ final class Propagation {
       openconsensus.trace.SpanContext context,
       Binary carrier) {
 
-    byte[] buff = format.toByteArray(context);
-    ByteBuffer byteBuff = carrier.injectionBuffer(buff.length);
-    byteBuff.put(buff);
+    ByteBuffer buff = format.toByteBuffer(context);
+    ByteBuffer injectionBuff = carrier.injectionBuffer(buff.remaining());
+    injectionBuff.put(buff);
   }
 
   @SuppressWarnings("ReturnMissingNullable")
   public static SpanContext extractBinaryFormat(
       openconsensus.trace.propagation.BinaryFormat format, Binary carrier) {
 
-    ByteBuffer byteBuff = carrier.extractionBuffer();
-    byte[] buff = new byte[byteBuff.remaining()];
-    byteBuff.get(buff);
-
+    ByteBuffer extractionBuff = carrier.extractionBuffer();
     openconsensus.trace.SpanContext context = null;
     try {
-      context = format.fromByteArray(buff);
+      context = format.fromByteBuffer(extractionBuff);
     } catch (SpanContextParseException e) {
       return null;
     }
