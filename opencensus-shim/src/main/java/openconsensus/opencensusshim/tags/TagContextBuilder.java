@@ -24,22 +24,6 @@ import openconsensus.opencensusshim.common.Scope;
  * @since 0.1.0
  */
 public abstract class TagContextBuilder {
-  /**
-   * Adds the key/value pair regardless of whether the key is present.
-   *
-   * <p>For backwards-compatibility this method still produces propagating {@link Tag}s.
-   *
-   * <p>Equivalent to calling {@code put(key, value,
-   * TagMetadata.create(TagTtl.UNLIMITED_PROPAGATION))}.
-   *
-   * @param key the {@code TagKey} which will be set.
-   * @param value the {@code TagValue} to set for the given key.
-   * @return this
-   * @since 0.1.0
-   * @deprecated in favor of {@link #put(TagKey, TagValue, TagMetadata)}.
-   */
-  @Deprecated
-  public abstract TagContextBuilder put(TagKey key, TagValue value);
 
   /**
    * Adds the key/value pair and metadata regardless of whether the key is present.
@@ -50,11 +34,7 @@ public abstract class TagContextBuilder {
    * @return this
    * @since 0.1.0
    */
-  public TagContextBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
-    @SuppressWarnings("deprecation")
-    TagContextBuilder builder = put(key, value);
-    return builder;
-  }
+  public abstract TagContextBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata);
 
   /**
    * Removes the key if it exists.

@@ -16,6 +16,8 @@
 
 package openconsensus.opencensusshim.common;
 
+import java.io.Closeable;
+
 /**
  * A {@link java.io.Closeable} that represents a change to the current context over a scope of code.
  * {@link Scope#close} cannot throw a checked exception.
@@ -31,7 +33,7 @@ package openconsensus.opencensusshim.common;
  * @since 0.1.0
  */
 @SuppressWarnings("deprecation")
-public interface Scope extends NonThrowingCloseable {
+public interface Scope extends Closeable {
   @Override
   void close();
 }

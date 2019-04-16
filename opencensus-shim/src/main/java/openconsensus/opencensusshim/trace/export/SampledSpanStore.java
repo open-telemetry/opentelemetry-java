@@ -29,7 +29,6 @@ import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.opencensusshim.internal.Utils;
-import openconsensus.opencensusshim.trace.EndSpanOptions;
 import openconsensus.opencensusshim.trace.Span;
 import openconsensus.opencensusshim.trace.Status;
 import openconsensus.opencensusshim.trace.Status.CanonicalCode;
@@ -65,9 +64,6 @@ public abstract class SampledSpanStore {
    * Returns the summary of all available data, such as number of sampled spans in the latency based
    * samples or error based samples.
    *
-   * <p>Data available only for span names registered using {@link
-   * #registerSpanNamesForCollection(Collection)}.
-   *
    * @return the summary of all available data.
    * @since 0.1.0
    */
@@ -76,9 +72,6 @@ public abstract class SampledSpanStore {
   /**
    * Returns a list of succeeded spans (spans with {@link Status} equal to {@link Status#OK}) that
    * match the {@code filter}.
-   *
-   * <p>Latency based sampled spans are available only for span names registered using {@link
-   * #registerSpanNamesForCollection(Collection)}.
    *
    * @param filter used to filter the returned sampled spans.
    * @return a list of succeeded spans that match the {@code filter}.
@@ -90,42 +83,11 @@ public abstract class SampledSpanStore {
    * Returns a list of failed spans (spans with {@link Status} other than {@link Status#OK}) that
    * match the {@code filter}.
    *
-   * <p>Error based sampled spans are available only for span names registered using {@link
-   * #registerSpanNamesForCollection(Collection)}.
-   *
    * @param filter used to filter the returned sampled spans.
    * @return a list of failed spans that match the {@code filter}.
    * @since 0.1.0
    */
   public abstract Collection<SpanData> getErrorSampledSpans(ErrorFilter filter);
-
-  /**
-   * Appends a list of span names for which the library will collect latency based sampled spans and
-   * error based sampled spans.
-   *
-   * <p>If called multiple times the library keeps the list of unique span names from all the calls.
-   *
-   * @param spanNames list of span names for which the library will collect samples.
-   * @since 0.1.0
-   * @deprecated since 0.18. Use {@link EndSpanOptions#getSampleToLocalSpanStore()}.
-   */
-  @Deprecated
-  public abstract void registerSpanNamesForCollection(Collection<String> spanNames);
-
-  /**
-   * Removes a list of span names for which the library will collect latency based sampled spans and
-   * error based sampled spans.
-   *
-   * <p>The library keeps the list of unique registered span names for which samples will be called.
-   * This method allows users to remove span names from that list.
-   *
-   * @param spanNames list of span names for which the library will no longer collect samples.
-   * @since 0.1.0
-   * @deprecated since 0.18. The need of controlling the registration the span name will be removed
-   *     soon.
-   */
-  @Deprecated
-  public abstract void unregisterSpanNamesForCollection(Collection<String> spanNames);
 
   /**
    * Returns the set of unique span names registered to the library, for use in tests. For this set
@@ -211,9 +173,6 @@ public abstract class SampledSpanStore {
     /**
      * Returns the number of sampled spans in all the latency buckets.
      *
-     * <p>Data available only for span names registered using {@link
-     * #registerSpanNamesForCollection(Collection)}.
-     *
      * @return the number of sampled spans in all the latency buckets.
      * @since 0.1.0
      */
@@ -221,9 +180,6 @@ public abstract class SampledSpanStore {
 
     /**
      * Returns the number of sampled spans in all the error buckets.
-     *
-     * <p>Data available only for span names registered using {@link
-     * #registerSpanNamesForCollection(Collection)}.
      *
      * @return the number of sampled spans in all the error buckets.
      * @since 0.1.0
@@ -503,22 +459,6 @@ public abstract class SampledSpanStore {
     public Collection<SpanData> getErrorSampledSpans(ErrorFilter filter) {
       Utils.checkNotNull(filter, "errorFilter");
       return Collections.<SpanData>emptyList();
-    }
-
-    @Override
-    public void registerSpanNamesForCollection(Collection<String> spanNames) {
-      Utils.checkNotNull(spanNames, "spanNames");
-      synchronized (registeredSpanNames) {
-        registeredSpanNames.addAll(spanNames);
-      }
-    }
-
-    @Override
-    public void unregisterSpanNamesForCollection(Collection<String> spanNames) {
-      Utils.checkNotNull(spanNames, "spanNames");
-      synchronized (registeredSpanNames) {
-        registeredSpanNames.removeAll(spanNames);
-      }
     }
 
     @Override

@@ -125,43 +125,6 @@ public abstract class Aggregation {
   }
 
   /**
-   * Calculate mean on aggregated {@code MeasureValue}s.
-   *
-   * @since 0.1.0
-   * @deprecated since 0.13, use {@link Distribution} instead.
-   */
-  @Immutable
-  @AutoValue
-  @Deprecated
-  @AutoValue.CopyAnnotations
-  public abstract static class Mean extends Aggregation {
-
-    Mean() {}
-
-    private static final Mean INSTANCE = new AutoValue_Aggregation_Mean();
-
-    /**
-     * Construct a {@code Mean}.
-     *
-     * @return a new {@code Mean}.
-     * @since 0.1.0
-     */
-    public static Mean create() {
-      return INSTANCE;
-    }
-
-    @Override
-    public final <T> T match(
-        Function<? super Sum, T> p0,
-        Function<? super Count, T> p1,
-        Function<? super Distribution, T> p2,
-        Function<? super LastValue, T> p3,
-        Function<? super Aggregation, T> defaultFunction) {
-      return defaultFunction.apply(this);
-    }
-  }
-
-  /**
    * Calculate distribution stats on aggregated {@code MeasureValue}s. Distribution includes mean,
    * count, histogram, min, max and sum of squared deviations.
    *

@@ -16,7 +16,6 @@
 
 package openconsensus.opencensusshim.metrics;
 
-import java.util.List;
 import openconsensus.opencensusshim.common.ExperimentalApi;
 import openconsensus.opencensusshim.common.ToDoubleFunction;
 import openconsensus.opencensusshim.common.ToLongFunction;
@@ -31,23 +30,6 @@ import openconsensus.opencensusshim.internal.Utils;
  */
 @ExperimentalApi
 public abstract class MetricRegistry {
-  /**
-   * This will be removed in 0.22.
-   *
-   * @deprecated since 0.20, use {@link #addLongGauge(String, MetricOptions)}.
-   * @since 0.1.0
-   */
-  @Deprecated
-  public LongGauge addLongGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return addLongGauge(
-        name,
-        MetricOptions.builder()
-            .setDescription(description)
-            .setUnit(unit)
-            .setLabelKeys(labelKeys)
-            .build());
-  }
 
   /**
    * Builds a new long gauge to be added to the registry. This is more convenient form when you want
@@ -64,24 +46,6 @@ public abstract class MetricRegistry {
   public abstract LongGauge addLongGauge(String name, MetricOptions options);
 
   /**
-   * This will be removed in 0.22.
-   *
-   * @deprecated since 0.20, use {@link #addDoubleGauge(String, MetricOptions)}.
-   * @since 0.1.0
-   */
-  @Deprecated
-  public DoubleGauge addDoubleGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return addDoubleGauge(
-        name,
-        MetricOptions.builder()
-            .setDescription(description)
-            .setUnit(unit)
-            .setLabelKeys(labelKeys)
-            .build());
-  }
-
-  /**
    * Builds a new double gauge to be added to the registry. This is more convenient form when you
    * want to manually increase and decrease values as per your service requirements.
    *
@@ -96,24 +60,6 @@ public abstract class MetricRegistry {
   public abstract DoubleGauge addDoubleGauge(String name, MetricOptions options);
 
   /**
-   * This will be removed in 0.22.
-   *
-   * @deprecated since 0.20, use {@link #addDerivedLongGauge(String, MetricOptions)}.
-   * @since 0.1.0
-   */
-  @Deprecated
-  public DerivedLongGauge addDerivedLongGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return addDerivedLongGauge(
-        name,
-        MetricOptions.builder()
-            .setDescription(description)
-            .setUnit(unit)
-            .setLabelKeys(labelKeys)
-            .build());
-  }
-
-  /**
    * Builds a new derived long gauge to be added to the registry. This is more convenient form when
    * you want to define a gauge by executing a {@link ToLongFunction} on an object.
    *
@@ -126,24 +72,6 @@ public abstract class MetricRegistry {
    */
   @ExperimentalApi
   public abstract DerivedLongGauge addDerivedLongGauge(String name, MetricOptions options);
-
-  /**
-   * This will be removed in 0.22.
-   *
-   * @deprecated since 0.20, use {@link #addDerivedDoubleGauge(String, MetricOptions)}.
-   * @since 0.1.0
-   */
-  @Deprecated
-  public DerivedDoubleGauge addDerivedDoubleGauge(
-      String name, String description, String unit, List<LabelKey> labelKeys) {
-    return addDerivedDoubleGauge(
-        name,
-        MetricOptions.builder()
-            .setDescription(description)
-            .setUnit(unit)
-            .setLabelKeys(labelKeys)
-            .build());
-  }
 
   /**
    * Builds a new derived double gauge to be added to the registry. This is more convenient form

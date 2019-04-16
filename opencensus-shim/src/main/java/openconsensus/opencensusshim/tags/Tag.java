@@ -18,7 +18,6 @@ package openconsensus.opencensusshim.tags;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.opencensusshim.tags.TagMetadata.TagTtl;
 
 /**
  * {@link TagKey} paired with a {@link TagValue}.
@@ -29,29 +28,7 @@ import openconsensus.opencensusshim.tags.TagMetadata.TagTtl;
 @AutoValue
 public abstract class Tag {
 
-  private static final TagMetadata METADATA_UNLIMITED_PROPAGATION =
-      TagMetadata.create(TagTtl.UNLIMITED_PROPAGATION);
-
   Tag() {}
-
-  /**
-   * Creates a {@code Tag} from the given key and value.
-   *
-   * <p>For backwards-compatibility this method still produces propagating {@link Tag}s.
-   *
-   * <p>This is equivalent to calling {@code create(key, value,
-   * TagMetadata.create(TagTtl.UNLIMITED_PROPAGATION))}.
-   *
-   * @param key the tag key.
-   * @param value the tag value.
-   * @return a {@code Tag} with the given key and value.
-   * @since 0.1.0
-   * @deprecated in favor of {@link #create(TagKey, TagValue, TagMetadata)}.
-   */
-  @Deprecated
-  public static Tag create(TagKey key, TagValue value) {
-    return create(key, value, METADATA_UNLIMITED_PROPAGATION);
-  }
 
   /**
    * Creates a {@code Tag} from the given key, value and metadata.

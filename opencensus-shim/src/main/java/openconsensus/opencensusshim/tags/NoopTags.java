@@ -99,8 +99,6 @@ final class NoopTags {
   @ThreadSafe
   private static final class NoopTagsComponent extends TagsComponent {
 
-    private volatile boolean isRead;
-
     @Override
     public Tagger getTagger() {
       return getNoopTagger();
@@ -109,19 +107,6 @@ final class NoopTags {
     @Override
     public TagPropagationComponent getTagPropagationComponent() {
       return getNoopTagPropagationComponent();
-    }
-
-    @Override
-    public TaggingState getState() {
-      isRead = true;
-      return TaggingState.DISABLED;
-    }
-
-    @Override
-    @Deprecated
-    public void setState(TaggingState state) {
-      Utils.checkNotNull(state, "state");
-      Utils.checkState(!isRead, "State was already read, cannot set state.");
     }
   }
 
@@ -167,14 +152,6 @@ final class NoopTags {
   private static final class NoopTagContextBuilder extends TagContextBuilder {
 
     static final TagContextBuilder INSTANCE = new NoopTagContextBuilder();
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public TagContextBuilder put(TagKey key, TagValue value) {
-      Utils.checkNotNull(key, "key");
-      Utils.checkNotNull(value, "value");
-      return this;
-    }
 
     @Override
     public TagContextBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {

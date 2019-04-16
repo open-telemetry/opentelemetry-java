@@ -17,14 +17,10 @@
 package openconsensus.opencensusshim.stats;
 
 import com.google.auto.value.AutoValue;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.opencensusshim.common.Duration;
-import openconsensus.opencensusshim.common.Function;
 import openconsensus.opencensusshim.internal.DefaultVisibilityForTesting;
 import openconsensus.opencensusshim.internal.StringUtils;
 import openconsensus.opencensusshim.internal.Utils;
@@ -43,14 +39,6 @@ import openconsensus.opencensusshim.tags.TagKey;
 public abstract class View {
 
   @DefaultVisibilityForTesting static final int NAME_MAX_LENGTH = 255;
-
-  private static final Comparator<TagKey> TAG_KEY_COMPARATOR =
-      new Comparator<TagKey>() {
-        @Override
-        public int compare(TagKey key1, TagKey key2) {
-          return key1.getName().compareToIgnoreCase(key2.getName());
-        }
-      };
 
   View() {}
 
@@ -93,47 +81,6 @@ public abstract class View {
   public abstract List<TagKey> getColumns();
 
   /**
-   * Returns the time {@link AggregationWindow} for this {@code View}.
-   *
-   * @return the time {@link AggregationWindow}.
-   * @since 0.1.0
-   * @deprecated since 0.13. In the future all {@link View}s will be cumulative.
-   */
-  @Deprecated
-  public abstract AggregationWindow getWindow();
-
-  /**
-   * Constructs a new {@link View}.
-   *
-   * @param name the {@link Name} of view. Must be unique.
-   * @param description the description of view.
-   * @param measure the {@link Measure} to be aggregated by this view.
-   * @param aggregation the basic {@link Aggregation} that this view will support.
-   * @param columns the {@link TagKey}s that this view will aggregate on. Columns should not contain
-   *     duplicates.
-   * @param window the {@link AggregationWindow} of view.
-   * @return a new {@link View}.
-   * @since 0.1.0
-   * @deprecated in favor of {@link #create(Name, String, Measure, Aggregation, List)}.
-   */
-  @Deprecated
-  public static View create(
-      Name name,
-      String description,
-      Measure measure,
-      Aggregation aggregation,
-      List<TagKey> columns,
-      AggregationWindow window) {
-    Utils.checkArgument(
-        new HashSet<TagKey>(columns).size() == columns.size(), "Columns have duplicate.");
-
-    List<TagKey> tagKeys = new ArrayList<TagKey>(columns);
-    Collections.sort(tagKeys, TAG_KEY_COMPARATOR);
-    return new AutoValue_View(
-        name, description, measure, aggregation, Collections.unmodifiableList(tagKeys), window);
-  }
-
-  /**
    * Constructs a new {@link View}.
    *
    * @param name the {@link Name} of view. Must be unique.
@@ -153,8 +100,8 @@ public abstract class View {
       List<TagKey> columns) {
     Utils.checkArgument(
         new HashSet<TagKey>(columns).size() == columns.size(), "Columns have duplicate.");
-    return create(
-        name, description, measure, aggregation, columns, AggregationWindow.Cumulative.create());
+    return new AutoValue_View(
+        name, description, measure, aggregation, Collections.unmodifiableList(columns));
   }
 
   /**
@@ -192,115 +139,6 @@ public abstract class View {
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           "Name should be a ASCII string with a length no greater than 255 characters.");
       return new AutoValue_View_Name(name);
-    }
-  }
-
-  /**
-   * The time window for a {@code View}.
-   *
-   * @since 0.1.0
-   * @deprecated since 0.13. In the future all {@link View}s will be cumulative.
-   */
-  @Deprecated
-  @Immutable
-  public abstract static class AggregationWindow {
-
-    private AggregationWindow() {}
-
-    /**
-     * Applies the given match function to the underlying data type.
-     *
-     * @since 0.1.0
-     */
-    public abstract <T> T match(
-        Function<? super Cumulative, T> p0,
-        Function<? super Interval, T> p1,
-        Function<? super AggregationWindow, T> defaultFunction);
-
-    /**
-     * Cumulative (infinite interval) time {@code AggregationWindow}.
-     *
-     * @since 0.1.0
-     * @deprecated since 0.13. In the future all {@link View}s will be cumulative.
-     */
-    @Deprecated
-    @Immutable
-    @AutoValue
-    @AutoValue.CopyAnnotations
-    public abstract static class Cumulative extends AggregationWindow {
-
-      private static final Cumulative CUMULATIVE =
-          new AutoValue_View_AggregationWindow_Cumulative();
-
-      Cumulative() {}
-
-      /**
-       * Constructs a cumulative {@code AggregationWindow} that does not have an explicit {@code
-       * Duration}. Instead, cumulative {@code AggregationWindow} always has an interval of infinite
-       * {@code Duration}.
-       *
-       * @return a cumulative {@code AggregationWindow}.
-       * @since 0.1.0
-       */
-      public static Cumulative create() {
-        return CUMULATIVE;
-      }
-
-      @Override
-      public final <T> T match(
-          Function<? super Cumulative, T> p0,
-          Function<? super Interval, T> p1,
-          Function<? super AggregationWindow, T> defaultFunction) {
-        return p0.apply(this);
-      }
-    }
-
-    /**
-     * Interval (finite interval) time {@code AggregationWindow}.
-     *
-     * @since 0.1.0
-     * @deprecated since 0.13. In the future all {@link View}s will be cumulative.
-     */
-    @Deprecated
-    @Immutable
-    @AutoValue
-    @AutoValue.CopyAnnotations
-    public abstract static class Interval extends AggregationWindow {
-
-      private static final Duration ZERO = Duration.create(0, 0);
-
-      Interval() {}
-
-      /**
-       * Returns the {@code Duration} associated with this {@code Interval}.
-       *
-       * @return a {@code Duration}.
-       * @since 0.1.0
-       */
-      public abstract Duration getDuration();
-
-      /**
-       * Constructs an interval {@code AggregationWindow} that has a finite explicit {@code
-       * Duration}.
-       *
-       * <p>The {@code Duration} should be able to round to milliseconds. Currently interval window
-       * cannot have smaller {@code Duration} such as microseconds or nanoseconds.
-       *
-       * @return an interval {@code AggregationWindow}.
-       * @since 0.1.0
-       */
-      public static Interval create(Duration duration) {
-        Utils.checkArgument(duration.compareTo(ZERO) > 0, "Duration must be positive");
-        return new AutoValue_View_AggregationWindow_Interval(duration);
-      }
-
-      @Override
-      public final <T> T match(
-          Function<? super Cumulative, T> p0,
-          Function<? super Interval, T> p1,
-          Function<? super AggregationWindow, T> defaultFunction) {
-        return p1.apply(this);
-      }
     }
   }
 }

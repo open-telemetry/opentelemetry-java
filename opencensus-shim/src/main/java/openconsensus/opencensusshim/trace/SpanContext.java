@@ -50,20 +50,6 @@ public final class SpanContext {
    * @param traceId the trace identifier of the span context.
    * @param spanId the span identifier of the span context.
    * @param traceOptions the trace options for the span context.
-   * @return a new {@code SpanContext} with the given identifiers and options.
-   * @deprecated use {@link #create(TraceId, SpanId, TraceOptions, Tracestate)}.
-   */
-  @Deprecated
-  public static SpanContext create(TraceId traceId, SpanId spanId, TraceOptions traceOptions) {
-    return create(traceId, spanId, traceOptions, TRACESTATE_DEFAULT);
-  }
-
-  /**
-   * Creates a new {@code SpanContext} with the given identifiers and options.
-   *
-   * @param traceId the trace identifier of the span context.
-   * @param spanId the span identifier of the span context.
-   * @param traceOptions the trace options for the span context.
    * @param tracestate the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    * @since 0.1.0

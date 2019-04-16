@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -28,13 +27,10 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.opencensusshim.common.Functions;
-import openconsensus.opencensusshim.common.Timestamp;
 import openconsensus.opencensusshim.internal.Utils;
 import openconsensus.opencensusshim.stats.Measure.MeasureDouble;
 import openconsensus.opencensusshim.stats.Measure.MeasureLong;
 import openconsensus.opencensusshim.tags.TagContext;
-import openconsensus.opencensusshim.tags.TagValue;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -97,19 +93,6 @@ final class NoopStats {
     public StatsRecorder getStatsRecorder() {
       return getNoopStatsRecorder();
     }
-
-    @Override
-    public StatsCollectionState getState() {
-      isRead = true;
-      return StatsCollectionState.DISABLED;
-    }
-
-    @Override
-    @Deprecated
-    public void setState(StatsCollectionState state) {
-      Utils.checkNotNull(state, "state");
-      Utils.checkState(!isRead, "State was already read, cannot set state.");
-    }
   }
 
   @Immutable
@@ -158,7 +141,6 @@ final class NoopStats {
 
   @ThreadSafe
   private static final class NoopViewManager extends ViewManager {
-    private static final Timestamp ZERO_TIMESTAMP = Timestamp.create(0, 0);
 
     @GuardedBy("registeredViews")
     private final Map<View.Name, View> registeredViews = new HashMap<View.Name, View>();
@@ -183,31 +165,6 @@ final class NoopStats {
     }
 
     @Override
-    @javax.annotation.Nullable
-    @SuppressWarnings("deprecation")
-    public ViewData getView(View.Name name) {
-      Utils.checkNotNull(name, "name");
-      synchronized (registeredViews) {
-        View view = registeredViews.get(name);
-        if (view == null) {
-          return null;
-        } else {
-          return ViewData.create(
-              view,
-              Collections.<List</*@Nullable*/ TagValue>, AggregationData>emptyMap(),
-              view.getWindow()
-                  .match(
-                      Functions.<ViewData.AggregationWindowData>returnConstant(
-                          ViewData.AggregationWindowData.CumulativeData.create(
-                              ZERO_TIMESTAMP, ZERO_TIMESTAMP)),
-                      Functions.<ViewData.AggregationWindowData>returnConstant(
-                          ViewData.AggregationWindowData.IntervalData.create(ZERO_TIMESTAMP)),
-                      Functions.<ViewData.AggregationWindowData>throwAssertionError()));
-        }
-      }
-    }
-
-    @Override
     public Set<View> getAllExportedViews() {
       Set<View> views = exportedViews;
       if (views == null) {
@@ -219,16 +176,8 @@ final class NoopStats {
     }
 
     // Returns the subset of the given views that should be exported
-    @SuppressWarnings("deprecation")
     private static Set<View> filterExportedViews(Collection<View> allViews) {
-      Set<View> views = new HashSet<View>();
-      for (View view : allViews) {
-        if (view.getWindow() instanceof View.AggregationWindow.Interval) {
-          continue;
-        }
-        views.add(view);
-      }
-      return Collections.unmodifiableSet(views);
+      return Collections.unmodifiableSet(new HashSet<View>(allViews));
     }
   }
 }

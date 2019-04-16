@@ -61,50 +61,6 @@ public final class TraceOptions {
   }
 
   /**
-   * Returns a {@code TraceOptions} built from a byte representation.
-   *
-   * <p>Equivalent with:
-   *
-   * <pre>{@code
-   * TraceOptions.fromBytes(buffer, 0);
-   * }</pre>
-   *
-   * @param buffer the representation of the {@code TraceOptions}.
-   * @return a {@code TraceOptions} whose representation is given by the {@code buffer} parameter.
-   * @throws NullPointerException if {@code buffer} is null.
-   * @throws IllegalArgumentException if {@code buffer.length} is not {@link TraceOptions#SIZE}.
-   * @since 0.1.0
-   * @deprecated use {@link #fromByte(byte)}.
-   */
-  @Deprecated
-  public static TraceOptions fromBytes(byte[] buffer) {
-    Utils.checkNotNull(buffer, "buffer");
-    Utils.checkArgument(
-        buffer.length == SIZE, "Invalid size: expected %s, got %s", SIZE, buffer.length);
-    return fromByte(buffer[0]);
-  }
-
-  /**
-   * Returns a {@code TraceOptions} whose representation is copied from the {@code src} beginning at
-   * the {@code srcOffset} offset.
-   *
-   * @param src the buffer where the representation of the {@code TraceOptions} is copied.
-   * @param srcOffset the offset in the buffer where the representation of the {@code TraceOptions}
-   *     begins.
-   * @return a {@code TraceOptions} whose representation is copied from the buffer.
-   * @throws NullPointerException if {@code src} is null.
-   * @throws IndexOutOfBoundsException if {@code srcOffset+TraceOptions.SIZE} is greater than {@code
-   *     src.length}.
-   * @since 0.1.0
-   * @deprecated use {@link #fromByte(byte)}.
-   */
-  @Deprecated
-  public static TraceOptions fromBytes(byte[] src, int srcOffset) {
-    Utils.checkIndex(srcOffset, src.length);
-    return fromByte(src[srcOffset]);
-  }
-
-  /**
    * Returns a {@code TraceOptions} whose representation is {@code src}.
    *
    * @param src the byte representation of the {@code TraceOptions}.
@@ -140,20 +96,6 @@ public final class TraceOptions {
    */
   public byte getByte() {
     return options;
-  }
-
-  /**
-   * Returns the 1-byte array representation of the {@code TraceOptions}.
-   *
-   * @return the 1-byte array representation of the {@code TraceOptions}.
-   * @since 0.1.0
-   * @deprecated use {@link #getByte()}.
-   */
-  @Deprecated
-  public byte[] getBytes() {
-    byte[] bytes = new byte[SIZE];
-    bytes[0] = options;
-    return bytes;
   }
 
   /**
@@ -273,18 +215,6 @@ public final class TraceOptions {
     }
 
     /**
-     * Sets the sampling bit in the options to true.
-     *
-     * @deprecated Use {@code Builder.setIsSampled(true)}.
-     * @return this.
-     * @since 0.1.0
-     */
-    @Deprecated
-    public Builder setIsSampled() {
-      return setIsSampled(true);
-    }
-
-    /**
      * Sets the sampling bit in the options.
      *
      * @param isSampled the sampling bit.
@@ -296,7 +226,6 @@ public final class TraceOptions {
         options = (byte) (options | IS_SAMPLED);
       } else {
         options = (byte) (options & ~IS_SAMPLED);
-        ;
       }
       return this;
     }

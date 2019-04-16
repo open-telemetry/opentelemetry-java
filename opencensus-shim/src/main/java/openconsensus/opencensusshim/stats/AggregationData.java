@@ -194,61 +194,6 @@ public abstract class AggregationData {
   }
 
   /**
-   * The mean value of aggregated {@code MeasureValue}s.
-   *
-   * @since 0.1.0
-   * @deprecated since 0.13, use {@link DistributionData} instead.
-   */
-  @Immutable
-  @AutoValue
-  @Deprecated
-  @AutoValue.CopyAnnotations
-  public abstract static class MeanData extends AggregationData {
-
-    MeanData() {}
-
-    /**
-     * Creates a {@code MeanData}.
-     *
-     * @param mean the aggregated mean.
-     * @param count the aggregated count.
-     * @return a {@code MeanData}.
-     * @since 0.1.0
-     */
-    public static MeanData create(double mean, long count) {
-      return new AutoValue_AggregationData_MeanData(mean, count);
-    }
-
-    /**
-     * Returns the aggregated mean.
-     *
-     * @return the aggregated mean.
-     * @since 0.1.0
-     */
-    public abstract double getMean();
-
-    /**
-     * Returns the aggregated count.
-     *
-     * @return the aggregated count.
-     * @since 0.1.0
-     */
-    public abstract long getCount();
-
-    @Override
-    public final <T> T match(
-        Function<? super SumDataDouble, T> p0,
-        Function<? super SumDataLong, T> p1,
-        Function<? super CountData, T> p2,
-        Function<? super DistributionData, T> p3,
-        Function<? super LastValueDataDouble, T> p4,
-        Function<? super LastValueDataLong, T> p5,
-        Function<? super AggregationData, T> defaultFunction) {
-      return defaultFunction.apply(this);
-    }
-  }
-
-  /**
    * The distribution stats of aggregated {@code MeasureValue}s. Distribution stats include mean,
    * count, histogram, min, max and sum of squared deviations.
    *
@@ -259,33 +204,6 @@ public abstract class AggregationData {
   public abstract static class DistributionData extends AggregationData {
 
     DistributionData() {}
-
-    /**
-     * Creates a {@code DistributionData}.
-     *
-     * @param mean mean value.
-     * @param count count value.
-     * @param min min value.
-     * @param max max value.
-     * @param sumOfSquaredDeviations sum of squared deviations.
-     * @param bucketCounts histogram bucket counts.
-     * @param exemplars the exemplars associated with histogram buckets.
-     * @return a {@code DistributionData}.
-     * @since 0.1.0
-     * @deprecated since 0.17. Use {@link #create(double, long, double, List, List)}
-     */
-    @Deprecated
-    @SuppressWarnings("InconsistentOverloads")
-    public static DistributionData create(
-        double mean,
-        long count,
-        double min,
-        double max,
-        double sumOfSquaredDeviations,
-        List<Long> bucketCounts,
-        List<Exemplar> exemplars) {
-      return create(mean, count, sumOfSquaredDeviations, bucketCounts, exemplars);
-    }
 
     /**
      * Creates a {@code DistributionData}.
@@ -329,32 +247,6 @@ public abstract class AggregationData {
      *
      * @param mean mean value.
      * @param count count value.
-     * @param min min value.
-     * @param max max value.
-     * @param sumOfSquaredDeviations sum of squared deviations.
-     * @param bucketCounts histogram bucket counts.
-     * @return a {@code DistributionData}.
-     * @since 0.1.0
-     * @deprecated since 0.17. Use {@link #create(double, long, double, List)}.
-     */
-    @Deprecated
-    @SuppressWarnings("InconsistentOverloads")
-    public static DistributionData create(
-        double mean,
-        long count,
-        double min,
-        double max,
-        double sumOfSquaredDeviations,
-        List<Long> bucketCounts) {
-      return create(
-          mean, count, sumOfSquaredDeviations, bucketCounts, Collections.<Exemplar>emptyList());
-    }
-
-    /**
-     * Creates a {@code DistributionData}.
-     *
-     * @param mean mean value.
-     * @param count count value.
      * @param sumOfSquaredDeviations sum of squared deviations.
      * @param bucketCounts histogram bucket counts.
      * @return a {@code DistributionData}.
@@ -381,30 +273,6 @@ public abstract class AggregationData {
      * @since 0.1.0
      */
     public abstract long getCount();
-
-    /**
-     * Returns the minimum of the population values.
-     *
-     * @return the minimum of the population values.
-     * @since 0.1.0
-     * @deprecated since 0.17. Returns {@code 0}.
-     */
-    @Deprecated
-    public double getMin() {
-      return 0;
-    }
-
-    /**
-     * Returns the maximum of the population values.
-     *
-     * @return the maximum of the population values.
-     * @since 0.1.0
-     * @deprecated since 0.17. Returns {@code 0}.
-     */
-    @Deprecated
-    public double getMax() {
-      return 0;
-    }
 
     /**
      * Returns the aggregated sum of squared deviations.
