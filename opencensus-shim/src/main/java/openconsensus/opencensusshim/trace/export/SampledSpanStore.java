@@ -39,8 +39,7 @@ import openconsensus.opencensusshim.trace.Status.CanonicalCode;
  *
  * <p>For all completed spans with the option {@link Span.Options#RECORD_EVENTS} the library can
  * store samples based on latency for succeeded operations or based on error code for failed
- * operations. To activate this, users MUST manually configure all the span names for which samples
- * will be collected (see {@link #registerSpanNamesForCollection(Collection)}).
+ * operations.
  *
  * @since 0.1.0
  */

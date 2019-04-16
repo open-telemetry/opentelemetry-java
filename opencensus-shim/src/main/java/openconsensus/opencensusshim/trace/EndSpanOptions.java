@@ -17,11 +17,9 @@
 package openconsensus.opencensusshim.trace;
 
 import com.google.auto.value.AutoValue;
-import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.opencensusshim.common.ExperimentalApi;
-import openconsensus.opencensusshim.trace.export.SampledSpanStore;
 
 /**
  * A class that enables overriding the default values used when ending a {@link Span}. Allows
@@ -50,8 +48,8 @@ public abstract class EndSpanOptions {
   }
 
   /**
-   * If {@code true} this is equivalent with calling the {@link
-   * SampledSpanStore#registerSpanNamesForCollection(Collection)} in advance for this span name.
+   * Returns {@code true} if the name of the {@code Span} should be registered to the {@code
+   * openconsensus.opencensusshim.trace.export.SampledSpanStore}.
    *
    * @return {@code true} if the name of the {@code Span} should be registered to the {@code
    *     openconsensus.opencensusshim.trace.export.SampledSpanStore}.
@@ -91,15 +89,11 @@ public abstract class EndSpanOptions {
     public abstract Builder setStatus(Status status);
 
     /**
-     * If set to {@code true} this is equivalent with calling the {@link
-     * SampledSpanStore#registerSpanNamesForCollection(Collection)} in advance for the given span
-     * name.
+     * Sets if the name of the span should be registered to {@code
+     * openconsensus.opencensusshim.trace.export.SampledSpanStore}.
      *
      * <p>WARNING: setting this option to a randomly generated span name can OOM your process
      * because the library will save samples for each name.
-     *
-     * <p>It is strongly recommended to use the {@link
-     * SampledSpanStore#registerSpanNamesForCollection(Collection)} API instead.
      *
      * @return this.
      * @since 0.1.0
