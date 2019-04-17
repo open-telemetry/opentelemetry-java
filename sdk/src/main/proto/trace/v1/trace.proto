@@ -209,26 +209,11 @@ message Span {
     // A unique identifier for the linked span. The ID is an 8-byte array.
     bytes span_id = 2;
 
-    // The relationship of the current span relative to the linked span: child,
-    // parent, or unspecified.
-    enum Type {
-      // The relationship of the two spans is unknown, or known but other
-      // than parent-child.
-      TYPE_UNSPECIFIED = 0;
-      // The linked span is a child of the current span.
-      CHILD_LINKED_SPAN = 1;
-      // The linked span is a parent of the current span.
-      PARENT_LINKED_SPAN = 2;
-    }
-
-    // The relationship of the current span relative to the linked span.
-    Type type = 3;
+    // The Tracestate associated with the link.
+    Tracestate tracestate = 3;
 
     // A set of attributes on the link.
     Attributes attributes = 4;
-
-    // The Tracestate associated with the link.
-    Tracestate tracestate = 5;
   }
 
   // A collection of links, which are references from this span to a span
