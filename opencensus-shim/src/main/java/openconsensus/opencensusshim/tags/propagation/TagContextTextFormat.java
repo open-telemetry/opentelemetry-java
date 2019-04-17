@@ -20,10 +20,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import openconsensus.opencensusshim.tags.TagContext;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.NonNull;
-*/
-
 /**
  * Object for injecting and extracting {@link TagContext} as text into carriers that travel in-band
  * across process boundaries. Tags are often encoded as messaging or RPC request headers.
@@ -101,8 +97,8 @@ public abstract class TagContextTextFormat {
    * @throws TagContextSerializationException if the given tag context cannot be serialized.
    * @since 0.1.0
    */
-  public abstract <C /*>>> extends @NonNull Object*/> void inject(
-      TagContext tagContext, C carrier, Setter<C> setter) throws TagContextSerializationException;
+  public abstract <C> void inject(TagContext tagContext, C carrier, Setter<C> setter)
+      throws TagContextSerializationException;
 
   /**
    * Class that allows a {@code TagContextTextFormat} to set propagated fields into a carrier.
@@ -137,8 +133,8 @@ public abstract class TagContextTextFormat {
    * @throws TagContextDeserializationException if the input is invalid
    * @since 0.1.0
    */
-  public abstract <C /*>>> extends @NonNull Object*/> TagContext extract(
-      C carrier, Getter<C> getter) throws TagContextDeserializationException;
+  public abstract <C> TagContext extract(C carrier, Getter<C> getter)
+      throws TagContextDeserializationException;
 
   /**
    * Class that allows a {@code TagContextTextFormat} to read propagated fields from a carrier.

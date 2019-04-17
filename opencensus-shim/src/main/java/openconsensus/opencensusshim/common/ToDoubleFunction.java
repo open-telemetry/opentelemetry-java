@@ -16,10 +16,6 @@
 
 package openconsensus.opencensusshim.common;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 /**
  * Represents a function that produces a double-valued result. See {@link
  * openconsensus.opencensusshim.metrics.MetricRegistry} for an example of its use.
@@ -29,7 +25,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * @since 0.1.0
  */
-public interface ToDoubleFunction</*@Nullable*/ T> {
+public interface ToDoubleFunction<T> {
 
   /**
    * Applies this function to the given argument.
@@ -37,5 +33,5 @@ public interface ToDoubleFunction</*@Nullable*/ T> {
    * @param value the function argument.
    * @return the function result.
    */
-  double applyAsDouble(/*@Nullable*/ T value);
+  double applyAsDouble(T value);
 }

@@ -36,10 +36,6 @@ import openconsensus.opencensusshim.trace.SpanContext;
 import openconsensus.opencensusshim.trace.SpanId;
 import openconsensus.opencensusshim.trace.Status;
 
-/*>>>
-import org.checkerframework.dataflow.qual.Deterministic;
-*/
-
 /**
  * Immutable representation of all data collected by the {@link Span} class.
  *

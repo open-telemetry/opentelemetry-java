@@ -36,10 +36,6 @@ import openconsensus.opencensusshim.stats.Measure.MeasureLong;
 import openconsensus.opencensusshim.tags.TagContext;
 import openconsensus.opencensusshim.tags.TagValue;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 /** No-op implementations of stats classes. */
 final class NoopStats {
 
@@ -194,7 +190,7 @@ final class NoopStats {
         } else {
           return ViewData.create(
               view,
-              Collections.<List</*@Nullable*/ TagValue>, AggregationData>emptyMap(),
+              Collections.<List<TagValue>, AggregationData>emptyMap(),
               view.getWindow()
                   .match(
                       Functions.<ViewData.AggregationWindowData>returnConstant(

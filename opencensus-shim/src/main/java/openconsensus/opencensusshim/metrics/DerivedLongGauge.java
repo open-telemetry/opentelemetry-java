@@ -22,10 +22,6 @@ import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.opencensusshim.common.ToLongFunction;
 import openconsensus.opencensusshim.internal.Utils;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 /**
  * Derived Long Gauge metric, to report instantaneous measurement of an int64 value. Gauges can go
  * both up and down. The gauges values can be negative.
@@ -80,7 +76,7 @@ public abstract class DerivedLongGauge {
    * @since 0.1.0
    */
   public abstract <T> void createTimeSeries(
-      List<LabelValue> labelValues, /*@Nullable*/ T obj, ToLongFunction</*@Nullable*/ T> function);
+      List<LabelValue> labelValues, T obj, ToLongFunction<T> function);
 
   /**
    * Removes the {@code TimeSeries} from the gauge metric, if it is present.
@@ -129,9 +125,7 @@ public abstract class DerivedLongGauge {
 
     @Override
     public <T> void createTimeSeries(
-        List<LabelValue> labelValues,
-        /*@Nullable*/ T obj,
-        ToLongFunction</*@Nullable*/ T> function) {
+        List<LabelValue> labelValues, T obj, ToLongFunction<T> function) {
       Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
