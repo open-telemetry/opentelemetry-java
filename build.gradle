@@ -11,8 +11,6 @@ buildscript {
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.16'
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
         classpath "gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.8"
-        classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.8"
-        classpath "gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0"
     }
 }
 
@@ -30,8 +28,6 @@ subprojects {
     apply plugin: 'jacoco'
     // The plugin only has an effect if a signature is specified
     apply plugin: 'ru.vyarus.animalsniffer'
-    apply plugin: 'me.champeau.gradle.jmh'
-    apply plugin: 'io.morethan.jmhreport'
     apply plugin: 'com.github.sherter.google-java-format'
     apply plugin: 'net.ltgt.errorprone'
 
@@ -46,7 +42,7 @@ subprojects {
         mavenLocal()
     }
 
-    [compileJava, compileTestJava, compileJmhJava].each() {
+    [compileJava, compileTestJava].each() {
         // We suppress the "try" warning because it disallows managing an auto-closeable with
         // try-with-resources without referencing the auto-closeable within the try block.
         // We suppress the "processing" warning as suggested in
@@ -100,7 +96,7 @@ subprojects {
     ext {
         findBugsJsr305Version = '3.0.2'
         errorProneVersion = '2.3.2'
-        grpcVersion = '1.19.0'
+        grpcVersion = '1.20.0'
         autoValueVersion = '1.6.2'
         opentracingVersion = '0.32.0'
 
@@ -187,29 +183,6 @@ subprojects {
     artifacts {
         archives javadocJar, sourcesJar
     }
-
-    jmh {
-        jmhVersion = '1.20'
-        warmupIterations = 10
-        iterations = 10
-        fork = 1
-        failOnError = true
-        resultFormat = 'JSON'
-        // Allow to run single benchmark class like:
-        // ./gradlew -PjmhIncludeSingleClass=StatsTraceContextBenchmark clean :grpc-core:jmh
-        if (project.hasProperty('jmhIncludeSingleClass')) {
-            include = [
-                    project.property('jmhIncludeSingleClass')
-            ]
-        }
-    }
-
-    jmhReport {
-        jmhResultPath = project.file("${project.buildDir}/reports/jmh/results.json")
-        jmhReportOutput = project.file("${project.buildDir}/reports/jmh")
-    }
-
-    tasks.jmh.finalizedBy tasks.jmhReport
 
     // At a test failure, log the stack trace to the console so that we don't
     // have to open the HTML in a browser.
