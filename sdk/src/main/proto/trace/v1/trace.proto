@@ -162,8 +162,6 @@ message Span {
   // A set of attributes on the span.
   Attributes attributes = 7;
 
-  // A stack trace captured at the start of the span.
-  StackTrace stack_trace = 8;
 
   // A time-stamped event in the Span.
   message TimedEvent {
@@ -294,70 +292,6 @@ message AttributeValue {
     // A double value.
     double double_value = 4;
   }
-}
-
-// The call stack which originated this span.
-message StackTrace {
-  // A single stack frame in a stack trace.
-  message StackFrame {
-    // The fully-qualified name that uniquely identifies the function or
-    // method that is active in this frame.
-    TruncatableString function_name = 1;
-    // An un-mangled function name, if `function_name` is
-    // [mangled](http://www.avabodh.com/cxxin/namemangling.html). The name can
-    // be fully qualified.
-    TruncatableString original_function_name = 2;
-    // The name of the source file where the function call appears.
-    TruncatableString file_name = 3;
-    // The line number in `file_name` where the function call appears.
-    int64 line_number = 4;
-    // The column number where the function call appears, if available.
-    // This is important in JavaScript because of its anonymous functions.
-    int64 column_number = 5;
-    // The binary module from where the code was loaded.
-    Module load_module = 6;
-    // The version of the deployed source code.
-    TruncatableString source_version = 7;
-  }
-
-  // A collection of stack frames, which can be truncated.
-  message StackFrames {
-    // Stack frames in this call stack.
-    repeated StackFrame frame = 1;
-    // The number of stack frames that were dropped because there
-    // were too many stack frames.
-    // If this value is 0, then no stack frames were dropped.
-    int32 dropped_frames_count = 2;
-  }
-
-  // Stack frames in this stack trace.
-  StackFrames stack_frames = 1;
-
-  // The hash ID is used to conserve network bandwidth for duplicate
-  // stack traces within a single trace.
-  //
-  // Often multiple spans will have identical stack traces.
-  // The first occurrence of a stack trace should contain both
-  // `stack_frames` and a value in `stack_trace_hash_id`.
-  //
-  // Subsequent spans within the same request can refer
-  // to that stack trace by setting only `stack_trace_hash_id`.
-  //
-  // TODO: describe how to deal with the case where stack_trace_hash_id is
-  // zero because it was not set.
-  uint64 stack_trace_hash_id = 2;
-}
-
-// A description of a binary module.
-message Module {
-  // TODO: document the meaning of this field.
-  // For example: main binary, kernel modules, and dynamic libraries
-  // such as libc.so, sharedlib.so.
-  TruncatableString module = 1;
-
-  // A unique identifier for the module, usually a hash of its
-  // contents.
-  TruncatableString build_id = 2;
 }
 
 // A string that might be shortened to a specified length.
