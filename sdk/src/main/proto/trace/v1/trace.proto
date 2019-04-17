@@ -1,4 +1,4 @@
-// Copyright 2017, OpenCensus Authors
+// Copyright 2019, OpenConsensus Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
 
 syntax = "proto3";
 
-package opencensus.proto.trace.v1;
+package openconsensus.proto.trace.v1;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "resource/v1/resource.proto";
 
 option java_multiple_files = true;
-option java_package = "opencensus.proto.trace.v1";
+option java_package = "openconsensus.proto.trace.v1";
 option java_outer_classname = "TraceProto";
 
 // A span represents a single operation within a trace. Spans can be
@@ -236,7 +236,7 @@ message Span {
   // An optional resource that is associated with this span. If not set, this span 
   // should be part of a batch that does include the resource information, unless resource 
   // information is unknown.
-  opencensus.proto.resource.v1.Resource resource = 16;
+  openconsensus.proto.resource.v1.Resource resource = 16;
 
   // A highly recommended but not required flag that identifies when a
   // trace crosses a process boundary. True when the parent_span belongs
