@@ -11,5 +11,4 @@ dependencies {
 
 javadoc {
     exclude 'openconsensus/internal/**'
-    exclude 'openconsensus/trace/internal/**'
 }
