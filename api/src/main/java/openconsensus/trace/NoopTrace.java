@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
 import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
 import openconsensus.internal.Utils;
-import openconsensus.trace.data.SpanData;
 import openconsensus.trace.propagation.BinaryFormat;
 import openconsensus.trace.propagation.TextFormat;
 
