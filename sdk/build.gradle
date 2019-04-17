@@ -2,8 +2,8 @@ description = 'OpenConsensus SDK'
 
 apply plugin: 'com.google.protobuf'
 
-def protobufVersion = '3.6.1'
-def protocVersion = '3.6.1'
+def protobufVersion = '3.7.1'
+def protocVersion = '3.7.1'
 
 buildscript {
     repositories {

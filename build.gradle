@@ -100,7 +100,7 @@ subprojects {
     ext {
         findBugsJsr305Version = '3.0.2'
         errorProneVersion = '2.3.2'
-        grpcVersion = '1.19.0'
+        grpcVersion = '1.20.0'
         autoValueVersion = '1.6.2'
         opentracingVersion = '0.32.0'
 
