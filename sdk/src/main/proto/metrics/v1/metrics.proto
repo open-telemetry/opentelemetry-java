@@ -120,20 +120,14 @@ message LabelKey {
 // A collection of data points that describes the time-varying values
 // of a metric.
 message TimeSeries {
-  // Must be present for cumulative metrics. The time when the cumulative value
-  // was reset to zero. Exclusive. The cumulative value is over the time interval
-  // (start_timestamp, timestamp]. If not specified, the backend can use the
-  // previous recorded value.
-  google.protobuf.Timestamp start_timestamp = 1;
-
   // The set of label values that uniquely identify this timeseries. Applies to
   // all points. The order of label values must match that of label keys in the
   // metric descriptor.
-  repeated LabelValue label_values = 2;
+  repeated LabelValue label_values = 1;
 
   // The data points of this timeseries. Point.value type MUST match the
   // MetricDescriptor.type.
-  repeated Point points = 3;
+  repeated Point points = 2;
 }
 
 message LabelValue {
@@ -146,23 +140,29 @@ message LabelValue {
 
 // A timestamped measurement.
 message Point {
+  // Must be present for cumulative metrics. The time when the cumulative value
+  // was reset to zero. Exclusive. The cumulative value is over the time interval
+  // (start_timestamp, timestamp]. If not specified, the backend can use the
+  // previous recorded value.
+  google.protobuf.Timestamp start_timestamp = 1;
+
   // The moment when this point was recorded. Inclusive.
   // If not specified, the timestamp will be decided by the backend.
-  google.protobuf.Timestamp timestamp = 1;
+  google.protobuf.Timestamp timestamp = 2;
 
   // The actual point value.
   oneof value {
     // A 64-bit integer.
-    int64 int64_value = 2;
+    int64 int64_value = 3;
 
     // A 64-bit double-precision floating-point number.
-    double double_value = 3;
+    double double_value = 4;
 
     // A distribution value.
-    DistributionValue distribution_value = 4;
+    DistributionValue distribution_value = 5;
 
     // A summary value. This is not recommended, since it cannot be aggregated.
-    SummaryValue summary_value = 5;
+    SummaryValue summary_value = 6;
   }
 }
 
