@@ -26,16 +26,21 @@ import openconsensus.metrics.data.LabelKey;
 import openconsensus.metrics.data.LabelValue;
 import openconsensus.metrics.data.Metric;
 
-/** No-op implementations of metrics classes. */
-final class NoopMetrics {
+/**
+ * No-op implementations of metrics classes.
+ *
+ * @since 0.1.0
+ */
+public final class NoopMetrics {
   private NoopMetrics() {}
 
   /**
    * Returns an instance that contains no-op implementations for all the instances.
    *
    * @return an instance that contains no-op implementations for all the instances.
+   * @since 0.1.0
    */
-  static MetricsComponent newNoopMetricsComponent() {
+  public static MetricsComponent newNoopMetricsComponent() {
     return new NoopMetricsComponent();
   }
 

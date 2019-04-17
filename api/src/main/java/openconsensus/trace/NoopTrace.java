@@ -27,9 +27,12 @@ import openconsensus.trace.data.SpanData;
 import openconsensus.trace.propagation.BinaryFormat;
 import openconsensus.trace.propagation.TextFormat;
 
-/** No-op implementations of trace classes. */
-// TODO(Issue #65): decide whether this class should be public or not.
-final class NoopTrace {
+/**
+ * No-op implementations of trace classes.
+ *
+ * @since 0.1.0
+ */
+public final class NoopTrace {
 
   private NoopTrace() {}
 
@@ -37,8 +40,9 @@ final class NoopTrace {
    * Returns a {@code Tracer} instance that is no-op implementations.
    *
    * @return a {@code Tracer} instance that is no-op implementations.
+   * @since 0.1.0
    */
-  static Tracer newNoopTracer() {
+  public static Tracer newNoopTracer() {
     return new NoopTracer();
   }
 
