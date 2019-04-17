@@ -75,9 +75,11 @@ public abstract class BinaryFormat {
   /**
    * Parses the {@link SpanContext} from a byte array using the binary format.
    *
+   * <p>If the {@link SpanContext} could not be parsed, the underlying implementation will decide to
+   * return either a no-op or a valid {@link SpanContext}.
+   *
    * @param bytes a binary encoded buffer from which the {@code SpanContext} will be parsed.
-   * @return the parsed {@code SpanContext} or {@code SpanContext.INVALID} if it could not be
-   *     parsed.
+   * @return the parsed {@code SpanContext} or an implementation-specific value in case of error.
    * @throws NullPointerException if the {@code input} is {@code null}.
    * @since 0.1.0
    */
