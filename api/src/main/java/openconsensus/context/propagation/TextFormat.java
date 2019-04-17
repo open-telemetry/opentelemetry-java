@@ -89,7 +89,7 @@ public abstract class TextFormat<V> {
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param getter invoked for each propagation key to get.
    * @param <C> carrier of propagation fields, such as an http request.
-   * @return carrier of propagated fields.
+   * @return the extracted value.
    * @since 0.1.0
    */
   public abstract <C> V extract(C carrier, Getter<C> getter);
