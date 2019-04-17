@@ -165,79 +165,37 @@ message Span {
   // A stack trace captured at the start of the span.
   StackTrace stack_trace = 8;
 
-  // A time-stamped annotation or message event in the Span.
-  message TimeEvent {
+  // A time-stamped event in the Span.
+  message TimedEvent {
     // The time the event occurred.
     google.protobuf.Timestamp time = 1;
 
     // A text annotation with a set of attributes.
-    message Annotation {
-      // A user-supplied message describing the event.
-      TruncatableString description = 1;
+    message Event {
+      // A user-supplied name describing the event.
+      TruncatableString name = 1;
 
-      // A set of attributes on the annotation.
+      // A set of attributes on the event.
       Attributes attributes = 2;
     }
 
-    // An event describing a message sent/received between Spans.
-    message MessageEvent {
-      // Indicates whether the message was sent or received.
-      enum Type {
-        // Unknown event type.
-        TYPE_UNSPECIFIED = 0;
-        // Indicates a sent message.
-        SENT = 1;
-        // Indicates a received message.
-        RECEIVED = 2;
-      }
-
-      // The type of MessageEvent. Indicates whether the message was sent or
-      // received.
-      Type type = 1;
-
-      // An identifier for the MessageEvent's message that can be used to match
-      // SENT and RECEIVED MessageEvents. For example, this field could
-      // represent a sequence ID for a streaming RPC. It is recommended to be
-      // unique within a Span.
-      uint64 id = 2;
-
-      // The number of uncompressed bytes sent or received.
-      uint64 uncompressed_size = 3;
-
-      // The number of compressed bytes sent or received. If zero, assumed to
-      // be the same size as uncompressed.
-      uint64 compressed_size = 4;
-    }
-
-    // A `TimeEvent` can contain either an `Annotation` object or a
-    // `MessageEvent` object, but not both.
-    oneof value {
-      // A text annotation with a set of attributes.
-      Annotation annotation = 2;
-
-      // An event describing a message sent/received between Spans.
-      MessageEvent message_event = 3;
-    }
+    // The event.
+    Event event = 2;
   }
 
   // A collection of `TimeEvent`s. A `TimeEvent` is a time-stamped annotation
   // on the span, consisting of either user-supplied key-value pairs, or
   // details of a message sent/received between Spans.
-  message TimeEvents {
-    // A collection of `TimeEvent`s.
-    repeated TimeEvent time_event = 1;
+  message TimedEvents {
+    // A collection of `TimedEvent`s.
+    repeated TimedEvent timed_event = 1;
 
-    // The number of dropped annotations in all the included time events.
-    // If the value is 0, then no annotations were dropped.
-    int32 dropped_annotations_count = 2;
-
-    // The number of dropped message events in all the included time events.
-    // If the value is 0, then no message events were dropped.
-    int32 dropped_message_events_count = 3;
+    // The number of dropped timed events. If the value is 0, then no events were dropped.
+    int32 dropped_timed_events_count = 2;
   }
 
-  // The included time events.
-  TimeEvents time_events = 9;
+  // The included timed events.
+  TimedEvents time_events = 9;
 
   // A pointer from the current span to another span in the same trace or in a
   // different trace. For example, this can be used in batching operations,
