@@ -57,8 +57,7 @@ public abstract class SpanData {
    * @param timedEvents the events associated with the {@code Span}.
    * @param links the links associated with the {@code Span}.
    * @param childSpanCount the number of child spans that were generated while the span was active.
-   * @param status the {@code Status} of the {@code Span}. {@code null} if the {@code Span} is still
-   *     active.
+   * @param status the {@code Status} of the {@code Span}.
    * @param endTimestamp the end {@code Timestamp} of the {@code Span}.
    * @return a new immutable {@code SpanData}.
    * @since 0.1.0
