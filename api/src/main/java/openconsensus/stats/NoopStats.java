@@ -21,11 +21,11 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.internal.Utils;
-import openconsensus.stats.data.Measure;
 import openconsensus.stats.view.ViewComponent;
 import openconsensus.stats.view.ViewManager;
 import openconsensus.stats.view.data.View;
 import openconsensus.tags.TagMap;
+import openconsensus.trace.SpanContext;
 
 /**
  * No-op implementations of stats classes.
@@ -68,25 +68,23 @@ public final class NoopStats {
 
   @Immutable
   private static final class NoopStatsRecorder extends StatsRecorder {
-    @Override
-    public MeasureMap newMeasureMap() {
-      return new NoopMeasureMap();
-    }
-  }
 
-  private static final class NoopMeasureMap extends MeasureMap {
     @Override
-    public MeasureMap put(Measure measure, double value) {
-      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-      return this;
+    public void record(List<Measurement> measurements) {
+      Utils.checkNotNull(measurements, "measurements");
     }
 
     @Override
-    public void record() {}
-
-    @Override
-    public void record(TagMap tags) {
+    public void record(TagMap tags, List<Measurement> measurements) {
       Utils.checkNotNull(tags, "tags");
+      Utils.checkNotNull(measurements, "measurements");
+    }
+
+    @Override
+    public void record(TagMap tags, List<Measurement> measurements, SpanContext spanContext) {
+      Utils.checkNotNull(tags, "tags");
+      Utils.checkNotNull(measurements, "measurements");
+      Utils.checkNotNull(spanContext, "spanContext");
     }
   }
 

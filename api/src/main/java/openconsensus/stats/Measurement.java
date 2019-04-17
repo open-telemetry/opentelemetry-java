@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.stats.data;
+package openconsensus.stats;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
@@ -51,7 +51,7 @@ public abstract class Measurement {
    *
    * @since 0.1.0
    */
-  public static Measurement create(Measure measure, double value) {
+  static Measurement create(Measure measure, double value) {
     return new AutoValue_Measurement(measure, value);
   }
 }

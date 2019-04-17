@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.stats.data;
+package openconsensus.stats;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
@@ -70,8 +70,16 @@ public abstract class Measure {
    */
   public abstract String getUnit();
 
-  // Prevents this class from being subclassed anywhere else.
-  Measure() {}
+  /**
+   * Returns a new {@link Measurement} for this {@code Measure}.
+   *
+   * @param value the corresponding value for the {@code Measurement}.
+   * @return a new {@link Measurement} for this {@code Measure}.
+   */
+  public final Measurement createMeasurement(double value) {
+    Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+    return Measurement.create(this, value);
+  }
 
   /**
    * Constructs a new {@link Measure}.
@@ -88,4 +96,6 @@ public abstract class Measure {
         ERROR_MESSAGE_INVALID_NAME);
     return new AutoValue_Measure(name, description, unit);
   }
+
+  protected Measure() {}
 }
