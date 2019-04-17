@@ -7,9 +7,8 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.4.6'
+        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.5.0'
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.16'
-        classpath "net.ltgt.gradle:gradle-apt-plugin:0.18"
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
         classpath "gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.8"
         classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.8"
@@ -22,21 +21,19 @@ buildscript {
 apply plugin: 'com.github.ben-manes.versions'
 
 subprojects {
-    apply plugin: "checkstyle"
-    apply plugin: 'maven'
-    apply plugin: 'idea'
+    apply plugin: 'checkstyle'
     apply plugin: 'eclipse'
     apply plugin: 'java'
-    apply plugin: "signing"
-    apply plugin: "jacoco"
+    apply plugin: 'java-library'
+    apply plugin: 'idea'
+    apply plugin: 'signing'
+    apply plugin: 'jacoco'
     // The plugin only has an effect if a signature is specified
     apply plugin: 'ru.vyarus.animalsniffer'
-    apply plugin: 'net.ltgt.apt'
-    apply plugin: 'net.ltgt.apt-idea'
-    apply plugin: "me.champeau.gradle.jmh"
-    apply plugin: "io.morethan.jmhreport"
+    apply plugin: 'me.champeau.gradle.jmh'
+    apply plugin: 'io.morethan.jmhreport'
     apply plugin: 'com.github.sherter.google-java-format'
-    apply plugin: "net.ltgt.errorprone"
+    apply plugin: 'net.ltgt.errorprone'
 
     group = "openconsensus"
     version = "0.1.0-SNAPSHOT" // CURRENT_VERSION
@@ -104,12 +101,13 @@ subprojects {
         findBugsJsr305Version = '3.0.2'
         errorProneVersion = '2.3.2'
         grpcVersion = '1.19.0'
-        autoValueVersion = '1.5.3'
+        autoValueVersion = '1.6.2'
         opentracingVersion = '0.32.0'
 
         libraries = [
                 auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
-                errorprone: "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
+                auto_value_annotation: "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
+                errorprone_annotation: "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
                 grpc_context: "io.grpc:grpc-context:${grpcVersion}",
                 jsr305: "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
 
@@ -132,7 +130,8 @@ subprojects {
     }
 
     dependencies {
-        compileOnly libraries.errorprone,
+        api libraries.auto_value_annotation,
+                libraries.errorprone_annotation,
                 libraries.jsr305
 
         testCompile libraries.junit,
