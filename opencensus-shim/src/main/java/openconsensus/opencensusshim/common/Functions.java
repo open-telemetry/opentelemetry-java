@@ -16,9 +16,7 @@
 
 package openconsensus.opencensusshim.common;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
+import javax.annotation.Nullable;
 
 /**
  * Commonly used {@link Function} instances.
@@ -28,8 +26,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public final class Functions {
   private Functions() {}
 
-  private static final Function<Object, /*@Nullable*/ Void> RETURN_NULL =
-      new Function<Object, /*@Nullable*/ Void>() {
+  private static final Function<Object, Void> RETURN_NULL =
+      new Function<Object, Void>() {
         @Override
         @javax.annotation.Nullable
         public Void apply(Object ignored) {
@@ -53,10 +51,12 @@ public final class Functions {
         }
       };
 
-  private static final Function<Object, /*@Nullable*/ String> RETURN_TO_STRING =
-      new Function<Object, /*@Nullable*/ String>() {
+  private static final Function<Object, String> RETURN_TO_STRING =
+      new Function<Object, String>() {
+
         @Override
-        public /*@Nullable*/ String apply(Object input) {
+        @Nullable
+        public String apply(Object input) {
           return input == null ? null : input.toString();
         }
       };
@@ -67,10 +67,10 @@ public final class Functions {
    * @return a {@code Function} that always ignores its argument and returns {@code null}.
    * @since 0.1.0
    */
-  public static <T> Function<Object, /*@Nullable*/ T> returnNull() {
+  public static <T> Function<Object, T> returnNull() {
     // It is safe to cast a producer of Void to anything, because Void is always null.
     @SuppressWarnings("unchecked")
-    Function<Object, /*@Nullable*/ T> function = (Function<Object, /*@Nullable*/ T>) RETURN_NULL;
+    Function<Object, T> function = (Function<Object, T>) RETURN_NULL;
     return function;
   }
 
@@ -95,7 +95,7 @@ public final class Functions {
    * @return a {@code Function} that always returns the {@link #toString()} value of the input.
    * @since 0.1.0
    */
-  public static Function<Object, /*@Nullable*/ String> returnToString() {
+  public static Function<Object, String> returnToString() {
     return RETURN_TO_STRING;
   }
 

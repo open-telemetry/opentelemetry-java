@@ -16,10 +16,6 @@
 
 package openconsensus.opencensusshim.common;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 /**
  * Represents a function that produces a long-valued result. See {@link
  * openconsensus.opencensusshim.metrics.MetricRegistry} for an example of its use.
@@ -29,12 +25,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * @since 0.1.0
  */
-public interface ToLongFunction</*@Nullable*/ T> {
+public interface ToLongFunction<T> {
   /**
    * Applies this function to the given argument.
    *
    * @param value the function argument.
    * @return the function result.
    */
-  long applyAsLong(/*@Nullable*/ T value);
+  long applyAsLong(T value);
 }
