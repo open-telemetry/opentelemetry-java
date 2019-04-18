@@ -17,16 +17,12 @@ Span tags apply to **the entire Span**; as such, they apply to the entire timera
 | Span tag name | Type | Notes and examples |
 |:--------------|:-----|:-------------------|
 | `component` | string  | The software package, framework, library, or module that generated the associated Span. E.g., `"grpc"`, `"django"`, `"JDBI"`. |
-| `db.instance` | string | Database instance name. E.g., In java, if the jdbc.url=`"jdbc:mysql://127.0.0.1:3306/customers"`, the instance name is `"customers"`. |
-| `db.statement` | string | A database statement for the given database type. E.g., for `db.type="sql"`, `"SELECT * FROM wuser_table"`; for `db.type="redis"`, `"SET mykey 'WuValue'"`. |
-| `db.type` | string | Database type. For any SQL database, `"sql"`. For others, the lower-case database category, e.g. `"cassandra"`, `"hbase"`, or `"redis"`. |
-| `db.user` | string | Username for accessing database. E.g., `"readonly_user"` or `"reporting_user"` |
 | `error` | bool | `true` if and only if the application considers the operation represented by the Span to have failed |
 | `http.method` | string | HTTP method of the request for the associated Span. E.g., `"GET"`, `"POST"` |
 | `http.status_code` | integer | HTTP response status code for the associated Span. E.g., 200, 503, 404 |
 | `http.url` | string | URL of the request being handled in this segment of the trace, in standard URI format. E.g., `"https://domain.net/path/to?resource=here"` |
 | `message_bus.destination` | string | An address at which messages can be exchanged. E.g. A Kafka record has an associated `"topic name"` that can be extracted by the instrumented producer or consumer and stored using this tag. |
-| `peer.address` | string | Remote "address", suitable for use in a networking client library. This may be a `"ip:port"`, a bare `"hostname"`, a FQDN, or even a JDBC substring like `"mysql://prod-db:3306"` |
+| `peer.address` | string | Remote "address", suitable for use in a networking client library. This may be a `"ip:port"`, a bare `"hostname"`, a FQDN or various connection strings |
 | `peer.hostname` | string | Remote hostname. E.g., `"opentracing.io"`, `"internal.dns.name"` |
 | `peer.ipv4` | string | Remote IPv4 address as a `.`-separated tuple. E.g., `"127.0.0.1"` |
 | `peer.ipv6` | string | Remote IPv6 address as a string of colon-separated 4-char hex tuples. E.g., `"2001:0db8:85a3:0000:0000:8a2e:0370:7334"` |
@@ -65,14 +61,6 @@ The following Span tags combine to model message bus based communications:
 - `message_bus.destination`: as described in the table above
 - `span.kind`: either `"producer"` or `"consumer"`. It is important to provide this tag **at Span start time**, as it may affect internal ID generation.
 - `peer.address`, `peer.hostname`, `peer.ipv4`, `peer.ipv6`, `peer.port`, `peer.service`: optional tags that describe the message bus broker (often in ways it cannot assess internally)
-
-### Database (client) calls
-
-The following Span tags combine to model database calls:
-
-- `db.type`, `db.instance`, `db.user`, and `db.statement`: as described in the table above
-- `peer.address`, `peer.hostname`, `peer.ipv4`, `peer.ipv6`, `peer.port`, `peer.service`: optional tags that describe the database peer
-- `span.kind`: `"client"`
 
 ### Captured errors
 
