@@ -47,12 +47,8 @@ import openconsensus.trace.SpanContext;
  * void onRequestReceived() {
  *   // Get the binaryValue from the request.
  *   SpanContext spanContext = SpanContext.INVALID;
- *   try {
- *     if (binaryValue != null) {
- *       spanContext = binaryFormat.fromByteArray(binaryValue);
- *     }
- *   } catch (SpanContextParseException e) {
- *     // Maybe log the exception.
+ *   if (binaryValue != null) {
+ *     spanContext = binaryFormat.fromByteArray(binaryValue);
  *   }
  *   Span span = tracer.spanBuilderWithRemoteParent("MyRequest", spanContext)
  *       .setSpanKind(Span.Kind.SERVER).startSpan();
@@ -80,11 +76,13 @@ public abstract class BinaryFormat {
   /**
    * Parses the {@link SpanContext} from a byte array using the binary format.
    *
+   * <p>If the {@link SpanContext} could not be parsed, the underlying implementation will decide to
+   * return either a no-op or a valid {@link SpanContext}.
+   *
    * @param bytes a binary encoded buffer from which the {@code SpanContext} will be parsed.
    * @return the parsed {@code SpanContext}.
    * @throws NullPointerException if the {@code input} is {@code null}.
-   * @throws SpanContextParseException if the version is not supported or the input is invalid
    * @since 0.1.0
    */
-  public abstract SpanContext fromByteArray(byte[] bytes) throws SpanContextParseException;
+  public abstract SpanContext fromByteArray(byte[] bytes);
 }
