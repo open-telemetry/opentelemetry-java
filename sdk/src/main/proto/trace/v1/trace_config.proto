@@ -26,9 +26,9 @@ message TraceConfig {
 
   // The global default sampler used to make decisions on span sampling.
   oneof sampler {
-    ProbabilitySampler probability_sampler = 1;
+    ConstantSampler constant_sampler = 1;
 
-    ConstantSampler constant_sampler = 2;
+    ProbabilitySampler probability_sampler = 2;
 
     RateLimitingSampler rate_limiting_sampler = 3;
   }
@@ -37,26 +37,20 @@ message TraceConfig {
   int64 max_number_of_attributes = 4;
 
   // The global default max number of annotation events per span.
-  int64 max_number_of_annotations = 5;
+  int64 max_number_of_timed_events= 5;
 
-  // The global default max number of message events per span.
-  int64 max_number_of_message_events = 6;
+  // The global default max number of attributes per timed event.
+  int64 max_number_of_attributes_per_timed_event = 6;
 
   // The global default max number of link entries per span.
   int64 max_number_of_links = 7;
-}
 
-// Sampler that tries to uniformly sample traces with a given probability.
-// The probability of sampling a trace is equal to that of the specified probability.
-message ProbabilitySampler {
-
-  // The desired probability of sampling. Must be within [0.0, 1.0].
-  double samplingProbability = 1;
+  // The global default max number of attributes per span.
+  int64 max_number_of_attributes_per_link = 8;
 }
 
 // Sampler that always makes a constant decision on span sampling.
 message ConstantSampler {
-
   // How spans should be sampled:
   // - Always off
   // - Always on
@@ -69,9 +63,15 @@ message ConstantSampler {
   ConstantDecision decision = 1;
 }
 
+// Sampler that tries to uniformly sample traces with a given probability.
+// The probability of sampling a trace is equal to that of the specified probability.
+message ProbabilitySampler {
+  // The desired probability of sampling. Must be within [0.0, 1.0].
+  double samplingProbability = 1;
+}
+
 // Sampler that tries to sample with a rate per time window.
 message RateLimitingSampler {
-
   // Rate per second.
   int64 qps = 1;
 }
