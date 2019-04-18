@@ -46,7 +46,7 @@ import openconsensus.trace.SpanContext;
  *     Trace.getTracer().getBinaryFormat();
  * void onRequestReceived() {
  *   // Get the binaryValue from the request.
- *   SpanContext spanContext = SpanContext.INVALID;
+ *   SpanContext spanContext = null;
  *   if (binaryValue != null) {
  *     spanContext = binaryFormat.fromByteArray(binaryValue);
  *   }

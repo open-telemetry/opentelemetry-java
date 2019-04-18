@@ -41,7 +41,7 @@ public final class SpanContext {
    *
    * @since 0.1.0
    */
-  public static final SpanContext INVALID =
+  static final SpanContext INVALID =
       new SpanContext(TraceId.INVALID, SpanId.INVALID, TraceOptions.DEFAULT, TRACESTATE_DEFAULT);
 
   /**
