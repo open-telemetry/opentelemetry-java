@@ -42,14 +42,7 @@ final class Propagation {
       carrierMap.put(entry.getKey(), entry.getValue());
     }
 
-    openconsensus.trace.SpanContext context = null;
-    try {
-      context = format.extract(carrierMap, TextMapGetter.INSTANCE);
-    } catch (SpanContextParseException e) {
-      return null;
-    }
-
-    return new SpanContextShim(context);
+    return new SpanContextShim(format.extract(carrierMap, TextMapGetter.INSTANCE));
   }
 
   static final class TextMapSetter
