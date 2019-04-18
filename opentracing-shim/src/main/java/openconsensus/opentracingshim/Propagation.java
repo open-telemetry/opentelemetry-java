@@ -27,14 +27,15 @@ final class Propagation {
   private Propagation() {}
 
   public static void injectTextFormat(
-      openconsensus.trace.propagation.TextFormat format,
+      openconsensus.context.propagation.TextFormat<openconsensus.trace.SpanContext> format,
       openconsensus.trace.SpanContext context,
       TextMap carrier) {
     format.inject(context, carrier, TextMapSetter.INSTANCE);
   }
 
   public static SpanContext extractTextFormat(
-      openconsensus.trace.propagation.TextFormat format, TextMap carrier) {
+      openconsensus.context.propagation.TextFormat<openconsensus.trace.SpanContext> format,
+      TextMap carrier) {
     Map<String, String> carrierMap = new HashMap<String, String>();
     for (Map.Entry<String, String> entry : carrier) {
       carrierMap.put(entry.getKey(), entry.getValue());
@@ -44,7 +45,7 @@ final class Propagation {
   }
 
   static final class TextMapSetter
-      extends openconsensus.trace.propagation.TextFormat.Setter<TextMap> {
+      extends openconsensus.context.propagation.TextFormat.Setter<TextMap> {
     private TextMapSetter() {}
 
     public static final TextMapSetter INSTANCE = new TextMapSetter();
@@ -58,7 +59,7 @@ final class Propagation {
   // We use Map<> instead of TextMap as we need to query a specified key, and iterating over
   // *all* values per key-query *might* be a bad idea.
   static final class TextMapGetter
-      extends openconsensus.trace.propagation.TextFormat.Getter<Map<String, String>> {
+      extends openconsensus.context.propagation.TextFormat.Getter<Map<String, String>> {
     private TextMapGetter() {}
 
     public static final TextMapGetter INSTANCE = new TextMapGetter();
@@ -70,7 +71,7 @@ final class Propagation {
   }
 
   public static void injectBinaryFormat(
-      openconsensus.trace.propagation.BinaryFormat format,
+      openconsensus.context.propagation.BinaryFormat<openconsensus.trace.SpanContext> format,
       openconsensus.trace.SpanContext context,
       Binary carrier) {
 
@@ -80,7 +81,8 @@ final class Propagation {
   }
 
   public static SpanContext extractBinaryFormat(
-      openconsensus.trace.propagation.BinaryFormat format, Binary carrier) {
+      openconsensus.context.propagation.BinaryFormat<openconsensus.trace.SpanContext> format,
+      Binary carrier) {
 
     ByteBuffer byteBuff = carrier.extractionBuffer();
     byte[] buff = new byte[byteBuff.remaining()];
