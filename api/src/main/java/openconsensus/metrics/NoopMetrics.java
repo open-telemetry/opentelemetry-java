@@ -35,22 +35,13 @@ public final class NoopMetrics {
   private NoopMetrics() {}
 
   /**
-   * Returns an instance that contains no-op implementations for all the instances.
+   * Returns an instance that is a no-op implementations for {@link MetricRegistry}.
    *
-   * @return an instance that contains no-op implementations for all the instances.
+   * @return an instance that is a no-op implementations for {@link MetricRegistry}
    * @since 0.1.0
    */
-  public static MetricsComponent newNoopMetricsComponent() {
-    return new NoopMetricsComponent();
-  }
-
-  private static final class NoopMetricsComponent extends MetricsComponent {
-    private static final MetricRegistry METRIC_REGISTRY = new NoopMetricRegistry();
-
-    @Override
-    public MetricRegistry getMetricRegistry() {
-      return METRIC_REGISTRY;
-    }
+  public static MetricRegistry newNoopMetricRegistry() {
+    return new NoopMetricRegistry();
   }
 
   private static final class NoopMetricRegistry extends MetricRegistry {
