@@ -132,7 +132,7 @@ final class SpanShim implements Span {
 
   @Override
   public Span setOperationName(String operationName) {
-    // TODO
+    span.updateName(operationName);
     return this;
   }
 
