@@ -21,7 +21,6 @@ Span tags apply to **the entire Span**; as such, they apply to the entire timera
 | `db.statement` | string | A database statement for the given database type. E.g., for `db.type="sql"`, `"SELECT * FROM wuser_table"`; for `db.type="redis"`, `"SET mykey 'WuValue'"`. |
 | `db.type` | string | Database type. For any SQL database, `"sql"`. For others, the lower-case database category, e.g. `"cassandra"`, `"hbase"`, or `"redis"`. |
 | `db.user` | string | Username for accessing database. E.g., `"readonly_user"` or `"reporting_user"` |
-| `error` | bool | `true` if and only if the application considers the operation represented by the Span to have failed |
 | `http.method` | string | HTTP method of the request for the associated Span. E.g., `"GET"`, `"POST"` |
 | `http.status_code` | integer | HTTP response status code for the associated Span. E.g., 200, 503, 404 |
 | `http.url` | string | URL of the request being handled in this segment of the trace, in standard URI format. E.g., `"https://domain.net/path/to?resource=here"` |
@@ -33,7 +32,6 @@ Span tags apply to **the entire Span**; as such, they apply to the entire timera
 | `peer.port` | integer | Remote port. E.g., `80` |
 | `peer.service` | string | Remote service name (for some unspecified definition of `"service"`). E.g., `"elasticsearch"`, `"a_custom_microservice"`, `"memcache"` |
 | `sampling.priority` | integer | If greater than 0, a hint to the Tracer to do its best to capture the trace. If 0, a hint to the trace to not-capture the trace. If absent, the Tracer should use its default sampling mechanism. |
-| `span.kind` | string | Either `"client"` or `"server"` for the appropriate roles in an RPC, and `"producer"` or `"consumer"` for the appropriate roles in a messaging scenario. |
 
 ### Log fields table
 
