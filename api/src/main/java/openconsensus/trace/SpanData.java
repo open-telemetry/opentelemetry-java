@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.trace.data;
+package openconsensus.trace;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
@@ -26,14 +26,8 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.common.Timestamp;
 import openconsensus.internal.Utils;
-import openconsensus.trace.AttributeValue;
-import openconsensus.trace.Event;
-import openconsensus.trace.Link;
-import openconsensus.trace.Span;
+import openconsensus.resource.Resource;
 import openconsensus.trace.Span.Kind;
-import openconsensus.trace.SpanContext;
-import openconsensus.trace.SpanId;
-import openconsensus.trace.Status;
 
 /**
  * Immutable representation of all data collected by the {@link Span} class.
@@ -65,6 +59,7 @@ public abstract class SpanData {
   public static SpanData create(
       SpanContext context,
       @Nullable SpanId parentSpanId,
+      Resource resource,
       String name,
       Kind kind,
       Timestamp startTimestamp,
@@ -77,6 +72,7 @@ public abstract class SpanData {
     return new AutoValue_SpanData(
         context,
         parentSpanId,
+        resource,
         name,
         kind,
         startTimestamp,
@@ -105,6 +101,14 @@ public abstract class SpanData {
    */
   @Nullable
   public abstract SpanId getParentSpanId();
+
+  /**
+   * Returns the resource of this {@code Span}.
+   *
+   * @return the resource of this {@code Span}.
+   * @since 0.1.0
+   */
+  public abstract Resource getResource();
 
   /**
    * Returns the name of this {@code Span}.
