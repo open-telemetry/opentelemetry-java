@@ -33,6 +33,8 @@ trace context](https://w3c.github.io/trace-context-binary/).
 
 ## Attributes
 
+
+**TODO: `type` is not implemented today in existing integrations. Need to track it**
 **TODO: should we include `host`, `uri` or those should be reported as `peer`?**
 **TODO: agree that `component` from OpenTracing is being replaced with `type` as
 a better name.**
