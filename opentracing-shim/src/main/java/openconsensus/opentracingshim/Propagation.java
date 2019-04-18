@@ -22,7 +22,6 @@ import io.opentracing.propagation.TextMap;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import openconsensus.trace.propagation.SpanContextParseException;
 
 final class Propagation {
   private Propagation() {}
@@ -34,7 +33,6 @@ final class Propagation {
     format.inject(context, carrier, TextMapSetter.INSTANCE);
   }
 
-  @SuppressWarnings("ReturnMissingNullable")
   public static SpanContext extractTextFormat(
       openconsensus.trace.propagation.TextFormat format, TextMap carrier) {
     Map<String, String> carrierMap = new HashMap<String, String>();
@@ -81,7 +79,6 @@ final class Propagation {
     byteBuff.put(buff);
   }
 
-  @SuppressWarnings("ReturnMissingNullable")
   public static SpanContext extractBinaryFormat(
       openconsensus.trace.propagation.BinaryFormat format, Binary carrier) {
 
@@ -89,13 +86,6 @@ final class Propagation {
     byte[] buff = new byte[byteBuff.remaining()];
     byteBuff.get(buff);
 
-    openconsensus.trace.SpanContext context = null;
-    try {
-      context = format.fromByteArray(buff);
-    } catch (SpanContextParseException e) {
-      return null;
-    }
-
-    return new SpanContextShim(context);
+    return new SpanContextShim(format.fromByteArray(buff));
   }
 }

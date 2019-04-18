@@ -24,6 +24,37 @@ import openconsensus.tags.data.TagMetadata.TagTtl;
 /**
  * Object for serializing and deserializing {@link TagMap}s with the binary format.
  *
+ * <p>Example of usage on the client:
+ *
+ * <pre>{@code
+ * private static final Tagger tagger = Tags.getTagger();
+ * private static final BinaryFormat binaryFormat =
+ *     Tags.getTagger().getBinaryFormat();
+ *
+ * Request createRequest() {
+ *   Request req = new Request();
+ *   byte[] tagsBuffer = binaryFormat.toByteArray(tagger.getCurrentTagMap());
+ *   request.addMetadata("tags", tagsBuffer);
+ *   return request;
+ * }
+ * }</pre>
+ *
+ * <p>Example of usage on the server:
+ *
+ * <pre>{@code
+ * private static final Tagger tagger = Tags.getTagger();
+ * private static final BinaryFormat binaryFormat =
+ *     Tags.getTagger().getBinaryFormat();
+ *
+ * void onRequestReceived(Request request) {
+ *   byte[] tagsBuffer = request.getMetadata("tags");
+ *   TagMap tagMap = textFormat.fromByteArray(tagsBuffer);
+ *   try (Scope s = tagger.withTagMap(tagMap)) {
+ *     // Handle request and send response back.
+ *   }
+ * }
+ * }</pre>
+ *
  * @since 0.1.0
  */
 public abstract class BinaryFormat {
@@ -38,22 +69,21 @@ public abstract class BinaryFormat {
    *
    * @param tags the {@code TagMap} to serialize.
    * @return the on-the-wire representation of a {@code TagMap}.
-   * @throws SerializationException if the result would be larger than the maximum allowed
-   *     serialized size.
    * @since 0.1.0
    */
-  public abstract byte[] toByteArray(TagMap tags) throws SerializationException;
+  public abstract byte[] toByteArray(TagMap tags);
 
   /**
    * Creates a {@code TagMap} from the given on-the-wire encoded representation.
    *
    * <p>This method should be the inverse of {@link #toByteArray}.
    *
+   * <p>If the {@link TagMap} could not be parsed, the underlying implementation will decide to
+   * return ether an empty of a valid {@link TagMap}.
+   *
    * @param bytes on-the-wire representation of a {@code TagMap}.
    * @return a {@code TagMap} deserialized from {@code bytes}.
-   * @throws DeserializationException if there is a parse error, the input contains invalid tags, or
-   *     the input is larger than the maximum allowed serialized size.
    * @since 0.1.0
    */
-  public abstract TagMap fromByteArray(byte[] bytes) throws DeserializationException;
+  public abstract TagMap fromByteArray(byte[] bytes);
 }
