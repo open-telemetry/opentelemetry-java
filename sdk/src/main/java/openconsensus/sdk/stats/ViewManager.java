@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package openconsensus.stats.view;
+package openconsensus.sdk.stats;
 
 import java.util.List;
-import openconsensus.stats.view.data.View;
 
 /**
  * Provides facilities to register {@link View}s for aggregating stats and exporting {@code

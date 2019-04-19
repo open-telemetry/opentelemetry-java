@@ -16,9 +16,6 @@
 
 package openconsensus.stats;
 
-import openconsensus.stats.view.ViewComponent;
-import openconsensus.stats.view.ViewManager;
-
 /**
  * Class for accessing the global {@link StatsRecorder}.
  *
@@ -26,7 +23,6 @@ import openconsensus.stats.view.ViewManager;
  */
 public final class Stats {
   private static final StatsRecorder STATS_RECORDER = NoopStats.newNoopStatsRecorder();
-  private static final ViewComponent viewComponent = NoopStats.newNoopViewComponent();
 
   /**
    * Returns the global {@link StatsRecorder}.
@@ -36,16 +32,6 @@ public final class Stats {
    */
   public static StatsRecorder getStatsRecorder() {
     return STATS_RECORDER;
-  }
-
-  /**
-   * Returns the default {@link ViewManager}.
-   *
-   * @return view manager.
-   * @since 0.1.0
-   */
-  public static ViewManager getViewManager() {
-    return viewComponent.getViewManager();
   }
 
   private Stats() {}
