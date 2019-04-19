@@ -77,4 +77,31 @@ public abstract class MetricRegistry {
    * @since 0.1.0
    */
   public abstract DerivedDoubleGauge addDerivedDoubleGauge(String name, MetricOptions options);
+
+  /**
+   * Builds a new double cumulative to be added to the registry. This is a more convenient form when
+   * you want to manually increase values as per your service requirements.
+   *
+   * @param name the name of the metric.
+   * @param options the options for the metric.
+   * @return a {@code DoubleCumulative}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @since 0.1.0
+   */
+  public abstract DoubleCumulative addDoubleCumulative(String name, MetricOptions options);
+
+  /**
+   * Builds a new derived double cumulative to be added to the registry. This is a more convenient
+   * form when you want to define a cumulative by executing a {@link ToDoubleFunction} on an object.
+   *
+   * @param name the name of the metric.
+   * @param options the options for the metric.
+   * @return a {@code DerivedDoubleCumulative}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @since 0.1.0
+   */
+  public abstract DerivedDoubleCumulative addDerivedDoubleCumulative(
+      String name, MetricOptions options);
 }
