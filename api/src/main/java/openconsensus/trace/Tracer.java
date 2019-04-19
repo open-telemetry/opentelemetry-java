@@ -310,8 +310,8 @@ public abstract class Tracer {
 
   /**
    * Returns a {@link SpanBuilder} to create and start a new child {@link Span} (or root if parent
-   * is {@link SpanContext#INVALID} or {@code null}), with parent being the remote {@link Span}
-   * designated by the {@link SpanContext}.
+   * is {@code null}), with parent being the remote {@link Span} designated by the {@link
+   * SpanContext}.
    *
    * <p>See {@link SpanBuilder} for usage examples.
    *

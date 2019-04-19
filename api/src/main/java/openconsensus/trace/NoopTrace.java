@@ -171,7 +171,7 @@ public final class NoopTrace {
     @Override
     public SpanContext fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return SpanContext.INVALID;
+      return SpanContext.BLANK;
     }
 
     private NoopBinaryFormat() {}
@@ -197,7 +197,7 @@ public final class NoopTrace {
     public <C> SpanContext extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
-      return SpanContext.INVALID;
+      return SpanContext.BLANK;
     }
   }
 }
