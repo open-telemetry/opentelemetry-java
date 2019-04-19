@@ -50,7 +50,6 @@ public abstract class SpanData {
    * @param attributes the attributes associated with the {@code Span}.
    * @param timedEvents the events associated with the {@code Span}.
    * @param links the links associated with the {@code Span}.
-   * @param childSpanCount the number of child spans that were generated while the span was active.
    * @param status the {@code Status} of the {@code Span}.
    * @param endTimestamp the end {@code Timestamp} of the {@code Span}.
    * @return a new immutable {@code SpanData}.
@@ -66,7 +65,6 @@ public abstract class SpanData {
       Map<String, AttributeValue> attributes,
       List<TimedEvent> timedEvents,
       List<Link> links,
-      @Nullable Integer childSpanCount,
       Status status,
       Timestamp endTimestamp) {
     return new AutoValue_SpanData(
@@ -80,7 +78,6 @@ public abstract class SpanData {
         Collections.unmodifiableList(
             new ArrayList<>(Utils.checkNotNull(timedEvents, "timedEvents"))),
         Collections.unmodifiableList(new ArrayList<>(Utils.checkNotNull(links, "links"))),
-        childSpanCount,
         status,
         endTimestamp);
   }
@@ -157,18 +154,6 @@ public abstract class SpanData {
    * @since 0.1.0
    */
   public abstract List<Link> getLinks();
-
-  /**
-   * Returns the number of child spans that were generated while the {@code Span} was running. If
-   * not {@code null} allows service implementations to detect missing child spans.
-   *
-   * <p>This information is not always available.
-   *
-   * @return the number of child spans that were generated while the {@code Span} was running.
-   * @since 0.1.0
-   */
-  @Nullable
-  public abstract Integer getChildSpanCount();
 
   /**
    * Returns the {@code Status}.
