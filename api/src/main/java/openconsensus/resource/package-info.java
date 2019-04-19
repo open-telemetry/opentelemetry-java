@@ -33,11 +33,5 @@
  * inclusive) and less than 256 characters. Type and label keys MUST have a length greater than
  * zero. They SHOULD start with a domain name and separate hierarchies with / characters, e.g.
  * k8s.io/namespace/name.
- *
- * <p>WARNING: Currently all the public classes under this package are marked as {@link
- * openconsensus.common.ExperimentalApi}. DO NOT USE except for experimental purposes.
  */
-@ExperimentalApi
 package openconsensus.resource;
-
-import openconsensus.common.ExperimentalApi;
