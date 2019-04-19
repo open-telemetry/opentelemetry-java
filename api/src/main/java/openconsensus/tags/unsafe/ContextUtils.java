@@ -17,8 +17,14 @@
 package openconsensus.tags.unsafe;
 
 import io.grpc.Context;
+import java.util.Collections;
+import java.util.Iterator;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import openconsensus.tags.Tag;
+import openconsensus.tags.TagKey;
 import openconsensus.tags.TagMap;
+import openconsensus.tags.TagValue;
 
 /**
  * Utility methods for accessing the {@link TagMap} contained in the {@link io.grpc.Context}.
@@ -43,5 +49,18 @@ public final class ContextUtils {
       Context.keyWithDefault("openconsensus-tag-map-key", EMPTY_TAG_MAP);
 
   @Immutable
-  private static final class EmptyTagMap extends TagMap {}
+  private static final class EmptyTagMap extends TagMap {
+    private static final Iterator<Tag> EMPTY_ITERATOR = Collections.<Tag>emptyList().iterator();
+
+    @Override
+    public Iterator<Tag> getIterator() {
+      return EMPTY_ITERATOR;
+    }
+
+    @Nullable
+    @Override
+    public TagValue getTagValue(TagKey tagKey) {
+      return null;
+    }
+  }
 }

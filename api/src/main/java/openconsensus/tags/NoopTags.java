@@ -24,9 +24,6 @@ import openconsensus.context.Scope;
 import openconsensus.context.propagation.BinaryFormat;
 import openconsensus.context.propagation.TextFormat;
 import openconsensus.internal.Utils;
-import openconsensus.tags.data.TagKey;
-import openconsensus.tags.data.TagMetadata;
-import openconsensus.tags.data.TagValue;
 
 /**
  * No-op implementations of tagging classes.
@@ -51,16 +48,15 @@ public final class NoopTags {
   private static final class NoopTagger extends Tagger {
     private static final BinaryFormat<TagMap> BINARY_FORMAT = new NoopBinaryFormat();
     private static final TextFormat<TagMap> TEXT_FORMAT = new NoopTextFormat();
-    private static final TagMap EMPTY = new NoopTagMap();
 
     @Override
     public TagMap empty() {
-      return EMPTY;
+      return EmptyTagMap.INSTANCE;
     }
 
     @Override
     public TagMap getCurrentTagMap() {
-      return EMPTY;
+      return EmptyTagMap.INSTANCE;
     }
 
     @Override
@@ -98,8 +94,6 @@ public final class NoopTags {
 
   @Immutable
   private static final class NoopTagMapBuilder extends TagMapBuilder {
-    private static final TagMap EMPTY = new NoopTagMap();
-
     @Override
     public TagMapBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
       Utils.checkNotNull(key, "key");
@@ -116,7 +110,7 @@ public final class NoopTags {
 
     @Override
     public TagMap build() {
-      return EMPTY;
+      return EmptyTagMap.INSTANCE;
     }
 
     @Override
@@ -126,12 +120,8 @@ public final class NoopTags {
   }
 
   @Immutable
-  private static final class NoopTagMap extends TagMap {}
-
-  @Immutable
   private static final class NoopBinaryFormat
       extends openconsensus.context.propagation.BinaryFormat<TagMap> {
-    private static final TagMap EMPTY = new NoopTagMap();
     static final byte[] EMPTY_BYTE_ARRAY = {};
 
     @Override
@@ -143,15 +133,13 @@ public final class NoopTags {
     @Override
     public TagMap fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return EMPTY;
+      return EmptyTagMap.INSTANCE;
     }
   }
 
   @Immutable
   private static final class NoopTextFormat
       extends openconsensus.context.propagation.TextFormat<TagMap> {
-    private static final TagMap EMPTY = new NoopTagMap();
-
     @Override
     public List<String> fields() {
       return Collections.emptyList();
@@ -168,7 +156,7 @@ public final class NoopTags {
     public <C> TagMap extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
-      return EMPTY;
+      return EmptyTagMap.INSTANCE;
     }
   }
 }
