@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.tags.data;
+package openconsensus.tags;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
