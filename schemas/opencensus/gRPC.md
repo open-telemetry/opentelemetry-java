@@ -1,4 +1,4 @@
-# gRPC Trace
+# gRPC
 
 This document explains tracing of gRPC requests with OpenConsensus.
 
