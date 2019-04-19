@@ -14,15 +14,29 @@
  * limitations under the License.
  */
 
-/**
- * This package describes common data models in Metrics that are shared across multiple packages.
- *
- * <p>WARNING: Currently all the public classes under this package are marked as {@link
- * openconsensus.common.ExperimentalApi}. The classes and APIs under {@link openconsensus.metrics}
- * are likely to get backwards-incompatible updates in the future. DO NOT USE except for
- * experimental purposes.
- */
-@ExperimentalApi
-package openconsensus.metrics.data;
+package openconsensus.tags;
 
-import openconsensus.common.ExperimentalApi;
+import java.util.Collections;
+import java.util.Iterator;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+
+@Immutable
+class EmptyTagMap extends TagMap {
+  private static final Iterator<Tag> EMPTY_ITERATOR = Collections.<Tag>emptyList().iterator();
+
+  static final TagMap INSTANCE = new EmptyTagMap();
+
+  @Override
+  public Iterator<Tag> getIterator() {
+    return EMPTY_ITERATOR;
+  }
+
+  @Nullable
+  @Override
+  public TagValue getTagValue(TagKey tagKey) {
+    return null;
+  }
+
+  private EmptyTagMap() {}
+}

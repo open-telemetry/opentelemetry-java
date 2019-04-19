@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package openconsensus.tags.data;
+package openconsensus.tags;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.tags.data.TagMetadata.TagTtl;
+import openconsensus.tags.TagMetadata.TagTtl;
 
 /**
  * {@link TagKey} paired with a {@link TagValue}.

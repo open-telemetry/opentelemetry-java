@@ -18,7 +18,6 @@ package openconsensus.metrics;
 
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.metrics.data.LabelValue;
 
 /**
  * Long Gauge metric, to report instantaneous measurement of an int64 value. Gauges can go both up

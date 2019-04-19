@@ -14,16 +14,5 @@
  * limitations under the License.
  */
 
-/**
- * This package describes the Metrics data model. Metrics are a data model for what stats exporters
- * take as input. This data model may eventually become the wire format for metrics.
- *
- * <p>WARNING: Currently all the public classes under this package are marked as {@link
- * openconsensus.common.ExperimentalApi}. The classes and APIs under {@link openconsensus.metrics}
- * are likely to get backwards-incompatible updates in the future. DO NOT USE except for
- * experimental purposes.
- */
-@ExperimentalApi
+/** This package describes the Metrics API that can be used to record application Metrics. */
 package openconsensus.metrics;
-
-import openconsensus.common.ExperimentalApi;

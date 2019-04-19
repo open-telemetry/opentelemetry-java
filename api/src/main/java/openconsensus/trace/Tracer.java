@@ -20,8 +20,8 @@ import com.google.errorprone.annotations.MustBeClosed;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 import openconsensus.context.Scope;
-import openconsensus.trace.propagation.BinaryFormat;
-import openconsensus.trace.propagation.TextFormat;
+import openconsensus.context.propagation.BinaryFormat;
+import openconsensus.context.propagation.TextFormat;
 
 /**
  * Tracer is a simple, thin class for {@link Span} creation and in-process context interaction.
@@ -310,8 +310,8 @@ public abstract class Tracer {
 
   /**
    * Returns a {@link SpanBuilder} to create and start a new child {@link Span} (or root if parent
-   * is {@link SpanContext#INVALID} or {@code null}), with parent being the remote {@link Span}
-   * designated by the {@link SpanContext}.
+   * is {@code null}), with parent being the remote {@link Span} designated by the {@link
+   * SpanContext}.
    *
    * <p>See {@link SpanBuilder} for usage examples.
    *
@@ -348,10 +348,49 @@ public abstract class Tracer {
    * <p>Usually this will be the W3C Trace Context as the binary format. For more details, see <a
    * href="https://github.com/w3c/trace-context">trace-context</a>.
    *
+   * <p>Example of usage on the client:
+   *
+   * <pre>{@code
+   * private static final Tracer tracer = Trace.getTracer();
+   * private static final BinaryFormat binaryFormat =
+   *     Trace.getTracer().getBinaryFormat();
+   * void onSendRequest() {
+   *   Span span = tracer.spanBuilder("MyRequest").setSpanKind(Span.Kind.CLIENT).startSpan();
+   *   try (Scope ss = tracer.withSpan(span)) {
+   *     byte[] binaryValue = binaryFormat.toByteArray(tracer.getCurrentContext().context());
+   *     // Send the request including the binaryValue and wait for the response.
+   *   } finally {
+   *     span.end();
+   *   }
+   * }
+   * }</pre>
+   *
+   * <p>Example of usage on the server:
+   *
+   * <pre>{@code
+   * private static final Tracer tracer = Trace.getTracer();
+   * private static final BinaryFormat binaryFormat =
+   *     Trace.getTracer().getBinaryFormat();
+   * void onRequestReceived() {
+   *   // Get the binaryValue from the request.
+   *   SpanContext spanContext = SpanContext.INVALID;
+   *   if (binaryValue != null) {
+   *     spanContext = binaryFormat.fromByteArray(binaryValue);
+   *   }
+   *   Span span = tracer.spanBuilderWithRemoteParent("MyRequest", spanContext)
+   *       .setSpanKind(Span.Kind.SERVER).startSpan();
+   *   try (Scope ss = tracer.withSpan(span)) {
+   *     // Handle request and send response back.
+   *   } finally {
+   *     span.end();
+   *   }
+   * }
+   * }</pre>
+   *
    * @return the {@code BinaryFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract BinaryFormat getBinaryFormat();
+  public abstract BinaryFormat<SpanContext> getBinaryFormat();
 
   /**
    * Returns the {@link TextFormat} for this implementation.
@@ -361,10 +400,51 @@ public abstract class Tracer {
    * <p>Usually this will be the W3C Trace Context as the HTTP text format. For more details, see <a
    * href="https://github.com/w3c/trace-context">trace-context</a>.
    *
+   * <p>Example of usage on the client:
+   *
+   * <pre>{@code
+   * private static final Tracer tracer = Trace.getTracer();
+   * private static final TextFormat textFormat = Trace.getTracer().getTextFormat();
+   * private static final TextFormat.Setter setter = new TextFormat.Setter<HttpURLConnection>() {
+   *   public void put(HttpURLConnection carrier, String key, String value) {
+   *     carrier.setRequestProperty(field, value);
+   *   }
+   * }
+   *
+   * void makeHttpRequest() {
+   *   Span span = tracer.spanBuilder("MyRequest").setSpanKind(Span.Kind.CLIENT).startSpan();
+   *   try (Scope s = tracer.withSpan(span)) {
+   *     HttpURLConnection connection =
+   *         (HttpURLConnection) new URL("http://myserver").openConnection();
+   *     textFormat.inject(span.getContext(), connection, httpURLConnectionSetter);
+   *     // Send the request, wait for response and maybe set the status if not ok.
+   *   }
+   *   span.end();  // Can set a status.
+   * }
+   * }</pre>
+   *
+   * <p>Example of usage on the server:
+   *
+   * <pre>{@code
+   * private static final Tracer tracer = Trace.getTracer();
+   * private static final TextFormat textFormat = Trace.getTracer().getTextFormat();
+   * private static final TextFormat.Getter<HttpRequest> getter = ...;
+   *
+   * void onRequestReceived(HttpRequest request) {
+   *   SpanContext spanContext = textFormat.extract(request, getter);
+   *   Span span = tracer.spanBuilderWithRemoteParent("MyRequest", spanContext)
+   *       .setSpanKind(Span.Kind.SERVER).startSpan();
+   *   try (Scope s = tracer.withSpan(span)) {
+   *     // Handle request and send response back.
+   *   }
+   *   span.end()
+   * }
+   * }</pre>
+   *
    * @return the {@code TextFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract TextFormat getTextFormat();
+  public abstract TextFormat<SpanContext> getTextFormat();
 
   protected Tracer() {}
 }

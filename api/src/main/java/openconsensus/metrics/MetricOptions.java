@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
-import openconsensus.metrics.data.LabelKey;
-import openconsensus.metrics.data.LabelValue;
 
 /**
  * Options for every metric added to the {@link MetricRegistry}.

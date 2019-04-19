@@ -22,9 +22,9 @@ import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
+import openconsensus.context.propagation.BinaryFormat;
+import openconsensus.context.propagation.TextFormat;
 import openconsensus.internal.Utils;
-import openconsensus.trace.propagation.BinaryFormat;
-import openconsensus.trace.propagation.TextFormat;
 
 /**
  * No-op implementations of trace classes.
@@ -47,8 +47,8 @@ public final class NoopTrace {
 
   // No-Op implementation of the Tracer.
   private static final class NoopTracer extends Tracer {
-    private static final BinaryFormat BINARY_FORMAT = new NoopBinaryFormat();
-    private static final TextFormat TEXT_FORMAT = new NoopTextFormat();
+    private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
+    private static final TextFormat<SpanContext> TEXT_FORMAT = new NoopTextFormat();
 
     @Override
     public Span getCurrentSpan() {
@@ -92,12 +92,12 @@ public final class NoopTrace {
     }
 
     @Override
-    public BinaryFormat getBinaryFormat() {
+    public BinaryFormat<SpanContext> getBinaryFormat() {
       return BINARY_FORMAT;
     }
 
     @Override
-    public TextFormat getTextFormat() {
+    public TextFormat<SpanContext> getTextFormat() {
       return TEXT_FORMAT;
     }
 
@@ -160,7 +160,7 @@ public final class NoopTrace {
     }
   }
 
-  private static final class NoopBinaryFormat extends BinaryFormat {
+  private static final class NoopBinaryFormat extends BinaryFormat<SpanContext> {
 
     @Override
     public byte[] toByteArray(SpanContext spanContext) {
@@ -171,13 +171,13 @@ public final class NoopTrace {
     @Override
     public SpanContext fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return SpanContext.INVALID;
+      return SpanContext.BLANK;
     }
 
     private NoopBinaryFormat() {}
   }
 
-  private static final class NoopTextFormat extends TextFormat {
+  private static final class NoopTextFormat extends TextFormat<SpanContext> {
 
     private NoopTextFormat() {}
 
@@ -197,7 +197,7 @@ public final class NoopTrace {
     public <C> SpanContext extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
-      return SpanContext.INVALID;
+      return SpanContext.BLANK;
     }
   }
 }
