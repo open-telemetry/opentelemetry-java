@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 
 /**
  * Injects and extracts a value as text into carriers that travel in-band across process boundaries.
- * Identifiers are often encoded as messaging or RPC request headers.
+ * Values are often encoded as RPC/HTTP request headers.
  *
  * <p>When using http, the carrier of propagated data on both the client (injector) and server
  * (extractor) side is usually an http request. Propagation is usually implemented via library-
@@ -85,6 +85,9 @@ public abstract class TextFormat<V> {
 
   /**
    * Extracts the value from upstream. For example, as http headers.
+   *
+   * <p>If the value could not be parsed, the underlying implementation will decide to return ether
+   * an empty value, an invalid value, or a valid value.
    *
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param getter invoked for each propagation key to get.
