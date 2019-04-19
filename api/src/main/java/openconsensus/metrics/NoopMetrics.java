@@ -16,15 +16,10 @@
 
 package openconsensus.metrics;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import openconsensus.common.ToDoubleFunction;
 import openconsensus.common.ToLongFunction;
 import openconsensus.internal.Utils;
-import openconsensus.metrics.data.LabelKey;
-import openconsensus.metrics.data.LabelValue;
-import openconsensus.metrics.data.Metric;
 
 /**
  * No-op implementations of metrics classes.
@@ -79,11 +74,6 @@ public final class NoopMetrics {
           options.getDescription(),
           options.getUnit(),
           options.getLabelKeys());
-    }
-
-    @Override
-    public Collection<Metric> getMetrics() {
-      return Collections.emptyList();
     }
   }
 

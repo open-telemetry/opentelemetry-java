@@ -16,14 +16,11 @@
 
 package openconsensus.metrics;
 
-import openconsensus.common.ExperimentalApi;
-
 /**
  * Class for accessing the default {@link MetricRegistry}.
  *
  * @since 0.1.0
  */
-@ExperimentalApi
 public final class Metrics {
   private static final MetricRegistry METRIC_REGISTRY = NoopMetrics.newNoopMetricRegistry();
 
