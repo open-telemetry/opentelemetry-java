@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.stats.view.data;
+package openconsensus.sdk.stats;
 
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;

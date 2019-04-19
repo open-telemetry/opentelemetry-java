@@ -38,21 +38,21 @@ public abstract class StatsRecorder {
   /**
    * Records all given measurements, with an explicit {@link TagMap}.
    *
-   * @param tags the tags associated with the measurements.
    * @param measurements the list of {@code Measurement}s to record.
+   * @param tags the tags associated with the measurements.
    * @since 0.1.0
    */
-  public abstract void record(TagMap tags, List<Measurement> measurements);
+  public abstract void record(List<Measurement> measurements, TagMap tags);
 
   /**
    * Records all given measurements, with an explicit {@link TagMap}. These measurements are
    * associated with the given {@code SpanContext}.
    *
-   * @param tags the tags associated with the measurements.
    * @param measurements the list of {@code Measurement}s to record.
+   * @param tags the tags associated with the measurements.
    * @param spanContext the {@code SpanContext} that identifies the {@code Span} for which the
    *     measurements are associated with.
    * @since 0.1.0
    */
-  public abstract void record(TagMap tags, List<Measurement> measurements, SpanContext spanContext);
+  public abstract void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext);
 }

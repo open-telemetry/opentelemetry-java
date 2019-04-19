@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.stats.view.data;
+package openconsensus.sdk.stats;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
@@ -65,7 +65,7 @@ public abstract class Aggregation {
   public abstract Type getType();
 
   /**
-   * Calculate sum on aggregated {@code MeasureValue}s.
+   * Calculate sum on aggregated {@code Measurement}s.
    *
    * @since 0.1.0
    */
@@ -94,7 +94,7 @@ public abstract class Aggregation {
   }
 
   /**
-   * Calculate count on aggregated {@code MeasureValue}s.
+   * Calculate count on aggregated {@code Measurement}s.
    *
    * @since 0.1.0
    */
@@ -123,7 +123,7 @@ public abstract class Aggregation {
   }
 
   /**
-   * Calculate distribution stats on aggregated {@code MeasureValue}s. Distribution includes mean,
+   * Calculate distribution stats on aggregated {@code Measurement}s. Distribution includes mean,
    * count, histogram, min, max and sum of squared deviations.
    *
    * @since 0.1.0
@@ -156,7 +156,7 @@ public abstract class Aggregation {
   }
 
   /**
-   * Calculate the last value of aggregated {@code MeasureValue}s.
+   * Calculate the last value of aggregated {@code Measurement}s.
    *
    * @since 0.1.0
    */
