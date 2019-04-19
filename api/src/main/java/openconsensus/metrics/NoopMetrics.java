@@ -312,9 +312,6 @@ public final class NoopMetrics {
 
       @Override
       public void add(double delta) {}
-
-      @Override
-      public void set(double val) {}
     }
   }
 
