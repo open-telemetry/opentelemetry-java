@@ -50,16 +50,4 @@ public final class Samplers {
   public static Sampler neverSample() {
     return NEVER_SAMPLE;
   }
-
-  /**
-   * Returns a {@link Sampler} that makes a "yes" decision with a given probability.
-   *
-   * @param probability The desired probability of sampling. Must be within [0.0, 1.0].
-   * @return a {@code Sampler} that makes a "yes" decision with a given probability.
-   * @throws IllegalArgumentException if {@code probability} is out of range
-   * @since 0.1.0
-   */
-  public static Sampler probabilitySampler(double probability) {
-    return ProbabilitySampler.create(probability);
-  }
 }
