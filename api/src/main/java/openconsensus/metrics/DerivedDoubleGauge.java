@@ -20,7 +20,6 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.common.ToDoubleFunction;
-import openconsensus.metrics.data.LabelValue;
 
 /**
  * Derived Double Gauge metric, to report instantaneous measurement of a double value. Gauges can go

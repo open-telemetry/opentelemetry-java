@@ -20,7 +20,6 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.common.ToLongFunction;
-import openconsensus.metrics.data.LabelValue;
 
 /**
  * Derived Long Gauge metric, to report instantaneous measurement of an int64 value. Gauges can go
