@@ -32,8 +32,6 @@ option java_outer_classname = "MetricsProto";
 // Defines a Metric which has one or more timeseries.
 message Metric {
   // The descriptor of the Metric.
-  // TODO(issue #152): consider only sending the name of descriptor for
-  // optimization.
   MetricDescriptor metric_descriptor = 1;
 
   // One or more timeseries for a single metric, where each timeseries has
@@ -76,11 +74,11 @@ message MetricDescriptor {
     // Floating point gauge. The value can go both up and down.
     GAUGE_DOUBLE = 2;
 
-    // Distribution gauge measurement. The count and sum can go both up and
+    // Histogram gauge measurement. The count and sum can go both up and
     // down. Recorded values are always >= 0.
     // Used in scenarios like a snapshot of time the current items in a queue
     // have spent there.
-    GAUGE_DISTRIBUTION = 3;
+    GAUGE_HISTOGRAM = 3;
 
     // Integer cumulative measurement. The value cannot decrease, if resets
     // then the start_time should also be reset.
@@ -91,9 +89,9 @@ message MetricDescriptor {
     // always >= 0.
     CUMULATIVE_DOUBLE = 5;
 
-    // Distribution cumulative measurement. The count and sum cannot decrease,
+    // Histogram cumulative measurement. The count and sum cannot decrease,
     // if resets then the start_time should also be reset.
-    CUMULATIVE_DISTRIBUTION = 6;
+    CUMULATIVE_HISTOGRAM = 6;
 
     // Some frameworks implemented Histograms as a summary of observations
     // (usually things like request durations and response sizes). While it
@@ -158,18 +156,17 @@ message Point {
     // A 64-bit double-precision floating-point number.
     double double_value = 4;
 
-    // A distribution value.
-    DistributionValue distribution_value = 5;
+    // A histogram value.
+    HistogramValue histogram_value = 5;
 
     // A summary value. This is not recommended, since it cannot be aggregated.
     SummaryValue summary_value = 6;
   }
 }
 
-// Distribution contains summary statistics for a population of values. It
-// optionally contains a histogram representing the distribution of those
-// values across a set of buckets.
-message DistributionValue {
+// Histogram contains summary statistics for a population of values. It may
+// optionally contain the distribution of those values across a set of buckets.
+message HistogramValue {
   // The number of values in the population. Must be non-negative. This value
   // must equal the sum of the values in bucket_counts if a histogram is
   // provided.
@@ -179,23 +176,8 @@ message DistributionValue {
   // must be zero.
   double sum = 2;
 
-  // The sum of squared deviations from the mean of the values in the
-  // population. For values x_i this is:
-  //
-  //     Sum[i=1..n]((x_i - mean)^2)
-  //
-  // Knuth, "The Art of Computer Programming", Vol. 2, page 323, 3rd edition
-  // describes Welford's method for accumulating this sum in one pass.
-  //
-  // If count is zero then this field must be zero.
-  double sum_of_squared_deviation = 3;
-
-  // A Distribution may optionally contain a histogram of the values in the
-  // population. The bucket boundaries for that histogram are described by
-  // BucketOptions.
-  //
-  // If bucket_options has no type, then there is no histogram associated with
-  // the Distribution.
+  // A Histogram may optionally contain the distribution of the values in the
+  // population. The bucket boundaries are described by BucketOptions.
   message BucketOptions {
     oneof type {
       // Bucket with explicit bounds.
@@ -221,38 +203,36 @@ message DistributionValue {
 
   // Don't change bucket boundaries within a TimeSeries if your backend doesn't
   // support this.
-  // TODO(issue #152): consider not required to send bucket options for
-  // optimization.
-  BucketOptions bucket_options = 4;
+  BucketOptions bucket_options = 3;
 
   message Bucket {
     // The number of values in each bucket of the histogram, as described in
     // bucket_bounds.
     int64 count = 1;
 
-    // If the distribution does not have a histogram, then omit this field.
+    // Exemplars are example points that may be used to annotate aggregated
+    // Histogram values. They are metadata that gives information about a
+    // particular value added to a Histogram bucket.
+    message Exemplar {
+      // Value of the exemplar point. It determines which bucket the exemplar
+      // belongs to.
+      double value = 1;
+
+      // The observation (sampling) time of the above value.
+      google.protobuf.Timestamp timestamp = 2;
+
+      // Contextual information about the example value.
+      map<string, string> attachments = 3;
+    }
+
+    // Exemplars are example points that may be used to annotate aggregated
+    // Histogram values.
     Exemplar exemplar = 2;
   }
 
-  // If the distribution does not have a histogram, then omit this field.
-  // If there is a histogram, then the sum of the values in the Bucket counts
-  // must equal the value in the count field of the distribution.
-  repeated Bucket buckets = 5;
-
-  // Exemplars are example points that may be used to annotate aggregated
-  // Distribution values. They are metadata that gives information about a
-  // particular value added to a Distribution bucket.
-  message Exemplar {
-    // Value of the exemplar point. It determines which bucket the exemplar
-    // belongs to.
-    double value = 1;
-
-    // The observation (sampling) time of the above value.
-    google.protobuf.Timestamp timestamp = 2;
-
-    // Contextual information about the example value.
-    map<string, string> attachments = 3;
-  }
+  // The sum of the values in the Bucket counts must equal the value in the
+  // count field of the histogram.
+  repeated Bucket buckets = 4;
 }
 
 // The start_timestamp only applies to the count and sum in the SummaryValue.
