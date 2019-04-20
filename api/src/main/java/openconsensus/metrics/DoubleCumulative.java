@@ -46,7 +46,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * }
  * }</pre>
  *
- * <p>Example 2: You can also use labels(keys and values) to track different types of metric.
+ * <p>Example 2: You can also use labels (keys and values) to track different types of metric.
  *
  * <pre>{@code
  * class YourClass {
