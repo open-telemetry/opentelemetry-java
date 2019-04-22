@@ -5,6 +5,10 @@
 OpenConsensus is a working name of a combined OpenCensus and OpenTracing
 project.
 
+## This codebase will be ready for review April 24th, 2019. 
+
+## Please note that this is a temorary repository, and we cannot accept PRs until the project is moved to its offical home, where it can be covered by the CNCF CLA.
+
 We would love to hear from the larger community: please provide feedback
 proactively on the [OpenCensus
 gitter](https://gitter.im/census-instrumentation/Lobby), [OpenTracing
@@ -13,6 +17,8 @@ issue](/issues). As we continue to
 make progress, we will post updates to the OpenCensus and OpenTracing blogs.
 
 ## Plan
+
+[Please review the roadmap here](https://medium.com/opentracing/a-roadmap-to-convergence-b074e5815289).
 
 In the coming months [we plan to merge the OpenCensus and OpenTracing
 projects](https://medium.com/opentracing/merging-opentracing-and-opencensus-f0fe9c7ca6f0).
