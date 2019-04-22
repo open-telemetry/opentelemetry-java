@@ -31,6 +31,7 @@ public abstract class Measurement {
   /**
    * Extracts the measured {@link Measure}.
    *
+   * @return the {@link Measure} if this measurement.
    * @since 0.1.0
    */
   public abstract Measure getMeasure();

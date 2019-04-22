@@ -45,6 +45,7 @@ public abstract class SpanData {
    * @param context the {@code SpanContext} of the {@code Span}.
    * @param parentSpanId the parent {@code SpanId} of the {@code Span}. {@code null} if the {@code
    *     Span} is a root.
+   * @param resource the resource this span was executed on.
    * @param name the name of the {@code Span}.
    * @param kind the kind of the {@code Span}.
    * @param startTimestamp the start {@code Timestamp} of the {@code Span}.

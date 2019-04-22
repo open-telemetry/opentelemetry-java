@@ -42,6 +42,7 @@ public abstract class TagMap {
   /**
    * Returns the {@code TagValue} associated with the given {@code TagKey}.
    *
+   * @param tagKey tag key to return the value for.
    * @return the {@code TagValue} associated with the given {@code TagKey}, or {@code null} if no
    *     {@code Tag} with the given {@code tagKey} is in this {@code TagMap}.
    */
