@@ -22,6 +22,7 @@ import io.opentracing.log.Fields;
 import io.opentracing.tag.Tag;
 import java.util.HashMap;
 import java.util.Map;
+import openconsensus.tags.EmptyTagMap;
 import openconsensus.tags.TagMap;
 import openconsensus.trace.AttributeValue;
 import openconsensus.trace.Status;
@@ -33,7 +34,7 @@ final class SpanShim implements Span {
   private final SpanContextShim contextShim;
 
   public SpanShim(TracerShim tracerShim, openconsensus.trace.Span span) {
-    this(tracerShim, span, tracerShim.getTagger().empty());
+    this(tracerShim, span, EmptyTagMap.INSTANCE);
   }
 
   public SpanShim(TracerShim tracerShim, openconsensus.trace.Span span, TagMap tagMap) {

@@ -19,6 +19,7 @@ package openconsensus.opentracingshim;
 import io.opentracing.SpanContext;
 import java.util.Iterator;
 import java.util.Map;
+import openconsensus.tags.EmptyTagMap;
 import openconsensus.tags.Tag;
 import openconsensus.tags.TagKey;
 import openconsensus.tags.TagMap;
@@ -35,7 +36,7 @@ final class SpanContextShim implements SpanContext {
   private TagMap tagMap;
 
   public SpanContextShim(TracerShim tracerShim, openconsensus.trace.SpanContext context) {
-    this(tracerShim, context, tracerShim.getTagger().empty());
+    this(tracerShim, context, EmptyTagMap.INSTANCE);
   }
 
   public SpanContextShim(
