@@ -53,7 +53,14 @@ public abstract class Resource {
   private static final Map<String, String> ENV_LABEL_MAP =
       parseResourceLabels(System.getenv(OC_RESOURCE_LABELS_ENV));
 
+  private static final Resource EMPTY =
+      new AutoValue_Resource(Collections.<String, String>emptyMap());
+
   Resource() {}
+
+  public static Resource getEmpty() {
+    return EMPTY;
+  }
 
   /**
    * Returns a map of labels that describe the resource.

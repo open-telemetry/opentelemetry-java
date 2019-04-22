@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import openconsensus.context.Scope;
 import openconsensus.context.propagation.BinaryFormat;
 import openconsensus.context.propagation.TextFormat;
+import openconsensus.resource.Resource;
 
 /**
  * Tracer is a simple, thin class for {@link Span} creation and in-process context interaction.
@@ -329,6 +330,23 @@ public abstract class Tracer {
    */
   public abstract SpanBuilder spanBuilderWithRemoteParent(
       String spanName, @Nullable SpanContext remoteParentSpanContext);
+
+  /**
+   * Sets the {@link Resource} to be associated with all {@link Span} and {@link SpanData} objects
+   * recorded by this {@link Tracer}.
+   *
+   * @param resource Resource to be associated with all {@link Span} and {@link SpanData} objects.
+   */
+  public abstract void setResource(Resource resource);
+
+  /**
+   * Gets the {@link Resource} that is associating with all the {@link Span} and {@link SpanData}
+   * objects recorded by this {@link Tracer}.
+   *
+   * @return {@link Resource} that is associating with all {@link Span} and {@link SpanData}
+   *     objects.
+   */
+  public abstract Resource getResource();
 
   /**
    * Records a {@link SpanData}. This API allows to send a pre-populated span object to the
