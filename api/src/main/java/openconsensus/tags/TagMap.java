@@ -16,13 +16,13 @@
 
 package openconsensus.tags;
 
+import java.util.Iterator;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.tags.data.TagKey;
-import openconsensus.tags.data.TagValue;
 
 /**
- * A map from {@link TagKey} to {@link TagValue} that can be used to label anything that is
- * associated with a specific operation.
+ * A map from {@link TagKey} to {@link TagValue} and {@link TagMetadata} that can be used to label
+ * anything that is associated with a specific operation.
  *
  * <p>For example, {@code TagMap}s can be used to label stats, log messages, or debugging
  * information.
@@ -31,8 +31,21 @@ import openconsensus.tags.data.TagValue;
  */
 @Immutable
 public abstract class TagMap {
-  @Override
-  public String toString() {
-    return "TagMap";
-  }
+  /**
+   * Returns an iterator over the tags in this {@code TagMap}.
+   *
+   * @return an iterator over the tags in this {@code TagMap}.
+   * @since 0.1.0
+   */
+  public abstract Iterator<Tag> getIterator();
+
+  /**
+   * Returns the {@code TagValue} associated with the given {@code TagKey}.
+   *
+   * @param tagKey tag key to return the value for.
+   * @return the {@code TagValue} associated with the given {@code TagKey}, or {@code null} if no
+   *     {@code Tag} with the given {@code tagKey} is in this {@code TagMap}.
+   */
+  @Nullable
+  public abstract TagValue getTagValue(TagKey tagKey);
 }

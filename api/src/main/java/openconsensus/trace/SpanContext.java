@@ -37,11 +37,11 @@ public final class SpanContext {
   private final Tracestate tracestate;
 
   /**
-   * The invalid {@code SpanContext}.
+   * A blank {@code SpanContext} that can be used for no-op operations.
    *
    * @since 0.1.0
    */
-  public static final SpanContext INVALID =
+  static final SpanContext BLANK =
       new SpanContext(TraceId.INVALID, SpanId.INVALID, TraceOptions.DEFAULT, TRACESTATE_DEFAULT);
 
   /**

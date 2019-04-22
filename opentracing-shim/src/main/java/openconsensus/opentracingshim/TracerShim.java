@@ -24,6 +24,7 @@ import io.opentracing.Tracer;
 import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
+import openconsensus.trace.Trace;
 
 public final class TracerShim implements Tracer {
   private final openconsensus.trace.Tracer tracer;
@@ -31,12 +32,12 @@ public final class TracerShim implements Tracer {
 
   /**
    * Creates a {@code io.opentracing.Tracer} shim out of the {@code openconsensus.trace.Tracer}
-   * exposed by {@code openconsensus.trace.Tracing}.
+   * exposed by {@code openconsensus.trace.Trace}.
    *
    * @since 0.1.0
    */
   public TracerShim() {
-    this(openconsensus.trace.Tracing.getTracer());
+    this(Trace.getTracer());
   }
 
   /**
@@ -67,7 +68,7 @@ public final class TracerShim implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(String operationName) {
-    return new SpanBuilderShim(tracer.spanBuilder(operationName));
+    return new SpanBuilderShim(tracer, operationName);
   }
 
   @Override

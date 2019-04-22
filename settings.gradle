@@ -2,8 +2,12 @@ rootProject.name = "openconsensus"
 
 include ":openconsensus-api"
 include ":openconsensus-contrib"
+include ":openconsensus-opencensus-shim"
 include ":openconsensus-opentracing-shim"
+include ":openconsensus-sdk"
 
 project(':openconsensus-api').projectDir = "$rootDir/api" as File
 project(':openconsensus-contrib').projectDir = "$rootDir/contrib" as File
+project(':openconsensus-opencensus-shim').projectDir = "$rootDir/opencensus-shim" as File
 project(':openconsensus-opentracing-shim').projectDir = "$rootDir/opentracing-shim" as File
+project(':openconsensus-sdk').projectDir = "$rootDir/sdk" as File

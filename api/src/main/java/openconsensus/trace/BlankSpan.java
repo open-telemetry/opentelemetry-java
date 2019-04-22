@@ -100,7 +100,7 @@ public final class BlankSpan extends Span {
 
   @Override
   public SpanContext getContext() {
-    return SpanContext.INVALID;
+    return SpanContext.BLANK;
   }
 
   @Override

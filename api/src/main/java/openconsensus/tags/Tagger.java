@@ -17,8 +17,8 @@
 package openconsensus.tags;
 
 import openconsensus.context.Scope;
-import openconsensus.tags.propagation.BinaryFormat;
-import openconsensus.tags.propagation.TextFormat;
+import openconsensus.context.propagation.BinaryFormat;
+import openconsensus.context.propagation.TextFormat;
 
 /**
  * Object for creating new {@link TagMap}s and {@code TagMap}s based on the current context.
@@ -33,14 +33,6 @@ import openconsensus.tags.propagation.TextFormat;
  * @since 0.1.0
  */
 public abstract class Tagger {
-
-  /**
-   * Returns an empty {@code TagMap}.
-   *
-   * @return an empty {@code TagMap}.
-   * @since 0.1.0
-   */
-  public abstract TagMap empty();
 
   /**
    * Returns the current {@code TagMap}.
@@ -90,10 +82,41 @@ public abstract class Tagger {
   /**
    * Returns the {@link BinaryFormat} for this implementation.
    *
+   * <p>Example of usage on the client:
+   *
+   * <pre>{@code
+   * private static final Tagger tagger = Tags.getTagger();
+   * private static final BinaryFormat binaryFormat =
+   *     Tags.getTagger().getBinaryFormat();
+   *
+   * Request createRequest() {
+   *   Request req = new Request();
+   *   byte[] tagsBuffer = binaryFormat.toByteArray(tagger.getCurrentTagMap());
+   *   request.addMetadata("tags", tagsBuffer);
+   *   return request;
+   * }
+   * }</pre>
+   *
+   * <p>Example of usage on the server:
+   *
+   * <pre>{@code
+   * private static final Tagger tagger = Tags.getTagger();
+   * private static final BinaryFormat binaryFormat =
+   *     Tags.getTagger().getBinaryFormat();
+   *
+   * void onRequestReceived(Request request) {
+   *   byte[] tagsBuffer = request.getMetadata("tags");
+   *   TagMap tagMap = textFormat.fromByteArray(tagsBuffer);
+   *   try (Scope s = tagger.withTagMap(tagMap)) {
+   *     // Handle request and send response back.
+   *   }
+   * }
+   * }</pre>
+   *
    * @return the {@code BinaryFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract BinaryFormat getBinaryFormat();
+  public abstract BinaryFormat<TagMap> getBinaryFormat();
 
   /**
    * Returns the {@link TextFormat} for this implementation.
@@ -101,8 +124,45 @@ public abstract class Tagger {
    * <p>Usually this will be the W3C Correlation Context as the HTTP text format. For more details,
    * see <a href="https://github.com/w3c/correlation-context">correlation-context</a>.
    *
+   * <p>Example of usage on the client:
+   *
+   * <pre>{@code
+   * private static final Tagger tagger = Tags.getTagger();
+   * private static final TextFormat textFormat =
+   *     Tags.getTagger().getTextFormat();
+   * private static final TextFormat.Setter setter =
+   *     new TextFormat.Setter<HttpURLConnection>() {
+   *       public void put(HttpURLConnection carrier, String key, String value) {
+   *         carrier.setRequestProperty(field, value);
+   *       }
+   *     };
+   *
+   * void makeHttpRequest() {
+   *   HttpURLConnection connection =
+   *       (HttpURLConnection) new URL("http://myserver").openConnection();
+   *   textFormat.inject(tagger.getCurrentTagMap(), connection, httpURLConnectionSetter);
+   *   // Send the request, wait for response and maybe set the status if not ok.
+   * }
+   * }</pre>
+   *
+   * <p>Example of usage on the server:
+   *
+   * <pre>{@code
+   * private static final Tagger tagger = Tags.getTagger();
+   * private static final TextFormat textFormat =
+   *     Tags.getTagger().getTextFormat();
+   * private static final TextFormat.Getter<HttpRequest> getter = ...;
+   *
+   * void onRequestReceived(HttpRequest request) {
+   *   TagMap tagMap = textFormat.extract(request, getter);
+   *   try (Scope s = tagger.withTagMap(tagMap)) {
+   *     // Handle request and send response back.
+   *   }
+   * }
+   * }</pre>
+   *
    * @return the {@code TextFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract TextFormat getTextFormat();
+  public abstract TextFormat<TagMap> getTextFormat();
 }

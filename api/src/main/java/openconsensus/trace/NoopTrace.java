@@ -23,14 +23,17 @@ import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
+import openconsensus.context.propagation.BinaryFormat;
+import openconsensus.context.propagation.TextFormat;
 import openconsensus.internal.Utils;
-import openconsensus.trace.data.SpanData;
-import openconsensus.trace.propagation.BinaryFormat;
-import openconsensus.trace.propagation.TextFormat;
+import openconsensus.resource.Resource;
 
-/** No-op implementations of trace classes. */
-// TODO(Issue #65): decide whether this class should be public or not.
-final class NoopTrace {
+/**
+ * No-op implementations of trace classes.
+ *
+ * @since 0.1.0
+ */
+public final class NoopTrace {
 
   private NoopTrace() {}
 
@@ -38,15 +41,16 @@ final class NoopTrace {
    * Returns a {@code Tracer} instance that is no-op implementations.
    *
    * @return a {@code Tracer} instance that is no-op implementations.
+   * @since 0.1.0
    */
-  static Tracer newNoopTracer() {
+  public static Tracer newNoopTracer() {
     return new NoopTracer();
   }
 
   // No-Op implementation of the Tracer.
   private static final class NoopTracer extends Tracer {
-    private static final BinaryFormat BINARY_FORMAT = new NoopBinaryFormat();
-    private static final TextFormat TEXT_FORMAT = new NoopTextFormat();
+    private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
+    private static final TextFormat<SpanContext> TEXT_FORMAT = new NoopTextFormat();
 
     @Override
     public Span getCurrentSpan() {
@@ -90,12 +94,22 @@ final class NoopTrace {
     }
 
     @Override
-    public BinaryFormat getBinaryFormat() {
+    public void setResource(Resource resource) {
+      // do nothing
+    }
+
+    @Override
+    public Resource getResource() {
+      return Resource.getEmpty();
+    }
+
+    @Override
+    public BinaryFormat<SpanContext> getBinaryFormat() {
       return BINARY_FORMAT;
     }
 
     @Override
-    public TextFormat getTextFormat() {
+    public TextFormat<SpanContext> getTextFormat() {
       return TEXT_FORMAT;
     }
 
@@ -158,7 +172,7 @@ final class NoopTrace {
     }
   }
 
-  private static final class NoopBinaryFormat extends BinaryFormat {
+  private static final class NoopBinaryFormat extends BinaryFormat<SpanContext> {
     private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.wrap(new byte[0]);
 
     @Override
@@ -170,13 +184,13 @@ final class NoopTrace {
     @Override
     public SpanContext fromByteBuffer(ByteBuffer bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return SpanContext.INVALID;
+      return SpanContext.BLANK;
     }
 
     private NoopBinaryFormat() {}
   }
 
-  private static final class NoopTextFormat extends TextFormat {
+  private static final class NoopTextFormat extends TextFormat<SpanContext> {
 
     private NoopTextFormat() {}
 
@@ -196,7 +210,7 @@ final class NoopTrace {
     public <C> SpanContext extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
-      return SpanContext.INVALID;
+      return SpanContext.BLANK;
     }
   }
 }

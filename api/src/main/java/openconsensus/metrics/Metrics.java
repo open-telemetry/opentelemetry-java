@@ -16,25 +16,22 @@
 
 package openconsensus.metrics;
 
-import openconsensus.common.ExperimentalApi;
-
 /**
- * Class for accessing the default {@link MetricsComponent}.
+ * Class for accessing the default {@link MetricRegistry}.
  *
  * @since 0.1.0
  */
-@ExperimentalApi
 public final class Metrics {
-  private static final MetricsComponent metricsComponent = NoopMetrics.newNoopMetricsComponent();
+  private static final MetricRegistry METRIC_REGISTRY = NoopMetrics.newNoopMetricRegistry();
 
   /**
-   * Returns the global {@link MetricRegistry}.
+   * Returns the global {@link MetricRegistry} with the provided implementation.
    *
-   * @return the global {@code MetricRegistry}.
+   * @return the global {@code MetricRegistry} with the provided implementation.
    * @since 0.1.0
    */
   public static MetricRegistry getMetricRegistry() {
-    return metricsComponent.getMetricRegistry();
+    return METRIC_REGISTRY;
   }
 
   private Metrics() {}

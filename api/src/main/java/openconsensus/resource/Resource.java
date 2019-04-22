@@ -18,44 +18,38 @@ package openconsensus.resource;
 
 import com.google.auto.value.AutoValue;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.common.ExperimentalApi;
 import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
 
 /**
  * {@link Resource} represents a resource, which capture identifying information about the entities
- * for which signals (stats or traces) are reported. It further provides a framework for detection
- * of resource information from the environment and progressive population as signals propagate from
- * the core instrumentation library to a backend's exporter.
+ * for which signals (stats or traces) are reported.
  *
  * @since 0.1.0
  */
 @Immutable
 @AutoValue
-@ExperimentalApi
 public abstract class Resource {
   private static final int MAX_LENGTH = 255;
-  private static final String OC_RESOURCE_LABELS_ENV = "OC_RESOURCE_LABELS";
-  private static final String LABEL_LIST_SPLITTER = ",";
-  private static final String LABEL_KEY_VALUE_SPLITTER = "=";
   private static final String ERROR_MESSAGE_INVALID_CHARS =
       " should be a ASCII string with a length greater than 0 and not exceed "
           + MAX_LENGTH
           + " characters.";
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
-
-  private static final Map<String, String> ENV_LABEL_MAP =
-      parseResourceLabels(System.getenv(OC_RESOURCE_LABELS_ENV));
+  private static final Resource EMPTY =
+      new AutoValue_Resource(Collections.<String, String>emptyMap());
 
   Resource() {}
+
+  public static Resource getEmpty() {
+    return EMPTY;
+  }
 
   /**
    * Returns a map of labels that describe the resource.
@@ -64,17 +58,6 @@ public abstract class Resource {
    * @since 0.1.0
    */
   public abstract Map<String, String> getLabels();
-
-  /**
-   * Returns a {@link Resource}. This resource information is loaded from the OC_RESOURCE_LABELS
-   * environment variable.
-   *
-   * @return a {@code Resource}.
-   * @since 0.1.0
-   */
-  public static Resource createFromEnvironmentVariable() {
-    return new AutoValue_Resource(ENV_LABEL_MAP);
-  }
 
   /**
    * Returns a {@link Resource}.
@@ -92,66 +75,20 @@ public abstract class Resource {
   }
 
   /**
-   * Returns a {@link Resource} that runs all input resources sequentially and merges their results.
-   * In case a label key is already set, the first set value takes precedence.
+   * Returns a new, merged {@link Resource} by merging the current {@code Resource} with the {@code
+   * other} {@code Resource}. In case of a collision, current {@code Resource} takes precedence.
    *
-   * @param resources a list of resources.
-   * @return a {@code Resource}.
-   * @since 0.1.0
+   * @param other the {@code Resource} that will be merged with {@code this}.
+   * @return the newly merged {@code Resource}.
    */
-  @Nullable
-  public static Resource mergeResources(List<Resource> resources) {
-    Resource currentResource = null;
-    for (Resource resource : resources) {
-      currentResource = merge(currentResource, resource);
-    }
-    return currentResource;
-  }
-
-  /*
-   * Creates a label map from the OC_RESOURCE_LABELS environment variable.
-   *
-   * <p>OC_RESOURCE_LABELS: A comma-separated list of labels describing the source in more detail,
-   * e.g. “key1=val1,key2=val2”. Domain names and paths are accepted as label keys. Values may be
-   * quoted or unquoted in general. If a value contains whitespaces, =, or " characters, it must
-   * always be quoted.
-   */
-  private static Map<String, String> parseResourceLabels(@Nullable String rawEnvLabels) {
-    if (rawEnvLabels == null) {
-      return Collections.emptyMap();
-    } else {
-      Map<String, String> labels = new HashMap<>();
-      String[] rawLabels = rawEnvLabels.split(LABEL_LIST_SPLITTER, -1);
-      for (String rawLabel : rawLabels) {
-        String[] keyValuePair = rawLabel.split(LABEL_KEY_VALUE_SPLITTER, -1);
-        if (keyValuePair.length != 2) {
-          continue;
-        }
-        String key = keyValuePair[0].trim();
-        String value = keyValuePair[1].trim().replaceAll("^\"|\"$", "");
-        labels.put(key, value);
-      }
-      checkLabels(labels);
-      return Collections.unmodifiableMap(labels);
-    }
-  }
-
-  /**
-   * Returns a new, merged {@link Resource} by merging two resources. In case of a collision, first
-   * resource takes precedence.
-   */
-  @Nullable
-  private static Resource merge(@Nullable Resource resource, @Nullable Resource otherResource) {
-    if (otherResource == null) {
-      return resource;
-    }
-    if (resource == null) {
-      return otherResource;
+  public Resource merge(@Nullable Resource other) {
+    if (other == null) {
+      return this;
     }
 
-    Map<String, String> mergedLabelMap = new LinkedHashMap<>(otherResource.getLabels());
+    Map<String, String> mergedLabelMap = new LinkedHashMap<>(other.getLabels());
     // Labels from resource overwrite labels from otherResource.
-    for (Entry<String, String> entry : resource.getLabels().entrySet()) {
+    for (Entry<String, String> entry : this.getLabels().entrySet()) {
       mergedLabelMap.put(entry.getKey(), entry.getValue());
     }
     return new AutoValue_Resource(Collections.unmodifiableMap(mergedLabelMap));

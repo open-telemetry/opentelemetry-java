@@ -16,36 +16,27 @@
 
 package openconsensus.metrics;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import openconsensus.common.ToDoubleFunction;
 import openconsensus.common.ToLongFunction;
 import openconsensus.internal.Utils;
-import openconsensus.metrics.data.LabelKey;
-import openconsensus.metrics.data.LabelValue;
-import openconsensus.metrics.data.Metric;
 
-/** No-op implementations of metrics classes. */
-final class NoopMetrics {
+/**
+ * No-op implementations of metrics classes.
+ *
+ * @since 0.1.0
+ */
+public final class NoopMetrics {
   private NoopMetrics() {}
 
   /**
-   * Returns an instance that contains no-op implementations for all the instances.
+   * Returns an instance that is a no-op implementations for {@link MetricRegistry}.
    *
-   * @return an instance that contains no-op implementations for all the instances.
+   * @return an instance that is a no-op implementations for {@link MetricRegistry}
+   * @since 0.1.0
    */
-  static MetricsComponent newNoopMetricsComponent() {
-    return new NoopMetricsComponent();
-  }
-
-  private static final class NoopMetricsComponent extends MetricsComponent {
-    private static final MetricRegistry METRIC_REGISTRY = new NoopMetricRegistry();
-
-    @Override
-    public MetricRegistry getMetricRegistry() {
-      return METRIC_REGISTRY;
-    }
+  public static MetricRegistry newNoopMetricRegistry() {
+    return new NoopMetricRegistry();
   }
 
   private static final class NoopMetricRegistry extends MetricRegistry {
@@ -86,8 +77,21 @@ final class NoopMetrics {
     }
 
     @Override
-    public Collection<Metric> getMetrics() {
-      return Collections.emptyList();
+    public DoubleCumulative addDoubleCumulative(String name, MetricOptions options) {
+      return NoopDoubleCumulative.create(
+          Utils.checkNotNull(name, "name"),
+          options.getDescription(),
+          options.getUnit(),
+          options.getLabelKeys());
+    }
+
+    @Override
+    public DerivedDoubleCumulative addDerivedDoubleCumulative(String name, MetricOptions options) {
+      return NoopDerivedDoubleCumulative.create(
+          Utils.checkNotNull(name, "name"),
+          options.getDescription(),
+          options.getUnit(),
+          options.getLabelKeys());
     }
   }
 
@@ -236,6 +240,93 @@ final class NoopMetrics {
 
     /** Creates a new {@code NoopDerivedDoubleGauge}. */
     NoopDerivedDoubleGauge(String name, String description, String unit, List<LabelKey> labelKeys) {
+      Utils.checkNotNull(name, "name");
+      Utils.checkNotNull(description, "description");
+      Utils.checkNotNull(unit, "unit");
+      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
+      labelKeysSize = labelKeys.size();
+    }
+
+    @Override
+    public <T> void createTimeSeries(
+        List<LabelValue> labelValues, T obj, ToDoubleFunction<T> function) {
+      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
+      Utils.checkArgument(
+          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
+      Utils.checkNotNull(function, "function");
+    }
+
+    @Override
+    public void removeTimeSeries(List<LabelValue> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+    }
+
+    @Override
+    public void clear() {}
+  }
+
+  /** No-op implementations of DoubleCumulative class. */
+  private static final class NoopDoubleCumulative extends DoubleCumulative {
+    private final int labelKeysSize;
+
+    static NoopDoubleCumulative create(
+        String name, String description, String unit, List<LabelKey> labelKeys) {
+      return new NoopDoubleCumulative(name, description, unit, labelKeys);
+    }
+
+    /** Creates a new {@code NoopDoublePoint}. */
+    NoopDoubleCumulative(String name, String description, String unit, List<LabelKey> labelKeys) {
+      Utils.checkNotNull(name, "name");
+      Utils.checkNotNull(description, "description");
+      Utils.checkNotNull(unit, "unit");
+      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
+      labelKeysSize = labelKeys.size();
+    }
+
+    @Override
+    public NoopDoublePoint getOrCreateTimeSeries(List<LabelValue> labelValues) {
+      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
+      Utils.checkArgument(
+          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
+      return NoopDoublePoint.INSTANCE;
+    }
+
+    @Override
+    public NoopDoublePoint getDefaultTimeSeries() {
+      return NoopDoublePoint.INSTANCE;
+    }
+
+    @Override
+    public void removeTimeSeries(List<LabelValue> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+    }
+
+    @Override
+    public void clear() {}
+
+    /** No-op implementations of DoublePoint class. */
+    private static final class NoopDoublePoint extends DoublePoint {
+      private static final NoopDoublePoint INSTANCE = new NoopDoublePoint();
+
+      private NoopDoublePoint() {}
+
+      @Override
+      public void add(double delta) {}
+    }
+  }
+
+  /** No-op implementations of DerivedDoubleCumulative class. */
+  private static final class NoopDerivedDoubleCumulative extends DerivedDoubleCumulative {
+    private final int labelKeysSize;
+
+    static NoopDerivedDoubleCumulative create(
+        String name, String description, String unit, List<LabelKey> labelKeys) {
+      return new NoopDerivedDoubleCumulative(name, description, unit, labelKeys);
+    }
+
+    /** Creates a new {@code NoopDerivedDoubleCumulative}. */
+    NoopDerivedDoubleCumulative(
+        String name, String description, String unit, List<LabelKey> labelKeys) {
       Utils.checkNotNull(name, "name");
       Utils.checkNotNull(description, "description");
       Utils.checkNotNull(unit, "unit");

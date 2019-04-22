@@ -25,43 +25,76 @@ import io.opentracing.tag.Tags;
 import java.util.ArrayList;
 import java.util.List;
 import openconsensus.trace.AttributeValue;
+import openconsensus.trace.Link;
 import openconsensus.trace.Span.Kind;
 import openconsensus.trace.Status;
 
 @SuppressWarnings("deprecation")
 final class SpanBuilderShim implements SpanBuilder {
-  private final openconsensus.trace.SpanBuilder builder;
+  private final openconsensus.trace.Tracer tracer;
+  private final String spanName;
 
-  // TODO: should it be any of concurrent maps?
+  // The parent will be either a Span or a SpanContext.
+  private openconsensus.trace.Span parentSpan;
+  private openconsensus.trace.SpanContext parentSpanContext;
+  private boolean ignoreActiveSpan;
+
+  private final List<Link> parentLinks = new ArrayList<>();
   private final List<String> spanBuilderAttributeKeys = new ArrayList<>();
   private final List<AttributeValue> spanBuilderAttributeValues = new ArrayList<>();
+  private Kind spanKind;
   private boolean error;
 
-  public SpanBuilderShim(openconsensus.trace.SpanBuilder builder) {
-    this.builder = builder;
+  public SpanBuilderShim(openconsensus.trace.Tracer tracer, String spanName) {
+    this.tracer = tracer;
+    this.spanName = spanName;
   }
 
   @Override
   public SpanBuilder asChildOf(SpanContext parent) {
     // TODO - Verify we handle a no-op SpanContext
+    openconsensus.trace.SpanContext actualParent = getActualContext(parent);
+
+    if (parentSpan == null && parentSpanContext == null) {
+      parentSpanContext = actualParent;
+    } else {
+      parentLinks.add(Link.create(actualParent));
+    }
+
     return this;
   }
 
   @Override
   public SpanBuilder asChildOf(Span parent) {
     // TODO - Verify we handle a no-op Span
+    openconsensus.trace.Span actualParent = getActualSpan(parent);
+
+    if (parentSpan == null && parentSpanContext == null) {
+      parentSpan = actualParent;
+    } else {
+      parentLinks.add(Link.create(actualParent.getContext()));
+    }
+
     return this;
   }
 
   @Override
   public SpanBuilder addReference(String referenceType, SpanContext referencedContext) {
-    // TODO
+    // TODO - Use referenceType
+    openconsensus.trace.SpanContext actualContext = getActualContext(referencedContext);
+
+    if (parentSpan == null && parentSpanContext == null) {
+      parentSpanContext = actualContext;
+    } else {
+      parentLinks.add(Link.create(actualContext));
+    }
+
     return this;
   }
 
   @Override
   public SpanBuilder ignoreActiveSpan() {
-    // TODO
+    ignoreActiveSpan = true;
     return this;
   }
 
@@ -70,19 +103,19 @@ final class SpanBuilderShim implements SpanBuilder {
     if ("span.kind".equals(key)) {
       switch (value) {
         case "CLIENT":
-          this.builder.setSpanKind(Kind.CLIENT);
+          spanKind = Kind.CLIENT;
           break;
         case "SERVER":
-          this.builder.setSpanKind(Kind.SERVER);
+          spanKind = Kind.SERVER;
           break;
         case "PRODUCER":
-          this.builder.setSpanKind(Kind.PRODUCER);
+          spanKind = Kind.PRODUCER;
           break;
         case "CONSUMER":
-          this.builder.setSpanKind(Kind.CONSUMER);
+          spanKind = Kind.CONSUMER;
           break;
         default:
-          this.builder.setSpanKind(Kind.INTERNAL);
+          spanKind = Kind.INTERNAL;
           break;
       }
     } else if (Tags.ERROR.getKey().equals(key)) {
@@ -153,7 +186,25 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public Span start() {
+
+    openconsensus.trace.SpanBuilder builder;
+    if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
+      builder = tracer.spanBuilderWithExplicitParent(spanName, null);
+    } else if (parentSpan != null) {
+      builder = tracer.spanBuilderWithExplicitParent(spanName, parentSpan);
+    } else if (parentSpanContext != null) {
+      builder = tracer.spanBuilderWithRemoteParent(spanName, parentSpanContext);
+    } else {
+      builder = tracer.spanBuilder(spanName);
+    }
+
+    if (!parentLinks.isEmpty()) {
+      builder.addLinks(parentLinks);
+    }
+
+    builder.setSpanKind(spanKind);
     openconsensus.trace.Span span = builder.startSpan();
+
     for (int i = 0; i < this.spanBuilderAttributeKeys.size(); i++) {
       String key = this.spanBuilderAttributeKeys.get(i);
       AttributeValue value = this.spanBuilderAttributeValues.get(i);
@@ -174,5 +225,21 @@ final class SpanBuilderShim implements SpanBuilder {
   @Override
   public Scope startActive(boolean finishSpanOnClose) {
     throw new UnsupportedOperationException();
+  }
+
+  static openconsensus.trace.Span getActualSpan(Span span) {
+    if (!(span instanceof SpanShim)) {
+      throw new IllegalArgumentException("span is not a valid SpanShim object");
+    }
+
+    return ((SpanShim) span).getSpan();
+  }
+
+  static openconsensus.trace.SpanContext getActualContext(SpanContext context) {
+    if (!(context instanceof SpanContextShim)) {
+      throw new IllegalArgumentException("context is not a valid SpanContextShim object");
+    }
+
+    return ((SpanContextShim) context).getSpanContext();
   }
 }

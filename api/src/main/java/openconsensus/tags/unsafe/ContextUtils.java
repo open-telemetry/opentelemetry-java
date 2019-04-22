@@ -17,7 +17,7 @@
 package openconsensus.tags.unsafe;
 
 import io.grpc.Context;
-import javax.annotation.concurrent.Immutable;
+import openconsensus.tags.EmptyTagMap;
 import openconsensus.tags.TagMap;
 
 /**
@@ -29,8 +29,6 @@ import openconsensus.tags.TagMap;
  * @since 0.1.0
  */
 public final class ContextUtils {
-  private static final TagMap EMPTY_TAG_MAP = new EmptyTagMap();
-
   private ContextUtils() {}
 
   /**
@@ -40,8 +38,5 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static final Context.Key<TagMap> TAG_MAP_KEY =
-      Context.keyWithDefault("openconsensus-tag-map-key", EMPTY_TAG_MAP);
-
-  @Immutable
-  private static final class EmptyTagMap extends TagMap {}
+      Context.keyWithDefault("openconsensus-tag-map-key", EmptyTagMap.INSTANCE);
 }

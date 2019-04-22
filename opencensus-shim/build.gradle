@@ -1,0 +1,7 @@
+description = 'OpenConsensus OpenCensus Bridge'
+
+dependencies {
+    api project(':openconsensus-api')
+
+    annotationProcessor libraries.auto_value
+}
