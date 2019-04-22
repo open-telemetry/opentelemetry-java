@@ -35,14 +35,6 @@ import openconsensus.context.propagation.TextFormat;
 public abstract class Tagger {
 
   /**
-   * Returns an empty {@code TagMap}.
-   *
-   * @return an empty {@code TagMap}.
-   * @since 0.1.0
-   */
-  public abstract TagMap empty();
-
-  /**
    * Returns the current {@code TagMap}.
    *
    * @return the current {@code TagMap}.

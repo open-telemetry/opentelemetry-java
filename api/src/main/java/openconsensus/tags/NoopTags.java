@@ -50,11 +50,6 @@ public final class NoopTags {
     private static final TextFormat<TagMap> TEXT_FORMAT = new NoopTextFormat();
 
     @Override
-    public TagMap empty() {
-      return EmptyTagMap.INSTANCE;
-    }
-
-    @Override
     public TagMap getCurrentTagMap() {
       return EmptyTagMap.INSTANCE;
     }

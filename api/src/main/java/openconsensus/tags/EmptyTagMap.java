@@ -21,11 +21,13 @@ import java.util.Iterator;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+/** An immutable implementation of the {@link TagMap} that does not contain any tags. */
 @Immutable
-class EmptyTagMap extends TagMap {
+public class EmptyTagMap extends TagMap {
   private static final Iterator<Tag> EMPTY_ITERATOR = Collections.<Tag>emptyList().iterator();
 
-  static final TagMap INSTANCE = new EmptyTagMap();
+  /** Returns the single instance of the {@link EmptyTagMap} class. */
+  public static final TagMap INSTANCE = new EmptyTagMap();
 
   @Override
   public Iterator<Tag> getIterator() {
