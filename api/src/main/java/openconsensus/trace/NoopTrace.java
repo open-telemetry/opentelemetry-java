@@ -25,6 +25,7 @@ import openconsensus.context.Scope;
 import openconsensus.context.propagation.BinaryFormat;
 import openconsensus.context.propagation.TextFormat;
 import openconsensus.internal.Utils;
+import openconsensus.resource.Resource;
 
 /**
  * No-op implementations of trace classes.
@@ -89,6 +90,16 @@ public final class NoopTrace {
     @Override
     public void recordSpanData(SpanData spanData) {
       Utils.checkNotNull(spanData, "spanData");
+    }
+
+    @Override
+    public void setResource(Resource resource) {
+      // do nothing
+    }
+
+    @Override
+    public Resource getResource() {
+      return Resource.getEmpty();
     }
 
     @Override
