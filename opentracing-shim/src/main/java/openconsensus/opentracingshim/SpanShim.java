@@ -33,7 +33,7 @@ final class SpanShim implements Span {
   private final SpanContextShim contextShim;
 
   public SpanShim(TracerShim tracerShim, openconsensus.trace.Span span) {
-    this(tracerShim, span, tracerShim.tagger().empty());
+    this(tracerShim, span, tracerShim.getTagger().empty());
   }
 
   public SpanShim(TracerShim tracerShim, openconsensus.trace.Span span, TagMap tagMap) {

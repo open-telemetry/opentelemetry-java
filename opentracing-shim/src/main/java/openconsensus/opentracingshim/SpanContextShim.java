@@ -35,7 +35,7 @@ final class SpanContextShim implements SpanContext {
   private TagMap tagMap;
 
   public SpanContextShim(TracerShim tracerShim, openconsensus.trace.SpanContext context) {
-    this(tracerShim, context, tracerShim.tagger().empty());
+    this(tracerShim, context, tracerShim.getTagger().empty());
   }
 
   public SpanContextShim(
@@ -81,7 +81,7 @@ final class SpanContextShim implements SpanContext {
 
   void setBaggageItem(String key, String value) {
     synchronized (this) {
-      TagMapBuilder builder = tracerShim.tagger().toBuilder(tagMap);
+      TagMapBuilder builder = tracerShim.getTagger().toBuilder(tagMap);
       builder.put(TagKey.create(key), TagValue.create(value), DEFAULT_TAG_METADATA);
       tagMap = builder.build();
     }

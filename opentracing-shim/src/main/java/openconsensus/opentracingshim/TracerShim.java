@@ -57,11 +57,11 @@ public final class TracerShim implements Tracer {
     this.propagation = new Propagation(this);
   }
 
-  Tagger tagger() {
+  Tagger getTagger() {
     return tagger;
   }
 
-  openconsensus.trace.Tracer tracer() {
+  openconsensus.trace.Tracer getTracer() {
     return tracer;
   }
 

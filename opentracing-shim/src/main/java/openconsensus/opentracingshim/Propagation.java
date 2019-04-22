@@ -31,11 +31,11 @@ final class Propagation {
 
   public void injectTextFormat(SpanContextShim contextShim, TextMap carrier) {
     tracerShim
-        .tracer()
+        .getTracer()
         .getTextFormat()
         .inject(contextShim.getSpanContext(), carrier, TextMapSetter.INSTANCE);
     tracerShim
-        .tagger()
+        .getTagger()
         .getTextFormat()
         .inject(contextShim.getTagMap(), carrier, TextMapSetter.INSTANCE);
   }
@@ -47,9 +47,9 @@ final class Propagation {
     }
 
     openconsensus.trace.SpanContext context =
-        tracerShim.tracer().getTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
+        tracerShim.getTracer().getTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
     openconsensus.tags.TagMap tagMap =
-        tracerShim.tagger().getTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
+        tracerShim.getTagger().getTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
     return new SpanContextShim(tracerShim, context, tagMap);
   }
 
@@ -83,7 +83,7 @@ final class Propagation {
   public void injectBinaryFormat(SpanContextShim context, Binary carrier) {
 
     byte[] contextBuff =
-        tracerShim.tracer().getBinaryFormat().toByteArray(context.getSpanContext());
+        tracerShim.getTracer().getBinaryFormat().toByteArray(context.getSpanContext());
     ByteBuffer byteBuff = carrier.injectionBuffer(contextBuff.length);
     byteBuff.put(contextBuff);
   }
@@ -94,6 +94,6 @@ final class Propagation {
     byte[] buff = new byte[byteBuff.remaining()];
     byteBuff.get(buff);
     return new SpanContextShim(
-        tracerShim, tracerShim.tracer().getBinaryFormat().fromByteArray(buff));
+        tracerShim, tracerShim.getTracer().getBinaryFormat().fromByteArray(buff));
   }
 }

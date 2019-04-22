@@ -31,7 +31,7 @@ final class ScopeManagerShim implements ScopeManager {
   @Override
   public Span activeSpan() {
     // TODO - is there a way to cleanly support baggage/tags here?
-    return new SpanShim(tracerShim, tracerShim.tracer().getCurrentSpan());
+    return new SpanShim(tracerShim, tracerShim.getTracer().getCurrentSpan());
   }
 
   @Override
@@ -43,7 +43,7 @@ final class ScopeManagerShim implements ScopeManager {
   @SuppressWarnings("MustBeClosedChecker")
   public Scope activate(Span span) {
     openconsensus.trace.Span actualSpan = getActualSpan(span);
-    return new ScopeShim(tracerShim.tracer().withSpan(actualSpan));
+    return new ScopeShim(tracerShim.getTracer().withSpan(actualSpan));
   }
 
   @Override
