@@ -17,10 +17,7 @@
 /**
  * Interfaces and implementations that are internal to OpenConsensus.
  *
- * <p>All the content under this package and its subpackages are considered annotated with {@link
- * openconsensus.common.Internal}.
+ * <p>All the content under this package and its subpackages are considered not part of the public
+ * API, and should not be used by users of the OpenConsensus library.
  */
-@Internal
 package openconsensus.internal;
-
-import openconsensus.common.Internal;
