@@ -41,6 +41,8 @@ public abstract class Measure {
    *
    * <p>Suggested format for name: {@code <web_host>/<path>}.
    *
+   * @return the name of this measure.
+   *
    * @since 0.1.0
    */
   public abstract String getName();
@@ -48,6 +50,7 @@ public abstract class Measure {
   /**
    * Detailed description of the measure, used in documentation.
    *
+   * @return the description of this measure.
    * @since 0.1.0
    */
   public abstract String getDescription();
@@ -66,6 +69,7 @@ public abstract class Measure {
    * <p>For example, string “MBy{transmitted}/ms” stands for megabytes per milliseconds, and the
    * annotation transmitted inside {} is just a comment of the unit.
    *
+   * @return the unit of this measure.
    * @since 0.1.0
    */
   public abstract String getUnit();
