@@ -16,6 +16,7 @@
 
 package openconsensus.tags;
 
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -117,16 +118,16 @@ public final class NoopTags {
   @Immutable
   private static final class NoopBinaryFormat
       extends openconsensus.context.propagation.BinaryFormat<TagMap> {
-    static final byte[] EMPTY_BYTE_ARRAY = {};
+    static final ByteBuffer EMPTY_BUFFER = ByteBuffer.wrap(new byte[0]);
 
     @Override
-    public byte[] toByteArray(TagMap tags) {
+    public ByteBuffer toByteBuffer(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
-      return EMPTY_BYTE_ARRAY;
+      return EMPTY_BUFFER;
     }
 
     @Override
-    public TagMap fromByteArray(byte[] bytes) {
+    public TagMap fromByteBuffer(ByteBuffer bytes) {
       Utils.checkNotNull(bytes, "bytes");
       return EmptyTagMap.INSTANCE;
     }

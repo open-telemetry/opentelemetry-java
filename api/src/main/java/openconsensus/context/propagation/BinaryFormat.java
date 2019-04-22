@@ -16,6 +16,8 @@
 
 package openconsensus.context.propagation;
 
+import java.nio.ByteBuffer;
+
 /**
  * Formatter to serializing and deserializing a value with into a binary format.
  *
@@ -30,7 +32,7 @@ public abstract class BinaryFormat<V> {
    * @return the on-the-wire representation of a {@code value}.
    * @since 0.1.0
    */
-  public abstract byte[] toByteArray(V value);
+  public abstract ByteBuffer toByteBuffer(V value);
 
   /**
    * Creates a value from the given on-the-wire encoded representation.
@@ -42,5 +44,5 @@ public abstract class BinaryFormat<V> {
    * @return a value deserialized from {@code bytes}.
    * @since 0.1.0
    */
-  public abstract V fromByteArray(byte[] bytes);
+  public abstract V fromByteBuffer(ByteBuffer bytes);
 }
