@@ -22,6 +22,7 @@ import io.opentracing.log.Fields;
 import io.opentracing.tag.Tag;
 import java.util.HashMap;
 import java.util.Map;
+import openconsensus.tags.TagMap;
 import openconsensus.trace.AttributeValue;
 import openconsensus.trace.Status;
 
@@ -31,9 +32,13 @@ final class SpanShim implements Span {
   private final openconsensus.trace.Span span;
   private final SpanContextShim contextShim;
 
-  public SpanShim(openconsensus.trace.Span span) {
+  public SpanShim(TracerShim tracerShim, openconsensus.trace.Span span) {
+    this(tracerShim, span, tracerShim.tagger().empty());
+  }
+
+  public SpanShim(TracerShim tracerShim, openconsensus.trace.Span span, TagMap tagMap) {
     this.span = span;
-    this.contextShim = new SpanContextShim(span.getContext());
+    this.contextShim = new SpanContextShim(tracerShim, span.getContext(), tagMap);
   }
 
   openconsensus.trace.Span getSpan() {
@@ -124,10 +129,8 @@ final class SpanShim implements Span {
   }
 
   @Override
-  @SuppressWarnings("ReturnMissingNullable")
   public String getBaggageItem(String key) {
-    // TODO
-    return null;
+    return contextShim.getBaggageItem(key);
   }
 
   @Override

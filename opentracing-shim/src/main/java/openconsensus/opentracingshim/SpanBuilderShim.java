@@ -31,7 +31,7 @@ import openconsensus.trace.Status;
 
 @SuppressWarnings("deprecation")
 final class SpanBuilderShim implements SpanBuilder {
-  private final openconsensus.trace.Tracer tracer;
+  private final TracerShim tracerShim;
   private final String spanName;
 
   // The parent will be either a Span or a SpanContext.
@@ -45,8 +45,8 @@ final class SpanBuilderShim implements SpanBuilder {
   private Kind spanKind;
   private boolean error;
 
-  public SpanBuilderShim(openconsensus.trace.Tracer tracer, String spanName) {
-    this.tracer = tracer;
+  public SpanBuilderShim(TracerShim tracerShim, String spanName) {
+    this.tracerShim = tracerShim;
     this.spanName = spanName;
   }
 
@@ -186,6 +186,7 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public Span start() {
+    openconsensus.trace.Tracer tracer = tracerShim.tracer();
 
     openconsensus.trace.SpanBuilder builder;
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
@@ -214,7 +215,7 @@ final class SpanBuilderShim implements SpanBuilder {
       span.setStatus(Status.UNKNOWN);
     }
 
-    return new SpanShim(span);
+    return new SpanShim(tracerShim, span);
   }
 
   @Override

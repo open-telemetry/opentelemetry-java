@@ -17,17 +17,40 @@
 package openconsensus.opentracingshim;
 
 import io.opentracing.SpanContext;
+import java.util.Iterator;
 import java.util.Map;
+import openconsensus.tags.Tag;
+import openconsensus.tags.TagKey;
+import openconsensus.tags.TagMap;
+import openconsensus.tags.TagMapBuilder;
+import openconsensus.tags.TagMetadata;
+import openconsensus.tags.TagValue;
 
 final class SpanContextShim implements SpanContext {
-  openconsensus.trace.SpanContext context;
+  static final TagMetadata DEFAULT_TAG_METADATA =
+      TagMetadata.create(TagMetadata.TagTtl.UNLIMITED_PROPAGATION);
 
-  public SpanContextShim(openconsensus.trace.SpanContext context) {
+  private final TracerShim tracerShim;
+  private final openconsensus.trace.SpanContext context;
+  private TagMap tagMap;
+
+  public SpanContextShim(TracerShim tracerShim, openconsensus.trace.SpanContext context) {
+    this(tracerShim, context, tracerShim.tagger().empty());
+  }
+
+  public SpanContextShim(
+      TracerShim tracerShim, openconsensus.trace.SpanContext context, TagMap tagMap) {
+    this.tracerShim = tracerShim;
     this.context = context;
+    this.tagMap = tagMap;
   }
 
   openconsensus.trace.SpanContext getSpanContext() {
     return context;
+  }
+
+  TagMap getTagMap() {
+    return tagMap;
   }
 
   @Override
@@ -40,10 +63,73 @@ final class SpanContextShim implements SpanContext {
     return context.getSpanId().toString();
   }
 
-  @SuppressWarnings("ReturnMissingNullable")
   @Override
   public Iterable<Map.Entry<String, String>> baggageItems() {
-    // TODO
-    return null;
+    synchronized (this) {
+      final Iterator<Tag> iterator = tagMap.getIterator();
+      return new BaggageIterable(iterator);
+    }
+  }
+
+  @SuppressWarnings("ReturnMissingNullable")
+  String getBaggageItem(String key) {
+    synchronized (this) {
+      TagValue value = tagMap.getTagValue(TagKey.create(key));
+      return value == null ? null : value.asString();
+    }
+  }
+
+  void setBaggageItem(String key, String value) {
+    synchronized (this) {
+      TagMapBuilder builder = tracerShim.tagger().toBuilder(tagMap);
+      builder.put(TagKey.create(key), TagValue.create(value), DEFAULT_TAG_METADATA);
+      tagMap = builder.build();
+    }
+  }
+
+  static class BaggageIterable implements Iterable<Map.Entry<String, String>> {
+    final Iterator<Tag> iterator;
+
+    BaggageIterable(Iterator<Tag> iterator) {
+      this.iterator = iterator;
+    }
+
+    @Override
+    public Iterator<Map.Entry<String, String>> iterator() {
+      return new Iterator<Map.Entry<String, String>>() {
+        @Override
+        public boolean hasNext() {
+          return iterator.hasNext();
+        }
+
+        @Override
+        public Map.Entry<String, String> next() {
+          return new BaggageEntry(iterator.next());
+        }
+      };
+    }
+  }
+
+  static class BaggageEntry implements Map.Entry<String, String> {
+    final Tag tag;
+
+    BaggageEntry(Tag tag) {
+      this.tag = tag;
+    }
+
+    @Override
+    public String getKey() {
+      return tag.getKey().getName();
+    }
+
+    @Override
+    public String getValue() {
+      return tag.getValue().asString();
+    }
+
+    @Override
+    public String setValue(String value) {
+      return getValue();
+    }
   }
 }

@@ -22,15 +22,16 @@ import io.opentracing.Span;
 
 @SuppressWarnings("deprecation")
 final class ScopeManagerShim implements ScopeManager {
-  private final openconsensus.trace.Tracer tracer;
+  private final TracerShim tracerShim;
 
-  public ScopeManagerShim(openconsensus.trace.Tracer tracer) {
-    this.tracer = tracer;
+  public ScopeManagerShim(TracerShim tracerShim) {
+    this.tracerShim = tracerShim;
   }
 
   @Override
   public Span activeSpan() {
-    return new SpanShim(tracer.getCurrentSpan());
+    // TODO - is there a way to cleanly support baggage/tags here?
+    return new SpanShim(tracerShim, tracerShim.tracer().getCurrentSpan());
   }
 
   @Override
@@ -42,7 +43,7 @@ final class ScopeManagerShim implements ScopeManager {
   @SuppressWarnings("MustBeClosedChecker")
   public Scope activate(Span span) {
     openconsensus.trace.Span actualSpan = getActualSpan(span);
-    return new ScopeShim(tracer.withSpan(actualSpan));
+    return new ScopeShim(tracerShim.tracer().withSpan(actualSpan));
   }
 
   @Override

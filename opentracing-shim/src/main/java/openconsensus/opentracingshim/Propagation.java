@@ -16,7 +16,6 @@
 
 package openconsensus.opentracingshim;
 
-import io.opentracing.SpanContext;
 import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.TextMap;
 import java.nio.ByteBuffer;
@@ -24,24 +23,34 @@ import java.util.HashMap;
 import java.util.Map;
 
 final class Propagation {
-  private Propagation() {}
+  private final TracerShim tracerShim;
 
-  public static void injectTextFormat(
-      openconsensus.context.propagation.TextFormat<openconsensus.trace.SpanContext> format,
-      openconsensus.trace.SpanContext context,
-      TextMap carrier) {
-    format.inject(context, carrier, TextMapSetter.INSTANCE);
+  Propagation(TracerShim tracerShim) {
+    this.tracerShim = tracerShim;
   }
 
-  public static SpanContext extractTextFormat(
-      openconsensus.context.propagation.TextFormat<openconsensus.trace.SpanContext> format,
-      TextMap carrier) {
+  public void injectTextFormat(SpanContextShim contextShim, TextMap carrier) {
+    tracerShim
+        .tracer()
+        .getTextFormat()
+        .inject(contextShim.getSpanContext(), carrier, TextMapSetter.INSTANCE);
+    tracerShim
+        .tagger()
+        .getTextFormat()
+        .inject(contextShim.getTagMap(), carrier, TextMapSetter.INSTANCE);
+  }
+
+  public SpanContextShim extractTextFormat(TextMap carrier) {
     Map<String, String> carrierMap = new HashMap<String, String>();
     for (Map.Entry<String, String> entry : carrier) {
       carrierMap.put(entry.getKey(), entry.getValue());
     }
 
-    return new SpanContextShim(format.extract(carrierMap, TextMapGetter.INSTANCE));
+    openconsensus.trace.SpanContext context =
+        tracerShim.tracer().getTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
+    openconsensus.tags.TagMap tagMap =
+        tracerShim.tagger().getTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
+    return new SpanContextShim(tracerShim, context, tagMap);
   }
 
   static final class TextMapSetter
@@ -70,24 +79,21 @@ final class Propagation {
     }
   }
 
-  public static void injectBinaryFormat(
-      openconsensus.context.propagation.BinaryFormat<openconsensus.trace.SpanContext> format,
-      openconsensus.trace.SpanContext context,
-      Binary carrier) {
+  // TODO - add baggage support for the Binary format.
+  public void injectBinaryFormat(SpanContextShim context, Binary carrier) {
 
-    byte[] buff = format.toByteArray(context);
-    ByteBuffer byteBuff = carrier.injectionBuffer(buff.length);
-    byteBuff.put(buff);
+    byte[] contextBuff =
+        tracerShim.tracer().getBinaryFormat().toByteArray(context.getSpanContext());
+    ByteBuffer byteBuff = carrier.injectionBuffer(contextBuff.length);
+    byteBuff.put(contextBuff);
   }
 
-  public static SpanContext extractBinaryFormat(
-      openconsensus.context.propagation.BinaryFormat<openconsensus.trace.SpanContext> format,
-      Binary carrier) {
+  public SpanContextShim extractBinaryFormat(Binary carrier) {
 
     ByteBuffer byteBuff = carrier.extractionBuffer();
     byte[] buff = new byte[byteBuff.remaining()];
     byteBuff.get(buff);
-
-    return new SpanContextShim(format.fromByteArray(buff));
+    return new SpanContextShim(
+        tracerShim, tracerShim.tracer().getBinaryFormat().fromByteArray(buff));
   }
 }

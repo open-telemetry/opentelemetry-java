@@ -24,11 +24,14 @@ import io.opentracing.Tracer;
 import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
+import openconsensus.tags.Tagger;
 import openconsensus.trace.Trace;
 
 public final class TracerShim implements Tracer {
   private final openconsensus.trace.Tracer tracer;
+  private final openconsensus.tags.Tagger tagger;
   private final ScopeManager scopeManagerShim;
+  private final Propagation propagation;
 
   /**
    * Creates a {@code io.opentracing.Tracer} shim out of the {@code openconsensus.trace.Tracer}
@@ -46,9 +49,20 @@ public final class TracerShim implements Tracer {
    * @param tracer the {@code openconsensus.trace.Tracer} used by this shim.
    * @since 0.1.0
    */
+  @SuppressWarnings("ConstructorLeaksThis")
   public TracerShim(openconsensus.trace.Tracer tracer) {
     this.tracer = tracer;
-    this.scopeManagerShim = new ScopeManagerShim(tracer);
+    this.tagger = openconsensus.tags.Tags.getTagger(); // TODO - Let the user specify it.
+    this.scopeManagerShim = new ScopeManagerShim(this);
+    this.propagation = new Propagation(this);
+  }
+
+  Tagger tagger() {
+    return tagger;
+  }
+
+  openconsensus.trace.Tracer tracer() {
+    return tracer;
   }
 
   @Override
@@ -68,18 +82,18 @@ public final class TracerShim implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(String operationName) {
-    return new SpanBuilderShim(tracer, operationName);
+    return new SpanBuilderShim(this, operationName);
   }
 
   @Override
   public <C> void inject(SpanContext context, Format<C> format, C carrier) {
-    openconsensus.trace.SpanContext actualContext = getActualContext(context);
+    SpanContextShim contextShim = getContextShim(context);
 
     // TODO - Shall we expect to get no-op objects if a given format is not supported at all?
     if (format == Format.Builtin.TEXT_MAP || format == Format.Builtin.HTTP_HEADERS) {
-      Propagation.injectTextFormat(tracer.getTextFormat(), actualContext, (TextMap) carrier);
+      propagation.injectTextFormat(contextShim, (TextMap) carrier);
     } else if (format == Format.Builtin.BINARY) {
-      Propagation.injectBinaryFormat(tracer.getBinaryFormat(), actualContext, (Binary) carrier);
+      propagation.injectBinaryFormat(contextShim, (Binary) carrier);
     }
   }
 
@@ -87,12 +101,12 @@ public final class TracerShim implements Tracer {
   @Override
   public <C> SpanContext extract(Format<C> format, C carrier) {
 
-    SpanContext context = null;
+    SpanContextShim context = null;
 
     if (format == Format.Builtin.TEXT_MAP || format == Format.Builtin.HTTP_HEADERS) {
-      context = Propagation.extractTextFormat(tracer.getTextFormat(), (TextMap) carrier);
+      context = propagation.extractTextFormat((TextMap) carrier);
     } else if (format == Format.Builtin.BINARY) {
-      context = Propagation.extractBinaryFormat(tracer.getBinaryFormat(), (Binary) carrier);
+      context = propagation.extractBinaryFormat((Binary) carrier);
     }
 
     return context;
@@ -103,11 +117,11 @@ public final class TracerShim implements Tracer {
     // TODO
   }
 
-  static openconsensus.trace.SpanContext getActualContext(SpanContext context) {
+  static SpanContextShim getContextShim(SpanContext context) {
     if (!(context instanceof SpanContextShim)) {
       throw new IllegalArgumentException("context is not a valid SpanContextShim object");
     }
 
-    return ((SpanContextShim) context).getSpanContext();
+    return (SpanContextShim) context;
   }
 }
