@@ -18,7 +18,7 @@ make progress, we will post updates to the OpenCensus and OpenTracing blogs.
 
 ## Plan
 
-[Please review the roadmap here.](https://medium.com/opentracing/a-roadmap-to-convergence-b074e5815289).
+[Please review the roadmap here](https://medium.com/opentracing/a-roadmap-to-convergence-b074e5815289).
 
 In the coming months [we plan to merge the OpenCensus and OpenTracing
 projects](https://medium.com/opentracing/merging-opentracing-and-opencensus-f0fe9c7ca6f0).
