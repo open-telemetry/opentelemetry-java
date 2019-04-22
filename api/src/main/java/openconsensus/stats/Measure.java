@@ -42,7 +42,6 @@ public abstract class Measure {
    * <p>Suggested format for name: {@code <web_host>/<path>}.
    *
    * @return the name of this measure.
-   *
    * @since 0.1.0
    */
   public abstract String getName();
