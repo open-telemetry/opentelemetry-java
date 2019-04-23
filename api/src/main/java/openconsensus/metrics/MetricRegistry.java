@@ -104,4 +104,31 @@ public abstract class MetricRegistry {
    */
   public abstract DerivedDoubleCumulative addDerivedDoubleCumulative(
       String name, MetricOptions options);
+
+  /**
+   * Builds a new long cumulative to be added to the registry. This is a more convenient form when
+   * you want to manually increase values as per your service requirements.
+   *
+   * @param name the name of the metric.
+   * @param options the options for the metric.
+   * @return a {@code LongCumulative}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @since 0.1.0
+   */
+  public abstract LongCumulative addLongCumulative(String name, MetricOptions options);
+
+  /**
+   * Builds a new derived long cumulative to be added to the registry. This is a more convenient
+   * form when you want to define a cumulative by executing a {@link ToLongFunction} on an object.
+   *
+   * @param name the name of the metric.
+   * @param options the options for the metric.
+   * @return a {@code DerivedLongCumulative}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @since 0.1.0
+   */
+  public abstract DerivedLongCumulative addDerivedLongCumulative(
+      String name, MetricOptions options);
 }

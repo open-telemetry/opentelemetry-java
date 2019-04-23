@@ -93,6 +93,24 @@ public final class NoopMetrics {
           options.getUnit(),
           options.getLabelKeys());
     }
+
+    @Override
+    public LongCumulative addLongCumulative(String name, MetricOptions options) {
+      return NoopLongCumulative.create(
+          Utils.checkNotNull(name, "name"),
+          options.getDescription(),
+          options.getUnit(),
+          options.getLabelKeys());
+    }
+
+    @Override
+    public DerivedLongCumulative addDerivedLongCumulative(String name, MetricOptions options) {
+      return NoopDerivedLongCumulative.create(
+          Utils.checkNotNull(name, "name"),
+          options.getDescription(),
+          options.getUnit(),
+          options.getLabelKeys());
+    }
   }
 
   /** No-op implementations of LongGauge class. */
@@ -337,6 +355,93 @@ public final class NoopMetrics {
     @Override
     public <T> void createTimeSeries(
         List<LabelValue> labelValues, T obj, ToDoubleFunction<T> function) {
+      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
+      Utils.checkArgument(
+          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
+      Utils.checkNotNull(function, "function");
+    }
+
+    @Override
+    public void removeTimeSeries(List<LabelValue> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+    }
+
+    @Override
+    public void clear() {}
+  }
+
+  /** No-op implementations of LongCumulative class. */
+  private static final class NoopLongCumulative extends LongCumulative {
+    private final int labelKeysSize;
+
+    static NoopLongCumulative create(
+        String name, String description, String unit, List<LabelKey> labelKeys) {
+      return new NoopLongCumulative(name, description, unit, labelKeys);
+    }
+
+    /** Creates a new {@code NoopLongPoint}. */
+    NoopLongCumulative(String name, String description, String unit, List<LabelKey> labelKeys) {
+      Utils.checkNotNull(name, "name");
+      Utils.checkNotNull(description, "description");
+      Utils.checkNotNull(unit, "unit");
+      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
+      labelKeysSize = labelKeys.size();
+    }
+
+    @Override
+    public NoopLongPoint getOrCreateTimeSeries(List<LabelValue> labelValues) {
+      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
+      Utils.checkArgument(
+          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
+      return NoopLongPoint.INSTANCE;
+    }
+
+    @Override
+    public NoopLongPoint getDefaultTimeSeries() {
+      return NoopLongPoint.INSTANCE;
+    }
+
+    @Override
+    public void removeTimeSeries(List<LabelValue> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+    }
+
+    @Override
+    public void clear() {}
+
+    /** No-op implementations of LongPoint class. */
+    private static final class NoopLongPoint extends LongPoint {
+      private static final NoopLongPoint INSTANCE = new NoopLongPoint();
+
+      private NoopLongPoint() {}
+
+      @Override
+      public void add(long delta) {}
+    }
+  }
+
+  /** No-op implementations of DerivedLongCumulative class. */
+  private static final class NoopDerivedLongCumulative extends DerivedLongCumulative {
+    private final int labelKeysSize;
+
+    static NoopDerivedLongCumulative create(
+        String name, String description, String unit, List<LabelKey> labelKeys) {
+      return new NoopDerivedLongCumulative(name, description, unit, labelKeys);
+    }
+
+    /** Creates a new {@code NoopDerivedLongCumulative}. */
+    NoopDerivedLongCumulative(
+        String name, String description, String unit, List<LabelKey> labelKeys) {
+      Utils.checkNotNull(name, "name");
+      Utils.checkNotNull(description, "description");
+      Utils.checkNotNull(unit, "unit");
+      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
+      labelKeysSize = labelKeys.size();
+    }
+
+    @Override
+    public <T> void createTimeSeries(
+        List<LabelValue> labelValues, T obj, ToLongFunction<T> function) {
       Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
