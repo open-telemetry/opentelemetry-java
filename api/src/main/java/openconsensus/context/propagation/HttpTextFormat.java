@@ -21,7 +21,8 @@ import javax.annotation.Nullable;
 
 /**
  * Injects and extracts a value as text into carriers that travel in-band across process boundaries.
- * Values are often encoded as RPC/HTTP request headers.
+ * Encoding is expected to conform to the HTTP/1.1 Header Field semantics. Values are often encoded
+ * as RPC/HTTP request headers.
  *
  * <p>When using http, the carrier of propagated data on both the client (injector) and server
  * (extractor) side is usually an http request. Propagation is usually implemented via library-
@@ -30,7 +31,7 @@ import javax.annotation.Nullable;
  *
  * @since 0.1.0
  */
-public abstract class TextFormat<V> {
+public abstract class HttpTextFormat<V> {
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
    * before calling {@link #inject(Object, Object, Setter)} )}.
@@ -59,7 +60,7 @@ public abstract class TextFormat<V> {
   public abstract <C> void inject(V value, C carrier, Setter<C> setter);
 
   /**
-   * Class that allows a {@code TextFormat} to set propagated fields into a carrier.
+   * Class that allows a {@code HttpTextFormat} to set propagated fields into a carrier.
    *
    * <p>{@code Setter} is stateless and allows to be saved as a constant to avoid runtime
    * allocations.
@@ -98,7 +99,7 @@ public abstract class TextFormat<V> {
   public abstract <C> V extract(C carrier, Getter<C> getter);
 
   /**
-   * Class that allows a {@code TextFormat} to read propagated fields from a carrier.
+   * Class that allows a {@code HttpTextFormat} to read propagated fields from a carrier.
    *
    * <p>{@code Getter} is stateless and allows to be saved as a constant to avoid runtime
    * allocations.

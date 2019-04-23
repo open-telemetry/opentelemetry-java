@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
 import openconsensus.context.propagation.BinaryFormat;
-import openconsensus.context.propagation.TextFormat;
+import openconsensus.context.propagation.HttpTextFormat;
 import openconsensus.internal.Utils;
 import openconsensus.resource.Resource;
 
@@ -49,7 +49,7 @@ public final class NoopTrace {
   // No-Op implementation of the Tracer.
   private static final class NoopTracer extends Tracer {
     private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
-    private static final TextFormat<SpanContext> TEXT_FORMAT = new NoopTextFormat();
+    private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new NoopHttpTextFormat();
 
     @Override
     public Span getCurrentSpan() {
@@ -108,8 +108,8 @@ public final class NoopTrace {
     }
 
     @Override
-    public TextFormat<SpanContext> getTextFormat() {
-      return TEXT_FORMAT;
+    public HttpTextFormat<SpanContext> getHttpTextFormat() {
+      return HTTP_TEXT_FORMAT;
     }
 
     private NoopTracer() {}
@@ -188,9 +188,9 @@ public final class NoopTrace {
     private NoopBinaryFormat() {}
   }
 
-  private static final class NoopTextFormat extends TextFormat<SpanContext> {
+  private static final class NoopHttpTextFormat extends HttpTextFormat<SpanContext> {
 
-    private NoopTextFormat() {}
+    private NoopHttpTextFormat() {}
 
     @Override
     public List<String> fields() {

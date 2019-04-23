@@ -18,7 +18,7 @@ package openconsensus.tags;
 
 import openconsensus.context.Scope;
 import openconsensus.context.propagation.BinaryFormat;
-import openconsensus.context.propagation.TextFormat;
+import openconsensus.context.propagation.HttpTextFormat;
 
 /**
  * Object for creating new {@link TagMap}s and {@code TagMap}s based on the current context.
@@ -119,7 +119,7 @@ public abstract class Tagger {
   public abstract BinaryFormat<TagMap> getBinaryFormat();
 
   /**
-   * Returns the {@link TextFormat} for this implementation.
+   * Returns the {@link HttpTextFormat} for this implementation.
    *
    * <p>Usually this will be the W3C Correlation Context as the HTTP text format. For more details,
    * see <a href="https://github.com/w3c/correlation-context">correlation-context</a>.
@@ -128,10 +128,10 @@ public abstract class Tagger {
    *
    * <pre>{@code
    * private static final Tagger tagger = Tags.getTagger();
-   * private static final TextFormat textFormat =
-   *     Tags.getTagger().getTextFormat();
+   * private static final HttpTextFormat textFormat =
+   *     Tags.getTagger().getHttpTextFormat();
    * private static final TextFormat.Setter setter =
-   *     new TextFormat.Setter<HttpURLConnection>() {
+   *     new HttpTextFormat.Setter<HttpURLConnection>() {
    *       public void put(HttpURLConnection carrier, String key, String value) {
    *         carrier.setRequestProperty(field, value);
    *       }
@@ -149,9 +149,9 @@ public abstract class Tagger {
    *
    * <pre>{@code
    * private static final Tagger tagger = Tags.getTagger();
-   * private static final TextFormat textFormat =
-   *     Tags.getTagger().getTextFormat();
-   * private static final TextFormat.Getter<HttpRequest> getter = ...;
+   * private static final HttpTextFormat textFormat =
+   *     Tags.getTagger().getHttpTextFormat();
+   * private static final HttpTextFormat.Getter<HttpRequest> getter = ...;
    *
    * void onRequestReceived(HttpRequest request) {
    *   TagMap tagMap = textFormat.extract(request, getter);
@@ -161,8 +161,8 @@ public abstract class Tagger {
    * }
    * }</pre>
    *
-   * @return the {@code TextFormat} for this implementation.
+   * @return the {@code HttpTextFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract TextFormat<TagMap> getTextFormat();
+  public abstract HttpTextFormat<TagMap> getHttpTextFormat();
 }

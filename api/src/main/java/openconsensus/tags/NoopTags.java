@@ -22,7 +22,7 @@ import javax.annotation.concurrent.Immutable;
 import openconsensus.context.NoopScope;
 import openconsensus.context.Scope;
 import openconsensus.context.propagation.BinaryFormat;
-import openconsensus.context.propagation.TextFormat;
+import openconsensus.context.propagation.HttpTextFormat;
 import openconsensus.internal.Utils;
 
 /**
@@ -47,7 +47,7 @@ public final class NoopTags {
   @Immutable
   private static final class NoopTagger extends Tagger {
     private static final BinaryFormat<TagMap> BINARY_FORMAT = new NoopBinaryFormat();
-    private static final TextFormat<TagMap> TEXT_FORMAT = new NoopTextFormat();
+    private static final HttpTextFormat<TagMap> HTTP_TEXT_FORMAT = new NoopHttpTextFormat();
 
     @Override
     public TagMap getCurrentTagMap() {
@@ -82,8 +82,8 @@ public final class NoopTags {
     }
 
     @Override
-    public TextFormat<TagMap> getTextFormat() {
-      return TEXT_FORMAT;
+    public HttpTextFormat<TagMap> getHttpTextFormat() {
+      return HTTP_TEXT_FORMAT;
     }
   }
 
@@ -133,8 +133,8 @@ public final class NoopTags {
   }
 
   @Immutable
-  private static final class NoopTextFormat
-      extends openconsensus.context.propagation.TextFormat<TagMap> {
+  private static final class NoopHttpTextFormat
+      extends openconsensus.context.propagation.HttpTextFormat<TagMap> {
     @Override
     public List<String> fields() {
       return Collections.emptyList();
