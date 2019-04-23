@@ -9,6 +9,7 @@ buildscript {
     dependencies {
         classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.5.0'
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.16'
+        classpath "net.ltgt.gradle:gradle-apt-plugin:0.18"
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
         classpath "gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.8"
     }
@@ -29,6 +30,8 @@ subprojects {
     // The plugin only has an effect if a signature is specified
     apply plugin: 'ru.vyarus.animalsniffer'
     apply plugin: 'com.github.sherter.google-java-format'
+    apply plugin: 'net.ltgt.apt'
+    apply plugin: 'net.ltgt.apt-idea'
     apply plugin: 'net.ltgt.errorprone'
 
     group = "openconsensus"
