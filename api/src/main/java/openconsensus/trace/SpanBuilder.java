@@ -236,7 +236,7 @@ public abstract class SpanBuilder {
    *
    * <pre><code>
    * Span span = tracer.spanBuilder("MyCallableSpan").startSpan();
-   * {@code Callable<MyResult>} newCallable = tracer.withSpan(span, myCallable);
+   * Callable&lt;MyResult&gt; newCallable = tracer.withSpan(span, myCallable);
    * MyResult myResult = null;
    * try {
    *   myResult = newCallable.call();
