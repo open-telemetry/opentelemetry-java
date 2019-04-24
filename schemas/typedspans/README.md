@@ -3,7 +3,7 @@
 
 ## Rationale
 
-Spans represent different _canonical_ _types _of operations. Examples are
+Spans represent different _canonical types_ of operations. Examples are
 
 * Local operations like method invocations
 * HTTP requests (inbound and outbound)
