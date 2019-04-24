@@ -19,6 +19,8 @@ package openconsensus.stats;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.Utils;
+import openconsensus.stats.Measure.MeasureDouble;
+import openconsensus.stats.Measure.MeasureLong;
 import openconsensus.tags.TagMap;
 import openconsensus.trace.SpanContext;
 
@@ -60,6 +62,16 @@ public final class NoopStats {
       Utils.checkNotNull(tags, "tags");
       Utils.checkNotNull(measurements, "measurements");
       Utils.checkNotNull(spanContext, "spanContext");
+    }
+
+    @Override
+    public MeasureDouble createMeasureDouble(String name, String description, String unit) {
+      return MeasureDouble.create(name, description, unit);
+    }
+
+    @Override
+    public MeasureLong createMeasureLong(String name, String description, String unit) {
+      return MeasureLong.create(name, description, unit);
     }
   }
 }

@@ -17,6 +17,8 @@
 package openconsensus.stats;
 
 import java.util.List;
+import openconsensus.stats.Measure.MeasureDouble;
+import openconsensus.stats.Measure.MeasureLong;
 import openconsensus.tags.TagMap;
 import openconsensus.trace.SpanContext;
 
@@ -55,4 +57,26 @@ public abstract class StatsRecorder {
    * @since 0.1.0
    */
   public abstract void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext);
+
+  /**
+   * Constructs a new {@link MeasureDouble}.
+   *
+   * @param name name of {@code Measure}. Suggested format: {@code <web_host>/<path>}.
+   * @param description description of {@code Measure}.
+   * @param unit unit of {@code Measure}.
+   * @return a {@code MeasureDouble}.
+   * @since 0.1.0
+   */
+  public abstract MeasureDouble createMeasureDouble(String name, String description, String unit);
+
+  /**
+   * Constructs a new {@link MeasureLong}.
+   *
+   * @param name name of {@code Measure}. Suggested format: {@code <web_host>/<path>}.
+   * @param description description of {@code Measure}.
+   * @param unit unit of {@code Measure}.
+   * @return a {@code MeasureLong}.
+   * @since 0.1.0
+   */
+  public abstract MeasureLong createMeasureLong(String name, String description, String unit);
 }

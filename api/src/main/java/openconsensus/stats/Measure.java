@@ -92,8 +92,6 @@ public abstract class Measure {
   @AutoValue
   public abstract static class MeasureDouble extends Measure {
 
-    MeasureDouble() {}
-
     /**
      * Constructs a new {@link MeasureDouble}.
      *
@@ -101,9 +99,8 @@ public abstract class Measure {
      * @param description description of {@code Measure}.
      * @param unit unit of {@code Measure}.
      * @return a {@code MeasureDouble}.
-     * @since 0.1.0
      */
-    public static MeasureDouble create(String name, String description, String unit) {
+    static MeasureDouble create(String name, String description, String unit) {
       Utils.checkArgument(
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
@@ -134,8 +131,6 @@ public abstract class Measure {
   @AutoValue
   public abstract static class MeasureLong extends Measure {
 
-    MeasureLong() {}
-
     /**
      * Constructs a new {@link MeasureLong}.
      *
@@ -143,9 +138,8 @@ public abstract class Measure {
      * @param description description of {@code Measure}.
      * @param unit unit of {@code Measure}.
      * @return a {@code MeasureLong}.
-     * @since 0.1.0
      */
-    public static MeasureLong create(String name, String description, String unit) {
+    static MeasureLong create(String name, String description, String unit) {
       Utils.checkArgument(
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
