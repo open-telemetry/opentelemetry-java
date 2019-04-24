@@ -17,9 +17,8 @@
 package openconsensus.metrics;
 
 import java.util.List;
-import openconsensus.common.ToDoubleFunction;
-import openconsensus.common.ToLongFunction;
 import openconsensus.internal.Utils;
+import openconsensus.resource.Resource;
 
 /**
  * No-op implementations of metrics classes.
@@ -30,16 +29,24 @@ public final class NoopMetrics {
   private NoopMetrics() {}
 
   /**
-   * Returns an instance that is a no-op implementations for {@link MetricRegistry}.
+   * Returns an instance that is a no-op implementations for {@link Meter}.
    *
-   * @return an instance that is a no-op implementations for {@link MetricRegistry}
+   * @return an instance that is a no-op implementations for {@link Meter}
    * @since 0.1.0
    */
-  public static MetricRegistry newNoopMetricRegistry() {
-    return new NoopMetricRegistry();
+  public static Meter newNoopMeter() {
+    return new NoopMeter();
   }
 
-  private static final class NoopMetricRegistry extends MetricRegistry {
+  private static final class NoopMeter extends Meter {
+
+    @Override
+    public MetricRegistry.Builder buildMetricRegistry() {
+      return new NoopMetricCollection.Builder();
+    }
+  }
+
+  private static final class NoopMetricCollection extends MetricRegistry {
     @Override
     public LongGauge addLongGauge(String name, MetricOptions options) {
       return NoopLongGauge.create(
@@ -110,6 +117,27 @@ public final class NoopMetrics {
           options.getDescription(),
           options.getUnit(),
           options.getLabelKeys());
+    }
+
+    private static final class Builder extends MetricRegistry.Builder {
+      private static final MetricRegistry METRIC_COLLECTION = new NoopMetricCollection();
+
+      @Override
+      public MetricRegistry.Builder setComponent(String component) {
+        Utils.checkNotNull(component, "component");
+        return this;
+      }
+
+      @Override
+      public MetricRegistry.Builder setResource(Resource resource) {
+        Utils.checkNotNull(resource, "resource");
+        return this;
+      }
+
+      @Override
+      public MetricRegistry build() {
+        return METRIC_COLLECTION;
+      }
     }
   }
 

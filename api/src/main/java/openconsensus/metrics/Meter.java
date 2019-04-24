@@ -16,23 +16,13 @@
 
 package openconsensus.metrics;
 
-/**
- * Class for accessing the default {@link Meter}.
- *
- * @since 0.1.0
- */
-public final class Metrics {
-  private static final Meter METER = NoopMetrics.newNoopMeter();
+/** Entry point fot metrics API, this object allows to create new {@link MetricRegistry}. */
+public abstract class Meter {
 
   /**
-   * Returns the global {@link Meter} with the provided implementation.
+   * Returns a new builder for a {@code MetricRegistry}.
    *
-   * @return the global {@code Meter} with the provided implementation.
-   * @since 0.1.0
+   * @return a new builder for a {@code MetricRegistry}.
    */
-  public static Meter getMeter() {
-    return METER;
-  }
-
-  private Metrics() {}
+  public abstract MetricRegistry.Builder buildMetricRegistry();
 }

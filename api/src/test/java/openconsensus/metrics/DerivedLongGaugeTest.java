@@ -19,7 +19,6 @@ package openconsensus.metrics;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import openconsensus.common.ToLongFunction;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,7 +39,8 @@ public class DerivedLongGaugeTest {
       Collections.singletonList(LabelValue.create("value"));
   private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<LabelValue>();
 
-  private final MetricRegistry metricRegistry = NoopMetrics.newNoopMetricRegistry();
+  private final MetricRegistry metricRegistry =
+      NoopMetrics.newNoopMeter().buildMetricRegistry().build();
   private final DerivedLongGauge derivedLongGauge =
       metricRegistry.addDerivedLongGauge(
           NAME,

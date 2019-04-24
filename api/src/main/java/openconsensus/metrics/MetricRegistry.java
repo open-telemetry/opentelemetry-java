@@ -16,11 +16,10 @@
 
 package openconsensus.metrics;
 
-import openconsensus.common.ToDoubleFunction;
-import openconsensus.common.ToLongFunction;
+import openconsensus.resource.Resource;
 
 /**
- * Creates and manages your collection set of metrics.
+ * Creates and manages a set of metrics for a library/application.
  *
  * @since 0.1.0
  */
@@ -131,4 +130,37 @@ public abstract class MetricRegistry {
    */
   public abstract DerivedLongCumulative addDerivedLongCumulative(
       String name, MetricOptions options);
+
+  /** Builder class for the {@link MetricRegistry}. */
+  public abstract static class Builder {
+
+    /**
+     * Sets the name of the component that reports these metrics.
+     *
+     * <p>The final name of the reported metric will be <code>component + "_" + name</code> if the
+     * component is not empty.
+     *
+     * @param component the name of the component that reports these metrics.
+     * @return this.
+     */
+    public abstract Builder setComponent(String component);
+
+    /**
+     * Sets the {@code Resource} associated with the new {@code MetricRegistry}.
+     *
+     * <p>This should be set only when reporting out-of-band metrics, otherwise the implementation
+     * will set the {@code Resource} for in-process metrics.
+     *
+     * @param resource the {@code Resource} associated with the new {@code MetricRegistry}.
+     * @return this.
+     */
+    public abstract Builder setResource(Resource resource);
+
+    /**
+     * Builds and returns a {@link MetricRegistry} with the desired options.
+     *
+     * @return a {@link MetricRegistry} with the desired options.
+     */
+    public abstract MetricRegistry build();
+  }
 }

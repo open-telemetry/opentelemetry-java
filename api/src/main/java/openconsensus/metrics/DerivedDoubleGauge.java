@@ -19,7 +19,6 @@ package openconsensus.metrics;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.common.ToDoubleFunction;
 
 /**
  * Derived Double Gauge metric, to report instantaneous measurement of a double value. Gauges can go

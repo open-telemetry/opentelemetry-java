@@ -19,7 +19,6 @@ package openconsensus.metrics;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.common.ToLongFunction;
 
 /**
  * Derived Long Cumulative metric, to report cumulative measurement of a long value. Cumulative
