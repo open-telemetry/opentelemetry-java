@@ -43,9 +43,9 @@ import openconsensus.resource.Resource;
  *   void doWork() {
  *     Span span = tracer.spanBuilder("MyClass.DoWork").startSpan();
  *     try(Scope ss = tracer.withSpan(span)) {
- *       tracer.getCurrentSpan().addAnnotation("Starting the work.");
+ *       tracer.getCurrentSpan().addEvent("Starting the work.");
  *       doWorkInternal();
- *       tracer.getCurrentSpan().addAnnotation("Finished working.");
+ *       tracer.getCurrentSpan().addEvent("Finished working.");
  *     } finally {
  *       span.end();
  *     }
@@ -60,7 +60,7 @@ import openconsensus.resource.Resource;
  *   private static final Tracer tracer = Trace.getTracer();
  *   void doWork(Span parent) {
  *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
- *     childSpan.addAnnotation("Starting the work.");
+ *     childSpan.addEvent("Starting the work.");
  *     try {
  *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
  *     } finally {
@@ -104,7 +104,7 @@ public abstract class Tracer {
    *   // Create a Span as a child of the current Span.
    *   Span span = tracer.spanBuilder("my span").startSpan();
    *   try (Scope ws = tracer.withSpan(span)) {
-   *     tracer.getCurrentSpan().addAnnotation("my annotation");
+   *     tracer.getCurrentSpan().addEvent("my event");
    *     doSomeOtherWork();  // Here "span" is the current Span.
    *   }
    *   span.end();
@@ -123,7 +123,7 @@ public abstract class Tracer {
    *   Span span = tracer.spanBuilder("my span").startSpan();
    *   Scope ws = tracer.withSpan(span);
    *   try {
-   *     tracer.getCurrentSpan().addAnnotation("my annotation");
+   *     tracer.getCurrentSpan().addEvent("my event");
    *     doSomeOtherWork();  // Here "span" is the current Span.
    *   } finally {
    *     ws.close();
