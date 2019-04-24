@@ -13,7 +13,7 @@ Spans represent different _canonical types_ of operations. Examples are
 A span consists of a number of mandatory and optional attributes that add information
 about the represented operation to it.
 
-Depending on the _canonical type_ of an operation some attributes might be needed
+Depending on the _canonical type_ of an operation, some attributes might be needed
 to represent and analyze a span correctly.
 
 **Example:** A HTTP request needs a status code to distinguish successful or
