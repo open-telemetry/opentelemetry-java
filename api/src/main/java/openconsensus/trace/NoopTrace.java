@@ -47,7 +47,7 @@ public final class NoopTrace {
   }
 
   // No-Op implementation of the Tracer.
-  private static final class NoopTracer extends Tracer {
+  private static final class NoopTracer implements Tracer {
     private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
     private static final TextFormat<SpanContext> TEXT_FORMAT = new NoopTextFormat();
 
@@ -116,7 +116,7 @@ public final class NoopTrace {
   }
 
   // Noop implementation of SpanBuilder.
-  private static final class NoopSpanBuilder extends SpanBuilder {
+  private static final class NoopSpanBuilder implements SpanBuilder {
     static NoopSpanBuilder createWithParent(String spanName, @Nullable Span parent) {
       return new NoopSpanBuilder(spanName);
     }
@@ -171,7 +171,7 @@ public final class NoopTrace {
     }
   }
 
-  private static final class NoopBinaryFormat extends BinaryFormat<SpanContext> {
+  private static final class NoopBinaryFormat implements BinaryFormat<SpanContext> {
 
     @Override
     public byte[] toByteArray(SpanContext spanContext) {
@@ -188,7 +188,7 @@ public final class NoopTrace {
     private NoopBinaryFormat() {}
   }
 
-  private static final class NoopTextFormat extends TextFormat<SpanContext> {
+  private static final class NoopTextFormat implements TextFormat<SpanContext> {
 
     private NoopTextFormat() {}
 

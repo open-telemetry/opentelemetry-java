@@ -25,7 +25,7 @@ import openconsensus.context.propagation.TextFormat;
 import openconsensus.resource.Resource;
 
 /**
- * Tracer is a simple, thin class for {@link Span} creation and in-process context interaction.
+ * Tracer is a simple, interface for {@link Span} creation and in-process context interaction.
  *
  * <p>Users may choose to use manual or automatic Context propagation. Because of that this class
  * offers APIs to facilitate both usages.
@@ -73,7 +73,7 @@ import openconsensus.resource.Resource;
  *
  * @since 0.1.0
  */
-public abstract class Tracer {
+public interface Tracer {
   /**
    * Gets the current Span from the current Context.
    *
@@ -86,7 +86,7 @@ public abstract class Tracer {
    *     from the Context.
    * @since 0.1.0
    */
-  public abstract Span getCurrentSpan();
+  Span getCurrentSpan();
 
   /**
    * Enters the scope of code where the given {@link Span} is in the current Context, and returns an
@@ -139,7 +139,7 @@ public abstract class Tracer {
    * @since 0.1.0
    */
   @MustBeClosed
-  public abstract Scope withSpan(Span span);
+  Scope withSpan(Span span);
 
   /**
    * Returns a {@link Runnable} that runs the given task with the given {@code Span} in the current
@@ -202,7 +202,7 @@ public abstract class Tracer {
    * @return the {@code Runnable}.
    * @since 0.1.0
    */
-  public abstract Runnable withSpan(Span span, Runnable runnable);
+  Runnable withSpan(Span span, Runnable runnable);
 
   /**
    * Returns a {@link Callable} that runs the given task with the given {@code Span} in the current
@@ -266,7 +266,7 @@ public abstract class Tracer {
    * @return the {@code Callable}.
    * @since 0.1.0
    */
-  public abstract <V> Callable<V> withSpan(Span span, final Callable<V> callable);
+  <V> Callable<V> withSpan(Span span, final Callable<V> callable);
 
   /**
    * Returns a {@link SpanBuilder} to create and start a new child {@link Span} as a child of to the
@@ -288,7 +288,7 @@ public abstract class Tracer {
    * @throws NullPointerException if {@code spanName} is {@code null}.
    * @since 0.1.0
    */
-  public abstract SpanBuilder spanBuilder(String spanName);
+  SpanBuilder spanBuilder(String spanName);
 
   /**
    * Returns a {@link SpanBuilder} to create and start a new child {@link Span} (or root if parent
@@ -307,7 +307,7 @@ public abstract class Tracer {
    * @throws NullPointerException if {@code spanName} is {@code null}.
    * @since 0.1.0
    */
-  public abstract SpanBuilder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent);
+  SpanBuilder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent);
 
   /**
    * Returns a {@link SpanBuilder} to create and start a new child {@link Span} (or root if parent
@@ -328,7 +328,7 @@ public abstract class Tracer {
    * @throws NullPointerException if {@code spanName} is {@code null}.
    * @since 0.1.0
    */
-  public abstract SpanBuilder spanBuilderWithRemoteParent(
+  SpanBuilder spanBuilderWithRemoteParent(
       String spanName, @Nullable SpanContext remoteParentSpanContext);
 
   /**
@@ -337,7 +337,7 @@ public abstract class Tracer {
    *
    * @param resource Resource to be associated with all {@link Span} and {@link SpanData} objects.
    */
-  public abstract void setResource(Resource resource);
+  void setResource(Resource resource);
 
   /**
    * Gets the {@link Resource} that is associating with all the {@link Span} and {@link SpanData}
@@ -346,7 +346,7 @@ public abstract class Tracer {
    * @return {@link Resource} that is associating with all {@link Span} and {@link SpanData}
    *     objects.
    */
-  public abstract Resource getResource();
+  Resource getResource();
 
   /**
    * Records a {@link SpanData}. This API allows to send a pre-populated span object to the
@@ -356,7 +356,7 @@ public abstract class Tracer {
    *
    * @param span Span Data to be reported to all exporters.
    */
-  public abstract void recordSpanData(SpanData span);
+  void recordSpanData(SpanData span);
 
   /**
    * Returns the {@link BinaryFormat} for this implementation.
@@ -408,7 +408,7 @@ public abstract class Tracer {
    * @return the {@code BinaryFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract BinaryFormat<SpanContext> getBinaryFormat();
+  BinaryFormat<SpanContext> getBinaryFormat();
 
   /**
    * Returns the {@link TextFormat} for this implementation.
@@ -462,7 +462,5 @@ public abstract class Tracer {
    * @return the {@code TextFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract TextFormat<SpanContext> getTextFormat();
-
-  protected Tracer() {}
+  TextFormat<SpanContext> getTextFormat();
 }

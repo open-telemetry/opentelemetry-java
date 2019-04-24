@@ -116,7 +116,7 @@ public final class NoopTags {
 
   @Immutable
   private static final class NoopBinaryFormat
-      extends openconsensus.context.propagation.BinaryFormat<TagMap> {
+      implements openconsensus.context.propagation.BinaryFormat<TagMap> {
     static final byte[] EMPTY_BYTE_ARRAY = {};
 
     @Override
@@ -134,7 +134,7 @@ public final class NoopTags {
 
   @Immutable
   private static final class NoopTextFormat
-      extends openconsensus.context.propagation.TextFormat<TagMap> {
+      implements openconsensus.context.propagation.TextFormat<TagMap> {
     @Override
     public List<String> fields() {
       return Collections.emptyList();

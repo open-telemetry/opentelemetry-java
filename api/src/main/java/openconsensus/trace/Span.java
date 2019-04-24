@@ -19,7 +19,7 @@ package openconsensus.trace;
 import java.util.Map;
 
 /**
- * An abstract class that represents a span. It has an associated {@link SpanContext}.
+ * An interface that represents a span. It has an associated {@link SpanContext}.
  *
  * <p>Spans are created by the {@link SpanBuilder#startSpan} method.
  *
@@ -27,7 +27,7 @@ import java.util.Map;
  *
  * @since 0.1.0
  */
-public abstract class Span {
+public interface Span {
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
@@ -36,7 +36,7 @@ public abstract class Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public abstract void setAttribute(String key, String value);
+  void setAttribute(String key, String value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -46,7 +46,7 @@ public abstract class Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public abstract void setAttribute(String key, long value);
+  void setAttribute(String key, long value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -56,7 +56,7 @@ public abstract class Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public abstract void setAttribute(String key, double value);
+  void setAttribute(String key, double value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -66,7 +66,7 @@ public abstract class Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public abstract void setAttribute(String key, boolean value);
+  void setAttribute(String key, boolean value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -76,7 +76,7 @@ public abstract class Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  public abstract void setAttribute(String key, AttributeValue value);
+  void setAttribute(String key, AttributeValue value);
 
   /**
    * Adds an event to the {@code Span}.
@@ -84,7 +84,7 @@ public abstract class Span {
    * @param name the name of the event.
    * @since 0.1.0
    */
-  public abstract void addEvent(String name);
+  void addEvent(String name);
 
   /**
    * Adds an event to the {@code Span}.
@@ -94,7 +94,7 @@ public abstract class Span {
    *     the {@code Span} as for {@code setAttributes()}.
    * @since 0.1.0
    */
-  public abstract void addEvent(String name, Map<String, AttributeValue> attributes);
+  void addEvent(String name, Map<String, AttributeValue> attributes);
 
   /**
    * Adds an event to the {@code Span}.
@@ -102,7 +102,7 @@ public abstract class Span {
    * @param event the event to add.
    * @since 0.1.0
    */
-  public abstract void addEvent(Event event);
+  void addEvent(Event event);
 
   /**
    * Adds a {@link Link} to the {@code Span}.
@@ -113,7 +113,7 @@ public abstract class Span {
    * @param link the link to add.
    * @since 0.1.0
    */
-  public abstract void addLink(Link link);
+  void addLink(Link link);
 
   /**
    * Sets the {@link Status} to the {@code Span}.
@@ -126,7 +126,7 @@ public abstract class Span {
    * @param status the {@link Status} to set.
    * @since 0.1.0
    */
-  public abstract void setStatus(Status status);
+  void setStatus(Status status);
 
   /**
    * Updates the {@code Span} name.
@@ -139,7 +139,7 @@ public abstract class Span {
    * @param name the {@code Span} name.
    * @since 0.1
    */
-  public abstract void updateName(String name);
+  void updateName(String name);
 
   /**
    * Marks the end of {@code Span} execution with the default options.
@@ -149,7 +149,7 @@ public abstract class Span {
    *
    * @since 0.1.0
    */
-  public abstract void end();
+  void end();
 
   /**
    * Returns the {@code SpanContext} associated with this {@code Span}.
@@ -157,7 +157,7 @@ public abstract class Span {
    * @return the {@code SpanContext} associated with this {@code Span}.
    * @since 0.1.0
    */
-  public abstract SpanContext getContext();
+  SpanContext getContext();
 
   /**
    * Returns {@code true} if this {@code Span} records events (e.g, {@link #addEvent(String)}.
@@ -165,7 +165,7 @@ public abstract class Span {
    * @return {@code true} if this {@code Span} records events.
    * @since 0.1.0
    */
-  public abstract boolean isRecordingEvents();
+  boolean isRecordingEvents();
 
   /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a
