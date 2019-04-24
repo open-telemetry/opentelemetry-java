@@ -35,12 +35,10 @@ public class DoubleCumulativeTest {
   private static final String UNIT = "1";
   private static final List<LabelKey> LABEL_KEY =
       Collections.singletonList(LabelKey.create("key", "key description"));
-  private static final List<LabelValue> LABEL_VALUES =
-      Collections.singletonList(LabelValue.create("value"));
-  private static final List<LabelKey> EMPTY_LABEL_KEYS = new ArrayList<LabelKey>();
   private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<LabelValue>();
 
-  private final MetricRegistry metricRegistry = NoopMetrics.newNoopMetricRegistry();
+  private final MetricRegistry metricRegistry =
+      NoopMetrics.newNoopMeter().buildMetricRegistry().build();
 
   @Test
   public void noopGetOrCreateTimeSeries_WithNullLabelValues() {

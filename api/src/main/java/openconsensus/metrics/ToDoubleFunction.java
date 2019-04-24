@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.common;
-
-import openconsensus.metrics.MetricRegistry;
+package openconsensus.metrics;
 
 /**
  * Represents a function that produces a double-valued result. See {@link MetricRegistry} for an

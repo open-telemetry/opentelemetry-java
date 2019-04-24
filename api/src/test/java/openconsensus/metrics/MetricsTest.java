@@ -28,7 +28,6 @@ public class MetricsTest {
 
   @Test
   public void defaultMetricRegistry() {
-    assertThat(Metrics.getMetricRegistry())
-        .isInstanceOf(NoopMetrics.newNoopMetricRegistry().getClass());
+    assertThat(Metrics.getMeter()).isInstanceOf(NoopMetrics.newNoopMeter().getClass());
   }
 }

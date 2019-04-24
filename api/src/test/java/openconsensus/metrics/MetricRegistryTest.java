@@ -18,7 +18,6 @@ package openconsensus.metrics;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -30,26 +29,20 @@ import org.junit.runners.JUnit4;
 public class MetricRegistryTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
-  private static final String NAME = "test_name";
-  private static final String NAME_2 = "test_name2";
   private static final String DESCRIPTION = "test_description";
   private static final String UNIT = "1";
   private static final LabelKey LABEL_KEY = LabelKey.create("test_key", "test key description");
   private static final List<LabelKey> LABEL_KEYS = Collections.singletonList(LABEL_KEY);
-  private static final LabelValue LABEL_VALUE = LabelValue.create("test_value");
-  private static final LabelValue LABEL_VALUE_2 = LabelValue.create("test_value_2");
-  private static final List<LabelValue> LABEL_VALUES = Collections.singletonList(LABEL_VALUE);
-  private static final Map<LabelKey, LabelValue> CONSTANT_LABELS =
-      Collections.singletonMap(
-          LabelKey.create("test_key_1", "test key description"), LABEL_VALUE_2);
   private static final MetricOptions METRIC_OPTIONS =
       MetricOptions.builder()
           .setDescription(DESCRIPTION)
           .setUnit(UNIT)
           .setLabelKeys(LABEL_KEYS)
-          .setConstantLabels(CONSTANT_LABELS)
+          .setConstantLabels(Collections.<LabelKey, LabelValue>emptyMap())
           .build();
-  private final MetricRegistry metricRegistry = NoopMetrics.newNoopMetricRegistry();
+
+  private final MetricRegistry metricRegistry =
+      NoopMetrics.newNoopMeter().buildMetricRegistry().build();
 
   @Test
   public void noopAddLongGauge_NullName() {
