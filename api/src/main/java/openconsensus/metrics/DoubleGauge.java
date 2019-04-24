@@ -73,7 +73,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public abstract class DoubleGauge {
+public interface DoubleGauge {
 
   /**
    * Creates a {@code TimeSeries} and returns a {@code DoublePoint} if the specified {@code
@@ -92,7 +92,7 @@ public abstract class DoubleGauge {
    *     keys.
    * @since 0.1.0
    */
-  public abstract DoublePoint getOrCreateTimeSeries(List<LabelValue> labelValues);
+  DoublePoint getOrCreateTimeSeries(List<LabelValue> labelValues);
 
   /**
    * Returns a {@code DoublePoint} for a gauge with all labels not set, or default labels.
@@ -100,7 +100,7 @@ public abstract class DoubleGauge {
    * @return a {@code DoublePoint} for a gauge with all labels not set, or default labels.
    * @since 0.1.0
    */
-  public abstract DoublePoint getDefaultTimeSeries();
+  DoublePoint getDefaultTimeSeries();
 
   /**
    * Removes the {@code TimeSeries} from the gauge metric, if it is present. i.e. references to
@@ -111,7 +111,7 @@ public abstract class DoubleGauge {
    *     labelValues} is null.
    * @since 0.1.0
    */
-  public abstract void removeTimeSeries(List<LabelValue> labelValues);
+  void removeTimeSeries(List<LabelValue> labelValues);
 
   /**
    * Removes all {@code TimeSeries} from the gauge metric. i.e. references to all previous {@code
@@ -119,14 +119,14 @@ public abstract class DoubleGauge {
    *
    * @since 0.1.0
    */
-  public abstract void clear();
+  void clear();
 
   /**
    * The value of a single point in the Gauge.TimeSeries.
    *
    * @since 0.1.0
    */
-  public abstract static class DoublePoint {
+  interface DoublePoint {
 
     /**
      * Adds the given value to the current value. The values can be negative.
@@ -134,7 +134,7 @@ public abstract class DoubleGauge {
      * @param amt the value to add
      * @since 0.1.0
      */
-    public abstract void add(double amt);
+    void add(double amt);
 
     /**
      * Sets the given value.
@@ -142,6 +142,6 @@ public abstract class DoubleGauge {
      * @param val the new value.
      * @since 0.1.0
      */
-    public abstract void set(double val);
+    void set(double val);
   }
 }

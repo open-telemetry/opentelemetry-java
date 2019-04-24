@@ -23,7 +23,7 @@ import openconsensus.resource.Resource;
  *
  * @since 0.1.0
  */
-public abstract class MetricRegistry {
+public interface MetricRegistry {
 
   /**
    * Builds a new long gauge to be added to the registry. This is more convenient form when you want
@@ -36,7 +36,7 @@ public abstract class MetricRegistry {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract LongGauge addLongGauge(String name, MetricOptions options);
+  LongGauge addLongGauge(String name, MetricOptions options);
 
   /**
    * Builds a new double gauge to be added to the registry. This is more convenient form when you
@@ -49,7 +49,7 @@ public abstract class MetricRegistry {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract DoubleGauge addDoubleGauge(String name, MetricOptions options);
+  DoubleGauge addDoubleGauge(String name, MetricOptions options);
 
   /**
    * Builds a new derived long gauge to be added to the registry. This is more convenient form when
@@ -62,7 +62,7 @@ public abstract class MetricRegistry {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract DerivedLongGauge addDerivedLongGauge(String name, MetricOptions options);
+  DerivedLongGauge addDerivedLongGauge(String name, MetricOptions options);
 
   /**
    * Builds a new derived double gauge to be added to the registry. This is more convenient form
@@ -75,7 +75,7 @@ public abstract class MetricRegistry {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract DerivedDoubleGauge addDerivedDoubleGauge(String name, MetricOptions options);
+  DerivedDoubleGauge addDerivedDoubleGauge(String name, MetricOptions options);
 
   /**
    * Builds a new double cumulative to be added to the registry. This is a more convenient form when
@@ -88,7 +88,7 @@ public abstract class MetricRegistry {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract DoubleCumulative addDoubleCumulative(String name, MetricOptions options);
+  DoubleCumulative addDoubleCumulative(String name, MetricOptions options);
 
   /**
    * Builds a new derived double cumulative to be added to the registry. This is a more convenient
@@ -101,8 +101,7 @@ public abstract class MetricRegistry {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract DerivedDoubleCumulative addDerivedDoubleCumulative(
-      String name, MetricOptions options);
+  DerivedDoubleCumulative addDerivedDoubleCumulative(String name, MetricOptions options);
 
   /**
    * Builds a new long cumulative to be added to the registry. This is a more convenient form when
@@ -115,7 +114,7 @@ public abstract class MetricRegistry {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract LongCumulative addLongCumulative(String name, MetricOptions options);
+  LongCumulative addLongCumulative(String name, MetricOptions options);
 
   /**
    * Builds a new derived long cumulative to be added to the registry. This is a more convenient
@@ -128,11 +127,10 @@ public abstract class MetricRegistry {
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract DerivedLongCumulative addDerivedLongCumulative(
-      String name, MetricOptions options);
+  DerivedLongCumulative addDerivedLongCumulative(String name, MetricOptions options);
 
   /** Builder class for the {@link MetricRegistry}. */
-  public abstract static class Builder {
+  interface Builder {
 
     /**
      * Sets the name of the component that reports these metrics.
@@ -143,7 +141,7 @@ public abstract class MetricRegistry {
      * @param component the name of the component that reports these metrics.
      * @return this.
      */
-    public abstract Builder setComponent(String component);
+    Builder setComponent(String component);
 
     /**
      * Sets the {@code Resource} associated with the new {@code MetricRegistry}.
@@ -154,13 +152,13 @@ public abstract class MetricRegistry {
      * @param resource the {@code Resource} associated with the new {@code MetricRegistry}.
      * @return this.
      */
-    public abstract Builder setResource(Resource resource);
+    Builder setResource(Resource resource);
 
     /**
      * Builds and returns a {@link MetricRegistry} with the desired options.
      *
      * @return a {@link MetricRegistry} with the desired options.
      */
-    public abstract MetricRegistry build();
+    MetricRegistry build();
   }
 }

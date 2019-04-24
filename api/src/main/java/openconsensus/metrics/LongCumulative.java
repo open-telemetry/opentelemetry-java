@@ -73,7 +73,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public abstract class LongCumulative {
+public interface LongCumulative {
 
   /**
    * Creates a {@code TimeSeries} and returns a {@code LongPoint} if the specified {@code
@@ -92,7 +92,7 @@ public abstract class LongCumulative {
    *     keys.
    * @since 0.1.0
    */
-  public abstract LongPoint getOrCreateTimeSeries(List<LabelValue> labelValues);
+  LongPoint getOrCreateTimeSeries(List<LabelValue> labelValues);
 
   /**
    * Returns a {@code LongPoint} for a cumulative with all labels not set, or default labels.
@@ -100,7 +100,7 @@ public abstract class LongCumulative {
    * @return a {@code LongPoint} for a cumulative with all labels not set, or default labels.
    * @since 0.1.0
    */
-  public abstract LongPoint getDefaultTimeSeries();
+  LongPoint getDefaultTimeSeries();
 
   /**
    * Removes the {@code TimeSeries} from the cumulative metric, if it is present. i.e. references to
@@ -111,7 +111,7 @@ public abstract class LongCumulative {
    *     labelValues} is null.
    * @since 0.1.0
    */
-  public abstract void removeTimeSeries(List<LabelValue> labelValues);
+  void removeTimeSeries(List<LabelValue> labelValues);
 
   /**
    * Removes all {@code TimeSeries} from the cumulative metric. i.e. references to all previous
@@ -119,14 +119,14 @@ public abstract class LongCumulative {
    *
    * @since 0.1.0
    */
-  public abstract void clear();
+  void clear();
 
   /**
    * The value of a single point in the Cumulative.TimeSeries.
    *
    * @since 0.1.0
    */
-  public abstract static class LongPoint {
+  interface LongPoint {
 
     /**
      * Adds the given value to the current value. The values cannot be negative.
@@ -134,6 +134,6 @@ public abstract class LongCumulative {
      * @param delta the value to add
      * @since 0.1.0
      */
-    public abstract void add(long delta);
+    void add(long delta);
   }
 }

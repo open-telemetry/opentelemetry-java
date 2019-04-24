@@ -56,7 +56,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public abstract class DerivedLongCumulative {
+public interface DerivedLongCumulative {
   /**
    * Creates a {@code TimeSeries}. The value of a single point in the TimeSeries is observed from a
    * callback function. This function is invoked whenever metrics are collected, meaning the
@@ -73,8 +73,7 @@ public abstract class DerivedLongCumulative {
    *     OR if number of {@code labelValues}s are not equal to the label keys.
    * @since 0.1.0
    */
-  public abstract <T> void createTimeSeries(
-      List<LabelValue> labelValues, T obj, ToLongFunction<T> function);
+  <T> void createTimeSeries(List<LabelValue> labelValues, T obj, ToLongFunction<T> function);
 
   /**
    * Removes the {@code TimeSeries} from the cumulative metric, if it is present.
@@ -83,12 +82,12 @@ public abstract class DerivedLongCumulative {
    * @throws NullPointerException if {@code labelValues} is null.
    * @since 0.1.0
    */
-  public abstract void removeTimeSeries(List<LabelValue> labelValues);
+  void removeTimeSeries(List<LabelValue> labelValues);
 
   /**
    * Removes all {@code TimeSeries} from the cumulative metric.
    *
    * @since 0.1.0
    */
-  public abstract void clear();
+  void clear();
 }
