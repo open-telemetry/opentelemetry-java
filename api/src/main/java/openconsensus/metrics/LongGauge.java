@@ -73,7 +73,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongGauge {
+public interface LongGauge extends Metric {
 
   /**
    * Creates a {@code TimeSeries} and returns a {@code LongPoint} if the specified {@code
@@ -84,12 +84,12 @@ public interface LongGauge {
    * for manual operations.
    *
    * @param labelValues the list of label values. The number of label values must be the same to
-   *     that of the label keys passed to {@link MetricRegistry#addLongGauge}.
+   *     that of the label keys passed to {@link Builder#setLabelKeys(List)}.
    * @return a {@code LongPoint} the value of single gauge.
    * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
    *     labelValues} is null.
    * @throws IllegalArgumentException if number of {@code labelValues}s are not equal to the label
-   *     keys passed to {@link MetricRegistry#addLongGauge}.
+   *     keys.
    * @since 0.1.0
    */
   LongPoint getOrCreateTimeSeries(List<LabelValue> labelValues);
@@ -101,24 +101,6 @@ public interface LongGauge {
    * @since 0.1.0
    */
   LongPoint getDefaultTimeSeries();
-
-  /**
-   * Removes the {@code TimeSeries} from the gauge metric, if it is present. i.e. references to
-   * previous {@code LongPoint} objects are invalid (not part of the metric).
-   *
-   * @param labelValues the list of label values.
-   * @throws NullPointerException if {@code labelValues} is null.
-   * @since 0.1.0
-   */
-  void removeTimeSeries(List<LabelValue> labelValues);
-
-  /**
-   * Removes all {@code TimeSeries} from the gauge metric. i.e. references to all previous {@code
-   * LongPoint} objects are invalid (not part of the metric).
-   *
-   * @since 0.1.0
-   */
-  void clear();
 
   /**
    * The value of a single point in the Gauge.TimeSeries.
@@ -143,4 +125,7 @@ public interface LongGauge {
      */
     void set(long val);
   }
+
+  /** Builder class for {@link LongGauge}. */
+  interface Builder extends Metric.Builder<Builder, LongGauge> {}
 }

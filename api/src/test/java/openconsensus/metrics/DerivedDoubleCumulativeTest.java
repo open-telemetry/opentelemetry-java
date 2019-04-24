@@ -42,13 +42,12 @@ public class DerivedDoubleCumulativeTest {
   private final MetricRegistry metricRegistry =
       NoopMetrics.newNoopMeter().metricRegistryBuilder().build();
   private final DerivedDoubleCumulative derivedDoubleCumulative =
-      metricRegistry.addDerivedDoubleCumulative(
-          NAME,
-          MetricOptions.builder()
-              .setDescription(DESCRIPTION)
-              .setLabelKeys(LABEL_KEY)
-              .setUnit(UNIT)
-              .build());
+      metricRegistry
+          .derivedDoubleCumulativeBuilder(NAME)
+          .setDescription(DESCRIPTION)
+          .setLabelKeys(LABEL_KEY)
+          .setUnit(UNIT)
+          .build();
   private static final ToDoubleFunction<Object> doubleFunction =
       new ToDoubleFunction<Object>() {
         @Override

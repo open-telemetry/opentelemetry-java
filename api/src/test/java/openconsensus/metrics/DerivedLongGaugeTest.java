@@ -42,13 +42,12 @@ public class DerivedLongGaugeTest {
   private final MetricRegistry metricRegistry =
       NoopMetrics.newNoopMeter().metricRegistryBuilder().build();
   private final DerivedLongGauge derivedLongGauge =
-      metricRegistry.addDerivedLongGauge(
-          NAME,
-          MetricOptions.builder()
-              .setDescription(DESCRIPTION)
-              .setLabelKeys(LABEL_KEY)
-              .setUnit(UNIT)
-              .build());
+      metricRegistry
+          .derivedLongGaugeBuilder(NAME)
+          .setDescription(DESCRIPTION)
+          .setLabelKeys(LABEL_KEY)
+          .setUnit(UNIT)
+          .build();
   private static final ToLongFunction<Object> longFunction =
       new ToLongFunction<Object>() {
         @Override
