@@ -130,7 +130,7 @@ public abstract class Tagger {
    * private static final Tagger tagger = Tags.getTagger();
    * private static final HttpTextFormat textFormat =
    *     Tags.getTagger().getHttpTextFormat();
-   * private static final TextFormat.Setter setter =
+   * private static final HttpTextFormat.Setter setter =
    *     new HttpTextFormat.Setter<HttpURLConnection>() {
    *       public void put(HttpURLConnection carrier, String key, String value) {
    *         carrier.setRequestProperty(field, value);
