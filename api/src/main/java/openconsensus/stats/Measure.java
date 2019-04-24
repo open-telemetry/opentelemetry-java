@@ -29,7 +29,7 @@ import openconsensus.internal.Utils;
 @Immutable
 @AutoValue
 public abstract class Measure {
-  private static final int NAME_MAX_LENGTH = 255;
+  /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
   private static final String ERROR_MESSAGE_INVALID_NAME =
       "Name should be a ASCII string with a length no greater than "
           + NAME_MAX_LENGTH
