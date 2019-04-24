@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
+import openconsensus.stats.Measure.MeasureDouble;
+import openconsensus.stats.Measurement.MeasurementDouble;
 import openconsensus.tags.Tag;
 import openconsensus.tags.TagKey;
 import openconsensus.tags.TagMap;
@@ -36,7 +38,8 @@ public final class NoopStatsTest {
   private static final Tag TAG =
       Tag.create(
           TagKey.create("key"), TagValue.create("value"), Tag.METADATA_UNLIMITED_PROPAGATION);
-  private static final Measure MEASURE = Measure.create("my measure", "description", "s");
+  private static final MeasureDouble MEASURE =
+      MeasureDouble.create("my measure", "description", "s");
 
   private final TagMap tagMap =
       new TagMap() {
@@ -57,7 +60,8 @@ public final class NoopStatsTest {
 
   @Test
   public void noopStatsRecorder_PutNegativeValue() {
-    List<Measurement> measurements = Collections.singletonList(Measurement.create(MEASURE, -5));
+    List<Measurement> measurements =
+        Collections.<Measurement>singletonList(MeasurementDouble.create(MEASURE, -5));
     NoopStats.newNoopStatsRecorder().record(measurements, tagMap);
   }
 
@@ -65,7 +69,8 @@ public final class NoopStatsTest {
   // exception.
   @Test
   public void noopStatsRecorder_Record() {
-    List<Measurement> measurements = Collections.singletonList(Measurement.create(MEASURE, 5));
+    List<Measurement> measurements =
+        Collections.<Measurement>singletonList(MeasurementDouble.create(MEASURE, 5));
     NoopStats.newNoopStatsRecorder().record(measurements, tagMap);
   }
 
@@ -73,13 +78,15 @@ public final class NoopStatsTest {
   // exception.
   @Test
   public void noopStatsRecorder_RecordWithCurrentContext() {
-    List<Measurement> measurements = Collections.singletonList(Measurement.create(MEASURE, 6));
+    List<Measurement> measurements =
+        Collections.<Measurement>singletonList(MeasurementDouble.create(MEASURE, 6));
     NoopStats.newNoopStatsRecorder().record(measurements);
   }
 
   @Test
   public void noopStatsRecorder_Record_DisallowNulltagMap() {
-    List<Measurement> measurements = Collections.singletonList(Measurement.create(MEASURE, 6));
+    List<Measurement> measurements =
+        Collections.<Measurement>singletonList(MeasurementDouble.create(MEASURE, 6));
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("tags");
     NoopStats.newNoopStatsRecorder().record(measurements, null);

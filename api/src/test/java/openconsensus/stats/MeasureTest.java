@@ -43,18 +43,18 @@ public final class MeasureTest {
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
-    Measure.create(longName, "description", "1");
+    Measure.MeasureDouble.create(longName, "description", "1");
   }
 
   @Test
   public void preventNonPrintableMeasureName() {
     thrown.expect(IllegalArgumentException.class);
-    Measure.create("\2", "description", "1");
+    Measure.MeasureDouble.create("\2", "description", "1");
   }
 
   @Test
   public void testMeasureComponents() {
-    Measure measurement = Measure.create("Foo", "The description of Foo", "Mbit/s");
+    Measure measurement = Measure.MeasureDouble.create("Foo", "The description of Foo", "Mbit/s");
     assertThat(measurement.getName()).isEqualTo("Foo");
     assertThat(measurement.getDescription()).isEqualTo("The description of Foo");
     assertThat(measurement.getUnit()).isEqualTo("Mbit/s");
@@ -64,9 +64,10 @@ public final class MeasureTest {
   public void testMeasureEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            Measure.create("name", "description", "bit/s"),
-            Measure.create("name", "description", "bit/s"))
-        .addEqualityGroup(Measure.create("name", "description 2", "bit/s"))
+            Measure.MeasureDouble.create("name", "description", "bit/s"),
+            Measure.MeasureDouble.create("name", "description", "bit/s"))
+        .addEqualityGroup(Measure.MeasureLong.create("name", "description", "bit/s"))
+        .addEqualityGroup(Measure.MeasureDouble.create("name", "description 2", "bit/s"))
         .testEquals();
   }
 }
