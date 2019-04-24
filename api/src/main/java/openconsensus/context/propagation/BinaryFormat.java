@@ -21,7 +21,7 @@ package openconsensus.context.propagation;
  *
  * @since 0.1.0
  */
-public abstract class BinaryFormat<V> {
+public interface BinaryFormat<V> {
 
   /**
    * Serializes the {@code value} into the on-the-wire representation.
@@ -30,7 +30,7 @@ public abstract class BinaryFormat<V> {
    * @return the on-the-wire representation of a {@code value}.
    * @since 0.1.0
    */
-  public abstract byte[] toByteArray(V value);
+  byte[] toByteArray(V value);
 
   /**
    * Creates a value from the given on-the-wire encoded representation.
@@ -42,5 +42,5 @@ public abstract class BinaryFormat<V> {
    * @return a value deserialized from {@code bytes}.
    * @since 0.1.0
    */
-  public abstract V fromByteArray(byte[] bytes);
+  V fromByteArray(byte[] bytes);
 }

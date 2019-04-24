@@ -29,7 +29,7 @@ import openconsensus.internal.Utils;
  * @since 0.1.0
  */
 @Immutable
-public final class BlankSpan extends Span {
+public final class BlankSpan implements Span {
   /**
    * Singleton instance of this class.
    *

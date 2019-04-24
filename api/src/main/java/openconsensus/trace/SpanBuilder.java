@@ -107,7 +107,7 @@ import java.util.concurrent.Callable;
  *
  * @since 0.1.0
  */
-public abstract class SpanBuilder {
+public interface SpanBuilder {
 
   /**
    * Sets the {@link Sampler} to use. If not set, the implementation will provide a default.
@@ -119,7 +119,7 @@ public abstract class SpanBuilder {
    * @return this.
    * @since 0.1.0
    */
-  public abstract SpanBuilder setSampler(Sampler sampler);
+  SpanBuilder setSampler(Sampler sampler);
 
   /**
    * Adds a {@link Link} to the newly created {@code Span}.
@@ -132,7 +132,7 @@ public abstract class SpanBuilder {
    * @throws NullPointerException if {@code link} is {@code null}.
    * @since 0.1.0
    */
-  public abstract SpanBuilder addLink(Link link);
+  SpanBuilder addLink(Link link);
 
   /**
    * Adds a {@code List} of {@link Link}s to the newly created {@code Span}.
@@ -143,7 +143,7 @@ public abstract class SpanBuilder {
    * @since 0.1.0
    * @see #addLink(Link)
    */
-  public abstract SpanBuilder addLinks(List<Link> links);
+  SpanBuilder addLinks(List<Link> links);
 
   /**
    * Sets the option to record events even if not sampled for the newly created {@code Span}. If not
@@ -153,7 +153,7 @@ public abstract class SpanBuilder {
    * @return this.
    * @since 0.1.0
    */
-  public abstract SpanBuilder setRecordEvents(boolean recordEvents);
+  SpanBuilder setRecordEvents(boolean recordEvents);
 
   /**
    * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the
@@ -163,7 +163,7 @@ public abstract class SpanBuilder {
    * @return this.
    * @since 0.1.0
    */
-  public abstract SpanBuilder setSpanKind(Span.Kind spanKind);
+  SpanBuilder setSpanKind(Span.Kind spanKind);
 
   /**
    * Starts a new {@link Span}.
@@ -193,7 +193,7 @@ public abstract class SpanBuilder {
    * @return the newly created {@code Span}.
    * @since 0.1.0
    */
-  public abstract Span startSpan();
+  Span startSpan();
 
   /**
    * Starts a new span and runs the given {@code Runnable} with the newly created {@code Span} as
@@ -220,7 +220,7 @@ public abstract class SpanBuilder {
    * @param runnable the {@code Runnable} to run in the {@code Span}.
    * @since 0.1.0
    */
-  public abstract void startSpanAndRun(final Runnable runnable);
+  void startSpanAndRun(final Runnable runnable);
 
   /**
    * Starts a new span and calls the given {@code Callable} with the newly created {@code Span} as
@@ -252,5 +252,5 @@ public abstract class SpanBuilder {
    * @throws Exception if the {@code Callable} throws an exception.
    * @since 0.1.0
    */
-  public abstract <V> V startSpanAndCall(Callable<V> callable) throws Exception;
+  <V> V startSpanAndCall(Callable<V> callable) throws Exception;
 }
