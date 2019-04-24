@@ -17,12 +17,12 @@
 package openconsensus.metrics;
 
 /** Entry point fot metrics API, this object allows to create new {@link MetricRegistry}. */
-public abstract class Meter {
+public interface Meter {
 
   /**
    * Returns a new builder for a {@code MetricRegistry}.
    *
    * @return a new builder for a {@code MetricRegistry}.
    */
-  public abstract MetricRegistry.Builder buildMetricRegistry();
+  MetricRegistry.Builder buildMetricRegistry();
 }

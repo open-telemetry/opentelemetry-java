@@ -71,7 +71,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public abstract class LongGauge {
+public interface LongGauge {
 
   /**
    * Creates a {@code TimeSeries} and returns a {@code LongPoint} if the specified {@code
@@ -90,7 +90,7 @@ public abstract class LongGauge {
    *     keys passed to {@link MetricRegistry#addLongGauge}.
    * @since 0.1.0
    */
-  public abstract LongPoint getOrCreateTimeSeries(List<LabelValue> labelValues);
+  LongPoint getOrCreateTimeSeries(List<LabelValue> labelValues);
 
   /**
    * Returns a {@code LongPoint} for a gauge with all labels not set, or default labels.
@@ -98,7 +98,7 @@ public abstract class LongGauge {
    * @return a {@code LongPoint} for a gauge with all labels not set, or default labels.
    * @since 0.1.0
    */
-  public abstract LongPoint getDefaultTimeSeries();
+  LongPoint getDefaultTimeSeries();
 
   /**
    * Removes the {@code TimeSeries} from the gauge metric, if it is present. i.e. references to
@@ -108,7 +108,7 @@ public abstract class LongGauge {
    * @throws NullPointerException if {@code labelValues} is null.
    * @since 0.1.0
    */
-  public abstract void removeTimeSeries(List<LabelValue> labelValues);
+  void removeTimeSeries(List<LabelValue> labelValues);
 
   /**
    * Removes all {@code TimeSeries} from the gauge metric. i.e. references to all previous {@code
@@ -116,14 +116,14 @@ public abstract class LongGauge {
    *
    * @since 0.1.0
    */
-  public abstract void clear();
+  void clear();
 
   /**
    * The value of a single point in the Gauge.TimeSeries.
    *
    * @since 0.1.0
    */
-  public abstract static class LongPoint {
+  interface LongPoint {
 
     /**
      * Adds the given value to the current value. The values can be negative.
@@ -131,7 +131,7 @@ public abstract class LongGauge {
      * @param amt the value to add
      * @since 0.1.0
      */
-    public abstract void add(long amt);
+    void add(long amt);
 
     /**
      * Sets the given value.
@@ -139,6 +139,6 @@ public abstract class LongGauge {
      * @param val the new value.
      * @since 0.1.0
      */
-    public abstract void set(long val);
+    void set(long val);
   }
 }

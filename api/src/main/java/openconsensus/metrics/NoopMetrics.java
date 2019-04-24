@@ -38,7 +38,7 @@ public final class NoopMetrics {
     return new NoopMeter();
   }
 
-  private static final class NoopMeter extends Meter {
+  private static final class NoopMeter implements Meter {
 
     @Override
     public MetricRegistry.Builder buildMetricRegistry() {
@@ -46,7 +46,7 @@ public final class NoopMetrics {
     }
   }
 
-  private static final class NoopMetricCollection extends MetricRegistry {
+  private static final class NoopMetricCollection implements MetricRegistry {
     @Override
     public LongGauge addLongGauge(String name, MetricOptions options) {
       return NoopLongGauge.create(
@@ -119,7 +119,7 @@ public final class NoopMetrics {
           options.getLabelKeys());
     }
 
-    private static final class Builder extends MetricRegistry.Builder {
+    private static final class Builder implements MetricRegistry.Builder {
       private static final MetricRegistry METRIC_COLLECTION = new NoopMetricCollection();
 
       @Override
@@ -142,7 +142,7 @@ public final class NoopMetrics {
   }
 
   /** No-op implementations of LongGauge class. */
-  private static final class NoopLongGauge extends LongGauge {
+  private static final class NoopLongGauge implements LongGauge {
     private final int labelKeysSize;
 
     static NoopLongGauge create(
@@ -177,7 +177,7 @@ public final class NoopMetrics {
     public void clear() {}
 
     /** No-op implementations of LongPoint class. */
-    private static final class NoopLongPoint extends LongPoint {
+    private static final class NoopLongPoint implements LongPoint {
       private NoopLongPoint() {}
 
       @Override
@@ -189,7 +189,7 @@ public final class NoopMetrics {
   }
 
   /** No-op implementations of DoubleGauge class. */
-  private static final class NoopDoubleGauge extends DoubleGauge {
+  private static final class NoopDoubleGauge implements DoubleGauge {
     private final int labelKeysSize;
 
     static NoopDoubleGauge create(
@@ -228,7 +228,7 @@ public final class NoopMetrics {
     public void clear() {}
 
     /** No-op implementations of DoublePoint class. */
-    private static final class NoopDoublePoint extends DoublePoint {
+    private static final class NoopDoublePoint implements DoublePoint {
       private NoopDoublePoint() {}
 
       @Override
@@ -240,7 +240,7 @@ public final class NoopMetrics {
   }
 
   /** No-op implementations of DerivedLongGauge class. */
-  private static final class NoopDerivedLongGauge extends DerivedLongGauge {
+  private static final class NoopDerivedLongGauge implements DerivedLongGauge {
     private final int labelKeysSize;
 
     static NoopDerivedLongGauge create(
@@ -276,7 +276,7 @@ public final class NoopMetrics {
   }
 
   /** No-op implementations of DerivedDoubleGauge class. */
-  private static final class NoopDerivedDoubleGauge extends DerivedDoubleGauge {
+  private static final class NoopDerivedDoubleGauge implements DerivedDoubleGauge {
     private final int labelKeysSize;
 
     static NoopDerivedDoubleGauge create(
@@ -312,7 +312,7 @@ public final class NoopMetrics {
   }
 
   /** No-op implementations of DoubleCumulative class. */
-  private static final class NoopDoubleCumulative extends DoubleCumulative {
+  private static final class NoopDoubleCumulative implements DoubleCumulative {
     private final int labelKeysSize;
 
     static NoopDoubleCumulative create(
@@ -351,7 +351,7 @@ public final class NoopMetrics {
     public void clear() {}
 
     /** No-op implementations of DoublePoint class. */
-    private static final class NoopDoublePoint extends DoublePoint {
+    private static final class NoopDoublePoint implements DoublePoint {
       private static final NoopDoublePoint INSTANCE = new NoopDoublePoint();
 
       private NoopDoublePoint() {}
@@ -362,7 +362,7 @@ public final class NoopMetrics {
   }
 
   /** No-op implementations of DerivedDoubleCumulative class. */
-  private static final class NoopDerivedDoubleCumulative extends DerivedDoubleCumulative {
+  private static final class NoopDerivedDoubleCumulative implements DerivedDoubleCumulative {
     private final int labelKeysSize;
 
     static NoopDerivedDoubleCumulative create(
@@ -399,7 +399,7 @@ public final class NoopMetrics {
   }
 
   /** No-op implementations of LongCumulative class. */
-  private static final class NoopLongCumulative extends LongCumulative {
+  private static final class NoopLongCumulative implements LongCumulative {
     private final int labelKeysSize;
 
     static NoopLongCumulative create(
@@ -438,7 +438,7 @@ public final class NoopMetrics {
     public void clear() {}
 
     /** No-op implementations of LongPoint class. */
-    private static final class NoopLongPoint extends LongPoint {
+    private static final class NoopLongPoint implements LongPoint {
       private static final NoopLongPoint INSTANCE = new NoopLongPoint();
 
       private NoopLongPoint() {}
@@ -449,7 +449,7 @@ public final class NoopMetrics {
   }
 
   /** No-op implementations of DerivedLongCumulative class. */
-  private static final class NoopDerivedLongCumulative extends DerivedLongCumulative {
+  private static final class NoopDerivedLongCumulative implements DerivedLongCumulative {
     private final int labelKeysSize;
 
     static NoopDerivedLongCumulative create(
