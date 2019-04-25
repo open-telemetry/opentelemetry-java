@@ -36,7 +36,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   LongGauge gauge = metricRegistry.addLongGauge("queue_size", "Pending jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a point for manual operations.
- *   LongPoint defaultPoint = gauge.getDefaultTimeSeries();
+ *   LongGauge.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
  *
  *   void doWork() {
  *      // Your code here.
@@ -60,7 +60,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   LongGauge gauge = metricRegistry.addLongGauge("queue_size", "Pending jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a point for manual operations.
- *   LongPoint inboundPoint = gauge.getOrCreateTimeSeries(labelValues);
+ *   LongGauge.TimeSeries inboundTimeSeries = gauge.getOrCreateTimeSeries(labelValues);
  *
  *   void doSomeWork() {
  *      // Your code here.
@@ -76,38 +76,38 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface LongGauge extends Metric {
 
   /**
-   * Creates a {@code TimeSeries} and returns a {@code LongPoint} if the specified {@code
+   * Creates a {@code TimeSeries} and returns a {@code TimeSeries} if the specified {@code
    * labelValues} is not already associated with this gauge, else returns an existing {@code
-   * LongPoint}.
+   * TimeSeries}.
    *
-   * <p>It is recommended to keep a reference to the LongPoint instead of always calling this method
-   * for manual operations.
+   * <p>It is recommended to keep a reference to the TimeSeries instead of always calling this
+   * method for manual operations.
    *
    * @param labelValues the list of label values. The number of label values must be the same to
    *     that of the label keys passed to {@link Builder#setLabelKeys(List)}.
-   * @return a {@code LongPoint} the value of single gauge.
+   * @return a {@code TimeSeries} the value of single gauge.
    * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
    *     labelValues} is null.
    * @throws IllegalArgumentException if number of {@code labelValues}s are not equal to the label
    *     keys.
    * @since 0.1.0
    */
-  LongPoint getOrCreateTimeSeries(List<LabelValue> labelValues);
+  TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
 
   /**
-   * Returns a {@code LongPoint} for a gauge with all labels not set, or default labels.
+   * Returns a {@code TimeSeries} for a gauge with all labels not set, or default labels.
    *
-   * @return a {@code LongPoint} for a gauge with all labels not set, or default labels.
+   * @return a {@code TimeSeries} for a gauge with all labels not set, or default labels.
    * @since 0.1.0
    */
-  LongPoint getDefaultTimeSeries();
+  TimeSeries getDefaultTimeSeries();
 
   /**
    * The value of a single point in the Gauge.TimeSeries.
    *
    * @since 0.1.0
    */
-  interface LongPoint {
+  interface TimeSeries {
 
     /**
      * Adds the given value to the current value. The values can be negative.
