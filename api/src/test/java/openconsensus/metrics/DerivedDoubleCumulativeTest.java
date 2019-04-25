@@ -37,7 +37,7 @@ public class DerivedDoubleCumulativeTest {
       Collections.singletonList(LabelKey.create("key", "key description"));
   private static final List<LabelValue> LABEL_VALUES =
       Collections.singletonList(LabelValue.create("value"));
-  private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<LabelValue>();
+  private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<>();
 
   private final MetricRegistry metricRegistry =
       NoopMetrics.newNoopMeter().buildMetricRegistry().build();

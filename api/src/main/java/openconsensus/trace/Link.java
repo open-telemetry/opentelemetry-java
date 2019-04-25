@@ -56,7 +56,7 @@ public abstract class Link {
    */
   public static Link create(SpanContext context, Map<String, AttributeValue> attributes) {
     return new AutoValue_Link(
-        context, Collections.unmodifiableMap(new HashMap<String, AttributeValue>(attributes)));
+        context, Collections.unmodifiableMap(new HashMap<>(attributes)));
   }
 
   /**

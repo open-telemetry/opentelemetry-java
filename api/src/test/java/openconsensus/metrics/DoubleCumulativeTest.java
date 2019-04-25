@@ -35,7 +35,7 @@ public class DoubleCumulativeTest {
   private static final String UNIT = "1";
   private static final List<LabelKey> LABEL_KEY =
       Collections.singletonList(LabelKey.create("key", "key description"));
-  private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<LabelValue>();
+  private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<>();
 
   private final MetricRegistry metricRegistry =
       NoopMetrics.newNoopMeter().buildMetricRegistry().build();

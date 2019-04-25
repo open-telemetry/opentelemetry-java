@@ -138,15 +138,15 @@ public abstract class MetricOptions {
      *     {@code constantLabels}.
      */
     public MetricOptions build() {
-      setLabelKeys(Collections.unmodifiableList(new ArrayList<LabelKey>(getLabelKeys())));
+      setLabelKeys(Collections.unmodifiableList(new ArrayList<>(getLabelKeys())));
       setConstantLabels(
           Collections.unmodifiableMap(
-              new LinkedHashMap<LabelKey, LabelValue>(getConstantLabels())));
+              new LinkedHashMap<>(getConstantLabels())));
       MetricOptions options = autoBuild();
       Utils.checkListElementNotNull(options.getLabelKeys(), "labelKeys elements");
       Utils.checkMapElementNotNull(options.getConstantLabels(), "constantLabels elements");
 
-      HashSet<String> labelKeyNamesMap = new HashSet<String>();
+      HashSet<String> labelKeyNamesMap = new HashSet<>();
       for (LabelKey labelKey : options.getLabelKeys()) {
         if (labelKeyNamesMap.contains(labelKey.getKey())) {
           throw new IllegalArgumentException("Invalid LabelKey in labelKeys");
