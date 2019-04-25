@@ -1,4 +1,3 @@
-openconsensus.common
 openconsensus.context
 openconsensus.context.propagation
 openconsensus.metrics
