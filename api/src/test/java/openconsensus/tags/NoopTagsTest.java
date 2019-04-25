@@ -41,7 +41,7 @@ public final class NoopTagsTest {
 
         @Override
         public Iterator<Tag> getIterator() {
-          return Arrays.<Tag>asList(Tag.create(KEY, VALUE, Tag.METADATA_UNLIMITED_PROPAGATION))
+          return Arrays.asList(Tag.create(KEY, VALUE, Tag.METADATA_UNLIMITED_PROPAGATION))
               .iterator();
         }
 
