@@ -30,14 +30,14 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 @Immutable
-public abstract class TagMap {
+public interface TagMap {
   /**
    * Returns an iterator over the tags in this {@code TagMap}.
    *
    * @return an iterator over the tags in this {@code TagMap}.
    * @since 0.1.0
    */
-  public abstract Iterator<Tag> getIterator();
+  Iterator<Tag> getIterator();
 
   /**
    * Returns the {@code TagValue} associated with the given {@code TagKey}.
@@ -47,5 +47,5 @@ public abstract class TagMap {
    *     {@code Tag} with the given {@code tagKey} is in this {@code TagMap}.
    */
   @Nullable
-  public abstract TagValue getTagValue(TagKey tagKey);
+  TagValue getTagValue(TagKey tagKey);
 }

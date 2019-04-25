@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
 
 /** An immutable implementation of the {@link TagMap} that does not contain any tags. */
 @Immutable
-public class EmptyTagMap extends TagMap {
+public class EmptyTagMap implements TagMap {
   private static final Iterator<Tag> EMPTY_ITERATOR = Collections.<Tag>emptyList().iterator();
 
   /** Returns the single instance of the {@link EmptyTagMap} class. */
