@@ -31,6 +31,8 @@ import openconsensus.trace.Status;
 
 @SuppressWarnings("deprecation")
 final class SpanBuilderShim implements SpanBuilder {
+  private static final String OT_START_TIME_ATTR = "ot.start_timestamp";
+
   private final openconsensus.trace.Tracer tracer;
   private final String spanName;
 
@@ -100,18 +102,18 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withTag(String key, String value) {
-    if ("span.kind".equals(key)) {
+    if (Tags.SPAN_KIND.getKey().equals(key)) {
       switch (value) {
-        case "CLIENT":
+        case Tags.SPAN_KIND_CLIENT:
           spanKind = Kind.CLIENT;
           break;
-        case "SERVER":
+        case Tags.SPAN_KIND_SERVER:
           spanKind = Kind.SERVER;
           break;
-        case "PRODUCER":
+        case Tags.SPAN_KIND_PRODUCER:
           spanKind = Kind.PRODUCER;
           break;
-        case "CONSUMER":
+        case Tags.SPAN_KIND_CONSUMER:
           spanKind = Kind.CONSUMER;
           break;
         default:
@@ -179,7 +181,7 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withStartTimestamp(long microseconds) {
-    this.spanBuilderAttributeKeys.add("ot.start_timestamp");
+    this.spanBuilderAttributeKeys.add(OT_START_TIME_ATTR);
     this.spanBuilderAttributeValues.add(AttributeValue.longAttributeValue(microseconds));
     return this;
   }
