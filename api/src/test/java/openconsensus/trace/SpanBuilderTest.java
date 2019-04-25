@@ -25,13 +25,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link SpanBuilder}. */
+/** Unit tests for {@link Span.Builder}. */
 @RunWith(JUnit4.class)
 // Need to suppress warnings for MustBeClosed because Java-6 does not support try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
 public class SpanBuilderTest {
   private final Tracer tracer = Trace.getTracer();
-  private final SpanBuilder spanBuilder = tracer.spanBuilder("test");
+  private final Span.Builder spanBuilder = tracer.spanBuilder("test");
 
   @Test
   public void startSpanAndRun() {
@@ -65,7 +65,7 @@ public class SpanBuilderTest {
 
   @Test
   public void doNotCrash_NoopImplementation() throws Exception {
-    SpanBuilder spanBuilder = tracer.spanBuilder("MySpanName");
+    Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     spanBuilder.setRecordEvents(true);
     spanBuilder.setSampler(Samplers.alwaysSample());
     spanBuilder.setSpanKind(Kind.SERVER);

@@ -145,7 +145,7 @@ public interface Tracer {
    * Returns a {@link Runnable} that runs the given task with the given {@code Span} in the current
    * context.
    *
-   * <p>Users may consider to use {@link SpanBuilder#startSpanAndRun(Runnable)}.
+   * <p>Users may consider to use {@link Span.Builder#startSpanAndRun(Runnable)}.
    *
    * <p>Any error will end up as a {@link Status#UNKNOWN}.
    *
@@ -208,7 +208,7 @@ public interface Tracer {
    * Returns a {@link Callable} that runs the given task with the given {@code Span} in the current
    * context.
    *
-   * <p>Users may consider to use {@link SpanBuilder#startSpanAndCall(Callable)}.
+   * <p>Users may consider to use {@link Span.Builder#startSpanAndCall(Callable)}.
    *
    * <p>Any error will end up as a {@link Status#UNKNOWN}.
    *
@@ -269,10 +269,10 @@ public interface Tracer {
   <V> Callable<V> withSpan(Span span, final Callable<V> callable);
 
   /**
-   * Returns a {@link SpanBuilder} to create and start a new child {@link Span} as a child of to the
-   * current {@code Span} if any, otherwise creates a root {@code Span}.
+   * Returns a {@link Span.Builder} to create and start a new child {@link Span} as a child of to
+   * the current {@code Span} if any, otherwise creates a root {@code Span}.
    *
-   * <p>See {@link SpanBuilder} for usage examples.
+   * <p>See {@link Span.Builder} for usage examples.
    *
    * <p>This <b>must</b> be used to create a {@code Span} when automatic Context propagation is
    * used.
@@ -284,37 +284,37 @@ public interface Tracer {
    * }</pre>
    *
    * @param spanName The name of the returned Span.
-   * @return a {@code SpanBuilder} to create and start a new {@code Span}.
+   * @return a {@code Span.Builder} to create and start a new {@code Span}.
    * @throws NullPointerException if {@code spanName} is {@code null}.
    * @since 0.1.0
    */
-  SpanBuilder spanBuilder(String spanName);
+  Span.Builder spanBuilder(String spanName);
 
   /**
-   * Returns a {@link SpanBuilder} to create and start a new child {@link Span} (or root if parent
+   * Returns a {@link Span.Builder} to create and start a new child {@link Span} (or root if parent
    * is {@code null} or has an invalid {@link SpanContext}), with parent being the designated {@code
    * Span}.
    *
-   * <p>See {@link SpanBuilder} for usage examples.
+   * <p>See {@link Span.Builder} for usage examples.
    *
    * <p>This <b>must</b> be used to create a {@code Span} when manual Context propagation is used OR
    * when creating a root {@code Span} with a {@code null} parent.
    *
    * @param spanName The name of the returned Span.
-   * @param parent The parent of the returned Span. If {@code null} the {@code SpanBuilder} will
+   * @param parent The parent of the returned Span. If {@code null} the {@code Span.Builder} will
    *     build a root {@code Span}.
-   * @return a {@code SpanBuilder} to create and start a new {@code Span}.
+   * @return a {@code Span.Builder} to create and start a new {@code Span}.
    * @throws NullPointerException if {@code spanName} is {@code null}.
    * @since 0.1.0
    */
-  SpanBuilder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent);
+  Span.Builder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent);
 
   /**
-   * Returns a {@link SpanBuilder} to create and start a new child {@link Span} (or root if parent
+   * Returns a {@link Span.Builder} to create and start a new child {@link Span} (or root if parent
    * is {@code null}), with parent being the remote {@link Span} designated by the {@link
    * SpanContext}.
    *
-   * <p>See {@link SpanBuilder} for usage examples.
+   * <p>See {@link Span.Builder} for usage examples.
    *
    * <p>This <b>must</b> be used to create a {@code Span} when the parent is in a different process.
    * This is only intended for use by RPC systems or similar.
@@ -324,11 +324,11 @@ public interface Tracer {
    *
    * @param spanName The name of the returned Span.
    * @param remoteParentSpanContext The remote parent of the returned Span.
-   * @return a {@code SpanBuilder} to create and start a new {@code Span}.
+   * @return a {@code Span.Builder} to create and start a new {@code Span}.
    * @throws NullPointerException if {@code spanName} is {@code null}.
    * @since 0.1.0
    */
-  SpanBuilder spanBuilderWithRemoteParent(
+  Span.Builder spanBuilderWithRemoteParent(
       String spanName, @Nullable SpanContext remoteParentSpanContext);
 
   /**

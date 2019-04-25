@@ -16,18 +16,67 @@
 
 package openconsensus.trace;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 /**
  * An interface that represents a span. It has an associated {@link SpanContext}.
  *
- * <p>Spans are created by the {@link SpanBuilder#startSpan} method.
+ * <p>Spans are created by the {@link Builder#startSpan} method.
  *
  * <p>{@code Span} <b>must</b> be ended by calling {@link #end()}.
  *
  * @since 0.1.0
  */
 public interface Span {
+  /**
+   * Type of span. Can be used to specify additional relationships between spans in addition to a
+   * parent/child relationship.
+   *
+   * @since 0.1.0
+   */
+  enum Kind {
+    /**
+     * Default value. Indicates that the span is used internally.
+     *
+     * @since 0.1.0
+     */
+    INTERNAL,
+
+    /**
+     * Indicates that the span covers server-side handling of an RPC or other remote request.
+     *
+     * @since 0.1.0
+     */
+    SERVER,
+
+    /**
+     * Indicates that the span covers the client-side wrapper around an RPC or other remote request.
+     *
+     * @since 0.1.0
+     */
+    CLIENT,
+
+    /**
+     * Indicates that the span describes producer sending a message to a broker. Unlike client and
+     * server, there is no direct critical path latency relationship between producer and consumer
+     * spans.
+     *
+     * @since 0.1.0
+     */
+    PRODUCER,
+
+    /**
+     * Indicates that the span describes consumer recieving a message from a broker. Unlike client
+     * and server, there is no direct critical path latency relationship between producer and
+     * consumer spans.
+     *
+     * @since 0.1.0
+     */
+    CONSUMER
+  }
+
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
@@ -131,7 +180,7 @@ public interface Span {
   /**
    * Updates the {@code Span} name.
    *
-   * <p>If used, this will override the name provided via {@code SpanBuilder}.
+   * <p>If used, this will override the name provided via {@code Span.Builder}.
    *
    * <p>Upon this update, any sampling behavior based on {@code Span} name will depend on the
    * implementation.
@@ -168,49 +217,238 @@ public interface Span {
   boolean isRecordingEvents();
 
   /**
-   * Type of span. Can be used to specify additional relationships between spans in addition to a
-   * parent/child relationship.
+   * {@link Builder} is used to construct {@link Span} instances which define arbitrary scopes of
+   * code that are sampled for distributed tracing as a single atomic unit.
+   *
+   * <p>This is a simple example where all the work is being done within a single scope and a single
+   * thread and the Context is automatically propagated:
+   *
+   * <pre>{@code
+   * class MyClass {
+   *   private static final Tracer tracer = Trace.getTracer();
+   *   void doWork {
+   *     // Create a Span as a child of the current Span.
+   *     Span span = tracer.spanBuilder("MyChildSpan").startSpan();
+   *     try (Scope ss = tracer.withSpan(span)) {
+   *       tracer.getCurrentSpan().addEvent("my event");
+   *       doSomeWork();  // Here the new span is in the current Context, so it can be used
+   *                      // implicitly anywhere down the stack.
+   *     } finally {
+   *       span.end();
+   *     }
+   *   }
+   * }
+   * }</pre>
+   *
+   * <p>There might be cases where you do not perform all the work inside one static scope and the
+   * Context is automatically propagated:
+   *
+   * <pre>{@code
+   * class MyRpcServerInterceptorListener implements RpcServerInterceptor.Listener {
+   *   private static final Tracer tracer = Trace.getTracer();
+   *   private Span mySpan;
+   *
+   *   public MyRpcInterceptor() {}
+   *
+   *   public void onRequest(String rpcName, Metadata metadata) {
+   *     // Create a Span as a child of the remote Span.
+   *     mySpan = tracer.spanBuilderWithRemoteParent(
+   *         getTraceContextFromMetadata(metadata), rpcName).startSpan();
+   *   }
+   *
+   *   public void onExecuteHandler(ServerCallHandler serverCallHandler) {
+   *     try (Scope ws = tracer.withSpan(mySpan)) {
+   *       tracer.getCurrentSpan().addEvent("Start rpc execution.");
+   *       serverCallHandler.run();  // Here the new span is in the current Context, so it can be
+   *                                 // used implicitly anywhere down the stack.
+   *     }
+   *   }
+   *
+   *   // Called when the RPC is canceled and guaranteed onComplete will not be called.
+   *   public void onCancel() {
+   *     // IMPORTANT: DO NOT forget to ended the Span here as the work is done.
+   *     mySpan.setStatus(Status.CANCELLED);
+   *     mySpan.end();
+   *   }
+   *
+   *   // Called when the RPC is done and guaranteed onCancel will not be called.
+   *   public void onComplete(RpcStatus rpcStatus) {
+   *     // IMPORTANT: DO NOT forget to ended the Span here as the work is done.
+   *     mySpan.setStatus(rpcStatusToCanonicalTraceStatus(status);
+   *     mySpan.end();
+   *   }
+   * }
+   * }</pre>
+   *
+   * <p>This is a simple example where all the work is being done within a single scope and the
+   * Context is manually propagated:
+   *
+   * <pre>{@code
+   * class MyClass {
+   *   private static final Tracer tracer = Trace.getTracer();
+   *   void DoWork(Span parent) {
+   *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
+   *     childSpan.addEvent("my event");
+   *     try {
+   *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
+   *     } finally {
+   *       // To make sure we end the span even in case of an exception.
+   *       childSpan.end();  // Manually end the span.
+   *     }
+   *   }
+   * }
+   * }</pre>
+   *
+   * <p>If your Java version is less than Java SE 7, see {@link Builder#startSpan} for usage
+   * examples.
    *
    * @since 0.1.0
    */
-  public enum Kind {
-    /**
-     * Default value. Indicates that the span is used internally.
-     *
-     * @since 0.1.0
-     */
-    INTERNAL,
+  interface Builder {
 
     /**
-     * Indicates that the span covers server-side handling of an RPC or other remote request.
+     * Sets the {@link Sampler} to use. If not set, the implementation will provide a default.
      *
+     * <p>Observe this is used only as a hint for the underlying implementation, which will decide
+     * whether to sample or not this {@code Span}.
+     *
+     * @param sampler the {@code Sampler} to use when determining sampling for a {@code Span}.
+     * @return this.
      * @since 0.1.0
      */
-    SERVER,
+    Builder setSampler(Sampler sampler);
 
     /**
-     * Indicates that the span covers the client-side wrapper around an RPC or other remote request.
+     * Adds a {@link Link} to the newly created {@code Span}.
      *
+     * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
+     * operations, where a single batch handler processes multiple requests from different traces.
+     *
+     * @param link the {@link Link} to be added.
+     * @return this.
+     * @throws NullPointerException if {@code link} is {@code null}.
      * @since 0.1.0
      */
-    CLIENT,
+    Builder addLink(Link link);
 
     /**
-     * Indicates that the span describes producer sending a message to a broker. Unlike client and
-     * server, there is no direct critical path latency relationship between producer and consumer
-     * spans.
+     * Adds a {@code List} of {@link Link}s to the newly created {@code Span}.
      *
+     * @param links the {@code List} of {@link Link}s to be added.
+     * @return this.
+     * @throws NullPointerException if {@code link} is {@code null}.
      * @since 0.1.0
+     * @see #addLink(Link)
      */
-    PRODUCER,
+    Builder addLinks(List<Link> links);
 
     /**
-     * Indicates that the span describes consumer recieving a message from a broker. Unlike client
-     * and server, there is no direct critical path latency relationship between producer and
-     * consumer spans.
+     * Sets the option to record events even if not sampled for the newly created {@code Span}. If
+     * not called, the implementation will provide a default.
      *
+     * @param recordEvents new value determining if this {@code Span} should have events recorded.
+     * @return this.
      * @since 0.1.0
      */
-    CONSUMER
+    Builder setRecordEvents(boolean recordEvents);
+
+    /**
+     * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the
+     * implementation will provide a default value {@link Span.Kind#INTERNAL}.
+     *
+     * @param spanKind the kind of the newly created {@code Span}.
+     * @return this.
+     * @since 0.1.0
+     */
+    Builder setSpanKind(Span.Kind spanKind);
+
+    /**
+     * Starts a new {@link Span}.
+     *
+     * <p>Users <b>must</b> manually call {@link Span#end()} to end this {@code Span}.
+     *
+     * <p>Does not install the newly created {@code Span} to the current Context.
+     *
+     * <p>Example of usage:
+     *
+     * <pre>{@code
+     * class MyClass {
+     *   private static final Tracer tracer = Trace.getTracer();
+     *   void DoWork(Span parent) {
+     *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
+     *     childSpan.addEvent("my event");
+     *     try {
+     *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
+     *     } finally {
+     *       // To make sure we end the span even in case of an exception.
+     *       childSpan.end();  // Manually end the span.
+     *     }
+     *   }
+     * }
+     * }</pre>
+     *
+     * @return the newly created {@code Span}.
+     * @since 0.1.0
+     */
+    Span startSpan();
+
+    /**
+     * Starts a new span and runs the given {@code Runnable} with the newly created {@code Span} as
+     * the current {@code Span}, and ends the {@code Span} after the {@code Runnable} is run.
+     *
+     * <p>Any error will end up as a {@link Status#UNKNOWN}.
+     *
+     * <pre><code>
+     * tracer.spanBuilder("MyRunnableSpan").startSpanAndRun(myRunnable);
+     * </code></pre>
+     *
+     * <p>It is equivalent with the following code:
+     *
+     * <pre><code>
+     * Span span = tracer.spanBuilder("MyRunnableSpan").startSpan();
+     * Runnable newRunnable = tracer.withSpan(span, myRunnable);
+     * try {
+     *   newRunnable.run();
+     * } finally {
+     *   span.end();
+     * }
+     * </code></pre>
+     *
+     * @param runnable the {@code Runnable} to run in the {@code Span}.
+     * @since 0.1.0
+     */
+    void startSpanAndRun(final Runnable runnable);
+
+    /**
+     * Starts a new span and calls the given {@code Callable} with the newly created {@code Span} as
+     * the current {@code Span}, and ends the {@code Span} after the {@code Callable} is called.
+     *
+     * <p>Any error will end up as a {@link Status#UNKNOWN}.
+     *
+     * <pre><code>
+     * MyResult myResult = tracer.spanBuilder("MyCallableSpan").startSpanAndCall(myCallable);
+     * </code></pre>
+     *
+     * <p>It is equivalent with the following code:
+     *
+     * <pre><code>
+     * Span span = tracer.spanBuilder("MyCallableSpan").startSpan();
+     * Callable&lt;MyResult&gt; newCallable = tracer.withSpan(span, myCallable);
+     * MyResult myResult = null;
+     * try {
+     *   myResult = newCallable.call();
+     * } finally {
+     *   span.end();
+     * }
+     * );
+     * </code></pre>
+     *
+     * @param callable the {@code Callable} to run in the {@code Span}.
+     * @param <V> the result type of method call.
+     * @return the result of the {@code Callable#call}.
+     * @throws Exception if the {@code Callable} throws an exception.
+     * @since 0.1.0
+     */
+    <V> V startSpanAndCall(Callable<V> callable) throws Exception;
   }
 }
