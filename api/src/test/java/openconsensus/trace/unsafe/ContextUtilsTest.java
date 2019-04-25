@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package openconsensus.tags.unsafe;
+package openconsensus.trace.unsafe;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
-import openconsensus.tags.TagMap;
+import openconsensus.trace.BlankSpan;
+import openconsensus.trace.Span;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -28,19 +29,19 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class ContextUtilsTest {
   @Test
-  public void testGetCurrentTagMap_DefaultContext() {
-    TagMap tags = ContextUtils.getValue(Context.current());
-    assertThat(tags).isNotNull();
-    assertThat(tags.getIterator().hasNext()).isFalse();
+  public void testGetCurrentSpan_DefaultContext() {
+    Span span = ContextUtils.getValue(Context.current());
+    assertThat(span).isNotNull();
+    assertThat(span).isInstanceOf(BlankSpan.class);
   }
 
   @Test
-  public void testGetCurrentTagMap_ContextSetToNull() {
+  public void testGetCurrentSpan_ContextSetToNull() {
     Context orig = ContextUtils.withValue(Context.current(), null).attach();
     try {
-      TagMap tags = ContextUtils.getValue(Context.current());
-      assertThat(tags).isNotNull();
-      assertThat(tags.getIterator().hasNext()).isFalse();
+      Span span = ContextUtils.getValue(Context.current());
+      assertThat(span).isNotNull();
+      assertThat(span).isInstanceOf(BlankSpan.class);
     } finally {
       Context.current().detach(orig);
     }
