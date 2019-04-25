@@ -54,7 +54,7 @@ public final class NoopStats {
             + " characters.";
 
     @Override
-    public Measure.Builder buildMeasure(String name) {
+    public Measure.Builder measureBuilder(String name) {
       Utils.checkArgument(
           StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);

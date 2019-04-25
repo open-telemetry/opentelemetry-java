@@ -37,7 +37,7 @@ public interface StatsRecorder {
    * @return a new builder for a {@code Measure}.
    * @since 0.1.0
    */
-  Measure.Builder buildMeasure(String name);
+  Measure.Builder measureBuilder(String name);
 
   /**
    * Records all given measurements, with the current {@link

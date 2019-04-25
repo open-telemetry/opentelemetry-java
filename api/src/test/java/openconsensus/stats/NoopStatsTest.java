@@ -41,7 +41,7 @@ public final class NoopStatsTest {
 
   private static final Measure MEASURE =
       STATS_RECORDER
-          .buildMeasure("my measure")
+          .measureBuilder("my measure")
           .setDescription("description")
           .setType(Measure.Type.DOUBLE)
           .setUnit("1")
