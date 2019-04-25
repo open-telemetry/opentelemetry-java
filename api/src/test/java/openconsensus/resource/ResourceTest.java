@@ -35,8 +35,6 @@ public class ResourceTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
   private static final Resource DEFAULT_RESOURCE =
       Resource.create(Collections.<String, String>emptyMap());
-  private static final Resource DEFAULT_RESOURCE_1 =
-      Resource.create(Collections.singletonMap("a", "100"));
   private Resource resource1;
   private Resource resource2;
 
