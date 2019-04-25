@@ -21,9 +21,7 @@ import static openconsensus.trace.TestUtils.generateRandomSpanId;
 import static openconsensus.trace.TestUtils.generateRandomTraceId;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Random;
-import openconsensus.trace.Sampler;
 import openconsensus.trace.Span;
 import openconsensus.trace.SpanContext;
 import openconsensus.trace.SpanId;
@@ -37,8 +35,6 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link Samplers}. */
 @RunWith(JUnit4.class)
 public class SamplersTest {
-  private static final String SPAN_NAME = "MySpanName";
-  private static final int NUM_SAMPLE_TRIES = 1000;
   private final Random random = new Random(1234);
   private final TraceId traceId = generateRandomTraceId(random);
   private final SpanId parentSpanId = generateRandomSpanId(random);
@@ -110,27 +106,5 @@ public class SamplersTest {
   @Test
   public void neverSampleSampler_ToString() {
     assertThat(Samplers.neverSample().toString()).isEqualTo("NeverSampleSampler");
-  }
-
-  // Applies the given sampler to NUM_SAMPLE_TRIES random traceId/spanId pairs.
-  private static void assertSamplerSamplesWithProbability(
-      Sampler sampler, SpanContext parent, List<Span> parentLinks, double probability) {
-    Random random = new Random(1234);
-    int count = 0; // Count of spans with sampling enabled
-    for (int i = 0; i < NUM_SAMPLE_TRIES; i++) {
-      if (sampler.shouldSample(
-          parent,
-          false,
-          generateRandomTraceId(random),
-          generateRandomSpanId(random),
-          SPAN_NAME,
-          parentLinks)) {
-        count++;
-      }
-    }
-    double proportionSampled = (double) count / NUM_SAMPLE_TRIES;
-    // Allow for a large amount of slop (+/- 10%) in number of sampled traces, to avoid flakiness.
-    assertThat(proportionSampled < probability + 0.1 && proportionSampled > probability - 0.1)
-        .isTrue();
   }
 }
