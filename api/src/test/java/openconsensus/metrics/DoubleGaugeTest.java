@@ -38,7 +38,7 @@ public class DoubleGaugeTest {
   private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<>();
 
   private final MetricRegistry metricRegistry =
-      NoopMetrics.newNoopMeter().buildMetricRegistry().build();
+      NoopMetrics.newNoopMeter().metricRegistryBuilder().build();
 
   @Test
   public void noopGetOrCreateTimeSeries_WithNullLabelValues() {

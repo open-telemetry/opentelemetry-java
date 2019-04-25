@@ -40,7 +40,7 @@ public class DerivedDoubleCumulativeTest {
   private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<>();
 
   private final MetricRegistry metricRegistry =
-      NoopMetrics.newNoopMeter().buildMetricRegistry().build();
+      NoopMetrics.newNoopMeter().metricRegistryBuilder().build();
   private final DerivedDoubleCumulative derivedDoubleCumulative =
       metricRegistry.addDerivedDoubleCumulative(
           NAME,
