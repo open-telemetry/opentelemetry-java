@@ -35,7 +35,7 @@ public final class BlankSpan implements Span {
    *
    * @since 0.1.0
    */
-  public static final BlankSpan INSTANCE = new BlankSpan();
+  public static final Span INSTANCE = new BlankSpan();
 
   private BlankSpan() {}
 
