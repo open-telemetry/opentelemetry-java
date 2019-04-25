@@ -139,9 +139,7 @@ public abstract class MetricOptions {
      */
     public MetricOptions build() {
       setLabelKeys(Collections.unmodifiableList(new ArrayList<>(getLabelKeys())));
-      setConstantLabels(
-          Collections.unmodifiableMap(
-              new LinkedHashMap<>(getConstantLabels())));
+      setConstantLabels(Collections.unmodifiableMap(new LinkedHashMap<>(getConstantLabels())));
       MetricOptions options = autoBuild();
       Utils.checkListElementNotNull(options.getLabelKeys(), "labelKeys elements");
       Utils.checkMapElementNotNull(options.getConstantLabels(), "constantLabels elements");

@@ -101,8 +101,7 @@ public abstract class View {
       Measure measure,
       Aggregation aggregation,
       List<TagKey> columns) {
-    Utils.checkArgument(
-        new HashSet<>(columns).size() == columns.size(), "Columns have duplicate.");
+    Utils.checkArgument(new HashSet<>(columns).size() == columns.size(), "Columns have duplicate.");
     return new AutoValue_View(
         name, description, measure, aggregation, Collections.unmodifiableList(columns));
   }
