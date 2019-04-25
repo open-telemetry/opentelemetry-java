@@ -71,4 +71,18 @@ public class MetricRegistryTest {
     thrown.expectMessage("name");
     metricRegistry.derivedDoubleCumulativeBuilder(null);
   }
+
+  @Test
+  public void noopAddLongCumulative_NullName() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    metricRegistry.longCumulativeBuilder(null);
+  }
+
+  @Test
+  public void noopAddDerivedLongCumulative_NullName() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    metricRegistry.derivedLongCumulativeBuilder(null);
+  }
 }
