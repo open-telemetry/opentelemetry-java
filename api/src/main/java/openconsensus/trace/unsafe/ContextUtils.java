@@ -17,6 +17,7 @@
 package openconsensus.trace.unsafe;
 
 import io.grpc.Context;
+import openconsensus.trace.BlankSpan;
 import openconsensus.trace.Span;
 import openconsensus.trace.Tracer;
 
@@ -38,5 +39,5 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static final Context.Key<Span> CONTEXT_SPAN_KEY =
-      Context.key("openconsensus-trace-span-key");
+      Context.keyWithDefault("openconsensus-trace-span-key", BlankSpan.INSTANCE);
 }
