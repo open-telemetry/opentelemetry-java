@@ -187,7 +187,7 @@ final class SpanBuilderShim implements SpanBuilder {
   @Override
   public Span start() {
 
-    openconsensus.trace.SpanBuilder builder;
+    openconsensus.trace.Span.Builder builder;
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder = tracer.spanBuilderWithExplicitParent(spanName, null);
     } else if (parentSpan != null) {
