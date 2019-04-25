@@ -20,9 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Base interface for all metrics defined in this package.
- */
+/** Base interface for all metrics defined in this package. */
 public interface Metric {
   /**
    * Removes the {@code TimeSeries} from the metric, if it is present. i.e. references to previous
