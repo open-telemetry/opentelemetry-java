@@ -36,18 +36,18 @@ public final class MeasureTest {
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
-    STATS_RECORDER.buildMeasure(longName).build();
+    STATS_RECORDER.measureBuilder(longName).build();
   }
 
   @Test
   public void preventNonPrintableMeasureName() {
     thrown.expect(IllegalArgumentException.class);
-    STATS_RECORDER.buildMeasure("\2").build();
+    STATS_RECORDER.measureBuilder("\2").build();
   }
 
   @Test
   public void preventNegativeValue() {
-    Measure myMeasure = STATS_RECORDER.buildMeasure("MyMeasure").build();
+    Measure myMeasure = STATS_RECORDER.measureBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     myMeasure.createDoubleMeasurement(-5);
   }
