@@ -32,7 +32,7 @@ import openconsensus.context.propagation.TextFormat;
  *
  * @since 0.1.0
  */
-public abstract class Tagger {
+public interface Tagger {
 
   /**
    * Returns the current {@code TagMap}.
@@ -40,7 +40,7 @@ public abstract class Tagger {
    * @return the current {@code TagMap}.
    * @since 0.1.0
    */
-  public abstract TagMap getCurrentTagMap();
+  TagMap getCurrentTagMap();
 
   /**
    * Returns a new empty {@code Builder}.
@@ -48,7 +48,7 @@ public abstract class Tagger {
    * @return a new empty {@code Builder}.
    * @since 0.1.0
    */
-  public abstract TagMapBuilder emptyBuilder();
+  TagMapBuilder emptyBuilder();
 
   /**
    * Returns a builder based on this {@code TagMap}.
@@ -57,7 +57,7 @@ public abstract class Tagger {
    * @return a builder based on this {@code TagMap}.
    * @since 0.1.0
    */
-  public abstract TagMapBuilder toBuilder(TagMap tags);
+  TagMapBuilder toBuilder(TagMap tags);
 
   /**
    * Returns a new builder created from the current {@code TagMap}.
@@ -65,7 +65,7 @@ public abstract class Tagger {
    * @return a new builder created from the current {@code TagMap}.
    * @since 0.1.0
    */
-  public abstract TagMapBuilder currentBuilder();
+  TagMapBuilder currentBuilder();
 
   /**
    * Enters the scope of code where the given {@code TagMap} is in the current context (replacing
@@ -77,7 +77,7 @@ public abstract class Tagger {
    *     context.
    * @since 0.1.0
    */
-  public abstract Scope withTagMap(TagMap tags);
+  Scope withTagMap(TagMap tags);
 
   /**
    * Returns the {@link BinaryFormat} for this implementation.
@@ -116,7 +116,7 @@ public abstract class Tagger {
    * @return the {@code BinaryFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract BinaryFormat<TagMap> getBinaryFormat();
+  BinaryFormat<TagMap> getBinaryFormat();
 
   /**
    * Returns the {@link TextFormat} for this implementation.
@@ -164,5 +164,5 @@ public abstract class Tagger {
    * @return the {@code TextFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract TextFormat<TagMap> getTextFormat();
+  TextFormat<TagMap> getTextFormat();
 }

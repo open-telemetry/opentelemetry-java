@@ -23,7 +23,7 @@ import openconsensus.context.Scope;
  *
  * @since 0.1.0
  */
-public abstract class TagMapBuilder {
+public interface TagMapBuilder {
   /**
    * Adds the key/value pair and metadata regardless of whether the key is present.
    *
@@ -33,7 +33,7 @@ public abstract class TagMapBuilder {
    * @return this
    * @since 0.1.0
    */
-  public abstract TagMapBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata);
+  TagMapBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata);
 
   /**
    * Removes the key if it exists.
@@ -42,7 +42,7 @@ public abstract class TagMapBuilder {
    * @return this
    * @since 0.1.0
    */
-  public abstract TagMapBuilder remove(TagKey key);
+  TagMapBuilder remove(TagKey key);
 
   /**
    * Creates a {@code TagMap} from this builder.
@@ -50,7 +50,7 @@ public abstract class TagMapBuilder {
    * @return a {@code TagMap} with the same tags as this builder.
    * @since 0.1.0
    */
-  public abstract TagMap build();
+  TagMap build();
 
   /**
    * Enters the scope of code where the {@link TagMap} created from this builder is in the current
@@ -61,5 +61,5 @@ public abstract class TagMapBuilder {
    *     set to the current context.
    * @since 0.1.0
    */
-  public abstract Scope buildScoped();
+  Scope buildScoped();
 }

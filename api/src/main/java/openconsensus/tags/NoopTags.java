@@ -45,7 +45,7 @@ public final class NoopTags {
   }
 
   @Immutable
-  private static final class NoopTagger extends Tagger {
+  private static final class NoopTagger implements Tagger {
     private static final BinaryFormat<TagMap> BINARY_FORMAT = new NoopBinaryFormat();
     private static final TextFormat<TagMap> TEXT_FORMAT = new NoopTextFormat();
 
@@ -88,7 +88,7 @@ public final class NoopTags {
   }
 
   @Immutable
-  private static final class NoopTagMapBuilder extends TagMapBuilder {
+  private static final class NoopTagMapBuilder implements TagMapBuilder {
     @Override
     public TagMapBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
       Utils.checkNotNull(key, "key");
