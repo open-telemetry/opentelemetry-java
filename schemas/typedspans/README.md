@@ -8,7 +8,7 @@ Spans represent different _canonical types_ of operations. Examples are
 * Local operations like method invocations
 * HTTP requests (inbound and outbound)
 * Database requests
-* eneric RPC requests like GRPC
+* Generic RPC requests like gRPC
 
 A span consists of a number of mandatory and optional attributes that add information
 about the represented operation to it.
