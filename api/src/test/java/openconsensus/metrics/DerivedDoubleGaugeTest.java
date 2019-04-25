@@ -42,13 +42,12 @@ public class DerivedDoubleGaugeTest {
   private final MetricRegistry metricRegistry =
       NoopMetrics.newNoopMeter().metricRegistryBuilder().build();
   private final DerivedDoubleGauge derivedDoubleGauge =
-      metricRegistry.addDerivedDoubleGauge(
-          NAME,
-          MetricOptions.builder()
-              .setDescription(DESCRIPTION)
-              .setLabelKeys(LABEL_KEY)
-              .setUnit(UNIT)
-              .build());
+      metricRegistry
+          .derivedDoubleGaugeBuilder(NAME)
+          .setDescription(DESCRIPTION)
+          .setLabelKeys(LABEL_KEY)
+          .setUnit(UNIT)
+          .build();
   private static final ToDoubleFunction<Object> doubleFunction =
       new ToDoubleFunction<Object>() {
         @Override

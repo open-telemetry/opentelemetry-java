@@ -43,13 +43,12 @@ public class LongGaugeTest {
   @Test
   public void noopGetOrCreateTimeSeries_WithNullLabelValues() {
     LongGauge longGauge =
-        metricRegistry.addLongGauge(
-            NAME,
-            MetricOptions.builder()
-                .setDescription(DESCRIPTION)
-                .setLabelKeys(LABEL_KEY)
-                .setUnit(UNIT)
-                .build());
+        metricRegistry
+            .longGaugeBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
     longGauge.getOrCreateTimeSeries(null);
@@ -59,13 +58,12 @@ public class LongGaugeTest {
   public void noopGetOrCreateTimeSeries_WithNullElement() {
     List<LabelValue> labelValues = Collections.singletonList(null);
     LongGauge longGauge =
-        metricRegistry.addLongGauge(
-            NAME,
-            MetricOptions.builder()
-                .setDescription(DESCRIPTION)
-                .setLabelKeys(LABEL_KEY)
-                .setUnit(UNIT)
-                .build());
+        metricRegistry
+            .longGaugeBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValue");
     longGauge.getOrCreateTimeSeries(labelValues);
@@ -74,13 +72,12 @@ public class LongGaugeTest {
   @Test
   public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
     LongGauge longGauge =
-        metricRegistry.addLongGauge(
-            NAME,
-            MetricOptions.builder()
-                .setDescription(DESCRIPTION)
-                .setLabelKeys(LABEL_KEY)
-                .setUnit(UNIT)
-                .build());
+        metricRegistry
+            .longGaugeBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
     longGauge.getOrCreateTimeSeries(EMPTY_LABEL_VALUES);
@@ -89,13 +86,12 @@ public class LongGaugeTest {
   @Test
   public void noopRemoveTimeSeries_WithNullLabelValues() {
     LongGauge longGauge =
-        metricRegistry.addLongGauge(
-            NAME,
-            MetricOptions.builder()
-                .setDescription(DESCRIPTION)
-                .setLabelKeys(LABEL_KEY)
-                .setUnit(UNIT)
-                .build());
+        metricRegistry
+            .longGaugeBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
     longGauge.removeTimeSeries(null);

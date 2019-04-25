@@ -57,7 +57,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DerivedDoubleCumulative {
+public interface DerivedDoubleCumulative extends Metric {
   /**
    * Creates a {@code TimeSeries}. The value of a single point in the TimeSeries is observed from a
    * callback function. This function is invoked whenever metrics are collected, meaning the
@@ -76,19 +76,6 @@ public interface DerivedDoubleCumulative {
    */
   <T> void createTimeSeries(List<LabelValue> labelValues, T obj, ToDoubleFunction<T> function);
 
-  /**
-   * Removes the {@code TimeSeries} from the cumulative metric, if it is present.
-   *
-   * @param labelValues the list of label values.
-   * @throws NullPointerException if {@code labelValues} is null.
-   * @since 0.1.0
-   */
-  void removeTimeSeries(List<LabelValue> labelValues);
-
-  /**
-   * Removes all {@code TimeSeries} from the cumulative metric.
-   *
-   * @since 0.1.0
-   */
-  void clear();
+  /** Builder class for {@link DerivedDoubleCumulative}. */
+  interface Builder extends Metric.Builder<Builder, DerivedDoubleCumulative> {}
 }

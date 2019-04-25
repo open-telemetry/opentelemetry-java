@@ -75,7 +75,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleGauge {
+public interface DoubleGauge extends Metric {
 
   /**
    * Creates a {@code TimeSeries} and returns a {@code DoublePoint} if the specified {@code
@@ -86,7 +86,7 @@ public interface DoubleGauge {
    * method for manual operations.
    *
    * @param labelValues the list of label values. The number of label values must be the same to
-   *     that of the label keys passed to {@link MetricRegistry#addDoubleGauge}.
+   *     that of the label keys passed to {@link Builder#setLabelKeys(List)}.
    * @return a {@code DoublePoint} the value of single gauge.
    * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
    *     labelValues} is null.
@@ -105,25 +105,6 @@ public interface DoubleGauge {
   DoublePoint getDefaultTimeSeries();
 
   /**
-   * Removes the {@code TimeSeries} from the gauge metric, if it is present. i.e. references to
-   * previous {@code DoublePoint} objects are invalid (not part of the metric).
-   *
-   * @param labelValues the list of label values.
-   * @throws NullPointerException if {@code labelValues} is null or any element of {@code
-   *     labelValues} is null.
-   * @since 0.1.0
-   */
-  void removeTimeSeries(List<LabelValue> labelValues);
-
-  /**
-   * Removes all {@code TimeSeries} from the gauge metric. i.e. references to all previous {@code
-   * DoublePoint} objects are invalid (not part of the metric).
-   *
-   * @since 0.1.0
-   */
-  void clear();
-
-  /**
    * The value of a single point in the Gauge.TimeSeries.
    *
    * @since 0.1.0
@@ -133,7 +114,7 @@ public interface DoubleGauge {
     /**
      * Adds the given value to the current value. The values can be negative.
      *
-     * @param amt the value to add
+     * @param amt the value to add.
      * @since 0.1.0
      */
     void add(double amt);
@@ -146,4 +127,7 @@ public interface DoubleGauge {
      */
     void set(double val);
   }
+
+  /** Builder class for {@link DerivedLongGauge}. */
+  interface Builder extends Metric.Builder<Builder, DoubleGauge> {}
 }

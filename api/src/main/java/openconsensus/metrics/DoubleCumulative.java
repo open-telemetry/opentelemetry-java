@@ -75,7 +75,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleCumulative {
+public interface DoubleCumulative extends Metric {
 
   /**
    * Creates a {@code TimeSeries} and returns a {@code DoublePoint} if the specified {@code
@@ -86,7 +86,7 @@ public interface DoubleCumulative {
    * method for manual operations.
    *
    * @param labelValues the list of label values. The number of label values must be the same to
-   *     that of the label keys passed to {@link MetricRegistry#addDoubleCumulative}.
+   *     that of the label keys passed to {@link Builder#setLabelKeys(List)}.
    * @return a {@code DoublePoint} the value of single cumulative.
    * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
    *     labelValues} is null.
@@ -105,25 +105,6 @@ public interface DoubleCumulative {
   DoublePoint getDefaultTimeSeries();
 
   /**
-   * Removes the {@code TimeSeries} from the cumulative metric, if it is present. i.e. references to
-   * previous {@code DoublePoint} objects are invalid (not part of the metric).
-   *
-   * @param labelValues the list of label values.
-   * @throws NullPointerException if {@code labelValues} is null or any element of {@code
-   *     labelValues} is null.
-   * @since 0.1.0
-   */
-  void removeTimeSeries(List<LabelValue> labelValues);
-
-  /**
-   * Removes all {@code TimeSeries} from the cumulative metric. i.e. references to all previous
-   * {@code DoublePoint} objects are invalid (not part of the metric).
-   *
-   * @since 0.1.0
-   */
-  void clear();
-
-  /**
    * The value of a single point in the Cumulative.TimeSeries.
    *
    * @since 0.1.0
@@ -138,4 +119,7 @@ public interface DoubleCumulative {
      */
     void add(double delta);
   }
+
+  /** Builder class for {@link DoubleCumulative}. */
+  interface Builder extends Metric.Builder<Builder, DoubleCumulative> {}
 }
