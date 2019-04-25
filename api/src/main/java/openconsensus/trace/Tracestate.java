@@ -126,7 +126,7 @@ public abstract class Tracestate {
       Entry entry = Entry.create(key, value);
       if (entries == null) {
         // Copy entries from the parent.
-        entries = new ArrayList<Entry>(parent.getEntries());
+        entries = new ArrayList<>(parent.getEntries());
       }
       for (int i = 0; i < entries.size(); i++) {
         if (entries.get(i).getKey().equals(entry.getKey())) {
@@ -152,7 +152,7 @@ public abstract class Tracestate {
       Utils.checkNotNull(key, "key");
       if (entries == null) {
         // Copy entries from the parent.
-        entries = new ArrayList<Entry>(parent.getEntries());
+        entries = new ArrayList<>(parent.getEntries());
       }
       for (int i = 0; i < entries.size(); i++) {
         if (entries.get(i).getKey().equals(key)) {

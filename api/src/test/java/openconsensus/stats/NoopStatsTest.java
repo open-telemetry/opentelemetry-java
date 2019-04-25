@@ -52,7 +52,7 @@ public final class NoopStatsTest {
 
         @Override
         public Iterator<Tag> getIterator() {
-          return Collections.<Tag>singleton(TAG).iterator();
+          return Collections.singleton(TAG).iterator();
         }
 
         @Nullable

@@ -40,10 +40,10 @@ public class ResourceTest {
 
   @Before
   public void setUp() {
-    Map<String, String> labelMap1 = new HashMap<String, String>();
+    Map<String, String> labelMap1 = new HashMap<>();
     labelMap1.put("a", "1");
     labelMap1.put("b", "2");
-    Map<String, String> labelMap2 = new HashMap<String, String>();
+    Map<String, String> labelMap2 = new HashMap<>();
     labelMap2.put("a", "1");
     labelMap2.put("b", "3");
     labelMap2.put("c", "4");
@@ -53,7 +53,7 @@ public class ResourceTest {
 
   @Test
   public void create() {
-    Map<String, String> labelMap = new HashMap<String, String>();
+    Map<String, String> labelMap = new HashMap<>();
     labelMap.put("a", "1");
     labelMap.put("b", "2");
     Resource resource = Resource.create(labelMap);
@@ -68,10 +68,10 @@ public class ResourceTest {
 
   @Test
   public void testResourceEquals() {
-    Map<String, String> labelMap1 = new HashMap<String, String>();
+    Map<String, String> labelMap1 = new HashMap<>();
     labelMap1.put("a", "1");
     labelMap1.put("b", "2");
-    Map<String, String> labelMap2 = new HashMap<String, String>();
+    Map<String, String> labelMap2 = new HashMap<>();
     labelMap2.put("a", "1");
     labelMap2.put("b", "3");
     labelMap2.put("c", "4");
@@ -83,7 +83,7 @@ public class ResourceTest {
 
   @Test
   public void testMergeResources() {
-    Map<String, String> expectedLabelMap = new HashMap<String, String>();
+    Map<String, String> expectedLabelMap = new HashMap<>();
     expectedLabelMap.put("a", "1");
     expectedLabelMap.put("b", "2");
     expectedLabelMap.put("c", "4");
@@ -94,7 +94,7 @@ public class ResourceTest {
 
   @Test
   public void testMergeResources_Resource1() {
-    Map<String, String> expectedLabelMap = new HashMap<String, String>();
+    Map<String, String> expectedLabelMap = new HashMap<>();
     expectedLabelMap.put("a", "1");
     expectedLabelMap.put("b", "2");
 
@@ -104,7 +104,7 @@ public class ResourceTest {
 
   @Test
   public void testMergeResources_Resource1_Null() {
-    Map<String, String> expectedLabelMap = new HashMap<String, String>();
+    Map<String, String> expectedLabelMap = new HashMap<>();
     expectedLabelMap.put("a", "1");
     expectedLabelMap.put("b", "3");
     expectedLabelMap.put("c", "4");
@@ -115,7 +115,7 @@ public class ResourceTest {
 
   @Test
   public void testMergeResources_Resource2_Null() {
-    Map<String, String> expectedLabelMap = new HashMap<String, String>();
+    Map<String, String> expectedLabelMap = new HashMap<>();
     expectedLabelMap.put("a", "1");
     expectedLabelMap.put("b", "2");
 
