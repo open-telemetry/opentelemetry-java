@@ -21,9 +21,7 @@ import static openconsensus.trace.TestUtils.generateRandomSpanId;
 import static openconsensus.trace.TestUtils.generateRandomTraceId;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Random;
-import openconsensus.trace.Sampler;
 import openconsensus.trace.Span;
 import openconsensus.trace.SpanContext;
 import openconsensus.trace.SpanId;
