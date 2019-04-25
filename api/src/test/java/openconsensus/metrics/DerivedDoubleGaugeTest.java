@@ -40,7 +40,7 @@ public class DerivedDoubleGaugeTest {
   private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<LabelValue>();
 
   private final MetricRegistry metricRegistry =
-      NoopMetrics.newNoopMeter().buildMetricRegistry().build();
+      NoopMetrics.newNoopMeter().metricRegistryBuilder().build();
   private final DerivedDoubleGauge derivedDoubleGauge =
       metricRegistry.addDerivedDoubleGauge(
           NAME,

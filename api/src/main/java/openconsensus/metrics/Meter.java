@@ -24,5 +24,5 @@ public interface Meter {
    *
    * @return a new builder for a {@code MetricRegistry}.
    */
-  MetricRegistry.Builder buildMetricRegistry();
+  MetricRegistry.Builder metricRegistryBuilder();
 }

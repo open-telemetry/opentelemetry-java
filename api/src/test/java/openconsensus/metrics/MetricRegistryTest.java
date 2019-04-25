@@ -42,7 +42,7 @@ public class MetricRegistryTest {
           .build();
 
   private final MetricRegistry metricRegistry =
-      NoopMetrics.newNoopMeter().buildMetricRegistry().build();
+      NoopMetrics.newNoopMeter().metricRegistryBuilder().build();
 
   @Test
   public void noopAddLongGauge_NullName() {

@@ -41,7 +41,7 @@ public final class NoopMetrics {
   private static final class NoopMeter implements Meter {
 
     @Override
-    public MetricRegistry.Builder buildMetricRegistry() {
+    public MetricRegistry.Builder metricRegistryBuilder() {
       return new NoopMetricCollection.Builder();
     }
   }
