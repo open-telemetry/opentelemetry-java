@@ -21,8 +21,6 @@ import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
-import openconsensus.stats.Measurement.MeasurementDouble;
-import openconsensus.stats.Measurement.MeasurementLong;
 import openconsensus.tags.TagMap;
 import openconsensus.trace.SpanContext;
 
@@ -89,21 +87,21 @@ public final class NoopStats {
     }
 
     @Override
-    public MeasurementDouble createDoubleMeasurement(double value) {
+    public Measurement createDoubleMeasurement(double value) {
       if (type != Type.DOUBLE) {
         throw new UnsupportedOperationException("This type can only create double measurement");
       }
       Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-      return MeasurementDouble.create(this, value);
+      return NoopMeasurement.INSTANCE;
     }
 
     @Override
-    public MeasurementLong createLongMeasurement(long value) {
+    public Measurement createLongMeasurement(long value) {
       if (type != Type.LONG) {
         throw new UnsupportedOperationException("This type can only create long measurement");
       }
       Utils.checkArgument(value >= 0, "Unsupported negative values.");
-      return MeasurementLong.create(this, value);
+      return NoopMeasurement.INSTANCE;
     }
 
     private static final class NoopBuilder implements Measure.Builder {
@@ -132,5 +130,10 @@ public final class NoopStats {
         return new NoopMeasure(type);
       }
     }
+  }
+
+  @Immutable
+  private static final class NoopMeasurement implements Measurement {
+    private static final Measurement INSTANCE = new NoopMeasurement();
   }
 }
