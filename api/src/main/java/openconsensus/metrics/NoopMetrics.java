@@ -122,22 +122,22 @@ public final class NoopMetrics {
   private static final class NoopLongGauge implements LongGauge {
     private final int labelKeysSize;
 
-    /** Creates a new {@code NoopLongPoint}. */
+    /** Creates a new {@code NoopTimeSeries}. */
     private NoopLongGauge(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
     @Override
-    public NoopLongPoint getOrCreateTimeSeries(List<LabelValue> labelValues) {
+    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
       Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      return new NoopLongPoint();
+      return new NoopTimeSeries();
     }
 
     @Override
-    public NoopLongPoint getDefaultTimeSeries() {
-      return new NoopLongPoint();
+    public NoopTimeSeries getDefaultTimeSeries() {
+      return new NoopTimeSeries();
     }
 
     @Override
@@ -148,9 +148,9 @@ public final class NoopMetrics {
     @Override
     public void clear() {}
 
-    /** No-op implementations of LongPoint class. */
-    private static final class NoopLongPoint implements LongPoint {
-      private NoopLongPoint() {}
+    /** No-op implementations of TimeSeries class. */
+    private static final class NoopTimeSeries implements TimeSeries {
+      private NoopTimeSeries() {}
 
       @Override
       public void add(long amt) {}
@@ -199,22 +199,22 @@ public final class NoopMetrics {
   private static final class NoopDoubleGauge implements DoubleGauge {
     private final int labelKeysSize;
 
-    /** Creates a new {@code NoopDoublePoint}. */
+    /** Creates a new {@code NoopTimeSeries}. */
     private NoopDoubleGauge(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
     @Override
-    public NoopDoublePoint getOrCreateTimeSeries(List<LabelValue> labelValues) {
+    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
       Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      return new NoopDoublePoint();
+      return new NoopTimeSeries();
     }
 
     @Override
-    public NoopDoublePoint getDefaultTimeSeries() {
-      return new NoopDoublePoint();
+    public NoopTimeSeries getDefaultTimeSeries() {
+      return new NoopTimeSeries();
     }
 
     @Override
@@ -225,9 +225,9 @@ public final class NoopMetrics {
     @Override
     public void clear() {}
 
-    /** No-op implementations of DoublePoint class. */
-    private static final class NoopDoublePoint implements DoublePoint {
-      private NoopDoublePoint() {}
+    /** No-op implementations of TimeSeries class. */
+    private static final class NoopTimeSeries implements TimeSeries {
+      private NoopTimeSeries() {}
 
       @Override
       public void add(double amt) {}
@@ -400,22 +400,22 @@ public final class NoopMetrics {
   private static final class NoopDoubleCumulative implements DoubleCumulative {
     private final int labelKeysSize;
 
-    /** Creates a new {@code NoopDoublePoint}. */
+    /** Creates a new {@code NoopTimeSeries}. */
     private NoopDoubleCumulative(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
     @Override
-    public NoopDoublePoint getOrCreateTimeSeries(List<LabelValue> labelValues) {
+    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
       Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      return NoopDoublePoint.INSTANCE;
+      return NoopTimeSeries.INSTANCE;
     }
 
     @Override
-    public NoopDoublePoint getDefaultTimeSeries() {
-      return NoopDoublePoint.INSTANCE;
+    public NoopTimeSeries getDefaultTimeSeries() {
+      return NoopTimeSeries.INSTANCE;
     }
 
     @Override
@@ -426,11 +426,11 @@ public final class NoopMetrics {
     @Override
     public void clear() {}
 
-    /** No-op implementations of DoublePoint class. */
-    private static final class NoopDoublePoint implements DoublePoint {
-      private static final NoopDoublePoint INSTANCE = new NoopDoublePoint();
+    /** No-op implementations of TimeSeries class. */
+    private static final class NoopTimeSeries implements TimeSeries {
+      private static final NoopTimeSeries INSTANCE = new NoopTimeSeries();
 
-      private NoopDoublePoint() {}
+      private NoopTimeSeries() {}
 
       @Override
       public void add(double delta) {}
@@ -538,22 +538,22 @@ public final class NoopMetrics {
   private static final class NoopLongCumulative implements LongCumulative {
     private final int labelKeysSize;
 
-    /** Creates a new {@code NoopLongPoint}. */
+    /** Creates a new {@code NoopTimeSeries}. */
     private NoopLongCumulative(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
     @Override
-    public NoopLongPoint getOrCreateTimeSeries(List<LabelValue> labelValues) {
+    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
       Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      return NoopLongPoint.INSTANCE;
+      return NoopTimeSeries.INSTANCE;
     }
 
     @Override
-    public NoopLongPoint getDefaultTimeSeries() {
-      return NoopLongPoint.INSTANCE;
+    public NoopTimeSeries getDefaultTimeSeries() {
+      return NoopTimeSeries.INSTANCE;
     }
 
     @Override
@@ -564,11 +564,11 @@ public final class NoopMetrics {
     @Override
     public void clear() {}
 
-    /** No-op implementations of LongPoint class. */
-    private static final class NoopLongPoint implements LongPoint {
-      private static final NoopLongPoint INSTANCE = new NoopLongPoint();
+    /** No-op implementations of TimeSeries class. */
+    private static final class NoopTimeSeries implements TimeSeries {
+      private static final NoopTimeSeries INSTANCE = new NoopTimeSeries();
 
-      private NoopLongPoint() {}
+      private NoopTimeSeries() {}
 
       @Override
       public void add(long delta) {}
