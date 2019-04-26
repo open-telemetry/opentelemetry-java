@@ -59,11 +59,11 @@ message MetricDescriptor {
   //
   // A gauge is an instantaneous measurement of a value.
   //
-  // A cumulative measurement is a value accumulated over a time interval. In
-  // a time series, cumulative measurements should have the same start time,
-  // increasing values and increasing end times, until an event resets the
-  // cumulative value to zero and sets a new start time for the following
-  // points.
+  // A counter/cumulative measurement is a value accumulated over a time
+  // interval. In a time series, cumulative measurements should have the same
+  // start time, increasing values and increasing end times, until an event
+  // resets the cumulative value to zero and sets a new start time for the
+  // following points.
   enum Type {
     // Do not use this default value.
     UNSPECIFIED = 0;
@@ -80,14 +80,14 @@ message MetricDescriptor {
     // have spent there.
     GAUGE_HISTOGRAM = 3;
 
-    // Integer cumulative measurement. The value cannot decrease, if resets
+    // Integer counter measurement. The value cannot decrease, if resets
     // then the start_time should also be reset.
-    CUMULATIVE_INT64 = 4;
+    COUNTER_INT64 = 4;
 
-    // Floating point cumulative measurement. The value cannot decrease, if
+    // Floating point counter measurement. The value cannot decrease, if
     // resets then the start_time should also be reset. Recorded values are
     // always >= 0.
-    CUMULATIVE_DOUBLE = 5;
+    COUNTER_DOUBLE = 5;
 
     // Histogram cumulative measurement. The count and sum cannot decrease,
     // if resets then the start_time should also be reset.
@@ -138,13 +138,13 @@ message LabelValue {
 
 // A timestamped measurement.
 message Point {
-  // Must be present for cumulative metrics. The time when the cumulative value
-  // was reset to zero. Exclusive. The cumulative value is over the time interval
-  // (start_timestamp, timestamp]. If not specified, the backend can use the
-  // previous recorded value.
+  // Must be present for counter/cumulative metrics. The time when the
+  // cumulative value was reset to zero. The cumulative value is over the time
+  // interval (start_timestamp, timestamp]. If not specified, the backend can
+  // use the previous recorded value.
   google.protobuf.Timestamp start_timestamp = 1;
 
-  // The moment when this point was recorded. Inclusive.
+  // The moment when this point was recorded.
   // If not specified, the timestamp will be decided by the backend.
   google.protobuf.Timestamp timestamp = 2;
 
