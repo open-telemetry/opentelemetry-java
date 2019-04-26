@@ -18,13 +18,12 @@ package openconsensus.metrics;
 
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.metrics.LongCumulative.TimeSeries;
 
 /**
- * Long Cumulative metric, to report instantaneous measurement of a long value. Cumulative values
- * can go up or stay the same, but can never go down. Cumulative values cannot be negative.
+ * Gauge metric, to report instantaneous measurement of an long value. Gauges can go both up and
+ * down. The gauges values can be negative.
  *
- * <p>Example 1: Create a Cumulative with default labels.
+ * <p>Example 1: Create a Gauge with default labels.
  *
  * <pre>{@code
  * class YourClass {
@@ -34,11 +33,10 @@ import openconsensus.metrics.LongCumulative.TimeSeries;
  *
  *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
  *
- *   LongCumulative cumulative = metricRegistry.addLongCumulative("processed_jobs",
- *                       "Processed jobs", "1", labelKeys);
+ *   GaugeLong gauge = metricRegistry.addLongGauge("queue_size", "Pending jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a TimeSeries.
- *   LongCumulative.TimeSeries defaultTimeSeries = cumulative.getDefaultTimeSeries();
+ *   GaugeLong.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
  *
  *   void doWork() {
  *      // Your code here.
@@ -48,7 +46,7 @@ import openconsensus.metrics.LongCumulative.TimeSeries;
  * }
  * }</pre>
  *
- * <p>Example 2: You can also use labels (keys and values) to track different types of metric.
+ * <p>Example 2: You can also use labels(keys and values) to track different types of metric.
  *
  * <pre>{@code
  * class YourClass {
@@ -59,11 +57,10 @@ import openconsensus.metrics.LongCumulative.TimeSeries;
  *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
  *   List<LabelValue> labelValues = Arrays.asList(LabelValue.create("Inbound"));
  *
- *   LongCumulative cumulative = metricRegistry.addLongCumulative("processed_jobs",
- *                       "Processed jobs", "1", labelKeys);
+ *   GaugeLong gauge = metricRegistry.addLongGauge("queue_size", "Pending jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a TimeSeries.
- *   LongCumulative.TimeSeries inboundTimeSeries = cumulative.getOrCreateTimeSeries(labelValues);
+ *   GaugeLong.TimeSeries inboundTimeSeries = gauge.getOrCreateTimeSeries(labelValues);
  *
  *   void doSomeWork() {
  *      // Your code here.
@@ -76,7 +73,7 @@ import openconsensus.metrics.LongCumulative.TimeSeries;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongCumulative extends Metric<TimeSeries> {
+public interface GaugeLong extends Metric<GaugeLong.TimeSeries> {
 
   @Override
   TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
@@ -85,25 +82,22 @@ public interface LongCumulative extends Metric<TimeSeries> {
   TimeSeries getDefaultTimeSeries();
 
   /**
-   * The value of a single point in the Cumulative.TimeSeries.
+   * The value of a single point in the Gauge.TimeSeries.
    *
    * @since 0.1.0
    */
   interface TimeSeries {
 
     /**
-     * Adds the given value to the current value. The values cannot be negative.
+     * Adds the given value to the current value. The values can be negative.
      *
-     * @param delta the value to add
+     * @param amt the value to add
      * @since 0.1.0
      */
-    void add(long delta);
+    void add(long amt);
 
     /**
-     * Sets the given value. The value must be larger than the current recorded value.
-     *
-     * <p>In general should be used in combination with {@link #setCallback(Runnable)} where the
-     * recorded value is guaranteed to be monotonically increasing.
+     * Sets the given value.
      *
      * @param val the new value.
      * @since 0.1.0
@@ -111,6 +105,6 @@ public interface LongCumulative extends Metric<TimeSeries> {
     void set(long val);
   }
 
-  /** Builder class for {@link LongCumulative}. */
-  interface Builder extends Metric.Builder<Builder, LongCumulative> {}
+  /** Builder class for {@link GaugeLong}. */
+  interface Builder extends Metric.Builder<Builder, GaugeLong> {}
 }

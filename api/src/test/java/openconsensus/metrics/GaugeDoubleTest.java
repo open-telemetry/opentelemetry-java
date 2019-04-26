@@ -25,9 +25,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link LongCumulative}. */
+/** Unit tests for {@link GaugeDouble}. */
 @RunWith(JUnit4.class)
-public class LongCumulativeTest {
+public class GaugeDoubleTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -42,58 +42,58 @@ public class LongCumulativeTest {
 
   @Test
   public void noopGetOrCreateTimeSeries_WithNullLabelValues() {
-    LongCumulative longCumulative =
+    GaugeDouble gaugeDouble =
         metricRegistry
-            .longCumulativeBuilder(NAME)
+            .gaugeDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    longCumulative.getOrCreateTimeSeries(null);
+    gaugeDouble.getOrCreateTimeSeries(null);
   }
 
   @Test
   public void noopGetOrCreateTimeSeries_WithNullElement() {
     List<LabelValue> labelValues = Collections.singletonList(null);
-    LongCumulative longCumulative =
+    GaugeDouble gaugeDouble =
         metricRegistry
-            .longCumulativeBuilder(NAME)
+            .gaugeDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValue");
-    longCumulative.getOrCreateTimeSeries(labelValues);
+    gaugeDouble.getOrCreateTimeSeries(labelValues);
   }
 
   @Test
   public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
-    LongCumulative longCumulative =
+    GaugeDouble gaugeDouble =
         metricRegistry
-            .longCumulativeBuilder(NAME)
+            .gaugeDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    longCumulative.getOrCreateTimeSeries(EMPTY_LABEL_VALUES);
+    gaugeDouble.getOrCreateTimeSeries(EMPTY_LABEL_VALUES);
   }
 
   @Test
   public void noopRemoveTimeSeries_WithNullLabelValues() {
-    LongCumulative longCumulative =
+    GaugeDouble gaugeDouble =
         metricRegistry
-            .longCumulativeBuilder(NAME)
+            .gaugeDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    longCumulative.removeTimeSeries(null);
+    gaugeDouble.removeTimeSeries(null);
   }
 }

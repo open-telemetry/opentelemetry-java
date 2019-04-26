@@ -26,53 +26,48 @@ import openconsensus.resource.Resource;
 public interface MetricRegistry {
 
   /**
-   * Returns a builder for a {@link LongGauge} to be added to the registry. This is more convenient
-   * form when you want to manually increase and decrease values as per your service requirements.
+   * Returns a builder for a {@link GaugeLong} to be added to the registry.
    *
    * @param name the name of the metric.
-   * @return a {@code LongGauge.Builder}.
+   * @return a {@code GaugeLong.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  LongGauge.Builder longGaugeBuilder(String name);
+  GaugeLong.Builder gaugeLongBuilder(String name);
 
   /**
-   * Returns a builder for a {@link DoubleGauge} to be added to the registry. This is more
-   * convenient form when you want to manually increase and decrease values as per your service
-   * requirements.
+   * Returns a builder for a {@link GaugeDouble} to be added to the registry.
    *
    * @param name the name of the metric.
-   * @return a {@code DoubleGauge.Builder}.
+   * @return a {@code GaugeDouble.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  DoubleGauge.Builder doubleGaugeBuilder(String name);
+  GaugeDouble.Builder gaugeDoubleBuilder(String name);
 
   /**
-   * Returns a builder for a {@link DoubleCumulative} to be added to the registry. This is a more
-   * convenient form when you want to manually increase values as per your service requirements.
+   * Returns a builder for a {@link CounterDouble} to be added to the registry.
    *
    * @param name the name of the metric.
-   * @return a {@code DoubleCumulative.Builder}.
+   * @return a {@code CounterDouble.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  DoubleCumulative.Builder doubleCumulativeBuilder(String name);
+  CounterDouble.Builder counterDoubleBuilder(String name);
 
   /**
-   * Returns a builder for a {@link LongCumulative} to be added to the registry. This is a more
-   * convenient form when you want to manually increase values as per your service requirements.
+   * Returns a builder for a {@link CounterLong} to be added to the registry.
    *
    * @param name the name of the metric.
-   * @return a {@code LongCumulative.Builder}.
+   * @return a {@code CounterLong.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  LongCumulative.Builder longCumulativeBuilder(String name);
+  CounterLong.Builder counterLongBuilder(String name);
 
   /** Builder class for the {@link MetricRegistry}. */
   interface Builder {

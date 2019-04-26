@@ -18,11 +18,11 @@ package openconsensus.metrics;
 
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
-import openconsensus.metrics.DoubleGauge.TimeSeries;
+import openconsensus.metrics.GaugeDouble.TimeSeries;
 
 /**
- * Double Gauge metric, to report instantaneous measurement of a double value. Gauges can go both up
- * and down. The gauges values can be negative.
+ * Gauge metric, to report instantaneous measurement of a double value. Gauges can go both up and
+ * down. The gauges values can be negative.
  *
  * <p>Example 1: Create a Gauge with default labels.
  *
@@ -34,11 +34,11 @@ import openconsensus.metrics.DoubleGauge.TimeSeries;
  *
  *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
  *
- *   DoubleGauge gauge = metricRegistry.addDoubleGauge("queue_size",
+ *   GaugeDouble gauge = metricRegistry.addDoubleGauge("queue_size",
  *                       "Pending jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a TimeSeries.
- *   DoubleGauge.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
+ *   GaugeDouble.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
  *
  *   void doWork() {
  *      // Your code here.
@@ -59,11 +59,11 @@ import openconsensus.metrics.DoubleGauge.TimeSeries;
  *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
  *   List<LabelValue> labelValues = Arrays.asList(LabelValue.create("Inbound"));
  *
- *   DoubleGauge gauge = metricRegistry.addDoubleGauge("queue_size",
+ *   GaugeDouble gauge = metricRegistry.addDoubleGauge("queue_size",
  *                       "Pending jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a TimeSeries.
- *   DoubleGauge.TimeSeries inboundTimeSeries = gauge.getOrCreateTimeSeries(labelValues);
+ *   GaugeDouble.TimeSeries inboundTimeSeries = gauge.getOrCreateTimeSeries(labelValues);
  *
  *   void doSomeWork() {
  *      // Your code here.
@@ -76,7 +76,7 @@ import openconsensus.metrics.DoubleGauge.TimeSeries;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleGauge extends Metric<TimeSeries> {
+public interface GaugeDouble extends Metric<TimeSeries> {
 
   @Override
   TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
@@ -85,7 +85,7 @@ public interface DoubleGauge extends Metric<TimeSeries> {
   TimeSeries getDefaultTimeSeries();
 
   /**
-   * A {@code TimeSeries} for a {@code DoubleGauge}.
+   * A {@code TimeSeries} for a {@code GaugeDouble}.
    *
    * @since 0.1.0
    */
@@ -108,6 +108,6 @@ public interface DoubleGauge extends Metric<TimeSeries> {
     void set(double val);
   }
 
-  /** Builder class for {@link LongGauge}. */
-  interface Builder extends Metric.Builder<Builder, DoubleGauge> {}
+  /** Builder class for {@link GaugeLong}. */
+  interface Builder extends Metric.Builder<Builder, GaugeDouble> {}
 }

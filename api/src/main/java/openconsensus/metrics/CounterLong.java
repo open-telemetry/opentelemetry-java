@@ -18,10 +18,11 @@ package openconsensus.metrics;
 
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
+import openconsensus.metrics.CounterLong.TimeSeries;
 
 /**
- * Double Cumulative metric, to report instantaneous measurement of a double value. Cumulative
- * values can go up or stay the same, but can never go down. Cumulative values cannot be negative.
+ * Counter metric, to report instantaneous measurement of a long value. Cumulative values can go up
+ * or stay the same, but can never go down. Cumulative values cannot be negative.
  *
  * <p>Example 1: Create a Cumulative with default labels.
  *
@@ -33,11 +34,11 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
  *
- *   DoubleCumulative cumulative = metricRegistry.addDoubleCumulative("processed_jobs",
+ *   CounterLong cumulative = metricRegistry.addLongCumulative("processed_jobs",
  *                       "Processed jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a TimeSeries.
- *   DoubleCumulative.TimeSeries defaultTimeSeries = cumulative.getDefaultTimeSeries();
+ *   CounterLong.TimeSeries defaultTimeSeries = cumulative.getDefaultTimeSeries();
  *
  *   void doWork() {
  *      // Your code here.
@@ -58,11 +59,11 @@ import javax.annotation.concurrent.ThreadSafe;
  *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
  *   List<LabelValue> labelValues = Arrays.asList(LabelValue.create("Inbound"));
  *
- *   DoubleCumulative cumulative = metricRegistry.addDoubleCumulative("processed_jobs",
+ *   CounterLong cumulative = metricRegistry.addLongCumulative("processed_jobs",
  *                       "Processed jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a TimeSeries.
- *   DoubleCumulative.TimeSeries inboundTimeSeries = cumulative.getOrCreateTimeSeries(labelValues);
+ *   CounterLong.TimeSeries inboundTimeSeries = cumulative.getOrCreateTimeSeries(labelValues);
  *
  *   void doSomeWork() {
  *      // Your code here.
@@ -75,7 +76,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleCumulative extends Metric<DoubleCumulative.TimeSeries> {
+public interface CounterLong extends Metric<TimeSeries> {
 
   @Override
   TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
@@ -84,7 +85,7 @@ public interface DoubleCumulative extends Metric<DoubleCumulative.TimeSeries> {
   TimeSeries getDefaultTimeSeries();
 
   /**
-   * A {@code TimeSeries} for a {@code DoubleCumulative}.
+   * The value of a single point in the Cumulative.TimeSeries.
    *
    * @since 0.1.0
    */
@@ -96,7 +97,7 @@ public interface DoubleCumulative extends Metric<DoubleCumulative.TimeSeries> {
      * @param delta the value to add
      * @since 0.1.0
      */
-    void add(double delta);
+    void add(long delta);
 
     /**
      * Sets the given value. The value must be larger than the current recorded value.
@@ -107,9 +108,9 @@ public interface DoubleCumulative extends Metric<DoubleCumulative.TimeSeries> {
      * @param val the new value.
      * @since 0.1.0
      */
-    void set(double val);
+    void set(long val);
   }
 
-  /** Builder class for {@link DoubleCumulative}. */
-  interface Builder extends Metric.Builder<Builder, DoubleCumulative> {}
+  /** Builder class for {@link CounterLong}. */
+  interface Builder extends Metric.Builder<Builder, CounterLong> {}
 }

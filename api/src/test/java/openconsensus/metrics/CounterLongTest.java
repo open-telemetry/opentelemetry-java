@@ -25,9 +25,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DoubleCumulative}. */
+/** Unit tests for {@link CounterLong}. */
 @RunWith(JUnit4.class)
-public class DoubleCumulativeTest {
+public class CounterLongTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -42,58 +42,58 @@ public class DoubleCumulativeTest {
 
   @Test
   public void noopGetOrCreateTimeSeries_WithNullLabelValues() {
-    DoubleCumulative doubleCumulative =
+    CounterLong counterLong =
         metricRegistry
-            .doubleCumulativeBuilder(NAME)
+            .counterLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    doubleCumulative.getOrCreateTimeSeries(null);
+    counterLong.getOrCreateTimeSeries(null);
   }
 
   @Test
   public void noopGetOrCreateTimeSeries_WithNullElement() {
     List<LabelValue> labelValues = Collections.singletonList(null);
-    DoubleCumulative doubleCumulative =
+    CounterLong counterLong =
         metricRegistry
-            .doubleCumulativeBuilder(NAME)
+            .counterLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValue");
-    doubleCumulative.getOrCreateTimeSeries(labelValues);
+    counterLong.getOrCreateTimeSeries(labelValues);
   }
 
   @Test
   public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
-    DoubleCumulative doubleCumulative =
+    CounterLong counterLong =
         metricRegistry
-            .doubleCumulativeBuilder(NAME)
+            .counterLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    doubleCumulative.getOrCreateTimeSeries(EMPTY_LABEL_VALUES);
+    counterLong.getOrCreateTimeSeries(EMPTY_LABEL_VALUES);
   }
 
   @Test
   public void noopRemoveTimeSeries_WithNullLabelValues() {
-    DoubleCumulative doubleCumulative =
+    CounterLong counterLong =
         metricRegistry
-            .doubleCumulativeBuilder(NAME)
+            .counterLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    doubleCumulative.removeTimeSeries(null);
+    counterLong.removeTimeSeries(null);
   }
 }
