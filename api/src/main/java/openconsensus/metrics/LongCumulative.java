@@ -18,6 +18,7 @@ package openconsensus.metrics;
 
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
+import openconsensus.metrics.LongCumulative.TimeSeries;
 
 /**
  * Long Cumulative metric, to report instantaneous measurement of a long value. Cumulative values
@@ -36,7 +37,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   LongCumulative cumulative = metricRegistry.addLongCumulative("processed_jobs",
  *                       "Processed jobs", "1", labelKeys);
  *
- *   // It is recommended to keep a reference of a point for manual operations.
+ *   // It is recommended to keep a reference of a TimeSeries.
  *   LongCumulative.TimeSeries defaultTimeSeries = cumulative.getDefaultTimeSeries();
  *
  *   void doWork() {
@@ -61,7 +62,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   LongCumulative cumulative = metricRegistry.addLongCumulative("processed_jobs",
  *                       "Processed jobs", "1", labelKeys);
  *
- *   // It is recommended to keep a reference of a point for manual operations.
+ *   // It is recommended to keep a reference of a TimeSeries.
  *   LongCumulative.TimeSeries inboundTimeSeries = cumulative.getOrCreateTimeSeries(labelValues);
  *
  *   void doSomeWork() {
@@ -75,33 +76,12 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongCumulative extends Metric {
+public interface LongCumulative extends Metric<TimeSeries> {
 
-  /**
-   * Creates a {@code TimeSeries} and returns a {@code TimeSeries} if the specified {@code
-   * labelValues} is not already associated with this cumulative, else returns an existing {@code
-   * TimeSeries}.
-   *
-   * <p>It is recommended to keep a reference to the TimeSeries instead of always calling this
-   * method for manual operations.
-   *
-   * @param labelValues the list of label values. The number of label values must be the same to
-   *     that of the label keys passed to {@link Builder#setLabelKeys(List)}.
-   * @return a {@code TimeSeries} the value of single cumulative.
-   * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
-   *     labelValues} is null.
-   * @throws IllegalArgumentException if number of {@code labelValues}s are not equal to the label
-   *     keys.
-   * @since 0.1.0
-   */
+  @Override
   TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
 
-  /**
-   * Returns a {@code TimeSeries} for a cumulative with all labels not set, or default labels.
-   *
-   * @return a {@code TimeSeries} for a cumulative with all labels not set, or default labels.
-   * @since 0.1.0
-   */
+  @Override
   TimeSeries getDefaultTimeSeries();
 
   /**
@@ -118,6 +98,17 @@ public interface LongCumulative extends Metric {
      * @since 0.1.0
      */
     void add(long delta);
+
+    /**
+     * Sets the given value. The value must be larger than the current recorded value.
+     *
+     * <p>In general should be used in combination with {@link #setCallback(Runnable)} where the
+     * recorded value is guaranteed to be monotonically increasing.
+     *
+     * @param val the new value.
+     * @since 0.1.0
+     */
+    void set(long val);
   }
 
   /** Builder class for {@link LongCumulative}. */

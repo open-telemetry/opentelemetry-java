@@ -61,39 +61,15 @@ public final class NoopMetrics {
     }
 
     @Override
-    public DerivedLongGauge.Builder derivedLongGaugeBuilder(String name) {
-      Utils.checkNotNull(name, "name");
-      return new NoopDerivedLongGauge.NoopBuilder();
-    }
-
-    @Override
-    public DerivedDoubleGauge.Builder derivedDoubleGaugeBuilder(String name) {
-      Utils.checkNotNull(name, "name");
-      return new NoopDerivedDoubleGauge.NoopBuilder();
-    }
-
-    @Override
     public DoubleCumulative.Builder doubleCumulativeBuilder(String name) {
       Utils.checkNotNull(name, "name");
       return new NoopDoubleCumulative.NoopBuilder();
     }
 
     @Override
-    public DerivedDoubleCumulative.Builder derivedDoubleCumulativeBuilder(String name) {
-      Utils.checkNotNull(name, "name");
-      return new NoopDerivedDoubleCumulative.NoopBuilder();
-    }
-
-    @Override
     public LongCumulative.Builder longCumulativeBuilder(String name) {
       Utils.checkNotNull(name, "name");
       return new NoopLongCumulative.NoopBuilder();
-    }
-
-    @Override
-    public DerivedLongCumulative.Builder derivedLongCumulativeBuilder(String name) {
-      Utils.checkNotNull(name, "name");
-      return new NoopDerivedLongCumulative.NoopBuilder();
     }
 
     private static final class Builder implements MetricRegistry.Builder {
@@ -138,6 +114,11 @@ public final class NoopMetrics {
     @Override
     public NoopTimeSeries getDefaultTimeSeries() {
       return new NoopTimeSeries();
+    }
+
+    @Override
+    public void setCallback(Runnable metricUpdater) {
+      Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
     @Override
@@ -218,6 +199,11 @@ public final class NoopMetrics {
     }
 
     @Override
+    public void setCallback(Runnable metricUpdater) {
+      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    }
+
+    @Override
     public void removeTimeSeries(List<LabelValue> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
@@ -272,130 +258,6 @@ public final class NoopMetrics {
     }
   }
 
-  /** No-op implementations of DerivedLongGauge class. */
-  private static final class NoopDerivedLongGauge implements DerivedLongGauge {
-    private final int labelKeysSize;
-
-    /** Creates a new {@code NoopDerivedLongGauge}. */
-    NoopDerivedLongGauge(int labelKeysSize) {
-      this.labelKeysSize = labelKeysSize;
-    }
-
-    @Override
-    public <T> void createTimeSeries(
-        List<LabelValue> labelValues, T obj, ToLongFunction<T> function) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
-      Utils.checkArgument(
-          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      Utils.checkNotNull(function, "function");
-    }
-
-    @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
-    @Override
-    public void clear() {}
-
-    private static final class NoopBuilder implements DerivedLongGauge.Builder {
-      private int labelKeysSize = 0;
-
-      @Override
-      public Builder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public Builder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public Builder setLabelKeys(List<LabelKey> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
-        Utils.checkMapElementNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
-        return this;
-      }
-
-      @Override
-      public DerivedLongGauge build() {
-        return new NoopDerivedLongGauge(labelKeysSize);
-      }
-    }
-  }
-
-  /** No-op implementations of DerivedDoubleGauge class. */
-  private static final class NoopDerivedDoubleGauge implements DerivedDoubleGauge {
-    private final int labelKeysSize;
-
-    /** Creates a new {@code NoopDerivedDoubleGauge}. */
-    private NoopDerivedDoubleGauge(int labelKeysSize) {
-      this.labelKeysSize = labelKeysSize;
-    }
-
-    @Override
-    public <T> void createTimeSeries(
-        List<LabelValue> labelValues, T obj, ToDoubleFunction<T> function) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
-      Utils.checkArgument(
-          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      Utils.checkNotNull(function, "function");
-    }
-
-    @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
-    @Override
-    public void clear() {}
-
-    private static final class NoopBuilder implements NoopDerivedDoubleGauge.Builder {
-      private int labelKeysSize = 0;
-
-      @Override
-      public Builder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public Builder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public Builder setLabelKeys(List<LabelKey> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
-        Utils.checkMapElementNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
-        return this;
-      }
-
-      @Override
-      public DerivedDoubleGauge build() {
-        return new NoopDerivedDoubleGauge(labelKeysSize);
-      }
-    }
-  }
-
   /** No-op implementations of DoubleCumulative class. */
   private static final class NoopDoubleCumulative implements DoubleCumulative {
     private final int labelKeysSize;
@@ -419,6 +281,11 @@ public final class NoopMetrics {
     }
 
     @Override
+    public void setCallback(Runnable metricUpdater) {
+      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    }
+
+    @Override
     public void removeTimeSeries(List<LabelValue> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
@@ -434,6 +301,9 @@ public final class NoopMetrics {
 
       @Override
       public void add(double delta) {}
+
+      @Override
+      public void set(double val) {}
     }
 
     private static final class NoopBuilder implements DoubleCumulative.Builder {
@@ -472,68 +342,6 @@ public final class NoopMetrics {
     }
   }
 
-  /** No-op implementations of DerivedDoubleCumulative class. */
-  private static final class NoopDerivedDoubleCumulative implements DerivedDoubleCumulative {
-    private final int labelKeysSize;
-
-    /** Creates a new {@code NoopDerivedDoubleCumulative}. */
-    private NoopDerivedDoubleCumulative(int labelKeysSize) {
-      this.labelKeysSize = labelKeysSize;
-    }
-
-    @Override
-    public <T> void createTimeSeries(
-        List<LabelValue> labelValues, T obj, ToDoubleFunction<T> function) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
-      Utils.checkArgument(
-          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      Utils.checkNotNull(function, "function");
-    }
-
-    @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
-    @Override
-    public void clear() {}
-
-    private static final class NoopBuilder implements DerivedDoubleCumulative.Builder {
-      private int labelKeysSize = 0;
-
-      @Override
-      public Builder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public Builder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public Builder setLabelKeys(List<LabelKey> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
-        Utils.checkMapElementNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
-        return this;
-      }
-
-      @Override
-      public DerivedDoubleCumulative build() {
-        return new NoopDerivedDoubleCumulative(labelKeysSize);
-      }
-    }
-  }
-
   /** No-op implementations of LongCumulative class. */
   private static final class NoopLongCumulative implements LongCumulative {
     private final int labelKeysSize;
@@ -557,6 +365,11 @@ public final class NoopMetrics {
     }
 
     @Override
+    public void setCallback(Runnable metricUpdater) {
+      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    }
+
+    @Override
     public void removeTimeSeries(List<LabelValue> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
@@ -572,6 +385,9 @@ public final class NoopMetrics {
 
       @Override
       public void add(long delta) {}
+
+      @Override
+      public void set(long val) {}
     }
 
     private static final class NoopBuilder implements LongCumulative.Builder {
@@ -606,68 +422,6 @@ public final class NoopMetrics {
       @Override
       public LongCumulative build() {
         return new NoopLongCumulative(labelKeysSize);
-      }
-    }
-  }
-
-  /** No-op implementations of DerivedLongCumulative class. */
-  private static final class NoopDerivedLongCumulative implements DerivedLongCumulative {
-    private final int labelKeysSize;
-
-    /** Creates a new {@code NoopDerivedLongCumulative}. */
-    NoopDerivedLongCumulative(int labelKeysSize) {
-      this.labelKeysSize = labelKeysSize;
-    }
-
-    @Override
-    public <T> void createTimeSeries(
-        List<LabelValue> labelValues, T obj, ToLongFunction<T> function) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
-      Utils.checkArgument(
-          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      Utils.checkNotNull(function, "function");
-    }
-
-    @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
-    @Override
-    public void clear() {}
-
-    private static final class NoopBuilder implements DerivedLongCumulative.Builder {
-      private int labelKeysSize = 0;
-
-      @Override
-      public Builder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public Builder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public Builder setLabelKeys(List<LabelKey> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
-        Utils.checkMapElementNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
-        return this;
-      }
-
-      @Override
-      public DerivedLongCumulative build() {
-        return new NoopDerivedLongCumulative(labelKeysSize);
       }
     }
   }
