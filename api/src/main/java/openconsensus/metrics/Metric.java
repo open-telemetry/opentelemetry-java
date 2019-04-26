@@ -21,7 +21,44 @@ import java.util.List;
 import java.util.Map;
 
 /** Base interface for all metrics defined in this package. */
-public interface Metric {
+public interface Metric<T> {
+  /**
+   * Creates a {@code TimeSeries} and returns a {@code TimeSeries} if the specified {@code
+   * labelValues} is not already associated with this gauge, else returns an existing {@code
+   * TimeSeries}.
+   *
+   * <p>It is recommended to keep a reference to the TimeSeries instead of always calling this
+   * method for every operations.
+   *
+   * @param labelValues the list of label values. The number of label values must be the same to
+   *     that of the label keys passed to {@link DoubleGauge.Builder#setLabelKeys(List)}.
+   * @return a {@code TimeSeries} the value of single gauge.
+   * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
+   *     labelValues} is null.
+   * @throws IllegalArgumentException if number of {@code labelValues}s are not equal to the label
+   *     keys.
+   * @since 0.1.0
+   */
+  T getOrCreateTimeSeries(List<LabelValue> labelValues);
+
+  /**
+   * Returns a {@code TimeSeries} for a metric with all labels not set (default label value).
+   *
+   * @return a {@code TimeSeries} for a metric with all labels not set (default label value).
+   * @since 0.1.0
+   */
+  T getDefaultTimeSeries();
+
+  /**
+   * Sets a callback that gets executed every time before exporting this metric.
+   *
+   * <p>Evaluation is deferred until needed, if this {@code Metric} is not exported then it will
+   * never be called.
+   *
+   * @param metricUpdater the callback to be executed before export.
+   */
+  void setCallback(Runnable metricUpdater);
+
   /**
    * Removes the {@code TimeSeries} from the metric, if it is present. i.e. references to previous
    * {@code TimeSeries} are invalid (not part of the metric).

@@ -45,20 +45,6 @@ public class MetricRegistryTest {
   }
 
   @Test
-  public void noopAddDerivedLongGauge_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    metricRegistry.derivedLongGaugeBuilder(null);
-  }
-
-  @Test
-  public void noopAddDerivedDoubleGauge_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    metricRegistry.derivedDoubleGaugeBuilder(null);
-  }
-
-  @Test
   public void noopAddDoubleCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
@@ -66,23 +52,9 @@ public class MetricRegistryTest {
   }
 
   @Test
-  public void noopAddDerivedDoubleCumulative_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    metricRegistry.derivedDoubleCumulativeBuilder(null);
-  }
-
-  @Test
   public void noopAddLongCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
     metricRegistry.longCumulativeBuilder(null);
-  }
-
-  @Test
-  public void noopAddDerivedLongCumulative_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    metricRegistry.derivedLongCumulativeBuilder(null);
   }
 }

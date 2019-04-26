@@ -51,32 +51,6 @@ public interface MetricRegistry {
   DoubleGauge.Builder doubleGaugeBuilder(String name);
 
   /**
-   * Returns a builder for a {@link DerivedLongGauge} to be added to the registry. This is more
-   * convenient form when you want to define a gauge by executing a {@link ToLongFunction} on an
-   * object.
-   *
-   * @param name the name of the metric.
-   * @return a {@code DerivedLongGauge.Builder}.
-   * @throws NullPointerException if {@code name} is null.
-   * @throws IllegalArgumentException if different metric with the same name already registered.
-   * @since 0.1.0
-   */
-  DerivedLongGauge.Builder derivedLongGaugeBuilder(String name);
-
-  /**
-   * Returns a builder for a {@link DerivedDoubleGauge} to be added to the registry. This is more
-   * convenient form when you want to define a gauge by executing a {@link ToDoubleFunction} on an
-   * object.
-   *
-   * @param name the name of the metric.
-   * @return a {@code DerivedDoubleGauge.Builder}.
-   * @throws NullPointerException if {@code name} is null.
-   * @throws IllegalArgumentException if different metric with the same name already registered.
-   * @since 0.1.0
-   */
-  DerivedDoubleGauge.Builder derivedDoubleGaugeBuilder(String name);
-
-  /**
    * Returns a builder for a {@link DoubleCumulative} to be added to the registry. This is a more
    * convenient form when you want to manually increase values as per your service requirements.
    *
@@ -89,19 +63,6 @@ public interface MetricRegistry {
   DoubleCumulative.Builder doubleCumulativeBuilder(String name);
 
   /**
-   * Returns a builder for a {@link DerivedDoubleCumulative} to be added to the registry. This is a
-   * more convenient form when you want to define a cumulative by executing a {@link
-   * ToDoubleFunction} on an object.
-   *
-   * @param name the name of the metric.
-   * @return a {@code DerivedDoubleCumulative.Builder}.
-   * @throws NullPointerException if {@code name} is null.
-   * @throws IllegalArgumentException if different metric with the same name already registered.
-   * @since 0.1.0
-   */
-  DerivedDoubleCumulative.Builder derivedDoubleCumulativeBuilder(String name);
-
-  /**
    * Returns a builder for a {@link LongCumulative} to be added to the registry. This is a more
    * convenient form when you want to manually increase values as per your service requirements.
    *
@@ -112,19 +73,6 @@ public interface MetricRegistry {
    * @since 0.1.0
    */
   LongCumulative.Builder longCumulativeBuilder(String name);
-
-  /**
-   * Returns a builder for a {@link DerivedLongCumulative} to be added to the registry. This is a
-   * more convenient form when you want to define a cumulative by executing a {@link ToLongFunction}
-   * on an object.
-   *
-   * @param name the name of the metric.
-   * @return a {@code DerivedLongCumulative.Builder}.
-   * @throws NullPointerException if {@code name} is null.
-   * @throws IllegalArgumentException if different metric with the same name already registered.
-   * @since 0.1.0
-   */
-  DerivedLongCumulative.Builder derivedLongCumulativeBuilder(String name);
 
   /** Builder class for the {@link MetricRegistry}. */
   interface Builder {

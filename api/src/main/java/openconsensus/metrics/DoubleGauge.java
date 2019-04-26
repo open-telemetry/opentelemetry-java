@@ -18,6 +18,7 @@ package openconsensus.metrics;
 
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
+import openconsensus.metrics.DoubleGauge.TimeSeries;
 
 /**
  * Double Gauge metric, to report instantaneous measurement of a double value. Gauges can go both up
@@ -36,7 +37,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   DoubleGauge gauge = metricRegistry.addDoubleGauge("queue_size",
  *                       "Pending jobs", "1", labelKeys);
  *
- *   // It is recommended to keep a reference of a point for manual operations.
+ *   // It is recommended to keep a reference of a TimeSeries.
  *   DoubleGauge.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
  *
  *   void doWork() {
@@ -61,7 +62,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   DoubleGauge gauge = metricRegistry.addDoubleGauge("queue_size",
  *                       "Pending jobs", "1", labelKeys);
  *
- *   // It is recommended to keep a reference of a point for manual operations.
+ *   // It is recommended to keep a reference of a TimeSeries.
  *   DoubleGauge.TimeSeries inboundTimeSeries = gauge.getOrCreateTimeSeries(labelValues);
  *
  *   void doSomeWork() {
@@ -75,33 +76,12 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleGauge extends Metric {
+public interface DoubleGauge extends Metric<TimeSeries> {
 
-  /**
-   * Creates a {@code TimeSeries} and returns a {@code TimeSeries} if the specified {@code
-   * labelValues} is not already associated with this gauge, else returns an existing {@code
-   * TimeSeries}.
-   *
-   * <p>It is recommended to keep a reference to the TimeSeries instead of always calling this
-   * method for manual operations.
-   *
-   * @param labelValues the list of label values. The number of label values must be the same to
-   *     that of the label keys passed to {@link Builder#setLabelKeys(List)}.
-   * @return a {@code TimeSeries} the value of single gauge.
-   * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
-   *     labelValues} is null.
-   * @throws IllegalArgumentException if number of {@code labelValues}s are not equal to the label
-   *     keys.
-   * @since 0.1.0
-   */
+  @Override
   TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
 
-  /**
-   * Returns a {@code TimeSeries} for a gauge with all labels not set, or default labels.
-   *
-   * @return a {@code TimeSeries} for a gauge with all labels not set, or default labels.
-   * @since 0.1.0
-   */
+  @Override
   TimeSeries getDefaultTimeSeries();
 
   /**
@@ -128,6 +108,6 @@ public interface DoubleGauge extends Metric {
     void set(double val);
   }
 
-  /** Builder class for {@link DerivedLongGauge}. */
+  /** Builder class for {@link LongGauge}. */
   interface Builder extends Metric.Builder<Builder, DoubleGauge> {}
 }
