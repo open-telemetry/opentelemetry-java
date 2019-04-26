@@ -20,9 +20,9 @@ import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.List;
+import openconsensus.metrics.CounterLong;
 import openconsensus.metrics.LabelKey;
 import openconsensus.metrics.LabelValue;
-import openconsensus.metrics.LongCumulative;
 import openconsensus.metrics.MetricRegistry;
 import openconsensus.metrics.Metrics;
 
@@ -57,9 +57,9 @@ public final class GarbageCollector {
   public void exportAll() {
     // TODO: This should probably be a cumulative Histogram without buckets (or Summary without
     //  percentiles) to allow count/sum.
-    final LongCumulative collectionMetric =
+    final CounterLong collectionMetric =
         metricRegistry
-            .longCumulativeBuilder("collection")
+            .counterLongBuilder("collection")
             .setDescription("Time spent in a given JVM garbage collector in milliseconds.")
             .setUnit("ms")
             .setLabelKeys(Collections.singletonList(GC))

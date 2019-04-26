@@ -34,27 +34,27 @@ public class MetricRegistryTest {
   public void noopAddLongGauge_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    metricRegistry.longGaugeBuilder(null);
+    metricRegistry.gaugeLongBuilder(null);
   }
 
   @Test
   public void noopAddDoubleGauge_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    metricRegistry.doubleGaugeBuilder(null);
+    metricRegistry.gaugeDoubleBuilder(null);
   }
 
   @Test
   public void noopAddDoubleCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    metricRegistry.doubleCumulativeBuilder(null);
+    metricRegistry.counterDoubleBuilder(null);
   }
 
   @Test
   public void noopAddLongCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    metricRegistry.longCumulativeBuilder(null);
+    metricRegistry.counterLongBuilder(null);
   }
 }

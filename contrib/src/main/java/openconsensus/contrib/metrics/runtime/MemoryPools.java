@@ -22,9 +22,9 @@ import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.Arrays;
 import java.util.List;
+import openconsensus.metrics.GaugeLong;
 import openconsensus.metrics.LabelKey;
 import openconsensus.metrics.LabelValue;
-import openconsensus.metrics.LongGauge;
 import openconsensus.metrics.MetricRegistry;
 import openconsensus.metrics.Metrics;
 
@@ -73,24 +73,24 @@ public final class MemoryPools {
     //  metrics and avoid using type, but type is nice that you can see what percent of the used
     //  memory is committed (this can also be achieved by displaying the two metrics in the same
     //  chart).
-    final LongGauge areaMetric =
+    final GaugeLong areaMetric =
         this.metricRegistry
-            .longGaugeBuilder("area")
+            .gaugeLongBuilder("area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE, AREA))
             .build();
-    final LongGauge.TimeSeries usedHeap =
+    final GaugeLong.TimeSeries usedHeap =
         areaMetric.getOrCreateTimeSeries(Arrays.asList(USED, HEAP));
-    final LongGauge.TimeSeries usedNonHeap =
+    final GaugeLong.TimeSeries usedNonHeap =
         areaMetric.getOrCreateTimeSeries(Arrays.asList(USED, NON_HEAP));
-    final LongGauge.TimeSeries committedHeap =
+    final GaugeLong.TimeSeries committedHeap =
         areaMetric.getOrCreateTimeSeries(Arrays.asList(COMMITTED, HEAP));
-    final LongGauge.TimeSeries committedNonHeap =
+    final GaugeLong.TimeSeries committedNonHeap =
         areaMetric.getOrCreateTimeSeries(Arrays.asList(COMMITTED, NON_HEAP));
     // TODO: Decide if max is needed or not. May be derived with some approximation from max(used).
-    final LongGauge.TimeSeries maxHeap = areaMetric.getOrCreateTimeSeries(Arrays.asList(MAX, HEAP));
-    final LongGauge.TimeSeries maxNonHeap =
+    final GaugeLong.TimeSeries maxHeap = areaMetric.getOrCreateTimeSeries(Arrays.asList(MAX, HEAP));
+    final GaugeLong.TimeSeries maxNonHeap =
         areaMetric.getOrCreateTimeSeries(Arrays.asList(MAX, NON_HEAP));
     areaMetric.setCallback(
         new Runnable() {
@@ -110,9 +110,9 @@ public final class MemoryPools {
 
   /** Export only the "pool" metric. */
   public void exportMemoryPoolMetric() {
-    final LongGauge poolMetric =
+    final GaugeLong poolMetric =
         this.metricRegistry
-            .longGaugeBuilder("pool")
+            .gaugeLongBuilder("pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE, POOL))

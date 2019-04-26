@@ -31,7 +31,7 @@ public interface Metric<T> {
    * method for every operations.
    *
    * @param labelValues the list of label values. The number of label values must be the same to
-   *     that of the label keys passed to {@link DoubleGauge.Builder#setLabelKeys(List)}.
+   *     that of the label keys passed to {@link GaugeDouble.Builder#setLabelKeys(List)}.
    * @return a {@code TimeSeries} the value of single gauge.
    * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
    *     labelValues} is null.

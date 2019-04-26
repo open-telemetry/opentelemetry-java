@@ -49,27 +49,27 @@ public final class NoopMetrics {
 
   private static final class NoopMetricCollection implements MetricRegistry {
     @Override
-    public LongGauge.Builder longGaugeBuilder(String name) {
+    public GaugeLong.Builder gaugeLongBuilder(String name) {
       Utils.checkNotNull(name, "name");
-      return new NoopLongGauge.NoopBuilder();
+      return new NoopGaugeLong.NoopBuilder();
     }
 
     @Override
-    public DoubleGauge.Builder doubleGaugeBuilder(String name) {
+    public GaugeDouble.Builder gaugeDoubleBuilder(String name) {
       Utils.checkNotNull(name, "name");
-      return new NoopDoubleGauge.NoopBuilder();
+      return new NoopGaugeDouble.NoopBuilder();
     }
 
     @Override
-    public DoubleCumulative.Builder doubleCumulativeBuilder(String name) {
+    public CounterDouble.Builder counterDoubleBuilder(String name) {
       Utils.checkNotNull(name, "name");
-      return new NoopDoubleCumulative.NoopBuilder();
+      return new NoopCounterDouble.NoopBuilder();
     }
 
     @Override
-    public LongCumulative.Builder longCumulativeBuilder(String name) {
+    public CounterLong.Builder counterLongBuilder(String name) {
       Utils.checkNotNull(name, "name");
-      return new NoopLongCumulative.NoopBuilder();
+      return new NoopCounterLong.NoopBuilder();
     }
 
     private static final class Builder implements MetricRegistry.Builder {
@@ -94,12 +94,12 @@ public final class NoopMetrics {
     }
   }
 
-  /** No-op implementations of LongGauge class. */
-  private static final class NoopLongGauge implements LongGauge {
+  /** No-op implementations of GaugeLong class. */
+  private static final class NoopGaugeLong implements GaugeLong {
     private final int labelKeysSize;
 
     /** Creates a new {@code NoopTimeSeries}. */
-    private NoopLongGauge(int labelKeysSize) {
+    private NoopGaugeLong(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
@@ -140,7 +140,7 @@ public final class NoopMetrics {
       public void set(long val) {}
     }
 
-    private static final class NoopBuilder implements LongGauge.Builder {
+    private static final class NoopBuilder implements GaugeLong.Builder {
       private int labelKeysSize = 0;
 
       @Override
@@ -170,18 +170,18 @@ public final class NoopMetrics {
       }
 
       @Override
-      public LongGauge build() {
-        return new NoopLongGauge(labelKeysSize);
+      public GaugeLong build() {
+        return new NoopGaugeLong(labelKeysSize);
       }
     }
   }
 
-  /** No-op implementations of DoubleGauge class. */
-  private static final class NoopDoubleGauge implements DoubleGauge {
+  /** No-op implementations of GaugeDouble class. */
+  private static final class NoopGaugeDouble implements GaugeDouble {
     private final int labelKeysSize;
 
     /** Creates a new {@code NoopTimeSeries}. */
-    private NoopDoubleGauge(int labelKeysSize) {
+    private NoopGaugeDouble(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
@@ -222,7 +222,7 @@ public final class NoopMetrics {
       public void set(double val) {}
     }
 
-    private static final class NoopBuilder implements DoubleGauge.Builder {
+    private static final class NoopBuilder implements GaugeDouble.Builder {
       private int labelKeysSize = 0;
 
       @Override
@@ -252,18 +252,18 @@ public final class NoopMetrics {
       }
 
       @Override
-      public DoubleGauge build() {
-        return new NoopDoubleGauge(labelKeysSize);
+      public GaugeDouble build() {
+        return new NoopGaugeDouble(labelKeysSize);
       }
     }
   }
 
-  /** No-op implementations of DoubleCumulative class. */
-  private static final class NoopDoubleCumulative implements DoubleCumulative {
+  /** No-op implementations of CounterDouble class. */
+  private static final class NoopCounterDouble implements CounterDouble {
     private final int labelKeysSize;
 
     /** Creates a new {@code NoopTimeSeries}. */
-    private NoopDoubleCumulative(int labelKeysSize) {
+    private NoopCounterDouble(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
@@ -306,7 +306,7 @@ public final class NoopMetrics {
       public void set(double val) {}
     }
 
-    private static final class NoopBuilder implements DoubleCumulative.Builder {
+    private static final class NoopBuilder implements CounterDouble.Builder {
       private int labelKeysSize = 0;
 
       @Override
@@ -336,18 +336,18 @@ public final class NoopMetrics {
       }
 
       @Override
-      public DoubleCumulative build() {
-        return new NoopDoubleCumulative(labelKeysSize);
+      public CounterDouble build() {
+        return new NoopCounterDouble(labelKeysSize);
       }
     }
   }
 
-  /** No-op implementations of LongCumulative class. */
-  private static final class NoopLongCumulative implements LongCumulative {
+  /** No-op implementations of CounterLong class. */
+  private static final class NoopCounterLong implements CounterLong {
     private final int labelKeysSize;
 
     /** Creates a new {@code NoopTimeSeries}. */
-    private NoopLongCumulative(int labelKeysSize) {
+    private NoopCounterLong(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
@@ -390,7 +390,7 @@ public final class NoopMetrics {
       public void set(long val) {}
     }
 
-    private static final class NoopBuilder implements LongCumulative.Builder {
+    private static final class NoopBuilder implements CounterLong.Builder {
       private int labelKeysSize = 0;
 
       @Override
@@ -420,8 +420,8 @@ public final class NoopMetrics {
       }
 
       @Override
-      public LongCumulative build() {
-        return new NoopLongCumulative(labelKeysSize);
+      public CounterLong build() {
+        return new NoopCounterLong(labelKeysSize);
       }
     }
   }
