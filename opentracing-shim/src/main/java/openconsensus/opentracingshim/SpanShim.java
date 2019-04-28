@@ -51,22 +51,24 @@ final class SpanShim implements Span {
     if (Tags.SPAN_KIND.getKey().equals(key)) {
       // TODO: confirm we can safely ignore span.kind after Span was created
       // https://github.com/bogdandrutu/openconsensus/issues/42
-    } else if (Tags.ERROR.getKey().equals(key) && Boolean.parseBoolean(value)) {
-      this.span.setStatus(Status.UNKNOWN);
-    } else {
-      span.setAttribute(key, value);
+    } else if (Tags.ERROR.getKey().equals(key)) {
+      Status status = Boolean.parseBoolean(value) ? Status.UNKNOWN : Status.OK;
+      span.setStatus(status);
     }
+
+    span.setAttribute(key, value);
 
     return this;
   }
 
   @Override
   public Span setTag(String key, boolean value) {
-    if (Tags.ERROR.getKey().equals(key) && value) {
-      this.span.setStatus(Status.UNKNOWN);
-    } else {
-      span.setAttribute(key, value);
+    if (Tags.ERROR.getKey().equals(key)) {
+      Status status = value ? Status.UNKNOWN : Status.OK;
+      span.setStatus(status);
     }
+
+    span.setAttribute(key, value);
 
     return this;
   }

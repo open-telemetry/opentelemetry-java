@@ -121,13 +121,11 @@ final class SpanBuilderShim implements SpanBuilder {
           break;
       }
     } else if (Tags.ERROR.getKey().equals(key)) {
-      if (Boolean.parseBoolean(value)) {
-        error = true;
-      }
-    } else {
-      this.spanBuilderAttributeKeys.add(key);
-      this.spanBuilderAttributeValues.add(AttributeValue.stringAttributeValue(value));
+      error = Boolean.parseBoolean(value);
     }
+
+    this.spanBuilderAttributeKeys.add(key);
+    this.spanBuilderAttributeValues.add(AttributeValue.stringAttributeValue(value));
 
     return this;
   }
@@ -135,13 +133,12 @@ final class SpanBuilderShim implements SpanBuilder {
   @Override
   public SpanBuilder withTag(String key, boolean value) {
     if (Tags.ERROR.getKey().equals(key)) {
-      if (value) {
-        error = true;
-      }
-    } else {
-      this.spanBuilderAttributeKeys.add(key);
-      this.spanBuilderAttributeValues.add(AttributeValue.booleanAttributeValue(value));
+      error = value;
     }
+
+    this.spanBuilderAttributeKeys.add(key);
+    this.spanBuilderAttributeValues.add(AttributeValue.booleanAttributeValue(value));
+
     return this;
   }
 
