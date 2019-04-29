@@ -64,7 +64,7 @@ import openconsensus.trace.SpanContext;
  *           .build();
  *   collectionMetric.setCallback(
  *       new Runnable() {
- *         @Override
+ *         &commat;Override
  *         public void run() {
  *           for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
  *             LabelValue gcName = LabelValue.create(gc.getName());

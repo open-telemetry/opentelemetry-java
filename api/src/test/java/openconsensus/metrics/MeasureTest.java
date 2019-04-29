@@ -17,8 +17,6 @@
 package openconsensus.metrics;
 
 import java.util.Arrays;
-import openconsensus.stats.NoopStats;
-import openconsensus.stats.StatsRecorder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,7 +26,7 @@ import org.junit.runners.JUnit4;
 /** Tests for {@link openconsensus.metrics.Measure}. */
 @RunWith(JUnit4.class)
 public final class MeasureTest {
-  private static final StatsRecorder STATS_RECORDER = NoopStats.newNoopStatsRecorder();
+  private static final Meter meter = NoopMetrics.newNoopMeter();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -38,18 +36,18 @@ public final class MeasureTest {
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
-    STATS_RECORDER.measureBuilder(longName).build();
+    meter.measureBuilder(longName).build();
   }
 
   @Test
   public void preventNonPrintableMeasureName() {
     thrown.expect(IllegalArgumentException.class);
-    STATS_RECORDER.measureBuilder("\2").build();
+    meter.measureBuilder("\2").build();
   }
 
   @Test
   public void preventNegativeValue() {
-    Measure myMeasure = STATS_RECORDER.measureBuilder("MyMeasure").build();
+    Measure myMeasure = meter.measureBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     myMeasure.createDoubleMeasurement(-5);
   }

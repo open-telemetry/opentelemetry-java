@@ -37,10 +37,10 @@ public final class NoopMeter {
       Tag.create(
           TagKey.create("key"), TagValue.create("value"), Tag.METADATA_UNLIMITED_PROPAGATION);
 
-  private static final Meter STATS_RECORDER = NoopMetrics.newNoopMeter();
+  private static final Meter meter = NoopMetrics.newNoopMeter();
 
   private static final Measure MEASURE =
-      STATS_RECORDER
+      meter
           .measureBuilder("my measure")
           .setDescription("description")
           .setType(Measure.Type.DOUBLE)
@@ -69,7 +69,7 @@ public final class NoopMeter {
   @Test
   public void noopStatsRecorder_Record() {
     List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(5));
-    STATS_RECORDER.record(measurements, tagMap);
+    meter.record(measurements, tagMap);
   }
 
   // The NoopStatsRecorder should do nothing, so this test just checks that record doesn't throw an
@@ -77,7 +77,7 @@ public final class NoopMeter {
   @Test
   public void noopStatsRecorder_RecordWithCurrentContext() {
     List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(6));
-    STATS_RECORDER.record(measurements);
+    meter.record(measurements);
   }
 
   @Test
@@ -85,6 +85,6 @@ public final class NoopMeter {
     List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(6));
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("tags");
-    STATS_RECORDER.record(measurements, null);
+    meter.record(measurements, null);
   }
 }
