@@ -18,8 +18,8 @@ package openconsensus.sdk.stats.impl;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
-import openconsensus.stats.Measure;
-import openconsensus.stats.Measurement;
+import openconsensus.metrics.Measure;
+import openconsensus.metrics.Measurement;
 
 abstract class MeasurementImpl implements Measurement {
   /**
@@ -31,7 +31,7 @@ abstract class MeasurementImpl implements Measurement {
   abstract Measure getMeasure();
 
   /**
-   * Returns the double value for the {@link openconsensus.stats.Measurement}.
+   * Returns the double value for the {@link Measurement}.
    *
    * <p>This method should only be called with {@link MeasurementDouble}.
    *
@@ -45,7 +45,7 @@ abstract class MeasurementImpl implements Measurement {
   }
 
   /**
-   * Returns the long value for the {@link openconsensus.stats.Measurement}.
+   * Returns the long value for the {@link Measurement}.
    *
    * <p>This method should only be called with {@link MeasurementLong}.
    *
@@ -62,7 +62,7 @@ abstract class MeasurementImpl implements Measurement {
   private MeasurementImpl() {}
 
   /**
-   * {@code double} typed {@link openconsensus.stats.Measurement}.
+   * {@code double} typed {@link Measurement}.
    *
    * @since 0.1.0
    */
@@ -88,7 +88,7 @@ abstract class MeasurementImpl implements Measurement {
   }
 
   /**
-   * {@code long} typed {@link openconsensus.stats.Measurement}.
+   * {@code long} typed {@link Measurement}.
    *
    * @since 0.1.0
    */

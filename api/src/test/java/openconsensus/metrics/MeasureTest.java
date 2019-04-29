@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package openconsensus.stats;
+package openconsensus.metrics;
 
 import java.util.Arrays;
+import openconsensus.stats.NoopStats;
+import openconsensus.stats.StatsRecorder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link Measure}. */
+/** Tests for {@link openconsensus.metrics.Measure}. */
 @RunWith(JUnit4.class)
 public final class MeasureTest {
   private static final StatsRecorder STATS_RECORDER = NoopStats.newNoopStatsRecorder();

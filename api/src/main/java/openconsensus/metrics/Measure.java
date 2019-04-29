@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.stats;
+package openconsensus.metrics;
 
 import javax.annotation.concurrent.ThreadSafe;
 

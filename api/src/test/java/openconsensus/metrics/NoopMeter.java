@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package openconsensus.stats;
+package openconsensus.metrics;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,14 +30,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link NoopStats}. */
+/** Unit tests for {@link NoopMeter}. */
 @RunWith(JUnit4.class)
-public final class NoopStatsTest {
+public final class NoopMeter {
   private static final Tag TAG =
       Tag.create(
           TagKey.create("key"), TagValue.create("value"), Tag.METADATA_UNLIMITED_PROPAGATION);
 
-  private static final StatsRecorder STATS_RECORDER = NoopStats.newNoopStatsRecorder();
+  private static final Meter STATS_RECORDER = NoopMetrics.newNoopMeter();
 
   private static final Measure MEASURE =
       STATS_RECORDER

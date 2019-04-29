@@ -23,7 +23,7 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import openconsensus.internal.StringUtils;
 import openconsensus.internal.Utils;
-import openconsensus.stats.Measure;
+import openconsensus.metrics.Measure;
 import openconsensus.tags.TagKey;
 
 /**

@@ -41,7 +41,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void doWork() {
  *      // Your code here.
- *      defaultPoint.add(10);
+ *      defaultTimeSeries.add(10);
  *   }
  *
  * }
@@ -66,7 +66,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      inboundPoint.set(15);
+ *      inboundTimeSeries.set(15);
  *   }
  *
  * }
