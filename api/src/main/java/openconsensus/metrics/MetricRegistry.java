@@ -16,92 +16,89 @@
 
 package openconsensus.metrics;
 
-import openconsensus.common.ToDoubleFunction;
-import openconsensus.common.ToLongFunction;
+import openconsensus.resource.Resource;
 
 /**
- * Creates and manages your collection set of metrics.
+ * Creates and manages a set of metrics for a library/application.
  *
  * @since 0.1.0
  */
-public abstract class MetricRegistry {
+public interface MetricRegistry {
 
   /**
-   * Builds a new long gauge to be added to the registry. This is more convenient form when you want
-   * to manually increase and decrease values as per your service requirements.
+   * Returns a builder for a {@link GaugeLong} to be added to the registry.
    *
    * @param name the name of the metric.
-   * @param options the options for the metric.
-   * @return a {@code LongGauge}.
+   * @return a {@code GaugeLong.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract LongGauge addLongGauge(String name, MetricOptions options);
+  GaugeLong.Builder gaugeLongBuilder(String name);
 
   /**
-   * Builds a new double gauge to be added to the registry. This is more convenient form when you
-   * want to manually increase and decrease values as per your service requirements.
+   * Returns a builder for a {@link GaugeDouble} to be added to the registry.
    *
    * @param name the name of the metric.
-   * @param options the options for the metric.
-   * @return a {@code DoubleGauge}.
+   * @return a {@code GaugeDouble.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract DoubleGauge addDoubleGauge(String name, MetricOptions options);
+  GaugeDouble.Builder gaugeDoubleBuilder(String name);
 
   /**
-   * Builds a new derived long gauge to be added to the registry. This is more convenient form when
-   * you want to define a gauge by executing a {@link ToLongFunction} on an object.
+   * Returns a builder for a {@link CounterDouble} to be added to the registry.
    *
    * @param name the name of the metric.
-   * @param options the options for the metric.
-   * @return a {@code DerivedLongGauge}.
+   * @return a {@code CounterDouble.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract DerivedLongGauge addDerivedLongGauge(String name, MetricOptions options);
+  CounterDouble.Builder counterDoubleBuilder(String name);
 
   /**
-   * Builds a new derived double gauge to be added to the registry. This is more convenient form
-   * when you want to define a gauge by executing a {@link ToDoubleFunction} on an object.
+   * Returns a builder for a {@link CounterLong} to be added to the registry.
    *
    * @param name the name of the metric.
-   * @param options the options for the metric.
-   * @return a {@code DerivedDoubleGauge}.
+   * @return a {@code CounterLong.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @since 0.1.0
    */
-  public abstract DerivedDoubleGauge addDerivedDoubleGauge(String name, MetricOptions options);
+  CounterLong.Builder counterLongBuilder(String name);
 
-  /**
-   * Builds a new double cumulative to be added to the registry. This is a more convenient form when
-   * you want to manually increase values as per your service requirements.
-   *
-   * @param name the name of the metric.
-   * @param options the options for the metric.
-   * @return a {@code DoubleCumulative}.
-   * @throws NullPointerException if {@code name} is null.
-   * @throws IllegalArgumentException if different metric with the same name already registered.
-   * @since 0.1.0
-   */
-  public abstract DoubleCumulative addDoubleCumulative(String name, MetricOptions options);
+  /** Builder class for the {@link MetricRegistry}. */
+  interface Builder {
 
-  /**
-   * Builds a new derived double cumulative to be added to the registry. This is a more convenient
-   * form when you want to define a cumulative by executing a {@link ToDoubleFunction} on an object.
-   *
-   * @param name the name of the metric.
-   * @param options the options for the metric.
-   * @return a {@code DerivedDoubleCumulative}.
-   * @throws NullPointerException if {@code name} is null.
-   * @throws IllegalArgumentException if different metric with the same name already registered.
-   * @since 0.1.0
-   */
-  public abstract DerivedDoubleCumulative addDerivedDoubleCumulative(
-      String name, MetricOptions options);
+    /**
+     * Sets the name of the component that reports these metrics.
+     *
+     * <p>The final name of the reported metric will be <code>component + "_" + name</code> if the
+     * component is not empty.
+     *
+     * @param component the name of the component that reports these metrics.
+     * @return this.
+     */
+    Builder setComponent(String component);
+
+    /**
+     * Sets the {@code Resource} associated with the new {@code MetricRegistry}.
+     *
+     * <p>This should be set only when reporting out-of-band metrics, otherwise the implementation
+     * will set the {@code Resource} for in-process metrics.
+     *
+     * @param resource the {@code Resource} associated with the new {@code MetricRegistry}.
+     * @return this.
+     */
+    Builder setResource(Resource resource);
+
+    /**
+     * Builds and returns a {@link MetricRegistry} with the desired options.
+     *
+     * @return a {@link MetricRegistry} with the desired options.
+     */
+    MetricRegistry build();
+  }
 }

@@ -16,43 +16,12 @@
 
 package openconsensus.stats;
 
-import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Immutable representation of a measurement.
+ * Immutable representation of a {@code Measurement}.
  *
  * @since 0.1.0
  */
 @Immutable
-@AutoValue
-public abstract class Measurement {
-
-  /**
-   * Extracts the measured {@link Measure}.
-   *
-   * @return the {@link Measure} if this measurement.
-   * @since 0.1.0
-   */
-  public abstract Measure getMeasure();
-
-  /**
-   * Returns the value for the {@link Measurement}.
-   *
-   * @return the value.
-   * @since 0.1.0
-   */
-  public abstract double getValue();
-
-  // Prevents this class from being subclassed anywhere else.
-  Measurement() {}
-
-  /**
-   * Constructs a new {@link Measurement}.
-   *
-   * @since 0.1.0
-   */
-  static Measurement create(Measure measure, double value) {
-    return new AutoValue_Measurement(measure, value);
-  }
-}
+public interface Measurement {}

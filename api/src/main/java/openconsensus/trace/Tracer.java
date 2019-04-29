@@ -25,7 +25,7 @@ import openconsensus.context.propagation.HttpTextFormat;
 import openconsensus.resource.Resource;
 
 /**
- * Tracer is a simple, thin class for {@link Span} creation and in-process context interaction.
+ * Tracer is a simple, interface for {@link Span} creation and in-process context interaction.
  *
  * <p>Users may choose to use manual or automatic Context propagation. Because of that this class
  * offers APIs to facilitate both usages.
@@ -43,9 +43,9 @@ import openconsensus.resource.Resource;
  *   void doWork() {
  *     Span span = tracer.spanBuilder("MyClass.DoWork").startSpan();
  *     try(Scope ss = tracer.withSpan(span)) {
- *       tracer.getCurrentSpan().addAnnotation("Starting the work.");
+ *       tracer.getCurrentSpan().addEvent("Starting the work.");
  *       doWorkInternal();
- *       tracer.getCurrentSpan().addAnnotation("Finished working.");
+ *       tracer.getCurrentSpan().addEvent("Finished working.");
  *     } finally {
  *       span.end();
  *     }
@@ -60,7 +60,7 @@ import openconsensus.resource.Resource;
  *   private static final Tracer tracer = Trace.getTracer();
  *   void doWork(Span parent) {
  *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
- *     childSpan.addAnnotation("Starting the work.");
+ *     childSpan.addEvent("Starting the work.");
  *     try {
  *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
  *     } finally {
@@ -73,7 +73,7 @@ import openconsensus.resource.Resource;
  *
  * @since 0.1.0
  */
-public abstract class Tracer {
+public interface Tracer {
   /**
    * Gets the current Span from the current Context.
    *
@@ -86,7 +86,7 @@ public abstract class Tracer {
    *     from the Context.
    * @since 0.1.0
    */
-  public abstract Span getCurrentSpan();
+  Span getCurrentSpan();
 
   /**
    * Enters the scope of code where the given {@link Span} is in the current Context, and returns an
@@ -104,7 +104,7 @@ public abstract class Tracer {
    *   // Create a Span as a child of the current Span.
    *   Span span = tracer.spanBuilder("my span").startSpan();
    *   try (Scope ws = tracer.withSpan(span)) {
-   *     tracer.getCurrentSpan().addAnnotation("my annotation");
+   *     tracer.getCurrentSpan().addEvent("my event");
    *     doSomeOtherWork();  // Here "span" is the current Span.
    *   }
    *   span.end();
@@ -123,7 +123,7 @@ public abstract class Tracer {
    *   Span span = tracer.spanBuilder("my span").startSpan();
    *   Scope ws = tracer.withSpan(span);
    *   try {
-   *     tracer.getCurrentSpan().addAnnotation("my annotation");
+   *     tracer.getCurrentSpan().addEvent("my event");
    *     doSomeOtherWork();  // Here "span" is the current Span.
    *   } finally {
    *     ws.close();
@@ -139,13 +139,13 @@ public abstract class Tracer {
    * @since 0.1.0
    */
   @MustBeClosed
-  public abstract Scope withSpan(Span span);
+  Scope withSpan(Span span);
 
   /**
    * Returns a {@link Runnable} that runs the given task with the given {@code Span} in the current
    * context.
    *
-   * <p>Users may consider to use {@link SpanBuilder#startSpanAndRun(Runnable)}.
+   * <p>Users may consider to use {@link Span.Builder#startSpanAndRun(Runnable)}.
    *
    * <p>Any error will end up as a {@link Status#UNKNOWN}.
    *
@@ -202,13 +202,13 @@ public abstract class Tracer {
    * @return the {@code Runnable}.
    * @since 0.1.0
    */
-  public abstract Runnable withSpan(Span span, Runnable runnable);
+  Runnable withSpan(Span span, Runnable runnable);
 
   /**
    * Returns a {@link Callable} that runs the given task with the given {@code Span} in the current
    * context.
    *
-   * <p>Users may consider to use {@link SpanBuilder#startSpanAndCall(Callable)}.
+   * <p>Users may consider to use {@link Span.Builder#startSpanAndCall(Callable)}.
    *
    * <p>Any error will end up as a {@link Status#UNKNOWN}.
    *
@@ -225,7 +225,7 @@ public abstract class Tracer {
    *   private static Tracer tracer = Trace.getTracer();
    *   void handleRequest(Executor executor) {
    *     Span span = tracer.spanBuilder("MyRunnableSpan").startSpan();
-   *     executor.execute(tracer.withSpan(span, {@code new Callable<MyResult>()} {
+   *     executor.execute(tracer.withSpan(span, new Callable&lt;MyResult&gt;() {
    *      {@literal @}Override
    *       public MyResult call() throws Exception {
    *         try {
@@ -246,7 +246,7 @@ public abstract class Tracer {
    *   private static Tracer tracer = Trace.getTracer();
    *   void handleRequest(Executor executor) {
    *     Span span = tracer.spanBuilder("MyRunnableSpan").startSpan();
-   *     executor.execute(Context.wrap(tracer.withSpan(span, {@code new Callable<MyResult>()} {
+   *     executor.execute(Context.wrap(tracer.withSpan(span, new Callable&lt;MyResult&gt;() {
    *      {@literal @}Override
    *       public MyResult call() throws Exception {
    *         try {
@@ -266,13 +266,13 @@ public abstract class Tracer {
    * @return the {@code Callable}.
    * @since 0.1.0
    */
-  public abstract <V> Callable<V> withSpan(Span span, final Callable<V> callable);
+  <V> Callable<V> withSpan(Span span, final Callable<V> callable);
 
   /**
-   * Returns a {@link SpanBuilder} to create and start a new child {@link Span} as a child of to the
-   * current {@code Span} if any, otherwise creates a root {@code Span}.
+   * Returns a {@link Span.Builder} to create and start a new child {@link Span} as a child of to
+   * the current {@code Span} if any, otherwise creates a root {@code Span}.
    *
-   * <p>See {@link SpanBuilder} for usage examples.
+   * <p>See {@link Span.Builder} for usage examples.
    *
    * <p>This <b>must</b> be used to create a {@code Span} when automatic Context propagation is
    * used.
@@ -284,37 +284,37 @@ public abstract class Tracer {
    * }</pre>
    *
    * @param spanName The name of the returned Span.
-   * @return a {@code SpanBuilder} to create and start a new {@code Span}.
+   * @return a {@code Span.Builder} to create and start a new {@code Span}.
    * @throws NullPointerException if {@code spanName} is {@code null}.
    * @since 0.1.0
    */
-  public abstract SpanBuilder spanBuilder(String spanName);
+  Span.Builder spanBuilder(String spanName);
 
   /**
-   * Returns a {@link SpanBuilder} to create and start a new child {@link Span} (or root if parent
+   * Returns a {@link Span.Builder} to create and start a new child {@link Span} (or root if parent
    * is {@code null} or has an invalid {@link SpanContext}), with parent being the designated {@code
    * Span}.
    *
-   * <p>See {@link SpanBuilder} for usage examples.
+   * <p>See {@link Span.Builder} for usage examples.
    *
    * <p>This <b>must</b> be used to create a {@code Span} when manual Context propagation is used OR
    * when creating a root {@code Span} with a {@code null} parent.
    *
    * @param spanName The name of the returned Span.
-   * @param parent The parent of the returned Span. If {@code null} the {@code SpanBuilder} will
+   * @param parent The parent of the returned Span. If {@code null} the {@code Span.Builder} will
    *     build a root {@code Span}.
-   * @return a {@code SpanBuilder} to create and start a new {@code Span}.
+   * @return a {@code Span.Builder} to create and start a new {@code Span}.
    * @throws NullPointerException if {@code spanName} is {@code null}.
    * @since 0.1.0
    */
-  public abstract SpanBuilder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent);
+  Span.Builder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent);
 
   /**
-   * Returns a {@link SpanBuilder} to create and start a new child {@link Span} (or root if parent
+   * Returns a {@link Span.Builder} to create and start a new child {@link Span} (or root if parent
    * is {@code null}), with parent being the remote {@link Span} designated by the {@link
    * SpanContext}.
    *
-   * <p>See {@link SpanBuilder} for usage examples.
+   * <p>See {@link Span.Builder} for usage examples.
    *
    * <p>This <b>must</b> be used to create a {@code Span} when the parent is in a different process.
    * This is only intended for use by RPC systems or similar.
@@ -324,11 +324,11 @@ public abstract class Tracer {
    *
    * @param spanName The name of the returned Span.
    * @param remoteParentSpanContext The remote parent of the returned Span.
-   * @return a {@code SpanBuilder} to create and start a new {@code Span}.
+   * @return a {@code Span.Builder} to create and start a new {@code Span}.
    * @throws NullPointerException if {@code spanName} is {@code null}.
    * @since 0.1.0
    */
-  public abstract SpanBuilder spanBuilderWithRemoteParent(
+  Span.Builder spanBuilderWithRemoteParent(
       String spanName, @Nullable SpanContext remoteParentSpanContext);
 
   /**
@@ -337,7 +337,7 @@ public abstract class Tracer {
    *
    * @param resource Resource to be associated with all {@link Span} and {@link SpanData} objects.
    */
-  public abstract void setResource(Resource resource);
+  void setResource(Resource resource);
 
   /**
    * Gets the {@link Resource} that is associating with all the {@link Span} and {@link SpanData}
@@ -346,7 +346,7 @@ public abstract class Tracer {
    * @return {@link Resource} that is associating with all {@link Span} and {@link SpanData}
    *     objects.
    */
-  public abstract Resource getResource();
+  Resource getResource();
 
   /**
    * Records a {@link SpanData}. This API allows to send a pre-populated span object to the
@@ -356,7 +356,7 @@ public abstract class Tracer {
    *
    * @param span Span Data to be reported to all exporters.
    */
-  public abstract void recordSpanData(SpanData span);
+  void recordSpanData(SpanData span);
 
   /**
    * Returns the {@link BinaryFormat} for this implementation.
@@ -408,7 +408,7 @@ public abstract class Tracer {
    * @return the {@code BinaryFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract BinaryFormat<SpanContext> getBinaryFormat();
+  BinaryFormat<SpanContext> getBinaryFormat();
 
   /**
    * Returns the {@link HttpTextFormat} for this implementation.
@@ -463,7 +463,5 @@ public abstract class Tracer {
    * @return the {@code HttpTextFormat} for this implementation.
    * @since 0.1.0
    */
-  public abstract HttpTextFormat<SpanContext> getHttpTextFormat();
-
-  protected Tracer() {}
+  HttpTextFormat<SpanContext> getHttpTextFormat();
 }

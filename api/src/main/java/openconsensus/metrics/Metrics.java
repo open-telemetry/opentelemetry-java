@@ -17,21 +17,21 @@
 package openconsensus.metrics;
 
 /**
- * Class for accessing the default {@link MetricRegistry}.
+ * Class for accessing the default {@link Meter}.
  *
  * @since 0.1.0
  */
 public final class Metrics {
-  private static final MetricRegistry METRIC_REGISTRY = NoopMetrics.newNoopMetricRegistry();
+  private static final Meter METER = NoopMetrics.newNoopMeter();
 
   /**
-   * Returns the global {@link MetricRegistry} with the provided implementation.
+   * Returns the global {@link Meter} with the provided implementation.
    *
-   * @return the global {@code MetricRegistry} with the provided implementation.
+   * @return the global {@code Meter} with the provided implementation.
    * @since 0.1.0
    */
-  public static MetricRegistry getMetricRegistry() {
-    return METRIC_REGISTRY;
+  public static Meter getMeter() {
+    return METER;
   }
 
   private Metrics() {}

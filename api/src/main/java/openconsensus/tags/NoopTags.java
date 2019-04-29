@@ -45,7 +45,7 @@ public final class NoopTags {
   }
 
   @Immutable
-  private static final class NoopTagger extends Tagger {
+  private static final class NoopTagger implements Tagger {
     private static final BinaryFormat<TagMap> BINARY_FORMAT = new NoopBinaryFormat();
     private static final HttpTextFormat<TagMap> HTTP_TEXT_FORMAT = new NoopHttpTextFormat();
 
@@ -88,7 +88,7 @@ public final class NoopTags {
   }
 
   @Immutable
-  private static final class NoopTagMapBuilder extends TagMapBuilder {
+  private static final class NoopTagMapBuilder implements TagMapBuilder {
     @Override
     public TagMapBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
       Utils.checkNotNull(key, "key");
@@ -116,7 +116,7 @@ public final class NoopTags {
 
   @Immutable
   private static final class NoopBinaryFormat
-      extends openconsensus.context.propagation.BinaryFormat<TagMap> {
+      implements openconsensus.context.propagation.BinaryFormat<TagMap> {
     static final byte[] EMPTY_BYTE_ARRAY = {};
 
     @Override
@@ -134,7 +134,7 @@ public final class NoopTags {
 
   @Immutable
   private static final class NoopHttpTextFormat
-      extends openconsensus.context.propagation.HttpTextFormat<TagMap> {
+      implements openconsensus.context.propagation.HttpTextFormat<TagMap> {
     @Override
     public List<String> fields() {
       return Collections.emptyList();

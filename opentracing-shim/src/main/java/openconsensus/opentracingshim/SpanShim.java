@@ -20,6 +20,7 @@ import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.log.Fields;
 import io.opentracing.tag.Tag;
+import io.opentracing.tag.Tags;
 import java.util.HashMap;
 import java.util.Map;
 import openconsensus.trace.AttributeValue;
@@ -47,10 +48,10 @@ final class SpanShim implements Span {
 
   @Override
   public Span setTag(String key, String value) {
-    if ("span.kind".equals(key)) {
+    if (Tags.SPAN_KIND.getKey().equals(key)) {
       // TODO: confirm we can safely ignore span.kind after Span was created
       // https://github.com/bogdandrutu/openconsensus/issues/42
-    } else if ("error".equals(key) && value.equalsIgnoreCase("true")) {
+    } else if (Tags.ERROR.getKey().equals(key) && Boolean.parseBoolean(value)) {
       this.span.setStatus(Status.UNKNOWN);
     } else {
       span.setAttribute(key, value);
@@ -61,7 +62,7 @@ final class SpanShim implements Span {
 
   @Override
   public Span setTag(String key, boolean value) {
-    if ("error".equals(key) && value) {
+    if (Tags.ERROR.getKey().equals(key) && value) {
       this.span.setStatus(Status.UNKNOWN);
     } else {
       span.setAttribute(key, value);

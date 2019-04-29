@@ -47,7 +47,7 @@ public final class NoopTrace {
   }
 
   // No-Op implementation of the Tracer.
-  private static final class NoopTracer extends Tracer {
+  private static final class NoopTracer implements Tracer {
     private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
     private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new NoopHttpTextFormat();
 
@@ -72,17 +72,17 @@ public final class NoopTrace {
     }
 
     @Override
-    public SpanBuilder spanBuilder(String spanName) {
+    public Span.Builder spanBuilder(String spanName) {
       return spanBuilderWithExplicitParent(spanName, getCurrentSpan());
     }
 
     @Override
-    public SpanBuilder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {
+    public Span.Builder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {
       return NoopSpanBuilder.createWithParent(spanName, parent);
     }
 
     @Override
-    public SpanBuilder spanBuilderWithRemoteParent(
+    public Span.Builder spanBuilderWithRemoteParent(
         String spanName, @Nullable SpanContext remoteParentSpanContext) {
       return NoopSpanBuilder.createWithRemoteParent(spanName, remoteParentSpanContext);
     }
@@ -115,8 +115,8 @@ public final class NoopTrace {
     private NoopTracer() {}
   }
 
-  // Noop implementation of SpanBuilder.
-  private static final class NoopSpanBuilder extends SpanBuilder {
+  // Noop implementation of Span.Builder.
+  private static final class NoopSpanBuilder implements Span.Builder {
     static NoopSpanBuilder createWithParent(String spanName, @Nullable Span parent) {
       return new NoopSpanBuilder(spanName);
     }
@@ -142,27 +142,27 @@ public final class NoopTrace {
     }
 
     @Override
-    public SpanBuilder setSampler(@Nullable Sampler sampler) {
+    public NoopSpanBuilder setSampler(@Nullable Sampler sampler) {
       return this;
     }
 
     @Override
-    public SpanBuilder addLink(Link link) {
+    public NoopSpanBuilder addLink(Link link) {
       return this;
     }
 
     @Override
-    public SpanBuilder addLinks(List<Link> links) {
+    public NoopSpanBuilder addLinks(List<Link> links) {
       return this;
     }
 
     @Override
-    public SpanBuilder setRecordEvents(boolean recordEvents) {
+    public NoopSpanBuilder setRecordEvents(boolean recordEvents) {
       return this;
     }
 
     @Override
-    public SpanBuilder setSpanKind(Span.Kind spanKind) {
+    public NoopSpanBuilder setSpanKind(Span.Kind spanKind) {
       return this;
     }
 
@@ -171,7 +171,7 @@ public final class NoopTrace {
     }
   }
 
-  private static final class NoopBinaryFormat extends BinaryFormat<SpanContext> {
+  private static final class NoopBinaryFormat implements BinaryFormat<SpanContext> {
 
     @Override
     public byte[] toByteArray(SpanContext spanContext) {
@@ -188,7 +188,7 @@ public final class NoopTrace {
     private NoopBinaryFormat() {}
   }
 
-  private static final class NoopHttpTextFormat extends HttpTextFormat<SpanContext> {
+  private static final class NoopHttpTextFormat implements HttpTextFormat<SpanContext> {
 
     private NoopHttpTextFormat() {}
 

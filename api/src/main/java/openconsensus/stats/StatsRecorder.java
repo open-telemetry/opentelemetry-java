@@ -17,6 +17,7 @@
 package openconsensus.stats;
 
 import java.util.List;
+import javax.annotation.concurrent.ThreadSafe;
 import openconsensus.tags.TagMap;
 import openconsensus.trace.SpanContext;
 
@@ -25,7 +26,19 @@ import openconsensus.trace.SpanContext;
  *
  * @since 0.1.0
  */
-public abstract class StatsRecorder {
+@ThreadSafe
+public interface StatsRecorder {
+
+  /**
+   * Returns a new builder for a {@code Measure}.
+   *
+   * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
+   *     greater than 255 characters.
+   * @return a new builder for a {@code Measure}.
+   * @since 0.1.0
+   */
+  Measure.Builder measureBuilder(String name);
+
   /**
    * Records all given measurements, with the current {@link
    * openconsensus.tags.Tagger#getCurrentTagMap}.
@@ -33,7 +46,7 @@ public abstract class StatsRecorder {
    * @param measurements the list of {@code Measurement}s to record.
    * @since 0.1.0
    */
-  public abstract void record(List<Measurement> measurements);
+  void record(List<Measurement> measurements);
 
   /**
    * Records all given measurements, with an explicit {@link TagMap}.
@@ -42,7 +55,7 @@ public abstract class StatsRecorder {
    * @param tags the tags associated with the measurements.
    * @since 0.1.0
    */
-  public abstract void record(List<Measurement> measurements, TagMap tags);
+  void record(List<Measurement> measurements, TagMap tags);
 
   /**
    * Records all given measurements, with an explicit {@link TagMap}. These measurements are
@@ -54,5 +67,5 @@ public abstract class StatsRecorder {
    *     measurements are associated with.
    * @since 0.1.0
    */
-  public abstract void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext);
+  void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext);
 }

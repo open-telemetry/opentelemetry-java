@@ -99,6 +99,7 @@ subprojects {
         grpcVersion = '1.20.0'
         autoValueVersion = '1.6.2'
         opentracingVersion = '0.32.0'
+        guavaVersion = '26.0-android'
 
         libraries = [
                 auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -111,6 +112,7 @@ subprojects {
                 opentracing: "io.opentracing:opentracing-api:${opentracingVersion}",
 
                 // Test dependencies.
+                guava_testlib: "com.google.guava:guava-testlib:${guavaVersion}",
                 junit: 'junit:junit:4.12',
                 mockito: 'org.mockito:mockito-core:1.9.5',
                 truth: 'com.google.truth:truth:0.42',
@@ -132,7 +134,8 @@ subprojects {
 
         testCompile libraries.junit,
                 libraries.mockito,
-                libraries.truth
+                libraries.truth,
+                libraries.guava_testlib
 
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check

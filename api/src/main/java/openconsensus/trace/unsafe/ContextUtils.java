@@ -17,6 +17,8 @@
 package openconsensus.trace.unsafe;
 
 import io.grpc.Context;
+import openconsensus.internal.Utils;
+import openconsensus.trace.BlankSpan;
 import openconsensus.trace.Span;
 import openconsensus.trace.Tracer;
 
@@ -29,14 +31,31 @@ import openconsensus.trace.Tracer;
  * @since 0.1.0
  */
 public final class ContextUtils {
-  // No instance of this class.
-  private ContextUtils() {}
+  private static final Context.Key<Span> CONTEXT_SPAN_KEY =
+      Context.keyWithDefault("openconsensus-trace-span-key", BlankSpan.INSTANCE);
 
   /**
-   * The {@link io.grpc.Context.Key} used to interact with {@link io.grpc.Context}.
+   * Creates a new {@code Context} with the given value set.
    *
+   * @param context the parent {@code Context}.
+   * @param span the value to be set.
+   * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static final Context.Key<Span> CONTEXT_SPAN_KEY =
-      Context.key("openconsensus-trace-span-key");
+  public static Context withValue(Context context, Span span) {
+    return Utils.checkNotNull(context, "context").withValue(CONTEXT_SPAN_KEY, span);
+  }
+
+  /**
+   * Returns the value from the specified {@code Context}.
+   *
+   * @param context the specified {@code Context}.
+   * @return the value from the specified {@code Context}.
+   * @since 0.1.0
+   */
+  public static Span getValue(Context context) {
+    return CONTEXT_SPAN_KEY.get(Utils.checkNotNull(context, "context"));
+  }
+
+  private ContextUtils() {}
 }

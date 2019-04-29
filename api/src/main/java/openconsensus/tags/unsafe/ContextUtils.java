@@ -17,6 +17,7 @@
 package openconsensus.tags.unsafe;
 
 import io.grpc.Context;
+import openconsensus.internal.Utils;
 import openconsensus.tags.EmptyTagMap;
 import openconsensus.tags.TagMap;
 
@@ -24,19 +25,36 @@ import openconsensus.tags.TagMap;
  * Utility methods for accessing the {@link TagMap} contained in the {@link io.grpc.Context}.
  *
  * <p>Most code should interact with the current context via the public APIs in {@link TagMap} and
- * avoid accessing {@link #TAG_MAP_KEY} directly.
+ * avoid accessing this class directly.
  *
  * @since 0.1.0
  */
 public final class ContextUtils {
-  private ContextUtils() {}
+  private static final Context.Key<TagMap> TAG_MAP_KEY =
+      Context.keyWithDefault("openconsensus-tag-map-key", EmptyTagMap.INSTANCE);
 
   /**
-   * The {@link io.grpc.Context.Key} used to interact with the {@code TagMap} contained in the
-   * {@link io.grpc.Context}.
+   * Creates a new {@code Context} with the given value set.
    *
+   * @param context the parent {@code Context}.
+   * @param tagMap the value to be set.
+   * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static final Context.Key<TagMap> TAG_MAP_KEY =
-      Context.keyWithDefault("openconsensus-tag-map-key", EmptyTagMap.INSTANCE);
+  public static Context withValue(Context context, TagMap tagMap) {
+    return Utils.checkNotNull(context, "context").withValue(TAG_MAP_KEY, tagMap);
+  }
+
+  /**
+   * Returns the value from the specified {@code Context}.
+   *
+   * @param context the specified {@code Context}.
+   * @return the value from the specified {@code Context}.
+   * @since 0.1.0
+   */
+  public static TagMap getValue(Context context) {
+    return TAG_MAP_KEY.get(context);
+  }
+
+  private ContextUtils() {}
 }

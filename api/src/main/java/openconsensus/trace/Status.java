@@ -232,7 +232,7 @@ public final class Status {
   private static final List<Status> STATUS_LIST = buildStatusList();
 
   private static List<Status> buildStatusList() {
-    TreeMap<Integer, Status> canonicalizer = new TreeMap<Integer, Status>();
+    TreeMap<Integer, Status> canonicalizer = new TreeMap<>();
     for (CanonicalCode code : CanonicalCode.values()) {
       Status replaced = canonicalizer.put(code.value(), new Status(code, null));
       if (replaced != null) {
@@ -243,7 +243,7 @@ public final class Status {
                 + code.name());
       }
     }
-    return Collections.unmodifiableList(new ArrayList<Status>(canonicalizer.values()));
+    return Collections.unmodifiableList(new ArrayList<>(canonicalizer.values()));
   }
 
   // A pseudo-enum of Status instances mapped 1:1 with values in CanonicalCode. This simplifies

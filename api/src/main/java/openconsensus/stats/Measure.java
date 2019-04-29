@@ -16,89 +16,95 @@
 
 package openconsensus.stats;
 
-import com.google.auto.value.AutoValue;
-import javax.annotation.concurrent.Immutable;
-import openconsensus.internal.StringUtils;
-import openconsensus.internal.Utils;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * The definition of the {@link Measurement} that is taken by OpenConsensus library.
+ * The definition of a {@link Measurement} that is taken by OpenConsensus library.
  *
  * @since 0.1.0
  */
-@Immutable
-@AutoValue
-public abstract class Measure {
-  private static final int NAME_MAX_LENGTH = 255;
-  private static final String ERROR_MESSAGE_INVALID_NAME =
-      "Name should be a ASCII string with a length no greater than "
-          + NAME_MAX_LENGTH
-          + " characters.";
-
+@ThreadSafe
+public interface Measure {
   /**
-   * Name of measure, as a {@code String}. Should be a ASCII string with a length no greater than
-   * 255 characters.
+   * An enum that represents all the possible value types for a {@code Measure} or a {@code
+   * Measurement}.
    *
-   * <p>Suggested format for name: {@code <web_host>/<path>}.
-   *
-   * @return the name of this measure.
    * @since 0.1.0
    */
-  public abstract String getName();
-
-  /**
-   * Detailed description of the measure, used in documentation.
-   *
-   * @return the description of this measure.
-   * @since 0.1.0
-   */
-  public abstract String getDescription();
-
-  /**
-   * The units in which {@link Measure} values are measured.
-   *
-   * <p>The suggested grammar for a unit is as follows:
-   *
-   * <ul>
-   *   <li>Expression = Component { "." Component } {"/" Component };
-   *   <li>Component = [ PREFIX ] UNIT [ Annotation ] | Annotation | "1";
-   *   <li>Annotation = "{" NAME "}" ;
-   * </ul>
-   *
-   * <p>For example, string “MBy{transmitted}/ms” stands for megabytes per milliseconds, and the
-   * annotation transmitted inside {} is just a comment of the unit.
-   *
-   * @return the unit of this measure.
-   * @since 0.1.0
-   */
-  public abstract String getUnit();
+  enum Type {
+    LONG,
+    DOUBLE
+  }
 
   /**
    * Returns a new {@link Measurement} for this {@code Measure}.
    *
-   * @param value the corresponding value for the {@code Measurement}.
+   * @param value the corresponding {@code double} value for the {@code Measurement}.
    * @return a new {@link Measurement} for this {@code Measure}.
+   * @throws UnsupportedOperationException if the type is not {@link Measure.Type#DOUBLE}.
    */
-  public final Measurement createMeasurement(double value) {
-    Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-    return Measurement.create(this, value);
-  }
+  Measurement createDoubleMeasurement(double value);
 
   /**
-   * Constructs a new {@link Measure}.
+   * Returns a new {@link Measurement} for this {@code Measure}.
    *
-   * @param name name of {@code Measure}. Suggested format: {@code <web_host>/<path>}.
-   * @param description description of {@code Measure}.
-   * @param unit unit of {@code Measure}.
-   * @return a {@code Measure}.
-   * @since 0.1.0
+   * @param value the corresponding {@code long} value for the {@code Measurement}.
+   * @return a new {@link Measurement} for this {@code Measure}.
+   * @throws UnsupportedOperationException if the type is not {@link Measure.Type#LONG}.
    */
-  public static Measure create(String name, String description, String unit) {
-    Utils.checkArgument(
-        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
-        ERROR_MESSAGE_INVALID_NAME);
-    return new AutoValue_Measure(name, description, unit);
-  }
+  Measurement createLongMeasurement(long value);
 
-  protected Measure() {}
+  /** Builder class for the {@link Measure}. */
+  interface Builder {
+    /**
+     * Sets the detailed description of the measure, used in documentation.
+     *
+     * <p>Default description is {@code ""}.
+     *
+     * @param description the detailed description of the {@code Measure}.
+     * @return this.
+     * @since 0.1.0
+     */
+    Builder setDescription(String description);
+
+    /**
+     * Sets the units in which {@code Measure} values are measured.
+     *
+     * <p>The suggested grammar for a unit is as follows:
+     *
+     * <ul>
+     *   <li>Expression = Component { "." Component } {"/" Component };
+     *   <li>Component = [ PREFIX ] UNIT [ Annotation ] | Annotation | "1";
+     *   <li>Annotation = "{" NAME "}" ;
+     * </ul>
+     *
+     * <p>For example, string “MBy{transmitted}/ms” stands for megabytes per milliseconds, and the
+     * annotation transmitted inside {} is just a comment of the unit.
+     *
+     * <p>Default unit is {@code "1"}.
+     *
+     * @param unit the units in which {@code Measure} values are measured.
+     * @return this.
+     * @since 0.1.0
+     */
+    Builder setUnit(String unit);
+
+    /**
+     * Sets the {@code Type} corresponding to the underlying value of this {@code Measure}.
+     *
+     * <p>Default {@code Type} is {@link Type#DOUBLE}.
+     *
+     * @param type the
+     * @return this.
+     * @since 0.1.0
+     */
+    Builder setType(Type type);
+
+    /**
+     * Builds and returns a {@code Measure} with the desired options.
+     *
+     * @return a {@code Measure} with the desired options.
+     */
+    Measure build();
+  }
 }

@@ -45,7 +45,7 @@ final class Propagation {
   }
 
   static final class TextMapSetter
-      extends openconsensus.context.propagation.HttpTextFormat.Setter<TextMap> {
+      implements openconsensus.context.propagation.HttpTextFormat.Setter<TextMap> {
     private TextMapSetter() {}
 
     public static final TextMapSetter INSTANCE = new TextMapSetter();
@@ -59,7 +59,7 @@ final class Propagation {
   // We use Map<> instead of TextMap as we need to query a specified key, and iterating over
   // *all* values per key-query *might* be a bad idea.
   static final class TextMapGetter
-      extends openconsensus.context.propagation.HttpTextFormat.Getter<Map<String, String>> {
+      implements openconsensus.context.propagation.HttpTextFormat.Getter<Map<String, String>> {
     private TextMapGetter() {}
 
     public static final TextMapGetter INSTANCE = new TextMapGetter();
