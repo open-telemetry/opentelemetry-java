@@ -23,48 +23,32 @@ import javax.annotation.concurrent.ThreadSafe;
  * Gauge metric, to report instantaneous measurement of an long value. Gauges can go both up and
  * down. The gauges values can be negative.
  *
- * <p>Example 1: Create a Gauge with default labels.
+ * <p>Example:
  *
  * <pre>{@code
  * class YourClass {
  *
  *   private static final Meter meter = Metrics.getMeter();
- *   private static final MetricRegistry metricRegistry = meter.metricRegistryBuilder().build();
- *
- *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
- *
- *   GaugeLong gauge = metricRegistry.addLongGauge("queue_size", "Pending jobs", "1", labelKeys);
- *
+ *   private static final GaugeLong gauge =
+ *       meter
+ *           .gaugeLongBuilder("processed_jobs")
+ *           .setDescription("Processed jobs")
+ *           .setUnit("1")
+ *           .setLabelKeys(Collections.singletonList(LabelKey.create("Name", "desc")))
+ *           .build();
  *   // It is recommended to keep a reference of a TimeSeries.
- *   GaugeLong.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
+ *   private static final GaugeLong.TimeSeries inboundTimeSeries =
+ *       gauge.getOrCreateTimeSeries(Collections.singletonList(LabelValue.create("SomeWork")));
+ *    private static final GaugeLong.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
  *
- *   void doWork() {
+ *   void doDefault() {
  *      // Your code here.
- *      defaultPoint.add(10);
+ *      defaultTimeSeries.add(10);
  *   }
- *
- * }
- * }</pre>
- *
- * <p>Example 2: You can also use labels(keys and values) to track different types of metric.
- *
- * <pre>{@code
- * class YourClass {
- *
- *   private static final Meter meter = Metrics.getMeter();
- *   private static final MetricRegistry metricRegistry = meter.metricRegistryBuilder().build();
- *
- *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
- *   List<LabelValue> labelValues = Arrays.asList(LabelValue.create("Inbound"));
- *
- *   GaugeLong gauge = metricRegistry.addLongGauge("queue_size", "Pending jobs", "1", labelKeys);
- *
- *   // It is recommended to keep a reference of a TimeSeries.
- *   GaugeLong.TimeSeries inboundTimeSeries = gauge.getOrCreateTimeSeries(labelValues);
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      inboundPoint.set(15);
+ *      inboundTimeSeries.set(15);
  *   }
  *
  * }
