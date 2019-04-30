@@ -45,6 +45,7 @@ We also follow these project-specific guidelines:
 ``` sh
 $ git checkout -b docs
 $ ./gradlew javadoc
+$ rm -fr docs/*
 $ cp -R api/build/docs/javadoc/* docs
 $ git add -A .
 $ git commit -m "Update javadoc for API."
