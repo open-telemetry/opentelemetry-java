@@ -22,39 +22,37 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link MetricRegistry}. */
+/** Unit tests for {@link Meter}. */
 @RunWith(JUnit4.class)
-public class MetricRegistryTest {
+public class MeterTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
-
-  private final MetricRegistry metricRegistry =
-      NoopMetrics.newNoopMeter().metricRegistryBuilder().build();
+  private final Meter meter = Metrics.getMeter();
 
   @Test
   public void noopAddLongGauge_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    metricRegistry.gaugeLongBuilder(null);
+    meter.gaugeLongBuilder(null);
   }
 
   @Test
   public void noopAddDoubleGauge_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    metricRegistry.gaugeDoubleBuilder(null);
+    meter.gaugeDoubleBuilder(null);
   }
 
   @Test
   public void noopAddDoubleCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    metricRegistry.counterDoubleBuilder(null);
+    meter.counterDoubleBuilder(null);
   }
 
   @Test
   public void noopAddLongCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    metricRegistry.counterLongBuilder(null);
+    meter.counterLongBuilder(null);
   }
 }

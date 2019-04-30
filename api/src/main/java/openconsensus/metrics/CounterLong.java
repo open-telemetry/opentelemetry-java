@@ -24,50 +24,32 @@ import openconsensus.metrics.CounterLong.TimeSeries;
  * Counter metric, to report instantaneous measurement of a long value. Cumulative values can go up
  * or stay the same, but can never go down. Cumulative values cannot be negative.
  *
- * <p>Example 1: Create a Cumulative with default labels.
+ * <p>Example:
  *
  * <pre>{@code
  * class YourClass {
  *
  *   private static final Meter meter = Metrics.getMeter();
- *   private static final MetricRegistry metricRegistry = meter.metricRegistryBuilder().build();
- *
- *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
- *
- *   CounterLong cumulative = metricRegistry.addLongCumulative("processed_jobs",
- *                       "Processed jobs", "1", labelKeys);
- *
+ *   private static final CounterLong counter =
+ *       meter.
+ *           .counterLongBuilder("processed_jobs")
+ *           .setDescription("Processed jobs")
+ *           .setUnit("1")
+ *           .setLabelKeys(Collections.singletonList(LabelKey.create("Name", "desc")))
+ *           .build();
  *   // It is recommended to keep a reference of a TimeSeries.
- *   CounterLong.TimeSeries defaultTimeSeries = cumulative.getDefaultTimeSeries();
+ *   private static final CounterLong.TimeSeries inboundTimeSeries =
+ *       counter.getOrCreateTimeSeries(Collections.singletonList(LabelValue.create("SomeWork")));
+ *   private static final CounterLong.TimeSeries defaultTimeSeries = counter.getDefaultTimeSeries();
  *
- *   void doWork() {
+ *   void doDefaultWork() {
  *      // Your code here.
- *      defaultPoint.add(10);
+ *      defaultTimeSeries.add(10);
  *   }
- *
- * }
- * }</pre>
- *
- * <p>Example 2: You can also use labels (keys and values) to track different types of metric.
- *
- * <pre>{@code
- * class YourClass {
- *
- *   private static final Meter meter = Metrics.getMeter();
- *   private static final MetricRegistry metricRegistry = meter.metricRegistryBuilder().build();
- *
- *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
- *   List<LabelValue> labelValues = Arrays.asList(LabelValue.create("Inbound"));
- *
- *   CounterLong cumulative = metricRegistry.addLongCumulative("processed_jobs",
- *                       "Processed jobs", "1", labelKeys);
- *
- *   // It is recommended to keep a reference of a TimeSeries.
- *   CounterLong.TimeSeries inboundTimeSeries = cumulative.getOrCreateTimeSeries(labelValues);
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      inboundPoint.set(15);
+ *      inboundTimeSeries.set(15);
  *   }
  *
  * }

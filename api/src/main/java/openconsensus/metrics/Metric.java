@@ -19,6 +19,7 @@ package openconsensus.metrics;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import openconsensus.resource.Resource;
 
 /** Base interface for all metrics defined in this package. */
 public interface Metric<T> {
@@ -79,7 +80,7 @@ public interface Metric<T> {
 
   interface Builder<B extends Builder<B, V>, V> {
     /**
-     * Sets the description of the Metric.
+     * Sets the description of the {@code Metric}.
      *
      * <p>Default value is {@code ""}.
      *
@@ -89,7 +90,7 @@ public interface Metric<T> {
     B setDescription(String description);
 
     /**
-     * Sets the unit of the Metric.
+     * Sets the unit of the {@code Metric}.
      *
      * <p>Default value is {@code "1"}.
      *
@@ -117,6 +118,32 @@ public interface Metric<T> {
      * @return this.
      */
     B setConstantLabels(Map<LabelKey, LabelValue> constantLabels);
+
+    /**
+     * Sets the name of the component that reports this {@code Metric}.
+     *
+     * <p>The final name of the reported metric will be <code>component + "_" + name</code> if the
+     * component is not empty.
+     *
+     * <p>It is recommended to always set a component name for all the metrics, because some
+     * implementations may filter based on the component.
+     *
+     * @param component the name of the component that reports these metrics.
+     * @return this.
+     */
+    B setComponent(String component);
+
+    /**
+     * Sets the {@code Resource} associated with this {@code Metric}.
+     *
+     * <p>This should be set only when reporting out-of-band metrics, otherwise the implementation
+     * will set the {@code Resource} for in-process metrics (or user can do that when initialize the
+     * {@code Meter}).
+     *
+     * @param resource the {@code Resource} associated with this {@code Metric}.
+     * @return this.
+     */
+    B setResource(Resource resource);
 
     /**
      * Builds and returns a metric with the desired options.
