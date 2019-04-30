@@ -21,16 +21,16 @@ import javax.annotation.Nullable;
 
 /**
  * Injects and extracts a value as text into carriers that travel in-band across process boundaries.
- * Values are often encoded as RPC/HTTP request headers.
+ * Encoding is expected to conform to the HTTP Header Field semantics. Values are often encoded as
+ * RPC/HTTP request headers.
  *
- * <p>When using http, the carrier of propagated data on both the client (injector) and server
- * (extractor) side is usually an http request. Propagation is usually implemented via library-
- * specific request interceptors, where the client-side injects values and the server-side extracts
- * them.
+ * <p>The carrier of propagated data on both the client (injector) and server (extractor) side is
+ * usually an http request. Propagation is usually implemented via library- specific request
+ * interceptors, where the client-side injects values and the server-side extracts them.
  *
  * @since 0.1.0
  */
-public interface TextFormat<V> {
+public interface HttpTextFormat<V> {
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
    * before calling {@link #inject(Object, Object, Setter)} )}.
@@ -59,7 +59,7 @@ public interface TextFormat<V> {
   <C> void inject(V value, C carrier, Setter<C> setter);
 
   /**
-   * Class that allows a {@code TextFormat} to set propagated fields into a carrier.
+   * Class that allows a {@code HttpTextFormat} to set propagated fields into a carrier.
    *
    * <p>{@code Setter} is stateless and allows to be saved as a constant to avoid runtime
    * allocations.
@@ -98,7 +98,7 @@ public interface TextFormat<V> {
   <C> V extract(C carrier, Getter<C> getter);
 
   /**
-   * Interface that allows a {@code TextFormat} to read propagated fields from a carrier.
+   * Interface that allows a {@code HttpTextFormat} to read propagated fields from a carrier.
    *
    * <p>{@code Getter} is stateless and allows to be saved as a constant to avoid runtime
    * allocations.

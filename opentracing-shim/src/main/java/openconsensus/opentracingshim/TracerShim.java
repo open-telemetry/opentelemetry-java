@@ -77,7 +77,7 @@ public final class TracerShim implements Tracer {
 
     // TODO - Shall we expect to get no-op objects if a given format is not supported at all?
     if (format == Format.Builtin.TEXT_MAP || format == Format.Builtin.HTTP_HEADERS) {
-      Propagation.injectTextFormat(tracer.getTextFormat(), actualContext, (TextMap) carrier);
+      Propagation.injectTextFormat(tracer.getHttpTextFormat(), actualContext, (TextMap) carrier);
     } else if (format == Format.Builtin.BINARY) {
       Propagation.injectBinaryFormat(tracer.getBinaryFormat(), actualContext, (Binary) carrier);
     }
@@ -90,7 +90,7 @@ public final class TracerShim implements Tracer {
     SpanContext context = null;
 
     if (format == Format.Builtin.TEXT_MAP || format == Format.Builtin.HTTP_HEADERS) {
-      context = Propagation.extractTextFormat(tracer.getTextFormat(), (TextMap) carrier);
+      context = Propagation.extractTextFormat(tracer.getHttpTextFormat(), (TextMap) carrier);
     } else if (format == Format.Builtin.BINARY) {
       context = Propagation.extractBinaryFormat(tracer.getBinaryFormat(), (Binary) carrier);
     }

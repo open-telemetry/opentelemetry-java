@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 import openconsensus.context.Scope;
 import openconsensus.context.propagation.BinaryFormat;
-import openconsensus.context.propagation.TextFormat;
+import openconsensus.context.propagation.HttpTextFormat;
 import openconsensus.resource.Resource;
 
 /**
@@ -411,7 +411,7 @@ public interface Tracer {
   BinaryFormat<SpanContext> getBinaryFormat();
 
   /**
-   * Returns the {@link TextFormat} for this implementation.
+   * Returns the {@link HttpTextFormat} for this implementation.
    *
    * <p>If no implementation is provided then no-op implementation will be used.
    *
@@ -422,8 +422,9 @@ public interface Tracer {
    *
    * <pre>{@code
    * private static final Tracer tracer = Trace.getTracer();
-   * private static final TextFormat textFormat = Trace.getTracer().getTextFormat();
-   * private static final TextFormat.Setter setter = new TextFormat.Setter<HttpURLConnection>() {
+   * private static final HttpTextFormat textFormat = Trace.getTracer().getHttpTextFormat();
+   * private static final HttpTextFormat.Setter setter =
+   *         new HttpTextFormat.Setter<HttpURLConnection>() {
    *   public void put(HttpURLConnection carrier, String key, String value) {
    *     carrier.setRequestProperty(field, value);
    *   }
@@ -445,8 +446,8 @@ public interface Tracer {
    *
    * <pre>{@code
    * private static final Tracer tracer = Trace.getTracer();
-   * private static final TextFormat textFormat = Trace.getTracer().getTextFormat();
-   * private static final TextFormat.Getter<HttpRequest> getter = ...;
+   * private static final HttpTextFormat textFormat = Trace.getTracer().getHttpTextFormat();
+   * private static final HttpTextFormat.Getter<HttpRequest> getter = ...;
    *
    * void onRequestReceived(HttpRequest request) {
    *   SpanContext spanContext = textFormat.extract(request, getter);
@@ -459,8 +460,8 @@ public interface Tracer {
    * }
    * }</pre>
    *
-   * @return the {@code TextFormat} for this implementation.
+   * @return the {@code HttpTextFormat} for this implementation.
    * @since 0.1.0
    */
-  TextFormat<SpanContext> getTextFormat();
+  HttpTextFormat<SpanContext> getHttpTextFormat();
 }
