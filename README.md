@@ -1,8 +1,8 @@
-# OpenConsensus
+# OpenTelemetry
 [![Gitter chat][gitter-image]][gitter-url]
 [![Build Status][travis-image]][travis-url]
 
-OpenConsensus is a working name of a combined OpenCensus and OpenTracing
+OpenTelemetry is a working name of a combined OpenCensus and OpenTracing
 project.
 
 ## This codebase will be ready for review April 24th, 2019. 
