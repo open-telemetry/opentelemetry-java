@@ -1,4 +1,4 @@
-# OpenConsensus
+# Open Telemetery
 [![Gitter chat][gitter-image]][gitter-url]
 [![Build Status][travis-image]][travis-url]
 
