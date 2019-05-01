@@ -89,21 +89,11 @@ public class CurrentSpanUtilsTest {
   @Test
   public void withSpan_CloseDetaches() {
     assertThat(CurrentSpanUtils.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
-    try (Scope ws = CurrentSpanUtils.withSpan(span, false)) {
+    try (Scope ws = CurrentSpanUtils.withSpan(span)) {
       assertThat(CurrentSpanUtils.getCurrentSpan()).isSameInstanceAs(span);
     }
     assertThat(CurrentSpanUtils.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
     verifyZeroInteractions(span);
-  }
-
-  @Test
-  public void withSpan_CloseDetachesAndEndsSpan() {
-    assertThat(CurrentSpanUtils.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
-    try (Scope ss = CurrentSpanUtils.withSpan(span, true)) {
-      assertThat(CurrentSpanUtils.getCurrentSpan()).isSameInstanceAs(span);
-    }
-    assertThat(CurrentSpanUtils.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
-    verify(span).end();
   }
 
   @Test

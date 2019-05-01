@@ -37,7 +37,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Scope withSpan(Span span) {
-    return CurrentSpanUtils.withSpan(span, /* endSpan= */ false);
+    return CurrentSpanUtils.withSpan(span);
   }
 
   @Override
