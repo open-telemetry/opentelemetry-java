@@ -10,5 +10,5 @@ dependencies {
 }
 
 javadoc {
-    exclude 'opentelemetry/internal/**'
+    exclude 'io/opentelemetry/internal/**'
 }
