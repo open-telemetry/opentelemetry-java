@@ -18,7 +18,6 @@ package io.opentelemetry.trace;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * An interface that represents a span. It has an associated {@link SpanContext}.
@@ -391,64 +390,5 @@ public interface Span {
      * @since 0.1.0
      */
     Span startSpan();
-
-    /**
-     * Starts a new span and runs the given {@code Runnable} with the newly created {@code Span} as
-     * the current {@code Span}, and ends the {@code Span} after the {@code Runnable} is run.
-     *
-     * <p>Any error will end up as a {@link Status#UNKNOWN}.
-     *
-     * <pre><code>
-     * tracer.spanBuilder("MyRunnableSpan").startSpanAndRun(myRunnable);
-     * </code></pre>
-     *
-     * <p>It is equivalent with the following code:
-     *
-     * <pre><code>
-     * Span span = tracer.spanBuilder("MyRunnableSpan").startSpan();
-     * Runnable newRunnable = tracer.withSpan(span, myRunnable);
-     * try {
-     *   newRunnable.run();
-     * } finally {
-     *   span.end();
-     * }
-     * </code></pre>
-     *
-     * @param runnable the {@code Runnable} to run in the {@code Span}.
-     * @since 0.1.0
-     */
-    void startSpanAndRun(final Runnable runnable);
-
-    /**
-     * Starts a new span and calls the given {@code Callable} with the newly created {@code Span} as
-     * the current {@code Span}, and ends the {@code Span} after the {@code Callable} is called.
-     *
-     * <p>Any error will end up as a {@link Status#UNKNOWN}.
-     *
-     * <pre><code>
-     * MyResult myResult = tracer.spanBuilder("MyCallableSpan").startSpanAndCall(myCallable);
-     * </code></pre>
-     *
-     * <p>It is equivalent with the following code:
-     *
-     * <pre><code>
-     * Span span = tracer.spanBuilder("MyCallableSpan").startSpan();
-     * Callable&lt;MyResult&gt; newCallable = tracer.withSpan(span, myCallable);
-     * MyResult myResult = null;
-     * try {
-     *   myResult = newCallable.call();
-     * } finally {
-     *   span.end();
-     * }
-     * );
-     * </code></pre>
-     *
-     * @param callable the {@code Callable} to run in the {@code Span}.
-     * @param <V> the result type of method call.
-     * @return the result of the {@code Callable#call}.
-     * @throws Exception if the {@code Callable} throws an exception.
-     * @since 0.1.0
-     */
-    <V> V startSpanAndCall(Callable<V> callable) throws Exception;
   }
 }

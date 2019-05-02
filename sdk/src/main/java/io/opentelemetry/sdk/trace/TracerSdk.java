@@ -16,38 +16,28 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.resource.Resource;
-import io.opentelemetry.sdk.trace.internal.CurrentSpanUtils;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
-import java.util.concurrent.Callable;
+import io.opentelemetry.trace.unsafe.ContextUtils;
 import javax.annotation.Nullable;
 
 public class TracerSdk implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return CurrentSpanUtils.getCurrentSpan();
+    return ContextUtils.getValue(Context.current());
   }
 
   @Override
   public Scope withSpan(Span span) {
-    return CurrentSpanUtils.withSpan(span);
-  }
-
-  @Override
-  public Runnable withSpan(Span span, Runnable runnable) {
-    return CurrentSpanUtils.withSpan(span, /* endSpan= */ false, runnable);
-  }
-
-  @Override
-  public <V> Callable<V> withSpan(Span span, Callable<V> callable) {
-    return CurrentSpanUtils.withSpan(span, /* endSpan= */ false, callable);
+    return new ScopeInSpan(span);
   }
 
   @Override
@@ -85,5 +75,24 @@ public class TracerSdk implements Tracer {
   @Override
   public HttpTextFormat<SpanContext> getHttpTextFormat() {
     return null;
+  }
+
+  // Defines an arbitrary scope of code as a traceable operation. Supports try-with-resources idiom.
+  private static final class ScopeInSpan implements Scope {
+    private final Context origContext;
+
+    /**
+     * Constructs a new {@link ScopeInSpan}.
+     *
+     * @param span is the {@code Span} to be added to the current {@code io.grpc.Context}.
+     */
+    private ScopeInSpan(Span span) {
+      origContext = ContextUtils.withValue(Context.current(), span).attach();
+    }
+
+    @Override
+    public void close() {
+      Context.current().detach(origContext);
+    }
   }
 }

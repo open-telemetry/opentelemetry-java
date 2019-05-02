@@ -20,48 +20,14 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.samplers.Samplers;
-import java.util.concurrent.Callable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link Span.Builder}. */
 @RunWith(JUnit4.class)
-// Need to suppress warnings for MustBeClosed because Java-6 does not support try-with-resources.
-@SuppressWarnings("MustBeClosedChecker")
 public class SpanBuilderTest {
   private final Tracer tracer = Trace.getTracer();
-  private final Span.Builder spanBuilder = tracer.spanBuilder("test");
-
-  @Test
-  public void startSpanAndRun() {
-    assertThat(tracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-    spanBuilder.startSpanAndRun(
-        new Runnable() {
-          @Override
-          public void run() {
-            assertThat(tracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-          }
-        });
-    assertThat(tracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-  }
-
-  @Test
-  public void startSpanAndCall() throws Exception {
-    final Object ret = new Object();
-    assertThat(tracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-    assertThat(
-            spanBuilder.startSpanAndCall(
-                new Callable<Object>() {
-                  @Override
-                  public Object call() throws Exception {
-                    assertThat(tracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-                    return ret;
-                  }
-                }))
-        .isEqualTo(ret);
-    assertThat(tracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-  }
 
   @Test
   public void doNotCrash_NoopImplementation() throws Exception {

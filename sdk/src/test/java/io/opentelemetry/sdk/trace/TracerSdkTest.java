@@ -17,12 +17,12 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.BlankSpan;
 import io.opentelemetry.trace.Span;
-import java.util.concurrent.Callable;
+import io.opentelemetry.trace.unsafe.ContextUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +47,19 @@ public class TracerSdkTest {
   }
 
   @Test
+  public void getCurrentSpan() {
+    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    Context origContext = ContextUtils.withValue(Context.current(), span).attach();
+    // Make sure context is detached even if test fails.
+    try {
+      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
+    } finally {
+      Context.current().detach(origContext);
+    }
+    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+  }
+
+  @Test
   public void withSpan_NullSpan() {
     assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
     try (Scope ws = tracer.withSpan(null)) {
@@ -61,46 +74,6 @@ public class TracerSdkTest {
     try (Scope ws = tracer.withSpan(span)) {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
     }
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
-  }
-
-  @Test
-  public void wrapRunnable() {
-    Runnable runnable;
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
-    runnable =
-        tracer.withSpan(
-            span,
-            new Runnable() {
-              @Override
-              public void run() {
-                assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
-              }
-            });
-    // When we run the runnable we will have the span in the current Context.
-    runnable.run();
-    verifyZeroInteractions(span);
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
-  }
-
-  @Test
-  public void wrapCallable() throws Exception {
-    final Object ret = new Object();
-    Callable<Object> callable;
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
-    callable =
-        tracer.withSpan(
-            span,
-            new Callable<Object>() {
-              @Override
-              public Object call() {
-                assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
-                return ret;
-              }
-            });
-    // When we call the callable we will have the span in the current Context.
-    assertThat(callable.call()).isEqualTo(ret);
-    verifyZeroInteractions(span);
     assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
   }
 }
