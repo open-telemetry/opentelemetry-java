@@ -20,7 +20,7 @@
  *
  * <p>WARNING: Currently all the public classes under this package are marked as {@link
  * io.opentelemetry.opencensusshim.common.ExperimentalApi}. The classes and APIs under {@link
- * opentelemetry.opencensusshim.metrics} are likely to get backwards-incompatible updates in the
+ * io.opentelemetry.opencensusshim.metrics} are likely to get backwards-incompatible updates in the
  * future. DO NOT USE except for experimental purposes.
  *
  * <p>Please see
