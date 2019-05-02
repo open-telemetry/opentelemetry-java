@@ -1,7 +1,7 @@
-description = 'OpenConsensus Contrib'
+description = 'OpenTelemetry Contrib'
 
 dependencies {
-    compile project(':openconsensus-api')
+    compile project(':opentelemetry-api')
 
     compileOnly libraries.auto_value
 

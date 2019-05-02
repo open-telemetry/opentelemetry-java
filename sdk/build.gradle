@@ -1,4 +1,4 @@
-description = 'OpenConsensus SDK'
+description = 'OpenTelemetry SDK'
 
 apply plugin: 'com.google.protobuf'
 
@@ -15,7 +15,7 @@ buildscript {
 }
 
 dependencies {
-    api project(':openconsensus-api')
+    api project(':opentelemetry-api')
 
     implementation "com.google.protobuf:protobuf-java:${protobufVersion}",
             "io.grpc:grpc-protobuf:${grpcVersion}",

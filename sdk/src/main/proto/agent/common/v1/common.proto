@@ -1,4 +1,4 @@
-// Copyright 2019, OpenConsensus Authors
+// Copyright 2019, OpenTelemetry Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ syntax = "proto3";
 // NOTE: This proto is experimental and is subject to change at this point.
 // Please do not use it at the moment.
 
-package openconsensus.proto.agent.common.v1;
+package opentelemetry.proto.agent.common.v1;
 
 import "google/protobuf/timestamp.proto";
 
 option java_multiple_files = true;
-option java_package = "openconsensus.proto.agent.common.v1";
+option java_package = "io.opentelemetry.proto.agent.common.v1";
 option java_outer_classname = "CommonProto";
 
 // Identifier metadata of the Node that produces the span or tracing data.
@@ -33,7 +33,7 @@ message Node {
   // Identifier that uniquely identifies a process within a VM/container.
   ProcessIdentifier identifier = 1;
 
-  // Information on the OpenConsensus Library that initiates the stream.
+  // Information on the OpenTelemetry Library that initiates the stream.
   LibraryInfo library_info = 2;
 
   // Additional information on service.
@@ -60,7 +60,7 @@ message ProcessIdentifier {
   google.protobuf.Timestamp start_timestamp = 3;
 }
 
-// Information on OpenConsensus Library.
+// Information on OpenTelemetry Library.
 message LibraryInfo {
 
   enum Language {
@@ -76,13 +76,13 @@ message LibraryInfo {
     RUBY = 9;
   }
 
-  // Language of OpenConsensus Library.
+  // Language of OpenTelemetry Library.
   Language language = 1;
 
   // Version of Agent exporter of Library.
   string exporter_version = 2;
 
-  // Version of OpenConsensus Library.
+  // Version of OpenTelemetry Library.
   string core_library_version = 3;
 }
 
