@@ -1,0 +1,10 @@
+io.opentelemetry.context
+io.opentelemetry.context.propagation
+io.opentelemetry.metrics
+io.opentelemetry.resource
+io.opentelemetry.stats
+io.opentelemetry.tags
+io.opentelemetry.tags.unsafe
+io.opentelemetry.trace
+io.opentelemetry.trace.samplers
+io.opentelemetry.trace.unsafe
