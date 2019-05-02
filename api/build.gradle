@@ -1,4 +1,4 @@
-description = 'OpenConsensus API'
+description = 'OpenTelemetry API'
 
 dependencies {
     api libraries.grpc_context
@@ -10,5 +10,5 @@ dependencies {
 }
 
 javadoc {
-    exclude 'openconsensus/internal/**'
+    exclude 'opentelemetry/internal/**'
 }

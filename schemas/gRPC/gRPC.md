@@ -57,7 +57,7 @@ In the lifetime of a gRPC stream, the following events SHOULD be created:
 - An event for each message sent/received on client and server spans.
 
 [Message
-event](../../contrib/src/main/java/openconsensus/contrib/trace/MessageEvent.java)
+event](../../contrib/src/main/java/opentelemetry/contrib/trace/MessageEvent.java)
 should be used as a name of event.
 
 ```

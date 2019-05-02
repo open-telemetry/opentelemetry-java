@@ -1,4 +1,4 @@
-// Copyright 2019, OpenConsensus Authors
+// Copyright 2019, OpenTelemetry Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This package describes the Metrics data model. It is currently experimental
-// but may eventually become the wire format for metrics. Please see
-// https://github.com/census-instrumentation/openconsensus-specs/blob/master/stats/Metrics.md
-// for more details.
-
 syntax = "proto3";
 
-package openconsensus.proto.metrics.v1;
+package opentelemetry.proto.metrics.v1;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "resource/v1/resource.proto";
 
 option java_multiple_files = true;
-option java_package = "io.openconsensus.proto.metrics.v1";
+option java_package = "io.opentelemetry.proto.metrics.v1";
 option java_outer_classname = "MetricsProto";
 
 // Defines a Metric which has one or more timeseries.
@@ -40,7 +35,7 @@ message Metric {
 
   // The resource for the metric. If unset, it may be set to a default value
   // provided for a sequence of messages in an RPC stream.
-  openconsensus.proto.resource.v1.Resource resource = 3;
+  opentelemetry.proto.resource.v1.Resource resource = 3;
 }
 
 // Defines a metric type and its schema.

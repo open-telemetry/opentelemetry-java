@@ -1,13 +1,13 @@
-rootProject.name = "openconsensus"
+rootProject.name = "opentelemetry"
 
-include ":openconsensus-api"
-include ":openconsensus-contrib"
-include ":openconsensus-opencensus-shim"
-include ":openconsensus-opentracing-shim"
-include ":openconsensus-sdk"
+include ":opentelemetry-api"
+include ":opentelemetry-contrib"
+include ":opentelemetry-opencensus-shim"
+include ":opentelemetry-opentracing-shim"
+include ":opentelemetry-sdk"
 
-project(':openconsensus-api').projectDir = "$rootDir/api" as File
-project(':openconsensus-contrib').projectDir = "$rootDir/contrib" as File
-project(':openconsensus-opencensus-shim').projectDir = "$rootDir/opencensus-shim" as File
-project(':openconsensus-opentracing-shim').projectDir = "$rootDir/opentracing-shim" as File
-project(':openconsensus-sdk').projectDir = "$rootDir/sdk" as File
+project(':opentelemetry-api').projectDir = "$rootDir/api" as File
+project(':opentelemetry-contrib').projectDir = "$rootDir/contrib" as File
+project(':opentelemetry-opencensus-shim').projectDir = "$rootDir/opencensus-shim" as File
+project(':opentelemetry-opentracing-shim').projectDir = "$rootDir/opentracing-shim" as File
+project(':opentelemetry-sdk').projectDir = "$rootDir/sdk" as File

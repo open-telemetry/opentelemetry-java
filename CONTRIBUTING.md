@@ -57,7 +57,7 @@ $ git commit -m "Update javadoc for API."
   constructors to all AutoValue classes to prevent classes in other packages
   from extending them.
 
-## Building openconsensus-java
+## Building opentelemetry-java
 
 Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.
