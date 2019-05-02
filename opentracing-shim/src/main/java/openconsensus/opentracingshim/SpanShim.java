@@ -146,8 +146,7 @@ final class SpanShim implements Span {
 
   @Override
   public void finish(long finishMicros) {
-    // TODO: Take finishMicros into account
-    span.end();
+    throw new UnsupportedOperationException();
   }
 
   static String getEventNameFromFields(Map<String, ?> fields) {
