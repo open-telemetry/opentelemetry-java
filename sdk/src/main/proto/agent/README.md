@@ -1,6 +1,6 @@
-# OpenConsensus Agent Proto
+# OpenTelemetry Agent Proto
 
-This package describes the OpenConsensus Agent protocol.
+This package describes the OpenTelemetry Agent protocol.
 
 ## Packages
 

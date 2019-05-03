@@ -31,7 +31,7 @@ subprojects {
     apply plugin: 'com.github.sherter.google-java-format'
     apply plugin: 'net.ltgt.errorprone'
 
-    group = "openconsensus"
+    group = "opentelemetry"
     version = "0.1.0-SNAPSHOT" // CURRENT_VERSION
 
     sourceCompatibility = 1.7
@@ -114,8 +114,8 @@ subprojects {
                 // Test dependencies.
                 guava_testlib: "com.google.guava:guava-testlib:${guavaVersion}",
                 junit: 'junit:junit:4.12',
-                mockito: 'org.mockito:mockito-core:1.9.5',
-                truth: 'com.google.truth:truth:0.42',
+                mockito: 'org.mockito:mockito-core:2.25.1',
+                truth: 'com.google.truth:truth:0.44',
         ]
     }
 

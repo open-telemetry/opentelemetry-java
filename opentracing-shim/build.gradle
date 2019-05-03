@@ -1,6 +1,6 @@
-description = 'OpenConsensus OpenTracing Bridge'
+description = 'OpenTelemetry OpenTracing Bridge'
 
 dependencies {
-    api project(':openconsensus-api')
+    api project(':opentelemetry-api')
     api libraries.opentracing
 }

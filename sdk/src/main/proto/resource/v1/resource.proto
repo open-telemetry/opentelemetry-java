@@ -1,4 +1,4 @@
-// Copyright 2019, OpenConsensus Authors
+// Copyright 2019, OpenTelemetry Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
 
 syntax = "proto3";
 
-package openconsensus.proto.resource.v1;
+package opentelemetry.proto.resource.v1;
 
 option java_multiple_files = true;
-option java_package = "openconsensus.proto.resource.v1";
+option java_package = "io.opentelemetry.proto.resource.v1";
 option java_outer_classname = "ResourceProto";
 
 // Resource information.
