@@ -24,7 +24,6 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.resource.Resource;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 
 /**
@@ -59,16 +58,6 @@ public final class NoopTrace {
     @Override
     public Scope withSpan(Span span) {
       return NoopScope.getInstance();
-    }
-
-    @Override
-    public Runnable withSpan(Span span, Runnable runnable) {
-      return runnable;
-    }
-
-    @Override
-    public <C> Callable<C> withSpan(Span span, Callable<C> callable) {
-      return callable;
     }
 
     @Override
@@ -129,16 +118,6 @@ public final class NoopTrace {
     @Override
     public Span startSpan() {
       return BlankSpan.INSTANCE;
-    }
-
-    @Override
-    public void startSpanAndRun(Runnable runnable) {
-      runnable.run();
-    }
-
-    @Override
-    public <V> V startSpanAndCall(Callable<V> callable) throws Exception {
-      return callable.call();
     }
 
     @Override

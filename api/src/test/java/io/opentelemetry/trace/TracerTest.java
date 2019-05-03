@@ -19,7 +19,6 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
-import java.util.concurrent.Callable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -46,44 +45,6 @@ public class TracerTest {
     } finally {
       ws.close();
     }
-    assertThat(noopTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-  }
-
-  @Test
-  public void wrapRunnable() {
-    Runnable runnable;
-    assertThat(noopTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-    runnable =
-        noopTracer.withSpan(
-            BlankSpan.INSTANCE,
-            new Runnable() {
-              @Override
-              public void run() {
-                assertThat(noopTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-              }
-            });
-    // When we run the runnable we will have the span in the current Context.
-    runnable.run();
-    assertThat(noopTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-  }
-
-  @Test
-  public void wrapCallable() throws Exception {
-    final Object ret = new Object();
-    Callable<Object> callable;
-    assertThat(noopTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-    callable =
-        noopTracer.withSpan(
-            BlankSpan.INSTANCE,
-            new Callable<Object>() {
-              @Override
-              public Object call() throws Exception {
-                assertThat(noopTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-                return ret;
-              }
-            });
-    // When we call the callable we will have the span in the current Context.
-    assertThat(callable.call()).isEqualTo(ret);
     assertThat(noopTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
   }
 
