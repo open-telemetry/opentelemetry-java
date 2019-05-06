@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.stats;
+package io.opentelemetry.metrics;
 
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Immutable representation of a {@code Measurement}.
+ * Immutable representation of a {@code io.opentelemetry.metrics.Measurement}.
  *
  * @since 0.1.0
  */

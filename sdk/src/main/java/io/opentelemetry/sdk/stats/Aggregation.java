@@ -65,7 +65,7 @@ public abstract class Aggregation {
   public abstract Type getType();
 
   /**
-   * Calculate sum on aggregated {@code Measurement}s.
+   * Calculate sum on aggregated {@code io.opentelemetry.metrics.Measurement}s.
    *
    * @since 0.1.0
    */
@@ -94,7 +94,7 @@ public abstract class Aggregation {
   }
 
   /**
-   * Calculate count on aggregated {@code Measurement}s.
+   * Calculate count on aggregated {@code io.opentelemetry.metrics.Measurement}s.
    *
    * @since 0.1.0
    */
@@ -123,8 +123,8 @@ public abstract class Aggregation {
   }
 
   /**
-   * Calculate distribution stats on aggregated {@code Measurement}s. Distribution includes mean,
-   * count, histogram, min, max and sum of squared deviations.
+   * Calculate distribution stats on aggregated {@code io.opentelemetry.metrics.Measurement}s.
+   * Distribution includes mean, count, histogram, min, max and sum of squared deviations.
    *
    * @since 0.1.0
    */
@@ -156,7 +156,7 @@ public abstract class Aggregation {
   }
 
   /**
-   * Calculate the last value of aggregated {@code Measurement}s.
+   * Calculate the last value of aggregated {@code io.opentelemetry.metrics.Measurement}s.
    *
    * @since 0.1.0
    */
