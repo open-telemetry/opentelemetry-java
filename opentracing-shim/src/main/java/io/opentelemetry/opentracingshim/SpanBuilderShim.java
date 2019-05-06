@@ -21,7 +21,6 @@ import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
@@ -30,7 +29,6 @@ import io.opentracing.tag.Tags;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("deprecation")
 final class SpanBuilderShim implements SpanBuilder {
   private final Tracer tracer;
   private final String spanName;
@@ -210,16 +208,6 @@ final class SpanBuilderShim implements SpanBuilder {
     }
 
     return new SpanShim(span);
-  }
-
-  @Override
-  public Span startManual() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Scope startActive(boolean finishSpanOnClose) {
-    throw new UnsupportedOperationException();
   }
 
   static io.opentelemetry.trace.Span getActualSpan(Span span) {
