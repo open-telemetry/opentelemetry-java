@@ -17,19 +17,12 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentracing.Scope;
-import io.opentracing.Span;
 
-@SuppressWarnings("deprecation")
 final class ScopeShim implements Scope {
   final io.opentelemetry.context.Scope scope;
 
   public ScopeShim(io.opentelemetry.context.Scope scope) {
     this.scope = scope;
-  }
-
-  @Override
-  public Span span() {
-    throw new UnsupportedOperationException();
   }
 
   @Override
