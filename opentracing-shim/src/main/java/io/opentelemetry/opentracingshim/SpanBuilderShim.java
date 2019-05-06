@@ -32,8 +32,6 @@ import java.util.List;
 
 @SuppressWarnings("deprecation")
 final class SpanBuilderShim implements SpanBuilder {
-  private static final String OT_START_TIME_ATTR = "ot.start_timestamp";
-
   private final Tracer tracer;
   private final String spanName;
 
@@ -178,9 +176,7 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public SpanBuilder withStartTimestamp(long microseconds) {
-    this.spanBuilderAttributeKeys.add(OT_START_TIME_ATTR);
-    this.spanBuilderAttributeValues.add(AttributeValue.longAttributeValue(microseconds));
-    return this;
+    throw new UnsupportedOperationException();
   }
 
   @Override
