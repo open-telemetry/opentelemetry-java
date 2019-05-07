@@ -16,13 +16,50 @@
 
 package io.opentelemetry.metrics;
 
-/** Entry point fot metrics API, this object allows to create new {@link MetricRegistry}. */
+/** Entry point fot metrics API, this object allows to record measurements and {@link Metric}s. */
 public interface Meter {
 
   /**
-   * Returns a new builder for a {@code MetricRegistry}.
+   * Returns a builder for a {@link GaugeLong} to be added to the registry.
    *
-   * @return a new builder for a {@code MetricRegistry}.
+   * @param name the name of the metric.
+   * @return a {@code GaugeLong.Builder}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @since 0.1.0
    */
-  MetricRegistry.Builder metricRegistryBuilder();
+  GaugeLong.Builder gaugeLongBuilder(String name);
+
+  /**
+   * Returns a builder for a {@link GaugeDouble} to be added to the registry.
+   *
+   * @param name the name of the metric.
+   * @return a {@code GaugeDouble.Builder}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @since 0.1.0
+   */
+  GaugeDouble.Builder gaugeDoubleBuilder(String name);
+
+  /**
+   * Returns a builder for a {@link CounterDouble} to be added to the registry.
+   *
+   * @param name the name of the metric.
+   * @return a {@code CounterDouble.Builder}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @since 0.1.0
+   */
+  CounterDouble.Builder counterDoubleBuilder(String name);
+
+  /**
+   * Returns a builder for a {@link CounterLong} to be added to the registry.
+   *
+   * @param name the name of the metric.
+   * @return a {@code CounterLong.Builder}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @since 0.1.0
+   */
+  CounterLong.Builder counterLongBuilder(String name);
 }
