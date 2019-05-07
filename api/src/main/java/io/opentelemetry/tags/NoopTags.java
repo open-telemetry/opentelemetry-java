@@ -55,18 +55,18 @@ public final class NoopTags {
     }
 
     @Override
-    public TagMapBuilder emptyBuilder() {
+    public TagMap.Builder emptyBuilder() {
       return new NoopTagMapBuilder();
     }
 
     @Override
-    public TagMapBuilder toBuilder(TagMap tags) {
+    public TagMap.Builder toBuilder(TagMap tags) {
       Utils.checkNotNull(tags, "tags");
       return new NoopTagMapBuilder();
     }
 
     @Override
-    public TagMapBuilder currentBuilder() {
+    public TagMap.Builder currentBuilder() {
       return new NoopTagMapBuilder();
     }
 
@@ -88,9 +88,9 @@ public final class NoopTags {
   }
 
   @Immutable
-  private static final class NoopTagMapBuilder implements TagMapBuilder {
+  private static final class NoopTagMapBuilder implements TagMap.Builder {
     @Override
-    public TagMapBuilder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
+    public TagMap.Builder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");
       Utils.checkNotNull(tagMetadata, "tagMetadata");
@@ -98,7 +98,7 @@ public final class NoopTags {
     }
 
     @Override
-    public TagMapBuilder remove(TagKey key) {
+    public TagMap.Builder remove(TagKey key) {
       Utils.checkNotNull(key, "key");
       return this;
     }

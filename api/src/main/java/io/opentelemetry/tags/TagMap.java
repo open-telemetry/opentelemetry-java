@@ -16,6 +16,7 @@
 
 package io.opentelemetry.tags;
 
+import io.opentelemetry.context.Scope;
 import java.util.Iterator;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -48,4 +49,50 @@ public interface TagMap {
    */
   @Nullable
   TagValue getTagValue(TagKey tagKey);
+
+  /**
+   * Builder for the {@link TagMap} class.
+   *
+   * @since 0.1.0
+   */
+  interface Builder {
+    /**
+     * Adds the key/value pair and metadata regardless of whether the key is present.
+     *
+     * @param key the {@code TagKey} which will be set.
+     * @param value the {@code TagValue} to set for the given key.
+     * @param tagMetadata the {@code TagMetadata} associated with this {@link Tag}.
+     * @return this
+     * @since 0.1.0
+     */
+    Builder put(TagKey key, TagValue value, TagMetadata tagMetadata);
+
+    /**
+     * Removes the key if it exists.
+     *
+     * @param key the {@code TagKey} which will be removed.
+     * @return this
+     * @since 0.1.0
+     */
+    Builder remove(TagKey key);
+
+    /**
+     * Creates a {@code TagMap} from this builder.
+     *
+     * @return a {@code TagMap} with the same tags as this builder.
+     * @since 0.1.0
+     */
+    TagMap build();
+
+    /**
+     * Enters the scope of code where the {@link TagMap} created from this builder is in the current
+     * context and returns an object that represents that scope. The scope is exited when the
+     * returned object is closed.
+     *
+     * @return an object that defines a scope where the {@code TagMap} created from this builder is
+     *     set to the current context.
+     * @since 0.1.0
+     */
+    Scope buildScoped();
+  }
 }
