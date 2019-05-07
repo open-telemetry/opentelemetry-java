@@ -18,7 +18,6 @@ package io.opentelemetry;
 
 import io.opentelemetry.spi.TracerProvider;
 import io.opentelemetry.trace.NoopTrace;
-import io.opentelemetry.trace.Trace;
 import io.opentelemetry.trace.Tracer;
 import java.util.ServiceLoader;
 
@@ -35,7 +34,7 @@ public final class OpenTelemetry {
   /**
    * Returns an instance of a {@link Tracer}.
    *
-   * @return registered tracer or {@link NoopTrace} singleton via {@link Trace#getTracer()}.
+   * @return registered tracer or {@link NoopTrace} singleton via {@link NoopTrace#newNoopTracer()}.
    * @throws IllegalStateException if a specified tracer (via system properties) could not be find.
    */
   public static Tracer getTracer() {
@@ -55,7 +54,7 @@ public final class OpenTelemetry {
     if (tracerClass != null) {
       throw new IllegalStateException(String.format("Tracer %s not found", tracerClass));
     }
-    return Trace.getTracer();
+    return NoopTrace.newNoopTracer();
   }
 
   /** Lazy loads an instance. */
