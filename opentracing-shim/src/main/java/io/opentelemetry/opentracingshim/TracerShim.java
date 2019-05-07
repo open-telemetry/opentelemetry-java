@@ -16,7 +16,7 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.trace.Trace;
+import io.opentelemetry.trace.NoopTrace;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
@@ -37,7 +37,7 @@ public final class TracerShim implements Tracer {
    * @since 0.1.0
    */
   public TracerShim() {
-    this(Trace.getTracer());
+    this(NoopTrace.newNoopTracer());
   }
 
   /**

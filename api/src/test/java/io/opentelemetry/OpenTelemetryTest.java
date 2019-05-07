@@ -23,11 +23,11 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.resource.Resource;
 import io.opentelemetry.spi.TracerProvider;
+import io.opentelemetry.trace.NoopTrace;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Builder;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
-import io.opentelemetry.trace.Trace;
 import io.opentelemetry.trace.Tracer;
 import java.io.File;
 import java.io.FileWriter;
@@ -50,7 +50,7 @@ public class OpenTelemetryTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracer()).isEqualTo(Trace.getTracer());
+    assertThat(OpenTelemetry.getTracer()).isInstanceOf(NoopTrace.newNoopTracer().getClass());
     assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
   }
 
