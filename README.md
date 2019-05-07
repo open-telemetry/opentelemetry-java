@@ -5,6 +5,13 @@
 OpenTelemetry is a working name of a combined OpenCensus and OpenTracing
 project.
 
+This project contains the following top level components:
+
+* [api](api/): The OpenTelemetry API, including tracing, metrics and tags.
+* [sdk](sdk/): The reference implementation complying to the OpenTelemetry API.
+* [OpenTracing shim](opentracing-shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
+* [OpenCensus shim](opencensus-shim): A bridge layer from OpenTelemetry to the OpenCensus API.
+
 ## This codebase will be ready for review April 24th, 2019. 
 
 ## Please note that this is a temorary repository, and we cannot accept PRs until the project is moved to its offical home, where it can be covered by the CNCF CLA.
