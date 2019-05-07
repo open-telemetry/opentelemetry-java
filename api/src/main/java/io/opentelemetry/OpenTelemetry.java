@@ -20,7 +20,6 @@ import io.opentelemetry.spi.TracerProvider;
 import io.opentelemetry.trace.NoopTrace;
 import io.opentelemetry.trace.Trace;
 import io.opentelemetry.trace.Tracer;
-import java.util.Iterator;
 import java.util.ServiceLoader;
 
 /**
@@ -46,9 +45,7 @@ public final class OpenTelemetry {
   private static Tracer loadTracer() {
     String tracerClass = System.getProperty(TracerProvider.class.getName());
     ServiceLoader<TracerProvider> tracers = ServiceLoader.load(TracerProvider.class);
-    Iterator<TracerProvider> tracerIterator = tracers.iterator();
-    while (tracerIterator.hasNext()) {
-      TracerProvider provider = tracerIterator.next();
+    for (TracerProvider provider : tracers) {
       if (tracerClass == null) {
         return provider.create();
       } else if (tracerClass.equals(provider.getClass().getName())) {
