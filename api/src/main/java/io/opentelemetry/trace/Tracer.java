@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = Trace.getTracer();
+ *   private static final Tracer tracer = OpenTelemetry.getTracer();
  *   void doWork() {
  *     Span span = tracer.spanBuilder("MyClass.DoWork").startSpan();
  *     try(Scope ss = tracer.withSpan(span)) {
@@ -56,7 +56,7 @@ import javax.annotation.Nullable;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Tracer tracer = Trace.getTracer();
+ *   private static final Tracer tracer = OpenTelemetry.getTracer();
  *   void doWork(Span parent) {
  *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
  *     childSpan.addEvent("Starting the work.");
@@ -98,7 +98,7 @@ public interface Tracer {
    * <p>Example of usage:
    *
    * <pre>{@code
-   * private static Tracer tracer = Trace.getTracer();
+   * private static Tracer tracer = OpenTelemetry.getTracer();
    * void doWork() {
    *   // Create a Span as a child of the current Span.
    *   Span span = tracer.spanBuilder("my span").startSpan();
@@ -116,7 +116,7 @@ public interface Tracer {
    * <p>Example of usage prior to Java SE7:
    *
    * <pre>{@code
-   * private static Tracer tracer = Trace.getTracer();
+   * private static Tracer tracer = OpenTelemetry.getTracer();
    * void doWork() {
    *   // Create a Span as a child of the current Span.
    *   Span span = tracer.spanBuilder("my span").startSpan();
@@ -241,9 +241,9 @@ public interface Tracer {
    * <p>Example of usage on the client:
    *
    * <pre>{@code
-   * private static final Tracer tracer = Trace.getTracer();
+   * private static final Tracer tracer = OpenTelemetry.getTracer();
    * private static final BinaryFormat binaryFormat =
-   *     Trace.getTracer().getBinaryFormat();
+   *     OpenTelemetry.getTracer().getBinaryFormat();
    * void onSendRequest() {
    *   Span span = tracer.spanBuilder("MyRequest").setSpanKind(Span.Kind.CLIENT).startSpan();
    *   try (Scope ss = tracer.withSpan(span)) {
@@ -258,9 +258,9 @@ public interface Tracer {
    * <p>Example of usage on the server:
    *
    * <pre>{@code
-   * private static final Tracer tracer = Trace.getTracer();
+   * private static final Tracer tracer = OpenTelemetry.getTracer();
    * private static final BinaryFormat binaryFormat =
-   *     Trace.getTracer().getBinaryFormat();
+   *     OpenTelemetry.getTracer().getBinaryFormat();
    * void onRequestReceived() {
    *   // Get the binaryValue from the request.
    *   SpanContext spanContext = SpanContext.INVALID;
@@ -293,8 +293,8 @@ public interface Tracer {
    * <p>Example of usage on the client:
    *
    * <pre>{@code
-   * private static final Tracer tracer = Trace.getTracer();
-   * private static final HttpTextFormat textFormat = Trace.getTracer().getHttpTextFormat();
+   * private static final Tracer tracer = OpenTelemetry.getTracer();
+   * private static final HttpTextFormat textFormat = OpenTelemetry.getTracer().getHttpTextFormat();
    * private static final HttpTextFormat.Setter setter =
    *         new HttpTextFormat.Setter<HttpURLConnection>() {
    *   public void put(HttpURLConnection carrier, String key, String value) {
@@ -317,8 +317,8 @@ public interface Tracer {
    * <p>Example of usage on the server:
    *
    * <pre>{@code
-   * private static final Tracer tracer = Trace.getTracer();
-   * private static final HttpTextFormat textFormat = Trace.getTracer().getHttpTextFormat();
+   * private static final Tracer tracer = OpenTelemetry.getTracer();
+   * private static final HttpTextFormat textFormat = OpenTelemetry.getTracer().getHttpTextFormat();
    * private static final HttpTextFormat.Getter<HttpRequest> getter = ...;
    *
    * void onRequestReceived(HttpRequest request) {
