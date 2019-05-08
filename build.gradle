@@ -31,7 +31,7 @@ subprojects {
     apply plugin: 'com.github.sherter.google-java-format'
     apply plugin: 'net.ltgt.errorprone'
 
-    group = "opentelemetry"
+    group = "io.opentelemetry"
     version = "0.1.0-SNAPSHOT" // CURRENT_VERSION
 
     sourceCompatibility = 1.7
@@ -98,7 +98,7 @@ subprojects {
         errorProneVersion = '2.3.2'
         grpcVersion = '1.20.0'
         autoValueVersion = '1.6.2'
-        opentracingVersion = '0.32.0'
+        opentracingVersion = '0.33.0'
         guavaVersion = '26.0-android'
 
         libraries = [

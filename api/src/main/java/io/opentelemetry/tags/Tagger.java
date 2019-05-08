@@ -23,7 +23,7 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 /**
  * Object for creating new {@link TagMap}s and {@code TagMap}s based on the current context.
  *
- * <p>This class returns {@link TagMapBuilder builders} that can be used to create the
+ * <p>This class returns {@link TagMap.Builder builders} that can be used to create the
  * implementation-dependent {@link TagMap}s.
  *
  * <p>Implementations may have different constraints and are free to convert tag contexts to their
@@ -48,7 +48,7 @@ public interface Tagger {
    * @return a new empty {@code Builder}.
    * @since 0.1.0
    */
-  TagMapBuilder emptyBuilder();
+  TagMap.Builder emptyBuilder();
 
   /**
    * Returns a builder based on this {@code TagMap}.
@@ -57,7 +57,7 @@ public interface Tagger {
    * @return a builder based on this {@code TagMap}.
    * @since 0.1.0
    */
-  TagMapBuilder toBuilder(TagMap tags);
+  TagMap.Builder toBuilder(TagMap tags);
 
   /**
    * Returns a new builder created from the current {@code TagMap}.
@@ -65,7 +65,7 @@ public interface Tagger {
    * @return a new builder created from the current {@code TagMap}.
    * @since 0.1.0
    */
-  TagMapBuilder currentBuilder();
+  TagMap.Builder currentBuilder();
 
   /**
    * Enters the scope of code where the given {@code TagMap} is in the current context (replacing

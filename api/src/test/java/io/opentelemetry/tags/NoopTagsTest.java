@@ -80,28 +80,28 @@ public final class NoopTagsTest {
 
   @Test
   public void noopTagMapBuilder_Put_DisallowsNullKey() {
-    TagMapBuilder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
+    TagMap.Builder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(null, VALUE, Tag.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopTagMapBuilder_Put_DisallowsNullValue() {
-    TagMapBuilder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
+    TagMap.Builder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(KEY, null, Tag.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopTagMapBuilder_Put_DisallowsNullTagMetadata() {
-    TagMapBuilder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
+    TagMap.Builder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(KEY, VALUE, null);
   }
 
   @Test
   public void noopTagMapBuilder_Remove_DisallowsNullKey() {
-    TagMapBuilder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
+    TagMap.Builder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.remove(null);
   }

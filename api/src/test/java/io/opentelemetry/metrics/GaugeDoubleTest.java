@@ -37,13 +37,12 @@ public class GaugeDoubleTest {
       Collections.singletonList(LabelKey.create("key", "key description"));
   private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<>();
 
-  private final MetricRegistry metricRegistry =
-      NoopMetrics.newNoopMeter().metricRegistryBuilder().build();
+  private final Meter meter = Metrics.getMeter();
 
   @Test
   public void noopGetOrCreateTimeSeries_WithNullLabelValues() {
     GaugeDouble gaugeDouble =
-        metricRegistry
+        meter
             .gaugeDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
@@ -58,7 +57,7 @@ public class GaugeDoubleTest {
   public void noopGetOrCreateTimeSeries_WithNullElement() {
     List<LabelValue> labelValues = Collections.singletonList(null);
     GaugeDouble gaugeDouble =
-        metricRegistry
+        meter
             .gaugeDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
@@ -72,7 +71,7 @@ public class GaugeDoubleTest {
   @Test
   public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
     GaugeDouble gaugeDouble =
-        metricRegistry
+        meter
             .gaugeDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
@@ -86,7 +85,7 @@ public class GaugeDoubleTest {
   @Test
   public void noopRemoveTimeSeries_WithNullLabelValues() {
     GaugeDouble gaugeDouble =
-        metricRegistry
+        meter
             .gaugeDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)

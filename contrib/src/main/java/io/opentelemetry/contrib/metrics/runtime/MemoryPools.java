@@ -19,7 +19,7 @@ package io.opentelemetry.contrib.metrics.runtime;
 import io.opentelemetry.metrics.GaugeLong;
 import io.opentelemetry.metrics.LabelKey;
 import io.opentelemetry.metrics.LabelValue;
-import io.opentelemetry.metrics.MetricRegistry;
+import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.Metrics;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -57,14 +57,13 @@ public final class MemoryPools {
 
   private final MemoryMXBean memoryBean;
   private final List<MemoryPoolMXBean> poolBeans;
-  private final MetricRegistry metricRegistry;
+  private final Meter meter;
 
   /** Constructs a new module that is capable to export metrics about "jvm_memory". */
   public MemoryPools() {
     this.memoryBean = ManagementFactory.getMemoryMXBean();
     this.poolBeans = ManagementFactory.getMemoryPoolMXBeans();
-    this.metricRegistry =
-        Metrics.getMeter().metricRegistryBuilder().setComponent("jvm_memory").build();
+    this.meter = Metrics.getMeter();
   }
 
   /** Export only the "area" metric. */
@@ -74,11 +73,12 @@ public final class MemoryPools {
     //  memory is committed (this can also be achieved by displaying the two metrics in the same
     //  chart).
     final GaugeLong areaMetric =
-        this.metricRegistry
+        this.meter
             .gaugeLongBuilder("area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE, AREA))
+            .setComponent("jvm_memory")
             .build();
     final GaugeLong.TimeSeries usedHeap =
         areaMetric.getOrCreateTimeSeries(Arrays.asList(USED, HEAP));
@@ -111,11 +111,12 @@ public final class MemoryPools {
   /** Export only the "pool" metric. */
   public void exportMemoryPoolMetric() {
     final GaugeLong poolMetric =
-        this.metricRegistry
+        this.meter
             .gaugeLongBuilder("pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE, POOL))
+            .setComponent("jvm_memory")
             .build();
     poolMetric.setCallback(
         new Runnable() {

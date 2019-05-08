@@ -1,4 +1,4 @@
-rootProject.name = "opentelemetry"
+rootProject.name = "opentelemetry-java"
 
 include ":opentelemetry-api"
 include ":opentelemetry-contrib"

@@ -21,7 +21,6 @@ import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 
-@SuppressWarnings("deprecation")
 final class ScopeManagerShim implements ScopeManager {
   private final Tracer tracer;
 
@@ -35,20 +34,10 @@ final class ScopeManagerShim implements ScopeManager {
   }
 
   @Override
-  public Scope active() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   @SuppressWarnings("MustBeClosedChecker")
   public Scope activate(Span span) {
     io.opentelemetry.trace.Span actualSpan = getActualSpan(span);
     return new ScopeShim(tracer.withSpan(actualSpan));
-  }
-
-  @Override
-  public Scope activate(Span span, boolean finishSpanOnClose) {
-    throw new UnsupportedOperationException();
   }
 
   static io.opentelemetry.trace.Span getActualSpan(Span span) {

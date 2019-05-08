@@ -40,14 +40,6 @@ public final class NoopMetrics {
   }
 
   private static final class NoopMeter implements Meter {
-
-    @Override
-    public MetricRegistry.Builder metricRegistryBuilder() {
-      return new NoopMetricCollection.Builder();
-    }
-  }
-
-  private static final class NoopMetricCollection implements MetricRegistry {
     @Override
     public GaugeLong.Builder gaugeLongBuilder(String name) {
       Utils.checkNotNull(name, "name");
@@ -70,27 +62,6 @@ public final class NoopMetrics {
     public CounterLong.Builder counterLongBuilder(String name) {
       Utils.checkNotNull(name, "name");
       return new NoopCounterLong.NoopBuilder();
-    }
-
-    private static final class Builder implements MetricRegistry.Builder {
-      private static final MetricRegistry METRIC_COLLECTION = new NoopMetricCollection();
-
-      @Override
-      public MetricRegistry.Builder setComponent(String component) {
-        Utils.checkNotNull(component, "component");
-        return this;
-      }
-
-      @Override
-      public MetricRegistry.Builder setResource(Resource resource) {
-        Utils.checkNotNull(resource, "resource");
-        return this;
-      }
-
-      @Override
-      public MetricRegistry build() {
-        return METRIC_COLLECTION;
-      }
     }
   }
 
@@ -166,6 +137,18 @@ public final class NoopMetrics {
       public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
         Utils.checkMapElementNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+        return this;
+      }
+
+      @Override
+      public Builder setComponent(String component) {
+        Utils.checkNotNull(component, "component");
+        return this;
+      }
+
+      @Override
+      public Builder setResource(Resource resource) {
+        Utils.checkNotNull(resource, "resource");
         return this;
       }
 
@@ -248,6 +231,18 @@ public final class NoopMetrics {
       public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
         Utils.checkMapElementNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+        return this;
+      }
+
+      @Override
+      public Builder setComponent(String component) {
+        Utils.checkNotNull(component, "component");
+        return this;
+      }
+
+      @Override
+      public Builder setResource(Resource resource) {
+        Utils.checkNotNull(resource, "resource");
         return this;
       }
 
@@ -336,6 +331,18 @@ public final class NoopMetrics {
       }
 
       @Override
+      public Builder setComponent(String component) {
+        Utils.checkNotNull(component, "component");
+        return this;
+      }
+
+      @Override
+      public Builder setResource(Resource resource) {
+        Utils.checkNotNull(resource, "resource");
+        return this;
+      }
+
+      @Override
       public CounterDouble build() {
         return new NoopCounterDouble(labelKeysSize);
       }
@@ -416,6 +423,18 @@ public final class NoopMetrics {
       public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
         Utils.checkMapElementNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+        return this;
+      }
+
+      @Override
+      public Builder setComponent(String component) {
+        Utils.checkNotNull(component, "component");
+        return this;
+      }
+
+      @Override
+      public Builder setResource(Resource resource) {
+        Utils.checkNotNull(resource, "resource");
         return this;
       }
 

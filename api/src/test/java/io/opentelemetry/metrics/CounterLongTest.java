@@ -37,13 +37,12 @@ public class CounterLongTest {
       Collections.singletonList(LabelKey.create("key", "key description"));
   private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<>();
 
-  private final MetricRegistry metricRegistry =
-      NoopMetrics.newNoopMeter().metricRegistryBuilder().build();
+  private final Meter meter = Metrics.getMeter();
 
   @Test
   public void noopGetOrCreateTimeSeries_WithNullLabelValues() {
     CounterLong counterLong =
-        metricRegistry
+        meter
             .counterLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
@@ -58,7 +57,7 @@ public class CounterLongTest {
   public void noopGetOrCreateTimeSeries_WithNullElement() {
     List<LabelValue> labelValues = Collections.singletonList(null);
     CounterLong counterLong =
-        metricRegistry
+        meter
             .counterLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
@@ -72,7 +71,7 @@ public class CounterLongTest {
   @Test
   public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
     CounterLong counterLong =
-        metricRegistry
+        meter
             .counterLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
@@ -86,7 +85,7 @@ public class CounterLongTest {
   @Test
   public void noopRemoveTimeSeries_WithNullLabelValues() {
     CounterLong counterLong =
-        metricRegistry
+        meter
             .counterLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)

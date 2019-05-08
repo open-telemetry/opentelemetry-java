@@ -21,7 +21,6 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.sdk.tags.internal.CurrentTagMapUtils;
 import io.opentelemetry.tags.TagMap;
-import io.opentelemetry.tags.TagMapBuilder;
 import io.opentelemetry.tags.Tagger;
 
 public class TaggerSdk implements Tagger {
@@ -32,17 +31,17 @@ public class TaggerSdk implements Tagger {
   }
 
   @Override
-  public TagMapBuilder emptyBuilder() {
+  public TagMap.Builder emptyBuilder() {
     return null;
   }
 
   @Override
-  public TagMapBuilder toBuilder(TagMap tags) {
+  public TagMap.Builder toBuilder(TagMap tags) {
     return null;
   }
 
   @Override
-  public TagMapBuilder currentBuilder() {
+  public TagMap.Builder currentBuilder() {
     return null;
   }
 

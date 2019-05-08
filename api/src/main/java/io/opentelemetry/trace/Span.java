@@ -224,7 +224,7 @@ public interface Span {
    *
    * <pre>{@code
    * class MyClass {
-   *   private static final Tracer tracer = Trace.getTracer();
+   *   private static final Tracer tracer = OpenTelemetry.getTracer();
    *   void doWork {
    *     // Create a Span as a child of the current Span.
    *     Span span = tracer.spanBuilder("MyChildSpan").startSpan();
@@ -244,7 +244,7 @@ public interface Span {
    *
    * <pre>{@code
    * class MyRpcServerInterceptorListener implements RpcServerInterceptor.Listener {
-   *   private static final Tracer tracer = Trace.getTracer();
+   *   private static final Tracer tracer = OpenTelemetry.getTracer();
    *   private Span mySpan;
    *
    *   public MyRpcInterceptor() {}
@@ -284,7 +284,7 @@ public interface Span {
    *
    * <pre>{@code
    * class MyClass {
-   *   private static final Tracer tracer = Trace.getTracer();
+   *   private static final Tracer tracer = OpenTelemetry.getTracer();
    *   void DoWork(Span parent) {
    *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
    *     childSpan.addEvent("my event");
@@ -372,7 +372,7 @@ public interface Span {
      *
      * <pre>{@code
      * class MyClass {
-     *   private static final Tracer tracer = Trace.getTracer();
+     *   private static final Tracer tracer = OpenTelemetry.getTracer();
      *   void DoWork(Span parent) {
      *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
      *     childSpan.addEvent("my event");

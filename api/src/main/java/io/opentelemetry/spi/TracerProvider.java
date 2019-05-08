@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace;
+package io.opentelemetry.spi;
 
-import static com.google.common.truth.Truth.assertThat;
+import io.opentelemetry.trace.Tracer;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+/**
+ * TracerProvider is a service provider for {@link Tracer}. Implementation should register
+ * implementation in <code>META-INF/services/io.opentelemetry.spi.TracerProvider</code>. <br>
+ * <br>
+ * A specific implementation can be specified by a system property {@code
+ * io.opentelemetry.spi.TracerProvider} with value of fully qualified class name.
+ */
+public interface TracerProvider {
 
-/** Unit tests for {@link Trace}. */
-@RunWith(JUnit4.class)
-public class TraceTest {
-
-  @Test
-  public void defaultTracer() {
-    assertThat(Trace.getTracer()).isInstanceOf(NoopTrace.newNoopTracer().getClass());
-  }
+  /**
+   * Creates a new tracer instance.
+   *
+   * @return a tracer instance.
+   */
+  Tracer create();
 }
