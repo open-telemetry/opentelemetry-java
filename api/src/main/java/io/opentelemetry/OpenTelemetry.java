@@ -23,6 +23,7 @@ import io.opentelemetry.spi.TracerProvider;
 import io.opentelemetry.trace.NoopTrace;
 import io.opentelemetry.trace.Tracer;
 import java.util.ServiceLoader;
+import javax.annotation.Nullable;
 
 /**
  * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link
@@ -64,6 +65,7 @@ public final class OpenTelemetry {
    * @return a provider or null if not found
    * @throws IllegalStateException if a specified provider is not found
    */
+  @Nullable
   private static <T> T loadSpi(Class<T> providerClass) {
     String specifiedProvider = System.getProperty(providerClass.getName());
     ServiceLoader<T> tracers = ServiceLoader.load(providerClass);
