@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +38,7 @@ public class GaugeLongTest {
       Collections.singletonList(LabelKey.create("key", "key description"));
   private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<>();
 
-  private final Meter meter = Metrics.getMeter();
+  private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
   public void noopGetOrCreateTimeSeries_WithNullLabelValues() {

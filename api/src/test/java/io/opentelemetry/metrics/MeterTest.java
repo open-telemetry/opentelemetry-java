@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.OpenTelemetry;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -26,7 +27,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class MeterTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
-  private final Meter meter = Metrics.getMeter();
+  private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
   public void noopAddLongGauge_NullName() {

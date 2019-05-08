@@ -16,11 +16,11 @@
 
 package io.opentelemetry.contrib.metrics.runtime;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.GaugeLong;
 import io.opentelemetry.metrics.LabelKey;
 import io.opentelemetry.metrics.LabelValue;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.Metrics;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
@@ -63,7 +63,7 @@ public final class MemoryPools {
   public MemoryPools() {
     this.memoryBean = ManagementFactory.getMemoryMXBean();
     this.poolBeans = ManagementFactory.getMemoryPoolMXBeans();
-    this.meter = Metrics.getMeter();
+    this.meter = OpenTelemetry.getMeter();
   }
 
   /** Export only the "area" metric. */

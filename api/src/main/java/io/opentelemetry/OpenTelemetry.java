@@ -16,6 +16,9 @@
 
 package io.opentelemetry;
 
+import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.metrics.NoopMetrics;
+import io.opentelemetry.spi.MeterProvider;
 import io.opentelemetry.spi.TracerProvider;
 import io.opentelemetry.trace.NoopTrace;
 import io.opentelemetry.trace.Tracer;
@@ -29,32 +32,50 @@ public final class OpenTelemetry {
 
   private static volatile OpenTelemetry instance;
 
-  private Tracer tracer;
+  private final Tracer tracer;
+  private final Meter meter;
 
   /**
    * Returns an instance of a {@link Tracer}.
    *
-   * @return registered tracer or {@link NoopTrace} singleton via {@link NoopTrace#newNoopTracer()}.
-   * @throws IllegalStateException if a specified tracer (via system properties) could not be find.
+   * @return registered tracer or noop via {@link NoopTrace#newNoopTracer()}.
+   * @throws IllegalStateException if a specified tracer (via system properties) could not be found.
    */
   public static Tracer getTracer() {
     return getInstance().tracer;
   }
 
-  private static Tracer loadTracer() {
-    String tracerClass = System.getProperty(TracerProvider.class.getName());
-    ServiceLoader<TracerProvider> tracers = ServiceLoader.load(TracerProvider.class);
-    for (TracerProvider provider : tracers) {
-      if (tracerClass == null) {
-        return provider.create();
-      } else if (tracerClass.equals(provider.getClass().getName())) {
-        return provider.create();
+  /**
+   * Returns an instance of a {@link Meter}.
+   *
+   * @return registered meter or noop via {@link NoopMetrics#newNoopMeter()}.
+   * @throws IllegalStateException if a specified meter (via system properties) could not be found.
+   */
+  public static Meter getMeter() {
+    return getInstance().meter;
+  }
+
+  /**
+   * Load provider class via {@link ServiceLoader}. A specific provider class can be requested via
+   * setting a system property with FQCN.
+   *
+   * @param providerClass a provider class
+   * @param <T> provider type
+   * @return a provider or null if not found
+   * @throws IllegalStateException if a specified provider is not found
+   */
+  private static <T> T loadSpi(Class<T> providerClass) {
+    String specifiedProvider = System.getProperty(providerClass.getName());
+    ServiceLoader<T> tracers = ServiceLoader.load(providerClass);
+    for (T provider : tracers) {
+      if (specifiedProvider == null || specifiedProvider.equals(provider.getClass().getName())) {
+        return provider;
       }
     }
-    if (tracerClass != null) {
-      throw new IllegalStateException(String.format("Tracer %s not found", tracerClass));
+    if (specifiedProvider != null) {
+      throw new IllegalStateException(String.format("Tracer %s not found", specifiedProvider));
     }
-    return NoopTrace.newNoopTracer();
+    return null;
   }
 
   /** Lazy loads an instance. */
@@ -70,11 +91,14 @@ public final class OpenTelemetry {
   }
 
   private OpenTelemetry() {
-    tracer = loadTracer();
+    TracerProvider tracerProvider = loadSpi(TracerProvider.class);
+    tracer = tracerProvider != null ? tracerProvider.create() : NoopTrace.newNoopTracer();
+    MeterProvider meterProvider = loadSpi(MeterProvider.class);
+    meter = meterProvider != null ? meterProvider.create() : NoopMetrics.newNoopMeter();
   }
 
   // for testing
-  static void initialize() {
-    getInstance().tracer = loadTracer();
+  static void reset() {
+    instance = null;
   }
 }

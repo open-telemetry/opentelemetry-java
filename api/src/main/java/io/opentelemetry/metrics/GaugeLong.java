@@ -28,7 +28,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <pre>{@code
  * class YourClass {
  *
- *   private static final Meter meter = Metrics.getMeter();
+ *   private static final Meter meter = OpenTelemetry.getMeter();
  *   private static final GaugeLong gauge =
  *       meter
  *           .gaugeLongBuilder("processed_jobs")
