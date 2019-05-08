@@ -122,6 +122,12 @@ public class OpenTelemetryTest {
     }
   }
 
+  @Test(expected = IllegalStateException.class)
+  public void testMeterNotFound() {
+    System.setProperty(MeterProvider.class.getName(), "io.does.not.exists");
+    OpenTelemetry.getMeter();
+  }
+
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {
     URL location = Tracer.class.getProtectionDomain().getCodeSource().getLocation();
     File file = new File(location.getPath() + "META-INF/services/" + service.getName());
