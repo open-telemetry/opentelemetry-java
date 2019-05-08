@@ -16,7 +16,6 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.OpenTelemetry;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
@@ -26,27 +25,11 @@ import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 
-public final class TracerShim implements Tracer {
+final class TracerShim implements Tracer {
   private final io.opentelemetry.trace.Tracer tracer;
   private final ScopeManager scopeManagerShim;
 
-  /**
-   * Creates a {@code io.opentracing.Tracer} shim out of the {@code Tracer} exposed by {@code
-   * Trace}.
-   *
-   * @since 0.1.0
-   */
-  public TracerShim() {
-    this(OpenTelemetry.getTracer());
-  }
-
-  /**
-   * Creates a {@code io.opentracing.Tracer} shim out of a {@code Tracer}.
-   *
-   * @param tracer the {@code Tracer} used by this shim.
-   * @since 0.1.0
-   */
-  public TracerShim(io.opentelemetry.trace.Tracer tracer) {
+  TracerShim(io.opentelemetry.trace.Tracer tracer) {
     this.tracer = tracer;
     this.scopeManagerShim = new ScopeManagerShim(tracer);
   }
