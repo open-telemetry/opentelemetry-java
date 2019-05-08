@@ -16,7 +16,7 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.trace.Trace;
+import io.opentelemetry.OpenTelemetry;
 import io.opentracing.Tracer;
 
 public final class TraceShim {
@@ -29,7 +29,7 @@ public final class TraceShim {
    * @since 0.1.0
    */
   public Tracer newTracerShim() {
-    return new TracerShim(Trace.getTracer());
+    return new TracerShim(OpenTelemetry.getTracer());
   }
 
   /**
