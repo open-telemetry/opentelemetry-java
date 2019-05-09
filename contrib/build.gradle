@@ -1,10 +1,12 @@
-description = 'OpenConsensus Contrib'
+description = 'OpenTelemetry Contrib'
 
 dependencies {
-    compile project(':openconsensus-api')
+    compile project(':opentelemetry-api')
 
     compileOnly libraries.auto_value
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+    // Runtime metrics are not android compatible, because we have only one artifact for contrib,
+    // disable the android requirement for the moment.
+    // signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
 }

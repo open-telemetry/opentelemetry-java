@@ -42,6 +42,15 @@ We also follow these project-specific guidelines:
 * Try to do the least amount of change when modifying existing documentation.
   Don't change the style unless you have a good reason.
 
+``` sh
+$ git checkout -b docs
+$ ./gradlew javadoc
+$ rm -fr docs/*
+$ cp -R api/build/docs/javadoc/* docs
+$ git add -A .
+$ git commit -m "Update javadoc for API."
+```
+
 ### AutoValue
 
 * Use [AutoValue](https://github.com/google/auto/tree/master/value), when
@@ -49,7 +58,7 @@ We also follow these project-specific guidelines:
   constructors to all AutoValue classes to prevent classes in other packages
   from extending them.
 
-## Building openconsensus-java
+## Building opentelemetry-java
 
 Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.

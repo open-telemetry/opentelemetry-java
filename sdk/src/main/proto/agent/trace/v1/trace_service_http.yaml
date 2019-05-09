@@ -1,12 +1,12 @@
 # This is an API configuration to generate an HTTP/JSON -> gRPC gateway for the
-# OpenConsensus service using github.com/grpc-ecosystem/grpc-gateway.
+# OpenTelemetry service using github.com/grpc-ecosystem/grpc-gateway.
 type: google.api.Service
 config_version: 3
 http:
  rules:
- - selector: openconsensus.proto.agent.trace.v1.TraceService.Export
+ - selector: opentelemetry.proto.agent.trace.v1.TraceService.Export
    post: /v1/trace
    body: "*"
- - selector: openconsensus.proto.agent.metrics.v1.MetricsService.Export
+ - selector: opentelemetry.proto.agent.metrics.v1.MetricsService.Export
    post: /v1/trace
    body: "*"

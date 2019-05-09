@@ -1,7 +1,7 @@
-description = 'OpenConsensus OpenCensus Bridge'
+description = 'OpenTelemetry OpenCensus Bridge'
 
 dependencies {
-    api project(':openconsensus-api')
+    api project(':opentelemetry-api')
 
     annotationProcessor libraries.auto_value
 }
