@@ -44,12 +44,18 @@ import java.io.Writer;
 import java.net.URL;
 import javax.annotation.Nullable;
 import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class OpenTelemetryTest {
+
+  @BeforeClass
+  public static void beforeClass() {
+    OpenTelemetry.reset();
+  }
 
   @After
   public void after() {
