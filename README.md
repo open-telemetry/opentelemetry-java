@@ -16,16 +16,7 @@ This project contains the following top level components:
 * [OpenTracing shim](opentracing-shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
 * [OpenCensus shim](opencensus-shim): A bridge layer from OpenTelemetry to the OpenCensus API.
 
-## This codebase will be ready for review April 24th, 2019. 
-
-## Please note that this is a temorary repository, and we cannot accept PRs until the project is moved to its offical home, where it can be covered by the CNCF CLA.
-
-We would love to hear from the larger community: please provide feedback
-proactively on the [OpenCensus
-gitter](https://gitter.im/census-instrumentation/Lobby), [OpenTracing
-gitter](https://gitter.im/opentracing/public) or file [an
-issue](/issues). As we continue to
-make progress, we will post updates to the OpenCensus and OpenTracing blogs.
+We would love to hear from the larger community: please provide feedback proactively.
 
 ## Plan
 
@@ -93,7 +84,7 @@ We plan to merge projects and pave the path for future improvements as a unified
 community of tracing vendors, users and library authors who wants apps be
 managed better. We are open to feedback and suggestions from all of you!
 
-[travis-image]: https://travis-ci.org/bogdandrutu/opentelemetry.svg?branch=master
-[travis-url]: https://travis-ci.org/bogdandrutu/opentelemetry 
-[gitter-image]: https://badges.gitter.im/census-instrumentation/big-hook.svg 
-[gitter-url]: https://gitter.im/census-instrumentation/big-hook?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+[travis-image]: https://travis-ci.org/open-telemetry/opentelemetry-java.svg?branch=master
+[travis-url]: https://travis-ci.org/open-telemetry/opentelemetry-java 
+[gitter-image]: https://badges.gitter.im/open-telemetry/opentelemetry-java.svg 
+[gitter-url]: https://gitter.im/open-telemetry/opentelemetry-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
