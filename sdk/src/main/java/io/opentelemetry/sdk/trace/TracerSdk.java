@@ -77,6 +77,17 @@ public class TracerSdk implements Tracer {
     return null;
   }
 
+  /**
+   * Attempts to stop all the activity for this {@link Tracer}. Calls
+   * {@link SpanInterceptor#shutdown()} for all registered {@link SpanInterceptor}s.
+   *
+   * <p>This operation may block until all the Spans are processed. Must be called before turning
+   * off the main application to ensure all data are processed and exported.
+   *
+   * <p>After this is called all the newly created {@code Span}s will be no-op.
+   */
+  public void shutdown() {}
+
   // Defines an arbitrary scope of code as a traceable operation. Supports try-with-resources idiom.
   private static final class ScopeInSpan implements Scope {
     private final Context origContext;
