@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
  */
 public final class OpenTelemetry {
 
-  private static volatile OpenTelemetry instance;
+  @Nullable private static volatile OpenTelemetry instance;
 
   private final Tracer tracer;
   private final Meter meter;

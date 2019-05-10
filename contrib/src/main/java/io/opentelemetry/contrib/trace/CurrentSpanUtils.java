@@ -45,6 +45,7 @@ public final class CurrentSpanUtils {
    * @param span the {@code Span} to be set as current.
    * @param endSpan if {@code true} the returned {@code Runnable} will close the {@code Span}.
    * @param callable the {@code Callable} to run in the {@code Span}.
+   * @param <C> the {@code Callable} result type.
    * @return the wrapped {@code Callable}.
    */
   public static <C> Callable<C> withSpan(Span span, boolean endSpan, Callable<C> callable) {
