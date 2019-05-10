@@ -32,8 +32,7 @@ script:
 
 after_success:
   - if \[ "$TASK" == "BUILD_AND_COVERAGE" \]; then
-    ./gradlew :opentelemetry-all:coveralls --stacktrace ;
-    bash <(curl -s https://codecov.io/bash) ;
+      bash <(curl -s https://codecov.io/bash) ;
     fi
 
 before_cache:
