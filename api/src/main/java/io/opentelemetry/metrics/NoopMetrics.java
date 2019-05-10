@@ -16,10 +16,15 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.resource.Resource;
+import io.opentelemetry.tags.TagMap;
+import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * No-op implementations of metrics classes.
@@ -40,6 +45,12 @@ public final class NoopMetrics {
   }
 
   private static final class NoopMeter implements Meter {
+    /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
+    private static final String ERROR_MESSAGE_INVALID_NAME =
+        "Name should be a ASCII string with a length no greater than "
+            + NAME_MAX_LENGTH
+            + " characters.";
+
     @Override
     public GaugeLong.Builder gaugeLongBuilder(String name) {
       Utils.checkNotNull(name, "name");
@@ -62,6 +73,32 @@ public final class NoopMetrics {
     public CounterLong.Builder counterLongBuilder(String name) {
       Utils.checkNotNull(name, "name");
       return new NoopCounterLong.NoopBuilder();
+    }
+
+    @Override
+    public Measure.Builder measureBuilder(String name) {
+      Utils.checkArgument(
+          StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+          ERROR_MESSAGE_INVALID_NAME);
+      return new NoopMeasure.NoopBuilder();
+    }
+
+    @Override
+    public void record(List<Measurement> measurements) {
+      Utils.checkNotNull(measurements, "measurements");
+    }
+
+    @Override
+    public void record(List<Measurement> measurements, TagMap tags) {
+      Utils.checkNotNull(measurements, "measurements");
+      Utils.checkNotNull(tags, "tags");
+    }
+
+    @Override
+    public void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext) {
+      Utils.checkNotNull(tags, "tags");
+      Utils.checkNotNull(measurements, "measurements");
+      Utils.checkNotNull(spanContext, "spanContext");
     }
   }
 
@@ -443,5 +480,64 @@ public final class NoopMetrics {
         return new NoopCounterLong(labelKeysSize);
       }
     }
+  }
+
+  @ThreadSafe
+  private static final class NoopMeasure implements Measure {
+    private final Type type;
+
+    private NoopMeasure(Type type) {
+      this.type = type;
+    }
+
+    @Override
+    public Measurement createDoubleMeasurement(double value) {
+      if (type != Type.DOUBLE) {
+        throw new UnsupportedOperationException("This type can only create double measurement");
+      }
+      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+      return NoopMeasurement.INSTANCE;
+    }
+
+    @Override
+    public Measurement createLongMeasurement(long value) {
+      if (type != Type.LONG) {
+        throw new UnsupportedOperationException("This type can only create long measurement");
+      }
+      Utils.checkArgument(value >= 0, "Unsupported negative values.");
+      return NoopMeasurement.INSTANCE;
+    }
+
+    private static final class NoopBuilder implements Measure.Builder {
+      private Type type = Type.DOUBLE;
+
+      @Override
+      public Builder setDescription(String description) {
+        Utils.checkNotNull(description, "description");
+        return this;
+      }
+
+      @Override
+      public Builder setUnit(String unit) {
+        Utils.checkNotNull(unit, "unit");
+        return this;
+      }
+
+      @Override
+      public Builder setType(Type type) {
+        this.type = Utils.checkNotNull(type, "type");
+        return this;
+      }
+
+      @Override
+      public Measure build() {
+        return new NoopMeasure(type);
+      }
+    }
+  }
+
+  @Immutable
+  private static final class NoopMeasurement implements Measurement {
+    private static final Measurement INSTANCE = new NoopMeasurement();
   }
 }

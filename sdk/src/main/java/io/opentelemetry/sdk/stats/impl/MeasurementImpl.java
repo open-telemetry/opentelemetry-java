@@ -17,8 +17,8 @@
 package io.opentelemetry.sdk.stats.impl;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.stats.Measure;
-import io.opentelemetry.stats.Measurement;
+import io.opentelemetry.metrics.Measure;
+import io.opentelemetry.metrics.Measurement;
 import javax.annotation.concurrent.Immutable;
 
 abstract class MeasurementImpl implements Measurement {

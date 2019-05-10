@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.stats;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.stats.Measure;
+import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.tags.TagKey;
 import java.util.Collections;
 import java.util.HashSet;

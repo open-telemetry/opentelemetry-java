@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.stats;
+package io.opentelemetry.metrics;
 
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -27,7 +27,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface Measure {
   /**
    * An enum that represents all the possible value types for a {@code Measure} or a {@code
-   * Measurement}.
+   * io.opentelemetry.metrics.Measurement}.
    *
    * @since 0.1.0
    */
@@ -39,7 +39,8 @@ public interface Measure {
   /**
    * Returns a new {@link Measurement} for this {@code Measure}.
    *
-   * @param value the corresponding {@code double} value for the {@code Measurement}.
+   * @param value the corresponding {@code double} value for the {@code
+   *     io.opentelemetry.metrics.Measurement}.
    * @return a new {@link Measurement} for this {@code Measure}.
    * @throws UnsupportedOperationException if the type is not {@link Measure.Type#DOUBLE}.
    */
@@ -48,7 +49,8 @@ public interface Measure {
   /**
    * Returns a new {@link Measurement} for this {@code Measure}.
    *
-   * @param value the corresponding {@code long} value for the {@code Measurement}.
+   * @param value the corresponding {@code long} value for the {@code
+   *     io.opentelemetry.metrics.Measurement}.
    * @return a new {@link Measurement} for this {@code Measure}.
    * @throws UnsupportedOperationException if the type is not {@link Measure.Type#LONG}.
    */
