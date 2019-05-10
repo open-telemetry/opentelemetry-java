@@ -27,7 +27,7 @@ script:
       "BUILD_AND_COVERAGE")
         ./gradlew verGJF ;
         ./gradlew clean assemble check --stacktrace ;
-        ./gradlew check :opencensus-all:jacocoTestReport ;;
+        ./gradlew check :opentelemetry-all:jacocoTestReport ;;
       esac
 
 after_success:
