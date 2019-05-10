@@ -21,23 +21,23 @@ import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 
 final class ScopeManagerShim implements ScopeManager {
-  private final TracerShim tracerShim;
+  private final TraceTagInfo traceTagInfo;
 
-  public ScopeManagerShim(TracerShim tracerShim) {
-    this.tracerShim = tracerShim;
+  public ScopeManagerShim(TraceTagInfo traceTagInfo) {
+    this.traceTagInfo = traceTagInfo;
   }
 
   @Override
   public Span activeSpan() {
     // TODO - is there a way to cleanly support baggage/tags here?
-    return new SpanShim(tracerShim, tracerShim.getTracer().getCurrentSpan());
+    return new SpanShim(traceTagInfo, traceTagInfo.tracer().getCurrentSpan());
   }
 
   @Override
   @SuppressWarnings("MustBeClosedChecker")
   public Scope activate(Span span) {
     io.opentelemetry.trace.Span actualSpan = getActualSpan(span);
-    return new ScopeShim(tracerShim.getTracer().withSpan(actualSpan));
+    return new ScopeShim(traceTagInfo.tracer().withSpan(actualSpan));
   }
 
   static io.opentelemetry.trace.Span getActualSpan(Span span) {

@@ -30,17 +30,17 @@ final class SpanContextShim implements SpanContext {
   static final TagMetadata DEFAULT_TAG_METADATA =
       TagMetadata.create(TagMetadata.TagTtl.UNLIMITED_PROPAGATION);
 
-  private final TracerShim tracerShim;
+  private final TraceTagInfo traceTagInfo;
   private final io.opentelemetry.trace.SpanContext context;
   private TagMap tagMap;
 
-  public SpanContextShim(TracerShim tracerShim, io.opentelemetry.trace.SpanContext context) {
-    this(tracerShim, context, EmptyTagMap.INSTANCE);
+  public SpanContextShim(TraceTagInfo traceTagInfo, io.opentelemetry.trace.SpanContext context) {
+    this(traceTagInfo, context, EmptyTagMap.INSTANCE);
   }
 
   public SpanContextShim(
-      TracerShim tracerShim, io.opentelemetry.trace.SpanContext context, TagMap tagMap) {
-    this.tracerShim = tracerShim;
+      TraceTagInfo traceTagInfo, io.opentelemetry.trace.SpanContext context, TagMap tagMap) {
+    this.traceTagInfo = traceTagInfo;
     this.context = context;
     this.tagMap = tagMap;
   }
@@ -81,7 +81,7 @@ final class SpanContextShim implements SpanContext {
 
   void setBaggageItem(String key, String value) {
     synchronized (this) {
-      TagMap.Builder builder = tracerShim.getTagger().toBuilder(tagMap);
+      TagMap.Builder builder = traceTagInfo.tagger().toBuilder(tagMap);
       builder.put(TagKey.create(key), TagValue.create(value), DEFAULT_TAG_METADATA);
       tagMap = builder.build();
     }

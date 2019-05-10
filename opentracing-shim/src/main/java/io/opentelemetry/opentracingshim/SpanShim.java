@@ -34,13 +34,13 @@ final class SpanShim implements Span {
   private final io.opentelemetry.trace.Span span;
   private final SpanContextShim contextShim;
 
-  public SpanShim(TracerShim tracerShim, io.opentelemetry.trace.Span span) {
-    this(tracerShim, span, EmptyTagMap.INSTANCE);
+  public SpanShim(TraceTagInfo traceTagInfo, io.opentelemetry.trace.Span span) {
+    this(traceTagInfo, span, EmptyTagMap.INSTANCE);
   }
 
-  public SpanShim(TracerShim tracerShim, io.opentelemetry.trace.Span span, TagMap tagMap) {
+  public SpanShim(TraceTagInfo traceTagInfo, io.opentelemetry.trace.Span span, TagMap tagMap) {
     this.span = span;
-    this.contextShim = new SpanContextShim(tracerShim, span.getContext(), tagMap);
+    this.contextShim = new SpanContextShim(traceTagInfo, span.getContext(), tagMap);
   }
 
   io.opentelemetry.trace.Span getSpan() {

@@ -29,7 +29,8 @@ public final class TraceShim {
    * @since 0.1.0
    */
   public Tracer newTracerShim() {
-    return new TracerShim(OpenTelemetry.getTracer());
+    // TODO - Use Tagger from the OpenTelemetry registry.
+    return new TracerShim(OpenTelemetry.getTracer(), io.opentelemetry.tags.Tags.getTagger());
   }
 
   /**
@@ -38,7 +39,8 @@ public final class TraceShim {
    * @param tracer the {@code Tracer} used by this shim.
    * @since 0.1.0
    */
-  public Tracer newTracerShim(io.opentelemetry.trace.Tracer tracer) {
-    return new TracerShim(tracer);
+  public Tracer newTracerShim(
+      io.opentelemetry.trace.Tracer tracer, io.opentelemetry.tags.Tagger tagger) {
+    return new TracerShim(tracer, tagger);
   }
 }

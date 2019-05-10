@@ -26,24 +26,14 @@ import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
 
 final class TracerShim implements Tracer {
-  private final io.opentelemetry.trace.Tracer tracer;
-  private final io.opentelemetry.tags.Tagger tagger;
+  private final TraceTagInfo traceTagInfo;
   private final ScopeManager scopeManagerShim;
   private final Propagation propagation;
 
-  TracerShim(io.opentelemetry.trace.Tracer tracer) {
-    this.tracer = tracer;
-    this.tagger = io.opentelemetry.tags.Tags.getTagger(); // TODO - Let the user specify it.
-    this.scopeManagerShim = new ScopeManagerShim(this);
-    this.propagation = new Propagation(this);
-  }
-
-  io.opentelemetry.tags.Tagger getTagger() {
-    return tagger;
-  }
-
-  io.opentelemetry.trace.Tracer getTracer() {
-    return tracer;
+  TracerShim(io.opentelemetry.trace.Tracer tracer, io.opentelemetry.tags.Tagger tagger) {
+    this.traceTagInfo = new TraceTagInfo(tracer, tagger);
+    this.scopeManagerShim = new ScopeManagerShim(traceTagInfo);
+    this.propagation = new Propagation(traceTagInfo);
   }
 
   @Override
@@ -63,7 +53,7 @@ final class TracerShim implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(String operationName) {
-    return new SpanBuilderShim(this, operationName);
+    return new SpanBuilderShim(traceTagInfo, operationName);
   }
 
   @Override

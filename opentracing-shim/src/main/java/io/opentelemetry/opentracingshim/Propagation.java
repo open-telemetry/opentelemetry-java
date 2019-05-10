@@ -24,19 +24,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 final class Propagation {
-  private final TracerShim tracerShim;
+  private final TraceTagInfo traceTagInfo;
 
-  Propagation(TracerShim tracerShim) {
-    this.tracerShim = tracerShim;
+  Propagation(TraceTagInfo traceTagInfo) {
+    this.traceTagInfo = traceTagInfo;
   }
 
   public void injectTextFormat(SpanContextShim contextShim, TextMap carrier) {
-    tracerShim
-        .getTracer()
+    traceTagInfo
+        .tracer()
         .getHttpTextFormat()
         .inject(contextShim.getSpanContext(), carrier, TextMapSetter.INSTANCE);
-    tracerShim
-        .getTagger()
+    traceTagInfo
+        .tagger()
         .getHttpTextFormat()
         .inject(contextShim.getTagMap(), carrier, TextMapSetter.INSTANCE);
   }
@@ -48,10 +48,10 @@ final class Propagation {
     }
 
     io.opentelemetry.trace.SpanContext context =
-        tracerShim.getTracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
+        traceTagInfo.tracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
     io.opentelemetry.tags.TagMap tagMap =
-        tracerShim.getTagger().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
-    return new SpanContextShim(tracerShim, context, tagMap);
+        traceTagInfo.tagger().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
+    return new SpanContextShim(traceTagInfo, context, tagMap);
   }
 
   static final class TextMapSetter implements HttpTextFormat.Setter<TextMap> {
@@ -82,7 +82,7 @@ final class Propagation {
   public void injectBinaryFormat(SpanContextShim context, Binary carrier) {
 
     byte[] contextBuff =
-        tracerShim.getTracer().getBinaryFormat().toByteArray(context.getSpanContext());
+        traceTagInfo.tracer().getBinaryFormat().toByteArray(context.getSpanContext());
     ByteBuffer byteBuff = carrier.injectionBuffer(contextBuff.length);
     byteBuff.put(contextBuff);
   }
@@ -93,6 +93,6 @@ final class Propagation {
     byte[] buff = new byte[byteBuff.remaining()];
     byteBuff.get(buff);
     return new SpanContextShim(
-        tracerShim, tracerShim.getTracer().getBinaryFormat().fromByteArray(buff));
+        traceTagInfo, traceTagInfo.tracer().getBinaryFormat().fromByteArray(buff));
   }
 }
