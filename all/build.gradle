@@ -1,4 +1,4 @@
-description = "OpenCensus All"
+description = "OpenTelemetry All"
 
 def subprojects = [
         project(':opentelemetry-api'),
