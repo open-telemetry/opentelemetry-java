@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.metrics;
+package io.opentelemetry.spi;
+
+import io.opentelemetry.metrics.Meter;
 
 /**
- * Class for accessing the default {@link Meter}.
- *
- * @since 0.1.0
+ * MeterProvider is a service provider for {@link Meter}. Implementation should be registered in
+ * <code>META-INF/services/io.opentelemetry.spi.MeterProvider</code>. <br>
+ * <br>
+ * A specific implementation can be specified by a system property {@code
+ * io.opentelemetry.spi.MeterProvider} with value of fully qualified class name.
  */
-public final class Metrics {
-  private static final Meter METER = NoopMetrics.newNoopMeter();
+public interface MeterProvider {
 
   /**
-   * Returns the global {@link Meter} with the provided implementation.
+   * Creates a new meter instance.
    *
-   * @return the global {@code Meter} with the provided implementation.
-   * @since 0.1.0
+   * @return a meter instance.
    */
-  public static Meter getMeter() {
-    return METER;
-  }
-
-  private Metrics() {}
+  Meter create();
 }

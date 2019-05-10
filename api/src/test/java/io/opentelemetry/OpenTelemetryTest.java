@@ -17,11 +17,19 @@
 package io.opentelemetry;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.metrics.CounterDouble;
+import io.opentelemetry.metrics.CounterLong;
+import io.opentelemetry.metrics.GaugeDouble;
+import io.opentelemetry.metrics.GaugeLong;
+import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.metrics.NoopMetrics;
 import io.opentelemetry.resource.Resource;
+import io.opentelemetry.spi.MeterProvider;
 import io.opentelemetry.spi.TracerProvider;
 import io.opentelemetry.trace.NoopTrace;
 import io.opentelemetry.trace.Span;
@@ -35,7 +43,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import javax.annotation.Nullable;
-import org.junit.Before;
+import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -43,39 +52,86 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class OpenTelemetryTest {
 
-  @Before
-  public void before() {
-    OpenTelemetry.initialize();
+  @BeforeClass
+  public static void beforeClass() {
+    OpenTelemetry.reset();
+  }
+
+  @After
+  public void after() {
+    OpenTelemetry.reset();
+    System.clearProperty(TracerProvider.class.getName());
+    System.clearProperty(MeterProvider.class.getName());
   }
 
   @Test
   public void testDefault() {
     assertThat(OpenTelemetry.getTracer()).isInstanceOf(NoopTrace.newNoopTracer().getClass());
     assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
+    assertThat(OpenTelemetry.getMeter()).isInstanceOf(NoopMetrics.newNoopMeter().getClass());
+    assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
   }
 
   @Test
-  public void testSystemProperty() throws IOException {
+  public void testTracerLoadArbitrary() throws IOException {
+    File serviceFile = createService(TracerProvider.class, FirstTracer.class, SecondTracer.class);
+    try {
+      assertTrue(
+          (OpenTelemetry.getTracer() instanceof FirstTracer)
+              || (OpenTelemetry.getTracer() instanceof SecondTracer));
+      assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
+    } finally {
+      serviceFile.delete();
+    }
+  }
+
+  @Test
+  public void testTracerSystemProperty() throws IOException {
     File serviceFile = createService(TracerProvider.class, FirstTracer.class, SecondTracer.class);
     System.setProperty(TracerProvider.class.getName(), SecondTracer.class.getName());
     try {
-      OpenTelemetry.initialize();
       assertThat(OpenTelemetry.getTracer()).isInstanceOf(SecondTracer.class);
       assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
     } finally {
       serviceFile.delete();
-      System.clearProperty(TracerProvider.class.getCanonicalName());
     }
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testNotFind() {
+  public void testTracerNotFound() {
     System.setProperty(TracerProvider.class.getName(), "io.does.not.exists");
+    OpenTelemetry.getTracer();
+  }
+
+  @Test
+  public void testMeterLoadArbitrary() throws IOException {
+    File serviceFile = createService(MeterProvider.class, FirstMeter.class, SecondMeter.class);
     try {
-      OpenTelemetry.initialize();
+      assertTrue(
+          (OpenTelemetry.getMeter() instanceof FirstMeter)
+              || (OpenTelemetry.getMeter() instanceof SecondMeter));
+      assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
     } finally {
-      System.clearProperty("io.does.not.exists");
+      serviceFile.delete();
     }
+  }
+
+  @Test
+  public void testMeterSystemProperty() throws IOException {
+    File serviceFile = createService(MeterProvider.class, FirstMeter.class, SecondMeter.class);
+    System.setProperty(MeterProvider.class.getName(), SecondMeter.class.getName());
+    try {
+      assertThat(OpenTelemetry.getMeter()).isInstanceOf(SecondMeter.class);
+      assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
+    } finally {
+      serviceFile.delete();
+    }
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testMeterNotFound() {
+    System.setProperty(MeterProvider.class.getName(), "io.does.not.exists");
+    OpenTelemetry.getMeter();
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {
@@ -149,6 +205,40 @@ public class OpenTelemetryTest {
 
     @Override
     public HttpTextFormat<SpanContext> getHttpTextFormat() {
+      return null;
+    }
+  }
+
+  public static class SecondMeter extends FirstMeter {
+    @Override
+    public Meter create() {
+      return new SecondMeter();
+    }
+  }
+
+  public static class FirstMeter implements Meter, MeterProvider {
+    @Override
+    public Meter create() {
+      return new FirstMeter();
+    }
+
+    @Override
+    public GaugeLong.Builder gaugeLongBuilder(String name) {
+      return null;
+    }
+
+    @Override
+    public GaugeDouble.Builder gaugeDoubleBuilder(String name) {
+      return null;
+    }
+
+    @Override
+    public CounterDouble.Builder counterDoubleBuilder(String name) {
+      return null;
+    }
+
+    @Override
+    public CounterLong.Builder counterLongBuilder(String name) {
       return null;
     }
   }
