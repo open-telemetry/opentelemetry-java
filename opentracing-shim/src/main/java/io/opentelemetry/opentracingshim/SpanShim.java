@@ -32,7 +32,7 @@ final class SpanShim implements Span {
   private static final String DEFAULT_EVENT_NAME = "log";
 
   private final io.opentelemetry.trace.Span span;
-  private final SpanContextShim contextShim;
+  private SpanContextShim contextShim;
 
   public SpanShim(TraceTagInfo traceTagInfo, io.opentelemetry.trace.Span span) {
     this(traceTagInfo, span, EmptyTagMap.INSTANCE);
@@ -49,7 +49,9 @@ final class SpanShim implements Span {
 
   @Override
   public SpanContext context() {
-    return contextShim;
+    synchronized (this) {
+      return contextShim;
+    }
   }
 
   @Override
@@ -128,13 +130,23 @@ final class SpanShim implements Span {
 
   @Override
   public Span setBaggageItem(String key, String value) {
-    // TODO
+    // TagKey nor TagValue can be created with null values.
+    if (key == null || value == null) {
+      return this;
+    }
+
+    synchronized (this) {
+      contextShim = contextShim.newWithKeyValue(key, value);
+    }
+
     return this;
   }
 
   @Override
   public String getBaggageItem(String key) {
-    return contextShim.getBaggageItem(key);
+    synchronized (this) {
+      return contextShim.getBaggageItem(key);
+    }
   }
 
   @Override

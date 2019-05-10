@@ -32,7 +32,7 @@ final class SpanContextShim implements SpanContext {
 
   private final TraceTagInfo traceTagInfo;
   private final io.opentelemetry.trace.SpanContext context;
-  private TagMap tagMap;
+  private final TagMap tagMap;
 
   public SpanContextShim(TraceTagInfo traceTagInfo, io.opentelemetry.trace.SpanContext context) {
     this(traceTagInfo, context, EmptyTagMap.INSTANCE);
@@ -43,6 +43,12 @@ final class SpanContextShim implements SpanContext {
     this.traceTagInfo = traceTagInfo;
     this.context = context;
     this.tagMap = tagMap;
+  }
+
+  SpanContextShim newWithKeyValue(String key, String value) {
+    TagMap.Builder builder = traceTagInfo.tagger().toBuilder(tagMap);
+    builder.put(TagKey.create(key), TagValue.create(value), DEFAULT_TAG_METADATA);
+    return new SpanContextShim(traceTagInfo, context, builder.build());
   }
 
   io.opentelemetry.trace.SpanContext getSpanContext() {
@@ -65,26 +71,14 @@ final class SpanContextShim implements SpanContext {
 
   @Override
   public Iterable<Map.Entry<String, String>> baggageItems() {
-    synchronized (this) {
-      final Iterator<Tag> iterator = tagMap.getIterator();
-      return new BaggageIterable(iterator);
-    }
+    final Iterator<Tag> iterator = tagMap.getIterator();
+    return new BaggageIterable(iterator);
   }
 
   @SuppressWarnings("ReturnMissingNullable")
   String getBaggageItem(String key) {
-    synchronized (this) {
-      TagValue value = tagMap.getTagValue(TagKey.create(key));
-      return value == null ? null : value.asString();
-    }
-  }
-
-  void setBaggageItem(String key, String value) {
-    synchronized (this) {
-      TagMap.Builder builder = traceTagInfo.tagger().toBuilder(tagMap);
-      builder.put(TagKey.create(key), TagValue.create(value), DEFAULT_TAG_METADATA);
-      tagMap = builder.build();
-    }
+    TagValue value = tagMap.getTagValue(TagKey.create(key));
+    return value == null ? null : value.asString();
   }
 
   static class BaggageIterable implements Iterable<Map.Entry<String, String>> {
