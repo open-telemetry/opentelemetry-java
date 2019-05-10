@@ -1,0 +1,61 @@
+description = "OpenCensus All"
+
+def subprojects = [
+        project(':opentelemetry-api'),
+        project(':opentelemetry-contrib'),
+        project(':opentelemetry-sdk'),
+]
+
+// A subset of subprojects for which we want to publish javadoc.
+def subprojects_javadoc = [
+        project(':opentelemetry-api'),
+        project(':opentelemetry-contrib'),
+        project(':opentelemetry-sdk'),
+]
+
+for (subproject in rootProject.subprojects) {
+    if (subproject == project) {
+        continue
+    }
+    evaluationDependsOn(subproject.path)
+}
+
+dependencies {
+    compile subprojects
+}
+
+javadoc {
+    classpath = files(subprojects_javadoc.collect { subproject ->
+        subproject.javadoc.classpath
+    })
+    for (subproject in subprojects_javadoc) {
+        if (subproject == project) {
+            continue;
+        }
+        source subproject.javadoc.source
+        options.links subproject.javadoc.options.links.toArray(new String[0])
+    }
+}
+
+task jacocoMerge(type: JacocoMerge) {
+    dependsOn(subprojects.jacocoTestReport.dependsOn)
+    mustRunAfter(subprojects.jacocoTestReport.mustRunAfter)
+    destinationFile = file("${buildDir}/jacoco/test.exec")
+    executionData = files(subprojects.jacocoTestReport.executionData)
+            .filter { f -> f.exists() }
+}
+
+jacocoTestReport {
+    dependsOn(jacocoMerge)
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    additionalSourceDirs = files(subprojects.sourceSets.main.allSource.srcDirs)
+    sourceDirectories = files(subprojects.sourceSets.main.allSource.srcDirs)
+    classDirectories = files(subprojects.sourceSets.main.output)
+    classDirectories = files(classDirectories.files.collect {
+        fileTree(dir: it)
+    })
+}
