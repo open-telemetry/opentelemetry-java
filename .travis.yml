@@ -6,7 +6,7 @@ matrix:
   fast_finish: true
   include:
   - jdk: oraclejdk8
-    env: TASK=BUILD
+    env: TASK=BUILD_AND_COVERAGE
     os: linux
 
   - jdk: oraclejdk9
@@ -20,8 +20,20 @@ before_install:
 install: true
 
 script:
-  - ./gradlew verGJF
-  - ./gradlew clean assemble check --stacktrace
+  - case "$TASK" in
+      "BUILD")
+        ./gradlew verGJF ;
+        ./gradlew clean assemble check --stacktrace ;;
+      "BUILD_AND_COVERAGE")
+        ./gradlew verGJF ;
+        ./gradlew clean assemble check --stacktrace ;
+        ./gradlew check :opentelemetry-all:jacocoTestReport ;;
+      esac
+
+after_success:
+  - if \[ "$TASK" == "BUILD_AND_COVERAGE" \]; then
+      bash <(curl -s https://codecov.io/bash) ;
+    fi
 
 before_cache:
   - rm -fr $HOME/.gradle/caches/modules-2/modules-2.lock
