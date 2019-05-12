@@ -26,11 +26,14 @@ import io.opentelemetry.metrics.CounterDouble;
 import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.GaugeDouble;
 import io.opentelemetry.metrics.GaugeLong;
+import io.opentelemetry.metrics.Measure;
+import io.opentelemetry.metrics.Measurement;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.NoopMetrics;
 import io.opentelemetry.resource.Resource;
 import io.opentelemetry.spi.MeterProvider;
 import io.opentelemetry.spi.TracerProvider;
+import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.trace.NoopTrace;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Builder;
@@ -42,6 +45,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -241,5 +245,19 @@ public class OpenTelemetryTest {
     public CounterLong.Builder counterLongBuilder(String name) {
       return null;
     }
+
+    @Override
+    public Measure.Builder measureBuilder(String name) {
+      return null;
+    }
+
+    @Override
+    public void record(List<Measurement> measurements) {}
+
+    @Override
+    public void record(List<Measurement> measurements, TagMap tags) {}
+
+    @Override
+    public void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext) {}
   }
 }
