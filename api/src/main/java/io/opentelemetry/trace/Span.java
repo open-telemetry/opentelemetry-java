@@ -18,6 +18,7 @@ package io.opentelemetry.trace;
 
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
  * An interface that represents a span. It has an associated {@link SpanContext}.
@@ -251,8 +252,8 @@ public interface Span {
    *
    *   public void onRequest(String rpcName, Metadata metadata) {
    *     // Create a Span as a child of the remote Span.
-   *     mySpan = tracer.spanBuilderWithRemoteParent(
-   *         getTraceContextFromMetadata(metadata), rpcName).startSpan();
+   *     mySpan = tracer.spanBuilder(rpcName)
+   *         .setParent(getTraceContextFromMetadata(metadata)).startSpan();
    *   }
    *
    *   public void onExecuteHandler(ServerCallHandler serverCallHandler) {
@@ -286,7 +287,8 @@ public interface Span {
    * class MyClass {
    *   private static final Tracer tracer = OpenTelemetry.getTracer();
    *   void DoWork(Span parent) {
-   *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
+   *     Span childSpan = tracer.spanBuilder("MyChildSpan")
+   *         .setParent(parent).startSpan();
    *     childSpan.addEvent("my event");
    *     try {
    *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
@@ -304,6 +306,39 @@ public interface Span {
    * @since 0.1.0
    */
   interface Builder {
+    /**
+     * Sets the parent {@code Span} to use. If not set, {@code Tracer.getCurrentSpan()} will be used
+     * as parent.
+     *
+     * <p>This <b>must</b> be used to create a {@code Span} when manual Context propagation is used
+     * OR when creating a root {@code Span} with a {@code null} parent or a parent with an invalid
+     * {@link SpanContext}.
+     *
+     * <p>Observe this is the preferred method when the parent is a {@code Span} created within the
+     * process. Using its {@code SpanContext} as parent remains as a valid, albeit inefficient,
+     * operation.
+     *
+     * @param parent the {@code Span} used as parent.
+     * @return this.
+     * @since 0.1.0
+     */
+    Builder setParent(@Nullable Span parent);
+
+    /**
+     * Sets the parent {@link SpanContext} to use. If not set, {@code Tracer.getCurrentSpan()} will
+     * be used as parent.
+     *
+     * <p>This <b>must</b> be used to create a {@code Span} when the parent is in a different
+     * process. This is only intended for use by RPC systems or similar.
+     *
+     * <p>If no {@link SpanContext} is available, users must call this method with a {@code null}
+     * remote parent {@link SpanContext}.
+     *
+     * @param remoteParent the {@link SpanContext} used as parent.
+     * @return this.
+     * @since 0.1.0
+     */
+    Builder setParent(@Nullable SpanContext remoteParent);
 
     /**
      * Sets the {@link Sampler} to use. If not set, the implementation will provide a default.

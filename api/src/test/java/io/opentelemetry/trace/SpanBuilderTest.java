@@ -35,6 +35,8 @@ public class SpanBuilderTest {
     spanBuilder.setRecordEvents(true);
     spanBuilder.setSampler(Samplers.alwaysSample());
     spanBuilder.setSpanKind(Kind.SERVER);
+    spanBuilder.setParent(BlankSpan.INSTANCE);
+    spanBuilder.setParent(BlankSpan.INSTANCE.getContext());
     assertThat(spanBuilder.startSpan()).isSameAs(BlankSpan.INSTANCE);
   }
 }

@@ -21,7 +21,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.resource.Resource;
-import javax.annotation.Nullable;
 
 /**
  * Tracer is a simple, interface for {@link Span} creation and in-process context interaction.
@@ -58,7 +57,8 @@ import javax.annotation.Nullable;
  * class MyClass {
  *   private static final Tracer tracer = OpenTelemetry.getTracer();
  *   void doWork(Span parent) {
- *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
+ *     Span childSpan = tracer.spanBuilder("MyChildSpan")
+ *         setParent(parent).startSpan();
  *     childSpan.addEvent("Starting the work.");
  *     try {
  *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
@@ -141,19 +141,9 @@ public interface Tracer {
   Scope withSpan(Span span);
 
   /**
-   * Returns a {@link Span.Builder} to create and start a new child {@link Span} as a child of to
-   * the current {@code Span} if any, otherwise creates a root {@code Span}.
+   * Returns a {@link Span.Builder} to create and start a new child {@link Span}.
    *
    * <p>See {@link Span.Builder} for usage examples.
-   *
-   * <p>This <b>must</b> be used to create a {@code Span} when automatic Context propagation is
-   * used.
-   *
-   * <p>This is equivalent with:
-   *
-   * <pre>{@code
-   * tracer.spanBuilderWithExplicitParent("MySpanName",tracer.getCurrentSpan());
-   * }</pre>
    *
    * @param spanName The name of the returned Span.
    * @return a {@code Span.Builder} to create and start a new {@code Span}.
@@ -161,47 +151,6 @@ public interface Tracer {
    * @since 0.1.0
    */
   Span.Builder spanBuilder(String spanName);
-
-  /**
-   * Returns a {@link Span.Builder} to create and start a new child {@link Span} (or root if parent
-   * is {@code null} or has an invalid {@link SpanContext}), with parent being the designated {@code
-   * Span}.
-   *
-   * <p>See {@link Span.Builder} for usage examples.
-   *
-   * <p>This <b>must</b> be used to create a {@code Span} when manual Context propagation is used OR
-   * when creating a root {@code Span} with a {@code null} parent.
-   *
-   * @param spanName The name of the returned Span.
-   * @param parent The parent of the returned Span. If {@code null} the {@code Span.Builder} will
-   *     build a root {@code Span}.
-   * @return a {@code Span.Builder} to create and start a new {@code Span}.
-   * @throws NullPointerException if {@code spanName} is {@code null}.
-   * @since 0.1.0
-   */
-  Span.Builder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent);
-
-  /**
-   * Returns a {@link Span.Builder} to create and start a new child {@link Span} (or root if parent
-   * is {@code null}), with parent being the remote {@link Span} designated by the {@link
-   * SpanContext}.
-   *
-   * <p>See {@link Span.Builder} for usage examples.
-   *
-   * <p>This <b>must</b> be used to create a {@code Span} when the parent is in a different process.
-   * This is only intended for use by RPC systems or similar.
-   *
-   * <p>If no {@link SpanContext} OR fail to parse the {@link SpanContext} on the server side, users
-   * must call this method with a {@code null} remote parent {@code SpanContext}.
-   *
-   * @param spanName The name of the returned Span.
-   * @param remoteParentSpanContext The remote parent of the returned Span.
-   * @return a {@code Span.Builder} to create and start a new {@code Span}.
-   * @throws NullPointerException if {@code spanName} is {@code null}.
-   * @since 0.1.0
-   */
-  Span.Builder spanBuilderWithRemoteParent(
-      String spanName, @Nullable SpanContext remoteParentSpanContext);
 
   /**
    * Sets the {@link Resource} to be associated with all {@link Span} and {@link SpanData} objects
@@ -267,7 +216,8 @@ public interface Tracer {
    *   if (binaryValue != null) {
    *     spanContext = binaryFormat.fromByteArray(binaryValue);
    *   }
-   *   Span span = tracer.spanBuilderWithRemoteParent("MyRequest", spanContext)
+   *   Span span = tracer.spanBuilder("MyRequest")
+   *       .setParent(spanContext)
    *       .setSpanKind(Span.Kind.SERVER).startSpan();
    *   try (Scope ss = tracer.withSpan(span)) {
    *     // Handle request and send response back.
@@ -323,7 +273,8 @@ public interface Tracer {
    *
    * void onRequestReceived(HttpRequest request) {
    *   SpanContext spanContext = textFormat.extract(request, getter);
-   *   Span span = tracer.spanBuilderWithRemoteParent("MyRequest", spanContext)
+   *   Span span = tracer.spanBuilder("MyRequest")
+   *       .setParent(spanContext)
    *       .setSpanKind(Span.Kind.SERVER).startSpan();
    *   try (Scope s = tracer.withSpan(span)) {
    *     // Handle request and send response back.

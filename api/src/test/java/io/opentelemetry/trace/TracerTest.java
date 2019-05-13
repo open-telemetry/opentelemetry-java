@@ -57,32 +57,4 @@ public class TracerTest {
   public void defaultSpanBuilderWithName() {
     assertThat(noopTracer.spanBuilder(SPAN_NAME).startSpan()).isSameAs(BlankSpan.INSTANCE);
   }
-
-  @Test(expected = NullPointerException.class)
-  public void spanBuilderWithParentAndName_NullName() {
-    noopTracer.spanBuilderWithExplicitParent(null, null);
-  }
-
-  @Test
-  public void defaultSpanBuilderWithParentAndName() {
-    assertThat(noopTracer.spanBuilderWithExplicitParent(SPAN_NAME, null).startSpan())
-        .isSameAs(BlankSpan.INSTANCE);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void spanBuilderWithRemoteParent_NullName() {
-    noopTracer.spanBuilderWithRemoteParent(null, null);
-  }
-
-  @Test
-  public void defaultSpanBuilderWithRemoteParent_NullParent() {
-    assertThat(noopTracer.spanBuilderWithRemoteParent(SPAN_NAME, null).startSpan())
-        .isSameAs(BlankSpan.INSTANCE);
-  }
-
-  @Test
-  public void defaultSpanBuilderWithRemoteParent() {
-    assertThat(noopTracer.spanBuilderWithRemoteParent(SPAN_NAME, SpanContext.BLANK).startSpan())
-        .isSameAs(BlankSpan.INSTANCE);
-  }
 }
