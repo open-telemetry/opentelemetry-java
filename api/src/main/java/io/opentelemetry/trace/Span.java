@@ -318,6 +318,8 @@ public interface Span {
      * process. Using its {@code SpanContext} as parent remains as a valid, albeit inefficient,
      * operation.
      *
+     * <p>If called multiple times, only the last specified value will be used.
+     *
      * @param parent the {@code Span} used as parent.
      * @return this.
      * @since 0.1.0
@@ -333,6 +335,8 @@ public interface Span {
      *
      * <p>If no {@link SpanContext} is available, users must call this method with a {@code null}
      * remote parent {@link SpanContext}.
+     *
+     * <p>If called multiple times, only the last specified value will be used.
      *
      * @param remoteParent the {@link SpanContext} used as parent.
      * @return this.
