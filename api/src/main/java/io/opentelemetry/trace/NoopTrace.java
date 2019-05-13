@@ -16,13 +16,14 @@
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.context.NoopScope;
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.context.propagation.TraceContextFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.resource.Resource;
+import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -52,12 +53,12 @@ public final class NoopTrace {
 
     @Override
     public Span getCurrentSpan() {
-      return BlankSpan.INSTANCE;
+      return ContextUtils.getValue();
     }
 
     @Override
     public Scope withSpan(Span span) {
-      return NoopScope.getInstance();
+      return SpanInScope.create(span);
     }
 
     @Override
@@ -165,5 +166,24 @@ public final class NoopTrace {
     }
 
     private NoopBinaryFormat() {}
+  }
+
+  private static final class SpanInScope implements Scope {
+    private final Context previous;
+    private final Context current;
+
+    private SpanInScope(Span span) {
+      current = ContextUtils.withValue(span);
+      previous = current.attach();
+    }
+
+    public static SpanInScope create(Span span) {
+      return new SpanInScope(span);
+    }
+
+    @Override
+    public void close() {
+      current.detach(previous);
+    }
   }
 }

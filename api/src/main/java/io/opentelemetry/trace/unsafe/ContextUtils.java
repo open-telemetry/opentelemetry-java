@@ -37,6 +37,17 @@ public final class ContextUtils {
   /**
    * Creates a new {@code Context} with the given value set.
    *
+   * @param span the value to be set.
+   * @return a new context with the given value set.
+   * @since 0.1.0
+   */
+  public static Context withValue(Span span) {
+    return Context.current().withValue(CONTEXT_SPAN_KEY, span);
+  }
+
+  /**
+   * Creates a new {@code Context} with the given value set.
+   *
    * @param context the parent {@code Context}.
    * @param span the value to be set.
    * @return a new context with the given value set.
@@ -44,6 +55,16 @@ public final class ContextUtils {
    */
   public static Context withValue(Context context, Span span) {
     return Utils.checkNotNull(context, "context").withValue(CONTEXT_SPAN_KEY, span);
+  }
+
+  /**
+   * Returns the value from the current {@code Context}.
+   *
+   * @return the value from the specified {@code Context}.
+   * @since 0.1.0
+   */
+  public static Span getValue() {
+    return CONTEXT_SPAN_KEY.get();
   }
 
   /**
