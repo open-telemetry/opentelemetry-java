@@ -67,7 +67,6 @@ public class TraceContextFormat implements HttpTextFormat<SpanContext> {
 
   @Override
   public <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter) {
-
     checkNotNull(spanContext, "spanContext");
     checkNotNull(setter, "setter");
     checkNotNull(carrier, "carrier");
