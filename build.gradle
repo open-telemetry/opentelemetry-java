@@ -132,7 +132,7 @@ subprojects {
                 libraries.errorprone_annotation,
                 libraries.jsr305
 
-        testCompile libraries.junit,
+        testImplementation libraries.junit,
                 libraries.mockito,
                 libraries.truth,
                 libraries.guava_testlib

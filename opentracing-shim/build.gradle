@@ -1,6 +1,6 @@
 description = 'OpenTelemetry OpenTracing Bridge'
 
 dependencies {
-    api project(':opentelemetry-api')
-    api libraries.opentracing
+    api project(':opentelemetry-api'),
+            libraries.opentracing
 }
