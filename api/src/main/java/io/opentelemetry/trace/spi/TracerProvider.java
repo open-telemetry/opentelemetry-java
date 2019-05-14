@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.spi;
+package io.opentelemetry.trace.spi;
 
-import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.trace.Tracer;
 
 /**
- * MeterProvider is a service provider for {@link Meter}. Implementation should be registered in
- * <code>META-INF/services/io.opentelemetry.spi.MeterProvider</code>. <br>
+ * TracerProvider is a service provider for {@link Tracer}. Fully qualified class name of the
+ * implementation should be registered in {@code
+ * META-INF/services/io.opentelemetry.tracer.spi.TracerProvider}. <br>
  * <br>
- * A specific implementation can be specified by a system property {@code
- * io.opentelemetry.spi.MeterProvider} with value of fully qualified class name.
+ * A specific implementation can be selected by a system property {@code
+ * io.opentelemetry.trace.spi.TracerProvider} with value of fully qualified class name.
+ *
+ * @see io.opentelemetry.OpenTelemetry
  */
-public interface MeterProvider {
+public interface TracerProvider {
 
   /**
-   * Creates a new meter instance.
+   * Creates a new tracer instance.
    *
-   * @return a meter instance.
+   * @return a tracer instance.
+   * @since 0.1.0
    */
-  Meter create();
+  Tracer create();
 }

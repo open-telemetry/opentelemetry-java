@@ -18,19 +18,25 @@ package io.opentelemetry;
 
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.NoopMetrics;
-import io.opentelemetry.spi.MeterProvider;
-import io.opentelemetry.spi.TaggerProvider;
-import io.opentelemetry.spi.TracerProvider;
+import io.opentelemetry.metrics.spi.MeterProvider;
 import io.opentelemetry.tags.NoopTags;
 import io.opentelemetry.tags.Tagger;
+import io.opentelemetry.tags.spi.TaggerProvider;
 import io.opentelemetry.trace.NoopTrace;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.spi.TracerProvider;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 
 /**
- * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link
- * io.opentelemetry.metrics.Meter} and {@link io.opentelemetry.tags.Tagger}.
+ * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link Meter}
+ * and {@link Tagger}.
+ *
+ * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
+ *
+ * @see TracerProvider
+ * @see MeterProvider
+ * @see TaggerProvider
  */
 public final class OpenTelemetry {
 
@@ -41,30 +47,33 @@ public final class OpenTelemetry {
   private final Tagger tagger;
 
   /**
-   * Returns an instance of a {@link Tracer}.
+   * Returns a singleton {@link Tracer}.
    *
    * @return registered tracer or noop via {@link NoopTrace#newNoopTracer()}.
    * @throws IllegalStateException if a specified tracer (via system properties) could not be found.
+   * @since 0.1.0
    */
   public static Tracer getTracer() {
     return getInstance().tracer;
   }
 
   /**
-   * Returns an instance of a {@link Meter}.
+   * Returns a singleton {@link Meter}.
    *
    * @return registered meter or noop via {@link NoopMetrics#newNoopMeter()}.
    * @throws IllegalStateException if a specified meter (via system properties) could not be found.
+   * @since 0.1.0
    */
   public static Meter getMeter() {
     return getInstance().meter;
   }
 
   /**
-   * Returns an instance of a {@link Tagger}.
+   * Returns a singleton {@link Tagger}.
    *
    * @return registered meter or noop via {@link NoopTags#newNoopTagger()}.
    * @throws IllegalStateException if a specified meter (via system properties) could not be found.
+   * @since 0.1.0
    */
   public static Tagger getTagger() {
     return getInstance().tagger;
