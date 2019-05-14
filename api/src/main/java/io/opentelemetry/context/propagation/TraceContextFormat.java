@@ -99,8 +99,7 @@ public class TraceContextFormat implements HttpTextFormat<SpanContext> {
   }
 
   @Override
-  public <C /*>>> extends @NonNull Object*/> SpanContext extract(C carrier, Getter<C> getter)
-      throws IllegalArgumentException {
+  public <C /*>>> extends @NonNull Object*/> SpanContext extract(C carrier, Getter<C> getter) {
     checkNotNull(carrier, "carrier");
     checkNotNull(getter, "getter");
     TraceId traceId;

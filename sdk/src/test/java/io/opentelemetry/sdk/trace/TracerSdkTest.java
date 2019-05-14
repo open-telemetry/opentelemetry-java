@@ -49,7 +49,7 @@ public class TracerSdkTest {
   @Test
   public void getCurrentSpan() {
     assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
-    Context origContext = ContextUtils.withValue(Context.current(), span).attach();
+    Context origContext = ContextUtils.withValue(span).attach();
     // Make sure context is detached even if test fails.
     try {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
