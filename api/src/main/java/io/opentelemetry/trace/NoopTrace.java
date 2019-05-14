@@ -115,6 +115,11 @@ public final class NoopTrace {
     }
 
     @Override
+    public NoopSpanBuilder setIgnoreCurrentSpan() {
+      return this;
+    }
+
+    @Override
     public NoopSpanBuilder setSampler(@Nullable Sampler sampler) {
       return this;
     }

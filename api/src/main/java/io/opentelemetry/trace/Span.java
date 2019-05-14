@@ -307,8 +307,8 @@ public interface Span {
    */
   interface Builder {
     /**
-     * Sets the parent {@code Span} to use. If not set, {@code Tracer.getCurrentSpan()} will be used
-     * as parent.
+     * Sets the parent {@code Span} to use. If not set, the value of {@code Tracer.getCurrentSpan()}
+     * at {@link #build} time will be used as parent.
      *
      * <p>This <b>must</b> be used to create a {@code Span} when manual Context propagation is used
      * OR when creating a root {@code Span} with a {@code null} parent or a parent with an invalid
@@ -327,8 +327,8 @@ public interface Span {
     Builder setParent(@Nullable Span parent);
 
     /**
-     * Sets the parent {@link SpanContext} to use. If not set, {@code Tracer.getCurrentSpan()} will
-     * be used as parent.
+     * Sets the parent {@link SpanContext} to use. If not set, the value of {@code
+     * Tracer.getCurrentSpan()} at {@link #build} time will be used as parent.
      *
      * <p>This <b>must</b> be used to create a {@code Span} when the parent is in a different
      * process. This is only intended for use by RPC systems or similar.
@@ -343,6 +343,16 @@ public interface Span {
      * @since 0.1.0
      */
     Builder setParent(@Nullable SpanContext remoteParent);
+
+    /**
+     * Sets the option to ignore {@code Tracer.getCurrentSpan()} as automatic parent, becoming a
+     * root {@code Span}. If not set, the value of {@code Tracer.getCurrentSpan()} at {@link #build}
+     * time will be used as parent.
+     *
+     * @return this.
+     * @since 0.1.0
+     */
+    Builder setIgnoreCurrentSpan();
 
     /**
      * Sets the {@link Sampler} to use. If not set, the implementation will provide a default.

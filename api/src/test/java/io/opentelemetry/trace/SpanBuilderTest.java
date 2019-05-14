@@ -37,6 +37,7 @@ public class SpanBuilderTest {
     spanBuilder.setSpanKind(Kind.SERVER);
     spanBuilder.setParent(BlankSpan.INSTANCE);
     spanBuilder.setParent(BlankSpan.INSTANCE.getContext());
+    spanBuilder.setIgnoreCurrentSpan();
     assertThat(spanBuilder.startSpan()).isSameAs(BlankSpan.INSTANCE);
   }
 }
