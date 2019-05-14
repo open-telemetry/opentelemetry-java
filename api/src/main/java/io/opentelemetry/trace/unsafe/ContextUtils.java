@@ -48,12 +48,12 @@ public final class ContextUtils {
   /**
    * Creates a new {@code Context} with the given value set.
    *
-   * @param context the parent {@code Context}.
    * @param span the value to be set.
+   * @param context the parent {@code Context}.
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(Context context, Span span) {
+  public static Context withValue(Span span, Context context) {
     return Utils.checkNotNull(context, "context").withValue(CONTEXT_SPAN_KEY, span);
   }
 

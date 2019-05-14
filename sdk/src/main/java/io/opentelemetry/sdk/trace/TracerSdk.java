@@ -32,7 +32,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return ContextUtils.getValue(Context.current());
+    return ContextUtils.getValue();
   }
 
   @Override
@@ -98,7 +98,7 @@ public class TracerSdk implements Tracer {
      * @param span is the {@code Span} to be added to the current {@code io.grpc.Context}.
      */
     private ScopeInSpan(Span span) {
-      origContext = ContextUtils.withValue(Context.current(), span).attach();
+      origContext = ContextUtils.withValue(span).attach();
     }
 
     @Override

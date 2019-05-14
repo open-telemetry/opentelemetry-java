@@ -36,8 +36,27 @@ public final class ContextUtilsTest {
   }
 
   @Test
+  public void testGetCurrentSpan_DefaultContext_WithoutExplicitContext() {
+    Span span = ContextUtils.getValue();
+    assertThat(span).isNotNull();
+    assertThat(span).isInstanceOf(BlankSpan.class);
+  }
+
+  @Test
   public void testGetCurrentSpan_ContextSetToNull() {
-    Context orig = ContextUtils.withValue(Context.current(), null).attach();
+    Context orig = ContextUtils.withValue(null, Context.current()).attach();
+    try {
+      Span span = ContextUtils.getValue(Context.current());
+      assertThat(span).isNotNull();
+      assertThat(span).isInstanceOf(BlankSpan.class);
+    } finally {
+      Context.current().detach(orig);
+    }
+  }
+
+  @Test
+  public void testGetCurrentSpan_ContextSetToNull_WithoutExplicitContext() {
+    Context orig = ContextUtils.withValue(null).attach();
     try {
       Span span = ContextUtils.getValue(Context.current());
       assertThat(span).isNotNull();
