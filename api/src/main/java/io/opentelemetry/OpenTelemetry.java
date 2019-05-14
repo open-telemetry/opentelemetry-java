@@ -19,7 +19,10 @@ package io.opentelemetry;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.NoopMetrics;
 import io.opentelemetry.spi.MeterProvider;
+import io.opentelemetry.spi.TaggerProvider;
 import io.opentelemetry.spi.TracerProvider;
+import io.opentelemetry.tags.NoopTags;
+import io.opentelemetry.tags.Tagger;
 import io.opentelemetry.trace.NoopTrace;
 import io.opentelemetry.trace.Tracer;
 import java.util.ServiceLoader;
@@ -35,6 +38,7 @@ public final class OpenTelemetry {
 
   private final Tracer tracer;
   private final Meter meter;
+  private final Tagger tagger;
 
   /**
    * Returns an instance of a {@link Tracer}.
@@ -57,6 +61,16 @@ public final class OpenTelemetry {
   }
 
   /**
+   * Returns an instance of a {@link Tagger}.
+   *
+   * @return registered meter or noop via {@link NoopTags#newNoopTagger()}.
+   * @throws IllegalStateException if a specified meter (via system properties) could not be found.
+   */
+  public static Tagger getTagger() {
+    return getInstance().tagger;
+  }
+
+  /**
    * Load provider class via {@link ServiceLoader}. A specific provider class can be requested via
    * setting a system property with FQCN.
    *
@@ -68,8 +82,8 @@ public final class OpenTelemetry {
   @Nullable
   private static <T> T loadSpi(Class<T> providerClass) {
     String specifiedProvider = System.getProperty(providerClass.getName());
-    ServiceLoader<T> tracers = ServiceLoader.load(providerClass);
-    for (T provider : tracers) {
+    ServiceLoader<T> providers = ServiceLoader.load(providerClass);
+    for (T provider : providers) {
       if (specifiedProvider == null || specifiedProvider.equals(provider.getClass().getName())) {
         return provider;
       }
@@ -97,6 +111,8 @@ public final class OpenTelemetry {
     tracer = tracerProvider != null ? tracerProvider.create() : NoopTrace.newNoopTracer();
     MeterProvider meterProvider = loadSpi(MeterProvider.class);
     meter = meterProvider != null ? meterProvider.create() : NoopMetrics.newNoopMeter();
+    TaggerProvider taggerProvider = loadSpi(TaggerProvider.class);
+    tagger = taggerProvider != null ? taggerProvider.create() : NoopTags.newNoopTagger();
   }
 
   // for testing
