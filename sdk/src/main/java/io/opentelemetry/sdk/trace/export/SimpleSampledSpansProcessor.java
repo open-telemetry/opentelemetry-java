@@ -64,17 +64,6 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
   }
 
   /**
-   * Returns a new {@link SimpleSampledSpansProcessor} that converts spans to proto and forwards
-   * them to the given {@code spanExporter}.
-   *
-   * @return a new {@link SimpleSampledSpansProcessor}.
-   * @throws NullPointerException if the {@code spanExporter} is {@code null}.
-   */
-  public SimpleSampledSpansProcessor create(SpanExporter spanExporter) {
-    return new SimpleSampledSpansProcessor(spanExporter);
-  }
-
-  /**
    * Returns a new Builder for {@link SimpleSampledSpansProcessor}.
    *
    * @param spanExporter the {@code SpanExporter} to where the sampled Spans are pushed.
