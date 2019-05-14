@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags;
+package io.opentelemetry.spi;
+
+import io.opentelemetry.tags.Tagger;
 
 /**
- * Class to access the global {@link Tagger}.
- *
- * @since 0.1.0
+ * TaggerProvider is a service provider for {@link Tagger}. Implementation should register
+ * implementation in <code>META-INF/services/io.opentelemetry.spi.TaggerProvider</code>. <br>
+ * <br>
+ * A specific implementation can be specified by a system property {@code
+ * io.opentelemetry.spi.TaggerProvider} with value of fully qualified class name.
  */
-public final class Tags {
-  private static final Tagger TAGGER = NoopTags.newNoopTagger();
-
-  private Tags() {}
+public interface TaggerProvider {
 
   /**
-   * Returns the default {@code Tagger}.
+   * Creates a new tagger instance.
    *
-   * @return the default {@code Tagger}.
-   * @since 0.1.0
+   * @return a tagger instance.
    */
-  public static Tagger getTagger() {
-    return TAGGER;
-  }
+  Tagger create();
 }
