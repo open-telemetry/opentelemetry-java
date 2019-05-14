@@ -108,17 +108,21 @@ public final class NoopTrace {
   // Noop implementation of Span.Builder.
   private static final class NoopSpanBuilder implements Span.Builder {
     static NoopSpanBuilder createWithParent(String spanName, @Nullable Span parent) {
-      return new NoopSpanBuilder(spanName);
+      return new NoopSpanBuilder(spanName, parent != null ? parent.getContext() : null);
     }
 
     static NoopSpanBuilder createWithRemoteParent(
         String spanName, @Nullable SpanContext remoteParentSpanContext) {
-      return new NoopSpanBuilder(spanName);
+      return new NoopSpanBuilder(spanName, remoteParentSpanContext);
     }
+
+    private SpanContext spanContext;
 
     @Override
     public Span startSpan() {
-      return BlankSpan.INSTANCE;
+      return spanContext != null && !SpanContext.BLANK.equals(spanContext)
+          ? new BlankSpan(spanContext)
+          : BlankSpan.INSTANCE;
     }
 
     @Override
@@ -146,8 +150,9 @@ public final class NoopTrace {
       return this;
     }
 
-    private NoopSpanBuilder(String name) {
+    private NoopSpanBuilder(String name, SpanContext spanContext) {
       Utils.checkNotNull(name, "name");
+      this.spanContext = spanContext;
     }
   }
 

@@ -21,8 +21,12 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * The {@code BlankSpan} is a singleton class, which is the default {@link Span} that is used when
- * no {@code Span} implementation is available. All operations are no-op.
+ * The {@code BlankSpan} is the default {@link Span} that is used when no {@code Span}
+ * implementation is available. All operations are no-op except context propagation.
+ *
+ * <p>When no valid context ({@code null} or {@link SpanContext#BLANK}) is available then
+ * implementation propagates {@link BlankSpan#INSTANCE} which encapsulates {@link
+ * SpanContext#BLANK}.
  *
  * <p>Used also to stop tracing, see {@link Tracer#withSpan}.
  *
@@ -31,13 +35,19 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class BlankSpan implements Span {
   /**
-   * Singleton instance of this class.
+   * An instance of this class. If there is no {@code SpanContext} or {@link SpanContext#BLANK} to
+   * propagate this instance is used.
    *
    * @since 0.1.0
    */
-  public static final Span INSTANCE = new BlankSpan();
+  public static final Span INSTANCE = new BlankSpan(SpanContext.BLANK);
 
-  private BlankSpan() {}
+  private final SpanContext spanContext;
+
+  // NoopTracer
+  BlankSpan(SpanContext spanContext) {
+    this.spanContext = spanContext;
+  }
 
   @Override
   public void setAttribute(String key, String value) {
@@ -100,7 +110,7 @@ public final class BlankSpan implements Span {
 
   @Override
   public SpanContext getContext() {
-    return SpanContext.BLANK;
+    return spanContext;
   }
 
   @Override
