@@ -44,7 +44,6 @@ public final class BlankSpan implements Span {
 
   private final SpanContext spanContext;
 
-  // NoopTracer
   BlankSpan(SpanContext spanContext) {
     this.spanContext = spanContext;
   }
