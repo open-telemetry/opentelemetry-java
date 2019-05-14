@@ -19,13 +19,16 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.trace.Span;
 
 /**
- * SpanInterceptor is the interface {@code TracerSdk} uses to allow synchronous hooks for when a
+ * SpanProcessor is the interface {@code TracerSdk} uses to allow synchronous hooks for when a
  * {@code Span} is started or when a {@code Span} is ended.
  */
-public interface SpanInterceptor {
+public interface SpanProcessor {
   /**
    * Called when a {@link io.opentelemetry.trace.Span} is started, if the {@link
    * Span#isRecordingEvents()} returns true.
+   *
+   * <p>This method is called synchronously on the execution thread, should not throw or block the
+   * execution thread.
    *
    * @param span the {@code SpanSdk} that just started.
    */
@@ -34,6 +37,9 @@ public interface SpanInterceptor {
   /**
    * Called when a {@link io.opentelemetry.trace.Span} is ended, if the {@link
    * Span#isRecordingEvents()} returns true.
+   *
+   * <p>This method is called synchronously on the execution thread, should not throw or block the
+   * execution thread.
    *
    * @param span the {@code SpanSdk} that just ended.
    */

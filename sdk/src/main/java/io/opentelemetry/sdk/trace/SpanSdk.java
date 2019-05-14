@@ -36,5 +36,5 @@ public interface SpanSdk extends Span {
    *
    * @return the proto representation of the collected data for this particular {@code Span}.
    */
-  openconsensus.proto.trace.v1.Span toSpanProto();
+  io.opentelemetry.proto.trace.v1.Span toSpanProto();
 }

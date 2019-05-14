@@ -79,7 +79,7 @@ public class TracerSdk implements Tracer {
 
   /**
    * Attempts to stop all the activity for this {@link Tracer}. Calls {@link
-   * SpanInterceptor#shutdown()} for all registered {@link SpanInterceptor}s.
+   * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
    *
    * <p>This operation may block until all the Spans are processed. Must be called before turning
    * off the main application to ensure all data are processed and exported.
