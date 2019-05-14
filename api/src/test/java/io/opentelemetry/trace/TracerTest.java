@@ -91,4 +91,25 @@ public class TracerTest {
   public void defaultHttpTextFormat() {
     assertThat(noopTracer.getHttpTextFormat()).isInstanceOf(TraceContextFormat.class);
   }
+
+  @Test
+  public void testInProcessContext() {
+    Span span = noopTracer.spanBuilder(SPAN_NAME).startSpan();
+    Scope scope = noopTracer.withSpan(span);
+    try {
+      assertThat(noopTracer.getCurrentSpan()).isEqualTo(span);
+      Span secondSpan = noopTracer.spanBuilder(SPAN_NAME).startSpan();
+      Scope secondScope = noopTracer.withSpan(span);
+      try {
+        assertThat(noopTracer.getCurrentSpan()).isEqualTo(secondSpan);
+        secondScope.close();
+        assertThat(noopTracer.getCurrentSpan()).isEqualTo(span);
+      } finally {
+        secondScope.close();
+      }
+    } finally {
+      scope.close();
+    }
+    assertThat(noopTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
+  }
 }
