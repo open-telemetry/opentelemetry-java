@@ -106,17 +106,19 @@ public final class NoopTrace {
     }
 
     @Override
-    public NoopSpanBuilder setParent(@Nullable Span parent) {
+    public NoopSpanBuilder setParent(Span parent) {
+      Utils.checkNotNull(parent, "parent");
       return this;
     }
 
     @Override
-    public NoopSpanBuilder setParent(@Nullable SpanContext remoteParent) {
+    public NoopSpanBuilder setParent(SpanContext remoteParent) {
+      Utils.checkNotNull(remoteParent, "remoteParent");
       return this;
     }
 
     @Override
-    public NoopSpanBuilder setIgnoreCurrentSpan() {
+    public NoopSpanBuilder setNoParent() {
       return this;
     }
 

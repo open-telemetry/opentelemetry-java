@@ -181,7 +181,7 @@ final class SpanBuilderShim implements SpanBuilder {
     io.opentelemetry.trace.Span.Builder builder = tracer.spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
-      builder.setParent((io.opentelemetry.trace.Span) null);
+      builder.setNoParent();
     } else if (parentSpan != null) {
       builder.setParent(parentSpan);
     } else if (parentSpanContext != null) {
