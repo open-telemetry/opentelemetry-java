@@ -141,7 +141,7 @@ public interface Tracer {
   Scope withSpan(Span span);
 
   /**
-   * Returns a {@link Span.Builder} to create and start a new child {@link Span}.
+   * Returns a {@link Span.Builder} to create and start a new {@link Span}.
    *
    * <p>See {@link Span.Builder} for usage examples.
    *

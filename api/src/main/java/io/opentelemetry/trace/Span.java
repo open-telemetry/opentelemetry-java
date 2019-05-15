@@ -330,16 +330,16 @@ public interface Span {
      * Sets the parent {@link SpanContext} to use. If not set, the value of {@code
      * Tracer.getCurrentSpan()} at {@link #build} time will be used as parent.
      *
-     * <p>This <b>must</b> be used to create a {@code Span} when the parent is in a different
-     * process. This is only intended for use by RPC systems or similar.
+     * <p>Similar to {@link #setParent(Span parent)} but this <b>must</b> be used to create a {@code
+     * Span} when the parent is in a different process. This is only intended for use by RPC systems
+     * or similar.
      *
      * <p>If no {@link SpanContext} is available, users must call this method with a {@code null}
      * remote parent {@link SpanContext}.
      *
-     * <p>If called multiple times, only the last specified value will be used.
-     *
      * @param remoteParent the {@link SpanContext} used as parent.
      * @return this.
+     * @see #setParent(Span parent)
      * @since 0.1.0
      */
     Builder setParent(@Nullable SpanContext remoteParent);
