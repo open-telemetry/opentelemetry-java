@@ -55,7 +55,7 @@ public final class CurrentTagMapUtils {
      * @param tags the {@code TagMap} to be added to the current {@code Context}.
      */
     private WithTagMap(TagMap tags) {
-      orig = ContextUtils.withValue(Context.current(), tags).attach();
+      orig = ContextUtils.withValue(tags).attach();
     }
 
     @Override

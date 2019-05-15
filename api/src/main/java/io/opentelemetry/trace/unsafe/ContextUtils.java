@@ -17,7 +17,6 @@
 package io.opentelemetry.trace.unsafe;
 
 import io.grpc.Context;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.BlankSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -54,7 +53,7 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static Context withValue(Span span, Context context) {
-    return Utils.checkNotNull(context, "context").withValue(CONTEXT_SPAN_KEY, span);
+    return context.withValue(CONTEXT_SPAN_KEY, span);
   }
 
   /**
@@ -75,7 +74,7 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static Span getValue(Context context) {
-    return CONTEXT_SPAN_KEY.get(Utils.checkNotNull(context, "context"));
+    return CONTEXT_SPAN_KEY.get(context);
   }
 
   private ContextUtils() {}

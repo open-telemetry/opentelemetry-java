@@ -17,7 +17,6 @@
 package io.opentelemetry.tags.unsafe;
 
 import io.grpc.Context;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.tags.EmptyTagMap;
 import io.opentelemetry.tags.TagMap;
 
@@ -36,13 +35,34 @@ public final class ContextUtils {
   /**
    * Creates a new {@code Context} with the given value set.
    *
-   * @param context the parent {@code Context}.
    * @param tagMap the value to be set.
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(Context context, TagMap tagMap) {
-    return Utils.checkNotNull(context, "context").withValue(TAG_MAP_KEY, tagMap);
+  public static Context withValue(TagMap tagMap) {
+    return Context.current().withValue(TAG_MAP_KEY, tagMap);
+  }
+
+  /**
+   * Creates a new {@code Context} with the given value set.
+   *
+   * @param tagMap the value to be set.
+   * @param context the parent {@code Context}.
+   * @return a new context with the given value set.
+   * @since 0.1.0
+   */
+  public static Context withValue(TagMap tagMap, Context context) {
+    return context.withValue(TAG_MAP_KEY, tagMap);
+  }
+
+  /**
+   * Returns the value from the current {@code Context}.
+   *
+   * @return the value from the specified {@code Context}.
+   * @since 0.1.0
+   */
+  public static TagMap getValue() {
+    return TAG_MAP_KEY.get();
   }
 
   /**
