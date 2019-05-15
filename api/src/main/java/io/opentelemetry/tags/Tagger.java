@@ -85,9 +85,9 @@ public interface Tagger {
    * <p>Example of usage on the client:
    *
    * <pre>{@code
-   * private static final Tagger tagger = Tags.getTagger();
+   * private static final Tagger tagger = OpenTelemetry.getTagger();
    * private static final BinaryFormat binaryFormat =
-   *     Tags.getTagger().getBinaryFormat();
+   *     OpenTelemetry.getTagger().getBinaryFormat();
    *
    * Request createRequest() {
    *   Request req = new Request();
@@ -100,9 +100,9 @@ public interface Tagger {
    * <p>Example of usage on the server:
    *
    * <pre>{@code
-   * private static final Tagger tagger = Tags.getTagger();
+   * private static final Tagger tagger = OpenTelemetry.getTagger();
    * private static final BinaryFormat binaryFormat =
-   *     Tags.getTagger().getBinaryFormat();
+   *     OpenTelemetry.getTagger().getBinaryFormat();
    *
    * void onRequestReceived(Request request) {
    *   byte[] tagsBuffer = request.getMetadata("tags");
@@ -127,9 +127,9 @@ public interface Tagger {
    * <p>Example of usage on the client:
    *
    * <pre>{@code
-   * private static final Tagger tagger = Tags.getTagger();
+   * private static final Tagger tagger = OpenTelemetry.getTagger();
    * private static final HttpTextFormat textFormat =
-   *     Tags.getTagger().getHttpTextFormat();
+   *     OpenTelemetry.getTagger().getHttpTextFormat();
    * private static final HttpTextFormat.Setter setter =
    *     new HttpTextFormat.Setter<HttpURLConnection>() {
    *       public void put(HttpURLConnection carrier, String key, String value) {
@@ -148,9 +148,9 @@ public interface Tagger {
    * <p>Example of usage on the server:
    *
    * <pre>{@code
-   * private static final Tagger tagger = Tags.getTagger();
+   * private static final Tagger tagger = OpenTelemetry.getTagger();
    * private static final HttpTextFormat textFormat =
-   *     Tags.getTagger().getHttpTextFormat();
+   *     OpenTelemetry.getTagger().getHttpTextFormat();
    * private static final HttpTextFormat.Getter<HttpRequest> getter = ...;
    *
    * void onRequestReceived(HttpRequest request) {

@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.spi;
+package io.opentelemetry.tags.spi;
 
-import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.tags.Tagger;
 
 /**
- * TracerProvider is a service provider for {@link Tracer}. Implementation should register
- * implementation in <code>META-INF/services/io.opentelemetry.spi.TracerProvider</code>. <br>
+ * TaggerProvider is a service provider for {@link Tagger}. Fully qualified class name of the
+ * implementation should be registered in {@code
+ * META-INF/services/io.opentelemetry.tags.spi.TaggerProvider}. <br>
  * <br>
- * A specific implementation can be specified by a system property {@code
- * io.opentelemetry.spi.TracerProvider} with value of fully qualified class name.
+ * A specific implementation can be selected by a system property {@code
+ * io.opentelemetry.tags.spi.TaggerProvider} with value of fully qualified class name.
+ *
+ * @see io.opentelemetry.OpenTelemetry
  */
-public interface TracerProvider {
+public interface TaggerProvider {
 
   /**
-   * Creates a new tracer instance.
+   * Creates a new tagger instance.
    *
-   * @return a tracer instance.
+   * @return a tagger instance.
+   * @since 0.1.0
    */
-  Tracer create();
+  Tagger create();
 }

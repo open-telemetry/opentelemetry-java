@@ -50,21 +50,11 @@ final class SpanBuilderShim implements SpanBuilder {
   }
 
   @Override
-  public SpanBuilder asChildOf(SpanContext parent) {
-    // TODO - Verify we handle a no-op SpanContext
-    io.opentelemetry.trace.SpanContext actualParent = getActualContext(parent);
-
-    if (parentSpan == null && parentSpanContext == null) {
-      parentSpanContext = actualParent;
-    } else {
-      parentLinks.add(Link.create(actualParent));
+  public SpanBuilder asChildOf(Span parent) {
+    if (parent == null) {
+      return this;
     }
 
-    return this;
-  }
-
-  @Override
-  public SpanBuilder asChildOf(Span parent) {
     // TODO - Verify we handle a no-op Span
     io.opentelemetry.trace.Span actualParent = getActualSpan(parent);
 
@@ -78,7 +68,16 @@ final class SpanBuilderShim implements SpanBuilder {
   }
 
   @Override
+  public SpanBuilder asChildOf(SpanContext parent) {
+    return addReference(null, parent);
+  }
+
+  @Override
   public SpanBuilder addReference(String referenceType, SpanContext referencedContext) {
+    if (referencedContext == null) {
+      return this;
+    }
+
     // TODO - Use referenceType
     io.opentelemetry.trace.SpanContext actualContext = getActualContext(referencedContext);
 

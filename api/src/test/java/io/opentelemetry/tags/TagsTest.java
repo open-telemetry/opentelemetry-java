@@ -18,6 +18,7 @@ package io.opentelemetry.tags;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.OpenTelemetry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -28,6 +29,6 @@ public class TagsTest {
 
   @Test
   public void defaultTagger() {
-    assertThat(Tags.getTagger()).isInstanceOf(NoopTags.newNoopTagger().getClass());
+    assertThat(OpenTelemetry.getTagger()).isInstanceOf(NoopTags.newNoopTagger().getClass());
   }
 }

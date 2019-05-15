@@ -31,7 +31,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return ContextUtils.getValue(Context.current());
+    return ContextUtils.getValue();
   }
 
   @Override
@@ -65,6 +65,17 @@ public class TracerSdk implements Tracer {
     return null;
   }
 
+  /**
+   * Attempts to stop all the activity for this {@link Tracer}. Calls {@link
+   * SpanProcessor#shutdown()} for all registered {@link SpanProcessor}s.
+   *
+   * <p>This operation may block until all the Spans are processed. Must be called before turning
+   * off the main application to ensure all data are processed and exported.
+   *
+   * <p>After this is called all the newly created {@code Span}s will be no-op.
+   */
+  public void shutdown() {}
+
   // Defines an arbitrary scope of code as a traceable operation. Supports try-with-resources idiom.
   private static final class ScopeInSpan implements Scope {
     private final Context origContext;
@@ -75,7 +86,7 @@ public class TracerSdk implements Tracer {
      * @param span is the {@code Span} to be added to the current {@code io.grpc.Context}.
      */
     private ScopeInSpan(Span span) {
-      origContext = ContextUtils.withValue(Context.current(), span).attach();
+      origContext = ContextUtils.withValue(span).attach();
     }
 
     @Override

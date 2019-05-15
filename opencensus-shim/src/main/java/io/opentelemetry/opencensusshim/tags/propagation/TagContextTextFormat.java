@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
  * <p>Example of usage on the client:
  *
  * <pre>{@code
- * private static final Tagger tagger = Tags.getTagger();
+ * private static final Tagger tagger = OpenTelemetry.getTagger();
  * private static final TagContextTextFormat textFormat =
  *     Tags.getPropagationComponent().getCorrelationContextFormat();
  * private static final TagContextTextFormat.Setter setter =
@@ -56,7 +56,7 @@ import javax.annotation.Nullable;
  * <p>Example of usage on the server:
  *
  * <pre>{@code
- * private static final Tagger tagger = Tags.getTagger();
+ * private static final Tagger tagger = OpenTelemetry.getTagger();
  * private static final TagContextTextFormat textFormat =
  *     Tags.getPropagationComponent().getCorrelationContextFormat();
  * private static final TagContextTextFormat.Getter<HttpRequest> getter = ...;

@@ -16,13 +16,14 @@
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.context.NoopScope;
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TraceContextFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.resource.Resource;
-import java.util.Collections;
+import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -48,16 +49,16 @@ public final class NoopTrace {
   // No-Op implementation of the Tracer.
   private static final class NoopTracer implements Tracer {
     private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
-    private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new NoopHttpTextFormat();
+    private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new TraceContextFormat();
 
     @Override
     public Span getCurrentSpan() {
-      return BlankSpan.INSTANCE;
+      return ContextUtils.getValue();
     }
 
     @Override
     public Scope withSpan(Span span) {
-      return NoopScope.getInstance();
+      return SpanInScope.create(span);
     }
 
     @Override
@@ -166,27 +167,22 @@ public final class NoopTrace {
     private NoopBinaryFormat() {}
   }
 
-  private static final class NoopHttpTextFormat implements HttpTextFormat<SpanContext> {
+  private static final class SpanInScope implements Scope {
+    private final Context previous;
+    private final Context current;
 
-    private NoopHttpTextFormat() {}
+    private SpanInScope(Span span) {
+      current = ContextUtils.withValue(span);
+      previous = current.attach();
+    }
 
-    @Override
-    public List<String> fields() {
-      return Collections.emptyList();
+    public static SpanInScope create(Span span) {
+      return new SpanInScope(span);
     }
 
     @Override
-    public <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter) {
-      Utils.checkNotNull(spanContext, "spanContext");
-      Utils.checkNotNull(carrier, "carrier");
-      Utils.checkNotNull(setter, "setter");
-    }
-
-    @Override
-    public <C> SpanContext extract(C carrier, Getter<C> getter) {
-      Utils.checkNotNull(carrier, "carrier");
-      Utils.checkNotNull(getter, "getter");
-      return SpanContext.BLANK;
+    public void close() {
+      current.detach(previous);
     }
   }
 }

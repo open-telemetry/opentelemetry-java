@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags;
+package io.opentelemetry.metrics.spi;
+
+import io.opentelemetry.metrics.Meter;
 
 /**
- * Class to access the global {@link Tagger}.
+ * MeterProvider is a service provider for {@link Meter}. Fully qualified class name of the
+ * implementation should be registered in {@code
+ * META-INF/services/io.opentelemetry.metrics.spi.MeterProvider}. <br>
+ * <br>
+ * A specific implementation can be selected by a system property {@code
+ * io.opentelemetry.metrics.spi.MeterProvider} with value of fully qualified class name.
  *
- * @since 0.1.0
+ * @see io.opentelemetry.OpenTelemetry
  */
-public final class Tags {
-  private static final Tagger TAGGER = NoopTags.newNoopTagger();
-
-  private Tags() {}
+public interface MeterProvider {
 
   /**
-   * Returns the default {@code Tagger}.
+   * Creates a new meter instance.
    *
-   * @return the default {@code Tagger}.
+   * @return a meter instance.
    * @since 0.1.0
    */
-  public static Tagger getTagger() {
-    return TAGGER;
-  }
+  Meter create();
 }

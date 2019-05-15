@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TraceContextFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -56,5 +57,31 @@ public class TracerTest {
   @Test
   public void defaultSpanBuilderWithName() {
     assertThat(noopTracer.spanBuilder(SPAN_NAME).startSpan()).isSameAs(BlankSpan.INSTANCE);
+  }
+
+  @Test
+  public void defaultHttpTextFormat() {
+    assertThat(noopTracer.getHttpTextFormat()).isInstanceOf(TraceContextFormat.class);
+  }
+
+  @Test
+  public void testInProcessContext() {
+    Span span = noopTracer.spanBuilder(SPAN_NAME).startSpan();
+    Scope scope = noopTracer.withSpan(span);
+    try {
+      assertThat(noopTracer.getCurrentSpan()).isEqualTo(span);
+      Span secondSpan = noopTracer.spanBuilder(SPAN_NAME).startSpan();
+      Scope secondScope = noopTracer.withSpan(span);
+      try {
+        assertThat(noopTracer.getCurrentSpan()).isEqualTo(secondSpan);
+        secondScope.close();
+        assertThat(noopTracer.getCurrentSpan()).isEqualTo(span);
+      } finally {
+        secondScope.close();
+      }
+    } finally {
+      scope.close();
+    }
+    assertThat(noopTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
   }
 }

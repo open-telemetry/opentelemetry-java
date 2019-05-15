@@ -30,16 +30,19 @@ import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.metrics.Measurement;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.NoopMetrics;
+import io.opentelemetry.metrics.spi.MeterProvider;
 import io.opentelemetry.resource.Resource;
-import io.opentelemetry.spi.MeterProvider;
-import io.opentelemetry.spi.TracerProvider;
+import io.opentelemetry.tags.NoopTags;
 import io.opentelemetry.tags.TagMap;
+import io.opentelemetry.tags.Tagger;
+import io.opentelemetry.tags.spi.TaggerProvider;
 import io.opentelemetry.trace.NoopTrace;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Builder;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.spi.TracerProvider;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -65,6 +68,7 @@ public class OpenTelemetryTest {
     OpenTelemetry.reset();
     System.clearProperty(TracerProvider.class.getName());
     System.clearProperty(MeterProvider.class.getName());
+    System.clearProperty(TaggerProvider.class.getName());
   }
 
   @Test
@@ -73,6 +77,8 @@ public class OpenTelemetryTest {
     assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
     assertThat(OpenTelemetry.getMeter()).isInstanceOf(NoopMetrics.newNoopMeter().getClass());
     assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
+    assertThat(OpenTelemetry.getTagger()).isInstanceOf(NoopTags.newNoopTagger().getClass());
+    assertThat(OpenTelemetry.getTagger()).isEqualTo(OpenTelemetry.getTagger());
   }
 
   @Test
@@ -135,6 +141,37 @@ public class OpenTelemetryTest {
   public void testMeterNotFound() {
     System.setProperty(MeterProvider.class.getName(), "io.does.not.exists");
     OpenTelemetry.getMeter();
+  }
+
+  @Test
+  public void testTaggerLoadArbitrary() throws IOException {
+    File serviceFile = createService(TaggerProvider.class, FirstTagger.class, SecondTagger.class);
+    try {
+      assertTrue(
+          (OpenTelemetry.getTagger() instanceof FirstTagger)
+              || (OpenTelemetry.getTagger() instanceof SecondTagger));
+      assertThat(OpenTelemetry.getTagger()).isEqualTo(OpenTelemetry.getTagger());
+    } finally {
+      serviceFile.delete();
+    }
+  }
+
+  @Test
+  public void testTaggerSystemProperty() throws IOException {
+    File serviceFile = createService(TaggerProvider.class, FirstTagger.class, SecondTagger.class);
+    System.setProperty(TaggerProvider.class.getName(), SecondTagger.class.getName());
+    try {
+      assertThat(OpenTelemetry.getTagger()).isInstanceOf(SecondTagger.class);
+      assertThat(OpenTelemetry.getTagger()).isEqualTo(OpenTelemetry.getTagger());
+    } finally {
+      serviceFile.delete();
+    }
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testTaggerNotFound() {
+    System.setProperty(TaggerProvider.class.getName(), "io.does.not.exists");
+    OpenTelemetry.getTagger();
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {
@@ -247,5 +284,54 @@ public class OpenTelemetryTest {
 
     @Override
     public void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext) {}
+  }
+
+  public static class SecondTagger extends FirstTagger {
+    @Override
+    public Tagger create() {
+      return new SecondTagger();
+    }
+  }
+
+  public static class FirstTagger implements Tagger, TaggerProvider {
+    @Override
+    public Tagger create() {
+      return new FirstTagger();
+    }
+
+    @Override
+    public TagMap getCurrentTagMap() {
+      return null;
+    }
+
+    @Override
+    public TagMap.Builder emptyBuilder() {
+      return null;
+    }
+
+    @Override
+    public TagMap.Builder toBuilder(TagMap tags) {
+      return null;
+    }
+
+    @Override
+    public TagMap.Builder currentBuilder() {
+      return null;
+    }
+
+    @Override
+    public Scope withTagMap(TagMap tags) {
+      return null;
+    }
+
+    @Override
+    public BinaryFormat<TagMap> getBinaryFormat() {
+      return null;
+    }
+
+    @Override
+    public HttpTextFormat<TagMap> getHttpTextFormat() {
+      return null;
+    }
   }
 }
