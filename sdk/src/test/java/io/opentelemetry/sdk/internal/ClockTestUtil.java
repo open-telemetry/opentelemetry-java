@@ -18,38 +18,13 @@ package io.opentelemetry.sdk.internal;
 
 import com.google.protobuf.Timestamp;
 
-class ClockUtil {
-  static final int MILLIS_PER_SECOND = 1000;
+final class ClockTestUtil {
   static final int NANOS_PER_SECOND = 1000 * 1000 * 1000;
   static final int NANOS_PER_MILLI = 1000 * 1000;
-
-  static Timestamp fromNanos(long nanos) {
-    return Timestamp.newBuilder()
-        .setSeconds(floorDiv(nanos, ClockUtil.NANOS_PER_SECOND))
-        .setNanos((int) floorMod(nanos, ClockUtil.NANOS_PER_SECOND))
-        .build();
-  }
-
-  static Timestamp fromMillis(long epochMilli) {
-    long secs = ClockUtil.floorDiv(epochMilli, ClockUtil.MILLIS_PER_SECOND);
-    long mos = ClockUtil.floorMod(epochMilli, ClockUtil.MILLIS_PER_SECOND);
-    return createTimestamp(secs, (int) (mos * ClockUtil.NANOS_PER_MILLI)); // Safe
-  }
 
   static Timestamp createTimestamp(long seconds, int nanos) {
     return Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
   }
 
-  private static long floorDiv(long x, long y) {
-    long r = x / y;
-    // if the signs are different and modulo not zero, round down
-    if ((x ^ y) < 0 && (r * y != x)) {
-      r--;
-    }
-    return r;
-  }
-
-  private static long floorMod(long x, long y) {
-    return x - floorDiv(x, y) * y;
-  }
+  private ClockTestUtil() {}
 }
