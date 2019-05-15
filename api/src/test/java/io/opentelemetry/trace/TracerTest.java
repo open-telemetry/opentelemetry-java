@@ -31,6 +31,14 @@ import org.junit.runners.JUnit4;
 public class TracerTest {
   private static final Tracer noopTracer = NoopTrace.newNoopTracer();
   private static final String SPAN_NAME = "MySpanName";
+  private static final byte[] firstBytes =
+      new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
+  private static final SpanContext spanContext =
+      SpanContext.create(
+          TraceId.fromBytes(firstBytes, 0),
+          SpanId.fromBytes(firstBytes, 8),
+          TraceOptions.DEFAULT,
+          Tracestate.builder().build());
 
   @Test
   public void defaultGetCurrentSpan() {
@@ -111,5 +119,31 @@ public class TracerTest {
       scope.close();
     }
     assertThat(noopTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
+  }
+
+  @Test
+  public void testSpanContextPropagationExplicitParent() {
+    Span span = noopTracer.spanBuilderWithRemoteParent(SPAN_NAME, spanContext).startSpan();
+    assertThat(span.getContext()).isSameInstanceAs(spanContext);
+  }
+
+  @Test
+  public void testSpanContextPropagation() {
+    BlankSpan parent = new BlankSpan(spanContext);
+
+    Span span = noopTracer.spanBuilderWithExplicitParent(SPAN_NAME, parent).startSpan();
+    assertThat(span.getContext()).isSameInstanceAs(spanContext);
+  }
+
+  @Test
+  public void testSpanContextPropagationCurrentSpan() {
+    BlankSpan parent = new BlankSpan(spanContext);
+    Scope scope = noopTracer.withSpan(parent);
+    try {
+      Span span = noopTracer.spanBuilder(SPAN_NAME).startSpan();
+      assertThat(span.getContext()).isSameInstanceAs(spanContext);
+    } finally {
+      scope.close();
+    }
   }
 }
