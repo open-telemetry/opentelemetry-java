@@ -30,9 +30,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link NoopTags}. */
+/** Unit tests for {@link NoopTagger}. */
 @RunWith(JUnit4.class)
-public final class NoopTagsTest {
+public final class NoopTaggerTest {
   private static final TagKey KEY = TagKey.create("key");
   private static final TagValue VALUE = TagValue.create("value");
 
@@ -55,8 +55,8 @@ public final class NoopTagsTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void noopTagger() {
-    Tagger noopTagger = NoopTags.newNoopTagger();
+  public void defaultMethods() {
+    Tagger noopTagger = NoopTagger.create();
     assertThat(asList(noopTagger.getCurrentTagMap())).isEmpty();
     assertThat(asList(noopTagger.emptyBuilder().build())).isEmpty();
     assertThat(asList(noopTagger.toBuilder(TAG_MAP).build())).isEmpty();
@@ -65,43 +65,43 @@ public final class NoopTagsTest {
   }
 
   @Test
-  public void noopTagger_ToBuilder_DisallowsNull() {
-    Tagger noopTagger = NoopTags.newNoopTagger();
+  public void toBuilder_DisallowsNull() {
+    Tagger noopTagger = NoopTagger.create();
     thrown.expect(NullPointerException.class);
     noopTagger.toBuilder(null);
   }
 
   @Test
-  public void noopTagger_WithTagMap_DisallowsNull() {
-    Tagger noopTagger = NoopTags.newNoopTagger();
+  public void withTagMap_DisallowsNull() {
+    Tagger noopTagger = NoopTagger.create();
     thrown.expect(NullPointerException.class);
     noopTagger.withTagMap(null);
   }
 
   @Test
   public void noopTagMapBuilder_Put_DisallowsNullKey() {
-    TagMap.Builder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
+    TagMap.Builder noopBuilder = NoopTagger.create().currentBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(null, VALUE, Tag.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopTagMapBuilder_Put_DisallowsNullValue() {
-    TagMap.Builder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
+    TagMap.Builder noopBuilder = NoopTagger.create().currentBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(KEY, null, Tag.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopTagMapBuilder_Put_DisallowsNullTagMetadata() {
-    TagMap.Builder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
+    TagMap.Builder noopBuilder = NoopTagger.create().currentBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(KEY, VALUE, null);
   }
 
   @Test
   public void noopTagMapBuilder_Remove_DisallowsNullKey() {
-    TagMap.Builder noopBuilder = NoopTags.newNoopTagger().currentBuilder();
+    TagMap.Builder noopBuilder = NoopTagger.create().currentBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.remove(null);
   }

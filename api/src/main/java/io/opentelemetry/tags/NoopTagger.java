@@ -26,13 +26,14 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * No-op implementations of tagging classes.
+ * No-op implementations of {@link Tagger}.
  *
  * @since 0.1.0
  */
-public final class NoopTags {
-
-  private NoopTags() {}
+@Immutable
+public final class NoopTagger implements Tagger {
+  private static final BinaryFormat<TagMap> BINARY_FORMAT = new NoopBinaryFormat();
+  private static final HttpTextFormat<TagMap> HTTP_TEXT_FORMAT = new NoopHttpTextFormat();
 
   /**
    * Returns a {@code Tagger} that is a no-op implementation for {@link Tagger}.
@@ -40,51 +41,45 @@ public final class NoopTags {
    * @return a {@code Tagger} that is a no-op implementation for {@link Tagger}.
    * @since 0.1.0
    */
-  public static Tagger newNoopTagger() {
+  public static Tagger create() {
     return new NoopTagger();
   }
 
-  @Immutable
-  private static final class NoopTagger implements Tagger {
-    private static final BinaryFormat<TagMap> BINARY_FORMAT = new NoopBinaryFormat();
-    private static final HttpTextFormat<TagMap> HTTP_TEXT_FORMAT = new NoopHttpTextFormat();
+  @Override
+  public TagMap getCurrentTagMap() {
+    return EmptyTagMap.INSTANCE;
+  }
 
-    @Override
-    public TagMap getCurrentTagMap() {
-      return EmptyTagMap.INSTANCE;
-    }
+  @Override
+  public TagMap.Builder emptyBuilder() {
+    return new NoopTagMapBuilder();
+  }
 
-    @Override
-    public TagMap.Builder emptyBuilder() {
-      return new NoopTagMapBuilder();
-    }
+  @Override
+  public TagMap.Builder toBuilder(TagMap tags) {
+    Utils.checkNotNull(tags, "tags");
+    return new NoopTagMapBuilder();
+  }
 
-    @Override
-    public TagMap.Builder toBuilder(TagMap tags) {
-      Utils.checkNotNull(tags, "tags");
-      return new NoopTagMapBuilder();
-    }
+  @Override
+  public TagMap.Builder currentBuilder() {
+    return new NoopTagMapBuilder();
+  }
 
-    @Override
-    public TagMap.Builder currentBuilder() {
-      return new NoopTagMapBuilder();
-    }
+  @Override
+  public Scope withTagMap(TagMap tags) {
+    Utils.checkNotNull(tags, "tags");
+    return NoopScope.getInstance();
+  }
 
-    @Override
-    public Scope withTagMap(TagMap tags) {
-      Utils.checkNotNull(tags, "tags");
-      return NoopScope.getInstance();
-    }
+  @Override
+  public BinaryFormat<TagMap> getBinaryFormat() {
+    return BINARY_FORMAT;
+  }
 
-    @Override
-    public BinaryFormat<TagMap> getBinaryFormat() {
-      return BINARY_FORMAT;
-    }
-
-    @Override
-    public HttpTextFormat<TagMap> getHttpTextFormat() {
-      return HTTP_TEXT_FORMAT;
-    }
+  @Override
+  public HttpTextFormat<TagMap> getHttpTextFormat() {
+    return HTTP_TEXT_FORMAT;
   }
 
   @Immutable

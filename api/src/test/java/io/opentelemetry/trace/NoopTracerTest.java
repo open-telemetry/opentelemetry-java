@@ -24,12 +24,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link Tracer}. */
+/** Unit tests for {@link NoopTracer}. */
 @RunWith(JUnit4.class)
 // Need to suppress warnings for MustBeClosed because Java-6 does not support try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
-public class TracerTest {
-  private static final Tracer noopTracer = NoopTrace.newNoopTracer();
+public class NoopTracerTest {
+  private static final Tracer noopTracer = NoopTracer.create();
   private static final String SPAN_NAME = "MySpanName";
   private static final byte[] firstBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
