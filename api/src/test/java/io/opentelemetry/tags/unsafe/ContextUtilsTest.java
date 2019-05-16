@@ -35,10 +35,29 @@ public final class ContextUtilsTest {
   }
 
   @Test
+  public void testGetCurrentTagMap_DefaultContext_WithoutExplicitContext() {
+    TagMap tags = ContextUtils.getValue();
+    assertThat(tags).isNotNull();
+    assertThat(tags.getIterator().hasNext()).isFalse();
+  }
+
+  @Test
   public void testGetCurrentTagMap_ContextSetToNull() {
-    Context orig = ContextUtils.withValue(Context.current(), null).attach();
+    Context orig = ContextUtils.withValue(null, Context.current()).attach();
     try {
       TagMap tags = ContextUtils.getValue(Context.current());
+      assertThat(tags).isNotNull();
+      assertThat(tags.getIterator().hasNext()).isFalse();
+    } finally {
+      Context.current().detach(orig);
+    }
+  }
+
+  @Test
+  public void testGetCurrentTagMap_ContextSetToNull_WithoutExplicitContext() {
+    Context orig = ContextUtils.withValue(null).attach();
+    try {
+      TagMap tags = ContextUtils.getValue();
       assertThat(tags).isNotNull();
       assertThat(tags.getIterator().hasNext()).isFalse();
     } finally {
