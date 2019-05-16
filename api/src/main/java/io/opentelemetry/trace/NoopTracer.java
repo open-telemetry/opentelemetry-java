@@ -58,7 +58,7 @@ public final class NoopTracer implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return NoopSpanBuilder.create(spanName);
+    return NoopSpanBuilder.create(this, spanName);
   }
 
   @Override
@@ -90,14 +90,20 @@ public final class NoopTracer implements Tracer {
 
   // Noop implementation of Span.Builder.
   private static final class NoopSpanBuilder implements Span.Builder {
-    static NoopSpanBuilder create(String spanName) {
-      return new NoopSpanBuilder(spanName);
+    static NoopSpanBuilder create(Tracer tracer, String spanName) {
+      return new NoopSpanBuilder(tracer, spanName);
     }
 
-    private final SpanContext spanContext;
+    private final Tracer tracer;
+    private boolean isRootSpan;
+    private SpanContext spanContext;
 
     @Override
     public Span startSpan() {
+      if (spanContext == null && !isRootSpan) {
+        spanContext = tracer.getCurrentSpan().getContext();
+      }
+
       return spanContext != null && !SpanContext.BLANK.equals(spanContext)
           ? new BlankSpan(spanContext)
           : BlankSpan.INSTANCE;
@@ -106,17 +112,20 @@ public final class NoopTracer implements Tracer {
     @Override
     public NoopSpanBuilder setParent(Span parent) {
       Utils.checkNotNull(parent, "parent");
+      spanContext = parent.getContext();
       return this;
     }
 
     @Override
     public NoopSpanBuilder setParent(SpanContext remoteParent) {
       Utils.checkNotNull(remoteParent, "remoteParent");
+      spanContext = remoteParent;
       return this;
     }
 
     @Override
     public NoopSpanBuilder setNoParent() {
+      isRootSpan = true;
       return this;
     }
 
@@ -145,9 +154,10 @@ public final class NoopTracer implements Tracer {
       return this;
     }
 
-    private NoopSpanBuilder(String name, SpanContext spanContext) {
+    private NoopSpanBuilder(Tracer tracer, String name) {
+      Utils.checkNotNull(tracer, "tracer");
       Utils.checkNotNull(name, "name");
-      this.spanContext = spanContext;
+      this.tracer = tracer;
     }
   }
 

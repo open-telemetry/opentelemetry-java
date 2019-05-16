@@ -95,7 +95,7 @@ public class NoopTracerTest {
 
   @Test
   public void testSpanContextPropagationExplicitParent() {
-    Span span = noopTracer.spanBuilderWithRemoteParent(SPAN_NAME, spanContext).startSpan();
+    Span span = noopTracer.spanBuilder(SPAN_NAME).setParent(spanContext).startSpan();
     assertThat(span.getContext()).isSameInstanceAs(spanContext);
   }
 
@@ -103,7 +103,7 @@ public class NoopTracerTest {
   public void testSpanContextPropagation() {
     BlankSpan parent = new BlankSpan(spanContext);
 
-    Span span = noopTracer.spanBuilderWithExplicitParent(SPAN_NAME, parent).startSpan();
+    Span span = noopTracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
     assertThat(span.getContext()).isSameInstanceAs(spanContext);
   }
 
