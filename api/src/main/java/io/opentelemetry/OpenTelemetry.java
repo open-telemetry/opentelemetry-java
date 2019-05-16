@@ -17,12 +17,12 @@
 package io.opentelemetry;
 
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.NoopMetrics;
+import io.opentelemetry.metrics.NoopMeter;
 import io.opentelemetry.metrics.spi.MeterProvider;
-import io.opentelemetry.tags.NoopTags;
+import io.opentelemetry.tags.NoopTagger;
 import io.opentelemetry.tags.Tagger;
 import io.opentelemetry.tags.spi.TaggerProvider;
-import io.opentelemetry.trace.NoopTrace;
+import io.opentelemetry.trace.NoopTracer;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.spi.TracerProvider;
 import java.util.ServiceLoader;
@@ -49,7 +49,7 @@ public final class OpenTelemetry {
   /**
    * Returns a singleton {@link Tracer}.
    *
-   * @return registered tracer or noop via {@link NoopTrace#newNoopTracer()}.
+   * @return registered tracer or noop via {@link NoopTracer#create()}.
    * @throws IllegalStateException if a specified tracer (via system properties) could not be found.
    * @since 0.1.0
    */
@@ -60,7 +60,7 @@ public final class OpenTelemetry {
   /**
    * Returns a singleton {@link Meter}.
    *
-   * @return registered meter or noop via {@link NoopMetrics#newNoopMeter()}.
+   * @return registered meter or noop via {@link NoopMeter#create()}.
    * @throws IllegalStateException if a specified meter (via system properties) could not be found.
    * @since 0.1.0
    */
@@ -71,7 +71,7 @@ public final class OpenTelemetry {
   /**
    * Returns a singleton {@link Tagger}.
    *
-   * @return registered meter or noop via {@link NoopTags#newNoopTagger()}.
+   * @return registered meter or noop via {@link NoopTagger#create()}.
    * @throws IllegalStateException if a specified meter (via system properties) could not be found.
    * @since 0.1.0
    */
@@ -117,11 +117,11 @@ public final class OpenTelemetry {
 
   private OpenTelemetry() {
     TracerProvider tracerProvider = loadSpi(TracerProvider.class);
-    tracer = tracerProvider != null ? tracerProvider.create() : NoopTrace.newNoopTracer();
+    tracer = tracerProvider != null ? tracerProvider.create() : NoopTracer.create();
     MeterProvider meterProvider = loadSpi(MeterProvider.class);
-    meter = meterProvider != null ? meterProvider.create() : NoopMetrics.newNoopMeter();
+    meter = meterProvider != null ? meterProvider.create() : NoopMeter.create();
     TaggerProvider taggerProvider = loadSpi(TaggerProvider.class);
-    tagger = taggerProvider != null ? taggerProvider.create() : NoopTags.newNoopTagger();
+    tagger = taggerProvider != null ? taggerProvider.create() : NoopTagger.create();
   }
 
   // for testing

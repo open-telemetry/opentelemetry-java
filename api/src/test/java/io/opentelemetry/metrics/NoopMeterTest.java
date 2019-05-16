@@ -32,12 +32,12 @@ import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link NoopMeter}. */
 @RunWith(JUnit4.class)
-public final class NoopMeter {
+public final class NoopMeterTest {
   private static final Tag TAG =
       Tag.create(
           TagKey.create("key"), TagValue.create("value"), Tag.METADATA_UNLIMITED_PROPAGATION);
 
-  private static final Meter meter = NoopMetrics.newNoopMeter();
+  private static final Meter meter = NoopMeter.create();
 
   private static final Measure MEASURE =
       meter
@@ -63,6 +63,34 @@ public final class NoopMeter {
       };
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
+
+  @Test
+  public void noopAddLongGauge_NullName() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.gaugeLongBuilder(null);
+  }
+
+  @Test
+  public void noopAddDoubleGauge_NullName() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.gaugeDoubleBuilder(null);
+  }
+
+  @Test
+  public void noopAddDoubleCumulative_NullName() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.counterDoubleBuilder(null);
+  }
+
+  @Test
+  public void noopAddLongCumulative_NullName() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.counterLongBuilder(null);
+  }
 
   // The NoopStatsRecorder should do nothing, so this test just checks that record doesn't throw an
   // exception.

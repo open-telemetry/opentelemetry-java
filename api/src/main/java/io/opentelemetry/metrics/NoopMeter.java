@@ -27,12 +27,16 @@ import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * No-op implementations of metrics classes.
+ * No-op implementations of {@link Meter}.
  *
  * @since 0.1.0
  */
-public final class NoopMetrics {
-  private NoopMetrics() {}
+public final class NoopMeter implements Meter {
+  /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
+  private static final String ERROR_MESSAGE_INVALID_NAME =
+      "Name should be a ASCII string with a length no greater than "
+          + NAME_MAX_LENGTH
+          + " characters.";
 
   /**
    * Returns an instance that is a no-op implementations for {@link Meter}.
@@ -40,66 +44,58 @@ public final class NoopMetrics {
    * @return an instance that is a no-op implementations for {@link Meter}
    * @since 0.1.0
    */
-  public static Meter newNoopMeter() {
+  public static Meter create() {
     return new NoopMeter();
   }
 
-  private static final class NoopMeter implements Meter {
-    /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
-    private static final String ERROR_MESSAGE_INVALID_NAME =
-        "Name should be a ASCII string with a length no greater than "
-            + NAME_MAX_LENGTH
-            + " characters.";
+  @Override
+  public GaugeLong.Builder gaugeLongBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    return new NoopGaugeLong.NoopBuilder();
+  }
 
-    @Override
-    public GaugeLong.Builder gaugeLongBuilder(String name) {
-      Utils.checkNotNull(name, "name");
-      return new NoopGaugeLong.NoopBuilder();
-    }
+  @Override
+  public GaugeDouble.Builder gaugeDoubleBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    return new NoopGaugeDouble.NoopBuilder();
+  }
 
-    @Override
-    public GaugeDouble.Builder gaugeDoubleBuilder(String name) {
-      Utils.checkNotNull(name, "name");
-      return new NoopGaugeDouble.NoopBuilder();
-    }
+  @Override
+  public CounterDouble.Builder counterDoubleBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    return new NoopCounterDouble.NoopBuilder();
+  }
 
-    @Override
-    public CounterDouble.Builder counterDoubleBuilder(String name) {
-      Utils.checkNotNull(name, "name");
-      return new NoopCounterDouble.NoopBuilder();
-    }
+  @Override
+  public CounterLong.Builder counterLongBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    return new NoopCounterLong.NoopBuilder();
+  }
 
-    @Override
-    public CounterLong.Builder counterLongBuilder(String name) {
-      Utils.checkNotNull(name, "name");
-      return new NoopCounterLong.NoopBuilder();
-    }
+  @Override
+  public Measure.Builder measureBuilder(String name) {
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
+    return new NoopMeasure.NoopBuilder();
+  }
 
-    @Override
-    public Measure.Builder measureBuilder(String name) {
-      Utils.checkArgument(
-          StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
-          ERROR_MESSAGE_INVALID_NAME);
-      return new NoopMeasure.NoopBuilder();
-    }
+  @Override
+  public void record(List<Measurement> measurements) {
+    Utils.checkNotNull(measurements, "measurements");
+  }
 
-    @Override
-    public void record(List<Measurement> measurements) {
-      Utils.checkNotNull(measurements, "measurements");
-    }
+  @Override
+  public void record(List<Measurement> measurements, TagMap tags) {
+    Utils.checkNotNull(measurements, "measurements");
+    Utils.checkNotNull(tags, "tags");
+  }
 
-    @Override
-    public void record(List<Measurement> measurements, TagMap tags) {
-      Utils.checkNotNull(measurements, "measurements");
-      Utils.checkNotNull(tags, "tags");
-    }
-
-    @Override
-    public void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext) {
-      Utils.checkNotNull(tags, "tags");
-      Utils.checkNotNull(measurements, "measurements");
-      Utils.checkNotNull(spanContext, "spanContext");
-    }
+  @Override
+  public void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext) {
+    Utils.checkNotNull(tags, "tags");
+    Utils.checkNotNull(measurements, "measurements");
+    Utils.checkNotNull(spanContext, "spanContext");
   }
 
   /** No-op implementations of GaugeLong class. */

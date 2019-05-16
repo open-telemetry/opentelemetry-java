@@ -28,13 +28,13 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 /**
- * No-op implementations of trace classes.
+ * No-op implementations of {@link Tracer}.
  *
  * @since 0.1.0
  */
-public final class NoopTrace {
-
-  private NoopTrace() {}
+public final class NoopTracer implements Tracer {
+  private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
+  private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new TraceContextFormat();
 
   /**
    * Returns a {@code Tracer} instance that is no-op implementations.
@@ -42,68 +42,62 @@ public final class NoopTrace {
    * @return a {@code Tracer} instance that is no-op implementations.
    * @since 0.1.0
    */
-  public static Tracer newNoopTracer() {
+  public static Tracer create() {
     return new NoopTracer();
   }
 
-  // No-Op implementation of the Tracer.
-  private static final class NoopTracer implements Tracer {
-    private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
-    private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new TraceContextFormat();
-
-    @Override
-    public Span getCurrentSpan() {
-      return ContextUtils.getValue();
-    }
-
-    @Override
-    public Scope withSpan(Span span) {
-      return SpanInScope.create(span);
-    }
-
-    @Override
-    public Span.Builder spanBuilder(String spanName) {
-      return spanBuilderWithExplicitParent(spanName, getCurrentSpan());
-    }
-
-    @Override
-    public Span.Builder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {
-      return NoopSpanBuilder.createWithParent(spanName, parent);
-    }
-
-    @Override
-    public Span.Builder spanBuilderWithRemoteParent(
-        String spanName, @Nullable SpanContext remoteParentSpanContext) {
-      return NoopSpanBuilder.createWithRemoteParent(spanName, remoteParentSpanContext);
-    }
-
-    @Override
-    public void recordSpanData(SpanData spanData) {
-      Utils.checkNotNull(spanData, "spanData");
-    }
-
-    @Override
-    public void setResource(Resource resource) {
-      // do nothing
-    }
-
-    @Override
-    public Resource getResource() {
-      return Resource.getEmpty();
-    }
-
-    @Override
-    public BinaryFormat<SpanContext> getBinaryFormat() {
-      return BINARY_FORMAT;
-    }
-
-    @Override
-    public HttpTextFormat<SpanContext> getHttpTextFormat() {
-      return HTTP_TEXT_FORMAT;
-    }
-
-    private NoopTracer() {}
+  @Override
+  public Span getCurrentSpan() {
+    return ContextUtils.getValue();
   }
+
+  @Override
+  public Scope withSpan(Span span) {
+    return SpanInScope.create(span);
+  }
+
+  @Override
+  public Span.Builder spanBuilder(String spanName) {
+    return spanBuilderWithExplicitParent(spanName, getCurrentSpan());
+  }
+
+  @Override
+  public Span.Builder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {
+    return NoopSpanBuilder.createWithParent(spanName, parent);
+  }
+
+  @Override
+  public Span.Builder spanBuilderWithRemoteParent(
+      String spanName, @Nullable SpanContext remoteParentSpanContext) {
+    return NoopSpanBuilder.createWithRemoteParent(spanName, remoteParentSpanContext);
+  }
+
+  @Override
+  public void recordSpanData(SpanData spanData) {
+    Utils.checkNotNull(spanData, "spanData");
+  }
+
+  @Override
+  public void setResource(Resource resource) {
+    // do nothing
+  }
+
+  @Override
+  public Resource getResource() {
+    return Resource.getEmpty();
+  }
+
+  @Override
+  public BinaryFormat<SpanContext> getBinaryFormat() {
+    return BINARY_FORMAT;
+  }
+
+  @Override
+  public HttpTextFormat<SpanContext> getHttpTextFormat() {
+    return HTTP_TEXT_FORMAT;
+  }
+
+  private NoopTracer() {}
 
   // Noop implementation of Span.Builder.
   private static final class NoopSpanBuilder implements Span.Builder {
@@ -116,7 +110,7 @@ public final class NoopTrace {
       return new NoopSpanBuilder(spanName, remoteParentSpanContext);
     }
 
-    private SpanContext spanContext;
+    private final SpanContext spanContext;
 
     @Override
     public Span startSpan() {
