@@ -156,7 +156,7 @@ public interface Span {
    * Adds a {@link Link} to the {@code Span}.
    *
    * <p>Used (for example) in batching operations, where a single batch handler processes multiple
-   * requests from different traces.
+   * requests from different traces or the same trace.
    *
    * @param link the link to add.
    * @since 0.1.0
@@ -321,7 +321,8 @@ public interface Span {
      * Adds a {@link Link} to the newly created {@code Span}.
      *
      * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
-     * operations, where a single batch handler processes multiple requests from different traces.
+     * operations, where a single batch handler processes multiple requests from different traces or
+     * the same trace.
      *
      * @param link the {@link Link} to be added.
      * @return this.
