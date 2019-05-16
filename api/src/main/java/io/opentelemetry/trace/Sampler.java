@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
  *
  * @since 0.1.0
  */
-public abstract class Sampler {
+public interface Sampler {
   /**
    * Called during {@link Span} creation to make a sampling decision.
    *
@@ -40,7 +40,7 @@ public abstract class Sampler {
    * @return {@code true} if the {@code Span} is sampled.
    * @since 0.1.0
    */
-  public abstract boolean shouldSample(
+  boolean shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
       TraceId traceId,
@@ -57,5 +57,5 @@ public abstract class Sampler {
    * @return the description of this {@code Sampler}.
    * @since 0.1.0
    */
-  public abstract String getDescription();
+  String getDescription();
 }
