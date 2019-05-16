@@ -23,10 +23,10 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A link to a {@link Span} from a different trace.
+ * A link to a {@link Span}.
  *
  * <p>Used (for example) in batching operations, where a single batch handler processes multiple
- * requests from different traces.
+ * requests from different traces. Link can be also used to reference spans from the same trace.
  *
  * @since 0.1.0
  */

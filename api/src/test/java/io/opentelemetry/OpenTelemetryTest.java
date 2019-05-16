@@ -29,16 +29,15 @@ import io.opentelemetry.metrics.GaugeLong;
 import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.metrics.Measurement;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.NoopMetrics;
+import io.opentelemetry.metrics.NoopMeter;
 import io.opentelemetry.metrics.spi.MeterProvider;
 import io.opentelemetry.resource.Resource;
-import io.opentelemetry.tags.NoopTags;
+import io.opentelemetry.tags.NoopTagger;
 import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.tags.Tagger;
 import io.opentelemetry.tags.spi.TaggerProvider;
-import io.opentelemetry.trace.NoopTrace;
+import io.opentelemetry.trace.NoopTracer;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Builder;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
@@ -73,11 +72,11 @@ public class OpenTelemetryTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracer()).isInstanceOf(NoopTrace.newNoopTracer().getClass());
+    assertThat(OpenTelemetry.getTracer()).isInstanceOf(NoopTracer.create().getClass());
     assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
-    assertThat(OpenTelemetry.getMeter()).isInstanceOf(NoopMetrics.newNoopMeter().getClass());
+    assertThat(OpenTelemetry.getMeter()).isInstanceOf(NoopMeter.create().getClass());
     assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
-    assertThat(OpenTelemetry.getTagger()).isInstanceOf(NoopTags.newNoopTagger().getClass());
+    assertThat(OpenTelemetry.getTagger()).isInstanceOf(NoopTagger.create().getClass());
     assertThat(OpenTelemetry.getTagger()).isEqualTo(OpenTelemetry.getTagger());
   }
 
@@ -212,7 +211,7 @@ public class OpenTelemetryTest {
     }
 
     @Override
-    public Builder spanBuilder(String spanName) {
+    public Span.Builder spanBuilder(String spanName) {
       return null;
     }
 

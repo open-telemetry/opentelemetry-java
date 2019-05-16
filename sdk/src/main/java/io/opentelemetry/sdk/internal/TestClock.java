@@ -16,8 +16,9 @@
 
 package io.opentelemetry.sdk.internal;
 
-import com.google.common.math.LongMath;
 import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Durations;
+import com.google.protobuf.util.Timestamps;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -29,10 +30,10 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public class TestClock implements Clock {
   @GuardedBy("this")
-  private long currentNanos;
+  private Timestamp currentTimestamp;
 
-  private TestClock(Timestamp time) {
-    currentNanos = getNanos(time);
+  private TestClock(Timestamp timestamp) {
+    currentTimestamp = timestamp;
   }
 
   /**
@@ -43,28 +44,28 @@ public class TestClock implements Clock {
    */
   public static TestClock create() {
     // Set Time to Tuesday, May 7, 2019 12:00:00 AM GMT-07:00 DST
-    return create(ClockUtil.createTimestamp(1557212400, 0));
+    return create(Timestamps.fromSeconds(1557212400));
   }
 
   /**
    * Creates a clock with the given time.
    *
-   * @param time the initial time.
+   * @param timestamp the initial time.
    * @return a new {@code TestClock} with the given time.
    * @since 0.1.0
    */
-  public static TestClock create(Timestamp time) {
-    return new TestClock(time);
+  public static TestClock create(Timestamp timestamp) {
+    return new TestClock(timestamp);
   }
 
   /**
    * Sets the time.
    *
-   * @param time the new time.
+   * @param timestamp the new time.
    * @since 0.1.0
    */
-  public synchronized void setTime(Timestamp time) {
-    currentNanos = getNanos(time);
+  public synchronized void setTime(Timestamp timestamp) {
+    currentTimestamp = timestamp;
   }
 
   /**
@@ -74,22 +75,16 @@ public class TestClock implements Clock {
    * @since 0.1.0
    */
   public synchronized void advanceMillis(long millis) {
-    currentNanos = LongMath.checkedAdd(currentNanos, millis * ClockUtil.NANOS_PER_MILLI);
+    currentTimestamp = Timestamps.add(currentTimestamp, Durations.fromMillis(millis));
   }
 
   @Override
   public synchronized Timestamp now() {
-    return ClockUtil.fromNanos(currentNanos);
+    return currentTimestamp;
   }
 
   @Override
   public synchronized long nowNanos() {
-    return currentNanos;
-  }
-
-  // Converts Timestamp into nanoseconds since time 0 and throws an exception if it overflows.
-  private static long getNanos(Timestamp time) {
-    return LongMath.checkedAdd(
-        LongMath.checkedMultiply(time.getSeconds(), ClockUtil.NANOS_PER_SECOND), time.getNanos());
+    return Timestamps.toNanos(currentTimestamp);
   }
 }

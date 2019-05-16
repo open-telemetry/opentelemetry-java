@@ -17,33 +17,14 @@
 package io.opentelemetry.sdk.internal;
 
 import com.google.protobuf.Timestamp;
-import com.google.protobuf.util.Timestamps;
-import javax.annotation.concurrent.ThreadSafe;
 
-/** A {@link Clock} that uses {@link System#currentTimeMillis()} and {@link System#nanoTime()}. */
-@ThreadSafe
-public final class MillisClock implements Clock {
+final class ClockTestUtil {
+  static final int NANOS_PER_SECOND = 1000 * 1000 * 1000;
+  static final int NANOS_PER_MILLI = 1000 * 1000;
 
-  private static final MillisClock INSTANCE = new MillisClock();
-
-  private MillisClock() {}
-
-  /**
-   * Returns a {@code MillisClock}.
-   *
-   * @return a {@code MillisClock}.
-   */
-  public static MillisClock getInstance() {
-    return INSTANCE;
+  static Timestamp createTimestamp(long seconds, int nanos) {
+    return Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
   }
 
-  @Override
-  public Timestamp now() {
-    return Timestamps.fromMillis(System.currentTimeMillis());
-  }
-
-  @Override
-  public long nowNanos() {
-    return System.nanoTime();
-  }
+  private ClockTestUtil() {}
 }
