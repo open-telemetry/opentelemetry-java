@@ -321,6 +321,7 @@ public interface Span {
      *
      * @param parent the {@code Span} used as parent.
      * @return this.
+     * @see #setNoParent()
      * @since 0.1.0
      */
     Builder setParent(Span parent);
@@ -335,6 +336,8 @@ public interface Span {
      *
      * <p>If no {@link SpanContext} is available, users must call {@link #setNoParent()} in order to
      * create a root {@code Span} for a new trace.
+     *
+     * <p>It is an error to specify a {@code null} parent.
      *
      * @param remoteParent the {@link SpanContext} used as parent.
      * @return this.
