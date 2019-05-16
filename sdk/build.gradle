@@ -18,6 +18,7 @@ dependencies {
     api project(':opentelemetry-api')
 
     implementation "com.google.protobuf:protobuf-java:${protobufVersion}",
+            "com.google.protobuf:protobuf-java-util:${protobufVersion}",
             "io.grpc:grpc-protobuf:${grpcVersion}",
             "io.grpc:grpc-stub:${grpcVersion}"
 
