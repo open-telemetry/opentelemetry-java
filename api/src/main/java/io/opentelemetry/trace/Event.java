@@ -16,30 +16,23 @@
 
 package io.opentelemetry.trace;
 
-import com.google.auto.value.AutoValue;
-import io.opentelemetry.internal.Utils;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A text annotation with a set of attributes.
  *
  * @since 0.1.0
  */
-@Immutable
-public abstract class Event {
-  private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES =
-      Collections.unmodifiableMap(Collections.<String, AttributeValue>emptyMap());
-
+@ThreadSafe
+public interface Event {
   /**
    * Return the name of the {@code Event}.
    *
    * @return the name of the {@code Event}.
    * @since 0.1.0
    */
-  public abstract String getName();
+  String getName();
 
   /**
    * Return the attributes of the {@code Event}.
@@ -47,46 +40,5 @@ public abstract class Event {
    * @return the attributes of the {@code Event}.
    * @since 0.1.0
    */
-  public abstract Map<String, AttributeValue> getAttributes();
-
-  /** Protected constructor to allow subclassing this class. */
-  protected Event() {}
-
-  /**
-   * Returns a new {@code Event} with the given name.
-   *
-   * @param name the text name of the {@code Event}.
-   * @return a new {@code Event} with the given name.
-   * @throws NullPointerException if {@code name} is {@code null}.
-   * @since 0.1.0
-   */
-  public static Event create(String name) {
-    return new AutoValue_Event_ImmutableEvent(name, EMPTY_ATTRIBUTES);
-  }
-
-  /**
-   * Returns a new {@code Event} with the given name and set of attributes.
-   *
-   * @param name the text name of the {@code Event}.
-   * @param attributes the attributes of the {@code Event}.
-   * @return a new {@code Event} with the given name and set of attributes.
-   * @throws NullPointerException if {@code name} or {@code attributes} are {@code null}.
-   * @since 0.1.0
-   */
-  public static Event create(String name, Map<String, AttributeValue> attributes) {
-    return new AutoValue_Event_ImmutableEvent(
-        name,
-        Collections.unmodifiableMap(new HashMap<>(Utils.checkNotNull(attributes, "attributes"))));
-  }
-
-  /**
-   * A text annotation with a set of attributes.
-   *
-   * @since 0.1.0
-   */
-  @Immutable
-  @AutoValue
-  abstract static class ImmutableEvent extends Event {
-    ImmutableEvent() {}
-  }
+  Map<String, AttributeValue> getAttributes();
 }

@@ -34,7 +34,7 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 @Immutable
-public final class MessageEvent extends Event {
+public final class MessageEvent implements Event {
 
   private static final String EVENT_NAME = "message";
   private static final String TYPE = "message.type";

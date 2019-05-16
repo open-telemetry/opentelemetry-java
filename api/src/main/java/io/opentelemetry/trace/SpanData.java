@@ -176,6 +176,46 @@ public abstract class SpanData {
   SpanData() {}
 
   /**
+   * An immutable implementation of the {@link io.opentelemetry.trace.Event}.
+   *
+   * @since 0.1.0
+   */
+  @Immutable
+  @AutoValue
+  public abstract static class Event implements io.opentelemetry.trace.Event {
+    private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES =
+        Collections.unmodifiableMap(Collections.<String, AttributeValue>emptyMap());
+
+    /**
+     * Returns a new {@code Event} with the given name.
+     *
+     * @param name the text name of the {@code Event}.
+     * @return a new {@code Event} with the given name.
+     * @throws NullPointerException if {@code name} is {@code null}.
+     * @since 0.1.0
+     */
+    public static io.opentelemetry.trace.Event create(String name) {
+      return new AutoValue_SpanData_Event(name, EMPTY_ATTRIBUTES);
+    }
+
+    /**
+     * Returns a new {@code Event} with the given name and set of attributes.
+     *
+     * @param name the text name of the {@code Event}.
+     * @param attributes the attributes of the {@code Event}.
+     * @return a new {@code Event} with the given name and set of attributes.
+     * @throws NullPointerException if {@code name} or {@code attributes} are {@code null}.
+     * @since 0.1.0
+     */
+    public static io.opentelemetry.trace.Event create(
+        String name, Map<String, AttributeValue> attributes) {
+      return new AutoValue_SpanData_Event(
+          name,
+          Collections.unmodifiableMap(new HashMap<>(Utils.checkNotNull(attributes, "attributes"))));
+    }
+  }
+
+  /**
    * A timed event representation.
    *
    * @since 0.1.0
