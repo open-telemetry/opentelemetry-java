@@ -316,11 +316,11 @@ public interface Span {
      * process. Using its {@code SpanContext} as parent remains as a valid, albeit inefficient,
      * operation.
      *
-     * <p>If called multiple times, only the last specified value will be used. It is an error to
-     * specify a {@code null} parent.
+     * <p>If called multiple times, only the last specified value will be used.
      *
      * @param parent the {@code Span} used as parent.
      * @return this.
+     * @throws NullPointerException if {@code parent} is {@code null}.
      * @see #setNoParent()
      * @since 0.1.0
      */
@@ -337,10 +337,11 @@ public interface Span {
      * <p>If no {@link SpanContext} is available, users must call {@link #setNoParent()} in order to
      * create a root {@code Span} for a new trace.
      *
-     * <p>It is an error to specify a {@code null} parent.
+     * <p>If called multiple times, only the last specified value will be used.
      *
      * @param remoteParent the {@link SpanContext} used as parent.
      * @return this.
+     * @throws NullPointerException if {@code remoteParent} is {@code null}.
      * @see #setParent(Span parent)
      * @see #setNoParent()
      * @since 0.1.0
