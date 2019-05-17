@@ -88,7 +88,7 @@ public interface HttpTextFormat<V> {
    *
    * <p>If the value could not be parsed, the underlying implementation will decide to return an
    * object representing either an empty value, an invalid value, or a valid value. Implementation
-   * must not return {#code null}.
+   * must not return {@code null}.
    *
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param getter invoked for each propagation key to get.
