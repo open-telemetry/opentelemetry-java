@@ -18,6 +18,7 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -37,7 +38,12 @@ public class BlankSpanTest {
     BlankSpan.INSTANCE.setAttribute(
         "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
     BlankSpan.INSTANCE.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
-    BlankSpan.INSTANCE.addEvent(Event.create("event"));
+    BlankSpan.INSTANCE.addEvent("event");
+    BlankSpan.INSTANCE.addEvent(
+        "event",
+        Collections.singletonMap(
+            "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
+    BlankSpan.INSTANCE.addEvent(SpanData.Event.create("event"));
     BlankSpan.INSTANCE.addLink(Link.create(SpanContext.BLANK));
     BlankSpan.INSTANCE.setStatus(Status.OK);
     BlankSpan.INSTANCE.end();
