@@ -24,19 +24,19 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.metrics.CounterDouble;
 import io.opentelemetry.metrics.CounterLong;
+import io.opentelemetry.metrics.DefaultMeter;
 import io.opentelemetry.metrics.GaugeDouble;
 import io.opentelemetry.metrics.GaugeLong;
 import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.metrics.Measurement;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.NoopMeter;
 import io.opentelemetry.metrics.spi.MeterProvider;
 import io.opentelemetry.resource.Resource;
-import io.opentelemetry.tags.NoopTagger;
+import io.opentelemetry.tags.DefaultTagger;
 import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.tags.Tagger;
 import io.opentelemetry.tags.spi.TaggerProvider;
-import io.opentelemetry.trace.NoopTracer;
+import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
@@ -72,11 +72,11 @@ public class OpenTelemetryTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracer()).isInstanceOf(NoopTracer.getInstance().getClass());
+    assertThat(OpenTelemetry.getTracer()).isInstanceOf(DefaultTracer.getInstance().getClass());
     assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
-    assertThat(OpenTelemetry.getMeter()).isInstanceOf(NoopMeter.getInstance().getClass());
+    assertThat(OpenTelemetry.getMeter()).isInstanceOf(DefaultMeter.getInstance().getClass());
     assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
-    assertThat(OpenTelemetry.getTagger()).isInstanceOf(NoopTagger.getInstance().getClass());
+    assertThat(OpenTelemetry.getTagger()).isInstanceOf(DefaultTagger.getInstance().getClass());
     assertThat(OpenTelemetry.getTagger()).isEqualTo(OpenTelemetry.getTagger());
   }
 

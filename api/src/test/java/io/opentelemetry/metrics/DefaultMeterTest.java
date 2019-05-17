@@ -30,14 +30,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link NoopMeter}. */
+/** Unit tests for {@link DefaultMeter}. */
 @RunWith(JUnit4.class)
-public final class NoopMeterTest {
+public final class DefaultMeterTest {
   private static final Tag TAG =
       Tag.create(
           TagKey.create("key"), TagValue.create("value"), Tag.METADATA_UNLIMITED_PROPAGATION);
 
-  private static final Meter meter = NoopMeter.getInstance();
+  private static final Meter meter = DefaultMeter.getInstance();
 
   private static final Measure MEASURE =
       meter
