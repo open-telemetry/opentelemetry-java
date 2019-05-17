@@ -18,18 +18,14 @@ package io.opentelemetry.context;
 
 /** A {@link Scope} that does nothing when it is created or closed. */
 public final class NoopScope implements Scope {
-  private static final Scope INSTANCE = new NoopScope();
+  /**
+   * A singleton instance of {@code NoopScope}.
+   *
+   * @since 0.1.0
+   */
+  public static final Scope INSTANCE = new NoopScope();
 
   private NoopScope() {}
-
-  /**
-   * Returns a {@code NoopScope}.
-   *
-   * @return a {@code NoopScope}.
-   */
-  public static Scope getInstance() {
-    return INSTANCE;
-  }
 
   @Override
   public void close() {}

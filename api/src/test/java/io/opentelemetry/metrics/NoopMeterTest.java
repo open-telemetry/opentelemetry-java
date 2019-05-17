@@ -37,7 +37,7 @@ public final class NoopMeterTest {
       Tag.create(
           TagKey.create("key"), TagValue.create("value"), Tag.METADATA_UNLIMITED_PROPAGATION);
 
-  private static final Meter meter = NoopMeter.create();
+  private static final Meter meter = NoopMeter.getInstance();
 
   private static final Measure MEASURE =
       meter

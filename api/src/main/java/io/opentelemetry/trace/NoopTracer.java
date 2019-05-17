@@ -33,17 +33,18 @@ import javax.annotation.Nullable;
  * @since 0.1.0
  */
 public final class NoopTracer implements Tracer {
+  private static final NoopTracer INSTANCE = new NoopTracer();
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new TraceContextFormat();
 
   /**
-   * Returns a {@code Tracer} instance that is no-op implementations.
+   * Returns a {@code Tracer} singleton that is no-op implementations for {@link Tracer}.
    *
-   * @return a {@code Tracer} instance that is no-op implementations.
+   * @return a {@code Tracer} singleton that is no-op implementations for {@link Tracer}.
    * @since 0.1.0
    */
-  public static Tracer create() {
-    return new NoopTracer();
+  public static Tracer getInstance() {
+    return INSTANCE;
   }
 
   @Override
