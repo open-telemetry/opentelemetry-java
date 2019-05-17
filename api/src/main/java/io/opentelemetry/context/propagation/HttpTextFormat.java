@@ -67,7 +67,7 @@ public interface HttpTextFormat<V> {
    * @param <C> carrier of propagation fields, such as an http request
    * @since 0.1.0
    */
-  public interface Setter<C> {
+  interface Setter<C> {
 
     /**
      * Replaces a propagated field with the given value.
@@ -86,13 +86,14 @@ public interface HttpTextFormat<V> {
   /**
    * Extracts the value from upstream. For example, as http headers.
    *
-   * <p>If the value could not be parsed, the underlying implementation will decide to return ether
-   * an empty value, an invalid value, or a valid value.
+   * <p>If the value could not be parsed, the underlying implementation will decide to return an
+   * object representing either an empty value, an invalid value, or a valid value. Implementation
+   * must not return {#code null}.
    *
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param getter invoked for each propagation key to get.
    * @param <C> carrier of propagation fields, such as an http request.
-   * @return the extracted value.
+   * @return the extracted value, never {@code null}.
    * @since 0.1.0
    */
   <C> V extract(C carrier, Getter<C> getter);
@@ -106,7 +107,7 @@ public interface HttpTextFormat<V> {
    * @param <C> carrier of propagation fields, such as an http request.
    * @since 0.1.0
    */
-  public interface Getter<C> {
+  interface Getter<C> {
 
     /**
      * Returns the first value of the given propagation {@code key} or returns {@code null}.
