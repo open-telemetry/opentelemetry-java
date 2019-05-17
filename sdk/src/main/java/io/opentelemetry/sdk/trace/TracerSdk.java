@@ -26,7 +26,6 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.unsafe.ContextUtils;
-import javax.annotation.Nullable;
 
 public class TracerSdk implements Tracer {
 
@@ -42,17 +41,6 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return spanBuilderWithExplicitParent(spanName, getCurrentSpan());
-  }
-
-  @Override
-  public Span.Builder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {
-    return null;
-  }
-
-  @Override
-  public Span.Builder spanBuilderWithRemoteParent(
-      String spanName, @Nullable SpanContext remoteParentSpanContext) {
     return null;
   }
 

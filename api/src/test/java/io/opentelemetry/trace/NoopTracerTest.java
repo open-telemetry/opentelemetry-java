@@ -67,34 +67,6 @@ public class NoopTracerTest {
     assertThat(noopTracer.spanBuilder(SPAN_NAME).startSpan()).isSameAs(BlankSpan.INSTANCE);
   }
 
-  @Test(expected = NullPointerException.class)
-  public void spanBuilderWithParentAndName_NullName() {
-    noopTracer.spanBuilderWithExplicitParent(null, null);
-  }
-
-  @Test
-  public void defaultSpanBuilderWithParentAndName() {
-    assertThat(noopTracer.spanBuilderWithExplicitParent(SPAN_NAME, null).startSpan())
-        .isSameAs(BlankSpan.INSTANCE);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void spanBuilderWithRemoteParent_NullName() {
-    noopTracer.spanBuilderWithRemoteParent(null, null);
-  }
-
-  @Test
-  public void defaultSpanBuilderWithRemoteParent_NullParent() {
-    assertThat(noopTracer.spanBuilderWithRemoteParent(SPAN_NAME, null).startSpan())
-        .isSameAs(BlankSpan.INSTANCE);
-  }
-
-  @Test
-  public void defaultSpanBuilderWithRemoteParent() {
-    assertThat(noopTracer.spanBuilderWithRemoteParent(SPAN_NAME, SpanContext.BLANK).startSpan())
-        .isSameAs(BlankSpan.INSTANCE);
-  }
-
   @Test
   public void defaultHttpTextFormat() {
     assertThat(noopTracer.getHttpTextFormat()).isInstanceOf(TraceContextFormat.class);
@@ -123,7 +95,7 @@ public class NoopTracerTest {
 
   @Test
   public void testSpanContextPropagationExplicitParent() {
-    Span span = noopTracer.spanBuilderWithRemoteParent(SPAN_NAME, spanContext).startSpan();
+    Span span = noopTracer.spanBuilder(SPAN_NAME).setParent(spanContext).startSpan();
     assertThat(span.getContext()).isSameInstanceAs(spanContext);
   }
 
@@ -131,7 +103,7 @@ public class NoopTracerTest {
   public void testSpanContextPropagation() {
     BlankSpan parent = new BlankSpan(spanContext);
 
-    Span span = noopTracer.spanBuilderWithExplicitParent(SPAN_NAME, parent).startSpan();
+    Span span = noopTracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
     assertThat(span.getContext()).isSameInstanceAs(spanContext);
   }
 

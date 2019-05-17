@@ -20,7 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.samplers.Samplers;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -35,6 +37,25 @@ public class SpanBuilderTest {
     spanBuilder.setRecordEvents(true);
     spanBuilder.setSampler(Samplers.alwaysSample());
     spanBuilder.setSpanKind(Kind.SERVER);
+    spanBuilder.setParent(BlankSpan.INSTANCE);
+    spanBuilder.setParent(BlankSpan.INSTANCE.getContext());
+    spanBuilder.setNoParent();
     assertThat(spanBuilder.startSpan()).isSameAs(BlankSpan.INSTANCE);
+  }
+
+  @Rule public final ExpectedException thrown = ExpectedException.none();
+
+  @Test
+  public void setParent_NullSpan() {
+    Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
+    thrown.expect(NullPointerException.class);
+    spanBuilder.setParent((Span) null);
+  }
+
+  @Test
+  public void setParent_NullSpanContex() {
+    Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
+    thrown.expect(NullPointerException.class);
+    spanBuilder.setParent((SpanContext) null);
   }
 }

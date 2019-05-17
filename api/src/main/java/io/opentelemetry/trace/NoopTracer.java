@@ -58,18 +58,7 @@ public final class NoopTracer implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return spanBuilderWithExplicitParent(spanName, getCurrentSpan());
-  }
-
-  @Override
-  public Span.Builder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {
-    return NoopSpanBuilder.createWithParent(spanName, parent);
-  }
-
-  @Override
-  public Span.Builder spanBuilderWithRemoteParent(
-      String spanName, @Nullable SpanContext remoteParentSpanContext) {
-    return NoopSpanBuilder.createWithRemoteParent(spanName, remoteParentSpanContext);
+    return NoopSpanBuilder.create(this, spanName);
   }
 
   @Override
@@ -101,22 +90,43 @@ public final class NoopTracer implements Tracer {
 
   // Noop implementation of Span.Builder.
   private static final class NoopSpanBuilder implements Span.Builder {
-    static NoopSpanBuilder createWithParent(String spanName, @Nullable Span parent) {
-      return new NoopSpanBuilder(spanName, parent != null ? parent.getContext() : null);
+    static NoopSpanBuilder create(Tracer tracer, String spanName) {
+      return new NoopSpanBuilder(tracer, spanName);
     }
 
-    static NoopSpanBuilder createWithRemoteParent(
-        String spanName, @Nullable SpanContext remoteParentSpanContext) {
-      return new NoopSpanBuilder(spanName, remoteParentSpanContext);
-    }
-
-    private final SpanContext spanContext;
+    private final Tracer tracer;
+    private boolean isRootSpan;
+    private SpanContext spanContext;
 
     @Override
     public Span startSpan() {
+      if (spanContext == null && !isRootSpan) {
+        spanContext = tracer.getCurrentSpan().getContext();
+      }
+
       return spanContext != null && !SpanContext.BLANK.equals(spanContext)
           ? new BlankSpan(spanContext)
           : BlankSpan.INSTANCE;
+    }
+
+    @Override
+    public NoopSpanBuilder setParent(Span parent) {
+      Utils.checkNotNull(parent, "parent");
+      spanContext = parent.getContext();
+      return this;
+    }
+
+    @Override
+    public NoopSpanBuilder setParent(SpanContext remoteParent) {
+      Utils.checkNotNull(remoteParent, "remoteParent");
+      spanContext = remoteParent;
+      return this;
+    }
+
+    @Override
+    public NoopSpanBuilder setNoParent() {
+      isRootSpan = true;
+      return this;
     }
 
     @Override
@@ -144,9 +154,10 @@ public final class NoopTracer implements Tracer {
       return this;
     }
 
-    private NoopSpanBuilder(String name, SpanContext spanContext) {
+    private NoopSpanBuilder(Tracer tracer, String name) {
+      Utils.checkNotNull(tracer, "tracer");
       Utils.checkNotNull(name, "name");
-      this.spanContext = spanContext;
+      this.tracer = tracer;
     }
   }
 

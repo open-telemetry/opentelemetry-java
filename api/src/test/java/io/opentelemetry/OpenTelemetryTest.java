@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.util.List;
-import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -213,17 +212,6 @@ public class OpenTelemetryTest {
 
     @Override
     public Span.Builder spanBuilder(String spanName) {
-      return null;
-    }
-
-    @Override
-    public Span.Builder spanBuilderWithExplicitParent(String spanName, @Nullable Span parent) {
-      return null;
-    }
-
-    @Override
-    public Span.Builder spanBuilderWithRemoteParent(
-        String spanName, @Nullable SpanContext remoteParentSpanContext) {
       return null;
     }
 
