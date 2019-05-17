@@ -21,7 +21,7 @@ import io.opentelemetry.trace.Tracer;
 /**
  * TracerProvider is a service provider for {@link Tracer}. Fully qualified class name of the
  * implementation should be registered in {@code
- * META-INF/services/io.opentelemetry.tracer.spi.TracerProvider}. <br>
+ * META-INF/services/io.opentelemetry.trace.spi.TracerProvider}. <br>
  * <br>
  * A specific implementation can be selected by a system property {@code
  * io.opentelemetry.trace.spi.TracerProvider} with value of fully qualified class name.
