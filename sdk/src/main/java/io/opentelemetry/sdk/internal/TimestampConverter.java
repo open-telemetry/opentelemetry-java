@@ -30,7 +30,12 @@ public class TimestampConverter {
   private final Timestamp timestamp;
   private final long nanoTime;
 
-  // Returns a WallTimeConverter initialized to now.
+  /**
+   * Returns a {@code TimestampConverter} initialized to now.
+   *
+   * @param clock the {@code Clock} to be used to read the current time.
+   * @return a {@code TimestampConverter} initialized to now.
+   */
   public static TimestampConverter now(Clock clock) {
     return new TimestampConverter(clock.now(), clock.nowNanos());
   }
