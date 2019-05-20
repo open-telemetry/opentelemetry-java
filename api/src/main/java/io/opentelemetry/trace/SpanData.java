@@ -232,7 +232,7 @@ public abstract class SpanData {
      * @return a new immutable {@code TimedEvent<T>}
      * @since 0.1.0
      */
-    public static <T> TimedEvent create(Timestamp timestamp, Event event) {
+    public static <T> TimedEvent create(Timestamp timestamp, io.opentelemetry.trace.Event event) {
       return new AutoValue_SpanData_TimedEvent(timestamp, event);
     }
 
@@ -250,7 +250,7 @@ public abstract class SpanData {
      * @return the event.
      * @since 0.1.0
      */
-    public abstract Event getEvent();
+    public abstract io.opentelemetry.trace.Event getEvent();
 
     TimedEvent() {}
   }
