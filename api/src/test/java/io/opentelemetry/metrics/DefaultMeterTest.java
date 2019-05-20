@@ -37,10 +37,10 @@ public final class DefaultMeterTest {
       Tag.create(
           TagKey.create("key"), TagValue.create("value"), Tag.METADATA_UNLIMITED_PROPAGATION);
 
-  private static final Meter meter = DefaultMeter.getInstance();
+  private static final Meter defaultMeter = DefaultMeter.getInstance();
 
   private static final Measure MEASURE =
-      meter
+      defaultMeter
           .measureBuilder("my measure")
           .setDescription("description")
           .setType(Measure.Type.DOUBLE)
@@ -68,28 +68,28 @@ public final class DefaultMeterTest {
   public void noopAddLongGauge_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    meter.gaugeLongBuilder(null);
+    defaultMeter.gaugeLongBuilder(null);
   }
 
   @Test
   public void noopAddDoubleGauge_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    meter.gaugeDoubleBuilder(null);
+    defaultMeter.gaugeDoubleBuilder(null);
   }
 
   @Test
   public void noopAddDoubleCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    meter.counterDoubleBuilder(null);
+    defaultMeter.counterDoubleBuilder(null);
   }
 
   @Test
   public void noopAddLongCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    meter.counterLongBuilder(null);
+    defaultMeter.counterLongBuilder(null);
   }
 
   // The NoopStatsRecorder should do nothing, so this test just checks that record doesn't throw an
@@ -97,7 +97,7 @@ public final class DefaultMeterTest {
   @Test
   public void noopStatsRecorder_Record() {
     List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(5));
-    meter.record(measurements, tagMap);
+    defaultMeter.record(measurements, tagMap);
   }
 
   // The NoopStatsRecorder should do nothing, so this test just checks that record doesn't throw an
@@ -105,7 +105,7 @@ public final class DefaultMeterTest {
   @Test
   public void noopStatsRecorder_RecordWithCurrentContext() {
     List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(6));
-    meter.record(measurements);
+    defaultMeter.record(measurements);
   }
 
   @Test
@@ -113,6 +113,6 @@ public final class DefaultMeterTest {
     List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(6));
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("tags");
-    meter.record(measurements, null);
+    defaultMeter.record(measurements, null);
   }
 }
