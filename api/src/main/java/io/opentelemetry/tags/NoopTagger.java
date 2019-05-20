@@ -32,17 +32,18 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class NoopTagger implements Tagger {
+  private static final NoopTagger INSTANCE = new NoopTagger();
   private static final BinaryFormat<TagMap> BINARY_FORMAT = new NoopBinaryFormat();
   private static final HttpTextFormat<TagMap> HTTP_TEXT_FORMAT = new NoopHttpTextFormat();
 
   /**
-   * Returns a {@code Tagger} that is a no-op implementation for {@link Tagger}.
+   * Returns a {@code Tagger} singleton that is a no-op implementation for {@link Tagger}.
    *
-   * @return a {@code Tagger} that is a no-op implementation for {@link Tagger}.
+   * @return a {@code Tagger} singleton that is a no-op implementation for {@link Tagger}.
    * @since 0.1.0
    */
-  public static Tagger create() {
-    return new NoopTagger();
+  public static Tagger getInstance() {
+    return INSTANCE;
   }
 
   @Override
@@ -69,7 +70,7 @@ public final class NoopTagger implements Tagger {
   @Override
   public Scope withTagMap(TagMap tags) {
     Utils.checkNotNull(tags, "tags");
-    return NoopScope.getInstance();
+    return NoopScope.INSTANCE;
   }
 
   @Override
@@ -105,7 +106,7 @@ public final class NoopTagger implements Tagger {
 
     @Override
     public Scope buildScoped() {
-      return NoopScope.getInstance();
+      return NoopScope.INSTANCE;
     }
   }
 

@@ -72,11 +72,11 @@ public class OpenTelemetryTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracer()).isInstanceOf(NoopTracer.create().getClass());
+    assertThat(OpenTelemetry.getTracer()).isInstanceOf(NoopTracer.getInstance().getClass());
     assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
-    assertThat(OpenTelemetry.getMeter()).isInstanceOf(NoopMeter.create().getClass());
+    assertThat(OpenTelemetry.getMeter()).isInstanceOf(NoopMeter.getInstance().getClass());
     assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
-    assertThat(OpenTelemetry.getTagger()).isInstanceOf(NoopTagger.create().getClass());
+    assertThat(OpenTelemetry.getTagger()).isInstanceOf(NoopTagger.getInstance().getClass());
     assertThat(OpenTelemetry.getTagger()).isEqualTo(OpenTelemetry.getTagger());
   }
 

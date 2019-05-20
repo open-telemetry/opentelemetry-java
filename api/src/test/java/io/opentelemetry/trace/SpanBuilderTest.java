@@ -29,7 +29,7 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link Span.Builder}. */
 @RunWith(JUnit4.class)
 public class SpanBuilderTest {
-  private final Tracer tracer = NoopTracer.create();
+  private final Tracer tracer = NoopTracer.getInstance();
 
   @Test
   public void doNotCrash_NoopImplementation() {

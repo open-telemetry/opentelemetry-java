@@ -26,7 +26,7 @@ import org.junit.runners.JUnit4;
 /** Tests for {@link io.opentelemetry.metrics.Measure}. */
 @RunWith(JUnit4.class)
 public final class MeasureTest {
-  private static final Meter meter = NoopMeter.create();
+  private static final Meter meter = NoopMeter.getInstance();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
