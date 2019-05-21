@@ -24,12 +24,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link NoopTracer}. */
+/** Unit tests for {@link DefaultTracer}. */
 @RunWith(JUnit4.class)
 // Need to suppress warnings for MustBeClosed because Java-6 does not support try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
-public class NoopTracerTest {
-  private static final Tracer noopTracer = NoopTracer.getInstance();
+public class DefaultTracerTest {
+  private static final Tracer defaultTracer = DefaultTracer.getInstance();
   private static final String SPAN_NAME = "MySpanName";
   private static final byte[] firstBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
@@ -42,60 +42,60 @@ public class NoopTracerTest {
 
   @Test
   public void defaultGetCurrentSpan() {
-    assertThat(noopTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
   }
 
   @Test
   public void getCurrentSpan_WithSpan() {
-    assertThat(noopTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
-    Scope ws = noopTracer.withSpan(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
+    Scope ws = defaultTracer.withSpan(BlankSpan.INSTANCE);
     try {
-      assertThat(noopTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
+      assertThat(defaultTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
     } finally {
       ws.close();
     }
-    assertThat(noopTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
   }
 
   @Test(expected = NullPointerException.class)
   public void spanBuilderWithName_NullName() {
-    noopTracer.spanBuilder(null);
+    defaultTracer.spanBuilder(null);
   }
 
   @Test
   public void defaultSpanBuilderWithName() {
-    assertThat(noopTracer.spanBuilder(SPAN_NAME).startSpan()).isSameAs(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan()).isSameAs(BlankSpan.INSTANCE);
   }
 
   @Test
   public void defaultHttpTextFormat() {
-    assertThat(noopTracer.getHttpTextFormat()).isInstanceOf(TraceContextFormat.class);
+    assertThat(defaultTracer.getHttpTextFormat()).isInstanceOf(TraceContextFormat.class);
   }
 
   @Test
   public void testInProcessContext() {
-    Span span = noopTracer.spanBuilder(SPAN_NAME).startSpan();
-    Scope scope = noopTracer.withSpan(span);
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+    Scope scope = defaultTracer.withSpan(span);
     try {
-      assertThat(noopTracer.getCurrentSpan()).isEqualTo(span);
-      Span secondSpan = noopTracer.spanBuilder(SPAN_NAME).startSpan();
-      Scope secondScope = noopTracer.withSpan(span);
+      assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
+      Span secondSpan = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+      Scope secondScope = defaultTracer.withSpan(span);
       try {
-        assertThat(noopTracer.getCurrentSpan()).isEqualTo(secondSpan);
+        assertThat(defaultTracer.getCurrentSpan()).isEqualTo(secondSpan);
         secondScope.close();
-        assertThat(noopTracer.getCurrentSpan()).isEqualTo(span);
+        assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
       } finally {
         secondScope.close();
       }
     } finally {
       scope.close();
     }
-    assertThat(noopTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
   }
 
   @Test
   public void testSpanContextPropagationExplicitParent() {
-    Span span = noopTracer.spanBuilder(SPAN_NAME).setParent(spanContext).startSpan();
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(spanContext).startSpan();
     assertThat(span.getContext()).isSameInstanceAs(spanContext);
   }
 
@@ -103,16 +103,16 @@ public class NoopTracerTest {
   public void testSpanContextPropagation() {
     BlankSpan parent = new BlankSpan(spanContext);
 
-    Span span = noopTracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
     assertThat(span.getContext()).isSameInstanceAs(spanContext);
   }
 
   @Test
   public void testSpanContextPropagationCurrentSpan() {
     BlankSpan parent = new BlankSpan(spanContext);
-    Scope scope = noopTracer.withSpan(parent);
+    Scope scope = defaultTracer.withSpan(parent);
     try {
-      Span span = noopTracer.spanBuilder(SPAN_NAME).startSpan();
+      Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);
     } finally {
       scope.close();

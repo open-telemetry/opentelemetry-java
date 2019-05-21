@@ -24,22 +24,23 @@ import io.opentelemetry.internal.Utils;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * No-op implementations of {@link Tagger}.
  *
  * @since 0.1.0
  */
-@Immutable
-public final class NoopTagger implements Tagger {
-  private static final NoopTagger INSTANCE = new NoopTagger();
+@ThreadSafe
+public final class DefaultTagger implements Tagger {
+  private static final DefaultTagger INSTANCE = new DefaultTagger();
   private static final BinaryFormat<TagMap> BINARY_FORMAT = new NoopBinaryFormat();
   private static final HttpTextFormat<TagMap> HTTP_TEXT_FORMAT = new NoopHttpTextFormat();
 
   /**
-   * Returns a {@code Tagger} singleton that is a no-op implementation for {@link Tagger}.
+   * Returns a {@code Tagger} singleton that is the default implementation for {@link Tagger}.
    *
-   * @return a {@code Tagger} singleton that is a no-op implementation for {@link Tagger}.
+   * @return a {@code Tagger} singleton that is the default implementation for {@link Tagger}.
    * @since 0.1.0
    */
   public static Tagger getInstance() {

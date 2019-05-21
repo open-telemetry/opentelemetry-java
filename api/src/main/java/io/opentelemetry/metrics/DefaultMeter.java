@@ -31,8 +31,9 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * @since 0.1.0
  */
-public final class NoopMeter implements Meter {
-  private static final NoopMeter INSTANCE = new NoopMeter();
+public final class DefaultMeter implements Meter {
+  private static final DefaultMeter INSTANCE = new DefaultMeter();
+
   /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
   private static final String ERROR_MESSAGE_INVALID_NAME =
       "Name should be a ASCII string with a length no greater than "
@@ -40,9 +41,9 @@ public final class NoopMeter implements Meter {
           + " characters.";
 
   /**
-   * Returns a {@code Meter} singleton that is no-op implementations for {@link Meter}.
+   * Returns a {@code Meter} singleton that is the default implementations for {@link Meter}.
    *
-   * @return a {@code Meter} singleton that is no-op implementations for {@link Meter}.
+   * @return a {@code Meter} singleton that is the default implementations for {@link Meter}.
    * @since 0.1.0
    */
   public static Meter getInstance() {

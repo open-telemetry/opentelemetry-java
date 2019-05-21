@@ -32,15 +32,15 @@ import javax.annotation.Nullable;
  *
  * @since 0.1.0
  */
-public final class NoopTracer implements Tracer {
-  private static final NoopTracer INSTANCE = new NoopTracer();
+public final class DefaultTracer implements Tracer {
+  private static final DefaultTracer INSTANCE = new DefaultTracer();
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new TraceContextFormat();
 
   /**
-   * Returns a {@code Tracer} singleton that is no-op implementations for {@link Tracer}.
+   * Returns a {@code Tracer} singleton that is the default implementations for {@link Tracer}.
    *
-   * @return a {@code Tracer} singleton that is no-op implementations for {@link Tracer}.
+   * @return a {@code Tracer} singleton that is the default implementations for {@link Tracer}.
    * @since 0.1.0
    */
   public static Tracer getInstance() {
@@ -87,7 +87,7 @@ public final class NoopTracer implements Tracer {
     return HTTP_TEXT_FORMAT;
   }
 
-  private NoopTracer() {}
+  private DefaultTracer() {}
 
   // Noop implementation of Span.Builder.
   private static final class NoopSpanBuilder implements Span.Builder {
