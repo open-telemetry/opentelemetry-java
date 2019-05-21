@@ -19,7 +19,9 @@ package io.opentelemetry.tags;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.Lists;
-import io.opentelemetry.context.NoopScope;
+import io.grpc.Context;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.tags.unsafe.ContextUtils;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -56,12 +58,10 @@ public final class DefaultTaggerTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void defaultMethods() {
-    assertThat(asList(defaultTagger.getCurrentTagMap())).isEmpty();
+  public void builderMethods() {
     assertThat(asList(defaultTagger.emptyBuilder().build())).isEmpty();
     assertThat(asList(defaultTagger.toBuilder(TAG_MAP).build())).isEmpty();
     assertThat(asList(defaultTagger.currentBuilder().build())).isEmpty();
-    assertThat(defaultTagger.withTagMap(TAG_MAP)).isSameAs(NoopScope.INSTANCE);
   }
 
   @Test
@@ -71,9 +71,67 @@ public final class DefaultTaggerTest {
   }
 
   @Test
-  public void withTagMap_DisallowsNull() {
-    thrown.expect(NullPointerException.class);
-    defaultTagger.withTagMap(null);
+  public void getCurrentTagMap_DefaultContext() {
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+  }
+
+  @Test
+  public void getCurrentTagMap_ContextSetToNull() {
+    Context orig = ContextUtils.withValue(null).attach();
+    try {
+      TagMap tags = defaultTagger.getCurrentTagMap();
+      assertThat(tags).isNotNull();
+      assertThat(tags.getIterator().hasNext()).isFalse();
+    } finally {
+      Context.current().detach(orig);
+    }
+  }
+
+  @Test
+  public void withTagMap() {
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    Scope wtm = defaultTagger.withTagMap(TAG_MAP);
+    try {
+      assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(TAG_MAP);
+    } finally {
+      wtm.close();
+    }
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+  }
+
+  @Test
+  public void withTagMap_nullTagMap() {
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    Scope wtm = defaultTagger.withTagMap(null);
+    try {
+      assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    } finally {
+      wtm.close();
+    }
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+  }
+
+  @Test
+  public void withTagMapUsingWrap() {
+    Runnable runnable;
+    Scope wtm = defaultTagger.withTagMap(TAG_MAP);
+    try {
+      assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(TAG_MAP);
+      runnable =
+          Context.current()
+              .wrap(
+                  new Runnable() {
+                    @Override
+                    public void run() {
+                      assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(TAG_MAP);
+                    }
+                  });
+    } finally {
+      wtm.close();
+    }
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    // When we run the runnable we will have the TagMap in the current Context.
+    runnable.run();
   }
 
   @Test
