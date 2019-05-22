@@ -19,9 +19,9 @@ package io.opentelemetry.sdk;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.metrics.NoopMeter;
+import io.opentelemetry.metrics.DefaultMeter;
 import io.opentelemetry.sdk.trace.TracerSdk;
-import io.opentelemetry.tags.NoopTagger;
+import io.opentelemetry.tags.DefaultTagger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -32,7 +32,7 @@ public class OpenTelemetryTest {
   @Test
   public void testDefault() {
     assertThat(OpenTelemetry.getTracer()).isInstanceOf(TracerSdk.class);
-    assertThat(OpenTelemetry.getMeter()).isInstanceOf(NoopMeter.create().getClass());
-    assertThat(OpenTelemetry.getTagger()).isInstanceOf(NoopTagger.create().getClass());
+    assertThat(OpenTelemetry.getMeter()).isInstanceOf(DefaultMeter.getInstance().getClass());
+    assertThat(OpenTelemetry.getTagger()).isInstanceOf(DefaultTagger.getInstance().getClass());
   }
 }
