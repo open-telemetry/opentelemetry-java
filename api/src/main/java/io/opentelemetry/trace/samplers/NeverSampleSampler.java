@@ -17,6 +17,7 @@
 package io.opentelemetry.trace.samplers;
 
 import io.opentelemetry.trace.Sampler;
+import io.opentelemetry.trace.SamplingDecision;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -28,19 +29,20 @@ import javax.annotation.concurrent.Immutable;
 /** Sampler that always makes a "no" decision on {@link Span} sampling. */
 @Immutable
 final class NeverSampleSampler implements Sampler {
+  private static final SamplingDecision DECISION = new DefaultSamplingDecision(false);
 
   NeverSampleSampler() {}
 
   // Returns always makes a "no" decision on {@link Span} sampling.
   @Override
-  public boolean shouldSample(
+  public SamplingDecision shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
       TraceId traceId,
       SpanId spanId,
       String name,
       List<Span> parentLinks) {
-    return false;
+    return DECISION;
   }
 
   @Override

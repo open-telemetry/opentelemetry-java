@@ -37,10 +37,10 @@ public interface Sampler {
    * @param spanId the {@link SpanId} for the new {@code Span}.
    * @param name the name of the new {@code Span}.
    * @param parentLinks the parentLinks associated with the new {@code Span}.
-   * @return {@code true} if the {@code Span} is sampled.
+   * @return sampling decision whether span should be sampled or not.
    * @since 0.1.0
    */
-  boolean shouldSample(
+  SamplingDecision shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
       TraceId traceId,
