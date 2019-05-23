@@ -16,24 +16,108 @@
 
 package io.opentelemetry.sdk.trace.config;
 
-import io.opencensus.trace.config.TraceParams;
+import com.google.auto.value.AutoValue;
+import com.google.common.base.Preconditions;
+import io.opentelemetry.trace.Event;
+import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Span;
+import javax.annotation.concurrent.Immutable;
 
-/**
- * Global configuration of the trace service. This allows users to change configs for the maximum
- * events to be kept, etc. (see {@link TraceParams} for details).
- */
-public interface TraceConfig {
-  /**
-   * Returns the active {@code TraceParams}.
-   *
-   * @return the active {@code TraceParams}.
-   */
-  TraceParams getActiveTraceParams();
+/** Class that holds global trace parameters. */
+@AutoValue
+@Immutable
+public abstract class TraceConfig {
+  // These values are the default values for all the global parameters.
+  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
+  private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
+  private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;
+
+  /** Default {@code TraceConfig}. */
+  public static final TraceConfig DEFAULT =
+      TraceConfig.builder()
+          .setMaxNumberOfAttributes(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES)
+          .setMaxNumberOfEvents(DEFAULT_SPAN_MAX_NUM_EVENTS)
+          .setMaxNumberOfLinks(DEFAULT_SPAN_MAX_NUM_LINKS)
+          .build();
 
   /**
-   * Updates the active {@link TraceParams}.
+   * Returns the global default max number of attributes per {@link Span}.
    *
-   * @param traceParams the new active {@code TraceParams}.
+   * @return the global default max number of attributes per {@link Span}.
    */
-  void updateActiveTraceParams(TraceParams traceParams);
+  public abstract int getMaxNumberOfAttributes();
+
+  /**
+   * Returns the global default max number of {@link Event}s per {@link Span}.
+   *
+   * @return the global default max number of {@code Event}s per {@code Span}.
+   */
+  public abstract int getMaxNumberOfEvents();
+
+  /**
+   * Returns the global default max number of {@link Link} entries per {@link Span}.
+   *
+   * @return the global default max number of {@code Link} entries per {@code Span}.
+   */
+  public abstract int getMaxNumberOfLinks();
+
+  private static Builder builder() {
+    return new AutoValue_TraceConfig.Builder();
+  }
+
+  /**
+   * Returns a {@link Builder} initialized to the same property values as the current instance.
+   *
+   * @return a {@link Builder} initialized to the same property values as the current instance.
+   */
+  public abstract Builder toBuilder();
+
+  /** A {@code Builder} class for {@link TraceConfig}. */
+  @AutoValue.Builder
+  public abstract static class Builder {
+
+    /**
+     * Sets the global default max number of attributes per {@link Span}.
+     *
+     * @param maxNumberOfAttributes the global default max number of attributes per {@link Span}. It
+     *     must be positive otherwise {@link #build()} will throw an exception.
+     * @return this.
+     */
+    public abstract Builder setMaxNumberOfAttributes(int maxNumberOfAttributes);
+
+    /**
+     * Sets the global default max number of {@link Event}s per {@link Span}.
+     *
+     * @param maxNumberOfEvents the global default max number of {@link Event}s per {@link Span}. It
+     *     must be positive otherwise {@link #build()} will throw an exception.
+     * @return this.
+     */
+    public abstract Builder setMaxNumberOfEvents(int maxNumberOfEvents);
+
+    /**
+     * Sets the global default max number of {@link Link} entries per {@link Span}.
+     *
+     * @param maxNumberOfLinks the global default max number of {@link Link} entries per {@link
+     *     Span}. It must be positive otherwise {@link #build()} will throw an exception.
+     * @return this.
+     */
+    public abstract Builder setMaxNumberOfLinks(int maxNumberOfLinks);
+
+    abstract TraceConfig autoBuild();
+
+    /**
+     * Builds and returns a {@code TraceConfig} with the desired values.
+     *
+     * @return a {@code TraceConfig} with the desired values.
+     * @throws IllegalArgumentException if any of the max numbers are not positive.
+     */
+    public TraceConfig build() {
+      TraceConfig traceConfig = autoBuild();
+      Preconditions.checkArgument(
+          traceConfig.getMaxNumberOfAttributes() > 0, "maxNumberOfAttributes");
+      Preconditions.checkArgument(traceConfig.getMaxNumberOfEvents() > 0, "maxNumberOfEvents");
+      Preconditions.checkArgument(traceConfig.getMaxNumberOfLinks() > 0, "maxNumberOfLinks");
+      return traceConfig;
+    }
+  }
 }

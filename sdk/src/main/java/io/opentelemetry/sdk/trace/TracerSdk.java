@@ -21,6 +21,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.resource.Resource;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
@@ -29,6 +30,10 @@ import io.opentelemetry.trace.unsafe.ContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
+
+  // Reads and writes are atomic for reference variables. Use volatile to ensure that these
+  // operations are visible on other CPUs as well.
+  private volatile TraceConfig activeTraceConfig = TraceConfig.DEFAULT;
 
   @Override
   public Span getCurrentSpan() {
@@ -76,6 +81,24 @@ public class TracerSdk implements Tracer {
    * <p>After this is called all the newly created {@code Span}s will be no-op.
    */
   public void shutdown() {}
+
+  /**
+   * Returns the active {@code TraceConfig}.
+   *
+   * @return the active {@code TraceConfig}.
+   */
+  public TraceConfig getActiveTraceConfig() {
+    return activeTraceConfig;
+  }
+
+  /**
+   * Updates the active {@link TraceConfig}.
+   *
+   * @param traceConfig the new active {@code TraceConfig}.
+   */
+  public void updateActiveTraceConfig(TraceConfig traceConfig) {
+    activeTraceConfig = traceConfig;
+  }
 
   // Defines an arbitrary scope of code as a traceable operation. Supports try-with-resources idiom.
   private static final class ScopeInSpan implements Scope {

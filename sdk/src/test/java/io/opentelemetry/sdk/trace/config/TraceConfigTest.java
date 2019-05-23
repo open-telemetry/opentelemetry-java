@@ -24,48 +24,48 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link TraceParams}. */
+/** Unit tests for {@link TraceConfig}. */
 @RunWith(JUnit4.class)
-public class TraceParamsTest {
+public class TraceConfigTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void defaultTraceParams() {
-    assertThat(TraceParams.DEFAULT.getMaxNumberOfAttributes()).isEqualTo(32);
-    assertThat(TraceParams.DEFAULT.getMaxNumberOfEvents()).isEqualTo(128);
-    assertThat(TraceParams.DEFAULT.getMaxNumberOfLinks()).isEqualTo(32);
+  public void defaultTraceConfig() {
+    assertThat(TraceConfig.DEFAULT.getMaxNumberOfAttributes()).isEqualTo(32);
+    assertThat(TraceConfig.DEFAULT.getMaxNumberOfEvents()).isEqualTo(128);
+    assertThat(TraceConfig.DEFAULT.getMaxNumberOfLinks()).isEqualTo(32);
   }
 
   @Test
-  public void updateTraceParams_NonPositiveMaxNumberOfAttributes() {
+  public void updateTraceConfig_NonPositiveMaxNumberOfAttributes() {
     thrown.expect(IllegalArgumentException.class);
-    TraceParams.DEFAULT.toBuilder().setMaxNumberOfAttributes(0).build();
+    TraceConfig.DEFAULT.toBuilder().setMaxNumberOfAttributes(0).build();
   }
 
   @Test
-  public void updateTraceParams_NonPositiveMaxNumberOfEvents() {
+  public void updateTraceConfig_NonPositiveMaxNumberOfEvents() {
     thrown.expect(IllegalArgumentException.class);
-    TraceParams.DEFAULT.toBuilder().setMaxNumberOfEvents(0).build();
+    TraceConfig.DEFAULT.toBuilder().setMaxNumberOfEvents(0).build();
   }
 
   @Test
-  public void updateTraceParams_NonPositiveMaxNumberOfLinks() {
+  public void updateTraceConfig_NonPositiveMaxNumberOfLinks() {
     thrown.expect(IllegalArgumentException.class);
-    TraceParams.DEFAULT.toBuilder().setMaxNumberOfLinks(0).build();
+    TraceConfig.DEFAULT.toBuilder().setMaxNumberOfLinks(0).build();
   }
 
   @Test
-  public void updateTraceParams_All() {
-    TraceParams traceParams =
-        TraceParams.DEFAULT
+  public void updateTraceConfig_All() {
+    TraceConfig traceConfig =
+        TraceConfig.DEFAULT
             .toBuilder()
             .setMaxNumberOfAttributes(8)
             .setMaxNumberOfEvents(10)
             .setMaxNumberOfLinks(11)
             .build();
-    assertThat(traceParams.getMaxNumberOfAttributes()).isEqualTo(8);
-    assertThat(traceParams.getMaxNumberOfEvents()).isEqualTo(10);
-    assertThat(traceParams.getMaxNumberOfLinks()).isEqualTo(11);
+    assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(8);
+    assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(10);
+    assertThat(traceConfig.getMaxNumberOfLinks()).isEqualTo(11);
   }
 }
