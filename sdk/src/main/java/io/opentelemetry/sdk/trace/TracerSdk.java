@@ -27,6 +27,7 @@ import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 
+/** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
 
   @Override
