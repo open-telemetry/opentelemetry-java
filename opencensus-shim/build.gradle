@@ -1,7 +1,0 @@
-description = 'OpenTelemetry OpenCensus Bridge'
-
-dependencies {
-    api project(':opentelemetry-api')
-
-    annotationProcessor libraries.auto_value
-}
