@@ -26,7 +26,7 @@ import java.util.Map;
  *
  * @since 0.1.0
  */
-public class DefaultSamplingDecision implements Sampler.SamplingDecision {
+public final class DefaultSamplingDecision implements Sampler.SamplingDecision {
 
   private final boolean decision;
 
