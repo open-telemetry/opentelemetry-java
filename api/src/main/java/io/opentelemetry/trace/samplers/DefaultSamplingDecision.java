@@ -36,7 +36,7 @@ public class DefaultSamplingDecision implements Sampler.SamplingDecision {
    * @param decision sampling decision
    * @since 0.1.0
    */
-  public DefaultSamplingDecision(boolean decision) {
+  DefaultSamplingDecision(boolean decision) {
     this.decision = decision;
   }
 
