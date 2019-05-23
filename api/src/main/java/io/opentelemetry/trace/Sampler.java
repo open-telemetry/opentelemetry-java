@@ -17,6 +17,7 @@
 package io.opentelemetry.trace;
 
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
@@ -58,4 +59,29 @@ public interface Sampler {
    * @since 0.1.0
    */
   String getDescription();
+
+  /**
+   * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, Boolean, TraceId,
+   * SpanId, String, List)}.
+   *
+   * @since 0.1.0
+   */
+  interface SamplingDecision {
+
+    /**
+     * Return sampling decision whether span should be sampled or not.
+     *
+     * @return sampling decision.
+     * @since 0.1.0
+     */
+    boolean isSampled();
+
+    /**
+     * Return tags which will be attached to the span.
+     *
+     * @return attributes which will be added to the span.
+     * @since 0.1.0
+     */
+    Map<String, AttributeValue> attributes();
+  }
 }

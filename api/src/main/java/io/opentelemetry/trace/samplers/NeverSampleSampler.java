@@ -17,7 +17,6 @@
 package io.opentelemetry.trace.samplers;
 
 import io.opentelemetry.trace.Sampler;
-import io.opentelemetry.trace.SamplingDecision;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
