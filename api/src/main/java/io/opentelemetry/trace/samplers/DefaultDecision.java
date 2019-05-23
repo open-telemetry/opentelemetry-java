@@ -17,7 +17,7 @@
 package io.opentelemetry.trace.samplers;
 
 import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.Sampler;
+import io.opentelemetry.trace.Sampler.Decision;
 import java.util.Collections;
 import java.util.Map;
 
@@ -26,7 +26,7 @@ import java.util.Map;
  *
  * @since 0.1.0
  */
-public final class DefaultSamplingDecision implements Sampler.SamplingDecision {
+public final class DefaultDecision implements Decision {
 
   private final boolean decision;
 
@@ -36,7 +36,7 @@ public final class DefaultSamplingDecision implements Sampler.SamplingDecision {
    * @param decision sampling decision
    * @since 0.1.0
    */
-  DefaultSamplingDecision(boolean decision) {
+  DefaultDecision(boolean decision) {
     this.decision = decision;
   }
 

@@ -41,7 +41,7 @@ public interface Sampler {
    * @return sampling decision whether span should be sampled or not.
    * @since 0.1.0
    */
-  SamplingDecision shouldSample(
+  Decision shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
       TraceId traceId,
@@ -66,7 +66,7 @@ public interface Sampler {
    *
    * @since 0.1.0
    */
-  interface SamplingDecision {
+  interface Decision {
 
     /**
      * Return sampling decision whether span should be sampled or not.
@@ -79,7 +79,8 @@ public interface Sampler {
     /**
      * Return tags which will be attached to the span.
      *
-     * @return attributes which will be added to the span.
+     * @return attributes added to span. These attributes should be added to the span only for root
+     *     span or when sampling decision {@link #isSampled()} changes from false to true.
      * @since 0.1.0
      */
     Map<String, AttributeValue> attributes();

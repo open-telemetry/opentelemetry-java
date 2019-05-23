@@ -28,13 +28,13 @@ import javax.annotation.concurrent.Immutable;
 /** Sampler that always makes a "yes" decision on {@link Span} sampling. */
 @Immutable
 final class AlwaysSampleSampler implements Sampler {
-  private static final SamplingDecision DECISION = new DefaultSamplingDecision(true);
+  private static final Decision DECISION = new DefaultDecision(true);
 
   AlwaysSampleSampler() {}
 
   // Returns always makes a "yes" decision on {@link Span} sampling.
   @Override
-  public SamplingDecision shouldSample(
+  public Decision shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
       TraceId traceId,
