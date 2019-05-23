@@ -27,6 +27,7 @@ import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 
+/** {@link MeterSdk} is SDK implementation of {@link Meter}. */
 public class MeterSdk implements Meter {
 
   @Override

@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.tags.internal.CurrentTagMapUtils;
 import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.tags.Tagger;
 
+/** {@link TaggerSdk} is SDK implementation of {@link Tagger}. */
 public class TaggerSdk implements Tagger {
 
   @Override
