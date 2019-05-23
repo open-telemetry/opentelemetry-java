@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.sdk.tags;
 
-import static com.google.common.truth.Truth.assertThat;
+import io.opentelemetry.tags.Tagger;
+import io.opentelemetry.tags.spi.TaggerProvider;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+/**
+ * {@code Tagger} provider implementation for {@link io.opentelemetry.tags.spi.TaggerProvider}.
+ *
+ * <p>This class is not intended to be used in application code and it is used only by {@link
+ * io.opentelemetry.OpenTelemetry}.
+ */
+public class TaggerSdkProvider implements TaggerProvider {
 
-@RunWith(JUnit4.class)
-public class TracerSdkProviderTest {
-
-  @Test
-  public void testDefault() {
-    assertThat(new TracerSdkProvider().create()).isInstanceOf(TracerSdk.class);
+  @Override
+  public Tagger create() {
+    return new TaggerSdk();
   }
 }

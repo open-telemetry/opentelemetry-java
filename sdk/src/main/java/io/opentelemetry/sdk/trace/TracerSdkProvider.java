@@ -19,10 +19,10 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.trace.Tracer;
 
 /**
- * Tracer provider implementation for {@link io.opentelemetry.trace.spi.TracerProvider}.
+ * {@code Tracer} provider implementation for {@link io.opentelemetry.trace.spi.TracerProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
- * io.opentelemetry.OpenTelemetry}
+ * io.opentelemetry.OpenTelemetry}.
  */
 public class TracerSdkProvider implements io.opentelemetry.trace.spi.TracerProvider {
 
