@@ -3,13 +3,11 @@ rootProject.name = "opentelemetry-java"
 include ":opentelemetry-all"
 include ":opentelemetry-api"
 include ":opentelemetry-contrib"
-include ":opentelemetry-opencensus-shim"
 include ":opentelemetry-opentracing-shim"
 include ":opentelemetry-sdk"
 
 project(':opentelemetry-all').projectDir = "$rootDir/all" as File
 project(':opentelemetry-api').projectDir = "$rootDir/api" as File
 project(':opentelemetry-contrib').projectDir = "$rootDir/contrib" as File
-project(':opentelemetry-opencensus-shim').projectDir = "$rootDir/opencensus-shim" as File
 project(':opentelemetry-opentracing-shim').projectDir = "$rootDir/opentracing-shim" as File
 project(':opentelemetry-sdk').projectDir = "$rootDir/sdk" as File
