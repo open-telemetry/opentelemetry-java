@@ -20,6 +20,7 @@ import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.tags.TagMap;
 
+/** A scope that manages the {@link Context} for a {@link TagMap}. */
 public final class TagMapInScope implements Scope {
   private final Context orig;
 
