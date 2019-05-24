@@ -31,6 +31,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -284,7 +285,8 @@ final class InMemorySpan implements Span {
     static SpanId createSpanId() {
       SpanId spanId;
       do {
-        spanId = new SpanId(random.nextLong());
+        ByteBuffer buff = ByteBuffer.allocate(SpanId.SIZE);
+        spanId = SpanId.fromBytes(buff.putLong(random.nextLong()).array(), 0);
       } while (spanId.equals(SpanId.INVALID));
 
       return spanId;
@@ -293,7 +295,10 @@ final class InMemorySpan implements Span {
     static TraceId createTraceId() {
       TraceId traceId;
       do {
-        traceId = new TraceId(random.nextLong(), random.nextLong());
+        ByteBuffer buff = ByteBuffer.allocate(TraceId.SIZE);
+        traceId =
+            TraceId.fromBytes(
+                buff.putLong(random.nextLong()).putLong(random.nextLong()).array(), 0);
       } while (traceId.equals(TraceId.INVALID));
 
       return traceId;
