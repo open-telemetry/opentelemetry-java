@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
@@ -27,6 +26,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.unsafe.SpanInScope;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
@@ -42,7 +42,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Scope withSpan(Span span) {
-    return new ScopeInSpan(span);
+    return SpanInScope.create(span);
   }
 
   @Override
@@ -98,24 +98,5 @@ public class TracerSdk implements Tracer {
    */
   public void updateActiveTraceConfig(TraceConfig traceConfig) {
     activeTraceConfig = traceConfig;
-  }
-
-  // Defines an arbitrary scope of code as a traceable operation. Supports try-with-resources idiom.
-  private static final class ScopeInSpan implements Scope {
-    private final Context origContext;
-
-    /**
-     * Constructs a new {@link ScopeInSpan}.
-     *
-     * @param span is the {@code Span} to be added to the current {@code io.grpc.Context}.
-     */
-    private ScopeInSpan(Span span) {
-      origContext = ContextUtils.withValue(span).attach();
-    }
-
-    @Override
-    public void close() {
-      Context.current().detach(origContext);
-    }
   }
 }

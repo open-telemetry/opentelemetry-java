@@ -22,13 +22,14 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.sdk.tags.internal.CurrentTagMapUtils;
 import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.tags.Tagger;
+import io.opentelemetry.tags.unsafe.ContextUtils;
 
 /** {@link TaggerSdk} is SDK implementation of {@link Tagger}. */
 public class TaggerSdk implements Tagger {
 
   @Override
   public TagMap getCurrentTagMap() {
-    return CurrentTagMapUtils.getCurrentTagMap();
+    return ContextUtils.getValue();
   }
 
   @Override

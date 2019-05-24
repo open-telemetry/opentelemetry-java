@@ -16,13 +16,13 @@
 
 package io.opentelemetry.tags;
 
-import io.grpc.Context;
 import io.opentelemetry.context.NoopScope;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.tags.unsafe.ContextUtils;
+import io.opentelemetry.tags.unsafe.TagMapInScope;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -72,7 +72,7 @@ public final class DefaultTagger implements Tagger {
 
   @Override
   public Scope withTagMap(TagMap tags) {
-    return new TagMapInScope(tags);
+    return TagMapInScope.create(tags);
   }
 
   @Override
@@ -148,24 +148,6 @@ public final class DefaultTagger implements Tagger {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
       return EmptyTagMap.INSTANCE;
-    }
-  }
-
-  private static final class TagMapInScope implements Scope {
-    private final Context orig;
-
-    /**
-     * Constructs a new {@link TagMapInScope}.
-     *
-     * @param tags the {@code TagMap} to be added to the current {@code Context}.
-     */
-    private TagMapInScope(TagMap tags) {
-      orig = ContextUtils.withValue(tags).attach();
-    }
-
-    @Override
-    public void close() {
-      Context.current().detach(orig);
     }
   }
 }

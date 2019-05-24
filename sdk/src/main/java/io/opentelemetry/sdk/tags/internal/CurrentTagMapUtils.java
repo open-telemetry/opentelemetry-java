@@ -20,6 +20,7 @@ import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.tags.unsafe.ContextUtils;
+import io.opentelemetry.tags.unsafe.TagMapInScope;
 
 public final class CurrentTagMapUtils {
   private CurrentTagMapUtils() {}
@@ -42,25 +43,6 @@ public final class CurrentTagMapUtils {
    *     context.
    */
   public static Scope withTagMap(TagMap tags) {
-    return new WithTagMap(tags);
-  }
-
-  private static final class WithTagMap implements Scope {
-
-    private final Context orig;
-
-    /**
-     * Constructs a new {@link WithTagMap}.
-     *
-     * @param tags the {@code TagMap} to be added to the current {@code Context}.
-     */
-    private WithTagMap(TagMap tags) {
-      orig = ContextUtils.withValue(tags).attach();
-    }
-
-    @Override
-    public void close() {
-      Context.current().detach(orig);
-    }
+    return TagMapInScope.create(tags);
   }
 }
