@@ -28,7 +28,7 @@ import javax.annotation.concurrent.Immutable;
 /** Sampler that always makes a "no" decision on {@link Span} sampling. */
 @Immutable
 final class NeverSampleSampler implements Sampler {
-  private static final Decision DECISION = new DefaultDecision(false);
+  private static final Decision DECISION = new SimpleDecision(false);
 
   NeverSampleSampler() {}
 

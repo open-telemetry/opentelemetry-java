@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.Map;
 
 /** Sampling decision without attributes. */
-final class DefaultDecision implements Decision {
+final class SimpleDecision implements Decision {
 
   private final boolean decision;
 
@@ -31,7 +31,7 @@ final class DefaultDecision implements Decision {
    *
    * @param decision sampling decision
    */
-  DefaultDecision(boolean decision) {
+  SimpleDecision(boolean decision) {
     this.decision = decision;
   }
 
