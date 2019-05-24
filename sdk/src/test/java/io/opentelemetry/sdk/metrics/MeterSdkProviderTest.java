@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk;
+package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.metrics.MeterSdk;
-import io.opentelemetry.sdk.tags.TaggerSdk;
-import io.opentelemetry.sdk.trace.TracerSdk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class OpenTelemetryTest {
+public class MeterSdkProviderTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracer()).isInstanceOf(TracerSdk.class);
-    assertThat(OpenTelemetry.getTagger()).isInstanceOf(TaggerSdk.class);
-    assertThat(OpenTelemetry.getMeter()).isInstanceOf(MeterSdk.class);
+    assertThat(new MeterSdkProvider().create()).isInstanceOf(MeterSdk.class);
   }
 }
