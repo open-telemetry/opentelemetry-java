@@ -21,20 +21,15 @@ import io.opentelemetry.trace.Sampler.Decision;
 import java.util.Collections;
 import java.util.Map;
 
-/**
- * Sampling decision without tags.
- *
- * @since 0.1.0
- */
-public final class DefaultDecision implements Decision {
+/** Sampling decision without attributes. */
+final class DefaultDecision implements Decision {
 
   private final boolean decision;
 
   /**
-   * Creates sampling decision without tags.
+   * Creates sampling decision without attributes.
    *
    * @param decision sampling decision
-   * @since 0.1.0
    */
   DefaultDecision(boolean decision) {
     this.decision = decision;
