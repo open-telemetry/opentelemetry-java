@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.stats;
+package io.opentelemetry.sdk.metrics.stats;
 
 import java.util.List;
 
