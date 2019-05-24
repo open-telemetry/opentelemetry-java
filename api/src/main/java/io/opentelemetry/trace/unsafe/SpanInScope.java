@@ -20,7 +20,11 @@ import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 
-/** A scope that manages the {@link Context} for a {@link Span}. */
+/**
+ * A scope that manages the {@link Context} for a {@link Span}.
+ *
+ * @since 0.1.0
+ */
 public final class SpanInScope implements Scope {
   private final Context previous;
   private final Context current;
@@ -34,6 +38,7 @@ public final class SpanInScope implements Scope {
    * Constructs a new {@link SpanInScope}.
    *
    * @param span the {@code Span} to be added to the current {@code Context}.
+   * @since 0.1.0
    */
   public static SpanInScope create(Span span) {
     return new SpanInScope(span);
