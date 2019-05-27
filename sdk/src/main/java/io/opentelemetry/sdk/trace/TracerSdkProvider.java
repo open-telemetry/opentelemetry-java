@@ -25,9 +25,10 @@ import io.opentelemetry.trace.Tracer;
  * io.opentelemetry.OpenTelemetry}.
  */
 public class TracerSdkProvider implements io.opentelemetry.trace.spi.TracerProvider {
+  private static final TracerSdk INSTANCE = new TracerSdk();
 
   @Override
-  public Tracer create() {
-    return new TracerSdk();
+  public Tracer get() {
+    return INSTANCE;
   }
 }

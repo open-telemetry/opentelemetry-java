@@ -26,9 +26,10 @@ import io.opentelemetry.metrics.spi.MeterProvider;
  * io.opentelemetry.OpenTelemetry}.
  */
 public class MeterSdkProvider implements MeterProvider {
+  private static final MeterSdk INSTANCE = new MeterSdk();
 
   @Override
-  public Meter create() {
-    return new MeterSdk();
+  public Meter get() {
+    return INSTANCE;
   }
 }

@@ -33,10 +33,11 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface MeterProvider {
 
   /**
-   * Creates a new meter instance.
+   * Creates a meter instance. In a single deployment runtime a singleton is returned, however in an
+   * application server with multiple deployments a different instance can be used per deployment.
    *
    * @return a meter instance.
    * @since 0.1.0
    */
-  Meter create();
+  Meter get();
 }

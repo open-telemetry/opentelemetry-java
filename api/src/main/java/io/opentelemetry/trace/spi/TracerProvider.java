@@ -33,10 +33,12 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface TracerProvider {
 
   /**
-   * Creates a new tracer instance.
+   * Returns a tracer instance. In a single deployment runtime a singleton is returned, however in
+   * an application server with multiple deployments a different instance can be used per
+   * deployment.
    *
    * @return a tracer instance.
    * @since 0.1.0
    */
-  Tracer create();
+  Tracer get();
 }

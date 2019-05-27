@@ -27,7 +27,9 @@ public class DistributedContextManagerSdkProviderTest {
 
   @Test
   public void testDefault() {
-    assertThat(new DistributedContextManagerSdkProvider().create())
+    assertThat(new DistributedContextManagerSdkProvider().get())
         .isInstanceOf(DistributedContextManagerSdk.class);
+    assertThat(new DistributedContextManagerSdkProvider().get())
+        .isSameInstanceAs(new DistributedContextManagerSdkProvider().get());
   }
 }

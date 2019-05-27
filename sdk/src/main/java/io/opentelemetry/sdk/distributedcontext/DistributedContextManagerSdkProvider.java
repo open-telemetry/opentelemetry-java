@@ -27,9 +27,10 @@ import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider
  * io.opentelemetry.OpenTelemetry}.
  */
 public class DistributedContextManagerSdkProvider implements DistributedContextManagerProvider {
+  private static final DistributedContextManager INSTANCE = new DistributedContextManagerSdk();
 
   @Override
-  public DistributedContextManager create() {
-    return new DistributedContextManagerSdk();
+  public DistributedContextManager get() {
+    return INSTANCE;
   }
 }

@@ -157,6 +157,7 @@ public class OpenTelemetryTest {
             FirstDistributedContextManager.class,
             SecondDistributedContextManager.class);
     try {
+      System.out.println(OpenTelemetry.getDistributedContextManager());
       assertTrue(
           (OpenTelemetry.getDistributedContextManager() instanceof FirstDistributedContextManager)
               || (OpenTelemetry.getDistributedContextManager()
@@ -196,7 +197,7 @@ public class OpenTelemetryTest {
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {
-    URL location = Tracer.class.getProtectionDomain().getCodeSource().getLocation();
+    URL location = OpenTelemetryTest.class.getProtectionDomain().getCodeSource().getLocation();
     File file = new File(location.getPath() + "META-INF/services/" + service.getName());
     file.getParentFile().mkdirs();
 
@@ -211,16 +212,20 @@ public class OpenTelemetryTest {
   }
 
   public static class SecondTracer extends FirstTracer {
+    private static final Tracer INSTANCE = new SecondTracer();
+
     @Override
-    public Tracer create() {
-      return new SecondTracer();
+    public Tracer get() {
+      return INSTANCE;
     }
   }
 
   public static class FirstTracer implements Tracer, TracerProvider {
+    private static final Tracer INSTANCE = new FirstTracer();
+
     @Override
-    public Tracer create() {
-      return new FirstTracer();
+    public Tracer get() {
+      return INSTANCE;
     }
 
     @Nullable
@@ -255,16 +260,20 @@ public class OpenTelemetryTest {
   }
 
   public static class SecondMeter extends FirstMeter {
+    private static final Meter INSTANCE = new SecondMeter();
+
     @Override
-    public Meter create() {
-      return new SecondMeter();
+    public Meter get() {
+      return INSTANCE;
     }
   }
 
   public static class FirstMeter implements Meter, MeterProvider {
+    private static final Meter INSTANCE = new FirstMeter();
+
     @Override
-    public Meter create() {
-      return new FirstMeter();
+    public Meter get() {
+      return INSTANCE;
     }
 
     @Nullable
@@ -311,17 +320,21 @@ public class OpenTelemetryTest {
   }
 
   public static class SecondDistributedContextManager extends FirstDistributedContextManager {
+    private static final DistributedContextManager INSTANCE = new SecondDistributedContextManager();
+
     @Override
-    public DistributedContextManager create() {
-      return new SecondDistributedContextManager();
+    public DistributedContextManager get() {
+      return INSTANCE;
     }
   }
 
   public static class FirstDistributedContextManager
       implements DistributedContextManager, DistributedContextManagerProvider {
+    private static final DistributedContextManager INSTANCE = new FirstDistributedContextManager();
+
     @Override
-    public DistributedContextManager create() {
-      return new FirstDistributedContextManager();
+    public DistributedContextManager get() {
+      return INSTANCE;
     }
 
     @Nullable

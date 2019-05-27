@@ -40,5 +40,5 @@ public interface DistributedContextManagerProvider {
    * @return a {@code DistributedContextManager} instance.
    * @since 0.1.0
    */
-  DistributedContextManager create();
+  DistributedContextManager get();
 }
