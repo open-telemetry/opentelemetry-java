@@ -35,6 +35,8 @@ public class TracerSdk implements Tracer {
   // operations are visible on other CPUs as well.
   private volatile TraceConfig activeTraceConfig = TraceConfig.DEFAULT;
 
+  private volatile Resource resource;
+
   @Override
   public Span getCurrentSpan() {
     return ContextUtils.getValue();
@@ -51,11 +53,13 @@ public class TracerSdk implements Tracer {
   }
 
   @Override
-  public void setResource(Resource resource) {}
+  public void setResource(Resource resource) {
+    this.resource = resource;
+  }
 
   @Override
   public Resource getResource() {
-    return null;
+    return resource;
   }
 
   @Override
