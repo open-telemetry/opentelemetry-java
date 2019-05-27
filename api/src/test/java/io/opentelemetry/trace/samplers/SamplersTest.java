@@ -57,7 +57,8 @@ public class SamplersTest {
                     traceId,
                     spanId,
                     "Another name",
-                    Collections.<Span>emptyList()))
+                    Collections.<Span>emptyList())
+                .isSampled())
         .isTrue();
     // Not sampled parent.
     Truth.assertThat(
@@ -68,7 +69,8 @@ public class SamplersTest {
                     traceId,
                     spanId,
                     "Yet another name",
-                    Collections.<Span>emptyList()))
+                    Collections.<Span>emptyList())
+                .isSampled())
         .isTrue();
   }
 
@@ -88,7 +90,8 @@ public class SamplersTest {
                     traceId,
                     spanId,
                     "bar",
-                    Collections.<Span>emptyList()))
+                    Collections.<Span>emptyList())
+                .isSampled())
         .isFalse();
     // Not sampled parent.
     Truth.assertThat(
@@ -99,7 +102,8 @@ public class SamplersTest {
                     traceId,
                     spanId,
                     "quux",
-                    Collections.<Span>emptyList()))
+                    Collections.<Span>emptyList())
+                .isSampled())
         .isFalse();
   }
 

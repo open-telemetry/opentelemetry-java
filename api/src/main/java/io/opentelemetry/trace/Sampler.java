@@ -17,6 +17,7 @@
 package io.opentelemetry.trace;
 
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
@@ -37,10 +38,10 @@ public interface Sampler {
    * @param spanId the {@link SpanId} for the new {@code Span}.
    * @param name the name of the new {@code Span}.
    * @param parentLinks the parentLinks associated with the new {@code Span}.
-   * @return {@code true} if the {@code Span} is sampled.
+   * @return sampling decision whether span should be sampled or not.
    * @since 0.1.0
    */
-  boolean shouldSample(
+  Decision shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
       TraceId traceId,
@@ -58,4 +59,30 @@ public interface Sampler {
    * @since 0.1.0
    */
   String getDescription();
+
+  /**
+   * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, Boolean, TraceId,
+   * SpanId, String, List)}.
+   *
+   * @since 0.1.0
+   */
+  interface Decision {
+
+    /**
+     * Return sampling decision whether span should be sampled or not.
+     *
+     * @return sampling decision.
+     * @since 0.1.0
+     */
+    boolean isSampled();
+
+    /**
+     * Return tags which will be attached to the span.
+     *
+     * @return attributes added to span. These attributes should be added to the span only for root
+     *     span or when sampling decision {@link #isSampled()} changes from false to true.
+     * @since 0.1.0
+     */
+    Map<String, AttributeValue> attributes();
+  }
 }

@@ -28,19 +28,20 @@ import javax.annotation.concurrent.Immutable;
 /** Sampler that always makes a "no" decision on {@link Span} sampling. */
 @Immutable
 final class NeverSampleSampler implements Sampler {
+  private static final Decision DECISION = new SimpleDecision(false);
 
   NeverSampleSampler() {}
 
   // Returns always makes a "no" decision on {@link Span} sampling.
   @Override
-  public boolean shouldSample(
+  public Decision shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
       TraceId traceId,
       SpanId spanId,
       String name,
       List<Span> parentLinks) {
-    return false;
+    return DECISION;
   }
 
   @Override
