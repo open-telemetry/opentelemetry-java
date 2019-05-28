@@ -57,6 +57,34 @@ public interface TagMap {
    */
   interface Builder {
     /**
+     * Sets the parent {@code TagMap} to use. If not set, the value of {@code
+     * Tagger.getCurrentTagMap()} at {@link #build()} or {@link #buildScoped()} time will be used as
+     * parent.
+     *
+     * <p>This <b>must</b> be used to create a {@code TagMap} when manual Context propagation is
+     * used.
+     *
+     * <p>If called multiple times, only the last specified value will be used.
+     *
+     * @param parent the {@code TagMap} used as parent.
+     * @return this.
+     * @throws NullPointerException if {@code parent} is {@code null}.
+     * @see #setNoParent()
+     * @since 0.1.0
+     */
+    Builder setParent(TagMap parent);
+
+    /**
+     * Sets the option to become a {@code TagMap} with no parent. If not set, the value of {@code
+     * Tagger.getCurrentTagMap()} at {@link #build()} or {@link #buildScoped()} time will be used as
+     * parent.
+     *
+     * @return this.
+     * @since 0.1.0
+     */
+    Builder setNoParent();
+
+    /**
      * Adds the key/value pair and metadata regardless of whether the key is present.
      *
      * @param key the {@code TagKey} which will be set.

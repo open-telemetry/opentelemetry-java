@@ -58,16 +58,8 @@ public final class DefaultTaggerTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void builderMethods() {
-    assertThat(asList(defaultTagger.emptyBuilder().build())).isEmpty();
-    assertThat(asList(defaultTagger.toBuilder(TAG_MAP).build())).isEmpty();
-    assertThat(asList(defaultTagger.currentBuilder().build())).isEmpty();
-  }
-
-  @Test
-  public void toBuilder_DisallowsNull() {
-    thrown.expect(NullPointerException.class);
-    defaultTagger.toBuilder(null);
+  public void builderMethod() {
+    assertThat(asList(defaultTagger.tagMapBuilder().build())).isEmpty();
   }
 
   @Test
@@ -135,29 +127,36 @@ public final class DefaultTaggerTest {
   }
 
   @Test
+  public void noopTagMapBuilder_SetParent_DisallowsNullKey() {
+    TagMap.Builder noopBuilder = defaultTagger.tagMapBuilder();
+    thrown.expect(NullPointerException.class);
+    noopBuilder.setParent(null);
+  }
+
+  @Test
   public void noopTagMapBuilder_Put_DisallowsNullKey() {
-    TagMap.Builder noopBuilder = defaultTagger.currentBuilder();
+    TagMap.Builder noopBuilder = defaultTagger.tagMapBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(null, VALUE, Tag.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopTagMapBuilder_Put_DisallowsNullValue() {
-    TagMap.Builder noopBuilder = defaultTagger.currentBuilder();
+    TagMap.Builder noopBuilder = defaultTagger.tagMapBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(KEY, null, Tag.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopTagMapBuilder_Put_DisallowsNullTagMetadata() {
-    TagMap.Builder noopBuilder = defaultTagger.currentBuilder();
+    TagMap.Builder noopBuilder = defaultTagger.tagMapBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(KEY, VALUE, null);
   }
 
   @Test
   public void noopTagMapBuilder_Remove_DisallowsNullKey() {
-    TagMap.Builder noopBuilder = defaultTagger.currentBuilder();
+    TagMap.Builder noopBuilder = defaultTagger.tagMapBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.remove(null);
   }

@@ -55,18 +55,7 @@ public final class DefaultTagger implements Tagger {
   }
 
   @Override
-  public TagMap.Builder emptyBuilder() {
-    return new NoopTagMapBuilder();
-  }
-
-  @Override
-  public TagMap.Builder toBuilder(TagMap tags) {
-    Utils.checkNotNull(tags, "tags");
-    return new NoopTagMapBuilder();
-  }
-
-  @Override
-  public TagMap.Builder currentBuilder() {
+  public TagMap.Builder tagMapBuilder() {
     return new NoopTagMapBuilder();
   }
 
@@ -87,6 +76,17 @@ public final class DefaultTagger implements Tagger {
 
   @Immutable
   private static final class NoopTagMapBuilder implements TagMap.Builder {
+    @Override
+    public TagMap.Builder setParent(TagMap parent) {
+      Utils.checkNotNull(parent, "parent");
+      return this;
+    }
+
+    @Override
+    public TagMap.Builder setNoParent() {
+      return this;
+    }
+
     @Override
     public TagMap.Builder put(TagKey key, TagValue value, TagMetadata tagMetadata) {
       Utils.checkNotNull(key, "key");
