@@ -163,6 +163,7 @@ public abstract class SpanData {
    * @return the {@code Status}.
    * @since 0.1.0
    */
+  @Nullable
   public abstract Status getStatus();
 
   /**
@@ -171,6 +172,7 @@ public abstract class SpanData {
    * @return the end {@code Timestamp}.
    * @since 0.1.0
    */
+  @Nullable
   public abstract Timestamp getEndTimestamp();
 
   SpanData() {}
