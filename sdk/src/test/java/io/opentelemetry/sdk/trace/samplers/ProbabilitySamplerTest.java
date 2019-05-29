@@ -133,8 +133,15 @@ public class ProbabilitySamplerTest {
       Sampler sampler, SpanContext parent, List<Span> parentLinks, double probability) {
     int count = 0; // Count of spans with sampling enabled
     for (int i = 0; i < NUM_SAMPLE_TRIES; i++) {
-      if (sampler.shouldSample(
-          parent, false, generateRandomTraceId(), generateRandomSpanId(), SPAN_NAME, parentLinks)) {
+      if (sampler
+          .shouldSample(
+              parent,
+              false,
+              generateRandomTraceId(),
+              generateRandomSpanId(),
+              SPAN_NAME,
+              parentLinks)
+          .isSampled()) {
         count++;
       }
     }
@@ -210,13 +217,15 @@ public class ProbabilitySamplerTest {
             },
             0);
     assertThat(
-            defaultProbability.shouldSample(
-                null,
-                false,
-                notSampledtraceId,
-                generateRandomSpanId(),
-                SPAN_NAME,
-                Collections.<Span>emptyList()))
+            defaultProbability
+                .shouldSample(
+                    null,
+                    false,
+                    notSampledtraceId,
+                    generateRandomSpanId(),
+                    SPAN_NAME,
+                    Collections.<Span>emptyList())
+                .isSampled())
         .isFalse();
     // This traceId will be sampled by the ProbabilitySampler because the first 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
@@ -242,13 +251,15 @@ public class ProbabilitySamplerTest {
             },
             0);
     assertThat(
-            defaultProbability.shouldSample(
-                null,
-                false,
-                sampledtraceId,
-                generateRandomSpanId(),
-                SPAN_NAME,
-                Collections.<Span>emptyList()))
+            defaultProbability
+                .shouldSample(
+                    null,
+                    false,
+                    sampledtraceId,
+                    generateRandomSpanId(),
+                    SPAN_NAME,
+                    Collections.<Span>emptyList())
+                .isSampled())
         .isTrue();
   }
 

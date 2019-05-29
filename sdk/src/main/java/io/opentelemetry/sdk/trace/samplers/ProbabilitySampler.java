@@ -18,12 +18,15 @@ package io.opentelemetry.sdk.trace.samplers;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
+import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -71,7 +74,7 @@ public abstract class ProbabilitySampler implements Sampler {
   }
 
   @Override
-  public final boolean shouldSample(
+  public final Decision shouldSample(
       @Nullable SpanContext parentContext,
       @Nullable Boolean hasRemoteParent,
       TraceId traceId,
@@ -80,13 +83,13 @@ public abstract class ProbabilitySampler implements Sampler {
       @Nullable List<Span> parentLinks) {
     // If the parent is sampled keep the sampling decision.
     if (parentContext != null && parentContext.getTraceOptions().isSampled()) {
-      return true;
+      return new SimpleDecision(true);
     }
     if (parentLinks != null) {
       // If any parent link is sampled keep the sampling decision.
       for (Span parentLink : parentLinks) {
         if (parentLink.getContext().getTraceOptions().isSampled()) {
-          return true;
+          return new SimpleDecision(true);
         }
       }
     }
@@ -97,11 +100,36 @@ public abstract class ProbabilitySampler implements Sampler {
     // while allowing for a (very) small chance of *not* sampling if the id == Long.MAX_VALUE.
     // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
     // code is executed in-line for every Span creation).
-    return Math.abs(traceId.getLowerLong()) < getIdUpperBound();
+    return new SimpleDecision(Math.abs(traceId.getLowerLong()) < getIdUpperBound());
   }
 
   @Override
   public final String getDescription() {
     return String.format("ProbabilitySampler{%.6f}", getProbability());
+  }
+
+  /** Sampling decision without attributes. */
+  private static final class SimpleDecision implements Decision {
+
+    private final boolean decision;
+
+    /**
+     * Creates sampling decision without attributes.
+     *
+     * @param decision sampling decision
+     */
+    SimpleDecision(boolean decision) {
+      this.decision = decision;
+    }
+
+    @Override
+    public boolean isSampled() {
+      return decision;
+    }
+
+    @Override
+    public Map<String, AttributeValue> attributes() {
+      return Collections.emptyMap();
+    }
   }
 }
