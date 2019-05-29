@@ -16,8 +16,18 @@
 
 package io.opentelemetry.trace.samplers;
 
+import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Sampler;
+import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceId;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Static class to access a set of pre-defined {@link Sampler Samplers}.
@@ -27,6 +37,8 @@ import io.opentelemetry.trace.Span;
 public final class Samplers {
   private static final Sampler ALWAYS_SAMPLE = new AlwaysSampleSampler();
   private static final Sampler NEVER_SAMPLE = new NeverSampleSampler();
+  private static final Decision ALWAYS_ON_DECISION = new SimpleDecision(true);
+  private static final Decision ALWAYS_OFF_DECISION = new SimpleDecision(false);
 
   // No instance of this class.
   private Samplers() {}
@@ -49,5 +61,85 @@ public final class Samplers {
    */
   public static Sampler neverSample() {
     return NEVER_SAMPLE;
+  }
+
+  @Immutable
+  private static final class AlwaysSampleSampler implements Sampler {
+    AlwaysSampleSampler() {}
+
+    // Returns always makes a "yes" decision on {@link Span} sampling.
+    @Override
+    public Decision shouldSample(
+        @Nullable SpanContext parentContext,
+        @Nullable Boolean hasRemoteParent,
+        TraceId traceId,
+        SpanId spanId,
+        String name,
+        List<Span> parentLinks) {
+      return ALWAYS_ON_DECISION;
+    }
+
+    @Override
+    public String getDescription() {
+      return toString();
+    }
+
+    @Override
+    public String toString() {
+      return "AlwaysSampleSampler";
+    }
+  }
+
+  @Immutable
+  private static final class NeverSampleSampler implements Sampler {
+    NeverSampleSampler() {}
+
+    // Returns always makes a "no" decision on {@link Span} sampling.
+    @Override
+    public Decision shouldSample(
+        @Nullable SpanContext parentContext,
+        @Nullable Boolean hasRemoteParent,
+        TraceId traceId,
+        SpanId spanId,
+        String name,
+        List<Span> parentLinks) {
+      return ALWAYS_OFF_DECISION;
+    }
+
+    @Override
+    public String getDescription() {
+      return toString();
+    }
+
+    @Override
+    public String toString() {
+      return "NeverSampleSampler";
+    }
+  }
+
+  /** Sampling decision without attributes. */
+  @Immutable
+  private static final class SimpleDecision implements Decision {
+
+    private final boolean decision;
+
+    /**
+     * Creates sampling decision without attributes.
+     *
+     * @param decision sampling decision
+     */
+    SimpleDecision(boolean decision) {
+      this.decision = decision;
+    }
+
+    @Override
+    public boolean isSampled() {
+      return decision;
+    }
+
+    @Override
+    public Map<String, AttributeValue> attributes() {
+      return Collections.emptyMap();
+    }
   }
 }
