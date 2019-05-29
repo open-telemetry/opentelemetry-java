@@ -22,7 +22,15 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
+import com.google.protobuf.BoolValue;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
+import com.google.protobuf.UInt32Value;
+import io.opentelemetry.proto.trace.v1.Span.Attributes;
+import io.opentelemetry.proto.trace.v1.Span.Links;
+import io.opentelemetry.proto.trace.v1.Span.SpanKind;
+import io.opentelemetry.proto.trace.v1.Span.TimedEvents;
+import io.opentelemetry.proto.trace.v1.TruncatableString;
 import io.opentelemetry.resource.Resource;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
@@ -37,7 +45,10 @@ import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.Tracestate;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -170,7 +181,174 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
 
   @Override
   public io.opentelemetry.proto.trace.v1.Span toSpanProto() {
-    throw new UnsupportedOperationException("not implemented");
+    synchronized (this) {
+      io.opentelemetry.proto.trace.v1.Span.Builder builder =
+          io.opentelemetry.proto.trace.v1.Span.newBuilder()
+              .setTraceId(toProtoTraceId(context.getTraceId()))
+              .setSpanId(toProtoSpanId(context.getSpanId()))
+              .setTracestate(toProtoTracestate(context.getTracestate()))
+              .setResource(toProtoResource(resource))
+              .setKind(toProtoKind(kind))
+              .setStartTime(timestampConverter.convertNanoTime(startNanoTime))
+              .setChildSpanCount(UInt32Value.of(numberOfChildren))
+              .setName(TruncatableString.newBuilder().setValue(name).build());
+      if (attributes != null) {
+        builder.setAttributes(toProtoAttributes(attributes));
+      }
+      if (events != null) {
+        builder.setTimeEvents(toProtoTimedEvents(events));
+      }
+      if (links != null) {
+        builder.setLinks(toProtoLinks(links));
+      }
+      if (hasRemoteParent != null) {
+        builder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
+      }
+      if (hasBeenEnded) {
+        builder.setStatus(toProtoStatus(getStatusWithDefault()));
+        builder.setEndTime(timestampConverter.convertNanoTime(endNanoTime));
+      }
+      return builder.build();
+    }
+  }
+
+  private static ByteString toProtoTraceId(TraceId traceId) {
+    return ByteString.copyFrom(traceId.toLowerBase16(), Charset.defaultCharset());
+  }
+
+  private static ByteString toProtoSpanId(SpanId spanId) {
+    return ByteString.copyFrom(spanId.toLowerBase16(), Charset.defaultCharset());
+  }
+
+  private static io.opentelemetry.proto.trace.v1.Span.Tracestate toProtoTracestate(
+      Tracestate tracestate) {
+    io.opentelemetry.proto.trace.v1.Span.Tracestate.Builder builder =
+        io.opentelemetry.proto.trace.v1.Span.Tracestate.newBuilder();
+    for (Tracestate.Entry entry : tracestate.getEntries()) {
+      builder.addEntries(
+          io.opentelemetry.proto.trace.v1.Span.Tracestate.Entry.newBuilder()
+              .setKey(entry.getKey())
+              .setValue(entry.getValue()));
+    }
+    return builder.build();
+  }
+
+  private static io.opentelemetry.proto.resource.v1.Resource toProtoResource(Resource resource) {
+    io.opentelemetry.proto.resource.v1.Resource.Builder builder =
+        io.opentelemetry.proto.resource.v1.Resource.newBuilder();
+    for (Map.Entry<String, String> entry : resource.getLabels().entrySet()) {
+      builder.putLabels(entry.getKey(), entry.getValue());
+    }
+    return builder.build();
+  }
+
+  private static SpanKind toProtoKind(@Nullable Kind kind) {
+    if (kind == null) {
+      return SpanKind.SPAN_KIND_UNSPECIFIED;
+    }
+    switch (kind) {
+      case CLIENT:
+        return SpanKind.CLIENT;
+      case SERVER:
+        return SpanKind.SERVER;
+    }
+    return SpanKind.UNRECOGNIZED;
+  }
+
+  private static Attributes toProtoAttributes(AttributesWithCapacity attributes) {
+    Attributes.Builder builder = Attributes.newBuilder();
+    builder.setDroppedAttributesCount(attributes.getNumberOfDroppedAttributes());
+    for (Map.Entry<String, AttributeValue> attribute : attributes.entrySet()) {
+      builder.putAttributeMap(attribute.getKey(), toProtoAttributeValue(attribute.getValue()));
+    }
+    return builder.build();
+  }
+
+  private static Attributes toProtoAttributes(Map<String, AttributeValue> attributes) {
+    Attributes.Builder builder = Attributes.newBuilder();
+    for (Map.Entry<String, AttributeValue> attribute : attributes.entrySet()) {
+      builder.putAttributeMap(attribute.getKey(), toProtoAttributeValue(attribute.getValue()));
+    }
+    return builder.build();
+  }
+
+  private static io.opentelemetry.proto.trace.v1.AttributeValue toProtoAttributeValue(
+      AttributeValue attributeValue) {
+    io.opentelemetry.proto.trace.v1.AttributeValue.Builder builder =
+        io.opentelemetry.proto.trace.v1.AttributeValue.newBuilder();
+    switch (attributeValue.getType()) {
+      case BOOLEAN:
+        builder.setBoolValue(attributeValue.getBooleanValue());
+        break;
+      case DOUBLE:
+        builder.setDoubleValue(attributeValue.getDoubleValue());
+        break;
+      case LONG:
+        builder.setIntValue(attributeValue.getLongValue());
+        break;
+      case STRING:
+        builder.setStringValue(
+            TruncatableString.newBuilder().setValue(attributeValue.getStringValue()).build());
+    }
+    return builder.build();
+  }
+
+  private static TimedEvents toProtoTimedEvents(TraceEvents<TimedEvent> events) {
+    TimedEvents.Builder builder = TimedEvents.newBuilder();
+    builder.setDroppedTimedEventsCount(events.getNumberOfDroppedEvents());
+    for (TimedEvent timedEvent : events.events) {
+      builder.addTimedEvent(toProtoTimedEvent(timedEvent));
+    }
+    return builder.build();
+  }
+
+  private static io.opentelemetry.proto.trace.v1.Span.TimedEvent toProtoTimedEvent(
+      TimedEvent timedEvent) {
+    io.opentelemetry.proto.trace.v1.Span.TimedEvent.Builder builder =
+        io.opentelemetry.proto.trace.v1.Span.TimedEvent.newBuilder();
+    builder.setTime(toProtoTimestamp(timedEvent.getTimestamp()));
+    Event event = timedEvent.getEvent();
+    builder.setEvent(
+        io.opentelemetry.proto.trace.v1.Span.TimedEvent.Event.newBuilder()
+            .setName(TruncatableString.newBuilder().setValue(event.getName()).build())
+            .setAttributes(toProtoAttributes(event.getAttributes()))
+            .build());
+    return builder.build();
+  }
+
+  private static Links toProtoLinks(TraceEvents<Link> links) {
+    Links.Builder builder = Links.newBuilder();
+    builder.setDroppedLinksCount(links.getNumberOfDroppedEvents());
+    for (Link link : links.events) {
+      builder.addLink(toProtoLink(link));
+    }
+    return builder.build();
+  }
+
+  private static io.opentelemetry.proto.trace.v1.Span.Link toProtoLink(Link link) {
+    io.opentelemetry.proto.trace.v1.Span.Link.Builder builder =
+        io.opentelemetry.proto.trace.v1.Span.Link.newBuilder();
+    SpanContext context = link.getContext();
+    builder
+        .setTraceId(toProtoTraceId(context.getTraceId()))
+        .setSpanId(toProtoSpanId(context.getSpanId()))
+        .setTracestate(toProtoTracestate(context.getTracestate()))
+        .setAttributes(toProtoAttributes(link.getAttributes()));
+    return builder.build();
+  }
+
+  private static io.opentelemetry.proto.trace.v1.Status toProtoStatus(Status status) {
+    return io.opentelemetry.proto.trace.v1.Status.newBuilder()
+        .setCode(status.getCanonicalCode().value())
+        .setMessage(status.getDescription())
+        .build();
+  }
+
+  private static Timestamp toProtoTimestamp(SpanData.Timestamp timestamp) {
+    return Timestamp.newBuilder()
+        .setSeconds(timestamp.getSeconds())
+        .setNanos(timestamp.getNanos())
+        .build();
   }
 
   /**
