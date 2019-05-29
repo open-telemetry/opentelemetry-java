@@ -47,14 +47,14 @@ public class DefaultTracerTest {
 
   @Test
   public void getCurrentSpan_WithSpan() {
-    assertThat(defaultTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
     Scope ws = defaultTracer.withSpan(BlankSpan.INSTANCE);
     try {
-      assertThat(defaultTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
+      assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
     } finally {
       ws.close();
     }
-    assertThat(defaultTracer.getCurrentSpan()).isSameAs(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
   }
 
   @Test(expected = NullPointerException.class)
@@ -64,7 +64,8 @@ public class DefaultTracerTest {
 
   @Test
   public void defaultSpanBuilderWithName() {
-    assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan()).isSameAs(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan())
+        .isSameInstanceAs(BlankSpan.INSTANCE);
   }
 
   @Test
