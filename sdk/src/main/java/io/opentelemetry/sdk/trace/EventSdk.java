@@ -26,7 +26,7 @@ import javax.annotation.concurrent.Immutable;
 /** Implementation of {@link Event}. */
 @Immutable
 @AutoValue
-public abstract class EventSdk implements Event {
+abstract class EventSdk implements Event {
 
   private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES =
       Collections.unmodifiableMap(Collections.<String, AttributeValue>emptyMap());
