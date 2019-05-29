@@ -40,7 +40,7 @@ public class SpanBuilderTest {
     spanBuilder.setParent(BlankSpan.INSTANCE);
     spanBuilder.setParent(BlankSpan.INSTANCE.getContext());
     spanBuilder.setNoParent();
-    assertThat(spanBuilder.startSpan()).isSameAs(BlankSpan.INSTANCE);
+    assertThat(spanBuilder.startSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
   }
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
