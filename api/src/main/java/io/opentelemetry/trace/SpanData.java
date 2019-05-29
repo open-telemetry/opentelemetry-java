@@ -33,6 +33,9 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Immutable representation of all data collected by the {@link Span} class.
  *
+ * <p>{@link SpanData} is only for reporting out-of-bond {@link Span}s. Running {@link Span}s will
+ * be reported using SDK or proto.
+ *
  * @since 0.1.0
  */
 @Immutable
