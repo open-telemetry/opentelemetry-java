@@ -64,7 +64,8 @@ public class DefaultTracerTest {
 
   @Test
   public void defaultSpanBuilderWithName() {
-    assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan())
+        .isSameInstanceAs(BlankSpan.INSTANCE);
   }
 
   @Test
