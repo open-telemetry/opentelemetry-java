@@ -20,6 +20,7 @@ import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TraceContextFormat;
 import io.opentelemetry.resource.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
@@ -30,6 +31,7 @@ import io.opentelemetry.trace.unsafe.ContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
+  private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new TraceContextFormat();
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
@@ -68,7 +70,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public HttpTextFormat<SpanContext> getHttpTextFormat() {
-    return null;
+    return HTTP_TEXT_FORMAT;
   }
 
   /**
