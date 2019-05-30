@@ -22,7 +22,6 @@ import com.google.protobuf.Timestamp;
 import io.opentelemetry.resource.Resource;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
-import io.opentelemetry.sdk.trace.RecordEventsSpanImpl.StartEndHandler;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
@@ -35,6 +34,7 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.Before;
@@ -64,7 +64,7 @@ public class RecordEventsSpanImplTest {
   private final Map<String, AttributeValue> attributes = new HashMap<String, AttributeValue>();
   private final Map<String, AttributeValue> expectedAttributes =
       new HashMap<String, AttributeValue>();
-  @Mock private StartEndHandler startEndHandler;
+  @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Before
@@ -90,7 +90,7 @@ public class RecordEventsSpanImplTest {
             parentSpanId,
             false,
             TraceConfig.DEFAULT,
-            startEndHandler,
+            spanProcessor,
             timestampConverter,
             testClock,
             resource);
@@ -124,7 +124,7 @@ public class RecordEventsSpanImplTest {
             parentSpanId,
             true,
             TraceConfig.DEFAULT,
-            startEndHandler,
+            spanProcessor,
             timestampConverter,
             testClock,
             resource);
@@ -142,11 +142,11 @@ public class RecordEventsSpanImplTest {
             parentSpanId,
             false,
             TraceConfig.DEFAULT,
-            startEndHandler,
+            spanProcessor,
             timestampConverter,
             testClock,
             resource);
-    Mockito.verify(startEndHandler, Mockito.times(1)).onStart(span);
+    Mockito.verify(spanProcessor, Mockito.times(1)).onStartSync(span);
     span.setAttribute(
         "MySingleStringAttributeKey",
         AttributeValue.stringAttributeValue("MySingleStringAttributeValue"));
@@ -154,21 +154,23 @@ public class RecordEventsSpanImplTest {
       span.setAttribute(attribute.getKey(), attribute.getValue());
     }
     testClock.advanceMillis(1000);
-    Event event = EventSdk.create("event2");
+    Event event = new SimpleEvent("event2", Collections.<String, AttributeValue>emptyMap());
+    Event expectdEvent =
+        SpanData.Event.create("event2", Collections.<String, AttributeValue>emptyMap());
     span.addEvent(event);
     Link link = Link.create(spanContext);
     span.addLink(link);
     testClock.advanceMillis(1000);
     span.setStatus(Status.CANCELLED);
     span.end();
-    Mockito.verify(startEndHandler, Mockito.times(1)).onEnd(span);
+    Mockito.verify(spanProcessor, Mockito.times(1)).onEndSync(span);
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getContext()).isEqualTo(spanContext);
     assertThat(spanData.getName()).isEqualTo(SPAN_NAME);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
     assertThat(spanData.getAttributes()).isEqualTo(expectedAttributes);
     assertThat(spanData.getTimedEvents().size()).isEqualTo(1);
-    assertThat(spanData.getTimedEvents().get(0).getEvent()).isEqualTo(event);
+    assertThat(spanData.getTimedEvents().get(0).getEvent()).isEqualTo(expectdEvent);
     assertThat(spanData.getLinks().size()).isEqualTo(1);
     assertThat(spanData.getLinks().get(0)).isEqualTo(link);
     assertThat(spanData.getStartTimestamp()).isEqualTo(toSpanDataTimestamp(timestamp));
@@ -186,36 +188,17 @@ public class RecordEventsSpanImplTest {
             parentSpanId,
             false,
             TraceConfig.DEFAULT,
-            startEndHandler,
+            spanProcessor,
             timestampConverter,
             testClock,
             resource);
-    Mockito.verify(startEndHandler, Mockito.times(1)).onStart(span);
+    Mockito.verify(spanProcessor, Mockito.times(1)).onStartSync(span);
     testClock.advanceMillis(10);
     assertThat(span.getStatus()).isEqualTo(Status.OK);
     span.setStatus(Status.CANCELLED);
     assertThat(span.getStatus()).isEqualTo(Status.CANCELLED);
     span.end();
     assertThat(span.getStatus()).isEqualTo(Status.CANCELLED);
-  }
-
-  @Test
-  public void sampleToLocalSpanStore_RunningSpan() {
-    RecordEventsSpanImpl span =
-        RecordEventsSpanImpl.startSpan(
-            spanContext,
-            SPAN_NAME,
-            Kind.INTERNAL,
-            parentSpanId,
-            false,
-            TraceConfig.DEFAULT,
-            startEndHandler,
-            timestampConverter,
-            testClock,
-            resource);
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("Running span does not have the SampleToLocalSpanStore set.");
-    span.getSampleToLocalSpanStore();
   }
 
   @Test
@@ -228,7 +211,7 @@ public class RecordEventsSpanImplTest {
             parentSpanId,
             false,
             TraceConfig.DEFAULT,
-            startEndHandler,
+            spanProcessor,
             timestampConverter,
             testClock,
             resource);
@@ -237,5 +220,26 @@ public class RecordEventsSpanImplTest {
 
   private static SpanData.Timestamp toSpanDataTimestamp(Timestamp protoTimestamp) {
     return SpanData.Timestamp.create(protoTimestamp.getSeconds(), protoTimestamp.getNanos());
+  }
+
+  private static final class SimpleEvent implements Event {
+
+    private final String name;
+    private final Map<String, AttributeValue> attributes;
+
+    private SimpleEvent(String name, Map<String, AttributeValue> attributes) {
+      this.name = name;
+      this.attributes = attributes;
+    }
+
+    @Override
+    public String getName() {
+      return name;
+    }
+
+    @Override
+    public Map<String, AttributeValue> getAttributes() {
+      return attributes;
+    }
   }
 }

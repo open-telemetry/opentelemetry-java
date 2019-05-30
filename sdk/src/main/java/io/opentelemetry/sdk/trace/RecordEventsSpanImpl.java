@@ -16,9 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
@@ -42,7 +39,6 @@ import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
-import io.opentelemetry.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
@@ -50,8 +46,10 @@ import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.Tracestate;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,12 +71,12 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
   // Active trace configs when the Span was created.
   private final TraceConfig traceConfig;
   // Handler called when the span starts and ends.
-  private final StartEndHandler startEndHandler;
+  private final SpanProcessor spanProcessor;
   // The displayed name of the span.
   @GuardedBy("this")
   private String name;
   // The kind of the span.
-  @Nullable private final Kind kind;
+  private final Kind kind;
   // The clock used to get the time.
   private final Clock clock;
   // The time converter used to convert nano time to Timestamp. This is needed because Java has
@@ -114,9 +112,6 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
   @GuardedBy("this")
   private boolean hasBeenEnded;
 
-  @GuardedBy("this")
-  private boolean sampleToLocalSpanStore;
-
   // Pointers for the ConcurrentIntrusiveList$Element. Guarded by the ConcurrentIntrusiveList.
   @Nullable private RecordEventsSpanImpl next = null;
   @Nullable private RecordEventsSpanImpl prev = null;
@@ -130,7 +125,7 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
    * @param hasRemoteParent {@code true} if the parentContext is remote. {@code null} if this is a
    *     root span.
    * @param traceConfig trace parameters like sampler and probability.
-   * @param startEndHandler handler called when the span starts and ends.
+   * @param spanProcessor handler called when the span starts and ends.
    * @param timestampConverter null if the span is a root span or the parent is not sampled. If the
    *     parent is sampled, we should use the same converter to ensure ordering between tracing
    *     events.
@@ -141,11 +136,11 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
   public static RecordEventsSpanImpl startSpan(
       SpanContext context,
       String name,
-      @Nullable Kind kind,
+      Kind kind,
       @Nullable SpanId parentSpanId,
       @Nullable Boolean hasRemoteParent,
       TraceConfig traceConfig,
-      StartEndHandler startEndHandler,
+      SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
       Resource resource) {
@@ -157,13 +152,13 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
             parentSpanId,
             hasRemoteParent,
             traceConfig,
-            startEndHandler,
+            spanProcessor,
             timestampConverter,
             clock,
             resource);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
-    startEndHandler.onStart(span);
+    spanProcessor.onStartSync(span);
     return span;
   }
 
@@ -196,7 +191,7 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
         builder.setAttributes(toProtoAttributes(attributes));
       }
       if (events != null) {
-        builder.setTimeEvents(toProtoTimedEvents(events));
+        builder.setTimeEvents(toProtoTimedEvents(events, timestampConverter));
       }
       if (links != null) {
         builder.setLinks(toProtoLinks(links));
@@ -242,10 +237,7 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
     return builder.build();
   }
 
-  private static SpanKind toProtoKind(@Nullable Kind kind) {
-    if (kind == null) {
-      return SpanKind.SPAN_KIND_UNSPECIFIED;
-    }
+  private static SpanKind toProtoKind(Kind kind) {
     switch (kind) {
       case CLIENT:
         return SpanKind.CLIENT;
@@ -293,25 +285,25 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
     return builder.build();
   }
 
-  private static TimedEvents toProtoTimedEvents(TraceEvents<TimedEvent> events) {
+  private static TimedEvents toProtoTimedEvents(
+      TraceEvents<TimedEvent> events, TimestampConverter converter) {
     TimedEvents.Builder builder = TimedEvents.newBuilder();
     builder.setDroppedTimedEventsCount(events.getNumberOfDroppedEvents());
     for (TimedEvent timedEvent : events.events) {
-      builder.addTimedEvent(toProtoTimedEvent(timedEvent));
+      builder.addTimedEvent(toProtoTimedEvent(timedEvent, converter));
     }
     return builder.build();
   }
 
   private static io.opentelemetry.proto.trace.v1.Span.TimedEvent toProtoTimedEvent(
-      TimedEvent timedEvent) {
+      TimedEvent timedEvent, TimestampConverter converter) {
     io.opentelemetry.proto.trace.v1.Span.TimedEvent.Builder builder =
         io.opentelemetry.proto.trace.v1.Span.TimedEvent.newBuilder();
-    builder.setTime(toProtoTimestamp(timedEvent.getTimestamp()));
-    Event event = timedEvent.getEvent();
+    builder.setTime(converter.convertNanoTime(timedEvent.getNanotime()));
     builder.setEvent(
         io.opentelemetry.proto.trace.v1.Span.TimedEvent.Event.newBuilder()
-            .setName(TruncatableString.newBuilder().setValue(event.getName()).build())
-            .setAttributes(toProtoAttributes(event.getAttributes()))
+            .setName(TruncatableString.newBuilder().setValue(timedEvent.getName()).build())
+            .setAttributes(toProtoAttributes(timedEvent.getAttributes()))
             .build());
     return builder.build();
   }
@@ -341,13 +333,6 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
     return io.opentelemetry.proto.trace.v1.Status.newBuilder()
         .setCode(status.getCanonicalCode().value())
         .setMessage(status.getDescription())
-        .build();
-  }
-
-  private static Timestamp toProtoTimestamp(SpanData.Timestamp timestamp) {
-    return Timestamp.newBuilder()
-        .setSeconds(timestamp.getSeconds())
-        .setNanos(timestamp.getNanos())
         .build();
   }
 
@@ -387,23 +372,10 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
   }
 
   /**
-   * Returns if the name of this {@code Span} must be register to the {@code SampledSpanStore}.
-   *
-   * @return if the name of this {@code Span} must be register to the {@code SampledSpanStore}.
-   */
-  public boolean getSampleToLocalSpanStore() {
-    synchronized (this) {
-      checkState(hasBeenEnded, "Running span does not have the SampleToLocalSpanStore set.");
-      return sampleToLocalSpanStore;
-    }
-  }
-
-  /**
    * Returns the kind of this {@code Span}.
    *
    * @return the kind of this {@code Span}.
    */
-  @Nullable
   public Kind getKind() {
     return kind;
   }
@@ -441,8 +413,8 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
               ? Collections.<String, AttributeValue>emptyMap()
               : Collections.unmodifiableMap(attributes),
           events == null
-              ? Collections.<TimedEvent>emptyList()
-              : Collections.unmodifiableList(new ArrayList<TimedEvent>(events.events)),
+              ? Collections.<SpanData.TimedEvent>emptyList()
+              : toSpanDataTimedEvents(events.events, timestampConverter),
           links == null
               ? Collections.<Link>emptyList()
               : Collections.unmodifiableList(new ArrayList<Link>(links.events)),
@@ -486,28 +458,39 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
 
   @Override
   public void addEvent(String name) {
-    addEvent(EventSdk.create(name));
+    addTimedEvent(TimedEvent.create(clock.nowNanos(), name));
   }
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes) {
-    addEvent(EventSdk.create(name, attributes));
+    addTimedEvent(TimedEvent.create(clock.nowNanos(), name, attributes));
   }
 
   @Override
   public void addEvent(Event event) {
-    Preconditions.checkNotNull(event, "event");
+    addTimedEvent(TimedEvent.create(clock.nowNanos(), event));
+  }
+
+  private void addTimedEvent(TimedEvent timedEvent) {
     synchronized (this) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
-      getInitializedEvents()
-          .addEvent(
-              TimedEvent.create(
-                  toSpanDataTimestamp(timestampConverter, clock.nowNanos()),
-                  checkNotNull(event, "event")));
+      getInitializedEvents().addEvent(timedEvent);
     }
+  }
+
+  private static List<SpanData.TimedEvent> toSpanDataTimedEvents(
+      Collection<TimedEvent> timedEvents, TimestampConverter converter) {
+    List<SpanData.TimedEvent> spanDataTimedEvents = new ArrayList<>(timedEvents.size());
+    for (TimedEvent timedEvent : timedEvents) {
+      spanDataTimedEvents.add(
+          SpanData.TimedEvent.create(
+              toSpanDataTimestamp(converter, timedEvent.getNanotime()),
+              SpanData.Event.create(timedEvent.getName(), timedEvent.getAttributes())));
+    }
+    return spanDataTimedEvents;
   }
 
   @Override
@@ -552,7 +535,7 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
       endNanoTime = clock.nowNanos();
       hasBeenEnded = true;
     }
-    startEndHandler.onEnd(this);
+    spanProcessor.onEndSync(this);
   }
 
   @Override
@@ -626,22 +609,6 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
     prev = element;
   }
 
-  /**
-   * Interface to handle the start and end operations for a {@link Span} only when {@link
-   * #isRecordingEvents()} is true.
-   *
-   * <p>Implementation must avoid high overhead work in any of the methods because the code is
-   * executed on the critical path.
-   *
-   * <p>One instance can be called by multiple threads in the same time, so the implementation must
-   * be thread-safe.
-   */
-  public interface StartEndHandler {
-    void onStart(RecordEventsSpanImpl span);
-
-    void onEnd(RecordEventsSpanImpl span);
-  }
-
   // A map implementation with a fixed capacity that drops events when the map gets full. Eviction
   // is based on the access order.
   private static final class AttributesWithCapacity extends LinkedHashMap<String, AttributeValue> {
@@ -699,11 +666,11 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
   private RecordEventsSpanImpl(
       SpanContext context,
       String name,
-      @Nullable Kind kind,
+      Kind kind,
       @Nullable SpanId parentSpanId,
       @Nullable Boolean hasRemoteParent,
       TraceConfig traceConfig,
-      StartEndHandler startEndHandler,
+      SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
       Resource resource) {
@@ -713,11 +680,10 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
     this.name = name;
     this.kind = kind;
     this.traceConfig = traceConfig;
-    this.startEndHandler = startEndHandler;
+    this.spanProcessor = spanProcessor;
     this.clock = clock;
     this.resource = resource;
     this.hasBeenEnded = false;
-    this.sampleToLocalSpanStore = false;
     this.numberOfChildren = 0;
     this.timestampConverter =
         timestampConverter != null ? timestampConverter : TimestampConverter.now(clock);
