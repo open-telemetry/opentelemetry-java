@@ -16,7 +16,6 @@
 
 package io.opentelemetry.trace;
 
-import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
@@ -54,7 +53,7 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Scope withSpan(Span span) {
-    return SpanInScope.create(span);
+    return ContextUtils.withSpan(span);
   }
 
   @Override
@@ -177,24 +176,5 @@ public final class DefaultTracer implements Tracer {
     }
 
     private NoopBinaryFormat() {}
-  }
-
-  private static final class SpanInScope implements Scope {
-    private final Context previous;
-    private final Context current;
-
-    private SpanInScope(Span span) {
-      current = ContextUtils.withValue(span);
-      previous = current.attach();
-    }
-
-    public static SpanInScope create(Span span) {
-      return new SpanInScope(span);
-    }
-
-    @Override
-    public void close() {
-      current.detach(previous);
-    }
   }
 }
