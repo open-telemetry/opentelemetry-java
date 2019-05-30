@@ -92,11 +92,17 @@ public final class RecordEventsSpanImpl implements SpanSdk {
   // List of recorded events.
   @GuardedBy("this")
   @Nullable
-  private TraceEvents<TimedEvent> events;
+  private EvictingQueue<TimedEvent> events;
+  // Number of events recorded.
+  @GuardedBy("this")
+  private int totalRecordedEvents = 0;
   // List of recorded links to parent and child spans.
   @GuardedBy("this")
   @Nullable
-  private TraceEvents<Link> links;
+  private EvictingQueue<Link> links;
+  // Number of link recorded.
+  @GuardedBy("this")
+  private int totalRecordedLinks = 0;
   // The number of children.
   @GuardedBy("this")
   private int numberOfChildren;
@@ -186,10 +192,10 @@ public final class RecordEventsSpanImpl implements SpanSdk {
         builder.setAttributes(toProtoAttributes(attributes));
       }
       if (events != null) {
-        builder.setTimeEvents(toProtoTimedEvents(events, timestampConverter));
+        builder.setTimeEvents(toProtoTimedEvents(events, totalRecordedEvents, timestampConverter));
       }
       if (links != null) {
-        builder.setLinks(toProtoLinks(links));
+        builder.setLinks(toProtoLinks(links, totalRecordedLinks));
       }
       if (hasRemoteParent != null) {
         builder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
@@ -281,10 +287,10 @@ public final class RecordEventsSpanImpl implements SpanSdk {
   }
 
   private static TimedEvents toProtoTimedEvents(
-      TraceEvents<TimedEvent> events, TimestampConverter converter) {
+      EvictingQueue<TimedEvent> events, int totalRecordedEvents, TimestampConverter converter) {
     TimedEvents.Builder builder = TimedEvents.newBuilder();
-    builder.setDroppedTimedEventsCount(events.getNumberOfDroppedEvents());
-    for (TimedEvent timedEvent : events.events) {
+    builder.setDroppedTimedEventsCount(totalRecordedEvents - events.size());
+    for (TimedEvent timedEvent : events) {
       builder.addTimedEvent(toProtoTimedEvent(timedEvent, converter));
     }
     return builder.build();
@@ -303,10 +309,10 @@ public final class RecordEventsSpanImpl implements SpanSdk {
     return builder.build();
   }
 
-  private static Links toProtoLinks(TraceEvents<Link> links) {
+  private static Links toProtoLinks(EvictingQueue<Link> links, int totalRecordedLinks) {
     Links.Builder builder = Links.newBuilder();
-    builder.setDroppedLinksCount(links.getNumberOfDroppedEvents());
-    for (Link link : links.events) {
+    builder.setDroppedLinksCount(totalRecordedLinks - links.size());
+    for (Link link : links) {
       builder.addLink(toProtoLink(link));
     }
     return builder.build();
@@ -409,10 +415,10 @@ public final class RecordEventsSpanImpl implements SpanSdk {
               : Collections.unmodifiableMap(attributes),
           events == null
               ? Collections.<SpanData.TimedEvent>emptyList()
-              : toSpanDataTimedEvents(events.events, timestampConverter),
+              : toSpanDataTimedEvents(events, timestampConverter),
           links == null
               ? Collections.<Link>emptyList()
-              : Collections.unmodifiableList(new ArrayList<Link>(links.events)),
+              : Collections.unmodifiableList(new ArrayList<Link>(links)),
           getStatusWithDefault(),
           toSpanDataTimestamp(timestampConverter, endNanoTime));
     }
@@ -472,7 +478,8 @@ public final class RecordEventsSpanImpl implements SpanSdk {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
-      getInitializedEvents().addEvent(timedEvent);
+      getInitializedEvents().add(timedEvent);
+      totalRecordedEvents++;
     }
   }
 
@@ -485,7 +492,7 @@ public final class RecordEventsSpanImpl implements SpanSdk {
               toSpanDataTimestamp(converter, timedEvent.getNanotime()),
               SpanData.Event.create(timedEvent.getName(), timedEvent.getAttributes())));
     }
-    return spanDataTimedEvents;
+    return Collections.unmodifiableList(spanDataTimedEvents);
   }
 
   @Override
@@ -496,7 +503,8 @@ public final class RecordEventsSpanImpl implements SpanSdk {
         logger.log(Level.FINE, "Calling addLink() on an ended Span.");
         return;
       }
-      getInitializedLinks().addEvent(link);
+      getInitializedLinks().add(link);
+      totalRecordedLinks++;
     }
   }
 
@@ -562,17 +570,17 @@ public final class RecordEventsSpanImpl implements SpanSdk {
   }
 
   @GuardedBy("this")
-  private TraceEvents<TimedEvent> getInitializedEvents() {
+  private EvictingQueue<TimedEvent> getInitializedEvents() {
     if (events == null) {
-      events = new TraceEvents<TimedEvent>(traceConfig.getMaxNumberOfEvents());
+      events = EvictingQueue.<TimedEvent>create((int) traceConfig.getMaxNumberOfEvents());
     }
     return events;
   }
 
   @GuardedBy("this")
-  private TraceEvents<Link> getInitializedLinks() {
+  private EvictingQueue<Link> getInitializedLinks() {
     if (links == null) {
-      links = new TraceEvents<Link>(traceConfig.getMaxNumberOfLinks());
+      links = EvictingQueue.<Link>create((int) traceConfig.getMaxNumberOfLinks());
     }
     return links;
   }
@@ -615,24 +623,6 @@ public final class RecordEventsSpanImpl implements SpanSdk {
     @Override
     protected boolean removeEldestEntry(Map.Entry<String, AttributeValue> eldest) {
       return size() > this.capacity;
-    }
-  }
-
-  private static final class TraceEvents<T> {
-    private int totalRecordedEvents = 0;
-    private final EvictingQueue<T> events;
-
-    private int getNumberOfDroppedEvents() {
-      return totalRecordedEvents - events.size();
-    }
-
-    TraceEvents(long maxNumEvents) {
-      events = EvictingQueue.<T>create((int) maxNumEvents);
-    }
-
-    void addEvent(T event) {
-      totalRecordedEvents++;
-      events.add(event);
     }
   }
 
