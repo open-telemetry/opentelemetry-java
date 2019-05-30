@@ -32,17 +32,7 @@ public class TaggerSdk implements Tagger {
   }
 
   @Override
-  public TagMap.Builder emptyBuilder() {
-    return null;
-  }
-
-  @Override
-  public TagMap.Builder toBuilder(TagMap tags) {
-    return null;
-  }
-
-  @Override
-  public TagMap.Builder currentBuilder() {
+  public TagMap.Builder tagMapBuilder() {
     return null;
   }
 

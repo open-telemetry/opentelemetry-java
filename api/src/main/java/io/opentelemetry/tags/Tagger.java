@@ -43,29 +43,12 @@ public interface Tagger {
   TagMap getCurrentTagMap();
 
   /**
-   * Returns a new empty {@code Builder}.
+   * Returns a new {@code Builder}.
    *
-   * @return a new empty {@code Builder}.
+   * @return a new {@code Builder}.
    * @since 0.1.0
    */
-  TagMap.Builder emptyBuilder();
-
-  /**
-   * Returns a builder based on this {@code TagMap}.
-   *
-   * @param tags the {@code TagMap} that the builder is based on.
-   * @return a builder based on this {@code TagMap}.
-   * @since 0.1.0
-   */
-  TagMap.Builder toBuilder(TagMap tags);
-
-  /**
-   * Returns a new builder created from the current {@code TagMap}.
-   *
-   * @return a new builder created from the current {@code TagMap}.
-   * @since 0.1.0
-   */
-  TagMap.Builder currentBuilder();
+  TagMap.Builder tagMapBuilder();
 
   /**
    * Enters the scope of code where the given {@code TagMap} is in the current context (replacing
