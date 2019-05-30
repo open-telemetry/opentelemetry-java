@@ -19,31 +19,57 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.Event;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link EventSdk}. */
+/** Unit tests for {@link TimedEvent}. */
 @RunWith(JUnit4.class)
-public class EventSdkTest {
+public class TimedEventTest {
 
   private static final String NAME = "event";
+  private static final String NAME_2 = "event2";
   private static final Map<String, AttributeValue> ATTRIBUTES =
       Collections.singletonMap("attribute", AttributeValue.stringAttributeValue("value"));
+  private static final Map<String, AttributeValue> ATTRIBUTES_2 =
+      Collections.singletonMap("attribute2", AttributeValue.stringAttributeValue("value2"));
+  private static final Event EVENT =
+      new Event() {
+        @Override
+        public String getName() {
+          return NAME_2;
+        }
+
+        @Override
+        public Map<String, AttributeValue> getAttributes() {
+          return ATTRIBUTES_2;
+        }
+      };
 
   @Test
-  public void createWithName() {
-    EventSdk event = EventSdk.create(NAME);
+  public void rawTimedEventWithName() {
+    TimedEvent event = TimedEvent.create(1000, NAME);
+    assertThat(event.getNanotime()).isEqualTo(1000);
     assertThat(event.getName()).isEqualTo(NAME);
     assertThat(event.getAttributes()).isEmpty();
   }
 
   @Test
-  public void createAndGet() {
-    EventSdk event = EventSdk.create(NAME, ATTRIBUTES);
+  public void rawTimedEventWithNameAndAttributes() {
+    TimedEvent event = TimedEvent.create(2000, NAME, ATTRIBUTES);
+    assertThat(event.getNanotime()).isEqualTo(2000);
     assertThat(event.getName()).isEqualTo(NAME);
     assertThat(event.getAttributes()).isEqualTo(ATTRIBUTES);
+  }
+
+  @Test
+  public void timedEventWithEvent() {
+    TimedEvent event = TimedEvent.create(3000, EVENT);
+    assertThat(event.getNanotime()).isEqualTo(3000);
+    assertThat(event.getName()).isEqualTo(NAME_2);
+    assertThat(event.getAttributes()).isEqualTo(ATTRIBUTES_2);
   }
 }
