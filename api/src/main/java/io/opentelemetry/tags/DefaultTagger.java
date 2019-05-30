@@ -22,7 +22,6 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.tags.unsafe.ContextUtils;
-import io.opentelemetry.tags.unsafe.TagMapInScope;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
@@ -72,7 +71,7 @@ public final class DefaultTagger implements Tagger {
 
   @Override
   public Scope withTagMap(TagMap tags) {
-    return TagMapInScope.create(tags);
+    return ContextUtils.withTagMap(tags);
   }
 
   @Override

@@ -25,7 +25,7 @@ import io.opentelemetry.trace.Span;
  *
  * @since 0.1.0
  */
-public final class SpanInScope implements Scope {
+final class SpanInScope implements Scope {
   private final Context previous;
   private final Context current;
 
@@ -40,7 +40,7 @@ public final class SpanInScope implements Scope {
    * @param span the {@code Span} to be added to the current {@code Context}.
    * @since 0.1.0
    */
-  public static SpanInScope create(Span span) {
+  static SpanInScope create(Span span) {
     return new SpanInScope(span);
   }
 

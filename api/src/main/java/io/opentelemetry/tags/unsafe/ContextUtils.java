@@ -17,6 +17,7 @@
 package io.opentelemetry.tags.unsafe;
 
 import io.grpc.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.tags.EmptyTagMap;
 import io.opentelemetry.tags.TagMap;
 
@@ -74,6 +75,18 @@ public final class ContextUtils {
    */
   public static TagMap getValue(Context context) {
     return TAG_MAP_KEY.get(context);
+  }
+
+  /**
+   * Returns a new {@link Scope} encapsulating the provided {@code TagMap} added to the current
+   * {@code Context}.
+   *
+   * @param tagMap the {@code TagMap} to be added to the current {@code Context}.
+   * @return the {@link Scope} for the updated {@code Context}.
+   * @since 0.1.0
+   */
+  public static Scope withTagMap(TagMap tagMap) {
+    return TagMapInScope.create(tagMap);
   }
 
   private ContextUtils() {}

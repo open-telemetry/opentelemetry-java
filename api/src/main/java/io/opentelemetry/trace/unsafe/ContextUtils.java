@@ -17,6 +17,7 @@
 package io.opentelemetry.trace.unsafe;
 
 import io.grpc.Context;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.BlankSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -75,6 +76,18 @@ public final class ContextUtils {
    */
   public static Span getValue(Context context) {
     return CONTEXT_SPAN_KEY.get(context);
+  }
+
+  /**
+   * Returns a new {@link Scope} encapsulating the provided {@code Span} added to the current {@code
+   * Context}.
+   *
+   * @param span the {@code Span} to be added to the current {@code Context}.
+   * @return the {@link Scope} for the updated {@code Context}.
+   * @since 0.1.0
+   */
+  public static Scope withSpan(Span span) {
+    return SpanInScope.create(span);
   }
 
   private ContextUtils() {}

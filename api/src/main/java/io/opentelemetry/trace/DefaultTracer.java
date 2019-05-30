@@ -23,7 +23,6 @@ import io.opentelemetry.context.propagation.TraceContextFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.resource.Resource;
 import io.opentelemetry.trace.unsafe.ContextUtils;
-import io.opentelemetry.trace.unsafe.SpanInScope;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -54,7 +53,7 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Scope withSpan(Span span) {
-    return SpanInScope.create(span);
+    return ContextUtils.withSpan(span);
   }
 
   @Override

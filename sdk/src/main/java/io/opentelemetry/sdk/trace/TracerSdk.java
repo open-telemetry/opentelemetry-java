@@ -26,7 +26,6 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.unsafe.ContextUtils;
-import io.opentelemetry.trace.unsafe.SpanInScope;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
@@ -42,7 +41,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Scope withSpan(Span span) {
-    return SpanInScope.create(span);
+    return ContextUtils.withSpan(span);
   }
 
   @Override

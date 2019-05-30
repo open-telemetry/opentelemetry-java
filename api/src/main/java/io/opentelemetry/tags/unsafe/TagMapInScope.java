@@ -25,7 +25,7 @@ import io.opentelemetry.tags.TagMap;
  *
  * @since 0.1.0
  */
-public final class TagMapInScope implements Scope {
+final class TagMapInScope implements Scope {
   private final Context orig;
 
   private TagMapInScope(TagMap tags) {
@@ -38,7 +38,7 @@ public final class TagMapInScope implements Scope {
    * @param tags the {@code TagMap} to be added to the current {@code Context}.
    * @since 0.1.0
    */
-  public static TagMapInScope create(TagMap tags) {
+  static TagMapInScope create(TagMap tags) {
     return new TagMapInScope(tags);
   }
 
