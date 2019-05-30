@@ -32,7 +32,6 @@ import io.opentelemetry.resource.Resource;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.internal.ConcurrentIntrusiveList.Element;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -59,7 +58,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
-public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEventsSpanImpl> {
+public final class RecordEventsSpanImpl implements SpanSdk {
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
   // Contains the identifiers associated with this Span.
@@ -111,10 +110,6 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
   // True if the span is ended.
   @GuardedBy("this")
   private boolean hasBeenEnded;
-
-  // Pointers for the ConcurrentIntrusiveList$Element. Guarded by the ConcurrentIntrusiveList.
-  @Nullable private RecordEventsSpanImpl next = null;
-  @Nullable private RecordEventsSpanImpl prev = null;
 
   /**
    * Creates and starts a span with the given configuration.
@@ -585,28 +580,6 @@ public final class RecordEventsSpanImpl implements SpanSdk, Element<RecordEvents
   @GuardedBy("this")
   private Status getStatusWithDefault() {
     return status == null ? Status.OK : status;
-  }
-
-  @Override
-  @Nullable
-  public RecordEventsSpanImpl getNext() {
-    return next;
-  }
-
-  @Override
-  public void setNext(@Nullable RecordEventsSpanImpl element) {
-    next = element;
-  }
-
-  @Override
-  @Nullable
-  public RecordEventsSpanImpl getPrev() {
-    return prev;
-  }
-
-  @Override
-  public void setPrev(@Nullable RecordEventsSpanImpl element) {
-    prev = element;
   }
 
   // A map implementation with a fixed capacity that drops events when the map gets full. Eviction
