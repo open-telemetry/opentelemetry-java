@@ -18,7 +18,7 @@ package io.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.resource.Resource;
+import io.opentelemetry.resources.Resource;
 import io.opentelemetry.trace.Span.Kind;
 import java.math.BigDecimal;
 import java.math.RoundingMode;

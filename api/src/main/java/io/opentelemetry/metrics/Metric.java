@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.resource.Resource;
+import io.opentelemetry.resources.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

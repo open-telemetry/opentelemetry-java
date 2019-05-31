@@ -31,7 +31,7 @@ import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.metrics.Measurement;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.spi.MeterProvider;
-import io.opentelemetry.resource.Resource;
+import io.opentelemetry.resources.Resource;
 import io.opentelemetry.tags.DefaultTagger;
 import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.tags.Tagger;

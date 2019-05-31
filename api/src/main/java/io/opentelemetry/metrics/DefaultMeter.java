@@ -18,7 +18,7 @@ package io.opentelemetry.metrics;
 
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.resource.Resource;
+import io.opentelemetry.resources.Resource;
 import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;

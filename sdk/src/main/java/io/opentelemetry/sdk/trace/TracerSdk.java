@@ -20,7 +20,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.context.propagation.TraceContextFormat;
-import io.opentelemetry.resource.Resource;
+import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;

@@ -21,7 +21,7 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.context.propagation.TraceContextFormat;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.resource.Resource;
+import io.opentelemetry.resources.Resource;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.List;
 import javax.annotation.Nullable;
