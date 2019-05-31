@@ -19,10 +19,7 @@ package io.opentelemetry.sdk.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
-import com.google.protobuf.BoolValue;
 import com.google.protobuf.Timestamp;
-import com.google.protobuf.UInt32Value;
-import io.opentelemetry.proto.trace.v1.TruncatableString;
 import io.opentelemetry.resource.Resource;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
@@ -169,36 +166,7 @@ public final class RecordEventsSpanImpl implements SpanSdk {
 
   @Override
   public io.opentelemetry.proto.trace.v1.Span toSpanProto() {
-    synchronized (this) {
-      io.opentelemetry.proto.trace.v1.Span.Builder builder =
-          io.opentelemetry.proto.trace.v1.Span.newBuilder()
-              .setTraceId(TraceProtoUtils.toProtoTraceId(context.getTraceId()))
-              .setSpanId(TraceProtoUtils.toProtoSpanId(context.getSpanId()))
-              .setTracestate(TraceProtoUtils.toProtoTracestate(context.getTracestate()))
-              .setResource(TraceProtoUtils.toProtoResource(resource))
-              .setKind(TraceProtoUtils.toProtoKind(kind))
-              .setStartTime(timestampConverter.convertNanoTime(startNanoTime))
-              .setChildSpanCount(UInt32Value.of(numberOfChildren))
-              .setName(TruncatableString.newBuilder().setValue(name).build());
-      if (attributes != null) {
-        builder.setAttributes(TraceProtoUtils.toProtoAttributes(attributes));
-      }
-      if (events != null) {
-        builder.setTimeEvents(
-            TraceProtoUtils.toProtoTimedEvents(events, totalRecordedEvents, timestampConverter));
-      }
-      if (links != null) {
-        builder.setLinks(TraceProtoUtils.toProtoLinks(links, totalRecordedLinks));
-      }
-      if (hasRemoteParent != null) {
-        builder.setSameProcessAsParentSpan(BoolValue.of(!hasRemoteParent));
-      }
-      if (hasBeenEnded) {
-        builder.setStatus(TraceProtoUtils.toProtoStatus(getStatusWithDefault()));
-        builder.setEndTime(timestampConverter.convertNanoTime(endNanoTime));
-      }
-      return builder.build();
-    }
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   /**
