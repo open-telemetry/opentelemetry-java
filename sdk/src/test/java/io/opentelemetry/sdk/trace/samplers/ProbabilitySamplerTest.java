@@ -17,6 +17,8 @@
 package io.opentelemetry.sdk.trace.samplers;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.sdk.trace.TestUtils.generateRandomSpanId;
+import static io.opentelemetry.sdk.trace.TestUtils.generateRandomTraceId;
 
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
@@ -33,7 +35,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -267,13 +268,5 @@ public class ProbabilitySamplerTest {
                     Collections.<Span>emptyList())
                 .isSampled())
         .isTrue();
-  }
-
-  private static TraceId generateRandomTraceId() {
-    return TraceId.fromLowerBase16(UUID.randomUUID().toString().replace("-", ""), 0);
-  }
-
-  private static SpanId generateRandomSpanId() {
-    return SpanId.fromLowerBase16(UUID.randomUUID().toString().replace("-", ""), 0);
   }
 }
