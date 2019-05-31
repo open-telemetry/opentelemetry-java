@@ -54,8 +54,6 @@ public final class RecordEventsSpanImpl implements SpanSdk {
   private final SpanContext context;
   // The parent SpanId of this span. Null if this is a root span.
   @Nullable private final SpanId parentSpanId;
-  // True if the parent is on a different process.
-  @Nullable private final Boolean hasRemoteParent;
   // Active trace configs when the Span was created.
   private final TraceConfig traceConfig;
   // Handler called when the span starts and ends.
@@ -112,8 +110,6 @@ public final class RecordEventsSpanImpl implements SpanSdk {
    * @param context supplies the trace_id and span_id for the newly started span.
    * @param name the displayed name for the new span.
    * @param parentSpanId the span_id of the parent span, or null if the new span is a root span.
-   * @param hasRemoteParent {@code true} if the parentContext is remote. {@code null} if this is a
-   *     root span.
    * @param traceConfig trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
    * @param timestampConverter null if the span is a root span or the parent is not sampled. If the
@@ -128,7 +124,6 @@ public final class RecordEventsSpanImpl implements SpanSdk {
       String name,
       Kind kind,
       @Nullable SpanId parentSpanId,
-      @Nullable Boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
@@ -140,7 +135,6 @@ public final class RecordEventsSpanImpl implements SpanSdk {
             name,
             kind,
             parentSpanId,
-            hasRemoteParent,
             traceConfig,
             spanProcessor,
             timestampConverter,
@@ -463,7 +457,6 @@ public final class RecordEventsSpanImpl implements SpanSdk {
       String name,
       Kind kind,
       @Nullable SpanId parentSpanId,
-      @Nullable Boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
@@ -471,7 +464,6 @@ public final class RecordEventsSpanImpl implements SpanSdk {
       Resource resource) {
     this.context = context;
     this.parentSpanId = parentSpanId;
-    this.hasRemoteParent = hasRemoteParent;
     this.name = name;
     this.kind = kind;
     this.traceConfig = traceConfig;
