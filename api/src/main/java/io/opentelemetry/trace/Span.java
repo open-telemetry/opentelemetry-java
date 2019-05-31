@@ -352,6 +352,8 @@ public interface Span {
      * Sets the option to become a root {@code Span} for a new trace. If not set, the value of
      * {@code Tracer.getCurrentSpan()} at {@link #startSpan()} time will be used as parent.
      *
+     * <p>Observe that any previously set parent will be discarded.
+     *
      * @return this.
      * @since 0.1.0
      */
