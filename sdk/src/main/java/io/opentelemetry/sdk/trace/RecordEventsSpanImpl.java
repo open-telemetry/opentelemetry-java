@@ -20,7 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import com.google.protobuf.Timestamp;
-import io.opentelemetry.resource.Resource;
+import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -86,7 +86,7 @@ public final class RecordEventsSpanImpl implements SpanSdk {
   // List of recorded links to parent and child spans.
   @GuardedBy("this")
   @Nullable
-  private EvictingQueue<Link> links;
+  private EvictingQueue<SpanData.Link> links;
   // Number of link recorded.
   @GuardedBy("this")
   private int totalRecordedLinks = 0;
@@ -324,6 +324,20 @@ public final class RecordEventsSpanImpl implements SpanSdk {
   @Override
   public void addLink(Link link) {
     Preconditions.checkNotNull(link, "link");
+    addLinkInternal(SpanData.Link.create(link.getContext(), link.getAttributes()));
+  }
+
+  @Override
+  public void addLink(SpanContext spanContext) {
+    addLinkInternal(SpanData.Link.create(spanContext));
+  }
+
+  @Override
+  public void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
+    addLinkInternal(SpanData.Link.create(spanContext, attributes));
+  }
+
+  private void addLinkInternal(SpanData.Link link) {
     synchronized (this) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling addLink() on an ended Span.");
@@ -404,9 +418,9 @@ public final class RecordEventsSpanImpl implements SpanSdk {
   }
 
   @GuardedBy("this")
-  private EvictingQueue<Link> getInitializedLinks() {
+  private EvictingQueue<SpanData.Link> getInitializedLinks() {
     if (links == null) {
-      links = EvictingQueue.<Link>create((int) traceConfig.getMaxNumberOfLinks());
+      links = EvictingQueue.<SpanData.Link>create((int) traceConfig.getMaxNumberOfLinks());
     }
     return links;
   }

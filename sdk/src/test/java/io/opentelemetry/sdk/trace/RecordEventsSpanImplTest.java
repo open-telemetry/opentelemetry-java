@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.protobuf.Timestamp;
-import io.opentelemetry.resource.Resource;
+import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -51,12 +51,11 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class RecordEventsSpanImplTest {
   private static final String SPAN_NAME = "MySpanName";
-  private static final Tracestate TRACE_STATE = Tracestate.builder().build();
   private final TraceId traceId = TestUtils.generateRandomTraceId();
   private final SpanId spanId = TestUtils.generateRandomSpanId();
   private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
   private final SpanContext spanContext =
-      SpanContext.create(traceId, spanId, TraceOptions.DEFAULT, TRACE_STATE);
+      SpanContext.create(traceId, spanId, TraceOptions.getDefault(), Tracestate.getDefault());
   private final Timestamp timestamp = Timestamp.newBuilder().setSeconds(1000).build();
   private final TestClock testClock = TestClock.create(timestamp);
   private final TimestampConverter timestampConverter = TimestampConverter.now(testClock);
@@ -101,9 +100,12 @@ public class RecordEventsSpanImplTest {
         AttributeValue.stringAttributeValue("MySingleStringAttributeValue"));
     span.addEvent("event");
     span.addLink(
-        Link.create(
+        SpanData.Link.create(
             SpanContext.create(
-                TraceId.INVALID, SpanId.INVALID, TraceOptions.DEFAULT, TRACE_STATE)));
+                TraceId.getInvalid(),
+                SpanId.getInvalid(),
+                TraceOptions.getDefault(),
+                Tracestate.getDefault())));
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getStartTimestamp()).isEqualTo(toSpanDataTimestamp(timestamp));
     assertThat(spanData.getAttributes()).isEmpty();
@@ -155,7 +157,7 @@ public class RecordEventsSpanImplTest {
     Event expectdEvent =
         SpanData.Event.create("event2", Collections.<String, AttributeValue>emptyMap());
     span.addEvent(event);
-    Link link = Link.create(spanContext);
+    Link link = SpanData.Link.create(spanContext);
     span.addLink(link);
     testClock.advanceMillis(1000);
     span.setStatus(Status.CANCELLED);
