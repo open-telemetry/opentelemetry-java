@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +30,7 @@ import org.junit.runners.JUnit4;
 public class SpanIdTest {
   private static final byte[] firstBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final byte[] secondBytes = new byte[] {(byte) 0xFF, 0, 0, 0, 0, 0, 0, 'A'};
-  private static final SpanId first = SpanId.fromBytes(firstBytes, 0);
+  private static final SpanId first = new SpanId(ByteBuffer.wrap(firstBytes).getLong());
   private static final SpanId second = SpanId.fromBytes(secondBytes, 0);
 
   @Test

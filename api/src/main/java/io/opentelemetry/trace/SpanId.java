@@ -48,7 +48,13 @@ public final class SpanId implements Comparable<SpanId> {
   // The internal representation of the SpanId.
   private final long id;
 
-  private SpanId(long id) {
+  /**
+   * Constructs a {@code SpanId} whose representation is specified by a long value.
+   *
+   * @param id the long represenation of the {@code TraceId}.
+   * @since 0.1.0
+   */
+  public SpanId(long id) {
     this.id = id;
   }
 
