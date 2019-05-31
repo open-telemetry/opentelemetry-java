@@ -316,7 +316,8 @@ public interface Span {
      * process. Using its {@code SpanContext} as parent remains as a valid, albeit inefficient,
      * operation.
      *
-     * <p>If called multiple times, only the last specified value will be used.
+     * <p>If called multiple times, only the last specified value will be used. Observe that the
+     * state defined by a previous call to {@link #setNoParent()} will be discarded.
      *
      * @param parent the {@code Span} used as parent.
      * @return this.
@@ -337,7 +338,8 @@ public interface Span {
      * <p>If no {@link SpanContext} is available, users must call {@link #setNoParent()} in order to
      * create a root {@code Span} for a new trace.
      *
-     * <p>If called multiple times, only the last specified value will be used.
+     * <p>If called multiple times, only the last specified value will be used. Observe that the
+     * state defined by a previous call to {@link #setNoParent()} will be discarded.
      *
      * @param remoteParent the {@link SpanContext} used as parent.
      * @return this.
