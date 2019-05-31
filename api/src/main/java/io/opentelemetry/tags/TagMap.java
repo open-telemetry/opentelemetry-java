@@ -96,7 +96,7 @@ public interface TagMap {
     Builder put(TagKey key, TagValue value, TagMetadata tagMetadata);
 
     /**
-     * Removes the key if it exists on the builder. Tags inherited from a parent can't be removed.
+     * Removes the key if it exists.
      *
      * @param key the {@code TagKey} which will be removed.
      * @return this

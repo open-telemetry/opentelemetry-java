@@ -127,7 +127,7 @@ public class TagMapSdkTest {
   public void remove_keyFromParent() {
     TagMapSdk tags = listToTagMap(T1, T2);
     assertThat(tagMapToList(tagger.tagMapBuilder().setParent(tags).remove(K1).build()))
-        .containsExactly(T1, T2);
+        .containsExactly(T2);
   }
 
   @Test

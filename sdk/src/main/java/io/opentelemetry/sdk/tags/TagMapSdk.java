@@ -52,14 +52,21 @@ public class TagMapSdk implements TagMap {
 
   @Override
   public Iterator<Tag> getIterator() {
-    Map<TagKey, Tag> combined = new HashMap<>();
+    Map<TagKey, Tag> combined = new HashMap<>(tags);
     if (parent != null) {
       for (Iterator<Tag> it = parent.getIterator(); it.hasNext(); ) {
         Tag tag = it.next();
-        combined.put(tag.getKey(), tag);
+        if (!combined.containsKey(tag.getKey())) {
+          combined.put(tag.getKey(), tag);
+        }
       }
     }
-    combined.putAll(tags);
+    // Clean out any null values that may have been added by Builder.remove.
+    for (Iterator<Tag> it = combined.values().iterator(); it.hasNext(); ) {
+      if (it.next() == null) {
+        it.remove();
+      }
+    }
 
     return Collections.unmodifiableCollection(combined.values()).iterator();
   }
@@ -141,6 +148,9 @@ public class TagMapSdk implements TagMap {
     @Override
     public TagMap.Builder remove(TagKey key) {
       tags.remove(checkNotNull(key, "key"));
+      if (parent != null && parent.getTagValue(key) != null) {
+        tags.put(key, null);
+      }
       return this;
     }
 
