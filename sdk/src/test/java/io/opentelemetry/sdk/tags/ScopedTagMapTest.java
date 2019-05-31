@@ -64,7 +64,7 @@ public class ScopedTagMapTest {
   public void withTagMap() {
     assertThat(tagMapToList(tagger.getCurrentTagMap())).isEmpty();
     TagMap scopedTags =
-        tagger.emptyBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+        tagger.tagMapBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = tagger.withTagMap(scopedTags)) {
       assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(scopedTags);
     }
@@ -74,10 +74,14 @@ public class ScopedTagMapTest {
   @Test
   public void createBuilderFromCurrentTags() {
     TagMap scopedTags =
-        tagger.emptyBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+        tagger.tagMapBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = tagger.withTagMap(scopedTags)) {
       TagMap newTags =
-          tagger.currentBuilder().put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION).build();
+          tagger
+              .tagMapBuilder()
+              .setParent(tagger.getCurrentTagMap())
+              .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
+              .build();
       assertThat(tagMapToList(newTags))
           .containsExactly(
               Tag.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
@@ -90,7 +94,7 @@ public class ScopedTagMapTest {
   public void setCurrentTagsWithBuilder() {
     assertThat(tagMapToList(tagger.getCurrentTagMap())).isEmpty();
     try (Scope scope =
-        tagger.emptyBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).buildScoped()) {
+        tagger.tagMapBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).buildScoped()) {
       assertThat(tagMapToList(tagger.getCurrentTagMap()))
           .containsExactly(Tag.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION));
     }
@@ -100,11 +104,12 @@ public class ScopedTagMapTest {
   @Test
   public void addToCurrentTagsWithBuilder() {
     TagMap scopedTags =
-        tagger.emptyBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+        tagger.tagMapBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope1 = tagger.withTagMap(scopedTags)) {
       try (Scope scope2 =
           tagger
-              .currentBuilder()
+              .tagMapBuilder()
+              .setParent(tagger.getCurrentTagMap())
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .buildScoped()) {
         assertThat(tagMapToList(tagger.getCurrentTagMap()))
@@ -120,30 +125,25 @@ public class ScopedTagMapTest {
   public void multiScopeTagMapWithMetadata() {
     TagMap scopedTags =
         tagger
-            .emptyBuilder()
+            .tagMapBuilder()
             .put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION)
             .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
             .build();
-    Scope scope1 = tagger.withTagMap(scopedTags);
-    try { // Scope 1
-      Scope scope2 =
+    try (Scope scope1 = tagger.withTagMap(scopedTags)) { // Scope 1
+      try (Scope scope2 =
           tagger
-              .currentBuilder()
+              .tagMapBuilder()
+              .setParent(tagger.getCurrentTagMap())
               .put(KEY_3, VALUE_3, METADATA_NO_PROPAGATION)
               .put(KEY_2, VALUE_4, METADATA_NO_PROPAGATION)
-              .buildScoped();
-      try { // Scope 2
+              .buildScoped()) { // Scope 2
         assertThat(tagMapToList(tagger.getCurrentTagMap()))
             .containsExactly(
                 Tag.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
                 Tag.create(KEY_2, VALUE_4, METADATA_NO_PROPAGATION),
                 Tag.create(KEY_3, VALUE_3, METADATA_NO_PROPAGATION));
-      } finally {
-        scope2.close(); // Close Scope 2
       }
       assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(scopedTags);
-    } finally {
-      scope1.close();
     }
   }
 }

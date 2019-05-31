@@ -37,26 +37,42 @@ public class TagMapSdk implements TagMap {
 
   // The types of the TagKey and Tag must match for each entry.
   private final Map<TagKey, Tag> tags;
+  @Nullable private final TagMap parent;
 
   /**
    * Creates a new {@link TagMapSdk} with the given tags.
    *
    * @param tags the initial tags for this {@code TagMapSdk}.
+   * @param parent providing a default set of tags
    */
-  private TagMapSdk(Map<? extends TagKey, ? extends Tag> tags) {
+  private TagMapSdk(Map<? extends TagKey, ? extends Tag> tags, TagMap parent) {
     this.tags = Collections.unmodifiableMap(new HashMap<>(checkNotNull(tags, "tags")));
+    this.parent = parent;
   }
 
   @Override
   public Iterator<Tag> getIterator() {
-    return tags.values().iterator();
+    Map<TagKey, Tag> combined = new HashMap<>();
+    if (parent != null) {
+      for (Iterator<Tag> it = parent.getIterator(); it.hasNext(); ) {
+        Tag tag = it.next();
+        combined.put(tag.getKey(), tag);
+      }
+    }
+    combined.putAll(tags);
+
+    return Collections.unmodifiableCollection(combined.values()).iterator();
   }
 
   @Nullable
   @Override
   public TagValue getTagValue(TagKey tagKey) {
     Tag tag = tags.get(tagKey);
-    return tag == null ? null : tag.getValue();
+    if (tag != null) {
+      return tag.getValue();
+    } else {
+      return parent == null ? null : parent.getTagValue(tagKey);
+    }
   }
 
   @Override
@@ -64,48 +80,54 @@ public class TagMapSdk implements TagMap {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (o == null || !(o instanceof TagMapSdk)) {
       return false;
     }
 
     TagMapSdk tagMapSdk = (TagMapSdk) o;
 
-    return tags.equals(tagMapSdk.tags);
+    if (!tags.equals(tagMapSdk.tags)) {
+      return false;
+    }
+    return parent != null ? parent.equals(tagMapSdk.parent) : tagMapSdk.parent == null;
   }
 
   @Override
   public int hashCode() {
-    return tags.hashCode();
+    int result = tags.hashCode();
+    result = 31 * result + (parent != null ? parent.hashCode() : 0);
+    return result;
   }
 
   public static class Builder implements TagMap.Builder {
+    @Nullable private TagMap parent;
     private final Map<TagKey, Tag> tags;
 
     /**
-     * Create a new {@link TagMap.Builder} with the provided {@link TagMap}.
+     * Create a new {@link TagMap.Builder} with the provided {@link TagMap} as the parent.
      *
-     * @param tagMap starting set of tags.
+     * @param parent TagMap used as base map.
      */
-    public Builder(TagMap tagMap) {
+    public Builder(TagMap parent) {
+      this.parent = checkNotNull(parent, "parent");
       this.tags = new HashMap<>();
-      for (Iterator<Tag> it = checkNotNull(tagMap, "tagMap").getIterator(); it.hasNext(); ) {
-        Tag tag = it.next();
-        this.tags.put(tag.getKey(), tag);
-      }
-    }
-
-    /**
-     * Create a new {@link TagMap.Builder} with the provided tags.
-     *
-     * @param tags starting set of tags.
-     */
-    public Builder(Map<TagKey, Tag> tags) {
-      this.tags = new HashMap<>(checkNotNull(tags, "tags"));
     }
 
     /** Create a new empty TagMap builder. */
     public Builder() {
       this.tags = new HashMap<>();
+    }
+
+    @Override
+    public TagMap.Builder setParent(TagMap parent) {
+      this.parent = parent;
+      return this;
+    }
+
+    @Override
+    public TagMap.Builder setNoParent() {
+      parent = null;
+      return this;
     }
 
     @Override
@@ -124,7 +146,7 @@ public class TagMapSdk implements TagMap {
 
     @Override
     public TagMapSdk build() {
-      return new TagMapSdk(tags);
+      return new TagMapSdk(tags, parent);
     }
 
     @Override

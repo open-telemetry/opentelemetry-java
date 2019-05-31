@@ -20,11 +20,24 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import io.opentelemetry.tags.Tag;
 import io.opentelemetry.tags.TagMap;
+import java.util.Arrays;
 import java.util.List;
 
-public class TagMapTestUtil {
+class TagMapTestUtil {
 
-  public static List<Tag> tagMapToList(TagMap tagMap) {
+  static TagMapSdk listToTagMap(Tag... tags) {
+    return listToTagMap(Arrays.asList(tags));
+  }
+
+  static TagMapSdk listToTagMap(List<Tag> tags) {
+    TagMapSdk.Builder builder = new TagMapSdk.Builder();
+    for (Tag tag : tags) {
+      builder.put(tag.getKey(), tag.getValue(), tag.getTagMetadata());
+    }
+    return builder.build();
+  }
+
+  static List<Tag> tagMapToList(TagMap tagMap) {
     return newArrayList(tagMap.getIterator());
   }
 

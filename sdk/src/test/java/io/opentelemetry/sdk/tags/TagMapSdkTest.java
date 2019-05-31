@@ -17,11 +17,11 @@
 package io.opentelemetry.sdk.tags;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.sdk.tags.TagMapTestUtil.listToTagMap;
 import static io.opentelemetry.sdk.tags.TagMapTestUtil.tagMapToList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.tags.Tag;
 import io.opentelemetry.tags.TagKey;
@@ -63,34 +63,34 @@ public class TagMapSdkTest {
 
   @Test
   public void getIterator_empty() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.<TagKey, Tag>of()).build();
+    TagMapSdk tags = new TagMapSdk.Builder().build();
     assertThat(tagMapToList(tags)).isEmpty();
   }
 
   @Test
   public void getIterator_nonEmpty() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.of(K1, T1, K2, T2)).build();
+    TagMapSdk tags = listToTagMap(T1, T2);
     assertThat(tagMapToList(tags)).containsExactly(T1, T2);
   }
 
   @Test
   public void put_newKey() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.of(K1, T1)).build();
-    assertThat(tagMapToList(tagger.toBuilder(tags).put(K2, V2, TMD).build()))
+    TagMapSdk tags = listToTagMap(T1);
+    assertThat(tagMapToList(tagger.tagMapBuilder().setParent(tags).put(K2, V2, TMD).build()))
         .containsExactly(T1, T2);
   }
 
   @Test
   public void put_existingKey() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.of(K1, T1)).build();
-    assertThat(tagMapToList(tagger.toBuilder(tags).put(K1, V2, TMD).build()))
+    TagMapSdk tags = listToTagMap(T1);
+    assertThat(tagMapToList(tagger.tagMapBuilder().setParent(tags).put(K1, V2, TMD).build()))
         .containsExactly(Tag.create(K1, V2, TMD));
   }
 
   @Test
   public void put_nullKey() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.of(K1, T1)).build();
-    TagMap.Builder builder = tagger.toBuilder(tags);
+    TagMapSdk tags = listToTagMap(T1);
+    TagMap.Builder builder = tagger.tagMapBuilder().setParent(tags);
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("key");
     builder.put(null, V2, TMD);
@@ -98,8 +98,8 @@ public class TagMapSdkTest {
 
   @Test
   public void put_nullValue() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.of(K1, T1)).build();
-    TagMap.Builder builder = tagger.toBuilder(tags);
+    TagMapSdk tags = listToTagMap(T1);
+    TagMap.Builder builder = tagger.tagMapBuilder().setParent(tags);
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("value");
     builder.put(K2, null, TMD);
@@ -107,20 +107,32 @@ public class TagMapSdkTest {
 
   @Test
   public void remove_existingKey() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.of(K1, T1, K2, T2)).build();
-    assertThat(tagMapToList(tagger.toBuilder(tags).remove(K1).build())).containsExactly(T2);
+    TagMapSdk.Builder builder = new TagMapSdk.Builder();
+    builder.put(T1.getKey(), T1.getValue(), T1.getTagMetadata());
+    builder.put(T2.getKey(), T2.getValue(), T2.getTagMetadata());
+
+    assertThat(tagMapToList(builder.remove(K1).build())).containsExactly(T2);
   }
 
   @Test
   public void remove_differentKey() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.of(K1, T1, K2, T2)).build();
-    assertThat(tagMapToList(tagger.toBuilder(tags).remove(K2).build())).containsExactly(T1);
+    TagMapSdk.Builder builder = new TagMapSdk.Builder();
+    builder.put(T1.getKey(), T1.getValue(), T1.getTagMetadata());
+    builder.put(T2.getKey(), T2.getValue(), T2.getTagMetadata());
+
+    assertThat(tagMapToList(builder.remove(K2).build())).containsExactly(T1);
+  }
+
+  @Test
+  public void remove_keyFromParent() {
+    TagMapSdk tags = listToTagMap(T1, T2);
+    assertThat(tagMapToList(tagger.tagMapBuilder().setParent(tags).remove(K1).build()))
+        .containsExactly(T1, T2);
   }
 
   @Test
   public void remove_nullKey() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.of(K1, T1)).build();
-    TagMap.Builder builder = tagger.toBuilder(tags);
+    TagMap.Builder builder = tagger.tagMapBuilder();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("key");
     builder.remove(null);
@@ -128,7 +140,12 @@ public class TagMapSdkTest {
 
   @Test
   public void testIterator() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.of(K1, T1, K2, T2)).build();
+    TagMap tags =
+        tagger
+            .tagMapBuilder()
+            .setParent(listToTagMap(T1))
+            .put(T2.getKey(), T2.getValue(), T2.getTagMetadata())
+            .build();
     Iterator<Tag> i = tags.getIterator();
     assertTrue(i.hasNext());
     Tag tag1 = i.next();
@@ -143,7 +160,7 @@ public class TagMapSdkTest {
 
   @Test
   public void disallowCallingRemoveOnIterator() {
-    TagMapSdk tags = new TagMapSdk.Builder(ImmutableMap.of(K1, T1, K2, T2)).build();
+    TagMapSdk tags = listToTagMap(T1, T2);
     Iterator<Tag> i = tags.getIterator();
     i.next();
     thrown.expect(UnsupportedOperationException.class);
@@ -154,11 +171,11 @@ public class TagMapSdkTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            tagger.emptyBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
-            tagger.emptyBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
-            tagger.emptyBuilder().put(K2, V2, TMD).put(K1, V1, TMD).build())
-        .addEqualityGroup(tagger.emptyBuilder().put(K1, V1, TMD).put(K2, V1, TMD).build())
-        .addEqualityGroup(tagger.emptyBuilder().put(K1, V2, TMD).put(K2, V1, TMD).build())
+            tagger.tagMapBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
+            tagger.tagMapBuilder().put(K1, V1, TMD).put(K2, V2, TMD).build(),
+            tagger.tagMapBuilder().put(K2, V2, TMD).put(K1, V1, TMD).build())
+        .addEqualityGroup(tagger.tagMapBuilder().put(K1, V1, TMD).put(K2, V1, TMD).build())
+        .addEqualityGroup(tagger.tagMapBuilder().put(K1, V2, TMD).put(K2, V1, TMD).build())
         .testEquals();
   }
 }
