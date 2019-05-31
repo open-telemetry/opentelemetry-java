@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.resource;
+package io.opentelemetry.sdk.resources;
 
-import io.opentelemetry.resource.Resource;
+import io.opentelemetry.resources.Resource;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
