@@ -20,6 +20,9 @@ import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.opentracingshim.InMemoryTracer;
 import io.opentelemetry.trace.SpanData;
+import io.opentelemetry.trace.SpanData.Timestamp;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -65,7 +68,7 @@ public final class TestUtils {
   /** A line so that Javadoc does not complain. */
   public static void sleep() {
     try {
-      TimeUnit.MILLISECONDS.sleep(new Random().nextInt(2000));
+      TimeUnit.MILLISECONDS.sleep(new Random().nextInt(500));
     } catch (InterruptedException e) {
       e.printStackTrace();
       Thread.currentThread().interrupt();
@@ -82,15 +85,24 @@ public final class TestUtils {
     }
   }
 
-  /*
-  public static void sortByStartMicros(List<SpanData> spans) {
-      Collections.sort(spans, new Comparator<SpanData>() {
+  /** A line so that Javadoc does not complain. */
+  public static void sortByStartTime(List<SpanData> spans) {
+    Collections.sort(
+        spans,
+        new Comparator<SpanData>() {
           @Override
           public int compare(SpanData o1, SpanData o2) {
-              return Long.compare(o1.getStartTimestamp(), o2.getStartTimestamp());
+            Timestamp t1 = o1.getStartTimestamp();
+            Timestamp t2 = o2.getStartTimestamp();
+
+            if (t1.getSeconds() == t2.getSeconds()) {
+              return Long.compare(t1.getNanos(), t2.getNanos());
+            } else {
+              return Long.compare(t1.getSeconds(), t2.getSeconds());
+            }
           }
-      });
-  }*/
+        });
+  }
 
   /** A line so that Javadoc does not complain. */
   public static void assertSameTrace(List<SpanData> spans) {
