@@ -139,7 +139,7 @@ public interface Span {
    *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
-   *     the {@code Span} as for {@code setAttributes()}.
+   *     the {@code Span} as for {@code setAttribute()}.
    * @since 0.1.0
    */
   void addEvent(String name, Map<String, AttributeValue> attributes);
