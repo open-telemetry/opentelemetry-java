@@ -110,16 +110,6 @@ class TagMapSdk implements TagMap {
     @Nullable private TagMap parent;
     private final Map<TagKey, Tag> tags;
 
-    /**
-     * Create a new {@link TagMap.Builder} with the provided {@link TagMap} as the parent.
-     *
-     * @param parent TagMap used as base map.
-     */
-    Builder(TagMap parent) {
-      this.parent = checkNotNull(parent, "parent");
-      this.tags = new HashMap<>();
-    }
-
     /** Create a new empty TagMap builder. */
     Builder() {
       this.tags = new HashMap<>();

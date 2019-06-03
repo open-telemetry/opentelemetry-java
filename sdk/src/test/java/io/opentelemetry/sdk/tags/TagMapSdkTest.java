@@ -74,6 +74,19 @@ public class TagMapSdkTest {
   }
 
   @Test
+  public void getIterator_chain() {
+    Tag t1alt = Tag.create(K1, V2, TMD);
+    TagMapSdk parent = listToTagMap(T1, T2);
+    TagMap tags =
+        tagger
+            .tagMapBuilder()
+            .setParent(parent)
+            .put(t1alt.getKey(), t1alt.getValue(), t1alt.getTagMetadata())
+            .build();
+    assertThat(tagMapToList(tags)).containsExactly(t1alt, T2);
+  }
+
+  @Test
   public void put_newKey() {
     TagMapSdk tags = listToTagMap(T1);
     assertThat(tagMapToList(tagger.tagMapBuilder().setParent(tags).put(K2, V2, TMD).build()))
@@ -103,6 +116,13 @@ public class TagMapSdkTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("value");
     builder.put(K2, null, TMD);
+  }
+
+  @Test
+  public void setParent_nullValue() {
+    TagMapSdk parent = listToTagMap(T1);
+    TagMap tags = tagger.tagMapBuilder().setParent(parent).setParent(null).build();
+    assertThat(tagMapToList(tags)).isEmpty();
   }
 
   @Test
