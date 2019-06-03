@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-public class TagMapSdk implements TagMap {
+class TagMapSdk implements TagMap {
 
   // The types of the TagKey and Tag must match for each entry.
   private final Map<TagKey, Tag> tags;
@@ -106,7 +106,7 @@ public class TagMapSdk implements TagMap {
     return result;
   }
 
-  public static class Builder implements TagMap.Builder {
+  static class Builder implements TagMap.Builder {
     @Nullable private TagMap parent;
     private final Map<TagKey, Tag> tags;
 
@@ -115,13 +115,13 @@ public class TagMapSdk implements TagMap {
      *
      * @param parent TagMap used as base map.
      */
-    public Builder(TagMap parent) {
+    Builder(TagMap parent) {
       this.parent = checkNotNull(parent, "parent");
       this.tags = new HashMap<>();
     }
 
     /** Create a new empty TagMap builder. */
-    public Builder() {
+    Builder() {
       this.tags = new HashMap<>();
     }
 
