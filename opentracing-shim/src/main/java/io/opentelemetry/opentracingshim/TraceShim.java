@@ -23,22 +23,23 @@ public final class TraceShim {
   private TraceShim() {}
 
   /**
-   * Creates a {@code io.opentracing.Tracer} shim out of the {@code Tracer} exposed by {@code
-   * Trace}.
+   * Creates a {@code io.opentracing.Tracer} shim around {@code OpenTelemetry.getTracer()}.
    *
+   * @return a {@code io.opentracing.Tracer}.
    * @since 0.1.0
    */
-  public Tracer newTracerShim() {
+  public static Tracer createTracerShim() {
     return new TracerShim(OpenTelemetry.getTracer());
   }
 
   /**
-   * Creates a {@code io.opentracing.Tracer} shim out of a {@code Tracer}.
+   * Creates a {@code io.opentracing.Tracer} shim around the specified {@code Tracer}.
    *
    * @param tracer the {@code Tracer} used by this shim.
+   * @return a {@code io.opentracing.Tracer}.
    * @since 0.1.0
    */
-  public Tracer newTracerShim(io.opentelemetry.trace.Tracer tracer) {
+  public static Tracer createTracerShim(io.opentelemetry.trace.Tracer tracer) {
     return new TracerShim(tracer);
   }
 }
