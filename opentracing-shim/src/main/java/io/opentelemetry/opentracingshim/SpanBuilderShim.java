@@ -192,7 +192,10 @@ final class SpanBuilderShim implements SpanBuilder {
       builder.addLinks(parentLinks);
     }
 
-    builder.setSpanKind(spanKind);
+    if (spanKind != null) {
+      builder.setSpanKind(spanKind);
+    }
+
     io.opentelemetry.trace.Span span = builder.startSpan();
 
     for (int i = 0; i < this.spanBuilderAttributeKeys.size(); i++) {
