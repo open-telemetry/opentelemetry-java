@@ -69,7 +69,7 @@ public class CurrentSpanUtilsTest {
 
   @Test
   public void withSpanRunnable() {
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Runnable runnable =
         new Runnable() {
           @Override
@@ -80,12 +80,12 @@ public class CurrentSpanUtilsTest {
         };
     CurrentSpanUtils.withSpan(span, false, runnable).run();
     verifyZeroInteractions(span);
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpanRunnable_EndSpan() {
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Runnable runnable =
         new Runnable() {
           @Override
@@ -96,13 +96,13 @@ public class CurrentSpanUtilsTest {
         };
     CurrentSpanUtils.withSpan(span, true, runnable).run();
     verify(span).end();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpanRunnable_WithError() {
     final AssertionError error = new AssertionError("MyError");
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Runnable runnable =
         new Runnable() {
           @Override
@@ -115,13 +115,13 @@ public class CurrentSpanUtilsTest {
     executeRunnableAndExpectError(runnable, error);
     verify(span).setStatus(Status.UNKNOWN.withDescription("MyError"));
     verify(span).end();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpanRunnable_WithErrorNoMessage() {
     final AssertionError error = new AssertionError();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Runnable runnable =
         new Runnable() {
           @Override
@@ -134,13 +134,13 @@ public class CurrentSpanUtilsTest {
     executeRunnableAndExpectError(runnable, error);
     verify(span).setStatus(Status.UNKNOWN.withDescription("AssertionError"));
     verify(span).end();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpanCallable() throws Exception {
     final Object ret = new Object();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
         new Callable<Object>() {
           @Override
@@ -152,13 +152,13 @@ public class CurrentSpanUtilsTest {
         };
     assertThat(CurrentSpanUtils.withSpan(span, false, callable).call()).isEqualTo(ret);
     verifyZeroInteractions(span);
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpanCallable_EndSpan() throws Exception {
     final Object ret = new Object();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
         new Callable<Object>() {
           @Override
@@ -170,13 +170,13 @@ public class CurrentSpanUtilsTest {
         };
     assertThat(CurrentSpanUtils.withSpan(span, true, callable).call()).isEqualTo(ret);
     verify(span).end();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpanCallable_WithException() {
     final Exception exception = new Exception("MyException");
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
         new Callable<Object>() {
           @Override
@@ -189,13 +189,13 @@ public class CurrentSpanUtilsTest {
     executeCallableAndExpectError(callable, exception);
     verify(span).setStatus(Status.UNKNOWN.withDescription("MyException"));
     verify(span).end();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpanCallable_WithExceptionNoMessage() {
     final Exception exception = new Exception();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
         new Callable<Object>() {
           @Override
@@ -208,13 +208,13 @@ public class CurrentSpanUtilsTest {
     executeCallableAndExpectError(callable, exception);
     verify(span).setStatus(Status.UNKNOWN.withDescription("Exception"));
     verify(span).end();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpanCallable_WithError() {
     final AssertionError error = new AssertionError("MyError");
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
         new Callable<Object>() {
           @Override
@@ -227,13 +227,13 @@ public class CurrentSpanUtilsTest {
     executeCallableAndExpectError(callable, error);
     verify(span).setStatus(Status.UNKNOWN.withDescription("MyError"));
     verify(span).end();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpanCallable_WithErrorNoMessage() {
     final AssertionError error = new AssertionError();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Callable<Object> callable =
         new Callable<Object>() {
           @Override
@@ -246,7 +246,7 @@ public class CurrentSpanUtilsTest {
     executeCallableAndExpectError(callable, error);
     verify(span).setStatus(Status.UNKNOWN.withDescription("AssertionError"));
     verify(span).end();
-    assertThat(getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   private static Span getCurrentSpan() {

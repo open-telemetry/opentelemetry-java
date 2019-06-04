@@ -45,6 +45,8 @@ public abstract class Tracestate {
   private static final int VALUE_MAX_SIZE = 256;
   private static final int MAX_KEY_VALUE_PAIRS = 32;
 
+  static final Tracestate DEFAULT = Tracestate.builder().build();
+
   /**
    * Returns the value to which the specified key is mapped, or null if this map contains no mapping
    * for the key.

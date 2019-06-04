@@ -106,7 +106,7 @@ public final class DefaultTracer implements Tracer {
 
       return spanContext != null && !SpanContext.BLANK.equals(spanContext)
           ? new DefaultSpan(spanContext)
-          : DefaultSpan.INSTANCE;
+          : DefaultSpan.create();
     }
 
     @Override

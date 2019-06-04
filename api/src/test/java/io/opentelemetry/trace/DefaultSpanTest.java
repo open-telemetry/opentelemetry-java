@@ -28,29 +28,40 @@ import org.junit.runners.JUnit4;
 public class DefaultSpanTest {
   @Test
   public void hasInvalidContextAndDefaultSpanOptions() {
-    assertThat(DefaultSpan.INSTANCE.getContext()).isEqualTo(SpanContext.BLANK);
+    SpanContext context = DefaultSpan.create().getContext();
+    assertThat(context.getTraceId()).isEqualTo(TraceId.INVALID);
+    assertThat(context.getTraceOptions()).isEqualTo(TraceOptions.DEFAULT);
+    assertThat(context.getTracestate()).isEqualTo(Tracestate.DEFAULT);
+  }
+
+  @Test
+  public void hasUniqueSpanId() {
+    DefaultSpan span1 = DefaultSpan.create();
+    DefaultSpan span2 = DefaultSpan.create();
+    assertThat(span1.getContext().getSpanId()).isNotEqualTo(span2.getContext().getSpanId());
   }
 
   @Test
   public void doNotCrash() {
-    DefaultSpan.INSTANCE.setAttribute(
+    DefaultSpan span = DefaultSpan.create();
+    span.setAttribute(
         "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
-    DefaultSpan.INSTANCE.setAttribute(
-        "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
-    DefaultSpan.INSTANCE.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
-    DefaultSpan.INSTANCE.addEvent("event");
-    DefaultSpan.INSTANCE.addEvent(
+    span.setAttribute("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
+    span.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
+    span.addEvent("event");
+    span.addEvent(
         "event",
         Collections.singletonMap(
             "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
-    DefaultSpan.INSTANCE.addEvent(SpanData.Event.create("event"));
-    DefaultSpan.INSTANCE.addLink(Link.create(SpanContext.BLANK));
-    DefaultSpan.INSTANCE.setStatus(Status.OK);
-    DefaultSpan.INSTANCE.end();
+    span.addEvent(SpanData.Event.create("event"));
+    span.addLink(Link.create(SpanContext.BLANK));
+    span.setStatus(Status.OK);
+    span.end();
   }
 
   @Test
-  public void blankSpan_ToString() {
-    assertThat(DefaultSpan.INSTANCE.toString()).isEqualTo("DefaultSpan");
+  public void defaultSpan_ToString() {
+    DefaultSpan span = DefaultSpan.create();
+    assertThat(span.toString()).isEqualTo("DefaultSpan");
   }
 }

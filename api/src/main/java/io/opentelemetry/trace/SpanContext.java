@@ -30,7 +30,6 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class SpanContext {
-  private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
   private final TraceId traceId;
   private final SpanId spanId;
   private final TraceOptions traceOptions;
@@ -42,7 +41,7 @@ public final class SpanContext {
    * @since 0.1.0
    */
   static final SpanContext BLANK =
-      new SpanContext(TraceId.INVALID, SpanId.INVALID, TraceOptions.DEFAULT, TRACESTATE_DEFAULT);
+      new SpanContext(TraceId.INVALID, SpanId.INVALID, TraceOptions.DEFAULT, Tracestate.DEFAULT);
 
   /**
    * Creates a new {@code SpanContext} with the given identifiers and options.
