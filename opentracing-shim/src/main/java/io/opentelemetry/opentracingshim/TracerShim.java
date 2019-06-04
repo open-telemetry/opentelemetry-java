@@ -23,7 +23,8 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.Format;
-import io.opentracing.propagation.TextMap;
+import io.opentracing.propagation.TextMapExtract;
+import io.opentracing.propagation.TextMapInject;
 
 final class TracerShim implements Tracer {
   private final io.opentelemetry.trace.Tracer tracer;
@@ -54,13 +55,17 @@ final class TracerShim implements Tracer {
     return new SpanBuilderShim(tracer, operationName);
   }
 
+  // TODO - do not fail in case the context was null!
   @Override
   public <C> void inject(SpanContext context, Format<C> format, C carrier) {
     io.opentelemetry.trace.SpanContext actualContext = getActualContext(context);
 
     // TODO - Shall we expect to get no-op objects if a given format is not supported at all?
-    if (format == Format.Builtin.TEXT_MAP || format == Format.Builtin.HTTP_HEADERS) {
-      Propagation.injectTextFormat(tracer.getHttpTextFormat(), actualContext, (TextMap) carrier);
+    if (format == Format.Builtin.TEXT_MAP
+        || format == Format.Builtin.TEXT_MAP_INJECT
+        || format == Format.Builtin.HTTP_HEADERS) {
+      Propagation.injectTextFormat(
+          tracer.getHttpTextFormat(), actualContext, (TextMapInject) carrier);
     } else if (format == Format.Builtin.BINARY) {
       Propagation.injectBinaryFormat(tracer.getBinaryFormat(), actualContext, (Binary) carrier);
     }
@@ -69,11 +74,12 @@ final class TracerShim implements Tracer {
   @SuppressWarnings("ReturnMissingNullable")
   @Override
   public <C> SpanContext extract(Format<C> format, C carrier) {
-
     SpanContext context = null;
 
-    if (format == Format.Builtin.TEXT_MAP || format == Format.Builtin.HTTP_HEADERS) {
-      context = Propagation.extractTextFormat(tracer.getHttpTextFormat(), (TextMap) carrier);
+    if (format == Format.Builtin.TEXT_MAP
+        || format == Format.Builtin.TEXT_MAP_EXTRACT
+        || format == Format.Builtin.HTTP_HEADERS) {
+      context = Propagation.extractTextFormat(tracer.getHttpTextFormat(), (TextMapExtract) carrier);
     } else if (format == Format.Builtin.BINARY) {
       context = Propagation.extractBinaryFormat(tracer.getBinaryFormat(), (Binary) carrier);
     }

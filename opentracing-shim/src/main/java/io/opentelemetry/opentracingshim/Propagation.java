@@ -20,7 +20,8 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentracing.SpanContext;
 import io.opentracing.propagation.Binary;
-import io.opentracing.propagation.TextMap;
+import io.opentracing.propagation.TextMapExtract;
+import io.opentracing.propagation.TextMapInject;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,12 +32,12 @@ final class Propagation {
   public static void injectTextFormat(
       HttpTextFormat<io.opentelemetry.trace.SpanContext> format,
       io.opentelemetry.trace.SpanContext context,
-      TextMap carrier) {
+      TextMapInject carrier) {
     format.inject(context, carrier, TextMapSetter.INSTANCE);
   }
 
   public static SpanContext extractTextFormat(
-      HttpTextFormat<io.opentelemetry.trace.SpanContext> format, TextMap carrier) {
+      HttpTextFormat<io.opentelemetry.trace.SpanContext> format, TextMapExtract carrier) {
     Map<String, String> carrierMap = new HashMap<String, String>();
     for (Map.Entry<String, String> entry : carrier) {
       carrierMap.put(entry.getKey(), entry.getValue());
@@ -45,13 +46,13 @@ final class Propagation {
     return new SpanContextShim(format.extract(carrierMap, TextMapGetter.INSTANCE));
   }
 
-  static final class TextMapSetter implements HttpTextFormat.Setter<TextMap> {
+  static final class TextMapSetter implements HttpTextFormat.Setter<TextMapInject> {
     private TextMapSetter() {}
 
     public static final TextMapSetter INSTANCE = new TextMapSetter();
 
     @Override
-    public void put(TextMap carrier, String key, String value) {
+    public void put(TextMapInject carrier, String key, String value) {
       carrier.put(key, value);
     }
   }
