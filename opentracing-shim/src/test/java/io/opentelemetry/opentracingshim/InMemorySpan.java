@@ -30,7 +30,9 @@ import io.opentelemetry.trace.SpanData.Timestamp;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.Tracestate;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -270,7 +272,9 @@ final class InMemorySpan implements Span {
       }
 
       // TODO - Create properly the remaining SpanContext members.
-      SpanContext context = SpanContext.create(traceId, createSpanId(), null, null);
+      SpanContext context =
+          SpanContext.create(
+              traceId, createSpanId(), TraceOptions.DEFAULT, Tracestate.builder().build());
       return new InMemorySpan(
           tracer,
           context,

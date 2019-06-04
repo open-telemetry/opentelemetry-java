@@ -43,26 +43,26 @@ public final class TestUtils {
 
   /*
   public static List<MockSpan> getByTag(List<SpanData> spans, AbstractTag key, Object value) {
-      List<MockSpan> found = new ArrayList<>(spans.size());
-      for (MockSpan span : spans) {
-          if (span.tags().get(key.getKey()).equals(value)) {
-              found.add(span);
-          }
+    List<SpanData> found = new ArrayList<>(spans.size());
+    for (SpanData span : spans) {
+      if (span.tags().get(key.getKey()).equals(value)) {
+        found.add(span);
       }
-      return found;
+    }
+    return found;
   }
 
   public static MockSpan getOneByTag(List<MockSpan> spans, AbstractTag key, Object value) {
-      List<MockSpan> found = getByTag(spans, key, value);
-      if (found.size() > 1) {
-          throw new IllegalArgumentException("there is more than one span with tag '"
-                  + key.getKey() + "' and value '" + value + "'");
-      }
-      if (found.isEmpty()) {
-          return null;
-      } else {
-          return found.get(0);
-      }
+    List<SpanData> found = getByTag(spans, key, value);
+    if (found.size() > 1) {
+      throw new IllegalArgumentException("there is more than one span with tag '"
+          + key.getKey() + "' and value '" + value + "'");
+    }
+    if (found.isEmpty()) {
+      return null;
+    } else {
+      return found.get(0);
+    }
   }*/
 
   /** A line so that Javadoc does not complain. */
