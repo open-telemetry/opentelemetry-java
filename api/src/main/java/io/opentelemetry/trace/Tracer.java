@@ -93,7 +93,7 @@ public interface Tracer {
    *
    * <p>Supports try-with-resource idiom.
    *
-   * <p>Can be called with {@link BlankSpan} to enter a scope of code where tracing is stopped.
+   * <p>Can be called with {@link DefaultSpan} to enter a scope of code where tracing is stopped.
    *
    * <p>Example of usage:
    *

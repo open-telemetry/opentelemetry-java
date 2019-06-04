@@ -23,34 +23,34 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link BlankSpan}. */
+/** Unit tests for {@link DefaultSpan}. */
 @RunWith(JUnit4.class)
-public class BlankSpanTest {
+public class DefaultSpanTest {
   @Test
   public void hasInvalidContextAndDefaultSpanOptions() {
-    assertThat(BlankSpan.INSTANCE.getContext()).isEqualTo(SpanContext.BLANK);
+    assertThat(DefaultSpan.INSTANCE.getContext()).isEqualTo(SpanContext.BLANK);
   }
 
   @Test
   public void doNotCrash() {
-    BlankSpan.INSTANCE.setAttribute(
+    DefaultSpan.INSTANCE.setAttribute(
         "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
-    BlankSpan.INSTANCE.setAttribute(
+    DefaultSpan.INSTANCE.setAttribute(
         "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
-    BlankSpan.INSTANCE.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
-    BlankSpan.INSTANCE.addEvent("event");
-    BlankSpan.INSTANCE.addEvent(
+    DefaultSpan.INSTANCE.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
+    DefaultSpan.INSTANCE.addEvent("event");
+    DefaultSpan.INSTANCE.addEvent(
         "event",
         Collections.singletonMap(
             "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
-    BlankSpan.INSTANCE.addEvent(SpanData.Event.create("event"));
-    BlankSpan.INSTANCE.addLink(Link.create(SpanContext.BLANK));
-    BlankSpan.INSTANCE.setStatus(Status.OK);
-    BlankSpan.INSTANCE.end();
+    DefaultSpan.INSTANCE.addEvent(SpanData.Event.create("event"));
+    DefaultSpan.INSTANCE.addLink(Link.create(SpanContext.BLANK));
+    DefaultSpan.INSTANCE.setStatus(Status.OK);
+    DefaultSpan.INSTANCE.end();
   }
 
   @Test
   public void blankSpan_ToString() {
-    assertThat(BlankSpan.INSTANCE.toString()).isEqualTo("BlankSpan");
+    assertThat(DefaultSpan.INSTANCE.toString()).isEqualTo("DefaultSpan");
   }
 }

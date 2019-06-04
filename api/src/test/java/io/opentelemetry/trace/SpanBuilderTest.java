@@ -37,10 +37,10 @@ public class SpanBuilderTest {
     spanBuilder.setRecordEvents(true);
     spanBuilder.setSampler(Samplers.alwaysSample());
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(BlankSpan.INSTANCE);
-    spanBuilder.setParent(BlankSpan.INSTANCE.getContext());
+    spanBuilder.setParent(DefaultSpan.INSTANCE);
+    spanBuilder.setParent(DefaultSpan.INSTANCE.getContext());
     spanBuilder.setNoParent();
-    assertThat(spanBuilder.startSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(spanBuilder.startSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
   }
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
