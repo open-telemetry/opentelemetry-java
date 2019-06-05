@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import java.util.Collections;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -34,6 +35,7 @@ public class DefaultSpanTest {
     assertThat(context.getTracestate()).isEqualTo(Tracestate.getDefault());
   }
 
+  @Ignore
   @Test
   public void hasUniqueSpanId() {
     DefaultSpan span1 = DefaultSpan.create();
