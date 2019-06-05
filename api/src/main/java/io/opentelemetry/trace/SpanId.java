@@ -55,6 +55,9 @@ public final class SpanId implements Comparable<SpanId> {
    * rules applying to {@code SpanId}. Specifying 0 for this value will effectively make the new
    * {@code SpanId} invalid.
    *
+   * <p>This is equivalent to calling {@link #fromBytes(byte[], int)} with the specified value
+   * stored as big-endian.
+   *
    * @param id the long represenation of the {@code TraceId}.
    * @since 0.1.0
    */

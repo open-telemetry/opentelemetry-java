@@ -57,6 +57,9 @@ public final class TraceId implements Comparable<TraceId> {
    * rules applying to {@code TraceId}. Specifying 0 for both values will effectively make the new
    * {@code TraceId} invalid.
    *
+   * <p>This is equivalent to calling {@link #fromBytes(byte[], int)} with the specified values
+   * stored as big-endian.
+   *
    * @param idHi the higher part of the {@code TraceId}.
    * @param idLo the lower part of the {@code TraceId}.
    * @since 0.1.0
