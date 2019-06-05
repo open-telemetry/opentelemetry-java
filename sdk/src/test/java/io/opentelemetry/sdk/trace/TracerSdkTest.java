@@ -21,7 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TraceContextFormat;
-import io.opentelemetry.trace.BlankSpan;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import org.junit.Before;
@@ -44,7 +44,7 @@ public class TracerSdkTest {
 
   @Test
   public void defaultGetCurrentSpan() {
-    assertThat(tracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isEqualTo(DefaultSpan.INSTANCE);
   }
 
   @Test
@@ -54,7 +54,7 @@ public class TracerSdkTest {
 
   @Test
   public void getCurrentSpan() {
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
     Context origContext = ContextUtils.withValue(span).attach();
     // Make sure context is detached even if test fails.
     try {
@@ -62,24 +62,24 @@ public class TracerSdkTest {
     } finally {
       Context.current().detach(origContext);
     }
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
   }
 
   @Test
   public void withSpan_NullSpan() {
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
     try (Scope ws = tracer.withSpan(null)) {
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
     }
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
   }
 
   @Test
   public void getCurrentSpan_WithSpan() {
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
     try (Scope ws = tracer.withSpan(span)) {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
     }
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
   }
 }

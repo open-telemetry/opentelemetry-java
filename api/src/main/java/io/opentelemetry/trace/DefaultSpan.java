@@ -21,11 +21,11 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * The {@code BlankSpan} is the default {@link Span} that is used when no {@code Span}
+ * The {@code DefaultSpan} is the default {@link Span} that is used when no {@code Span}
  * implementation is available. All operations are no-op except context propagation.
  *
  * <p>When no valid context ({@code null} or {@link SpanContext#BLANK}) is available then
- * implementation propagates {@link BlankSpan#INSTANCE} which encapsulates {@link
+ * implementation propagates {@link DefaultSpan#INSTANCE} which encapsulates {@link
  * SpanContext#BLANK}.
  *
  * <p>Used also to stop tracing, see {@link Tracer#withSpan}.
@@ -33,18 +33,18 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 @Immutable
-public final class BlankSpan implements Span {
+public final class DefaultSpan implements Span {
   /**
    * An instance of this class. If there is no {@code SpanContext} or {@link SpanContext#BLANK} to
    * propagate this instance is used.
    *
    * @since 0.1.0
    */
-  public static final Span INSTANCE = new BlankSpan(SpanContext.BLANK);
+  public static final Span INSTANCE = new DefaultSpan(SpanContext.BLANK);
 
   private final SpanContext spanContext;
 
-  BlankSpan(SpanContext spanContext) {
+  DefaultSpan(SpanContext spanContext) {
     this.spanContext = spanContext;
   }
 
@@ -119,6 +119,6 @@ public final class BlankSpan implements Span {
 
   @Override
   public String toString() {
-    return "BlankSpan";
+    return "DefaultSpan";
   }
 }

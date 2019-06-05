@@ -42,19 +42,19 @@ public class DefaultTracerTest {
 
   @Test
   public void defaultGetCurrentSpan() {
-    assertThat(defaultTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isEqualTo(DefaultSpan.INSTANCE);
   }
 
   @Test
   public void getCurrentSpan_WithSpan() {
-    assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
-    Scope ws = defaultTracer.withSpan(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    Scope ws = defaultTracer.withSpan(DefaultSpan.INSTANCE);
     try {
-      assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+      assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
     } finally {
       ws.close();
     }
-    assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
   }
 
   @Test(expected = NullPointerException.class)
@@ -65,7 +65,7 @@ public class DefaultTracerTest {
   @Test
   public void defaultSpanBuilderWithName() {
     assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan())
-        .isSameInstanceAs(BlankSpan.INSTANCE);
+        .isSameInstanceAs(DefaultSpan.INSTANCE);
   }
 
   @Test
@@ -91,7 +91,7 @@ public class DefaultTracerTest {
     } finally {
       scope.close();
     }
-    assertThat(defaultTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isEqualTo(DefaultSpan.INSTANCE);
   }
 
   @Test
@@ -102,7 +102,7 @@ public class DefaultTracerTest {
 
   @Test
   public void testSpanContextPropagation() {
-    BlankSpan parent = new BlankSpan(spanContext);
+    DefaultSpan parent = new DefaultSpan(spanContext);
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
     assertThat(span.getContext()).isSameInstanceAs(spanContext);
@@ -110,7 +110,7 @@ public class DefaultTracerTest {
 
   @Test
   public void testSpanContextPropagationCurrentSpan() {
-    BlankSpan parent = new BlankSpan(spanContext);
+    DefaultSpan parent = new DefaultSpan(spanContext);
     Scope scope = defaultTracer.withSpan(parent);
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();

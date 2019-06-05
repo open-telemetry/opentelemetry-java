@@ -18,7 +18,7 @@ package io.opentelemetry.trace.unsafe;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.trace.BlankSpan;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 
@@ -32,7 +32,7 @@ import io.opentelemetry.trace.Tracer;
  */
 public final class ContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
-      Context.keyWithDefault("opentelemetry-trace-span-key", BlankSpan.INSTANCE);
+      Context.keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.INSTANCE);
 
   /**
    * Creates a new {@code Context} with the given value set.
