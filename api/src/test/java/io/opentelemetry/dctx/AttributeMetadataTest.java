@@ -14,32 +14,33 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags;
+package io.opentelemetry.dctx;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.tags.TagMetadata.TagTtl;
+import io.opentelemetry.dctx.AttributeMetadata.AttributeTtl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link TagMetadata}. */
+/** Tests for {@link AttributeMetadata}. */
 @RunWith(JUnit4.class)
-public class TagMetadataTest {
+public class AttributeMetadataTest {
 
   @Test
-  public void testGetTagTtl() {
-    TagMetadata tagMetadata = TagMetadata.create(TagTtl.NO_PROPAGATION);
-    assertThat(tagMetadata.getTagTtl()).isEqualTo(TagTtl.NO_PROPAGATION);
+  public void testGetAttributeTtl() {
+    AttributeMetadata attrMetadata = AttributeMetadata.create(AttributeTtl.NO_PROPAGATION);
+    assertThat(attrMetadata.getAttributeTtl()).isEqualTo(AttributeTtl.NO_PROPAGATION);
   }
 
   @Test
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            TagMetadata.create(TagTtl.NO_PROPAGATION), TagMetadata.create(TagTtl.NO_PROPAGATION))
-        .addEqualityGroup(TagMetadata.create(TagTtl.UNLIMITED_PROPAGATION))
+            AttributeMetadata.create(AttributeTtl.NO_PROPAGATION),
+            AttributeMetadata.create(AttributeTtl.NO_PROPAGATION))
+        .addEqualityGroup(AttributeMetadata.create(AttributeTtl.UNLIMITED_PROPAGATION))
         .testEquals();
   }
 }

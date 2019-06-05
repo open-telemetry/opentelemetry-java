@@ -22,6 +22,10 @@ import static org.junit.Assert.assertTrue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.dctx.DefaultDistributedContextManager;
+import io.opentelemetry.dctx.DistributedContext;
+import io.opentelemetry.dctx.DistributedContextManager;
+import io.opentelemetry.dctx.spi.DistributedContextManagerProvider;
 import io.opentelemetry.metrics.CounterDouble;
 import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.DefaultMeter;
@@ -32,10 +36,6 @@ import io.opentelemetry.metrics.Measurement;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.spi.MeterProvider;
 import io.opentelemetry.resources.Resource;
-import io.opentelemetry.tags.DefaultTagger;
-import io.opentelemetry.tags.TagMap;
-import io.opentelemetry.tags.Tagger;
-import io.opentelemetry.tags.spi.TaggerProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -67,7 +67,7 @@ public class OpenTelemetryTest {
     OpenTelemetry.reset();
     System.clearProperty(TracerProvider.class.getName());
     System.clearProperty(MeterProvider.class.getName());
-    System.clearProperty(TaggerProvider.class.getName());
+    System.clearProperty(DistributedContextManagerProvider.class.getName());
   }
 
   @Test
@@ -76,8 +76,10 @@ public class OpenTelemetryTest {
     assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
     assertThat(OpenTelemetry.getMeter()).isInstanceOf(DefaultMeter.getInstance().getClass());
     assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
-    assertThat(OpenTelemetry.getTagger()).isInstanceOf(DefaultTagger.getInstance().getClass());
-    assertThat(OpenTelemetry.getTagger()).isEqualTo(OpenTelemetry.getTagger());
+    assertThat(OpenTelemetry.getDistributedContextManager())
+        .isInstanceOf(DefaultDistributedContextManager.getInstance().getClass());
+    assertThat(OpenTelemetry.getDistributedContextManager())
+        .isEqualTo(OpenTelemetry.getDistributedContextManager());
   }
 
   @Test
@@ -143,34 +145,48 @@ public class OpenTelemetryTest {
   }
 
   @Test
-  public void testTaggerLoadArbitrary() throws IOException {
-    File serviceFile = createService(TaggerProvider.class, FirstTagger.class, SecondTagger.class);
+  public void testDistributedContextManagerLoadArbitrary() throws IOException {
+    File serviceFile =
+        createService(
+            DistributedContextManagerProvider.class,
+            FirstDistributedContextManager.class,
+            SecondDistributedContextManager.class);
     try {
       assertTrue(
-          (OpenTelemetry.getTagger() instanceof FirstTagger)
-              || (OpenTelemetry.getTagger() instanceof SecondTagger));
-      assertThat(OpenTelemetry.getTagger()).isEqualTo(OpenTelemetry.getTagger());
+          (OpenTelemetry.getDistributedContextManager() instanceof FirstDistributedContextManager)
+              || (OpenTelemetry.getDistributedContextManager()
+                  instanceof SecondDistributedContextManager));
+      assertThat(OpenTelemetry.getDistributedContextManager())
+          .isEqualTo(OpenTelemetry.getDistributedContextManager());
     } finally {
       serviceFile.delete();
     }
   }
 
   @Test
-  public void testTaggerSystemProperty() throws IOException {
-    File serviceFile = createService(TaggerProvider.class, FirstTagger.class, SecondTagger.class);
-    System.setProperty(TaggerProvider.class.getName(), SecondTagger.class.getName());
+  public void testDistributedContextManagerSystemProperty() throws IOException {
+    File serviceFile =
+        createService(
+            DistributedContextManagerProvider.class,
+            FirstDistributedContextManager.class,
+            SecondDistributedContextManager.class);
+    System.setProperty(
+        DistributedContextManagerProvider.class.getName(),
+        SecondDistributedContextManager.class.getName());
     try {
-      assertThat(OpenTelemetry.getTagger()).isInstanceOf(SecondTagger.class);
-      assertThat(OpenTelemetry.getTagger()).isEqualTo(OpenTelemetry.getTagger());
+      assertThat(OpenTelemetry.getDistributedContextManager())
+          .isInstanceOf(SecondDistributedContextManager.class);
+      assertThat(OpenTelemetry.getDistributedContextManager())
+          .isEqualTo(OpenTelemetry.getDistributedContextManager());
     } finally {
       serviceFile.delete();
     }
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testTaggerNotFound() {
-    System.setProperty(TaggerProvider.class.getName(), "io.does.not.exists");
-    OpenTelemetry.getTagger();
+  public void testDistributedContextManagerNotFound() {
+    System.setProperty(DistributedContextManagerProvider.class.getName(), "io.does.not.exists");
+    OpenTelemetry.getDistributedContextManager();
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {
@@ -279,47 +295,49 @@ public class OpenTelemetryTest {
     public void record(List<Measurement> measurements) {}
 
     @Override
-    public void record(List<Measurement> measurements, TagMap tags) {}
+    public void record(List<Measurement> measurements, DistributedContext distContext) {}
 
     @Override
-    public void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext) {}
+    public void record(
+        List<Measurement> measurements, DistributedContext distContext, SpanContext spanContext) {}
   }
 
-  public static class SecondTagger extends FirstTagger {
+  public static class SecondDistributedContextManager extends FirstDistributedContextManager {
     @Override
-    public Tagger create() {
-      return new SecondTagger();
+    public DistributedContextManager create() {
+      return new SecondDistributedContextManager();
     }
   }
 
-  public static class FirstTagger implements Tagger, TaggerProvider {
+  public static class FirstDistributedContextManager
+      implements DistributedContextManager, DistributedContextManagerProvider {
     @Override
-    public Tagger create() {
-      return new FirstTagger();
+    public DistributedContextManager create() {
+      return new FirstDistributedContextManager();
     }
 
     @Override
-    public TagMap getCurrentTagMap() {
+    public DistributedContext getCurrentContext() {
       return null;
     }
 
     @Override
-    public TagMap.Builder tagMapBuilder() {
+    public DistributedContext.Builder contextBuilder() {
       return null;
     }
 
     @Override
-    public Scope withTagMap(TagMap tags) {
+    public Scope withContext(DistributedContext distContext) {
       return null;
     }
 
     @Override
-    public BinaryFormat<TagMap> getBinaryFormat() {
+    public BinaryFormat<DistributedContext> getBinaryFormat() {
       return null;
     }
 
     @Override
-    public HttpTextFormat<TagMap> getHttpTextFormat() {
+    public HttpTextFormat<DistributedContext> getHttpTextFormat() {
       return null;
     }
   }

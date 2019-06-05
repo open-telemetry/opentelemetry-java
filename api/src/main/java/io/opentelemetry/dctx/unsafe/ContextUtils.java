@@ -14,46 +14,47 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags.unsafe;
+package io.opentelemetry.dctx.unsafe;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.tags.EmptyTagMap;
-import io.opentelemetry.tags.TagMap;
+import io.opentelemetry.dctx.DistributedContext;
+import io.opentelemetry.dctx.EmptyDistributedContext;
 
 /**
- * Utility methods for accessing the {@link TagMap} contained in the {@link io.grpc.Context}.
+ * Utility methods for accessing the {@link DistributedContext} contained in the {@link
+ * io.grpc.Context}.
  *
- * <p>Most code should interact with the current context via the public APIs in {@link TagMap} and
- * avoid accessing this class directly.
+ * <p>Most code should interact with the current context via the public APIs in {@link
+ * DistributedContext} and avoid accessing this class directly.
  *
  * @since 0.1.0
  */
 public final class ContextUtils {
-  private static final Context.Key<TagMap> TAG_MAP_KEY =
-      Context.keyWithDefault("opentelemetry-tag-map-key", EmptyTagMap.INSTANCE);
+  private static final Context.Key<DistributedContext> DIST_CONTEXT_KEY =
+      Context.keyWithDefault("opentelemetry-dist-context-key", EmptyDistributedContext.INSTANCE);
 
   /**
    * Creates a new {@code Context} with the given value set.
    *
-   * @param tagMap the value to be set.
+   * @param distContext the value to be set.
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(TagMap tagMap) {
-    return Context.current().withValue(TAG_MAP_KEY, tagMap);
+  public static Context withValue(DistributedContext distContext) {
+    return Context.current().withValue(DIST_CONTEXT_KEY, distContext);
   }
 
   /**
    * Creates a new {@code Context} with the given value set.
    *
-   * @param tagMap the value to be set.
+   * @param distContext the value to be set.
    * @param context the parent {@code Context}.
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(TagMap tagMap, Context context) {
-    return context.withValue(TAG_MAP_KEY, tagMap);
+  public static Context withValue(DistributedContext distContext, Context context) {
+    return context.withValue(DIST_CONTEXT_KEY, distContext);
   }
 
   /**
@@ -62,8 +63,8 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static TagMap getValue() {
-    return TAG_MAP_KEY.get();
+  public static DistributedContext getValue() {
+    return DIST_CONTEXT_KEY.get();
   }
 
   /**
@@ -73,20 +74,20 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static TagMap getValue(Context context) {
-    return TAG_MAP_KEY.get(context);
+  public static DistributedContext getValue(Context context) {
+    return DIST_CONTEXT_KEY.get(context);
   }
 
   /**
-   * Returns a new {@link Scope} encapsulating the provided {@code TagMap} added to the current
-   * {@code Context}.
+   * Returns a new {@link Scope} encapsulating the provided {@code DistributedContext} added to the
+   * current {@code Context}.
    *
-   * @param tagMap the {@code TagMap} to be added to the current {@code Context}.
+   * @param distContext the {@code DistributedContext} to be added to the current {@code Context}.
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */
-  public static Scope withTagMap(TagMap tagMap) {
-    return TagMapInScope.create(tagMap);
+  public static Scope withDistributedContext(DistributedContext distContext) {
+    return DistributedContextInScope.create(distContext);
   }
 
   private ContextUtils() {}

@@ -14,32 +14,32 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags.unsafe;
+package io.opentelemetry.dctx.unsafe;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.tags.TagMap;
+import io.opentelemetry.dctx.DistributedContext;
 
 /**
- * A scope that manages the {@link Context} for a {@link TagMap}.
+ * A scope that manages the {@link Context} for a {@link DistributedContext}.
  *
  * @since 0.1.0
  */
-final class TagMapInScope implements Scope {
+final class DistributedContextInScope implements Scope {
   private final Context orig;
 
-  private TagMapInScope(TagMap tags) {
-    orig = ContextUtils.withValue(tags).attach();
+  private DistributedContextInScope(DistributedContext distContext) {
+    orig = ContextUtils.withValue(distContext).attach();
   }
 
   /**
-   * Constructs a new {@link TagMapInScope}.
+   * Constructs a new {@link DistributedContextInScope}.
    *
-   * @param tags the {@code TagMap} to be added to the current {@code Context}.
+   * @param distContext the {@code DistributedContext} to be added to the current {@code Context}.
    * @since 0.1.0
    */
-  static TagMapInScope create(TagMap tags) {
-    return new TagMapInScope(tags);
+  static DistributedContextInScope create(DistributedContext distContext) {
+    return new DistributedContextInScope(distContext);
   }
 
   @Override

@@ -16,10 +16,10 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.dctx.DistributedContext;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.resources.Resource;
-import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 import java.util.Map;
@@ -88,14 +88,15 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public void record(List<Measurement> measurements, TagMap tags) {
+  public void record(List<Measurement> measurements, DistributedContext distContext) {
     Utils.checkNotNull(measurements, "measurements");
-    Utils.checkNotNull(tags, "tags");
+    Utils.checkNotNull(distContext, "distContext");
   }
 
   @Override
-  public void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext) {
-    Utils.checkNotNull(tags, "tags");
+  public void record(
+      List<Measurement> measurements, DistributedContext distContext, SpanContext spanContext) {
+    Utils.checkNotNull(distContext, "distContext");
     Utils.checkNotNull(measurements, "measurements");
     Utils.checkNotNull(spanContext, "spanContext");
   }

@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags.spi;
+package io.opentelemetry.dctx.spi;
 
-import io.opentelemetry.tags.Tagger;
+import io.opentelemetry.dctx.DistributedContextManager;
 
 /**
- * TaggerProvider is a service provider for {@link Tagger}. Fully qualified class name of the
- * implementation should be registered in {@code
- * META-INF/services/io.opentelemetry.tags.spi.TaggerProvider}. <br>
+ * DistributedContextManagerProvider is a service provider for {@link DistributedContextManager}.
+ * Fully qualified class name of the implementation should be registered in {@code
+ * META-INF/services/io.opentelemetry.dctx.spi.DistributedContextManagerProvider}. <br>
  * <br>
  * A specific implementation can be selected by a system property {@code
- * io.opentelemetry.tags.spi.TaggerProvider} with value of fully qualified class name.
+ * io.opentelemetry.dctx.spi.DistributedContextManagerProvider} with value of fully qualified class
+ * name.
  *
  * @see io.opentelemetry.OpenTelemetry
  */
-public interface TaggerProvider {
+public interface DistributedContextManagerProvider {
 
   /**
-   * Creates a new tagger instance.
+   * Creates a new {@code DistributedContextManager} instance.
    *
-   * @return a tagger instance.
+   * @return a {@code DistributedContextManager} instance.
    * @since 0.1.0
    */
-  Tagger create();
+  DistributedContextManager create();
 }

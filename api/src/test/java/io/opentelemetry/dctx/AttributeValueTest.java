@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags;
+package io.opentelemetry.dctx;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -26,50 +26,50 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link TagValue}. */
+/** Tests for {@link AttributeValue}. */
 @RunWith(JUnit4.class)
-public final class TagValueTest {
+public final class AttributeValueTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testMaxLength() {
-    assertThat(TagValue.MAX_LENGTH).isEqualTo(255);
+    assertThat(AttributeValue.MAX_LENGTH).isEqualTo(255);
   }
 
   @Test
   public void testAsString() {
-    assertThat(TagValue.create("foo").asString()).isEqualTo("foo");
+    assertThat(AttributeValue.create("foo").asString()).isEqualTo("foo");
   }
 
   @Test
-  public void create_AllowTagValueWithMaxLength() {
-    char[] chars = new char[TagValue.MAX_LENGTH];
+  public void create_AllowAttributeValueWithMaxLength() {
+    char[] chars = new char[AttributeValue.MAX_LENGTH];
     Arrays.fill(chars, 'v');
     String value = new String(chars);
-    assertThat(TagValue.create(value).asString()).isEqualTo(value);
+    assertThat(AttributeValue.create(value).asString()).isEqualTo(value);
   }
 
   @Test
-  public void create_DisallowTagValueOverMaxLength() {
-    char[] chars = new char[TagValue.MAX_LENGTH + 1];
+  public void create_DisallowAttributeValueOverMaxLength() {
+    char[] chars = new char[AttributeValue.MAX_LENGTH + 1];
     Arrays.fill(chars, 'v');
     String value = new String(chars);
     thrown.expect(IllegalArgumentException.class);
-    TagValue.create(value);
+    AttributeValue.create(value);
   }
 
   @Test
-  public void disallowTagValueWithUnprintableChars() {
+  public void disallowAttributeValueWithUnprintableChars() {
     String value = "\2ab\3cd";
     thrown.expect(IllegalArgumentException.class);
-    TagValue.create(value);
+    AttributeValue.create(value);
   }
 
   @Test
-  public void testTagValueEquals() {
+  public void testAttributeValueEquals() {
     new EqualsTester()
-        .addEqualityGroup(TagValue.create("foo"), TagValue.create("foo"))
-        .addEqualityGroup(TagValue.create("bar"))
+        .addEqualityGroup(AttributeValue.create("foo"), AttributeValue.create("foo"))
+        .addEqualityGroup(AttributeValue.create("bar"))
         .testEquals();
   }
 }

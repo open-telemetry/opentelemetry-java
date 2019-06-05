@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags;
+package io.opentelemetry.dctx;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.StringUtils;
@@ -22,30 +22,30 @@ import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A key to a value stored in a {@link TagMap}.
+ * A key to a value stored in a {@link DistributedContext}.
  *
- * <p>Each {@code TagKey} has a {@code String} name. Names have a maximum length of {@link
+ * <p>Each {@code AttributeKey} has a {@code String} name. Names have a maximum length of {@link
  * #MAX_LENGTH} and contain only printable ASCII characters.
  *
- * <p>{@code TagKey}s are designed to be used as constants. Declaring each key as a constant
+ * <p>{@code AttributeKey}s are designed to be used as constants. Declaring each key as a constant
  * prevents key names from being validated multiple times.
  *
  * @since 0.1.0
  */
 @Immutable
 @AutoValue
-public abstract class TagKey {
+public abstract class AttributeKey {
   /**
-   * The maximum length for a tag key name. The value is {@value #MAX_LENGTH}.
+   * The maximum length for an attribute key name. The value is {@value #MAX_LENGTH}.
    *
    * @since 0.1.0
    */
   public static final int MAX_LENGTH = 255;
 
-  TagKey() {}
+  AttributeKey() {}
 
   /**
-   * Constructs a {@code TagKey} with the given name.
+   * Constructs an {@code AttributeKey} with the given name.
    *
    * <p>The name must meet the following requirements:
    *
@@ -55,13 +55,13 @@ public abstract class TagKey {
    * </ol>
    *
    * @param name the name of the key.
-   * @return a {@code TagKey} with the given name.
+   * @return an {@code AttributeKey} with the given name.
    * @throws IllegalArgumentException if the name is not valid.
    * @since 0.1.0
    */
-  public static TagKey create(String name) {
-    Utils.checkArgument(isValid(name), "Invalid TagKey name: %s", name);
-    return new AutoValue_TagKey(name);
+  public static AttributeKey create(String name) {
+    Utils.checkArgument(isValid(name), "Invalid AttributeKey name: %s", name);
+    return new AutoValue_AttributeKey(name);
   }
 
   /**
@@ -73,9 +73,9 @@ public abstract class TagKey {
   public abstract String getName();
 
   /**
-   * Determines whether the given {@code String} is a valid tag key.
+   * Determines whether the given {@code String} is a valid attribute key.
    *
-   * @param name the tag key name to be validated.
+   * @param name the attribute key name to be validated.
    * @return whether the name is valid.
    */
   private static boolean isValid(String name) {

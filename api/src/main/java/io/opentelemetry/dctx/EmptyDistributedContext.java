@@ -14,31 +14,35 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags;
+package io.opentelemetry.dctx;
 
 import java.util.Collections;
 import java.util.Iterator;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** An immutable implementation of the {@link TagMap} that does not contain any tags. */
+/**
+ * An immutable implementation of the {@link DistributedContext} that does not contain any
+ * attributes.
+ */
 @Immutable
-public class EmptyTagMap implements TagMap {
-  private static final Iterator<Tag> EMPTY_ITERATOR = Collections.<Tag>emptyList().iterator();
+public class EmptyDistributedContext implements DistributedContext {
+  private static final Iterator<Attribute> EMPTY_ITERATOR =
+      Collections.<Attribute>emptyList().iterator();
 
-  /** Returns the single instance of the {@link EmptyTagMap} class. */
-  public static final TagMap INSTANCE = new EmptyTagMap();
+  /** Returns the single instance of the {@link EmptyDistributedContext} class. */
+  public static final DistributedContext INSTANCE = new EmptyDistributedContext();
 
   @Override
-  public Iterator<Tag> getIterator() {
+  public Iterator<Attribute> getIterator() {
     return EMPTY_ITERATOR;
   }
 
   @Nullable
   @Override
-  public TagValue getTagValue(TagKey tagKey) {
+  public AttributeValue getAttributeValue(AttributeKey attrKey) {
     return null;
   }
 
-  private EmptyTagMap() {}
+  private EmptyDistributedContext() {}
 }

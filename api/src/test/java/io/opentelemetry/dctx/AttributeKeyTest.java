@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags;
+package io.opentelemetry.dctx;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -26,55 +26,55 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link TagKey}. */
+/** Tests for {@link AttributeKey}. */
 @RunWith(JUnit4.class)
-public final class TagKeyTest {
+public final class AttributeKeyTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testMaxLength() {
-    assertThat(TagKey.MAX_LENGTH).isEqualTo(255);
+    assertThat(AttributeKey.MAX_LENGTH).isEqualTo(255);
   }
 
   @Test
   public void testGetName() {
-    assertThat(TagKey.create("foo").getName()).isEqualTo("foo");
+    assertThat(AttributeKey.create("foo").getName()).isEqualTo("foo");
   }
 
   @Test
-  public void create_AllowTagKeyNameWithMaxLength() {
-    char[] chars = new char[TagKey.MAX_LENGTH];
+  public void create_AllowAttributeKeyNameWithMaxLength() {
+    char[] chars = new char[AttributeKey.MAX_LENGTH];
     Arrays.fill(chars, 'k');
     String key = new String(chars);
-    assertThat(TagKey.create(key).getName()).isEqualTo(key);
+    assertThat(AttributeKey.create(key).getName()).isEqualTo(key);
   }
 
   @Test
-  public void create_DisallowTagKeyNameOverMaxLength() {
-    char[] chars = new char[TagKey.MAX_LENGTH + 1];
+  public void create_DisallowAttributeKeyNameOverMaxLength() {
+    char[] chars = new char[AttributeKey.MAX_LENGTH + 1];
     Arrays.fill(chars, 'k');
     String key = new String(chars);
     thrown.expect(IllegalArgumentException.class);
-    TagKey.create(key);
+    AttributeKey.create(key);
   }
 
   @Test
   public void create_DisallowUnprintableChars() {
     thrown.expect(IllegalArgumentException.class);
-    TagKey.create("\2ab\3cd");
+    AttributeKey.create("\2ab\3cd");
   }
 
   @Test
   public void createString_DisallowEmpty() {
     thrown.expect(IllegalArgumentException.class);
-    TagKey.create("");
+    AttributeKey.create("");
   }
 
   @Test
-  public void testTagKeyEquals() {
+  public void testAttributeKeyEquals() {
     new EqualsTester()
-        .addEqualityGroup(TagKey.create("foo"), TagKey.create("foo"))
-        .addEqualityGroup(TagKey.create("bar"))
+        .addEqualityGroup(AttributeKey.create("foo"), AttributeKey.create("foo"))
+        .addEqualityGroup(AttributeKey.create("bar"))
         .testEquals();
   }
 }

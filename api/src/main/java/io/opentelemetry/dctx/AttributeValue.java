@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags;
+package io.opentelemetry.dctx;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.StringUtils;
@@ -22,7 +22,7 @@ import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A validated tag value.
+ * A validated attribute value.
  *
  * <p>Validation ensures that the {@code String} has a maximum length of {@link #MAX_LENGTH} and
  * contains only printable ASCII characters.
@@ -31,18 +31,18 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class TagValue {
+public abstract class AttributeValue {
   /**
-   * The maximum length for a tag value. The value is {@value #MAX_LENGTH}.
+   * The maximum length for a attribute value. The value is {@value #MAX_LENGTH}.
    *
    * @since 0.1.0
    */
   public static final int MAX_LENGTH = 255;
 
-  TagValue() {}
+  AttributeValue() {}
 
   /**
-   * Constructs a {@code TagValue} from the given string. The string must meet the following
+   * Constructs an {@code AttributeValue} from the given string. The string must meet the following
    * requirements:
    *
    * <ol>
@@ -50,28 +50,28 @@ public abstract class TagValue {
    *   <li>It can only contain printable ASCII characters.
    * </ol>
    *
-   * @param value the tag value.
-   * @return a {@code TagValue} from the given string.
+   * @param value the attribute value.
+   * @return an {@code AttributeValue} from the given string.
    * @throws IllegalArgumentException if the {@code String} is not valid.
    * @since 0.1.0
    */
-  public static TagValue create(String value) {
-    Utils.checkArgument(isValid(value), "Invalid TagValue: %s", value);
-    return new AutoValue_TagValue(value);
+  public static AttributeValue create(String value) {
+    Utils.checkArgument(isValid(value), "Invalid AttributeValue: %s", value);
+    return new AutoValue_AttributeValue(value);
   }
 
   /**
-   * Returns the tag value as a {@code String}.
+   * Returns the attribute value as a {@code String}.
    *
-   * @return the tag value as a {@code String}.
+   * @return the attribute value as a {@code String}.
    * @since 0.1.0
    */
   public abstract String asString();
 
   /**
-   * Determines whether the given {@code String} is a valid tag value.
+   * Determines whether the given {@code String} is a valid attribute value.
    *
-   * @param value the tag value to be validated.
+   * @param value the attribute value to be validated.
    * @return whether the value is valid.
    */
   private static boolean isValid(String value) {

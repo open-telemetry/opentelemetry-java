@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.tags.unsafe;
+package io.opentelemetry.dctx.unsafe;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
-import io.opentelemetry.tags.TagMap;
+import io.opentelemetry.dctx.DistributedContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -28,38 +28,38 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class ContextUtilsTest {
   @Test
-  public void testGetCurrentTagMap_DefaultContext() {
-    TagMap tags = ContextUtils.getValue(Context.current());
-    assertThat(tags).isNotNull();
-    assertThat(tags.getIterator().hasNext()).isFalse();
+  public void testGetCurrentDistributedContex_DefaultContext() {
+    DistributedContext distContext = ContextUtils.getValue(Context.current());
+    assertThat(distContext).isNotNull();
+    assertThat(distContext.getIterator().hasNext()).isFalse();
   }
 
   @Test
-  public void testGetCurrentTagMap_DefaultContext_WithoutExplicitContext() {
-    TagMap tags = ContextUtils.getValue();
-    assertThat(tags).isNotNull();
-    assertThat(tags.getIterator().hasNext()).isFalse();
+  public void testGetCurrentDistributedContex_DefaultContext_WithoutExplicitContext() {
+    DistributedContext distContext = ContextUtils.getValue();
+    assertThat(distContext).isNotNull();
+    assertThat(distContext.getIterator().hasNext()).isFalse();
   }
 
   @Test
-  public void testGetCurrentTagMap_ContextSetToNull() {
+  public void testGetCurrentDistributedContex_ContextSetToNull() {
     Context orig = ContextUtils.withValue(null, Context.current()).attach();
     try {
-      TagMap tags = ContextUtils.getValue(Context.current());
-      assertThat(tags).isNotNull();
-      assertThat(tags.getIterator().hasNext()).isFalse();
+      DistributedContext distContext = ContextUtils.getValue(Context.current());
+      assertThat(distContext).isNotNull();
+      assertThat(distContext.getIterator().hasNext()).isFalse();
     } finally {
       Context.current().detach(orig);
     }
   }
 
   @Test
-  public void testGetCurrentTagMap_ContextSetToNull_WithoutExplicitContext() {
+  public void testGetCurrentDistributedContex_ContextSetToNull_WithoutExplicitContext() {
     Context orig = ContextUtils.withValue(null).attach();
     try {
-      TagMap tags = ContextUtils.getValue();
-      assertThat(tags).isNotNull();
-      assertThat(tags.getIterator().hasNext()).isFalse();
+      DistributedContext distContext = ContextUtils.getValue();
+      assertThat(distContext).isNotNull();
+      assertThat(distContext.getIterator().hasNext()).isFalse();
     } finally {
       Context.current().detach(orig);
     }
