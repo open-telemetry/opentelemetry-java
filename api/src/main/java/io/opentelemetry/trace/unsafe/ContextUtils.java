@@ -32,7 +32,7 @@ import io.opentelemetry.trace.Tracer;
  */
 public final class ContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
-      Context.keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.INSTANCE);
+      Context.<Span>keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.create());
 
   /**
    * Creates a new {@code Context} with the given value set.

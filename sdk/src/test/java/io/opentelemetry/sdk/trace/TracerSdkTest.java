@@ -44,7 +44,7 @@ public class TracerSdkTest {
 
   @Test
   public void defaultGetCurrentSpan() {
-    assertThat(tracer.getCurrentSpan()).isEqualTo(DefaultSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -54,7 +54,7 @@ public class TracerSdkTest {
 
   @Test
   public void getCurrentSpan() {
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     Context origContext = ContextUtils.withValue(span).attach();
     // Make sure context is detached even if test fails.
     try {
@@ -62,24 +62,24 @@ public class TracerSdkTest {
     } finally {
       Context.current().detach(origContext);
     }
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpan_NullSpan() {
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     try (Scope ws = tracer.withSpan(null)) {
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+      assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     }
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void getCurrentSpan_WithSpan() {
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     try (Scope ws = tracer.withSpan(span)) {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
     }
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.INSTANCE);
+    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 }

@@ -44,9 +44,9 @@ public class TraceContextFormat implements HttpTextFormat<SpanContext> {
   private static final int VERSION_SIZE = 2;
   private static final char TRACEPARENT_DELIMITER = '-';
   private static final int TRACEPARENT_DELIMITER_SIZE = 1;
-  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.SIZE;
-  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.SIZE;
-  private static final int TRACE_OPTION_HEX_SIZE = 2 * TraceOptions.SIZE;
+  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
+  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
+  private static final int TRACE_OPTION_HEX_SIZE = 2 * TraceOptions.getSize();
   private static final int TRACE_ID_OFFSET = VERSION_SIZE + TRACEPARENT_DELIMITER_SIZE;
   private static final int SPAN_ID_OFFSET =
       TRACE_ID_OFFSET + TRACE_ID_HEX_SIZE + TRACEPARENT_DELIMITER_SIZE;
