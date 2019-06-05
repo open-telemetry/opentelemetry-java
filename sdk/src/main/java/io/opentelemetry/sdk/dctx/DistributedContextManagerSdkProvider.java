@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.tags;
+package io.opentelemetry.sdk.dctx;
 
-import io.opentelemetry.tags.Tagger;
-import io.opentelemetry.tags.spi.TaggerProvider;
+import io.opentelemetry.dctx.DistributedContextManager;
+import io.opentelemetry.dctx.spi.DistributedContextManagerProvider;
 
 /**
- * {@code Tagger} provider implementation for {@link io.opentelemetry.tags.spi.TaggerProvider}.
+ * {@code DistributedContextManager} provider implementation for {@link
+ * io.opentelemetry.dctx.spi.DistributedContextManagerProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
  */
-public class TaggerSdkProvider implements TaggerProvider {
+public class DistributedContextManagerSdkProvider implements DistributedContextManagerProvider {
 
   @Override
-  public Tagger create() {
-    return new TaggerSdk();
+  public DistributedContextManager create() {
+    return new DistributedContextManagerSdk();
   }
 }

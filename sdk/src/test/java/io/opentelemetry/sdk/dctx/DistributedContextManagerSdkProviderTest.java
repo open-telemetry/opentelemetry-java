@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.tags;
+package io.opentelemetry.sdk.dctx;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -23,10 +23,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class TaggerSdkProviderTest {
+public class DistributedContextManagerSdkProviderTest {
 
   @Test
   public void testDefault() {
-    assertThat(new TaggerSdkProvider().create()).isInstanceOf(TaggerSdk.class);
+    assertThat(new DistributedContextManagerSdkProvider().create())
+        .isInstanceOf(DistributedContextManagerSdk.class);
   }
 }

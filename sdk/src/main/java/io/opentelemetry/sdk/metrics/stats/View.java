@@ -17,18 +17,18 @@
 package io.opentelemetry.sdk.metrics.stats;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.dctx.AttributeKey;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.Measure;
-import io.opentelemetry.tags.TagKey;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A View specifies an aggregation and a set of tag keys. The aggregation will be broken down by the
- * unique set of matching tag values for each measure.
+ * A View specifies an aggregation and a set of attribute keys. The aggregation will be broken down
+ * by the unique set of matching attribute values for each measure.
  *
  * @since 0.1.0
  */
@@ -73,15 +73,15 @@ public abstract class View {
   public abstract Aggregation getAggregation();
 
   /**
-   * Columns (a.k.a Tag Keys) to match with the associated {@link Measure}.
+   * Columns (a.k.a Attribute Keys) to match with the associated {@link Measure}.
    *
    * <p>{@link Measure} will be recorded in a "greedy" way. That is, every view aggregates every
    * measure. This is similar to doing a GROUPBY on view’s columns. Columns must be unique.
    *
-   * @return columns (a.k.a Tag Keys) to match with the associated {@link Measure}.
+   * @return columns (a.k.a Attribute Keys) to match with the associated {@link Measure}.
    * @since 0.1.0
    */
-  public abstract List<TagKey> getColumns();
+  public abstract List<AttributeKey> getColumns();
 
   /**
    * Constructs a new {@link View}.
@@ -90,8 +90,8 @@ public abstract class View {
    * @param description the description of view.
    * @param measure the {@link Measure} to be aggregated by this view.
    * @param aggregation the basic {@link Aggregation} that this view will support.
-   * @param columns the {@link TagKey}s that this view will aggregate on. Columns should not contain
-   *     duplicates.
+   * @param columns the {@link AttributeKey}s that this view will aggregate on. Columns should not
+   *     contain duplicates.
    * @return a new {@link View}.
    * @since 0.1.0
    */
@@ -100,7 +100,7 @@ public abstract class View {
       String description,
       Measure measure,
       Aggregation aggregation,
-      List<TagKey> columns) {
+      List<AttributeKey> columns) {
     Utils.checkArgument(new HashSet<>(columns).size() == columns.size(), "Columns have duplicate.");
     return new AutoValue_View(
         name, description, measure, aggregation, Collections.unmodifiableList(columns));

@@ -19,8 +19,8 @@ package io.opentelemetry.sdk;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.sdk.dctx.DistributedContextManagerSdk;
 import io.opentelemetry.sdk.metrics.MeterSdk;
-import io.opentelemetry.sdk.tags.TaggerSdk;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +32,8 @@ public class OpenTelemetryTest {
   @Test
   public void testDefault() {
     assertThat(OpenTelemetry.getTracer()).isInstanceOf(TracerSdk.class);
-    assertThat(OpenTelemetry.getTagger()).isInstanceOf(TaggerSdk.class);
+    assertThat(OpenTelemetry.getDistributedContextManager())
+        .isInstanceOf(DistributedContextManagerSdk.class);
     assertThat(OpenTelemetry.getMeter()).isInstanceOf(MeterSdk.class);
   }
 }

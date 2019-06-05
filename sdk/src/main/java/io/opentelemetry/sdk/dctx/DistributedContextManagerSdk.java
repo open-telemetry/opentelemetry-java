@@ -14,40 +14,42 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.tags;
+package io.opentelemetry.sdk.dctx;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.tags.TagMap;
-import io.opentelemetry.tags.Tagger;
-import io.opentelemetry.tags.unsafe.ContextUtils;
+import io.opentelemetry.dctx.DistributedContext;
+import io.opentelemetry.dctx.DistributedContextManager;
+import io.opentelemetry.dctx.unsafe.ContextUtils;
 
-/** {@link TaggerSdk} is SDK implementation of {@link Tagger}. */
-public class TaggerSdk implements Tagger {
+/**
+ * {@link DistributedContextManagerSdk} is SDK implementation of {@link DistributedContextManager}.
+ */
+public class DistributedContextManagerSdk implements DistributedContextManager {
 
   @Override
-  public TagMap getCurrentTagMap() {
+  public DistributedContext getCurrentContext() {
     return ContextUtils.getValue();
   }
 
   @Override
-  public TagMap.Builder tagMapBuilder() {
+  public DistributedContext.Builder contextBuilder() {
     return null;
   }
 
   @Override
-  public Scope withTagMap(TagMap tags) {
-    return ContextUtils.withTagMap(tags);
+  public Scope withContext(DistributedContext distContext) {
+    return ContextUtils.withDistributedContext(distContext);
   }
 
   @Override
-  public BinaryFormat<TagMap> getBinaryFormat() {
+  public BinaryFormat<DistributedContext> getBinaryFormat() {
     return null;
   }
 
   @Override
-  public HttpTextFormat<TagMap> getHttpTextFormat() {
+  public HttpTextFormat<DistributedContext> getHttpTextFormat() {
     return null;
   }
 }
