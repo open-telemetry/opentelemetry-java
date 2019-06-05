@@ -45,14 +45,14 @@ public class SimpleSampledSpansProcessorTest {
   @Mock private SpanExporter spanExporter;
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
-          TraceId.INVALID,
-          SpanId.INVALID,
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
           TraceOptions.builder().setIsSampled(true).build(),
           Tracestate.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
-          TraceId.INVALID,
-          SpanId.INVALID,
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
           TraceOptions.builder().build(),
           Tracestate.builder().build());
 

@@ -29,21 +29,31 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class TraceId implements Comparable<TraceId> {
   /**
-   * The size in bytes of the {@code TraceId}.
+   * Returns the size in bytes of the {@code TraceId}.
    *
+   * @return the size in bytes of the {@code TraceId}.
    * @since 0.1.0
    */
-  public static final int SIZE = 16;
+  public static int getSize() {
+    return SIZE;
+  }
+
+  private static final int SIZE = 16;
 
   private static final int BASE16_SIZE = 2 * BigendianEncoding.LONG_BASE16;
   private static final long INVALID_ID = 0;
 
   /**
-   * The invalid {@code TraceId}. All bytes are '\0'.
+   * Returns the invalid {@code TraceId}. All bytes are '\0'.
    *
+   * @return the invalid {@code TraceId}.
    * @since 0.1.0
    */
-  public static final TraceId INVALID = new TraceId(INVALID_ID, INVALID_ID);
+  public static TraceId getInvalid() {
+    return INVALID;
+  }
+
+  private static final TraceId INVALID = new TraceId(INVALID_ID, INVALID_ID);
 
   // The internal representation of the TraceId.
   private final long idHi;
@@ -63,7 +73,7 @@ public final class TraceId implements Comparable<TraceId> {
    *     begins.
    * @return a {@code TraceId} whose representation is copied from the buffer.
    * @throws NullPointerException if {@code src} is null.
-   * @throws IndexOutOfBoundsException if {@code srcOffset+TraceId.SIZE} is greater than {@code
+   * @throws IndexOutOfBoundsException if {@code srcOffset+TraceId.getSize()} is greater than {@code
    *     src.length}.
    * @since 0.1.0
    */
@@ -81,8 +91,8 @@ public final class TraceId implements Comparable<TraceId> {
    * @param dest the destination buffer.
    * @param destOffset the starting offset in the destination buffer.
    * @throws NullPointerException if {@code dest} is null.
-   * @throws IndexOutOfBoundsException if {@code destOffset+TraceId.SIZE} is greater than {@code
-   *     dest.length}.
+   * @throws IndexOutOfBoundsException if {@code destOffset+TraceId.getSize()} is greater than
+   *     {@code dest.length}.
    * @since 0.1.0
    */
   public void copyBytesTo(byte[] dest, int destOffset) {
@@ -115,7 +125,7 @@ public final class TraceId implements Comparable<TraceId> {
    *
    * @param dest the destination buffer.
    * @param destOffset the starting offset in the destination buffer.
-   * @throws IndexOutOfBoundsException if {@code destOffset + 2 * TraceId.SIZE} is greater than
+   * @throws IndexOutOfBoundsException if {@code destOffset + 2 * TraceId.getSize()} is greater than
    *     {@code dest.length}.
    * @since 0.1.0
    */

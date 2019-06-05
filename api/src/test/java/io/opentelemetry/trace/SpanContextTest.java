@@ -39,7 +39,7 @@ public class SpanContextTest {
       SpanContext.create(
           TraceId.fromBytes(firstTraceIdBytes, 0),
           SpanId.fromBytes(firstSpanIdBytes, 0),
-          TraceOptions.DEFAULT,
+          TraceOptions.getDefault(),
           firstTracestate);
   private static final SpanContext second =
       SpanContext.create(
@@ -50,27 +50,27 @@ public class SpanContextTest {
 
   @Test
   public void invalidSpanContext() {
-    assertThat(SpanContext.BLANK.getTraceId()).isEqualTo(TraceId.INVALID);
-    assertThat(SpanContext.BLANK.getSpanId()).isEqualTo(SpanId.INVALID);
-    assertThat(SpanContext.BLANK.getTraceOptions()).isEqualTo(TraceOptions.DEFAULT);
+    assertThat(SpanContext.getBlank().getTraceId()).isEqualTo(TraceId.getInvalid());
+    assertThat(SpanContext.getBlank().getSpanId()).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanContext.getBlank().getTraceOptions()).isEqualTo(TraceOptions.getDefault());
   }
 
   @Test
   public void isValid() {
-    assertThat(SpanContext.BLANK.isValid()).isFalse();
+    assertThat(SpanContext.getBlank().isValid()).isFalse();
     assertThat(
             SpanContext.create(
                     TraceId.fromBytes(firstTraceIdBytes, 0),
-                    SpanId.INVALID,
-                    TraceOptions.DEFAULT,
+                    SpanId.getInvalid(),
+                    TraceOptions.getDefault(),
                     emptyTracestate)
                 .isValid())
         .isFalse();
     assertThat(
             SpanContext.create(
-                    TraceId.INVALID,
+                    TraceId.getInvalid(),
                     SpanId.fromBytes(firstSpanIdBytes, 0),
-                    TraceOptions.DEFAULT,
+                    TraceOptions.getDefault(),
                     emptyTracestate)
                 .isValid())
         .isFalse();
@@ -92,7 +92,7 @@ public class SpanContextTest {
 
   @Test
   public void getTraceOptions() {
-    assertThat(first.getTraceOptions()).isEqualTo(TraceOptions.DEFAULT);
+    assertThat(first.getTraceOptions()).isEqualTo(TraceOptions.getDefault());
     assertThat(second.getTraceOptions())
         .isEqualTo(TraceOptions.builder().setIsSampled(true).build());
   }
@@ -111,7 +111,7 @@ public class SpanContextTest {
         SpanContext.create(
             TraceId.fromBytes(firstTraceIdBytes, 0),
             SpanId.fromBytes(firstSpanIdBytes, 0),
-            TraceOptions.DEFAULT,
+            TraceOptions.getDefault(),
             emptyTracestate),
         SpanContext.create(
             TraceId.fromBytes(firstTraceIdBytes, 0),
@@ -132,7 +132,7 @@ public class SpanContextTest {
   public void spanContext_ToString() {
     assertThat(first.toString()).contains(TraceId.fromBytes(firstTraceIdBytes, 0).toString());
     assertThat(first.toString()).contains(SpanId.fromBytes(firstSpanIdBytes, 0).toString());
-    assertThat(first.toString()).contains(TraceOptions.DEFAULT.toString());
+    assertThat(first.toString()).contains(TraceOptions.getDefault().toString());
     assertThat(second.toString()).contains(TraceId.fromBytes(secondTraceIdBytes, 0).toString());
     assertThat(second.toString()).contains(SpanId.fromBytes(secondSpanIdBytes, 0).toString());
     assertThat(second.toString())

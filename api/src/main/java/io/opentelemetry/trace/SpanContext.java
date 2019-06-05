@@ -36,12 +36,21 @@ public final class SpanContext {
   private final Tracestate tracestate;
 
   /**
-   * A blank {@code SpanContext} that can be used for no-op operations.
+   * Returns the blank {@code SpanContext} that can be used for no-op operations.
    *
+   * @return the blank {@code SpanContext}.
    * @since 0.1.0
    */
-  static final SpanContext BLANK =
-      new SpanContext(TraceId.INVALID, SpanId.INVALID, TraceOptions.DEFAULT, Tracestate.DEFAULT);
+  public static SpanContext getBlank() {
+    return BLANK;
+  }
+
+  private static final SpanContext BLANK =
+      new SpanContext(
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
+          TraceOptions.getDefault(),
+          Tracestate.getDefault());
 
   /**
    * Creates a new {@code SpanContext} with the given identifiers and options.

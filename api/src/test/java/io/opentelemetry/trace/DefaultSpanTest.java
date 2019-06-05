@@ -29,9 +29,9 @@ public class DefaultSpanTest {
   @Test
   public void hasInvalidContextAndDefaultSpanOptions() {
     SpanContext context = DefaultSpan.create().getContext();
-    assertThat(context.getTraceId()).isEqualTo(TraceId.INVALID);
-    assertThat(context.getTraceOptions()).isEqualTo(TraceOptions.DEFAULT);
-    assertThat(context.getTracestate()).isEqualTo(Tracestate.DEFAULT);
+    assertThat(context.getTraceId()).isEqualTo(TraceId.getInvalid());
+    assertThat(context.getTraceOptions()).isEqualTo(TraceOptions.getDefault());
+    assertThat(context.getTracestate()).isEqualTo(Tracestate.getDefault());
   }
 
   @Test
@@ -54,7 +54,7 @@ public class DefaultSpanTest {
         Collections.singletonMap(
             "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
     span.addEvent(SpanData.Event.create("event"));
-    span.addLink(Link.create(SpanContext.BLANK));
+    span.addLink(Link.create(SpanContext.getBlank()));
     span.setStatus(Status.OK);
     span.end();
   }

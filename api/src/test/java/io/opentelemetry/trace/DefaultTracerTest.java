@@ -37,8 +37,8 @@ public class DefaultTracerTest {
       SpanContext.create(
           TraceId.fromBytes(firstBytes, 0),
           SpanId.fromBytes(firstBytes, 8),
-          TraceOptions.DEFAULT,
-          Tracestate.builder().build());
+          TraceOptions.getDefault(),
+          Tracestate.getDefault());
 
   @Test
   public void defaultGetCurrentSpan() {

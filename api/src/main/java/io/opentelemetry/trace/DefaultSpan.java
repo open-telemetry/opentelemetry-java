@@ -45,10 +45,10 @@ public final class DefaultSpan implements Span {
   public static DefaultSpan create() {
     return new DefaultSpan(
         SpanContext.create(
-            TraceId.INVALID,
+            TraceId.getInvalid(),
             SpanId.generateRandomId(random),
-            TraceOptions.DEFAULT,
-            Tracestate.DEFAULT));
+            TraceOptions.getDefault(),
+            Tracestate.getDefault()));
   }
 
   private final SpanContext spanContext;

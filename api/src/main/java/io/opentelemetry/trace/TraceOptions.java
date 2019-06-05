@@ -36,20 +36,30 @@ public final class TraceOptions {
   private static final byte IS_SAMPLED = 0x1;
 
   /**
-   * The size in bytes of the {@code TraceOptions}.
+   * Returns the size in bytes of the {@code TraceOptions}.
    *
+   * @return the size in bytes of the {@code TraceOptions}.
    * @since 0.1.0
    */
-  public static final int SIZE = 1;
+  public static int getSize() {
+    return SIZE;
+  }
+
+  private static final int SIZE = 1;
 
   private static final int BASE16_SIZE = 2 * SIZE;
 
   /**
-   * The default {@code TraceOptions}.
+   * Returns the default {@code TraceOptions}.
    *
+   * @return the default {@code TraceOptions}.
    * @since 0.1.0
    */
-  public static final TraceOptions DEFAULT = fromByte(DEFAULT_OPTIONS);
+  public static TraceOptions getDefault() {
+    return DEFAULT;
+  }
+
+  private static final TraceOptions DEFAULT = fromByte(DEFAULT_OPTIONS);
 
   // The set of enabled features is determined by all the enabled bits.
   private final byte options;
@@ -103,13 +113,13 @@ public final class TraceOptions {
    * <p>Equivalent with (but faster because it avoids any new allocations):
    *
    * <pre>{@code
-   * System.arraycopy(getBytes(), 0, dest, destOffset, TraceOptions.SIZE);
+   * System.arraycopy(getBytes(), 0, dest, destOffset, TraceOptions.getSize());
    * }</pre>
    *
    * @param dest the destination buffer.
    * @param destOffset the starting offset in the destination buffer.
    * @throws NullPointerException if {@code dest} is null.
-   * @throws IndexOutOfBoundsException if {@code destOffset+TraceOptions.SIZE} is greater than
+   * @throws IndexOutOfBoundsException if {@code destOffset+TraceOptions.getSize()} is greater than
    *     {@code dest.length}.
    * @since 0.1.0
    */
