@@ -29,6 +29,19 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class SpanId implements Comparable<SpanId> {
+
+  private static final int SIZE = 8;
+  private static final int BASE16_SIZE = 2 * SIZE;
+  private static final long INVALID_ID = 0;
+  private static final SpanId INVALID = new SpanId(INVALID_ID);
+
+  // The internal representation of the SpanId.
+  private final long id;
+
+  private SpanId(long id) {
+    this.id = id;
+  }
+
   /**
    * Returns the size in bytes of the {@code SpanId}.
    *
@@ -39,8 +52,6 @@ public final class SpanId implements Comparable<SpanId> {
     return SIZE;
   }
 
-  private static final int SIZE = 8;
-
   /**
    * Returns the invalid {@code SpanId}. All bytes are 0.
    *
@@ -49,18 +60,6 @@ public final class SpanId implements Comparable<SpanId> {
    */
   public static SpanId getInvalid() {
     return INVALID;
-  }
-
-  private static final SpanId INVALID = new SpanId(0);
-
-  private static final int BASE16_SIZE = 2 * SIZE;
-  private static final long INVALID_ID = 0;
-
-  // The internal representation of the SpanId.
-  private final long id;
-
-  private SpanId(long id) {
-    this.id = id;
   }
 
   /**

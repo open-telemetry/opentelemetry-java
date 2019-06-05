@@ -28,6 +28,21 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class TraceId implements Comparable<TraceId> {
+
+  private static final int SIZE = 16;
+  private static final int BASE16_SIZE = 2 * BigendianEncoding.LONG_BASE16;
+  private static final long INVALID_ID = 0;
+  private static final TraceId INVALID = new TraceId(INVALID_ID, INVALID_ID);
+
+  // The internal representation of the TraceId.
+  private final long idHi;
+  private final long idLo;
+
+  private TraceId(long idHi, long idLo) {
+    this.idHi = idHi;
+    this.idLo = idLo;
+  }
+
   /**
    * Returns the size in bytes of the {@code TraceId}.
    *
@@ -38,11 +53,6 @@ public final class TraceId implements Comparable<TraceId> {
     return SIZE;
   }
 
-  private static final int SIZE = 16;
-
-  private static final int BASE16_SIZE = 2 * BigendianEncoding.LONG_BASE16;
-  private static final long INVALID_ID = 0;
-
   /**
    * Returns the invalid {@code TraceId}. All bytes are '\0'.
    *
@@ -51,17 +61,6 @@ public final class TraceId implements Comparable<TraceId> {
    */
   public static TraceId getInvalid() {
     return INVALID;
-  }
-
-  private static final TraceId INVALID = new TraceId(INVALID_ID, INVALID_ID);
-
-  // The internal representation of the TraceId.
-  private final long idHi;
-  private final long idLo;
-
-  private TraceId(long idHi, long idLo) {
-    this.idHi = idHi;
-    this.idLo = idLo;
   }
 
   /**

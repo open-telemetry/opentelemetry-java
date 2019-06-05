@@ -30,6 +30,14 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class SpanContext {
+
+  private static final SpanContext BLANK =
+      new SpanContext(
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
+          TraceOptions.getDefault(),
+          Tracestate.getDefault());
+
   private final TraceId traceId;
   private final SpanId spanId;
   private final TraceOptions traceOptions;
@@ -44,13 +52,6 @@ public final class SpanContext {
   public static SpanContext getBlank() {
     return BLANK;
   }
-
-  private static final SpanContext BLANK =
-      new SpanContext(
-          TraceId.getInvalid(),
-          SpanId.getInvalid(),
-          TraceOptions.getDefault(),
-          Tracestate.getDefault());
 
   /**
    * Creates a new {@code SpanContext} with the given identifiers and options.

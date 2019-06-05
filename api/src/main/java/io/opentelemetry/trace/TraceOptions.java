@@ -35,6 +35,18 @@ public final class TraceOptions {
   // Bit to represent whether trace is sampled or not.
   private static final byte IS_SAMPLED = 0x1;
 
+  private static final int SIZE = 1;
+  private static final int BASE16_SIZE = 2 * SIZE;
+  private static final TraceOptions DEFAULT = fromByte(DEFAULT_OPTIONS);
+
+  // The set of enabled features is determined by all the enabled bits.
+  private final byte options;
+
+  // Creates a new {@code TraceOptions} with the given options.
+  private TraceOptions(byte options) {
+    this.options = options;
+  }
+
   /**
    * Returns the size in bytes of the {@code TraceOptions}.
    *
@@ -45,10 +57,6 @@ public final class TraceOptions {
     return SIZE;
   }
 
-  private static final int SIZE = 1;
-
-  private static final int BASE16_SIZE = 2 * SIZE;
-
   /**
    * Returns the default {@code TraceOptions}.
    *
@@ -57,16 +65,6 @@ public final class TraceOptions {
    */
   public static TraceOptions getDefault() {
     return DEFAULT;
-  }
-
-  private static final TraceOptions DEFAULT = fromByte(DEFAULT_OPTIONS);
-
-  // The set of enabled features is determined by all the enabled bits.
-  private final byte options;
-
-  // Creates a new {@code TraceOptions} with the given options.
-  private TraceOptions(byte options) {
-    this.options = options;
   }
 
   /**
