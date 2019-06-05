@@ -30,9 +30,7 @@ public final class TestUtils {
    * @return a {@link TraceId}.
    */
   public static TraceId generateRandomTraceId(Random random) {
-    byte[] bytes = new byte[16];
-    random.nextBytes(bytes);
-    return TraceId.fromBytes(bytes, 0);
+    return TraceId.generateRandomId(random);
   }
 
   /**
@@ -42,8 +40,6 @@ public final class TestUtils {
    * @return a {@link SpanId}.
    */
   public static SpanId generateRandomSpanId(Random random) {
-    byte[] bytes = new byte[8];
-    random.nextBytes(bytes);
-    return SpanId.fromBytes(bytes, 0);
+    return SpanId.generateRandomId(random);
   }
 }

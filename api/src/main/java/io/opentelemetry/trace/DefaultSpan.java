@@ -18,6 +18,7 @@ package io.opentelemetry.trace;
 
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
+import java.util.Random;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -31,10 +32,12 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class DefaultSpan implements Span {
 
+  private static final Random random = new Random();
+
   /**
    * Creates an instance of this class.
    *
-   * <p>Each instance will have a unique and valid {@link SpanId}.
+   * <p>Each instance will have unique and valid {@link TraceId} and {@link SpanId}.
    *
    * @return a {@link DefaultSpan}.
    * @since 0.1.0
@@ -42,8 +45,8 @@ public final class DefaultSpan implements Span {
   public static DefaultSpan create() {
     return new DefaultSpan(
         SpanContext.create(
-            TraceId.getInvalid(),
-            SpanId.getInvalid(),
+            TraceId.generateRandomId(random),
+            SpanId.generateRandomId(random),
             TraceOptions.getDefault(),
             Tracestate.getDefault()));
   }
