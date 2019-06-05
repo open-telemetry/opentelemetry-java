@@ -51,6 +51,10 @@ public final class SpanId implements Comparable<SpanId> {
   /**
    * Constructs a {@code SpanId} whose representation is specified by a long value.
    *
+   * <p>There is no restriction on the specified value, other than the already established validity
+   * rules applying to {@code SpanId}. Specifying 0 for this value will effectively make the new
+   * {@code SpanId} invalid.
+   *
    * @param id the long represenation of the {@code TraceId}.
    * @since 0.1.0
    */
