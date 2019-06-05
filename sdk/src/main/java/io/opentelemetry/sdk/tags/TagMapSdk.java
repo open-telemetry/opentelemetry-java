@@ -33,6 +33,8 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
+// TODO: Migrate to AutoValue
+// @AutoValue
 class TagMapSdk implements TagMap {
 
   // The types of the TagKey and Tag must match for each entry.
@@ -106,6 +108,8 @@ class TagMapSdk implements TagMap {
     return result;
   }
 
+  // TODO: Migrate to AutoValue.Builder
+  // @AutoValue.Builder
   static class Builder implements TagMap.Builder {
     @Nullable private TagMap parent;
     private final Map<TagKey, Tag> tags;

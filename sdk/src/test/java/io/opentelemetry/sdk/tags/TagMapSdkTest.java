@@ -126,6 +126,13 @@ public class TagMapSdkTest {
   }
 
   @Test
+  public void setParent_setNoParent() {
+    TagMapSdk parent = listToTagMap(T1);
+    TagMap tags = tagger.tagMapBuilder().setParent(parent).setNoParent().build();
+    assertThat(tagMapToList(tags)).isEmpty();
+  }
+
+  @Test
   public void remove_existingKey() {
     TagMapSdk.Builder builder = new TagMapSdk.Builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getTagMetadata());
