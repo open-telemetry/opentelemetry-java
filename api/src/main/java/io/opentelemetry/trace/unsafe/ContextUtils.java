@@ -26,7 +26,7 @@ import io.opentelemetry.trace.Tracer;
  * Util methods/functionality to interact with the {@link io.grpc.Context}.
  *
  * <p>Users must interact with the current Context via the public APIs in {@link Tracer} and avoid
- * usages of the {@link #CONTEXT_SPAN_KEY} directly.
+ * accessing this class directly.
  *
  * @since 0.1.0
  */
