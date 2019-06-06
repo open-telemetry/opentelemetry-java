@@ -29,8 +29,8 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
  *
  * <p>Implementations may have different constraints and are free to convert attribute contexts to
  * their own subtypes. This means callers cannot assume the {@link #getCurrentContext() current
- * context} is the same instance as the one {@link #withDistributedContext(DistributedContext)
- * placed into scope}.
+ * context} is the same instance as the one {@link #withContext(DistributedContext) placed into
+ * scope}.
  *
  * @since 0.1.0
  */
