@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +33,9 @@ public class TraceIdTest {
   private static final byte[] secondBytes =
       new byte[] {(byte) 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A'};
   private static final TraceId first = TraceId.fromBytes(firstBytes, 0);
-  private static final TraceId second = TraceId.fromBytes(secondBytes, 0);
+  private static final TraceId second =
+      new TraceId(
+          ByteBuffer.wrap(secondBytes).getLong(), ByteBuffer.wrap(secondBytes, 8, 8).getLong());
 
   @Test
   public void invalidTraceId() {

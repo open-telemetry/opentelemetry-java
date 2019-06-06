@@ -38,7 +38,22 @@ public final class TraceId implements Comparable<TraceId> {
   private final long idHi;
   private final long idLo;
 
-  private TraceId(long idHi, long idLo) {
+  /**
+   * Constructs a {@code TraceId} whose representation is specified by two long values representing
+   * the lower and higher parts.
+   *
+   * <p>There is no restriction on the specified values, other than the already established validity
+   * rules applying to {@code TraceId}. Specifying 0 for both values will effectively make the new
+   * {@code TraceId} invalid.
+   *
+   * <p>This is equivalent to calling {@link #fromBytes(byte[], int)} with the specified values
+   * stored as big-endian.
+   *
+   * @param idHi the higher part of the {@code TraceId}.
+   * @param idLo the lower part of the {@code TraceId}.
+   * @since 0.1.0
+   */
+  public TraceId(long idHi, long idLo) {
     this.idHi = idHi;
     this.idLo = idLo;
   }
