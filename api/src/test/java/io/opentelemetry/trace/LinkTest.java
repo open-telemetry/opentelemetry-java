@@ -59,7 +59,7 @@ public class LinkTest {
     EqualsTester tester = new EqualsTester();
     tester
         .addEqualityGroup(Link.create(spanContext), Link.create(spanContext))
-        .addEqualityGroup(Link.create(SpanContext.getBlank()))
+        .addEqualityGroup(Link.create(SpanContext.getInvalid()))
         .addEqualityGroup(
             Link.create(spanContext, attributesMap), Link.create(spanContext, attributesMap));
     tester.testEquals();

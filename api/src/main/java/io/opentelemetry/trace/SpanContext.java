@@ -31,7 +31,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class SpanContext {
 
-  private static final SpanContext BLANK =
+  private static final SpanContext INVALID =
       new SpanContext(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
@@ -44,13 +44,13 @@ public final class SpanContext {
   private final Tracestate tracestate;
 
   /**
-   * Returns the blank {@code SpanContext} that can be used for no-op operations.
+   * Returns the invalid {@code SpanContext} that can be used for no-op operations.
    *
-   * @return the blank {@code SpanContext}.
+   * @return the invalid {@code SpanContext}.
    * @since 0.1.0
    */
-  public static SpanContext getBlank() {
-    return BLANK;
+  public static SpanContext getInvalid() {
+    return INVALID;
   }
 
   /**

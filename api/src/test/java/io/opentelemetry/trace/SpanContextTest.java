@@ -50,14 +50,14 @@ public class SpanContextTest {
 
   @Test
   public void invalidSpanContext() {
-    assertThat(SpanContext.getBlank().getTraceId()).isEqualTo(TraceId.getInvalid());
-    assertThat(SpanContext.getBlank().getSpanId()).isEqualTo(SpanId.getInvalid());
-    assertThat(SpanContext.getBlank().getTraceOptions()).isEqualTo(TraceOptions.getDefault());
+    assertThat(SpanContext.getInvalid().getTraceId()).isEqualTo(TraceId.getInvalid());
+    assertThat(SpanContext.getInvalid().getSpanId()).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanContext.getInvalid().getTraceOptions()).isEqualTo(TraceOptions.getDefault());
   }
 
   @Test
   public void isValid() {
-    assertThat(SpanContext.getBlank().isValid()).isFalse();
+    assertThat(SpanContext.getInvalid().isValid()).isFalse();
     assertThat(
             SpanContext.create(
                     TraceId.fromBytes(firstTraceIdBytes, 0),

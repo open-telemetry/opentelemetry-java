@@ -93,7 +93,7 @@ public final class DefaultTracer implements Tracer {
         spanContext = tracer.getCurrentSpan().getContext();
       }
 
-      return spanContext != null && !SpanContext.getBlank().equals(spanContext)
+      return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
           ? new DefaultSpan(spanContext)
           : DefaultSpan.create();
     }
@@ -167,7 +167,7 @@ public final class DefaultTracer implements Tracer {
     @Override
     public SpanContext fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return SpanContext.getBlank();
+      return SpanContext.getInvalid();
     }
 
     private NoopBinaryFormat() {}
