@@ -96,6 +96,17 @@ public final class DefaultSpan implements Span {
   }
 
   @Override
+  public void addLink(SpanContext spanContext) {
+    Utils.checkNotNull(spanContext, "spanContext");
+  }
+
+  @Override
+  public void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
+    Utils.checkNotNull(spanContext, "spanContext");
+    Utils.checkNotNull(attributes, "attributes");
+  }
+
+  @Override
   public void addLink(Link link) {
     Utils.checkNotNull(link, "link");
   }

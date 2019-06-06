@@ -56,6 +56,8 @@ public class DefaultSpanTest {
         Collections.singletonMap(
             "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
     span.addEvent(SpanData.Event.create("event"));
+    span.addLink(SpanContext.getBlank());
+    span.addLink(SpanContext.getBlank(), Collections.<String, AttributeValue>emptyMap());
     span.addLink(Link.create(SpanContext.getBlank()));
     span.setStatus(Status.OK);
     span.end();
