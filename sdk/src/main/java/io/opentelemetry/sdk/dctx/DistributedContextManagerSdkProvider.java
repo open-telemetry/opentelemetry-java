@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.dctx;
+package io.opentelemetry.sdk.distributedcontext;
 
-import io.opentelemetry.dctx.DistributedContextManager;
-import io.opentelemetry.dctx.spi.DistributedContextManagerProvider;
+import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
 
 /**
  * {@code DistributedContextManager} provider implementation for {@link
- * io.opentelemetry.dctx.spi.DistributedContextManagerProvider}.
+ * io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.

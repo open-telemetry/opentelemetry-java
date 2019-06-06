@@ -16,10 +16,10 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.dctx.Attribute;
-import io.opentelemetry.dctx.AttributeKey;
-import io.opentelemetry.dctx.AttributeValue;
-import io.opentelemetry.dctx.DistributedContext;
+import io.opentelemetry.distributedcontext.Attribute;
+import io.opentelemetry.distributedcontext.AttributeKey;
+import io.opentelemetry.distributedcontext.AttributeValue;
+import io.opentelemetry.distributedcontext.DistributedContext;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;

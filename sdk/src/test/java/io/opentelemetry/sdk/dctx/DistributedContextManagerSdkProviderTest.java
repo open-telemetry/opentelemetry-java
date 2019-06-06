@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.dctx;
+package io.opentelemetry.sdk.distributedcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 

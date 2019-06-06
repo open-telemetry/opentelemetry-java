@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.dctx;
+package io.opentelemetry.distributedcontext;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;

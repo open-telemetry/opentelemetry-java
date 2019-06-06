@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.dctx.unsafe;
+package io.opentelemetry.distributedcontext.unsafe;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
-import io.opentelemetry.dctx.DistributedContext;
+import io.opentelemetry.distributedcontext.DistributedContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

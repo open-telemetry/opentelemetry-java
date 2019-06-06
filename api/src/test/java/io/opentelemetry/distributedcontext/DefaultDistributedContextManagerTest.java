@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.dctx;
+package io.opentelemetry.distributedcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.Lists;
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.dctx.unsafe.ContextUtils;
+import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;

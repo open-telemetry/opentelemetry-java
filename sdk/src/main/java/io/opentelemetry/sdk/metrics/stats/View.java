@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.metrics.stats;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.dctx.AttributeKey;
+import io.opentelemetry.distributedcontext.AttributeKey;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.Measure;

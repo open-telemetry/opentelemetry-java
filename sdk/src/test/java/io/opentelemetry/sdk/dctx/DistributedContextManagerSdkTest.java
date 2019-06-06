@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.dctx;
+package io.opentelemetry.sdk.distributedcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.dctx.DistributedContext;
-import io.opentelemetry.dctx.EmptyDistributedContext;
-import io.opentelemetry.dctx.unsafe.ContextUtils;
+import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.distributedcontext.EmptyDistributedContext;
+import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

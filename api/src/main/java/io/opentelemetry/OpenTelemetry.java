@@ -16,9 +16,9 @@
 
 package io.opentelemetry;
 
-import io.opentelemetry.dctx.DefaultDistributedContextManager;
-import io.opentelemetry.dctx.DistributedContextManager;
-import io.opentelemetry.dctx.spi.DistributedContextManagerProvider;
+import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
+import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
 import io.opentelemetry.metrics.DefaultMeter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.spi.MeterProvider;

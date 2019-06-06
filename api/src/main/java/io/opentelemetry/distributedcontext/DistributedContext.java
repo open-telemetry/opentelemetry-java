@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.dctx;
+package io.opentelemetry.distributedcontext;
 
 import io.opentelemetry.context.Scope;
 import java.util.Iterator;

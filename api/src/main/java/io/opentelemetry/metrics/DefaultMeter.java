@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.dctx.DistributedContext;
+import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.resources.Resource;

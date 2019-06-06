@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.dctx.DistributedContext;
+import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 
@@ -160,7 +160,7 @@ public interface Meter {
 
   /**
    * Records all given measurements, with the current {@link
-   * io.opentelemetry.dctx.DistributedContextManager#getCurrentContext}.
+   * io.opentelemetry.distributedcontext.DistributedContextManager#getCurrentContext}.
    *
    * @param measurements the list of {@code io.opentelemetry.metrics.Measurement}s to record.
    * @since 0.1.0

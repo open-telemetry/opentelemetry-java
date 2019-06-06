@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.dctx.unsafe;
+package io.opentelemetry.distributedcontext.unsafe;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.dctx.DistributedContext;
+import io.opentelemetry.distributedcontext.DistributedContext;
 
 /**
  * A scope that manages the {@link Context} for a {@link DistributedContext}.

@@ -21,13 +21,13 @@
  * used to label anything that is associated with a specific operation. For example, the {@code
  * opentelemetry.stats} package labels all stats with the current attributes.
  *
- * <p>{@link io.opentelemetry.dctx.Attribute Attributes} are key-value pairs. The {@link
- * io.opentelemetry.dctx.AttributeKey keys} and {@link io.opentelemetry.dctx.AttributeValue values}
- * are wrapped {@code String}s. They are stored as a map in a {@link
- * io.opentelemetry.dctx.DistributedContext}.
+ * <p>{@link io.opentelemetry.distributedcontext.Attribute Attributes} are key-value pairs. The
+ * {@link io.opentelemetry.distributedcontext.AttributeKey keys} and {@link
+ * io.opentelemetry.distributedcontext.AttributeValue values} are wrapped {@code String}s. They are
+ * stored as a map in a {@link io.opentelemetry.distributedcontext.DistributedContext}.
  *
  * <p>Note that attributes are independent of the tracing data that is propagated in the {@code
  * io.grpc.Context}, such as trace ID.
  */
 // TODO: Add code examples.
-package io.opentelemetry.dctx;
+package io.opentelemetry.distributedcontext;

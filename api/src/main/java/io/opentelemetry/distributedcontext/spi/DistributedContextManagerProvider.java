@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.dctx.spi;
+package io.opentelemetry.distributedcontext.spi;
 
-import io.opentelemetry.dctx.DistributedContextManager;
+import io.opentelemetry.distributedcontext.DistributedContextManager;
 
 /**
  * DistributedContextManagerProvider is a service provider for {@link DistributedContextManager}.
  * Fully qualified class name of the implementation should be registered in {@code
- * META-INF/services/io.opentelemetry.dctx.spi.DistributedContextManagerProvider}. <br>
+ * META-INF/services/io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider}.
+ * <br>
  * <br>
  * A specific implementation can be selected by a system property {@code
- * io.opentelemetry.dctx.spi.DistributedContextManagerProvider} with value of fully qualified class
- * name.
+ * io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider} with value of fully
+ * qualified class name.
  *
  * @see io.opentelemetry.OpenTelemetry
  */

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.dctx.DistributedContext;
+import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.metrics.CounterDouble;
 import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.GaugeDouble;

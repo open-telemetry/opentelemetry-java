@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.dctx;
+package io.opentelemetry.sdk.distributedcontext;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.dctx.DistributedContext;
-import io.opentelemetry.dctx.DistributedContextManager;
-import io.opentelemetry.dctx.unsafe.ContextUtils;
+import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
 
 /**
  * {@link DistributedContextManagerSdk} is SDK implementation of {@link DistributedContextManager}.

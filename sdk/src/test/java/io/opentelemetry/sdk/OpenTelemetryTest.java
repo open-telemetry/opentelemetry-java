@@ -19,7 +19,7 @@ package io.opentelemetry.sdk;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.dctx.DistributedContextManagerSdk;
+import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
 import io.opentelemetry.sdk.metrics.MeterSdk;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import org.junit.Test;

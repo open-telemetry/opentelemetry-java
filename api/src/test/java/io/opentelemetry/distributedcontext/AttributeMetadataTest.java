@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.dctx;
+package io.opentelemetry.distributedcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.dctx.AttributeMetadata.AttributeTtl;
+import io.opentelemetry.distributedcontext.AttributeMetadata.AttributeTtl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

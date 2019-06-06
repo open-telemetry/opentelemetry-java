@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.dctx;
+package io.opentelemetry.distributedcontext;
 
 import io.opentelemetry.context.NoopScope;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.dctx.unsafe.ContextUtils;
+import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Collections;
 import java.util.List;

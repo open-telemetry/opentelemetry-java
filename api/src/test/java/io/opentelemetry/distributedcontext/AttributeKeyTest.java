@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.dctx;
+package io.opentelemetry.distributedcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -26,50 +26,55 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link AttributeValue}. */
+/** Tests for {@link AttributeKey}. */
 @RunWith(JUnit4.class)
-public final class AttributeValueTest {
+public final class AttributeKeyTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testMaxLength() {
-    assertThat(AttributeValue.MAX_LENGTH).isEqualTo(255);
+    assertThat(AttributeKey.MAX_LENGTH).isEqualTo(255);
   }
 
   @Test
-  public void testAsString() {
-    assertThat(AttributeValue.create("foo").asString()).isEqualTo("foo");
+  public void testGetName() {
+    assertThat(AttributeKey.create("foo").getName()).isEqualTo("foo");
   }
 
   @Test
-  public void create_AllowAttributeValueWithMaxLength() {
-    char[] chars = new char[AttributeValue.MAX_LENGTH];
-    Arrays.fill(chars, 'v');
-    String value = new String(chars);
-    assertThat(AttributeValue.create(value).asString()).isEqualTo(value);
+  public void create_AllowAttributeKeyNameWithMaxLength() {
+    char[] chars = new char[AttributeKey.MAX_LENGTH];
+    Arrays.fill(chars, 'k');
+    String key = new String(chars);
+    assertThat(AttributeKey.create(key).getName()).isEqualTo(key);
   }
 
   @Test
-  public void create_DisallowAttributeValueOverMaxLength() {
-    char[] chars = new char[AttributeValue.MAX_LENGTH + 1];
-    Arrays.fill(chars, 'v');
-    String value = new String(chars);
+  public void create_DisallowAttributeKeyNameOverMaxLength() {
+    char[] chars = new char[AttributeKey.MAX_LENGTH + 1];
+    Arrays.fill(chars, 'k');
+    String key = new String(chars);
     thrown.expect(IllegalArgumentException.class);
-    AttributeValue.create(value);
+    AttributeKey.create(key);
   }
 
   @Test
-  public void disallowAttributeValueWithUnprintableChars() {
-    String value = "\2ab\3cd";
+  public void create_DisallowUnprintableChars() {
     thrown.expect(IllegalArgumentException.class);
-    AttributeValue.create(value);
+    AttributeKey.create("\2ab\3cd");
   }
 
   @Test
-  public void testAttributeValueEquals() {
+  public void createString_DisallowEmpty() {
+    thrown.expect(IllegalArgumentException.class);
+    AttributeKey.create("");
+  }
+
+  @Test
+  public void testAttributeKeyEquals() {
     new EqualsTester()
-        .addEqualityGroup(AttributeValue.create("foo"), AttributeValue.create("foo"))
-        .addEqualityGroup(AttributeValue.create("bar"))
+        .addEqualityGroup(AttributeKey.create("foo"), AttributeKey.create("foo"))
+        .addEqualityGroup(AttributeKey.create("bar"))
         .testEquals();
   }
 }
