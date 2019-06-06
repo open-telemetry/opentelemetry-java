@@ -19,28 +19,28 @@ package io.opentelemetry.distributedcontext;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.distributedcontext.AttributeMetadata.AttributeTtl;
+import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link AttributeMetadata}. */
+/** Tests for {@link EntryMetadata}. */
 @RunWith(JUnit4.class)
-public class AttributeMetadataTest {
+public class EntryMetadataTest {
 
   @Test
-  public void testGetAttributeTtl() {
-    AttributeMetadata attrMetadata = AttributeMetadata.create(AttributeTtl.NO_PROPAGATION);
-    assertThat(attrMetadata.getAttributeTtl()).isEqualTo(AttributeTtl.NO_PROPAGATION);
+  public void testGetEntryTtl() {
+    EntryMetadata entryMetadata = EntryMetadata.create(EntryTtl.NO_PROPAGATION);
+    assertThat(entryMetadata.getEntryTtl()).isEqualTo(EntryTtl.NO_PROPAGATION);
   }
 
   @Test
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            AttributeMetadata.create(AttributeTtl.NO_PROPAGATION),
-            AttributeMetadata.create(AttributeTtl.NO_PROPAGATION))
-        .addEqualityGroup(AttributeMetadata.create(AttributeTtl.UNLIMITED_PROPAGATION))
+            EntryMetadata.create(EntryTtl.NO_PROPAGATION),
+            EntryMetadata.create(EntryTtl.NO_PROPAGATION))
+        .addEqualityGroup(EntryMetadata.create(EntryTtl.UNLIMITED_PROPAGATION))
         .testEquals();
   }
 }

@@ -26,55 +26,55 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link AttributeKey}. */
+/** Tests for {@link EntryKey}. */
 @RunWith(JUnit4.class)
-public final class AttributeKeyTest {
+public final class EntryKeyTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testMaxLength() {
-    assertThat(AttributeKey.MAX_LENGTH).isEqualTo(255);
+    assertThat(EntryKey.MAX_LENGTH).isEqualTo(255);
   }
 
   @Test
   public void testGetName() {
-    assertThat(AttributeKey.create("foo").getName()).isEqualTo("foo");
+    assertThat(EntryKey.create("foo").getName()).isEqualTo("foo");
   }
 
   @Test
-  public void create_AllowAttributeKeyNameWithMaxLength() {
-    char[] chars = new char[AttributeKey.MAX_LENGTH];
+  public void create_AllowEntryKeyNameWithMaxLength() {
+    char[] chars = new char[EntryKey.MAX_LENGTH];
     Arrays.fill(chars, 'k');
     String key = new String(chars);
-    assertThat(AttributeKey.create(key).getName()).isEqualTo(key);
+    assertThat(EntryKey.create(key).getName()).isEqualTo(key);
   }
 
   @Test
-  public void create_DisallowAttributeKeyNameOverMaxLength() {
-    char[] chars = new char[AttributeKey.MAX_LENGTH + 1];
+  public void create_DisallowEntryKeyNameOverMaxLength() {
+    char[] chars = new char[EntryKey.MAX_LENGTH + 1];
     Arrays.fill(chars, 'k');
     String key = new String(chars);
     thrown.expect(IllegalArgumentException.class);
-    AttributeKey.create(key);
+    EntryKey.create(key);
   }
 
   @Test
   public void create_DisallowUnprintableChars() {
     thrown.expect(IllegalArgumentException.class);
-    AttributeKey.create("\2ab\3cd");
+    EntryKey.create("\2ab\3cd");
   }
 
   @Test
   public void createString_DisallowEmpty() {
     thrown.expect(IllegalArgumentException.class);
-    AttributeKey.create("");
+    EntryKey.create("");
   }
 
   @Test
-  public void testAttributeKeyEquals() {
+  public void testEntryKeyEquals() {
     new EqualsTester()
-        .addEqualityGroup(AttributeKey.create("foo"), AttributeKey.create("foo"))
-        .addEqualityGroup(AttributeKey.create("bar"))
+        .addEqualityGroup(EntryKey.create("foo"), EntryKey.create("foo"))
+        .addEqualityGroup(EntryKey.create("bar"))
         .testEquals();
   }
 }

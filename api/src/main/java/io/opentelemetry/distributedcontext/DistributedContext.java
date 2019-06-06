@@ -22,8 +22,8 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A map from {@link AttributeKey} to {@link AttributeValue} and {@link AttributeMetadata} that can
- * be used to label anything that is associated with a specific operation.
+ * A map from {@link EntryKey} to {@link EntryValue} and {@link EntryMetadata} that can be used to
+ * label anything that is associated with a specific operation.
  *
  * <p>For example, {@code DistributedContext}s can be used to label stats, log messages, or
  * debugging information.
@@ -33,23 +33,22 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface DistributedContext {
   /**
-   * Returns an iterator over the attributes in this {@code DistributedContext}.
+   * Returns an iterator over the entries in this {@code DistributedContext}.
    *
-   * @return an iterator over the attributes in this {@code DistributedContext}.
+   * @return an iterator over the entries in this {@code DistributedContext}.
    * @since 0.1.0
    */
-  Iterator<Attribute> getIterator();
+  Iterator<Entry> getIterator();
 
   /**
-   * Returns the {@code AttributeValue} associated with the given {@code AttributeKey}.
+   * Returns the {@code EntryValue} associated with the given {@code EntryKey}.
    *
-   * @param attrKey attribute key to return the value for.
-   * @return the {@code AttributeValue} associated with the given {@code AttributeKey}, or {@code
-   *     null} if no {@code Attribute} with the given {@code attrKey} is in this {@code
-   *     DistributedContext}.
+   * @param entryKey entry key to return the value for.
+   * @return the {@code EntryValue} associated with the given {@code EntryKey}, or {@code null} if
+   *     no {@code Entry} with the given {@code entryKey} is in this {@code DistributedContext}.
    */
   @Nullable
-  AttributeValue getAttributeValue(AttributeKey attrKey);
+  EntryValue getEntryValue(EntryKey entryKey);
 
   /**
    * Builder for the {@link DistributedContext} class.
@@ -59,8 +58,8 @@ public interface DistributedContext {
   interface Builder {
     /**
      * Sets the parent {@code DistributedContext} to use. If not set, the value of {@code
-     * Attributeger.getCurrentDistributedContext()} at {@link #build()} or {@link #buildScoped()}
-     * time will be used as parent.
+     * Entryger.getCurrentDistributedContext()} at {@link #build()} or {@link #buildScoped()} time
+     * will be used as parent.
      *
      * <p>This <b>must</b> be used to create a {@code DistributedContext} when manual Context
      * propagation is used.
@@ -77,7 +76,7 @@ public interface DistributedContext {
 
     /**
      * Sets the option to become a {@code DistributedContext} with no parent. If not set, the value
-     * of {@code Attributeger.getCurrentDistributedContext()} at {@link #build()} or {@link
+     * of {@code Entryger.getCurrentDistributedContext()} at {@link #build()} or {@link
      * #buildScoped()} time will be used as parent.
      *
      * @return this.
@@ -88,27 +87,27 @@ public interface DistributedContext {
     /**
      * Adds the key/value pair and metadata regardless of whether the key is present.
      *
-     * @param key the {@code AttributeKey} which will be set.
-     * @param value the {@code AttributeValue} to set for the given key.
-     * @param attrMetadata the {@code AttributeMetadata} associated with this {@link Attribute}.
+     * @param key the {@code EntryKey} which will be set.
+     * @param value the {@code EntryValue} to set for the given key.
+     * @param entryMetadata the {@code EntryMetadata} associated with this {@link Entry}.
      * @return this
      * @since 0.1.0
      */
-    Builder put(AttributeKey key, AttributeValue value, AttributeMetadata attrMetadata);
+    Builder put(EntryKey key, EntryValue value, EntryMetadata entryMetadata);
 
     /**
      * Removes the key if it exists.
      *
-     * @param key the {@code AttributeKey} which will be removed.
+     * @param key the {@code EntryKey} which will be removed.
      * @return this
      * @since 0.1.0
      */
-    Builder remove(AttributeKey key);
+    Builder remove(EntryKey key);
 
     /**
      * Creates a {@code DistributedContext} from this builder.
      *
-     * @return a {@code DistributedContext} with the same attributes as this builder.
+     * @return a {@code DistributedContext} with the same entries as this builder.
      * @since 0.1.0
      */
     DistributedContext build();

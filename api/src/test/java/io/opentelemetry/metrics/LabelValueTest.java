@@ -41,7 +41,7 @@ public class LabelValueTest {
 
   @Test
   public void create_NoLengthConstraint() {
-    // We have a length constraint of 256-characters for AttributeValue. That constraint doesn't
+    // We have a length constraint of 256-characters for EntryValue. That constraint doesn't
     // apply to
     // LabelValue.
     char[] chars = new char[300];

@@ -26,50 +26,50 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link AttributeValue}. */
+/** Tests for {@link EntryValue}. */
 @RunWith(JUnit4.class)
-public final class AttributeValueTest {
+public final class EntryValueTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testMaxLength() {
-    assertThat(AttributeValue.MAX_LENGTH).isEqualTo(255);
+    assertThat(EntryValue.MAX_LENGTH).isEqualTo(255);
   }
 
   @Test
   public void testAsString() {
-    assertThat(AttributeValue.create("foo").asString()).isEqualTo("foo");
+    assertThat(EntryValue.create("foo").asString()).isEqualTo("foo");
   }
 
   @Test
-  public void create_AllowAttributeValueWithMaxLength() {
-    char[] chars = new char[AttributeValue.MAX_LENGTH];
+  public void create_AllowEntryValueWithMaxLength() {
+    char[] chars = new char[EntryValue.MAX_LENGTH];
     Arrays.fill(chars, 'v');
     String value = new String(chars);
-    assertThat(AttributeValue.create(value).asString()).isEqualTo(value);
+    assertThat(EntryValue.create(value).asString()).isEqualTo(value);
   }
 
   @Test
-  public void create_DisallowAttributeValueOverMaxLength() {
-    char[] chars = new char[AttributeValue.MAX_LENGTH + 1];
+  public void create_DisallowEntryValueOverMaxLength() {
+    char[] chars = new char[EntryValue.MAX_LENGTH + 1];
     Arrays.fill(chars, 'v');
     String value = new String(chars);
     thrown.expect(IllegalArgumentException.class);
-    AttributeValue.create(value);
+    EntryValue.create(value);
   }
 
   @Test
-  public void disallowAttributeValueWithUnprintableChars() {
+  public void disallowEntryValueWithUnprintableChars() {
     String value = "\2ab\3cd";
     thrown.expect(IllegalArgumentException.class);
-    AttributeValue.create(value);
+    EntryValue.create(value);
   }
 
   @Test
-  public void testAttributeValueEquals() {
+  public void testEntryValueEquals() {
     new EqualsTester()
-        .addEqualityGroup(AttributeValue.create("foo"), AttributeValue.create("foo"))
-        .addEqualityGroup(AttributeValue.create("bar"))
+        .addEqualityGroup(EntryValue.create("foo"), EntryValue.create("foo"))
+        .addEqualityGroup(EntryValue.create("bar"))
         .testEquals();
   }
 }

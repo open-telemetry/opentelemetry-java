@@ -37,22 +37,21 @@ import org.junit.runners.JUnit4;
 public final class DefaultDistributedContextManagerTest {
   private static final DistributedContextManager defaultDistributedContextManager =
       DefaultDistributedContextManager.getInstance();
-  private static final AttributeKey KEY = AttributeKey.create("key");
-  private static final AttributeValue VALUE = AttributeValue.create("value");
+  private static final EntryKey KEY = EntryKey.create("key");
+  private static final EntryValue VALUE = EntryValue.create("value");
 
   private static final DistributedContext DIST_CONTEXT =
       new DistributedContext() {
 
         @Override
-        public Iterator<Attribute> getIterator() {
-          return Arrays.asList(
-                  Attribute.create(KEY, VALUE, Attribute.METADATA_UNLIMITED_PROPAGATION))
+        public Iterator<Entry> getIterator() {
+          return Arrays.asList(Entry.create(KEY, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION))
               .iterator();
         }
 
         @Nullable
         @Override
-        public AttributeValue getAttributeValue(AttributeKey attrKey) {
+        public EntryValue getEntryValue(EntryKey entryKey) {
           return VALUE;
         }
       };
@@ -149,18 +148,18 @@ public final class DefaultDistributedContextManagerTest {
   public void noopDistributedContexBuilder_Put_DisallowsNullKey() {
     DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
-    noopBuilder.put(null, VALUE, Attribute.METADATA_UNLIMITED_PROPAGATION);
+    noopBuilder.put(null, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopDistributedContexBuilder_Put_DisallowsNullValue() {
     DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
-    noopBuilder.put(KEY, null, Attribute.METADATA_UNLIMITED_PROPAGATION);
+    noopBuilder.put(KEY, null, Entry.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
-  public void noopDistributedContexBuilder_Put_DisallowsNullAttributeMetadata() {
+  public void noopDistributedContexBuilder_Put_DisallowsNullEntryMetadata() {
     DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(KEY, VALUE, null);
@@ -173,7 +172,7 @@ public final class DefaultDistributedContextManagerTest {
     noopBuilder.remove(null);
   }
 
-  private static List<Attribute> asList(DistributedContext distContext) {
+  private static List<Entry> asList(DistributedContext distContext) {
     return Lists.newArrayList(distContext.getIterator());
   }
 }

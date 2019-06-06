@@ -16,10 +16,10 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.distributedcontext.Attribute;
-import io.opentelemetry.distributedcontext.AttributeKey;
-import io.opentelemetry.distributedcontext.AttributeValue;
 import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.distributedcontext.Entry;
+import io.opentelemetry.distributedcontext.EntryKey;
+import io.opentelemetry.distributedcontext.EntryValue;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -33,11 +33,9 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link DefaultMeter}. */
 @RunWith(JUnit4.class)
 public final class DefaultMeterTest {
-  private static final Attribute ATTRIBUTE =
-      Attribute.create(
-          AttributeKey.create("key"),
-          AttributeValue.create("value"),
-          Attribute.METADATA_UNLIMITED_PROPAGATION);
+  private static final Entry ENTRY =
+      Entry.create(
+          EntryKey.create("key"), EntryValue.create("value"), Entry.METADATA_UNLIMITED_PROPAGATION);
 
   private static final Meter defaultMeter = DefaultMeter.getInstance();
 
@@ -53,14 +51,14 @@ public final class DefaultMeterTest {
       new DistributedContext() {
 
         @Override
-        public Iterator<Attribute> getIterator() {
-          return Collections.singleton(ATTRIBUTE).iterator();
+        public Iterator<Entry> getIterator() {
+          return Collections.singleton(ENTRY).iterator();
         }
 
         @Nullable
         @Override
-        public AttributeValue getAttributeValue(AttributeKey attrKey) {
-          return AttributeValue.create("value");
+        public EntryValue getEntryValue(EntryKey entryKey) {
+          return EntryValue.create("value");
         }
       };
 

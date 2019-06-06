@@ -15,18 +15,18 @@
  */
 
 /**
- * API for associating attributes with scoped operations.
+ * API for associating entries with scoped operations.
  *
- * <p>This package manages a set of attributes in the {@code io.grpc.Context}. The attributes can be
- * used to label anything that is associated with a specific operation. For example, the {@code
- * opentelemetry.stats} package labels all stats with the current attributes.
+ * <p>This package manages a set of entries in the {@code io.grpc.Context}. The entries can be used
+ * to label anything that is associated with a specific operation. For example, the {@code
+ * opentelemetry.stats} package labels all stats with the current entries.
  *
- * <p>{@link io.opentelemetry.distributedcontext.Attribute Attributes} are key-value pairs. The
- * {@link io.opentelemetry.distributedcontext.AttributeKey keys} and {@link
- * io.opentelemetry.distributedcontext.AttributeValue values} are wrapped {@code String}s. They are
+ * <p>{@link io.opentelemetry.distributedcontext.Entry Entrys} are key-value pairs. The {@link
+ * io.opentelemetry.distributedcontext.EntryKey keys} and {@link
+ * io.opentelemetry.distributedcontext.EntryValue values} are wrapped {@code String}s. They are
  * stored as a map in a {@link io.opentelemetry.distributedcontext.DistributedContext}.
  *
- * <p>Note that attributes are independent of the tracing data that is propagated in the {@code
+ * <p>Note that entries are independent of the tracing data that is propagated in the {@code
  * io.grpc.Context}, such as trace ID.
  */
 // TODO: Add code examples.

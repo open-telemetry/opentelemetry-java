@@ -22,7 +22,7 @@ import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A validated attribute value.
+ * A validated entry value.
  *
  * <p>Validation ensures that the {@code String} has a maximum length of {@link #MAX_LENGTH} and
  * contains only printable ASCII characters.
@@ -31,18 +31,18 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class AttributeValue {
+public abstract class EntryValue {
   /**
-   * The maximum length for a attribute value. The value is {@value #MAX_LENGTH}.
+   * The maximum length for a entry value. The value is {@value #MAX_LENGTH}.
    *
    * @since 0.1.0
    */
   public static final int MAX_LENGTH = 255;
 
-  AttributeValue() {}
+  EntryValue() {}
 
   /**
-   * Constructs an {@code AttributeValue} from the given string. The string must meet the following
+   * Constructs an {@code EntryValue} from the given string. The string must meet the following
    * requirements:
    *
    * <ol>
@@ -50,28 +50,28 @@ public abstract class AttributeValue {
    *   <li>It can only contain printable ASCII characters.
    * </ol>
    *
-   * @param value the attribute value.
-   * @return an {@code AttributeValue} from the given string.
+   * @param value the entry value.
+   * @return an {@code EntryValue} from the given string.
    * @throws IllegalArgumentException if the {@code String} is not valid.
    * @since 0.1.0
    */
-  public static AttributeValue create(String value) {
-    Utils.checkArgument(isValid(value), "Invalid AttributeValue: %s", value);
-    return new AutoValue_AttributeValue(value);
+  public static EntryValue create(String value) {
+    Utils.checkArgument(isValid(value), "Invalid EntryValue: %s", value);
+    return new AutoValue_EntryValue(value);
   }
 
   /**
-   * Returns the attribute value as a {@code String}.
+   * Returns the entry value as a {@code String}.
    *
-   * @return the attribute value as a {@code String}.
+   * @return the entry value as a {@code String}.
    * @since 0.1.0
    */
   public abstract String asString();
 
   /**
-   * Determines whether the given {@code String} is a valid attribute value.
+   * Determines whether the given {@code String} is a valid entry value.
    *
-   * @param value the attribute value to be validated.
+   * @param value the entry value to be validated.
    * @return whether the value is valid.
    */
   private static boolean isValid(String value) {

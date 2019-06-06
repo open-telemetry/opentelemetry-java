@@ -22,25 +22,23 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An immutable implementation of the {@link DistributedContext} that does not contain any
- * attributes.
+ * An immutable implementation of the {@link DistributedContext} that does not contain any entries.
  */
 @Immutable
 public class EmptyDistributedContext implements DistributedContext {
-  private static final Iterator<Attribute> EMPTY_ITERATOR =
-      Collections.<Attribute>emptyList().iterator();
+  private static final Iterator<Entry> EMPTY_ITERATOR = Collections.<Entry>emptyList().iterator();
 
   /** Returns the single instance of the {@link EmptyDistributedContext} class. */
   public static final DistributedContext INSTANCE = new EmptyDistributedContext();
 
   @Override
-  public Iterator<Attribute> getIterator() {
+  public Iterator<Entry> getIterator() {
     return EMPTY_ITERATOR;
   }
 
   @Nullable
   @Override
-  public AttributeValue getAttributeValue(AttributeKey attrKey) {
+  public EntryValue getEntryValue(EntryKey entryKey) {
     return null;
   }
 

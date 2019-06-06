@@ -92,15 +92,15 @@ public final class DefaultDistributedContextManager implements DistributedContex
 
     @Override
     public DistributedContext.Builder put(
-        AttributeKey key, AttributeValue value, AttributeMetadata attrMetadata) {
+        EntryKey key, EntryValue value, EntryMetadata entryMetadata) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");
-      Utils.checkNotNull(attrMetadata, "attributeMetadata");
+      Utils.checkNotNull(entryMetadata, "entryMetadata");
       return this;
     }
 
     @Override
-    public DistributedContext.Builder remove(AttributeKey key) {
+    public DistributedContext.Builder remove(EntryKey key) {
       Utils.checkNotNull(key, "key");
       return this;
     }

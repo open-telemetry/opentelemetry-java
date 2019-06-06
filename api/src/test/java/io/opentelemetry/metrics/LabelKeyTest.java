@@ -42,7 +42,7 @@ public class LabelKeyTest {
 
   @Test
   public void create_NoLengthConstraint() {
-    // We have a length constraint of 256-characters for AttributeKey. That constraint doesn't apply
+    // We have a length constraint of 256-characters for EntryKey. That constraint doesn't apply
     // to
     // LabelKey.
     char[] chars = new char[300];
