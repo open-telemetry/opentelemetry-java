@@ -33,6 +33,17 @@ import javax.annotation.concurrent.Immutable;
 public final class DefaultSpan implements Span {
 
   private static final Random random = new Random();
+  private static final DefaultSpan INVALID = new DefaultSpan(SpanContext.getInvalid());
+
+  /**
+   * Returns a {@link DefaultSpan} with an invalid {@link SpanContext}.
+   *
+   * @return a {@code DefaultSpan} with an invalid {@code SpanContext}.
+   * @since 0.1.0
+   */
+  public static DefaultSpan getInvalid() {
+    return INVALID;
+  }
 
   /**
    * Creates an instance of this class.
@@ -40,9 +51,8 @@ public final class DefaultSpan implements Span {
    * <p>Each instance will have unique and valid {@link TraceId} and {@link SpanId}.
    *
    * @return a {@link DefaultSpan}.
-   * @since 0.1.0
    */
-  public static DefaultSpan create() {
+  static DefaultSpan create() {
     return new DefaultSpan(
         SpanContext.create(
             TraceId.generateRandomId(random),
