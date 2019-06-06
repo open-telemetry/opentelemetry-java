@@ -431,7 +431,9 @@ public interface Span {
      * class MyClass {
      *   private static final Tracer tracer = OpenTelemetry.getTracer();
      *   void DoWork(Span parent) {
-     *     Span childSpan = tracer.spanBuilderWithExplicitParent("MyChildSpan", parent).startSpan();
+     *     Span childSpan = tracer.spanBuilder("MyChildSpan")
+     *          .setParent(parent)
+     *          .startSpan();
      *     childSpan.addEvent("my event");
      *     try {
      *       doSomeWork(childSpan); // Manually propagate the new span down the stack.
