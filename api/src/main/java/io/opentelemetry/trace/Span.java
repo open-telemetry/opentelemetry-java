@@ -166,6 +166,8 @@ public interface Span {
    *
    * @param spanContext the context of the linked {@code Span}.
    * @param attributes the attributes of the {@code Link}.
+   * @throws NullPointerException if {@code spanContext} is {@code null}.
+   * @throws NullPointerException if {@code attributes} is {@code null}.
    * @see #addLink(Link)
    * @since 0.1.0
    */
