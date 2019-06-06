@@ -81,6 +81,12 @@ public class ProbabilitySamplerTest {
         public void addEvent(Event event) {}
 
         @Override
+        public void addLink(SpanContext spanContext) {}
+
+        @Override
+        public void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {}
+
+        @Override
         public void addLink(Link link) {}
 
         @Override

@@ -188,8 +188,8 @@ final class SpanBuilderShim implements SpanBuilder {
       builder.setParent(parentSpanContext);
     }
 
-    if (!parentLinks.isEmpty()) {
-      builder.addLinks(parentLinks);
+    for (Link link : parentLinks) {
+      builder.addLink(link);
     }
 
     if (spanKind != null) {

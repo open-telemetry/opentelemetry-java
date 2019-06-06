@@ -16,7 +16,6 @@
 
 package io.opentelemetry.trace;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -151,6 +150,25 @@ public interface Span {
    * @since 0.1.0
    */
   void addEvent(Event event);
+
+  /**
+   * Adds a {@link Link} to the {@code Span}.
+   *
+   * @param spanContext the context of the linked {@code Span}.
+   * @see #addLink(Link)
+   * @since 0.1.0
+   */
+  void addLink(SpanContext spanContext);
+
+  /**
+   * Adds a {@link Link} to the {@code Span}.
+   *
+   * @param spanContext the context of the linked {@code Span}.
+   * @param attributes the attributes of the {@code Link}.
+   * @see #addLink(Link)
+   * @since 0.1.0
+   */
+  void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes);
 
   /**
    * Adds a {@link Link} to the {@code Span}.
@@ -376,6 +394,30 @@ public interface Span {
     /**
      * Adds a {@link Link} to the newly created {@code Span}.
      *
+     * @param spanContext the context of the linked {@code Span}.
+     * @return this.
+     * @throws NullPointerException if {@code spanContext} is {@code null}.
+     * @see #addLink(Link)
+     * @since 0.1.0
+     */
+    Builder addLink(SpanContext spanContext);
+
+    /**
+     * Adds a {@link Link} to the newly created {@code Span}.
+     *
+     * @param spanContext the context of the linked {@code Span}.
+     * @param attributes the attributes of the {@code Link}.
+     * @return this.
+     * @throws NullPointerException if {@code spanContext} is {@code null}.
+     * @throws NullPointerException if {@code attributes} is {@code null}.
+     * @see #addLink(Link)
+     * @since 0.1.0
+     */
+    Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes);
+
+    /**
+     * Adds a {@link Link} to the newly created {@code Span}.
+     *
      * <p>Links are used to link {@link Span}s in different traces. Used (for example) in batching
      * operations, where a single batch handler processes multiple requests from different traces or
      * the same trace.
@@ -386,17 +428,6 @@ public interface Span {
      * @since 0.1.0
      */
     Builder addLink(Link link);
-
-    /**
-     * Adds a {@code List} of {@link Link}s to the newly created {@code Span}.
-     *
-     * @param links the {@code List} of {@link Link}s to be added.
-     * @return this.
-     * @throws NullPointerException if {@code link} is {@code null}.
-     * @since 0.1.0
-     * @see #addLink(Link)
-     */
-    Builder addLinks(List<Link> links);
 
     /**
      * Sets the option to record events even if not sampled for the newly created {@code Span}. If
