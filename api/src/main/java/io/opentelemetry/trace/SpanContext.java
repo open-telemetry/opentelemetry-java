@@ -47,9 +47,8 @@ public final class SpanContext {
    * Returns the invalid {@code SpanContext} that can be used for no-op operations.
    *
    * @return the invalid {@code SpanContext}.
-   * @since 0.1.0
    */
-  public static SpanContext getInvalid() {
+  static SpanContext getInvalid() {
     return INVALID;
   }
 
