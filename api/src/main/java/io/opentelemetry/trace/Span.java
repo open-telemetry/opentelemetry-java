@@ -155,6 +155,7 @@ public interface Span {
    * Adds a {@link Link} to the {@code Span}.
    *
    * @param spanContext the context of the linked {@code Span}.
+   * @throws NullPointerException if {@code spanContext} is {@code null}.
    * @see #addLink(Link)
    * @since 0.1.0
    */
