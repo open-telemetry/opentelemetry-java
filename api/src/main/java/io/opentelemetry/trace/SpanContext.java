@@ -30,19 +30,28 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class SpanContext {
-  private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
+
+  private static final SpanContext INVALID =
+      new SpanContext(
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
+          TraceOptions.getDefault(),
+          Tracestate.getDefault());
+
   private final TraceId traceId;
   private final SpanId spanId;
   private final TraceOptions traceOptions;
   private final Tracestate tracestate;
 
   /**
-   * A blank {@code SpanContext} that can be used for no-op operations.
+   * Returns the invalid {@code SpanContext} that can be used for no-op operations.
    *
+   * @return the invalid {@code SpanContext}.
    * @since 0.1.0
    */
-  static final SpanContext BLANK =
-      new SpanContext(TraceId.INVALID, SpanId.INVALID, TraceOptions.DEFAULT, TRACESTATE_DEFAULT);
+  public static SpanContext getInvalid() {
+    return INVALID;
+  }
 
   /**
    * Creates a new {@code SpanContext} with the given identifiers and options.

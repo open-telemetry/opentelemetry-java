@@ -28,28 +28,50 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class SpanId implements Comparable<SpanId> {
-  /**
-   * The size in bytes of the {@code SpanId}.
-   *
-   * @since 0.1.0
-   */
-  public static final int SIZE = 8;
 
-  /**
-   * The invalid {@code SpanId}. All bytes are 0.
-   *
-   * @since 0.1.0
-   */
-  public static final SpanId INVALID = new SpanId(0);
-
+  private static final int SIZE = 8;
   private static final int BASE16_SIZE = 2 * SIZE;
   private static final long INVALID_ID = 0;
+  private static final SpanId INVALID = new SpanId(INVALID_ID);
 
   // The internal representation of the SpanId.
   private final long id;
 
-  private SpanId(long id) {
+  /**
+   * Constructs a {@code SpanId} whose representation is specified by a long value.
+   *
+   * <p>There is no restriction on the specified value, other than the already established validity
+   * rules applying to {@code SpanId}. Specifying 0 for this value will effectively make the new
+   * {@code SpanId} invalid.
+   *
+   * <p>This is equivalent to calling {@link #fromBytes(byte[], int)} with the specified value
+   * stored as big-endian.
+   *
+   * @param id the long represenation of the {@code TraceId}.
+   * @since 0.1.0
+   */
+  public SpanId(long id) {
     this.id = id;
+  }
+
+  /**
+   * Returns the size in bytes of the {@code SpanId}.
+   *
+   * @return the size in bytes of the {@code SpanId}.
+   * @since 0.1.0
+   */
+  public static int getSize() {
+    return SIZE;
+  }
+
+  /**
+   * Returns the invalid {@code SpanId}. All bytes are 0.
+   *
+   * @return the invalid {@code SpanId}.
+   * @since 0.1.0
+   */
+  public static SpanId getInvalid() {
+    return INVALID;
   }
 
   /**
@@ -61,7 +83,7 @@ public final class SpanId implements Comparable<SpanId> {
    *     begins.
    * @return a {@code SpanId} whose representation is copied from the buffer.
    * @throws NullPointerException if {@code src} is null.
-   * @throws IndexOutOfBoundsException if {@code srcOffset+SpanId.SIZE} is greater than {@code
+   * @throws IndexOutOfBoundsException if {@code srcOffset+SpanId.getSize()} is greater than {@code
    *     src.length}.
    * @since 0.1.0
    */
@@ -77,7 +99,7 @@ public final class SpanId implements Comparable<SpanId> {
    * @param dest the destination buffer.
    * @param destOffset the starting offset in the destination buffer.
    * @throws NullPointerException if {@code dest} is null.
-   * @throws IndexOutOfBoundsException if {@code destOffset+SpanId.SIZE} is greater than {@code
+   * @throws IndexOutOfBoundsException if {@code destOffset+SpanId.getSize()} is greater than {@code
    *     dest.length}.
    * @since 0.1.0
    */
@@ -108,7 +130,7 @@ public final class SpanId implements Comparable<SpanId> {
    *
    * @param dest the destination buffer.
    * @param destOffset the starting offset in the destination buffer.
-   * @throws IndexOutOfBoundsException if {@code destOffset + 2 * SpanId.SIZE} is greater than
+   * @throws IndexOutOfBoundsException if {@code destOffset + 2 * SpanId.getSize()} is greater than
    *     {@code dest.length}.
    * @since 0.1.0
    */

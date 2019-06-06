@@ -44,7 +44,7 @@ public class SamplersTest {
       SpanContext.create(
           traceId, parentSpanId, TraceOptions.builder().setIsSampled(true).build(), tracestate);
   private final SpanContext notSampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceOptions.DEFAULT, tracestate);
+      SpanContext.create(traceId, parentSpanId, TraceOptions.getDefault(), tracestate);
 
   @Test
   public void alwaysSampleSampler_AlwaysReturnTrue() {

@@ -19,7 +19,7 @@ package io.opentelemetry.trace.unsafe;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
-import io.opentelemetry.trace.BlankSpan;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,14 +32,14 @@ public final class ContextUtilsTest {
   public void testGetCurrentSpan_DefaultContext() {
     Span span = ContextUtils.getValue(Context.current());
     assertThat(span).isNotNull();
-    assertThat(span).isInstanceOf(BlankSpan.class);
+    assertThat(span).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void testGetCurrentSpan_DefaultContext_WithoutExplicitContext() {
     Span span = ContextUtils.getValue();
     assertThat(span).isNotNull();
-    assertThat(span).isInstanceOf(BlankSpan.class);
+    assertThat(span).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -48,7 +48,7 @@ public final class ContextUtilsTest {
     try {
       Span span = ContextUtils.getValue(Context.current());
       assertThat(span).isNotNull();
-      assertThat(span).isInstanceOf(BlankSpan.class);
+      assertThat(span).isInstanceOf(DefaultSpan.class);
     } finally {
       Context.current().detach(orig);
     }
@@ -60,7 +60,7 @@ public final class ContextUtilsTest {
     try {
       Span span = ContextUtils.getValue(Context.current());
       assertThat(span).isNotNull();
-      assertThat(span).isInstanceOf(BlankSpan.class);
+      assertThat(span).isInstanceOf(DefaultSpan.class);
     } finally {
       Context.current().detach(orig);
     }

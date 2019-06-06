@@ -21,9 +21,8 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.context.propagation.TraceContextFormat;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.resources.Resource;
 import io.opentelemetry.trace.unsafe.ContextUtils;
-import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
@@ -67,16 +66,6 @@ public final class DefaultTracer implements Tracer {
   }
 
   @Override
-  public void setResource(Resource resource) {
-    // do nothing
-  }
-
-  @Override
-  public Resource getResource() {
-    return Resource.getEmpty();
-  }
-
-  @Override
   public BinaryFormat<SpanContext> getBinaryFormat() {
     return BINARY_FORMAT;
   }
@@ -104,9 +93,9 @@ public final class DefaultTracer implements Tracer {
         spanContext = tracer.getCurrentSpan().getContext();
       }
 
-      return spanContext != null && !SpanContext.BLANK.equals(spanContext)
-          ? new BlankSpan(spanContext)
-          : BlankSpan.INSTANCE;
+      return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
+          ? new DefaultSpan(spanContext)
+          : DefaultSpan.create();
     }
 
     @Override
@@ -135,12 +124,18 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder addLink(Link link) {
+    public NoopSpanBuilder addLink(SpanContext spanContext) {
       return this;
     }
 
     @Override
-    public NoopSpanBuilder addLinks(List<Link> links) {
+    public NoopSpanBuilder addLink(
+        SpanContext spanContext, Map<String, AttributeValue> attributes) {
+      return this;
+    }
+
+    @Override
+    public NoopSpanBuilder addLink(Link link) {
       return this;
     }
 
@@ -172,7 +167,7 @@ public final class DefaultTracer implements Tracer {
     @Override
     public SpanContext fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return SpanContext.BLANK;
+      return SpanContext.getInvalid();
     }
 
     private NoopBinaryFormat() {}
