@@ -21,7 +21,6 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.context.propagation.TraceContextFormat;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.resources.Resource;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -64,16 +63,6 @@ public final class DefaultTracer implements Tracer {
   @Override
   public void recordSpanData(SpanData spanData) {
     Utils.checkNotNull(spanData, "spanData");
-  }
-
-  @Override
-  public void setResource(Resource resource) {
-    // do nothing
-  }
-
-  @Override
-  public Resource getResource() {
-    return Resource.getEmpty();
   }
 
   @Override
