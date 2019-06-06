@@ -54,49 +54,54 @@ import java.util.List;
  * <p>Example usage for already aggregated metrics:
  *
  * <pre>{@code
- * public final void exportGarbageCollectorMetrics {
- *   final CounterLong collectionMetric =
+ * class YourClass {
+ *   private static final Meter meter = Metrics.getMeter();
+ *   private static final CounterLong collectionMetric =
  *       meter
  *           .counterLongBuilder("collection")
  *           .setDescription("Time spent in a given JVM garbage collector in milliseconds.")
  *           .setUnit("ms")
  *           .setLabelKeys(Collections.singletonList(GC))
  *           .build();
- *   collectionMetric.setCallback(
- *       new Runnable() {
- *         &commat;Override
- *         public void run() {
- *           for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
- *             LabelValue gcName = LabelValue.create(gc.getName());
- *             collectionMetric
- *                 .getOrCreateTimeSeries(Collections.singletonList(gcName))
- *                 .set(gc.getCollectionTime());
+ *
+ *   public final void exportGarbageCollectorMetrics {
+ *     collectionMetric.setCallback(
+ *         new Runnable() {
+ *           &commat;Override
+ *           public void run() {
+ *             for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
+ *               LabelValue gcName = LabelValue.create(gc.getName());
+ *               collectionMetric
+ *                   .getOrCreateTimeSeries(Collections.singletonList(gcName))
+ *                   .set(gc.getCollectionTime());
+ *             }
  *           }
- *         }
- *       });
+ *         });
  *   }
+ * }
  * }</pre>
  *
  * <p>Example usage for simple pre-defined aggregation metrics:
  *
  * <pre>{@code
  * class YourClass {
- *
  *   private static final Meter meter = Metrics.getMeter();
- *   private static final MetricRegistry metricRegistry = meter.metricRegistryBuilder().build();
- *
- *   List<LabelKey> labelKeys = Arrays.asList(LabelKey.create("Name", "desc"));
- *   List<LabelValue> labelValues = Arrays.asList(LabelValue.create("Inbound"));
- *
- *   GaugeDouble gauge = metricRegistry.addDoubleGauge("queue_size",
- *                       "Pending jobs", "1", labelKeys);
+ *   private static final List<LabelKey> keys = Arrays.asList(LabelKey.create("Name", "desc"));
+ *   private static final List<LabelValue> values = Arrays.asList(LabelValue.create("Inbound"));
+ *   private static final GaugeDouble gauge = metricRegistry.gaugeLongBuilder(
+ *       "queue_size", "Pending jobs", "1", labelKeys);
  *
  *   // It is recommended to keep a reference of a TimeSeries.
  *   GaugeDouble.TimeSeries inboundTimeSeries = gauge.getOrCreateTimeSeries(labelValues);
  *
- *   void doSomeWork() {
+ *   void doAddElement() {
  *      // Your code here.
- *      inboundTimeSeries.add(15);
+ *      inboundTimeSeries.add(1);
+ *   }
+ *
+ *   void doRemoveElement() {
+ *      inboundTimeSeries.add(-1);
+ *      // Your code here.
  *   }
  *
  * }
