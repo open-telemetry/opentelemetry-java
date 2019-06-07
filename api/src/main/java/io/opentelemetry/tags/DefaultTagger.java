@@ -102,12 +102,12 @@ public final class DefaultTagger implements Tagger {
 
     @Override
     public TagMap build() {
-      return EmptyTagMap.INSTANCE;
+      return EmptyTagMap.getInstance();
     }
 
     @Override
     public Scope buildScoped() {
-      return NoopScope.INSTANCE;
+      return NoopScope.getInstance();
     }
   }
 
@@ -124,7 +124,7 @@ public final class DefaultTagger implements Tagger {
     @Override
     public TagMap fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return EmptyTagMap.INSTANCE;
+      return EmptyTagMap.getInstance();
     }
   }
 
@@ -146,7 +146,7 @@ public final class DefaultTagger implements Tagger {
     public <C> TagMap extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
-      return EmptyTagMap.INSTANCE;
+      return EmptyTagMap.getInstance();
     }
   }
 }
