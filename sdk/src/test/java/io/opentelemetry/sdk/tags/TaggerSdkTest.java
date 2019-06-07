@@ -43,7 +43,7 @@ public class TaggerSdkTest {
 
   @Test
   public void testGetCurrentTagMap_DefaultContext() {
-    assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
   }
 
   @Test
@@ -60,11 +60,11 @@ public class TaggerSdkTest {
 
   @Test
   public void testWithTagMap() {
-    assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
     try (Scope wtm = tagger.withTagMap(tagMap)) {
       assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(tagMap);
     }
-    assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
   }
 
   @Test
@@ -82,7 +82,7 @@ public class TaggerSdkTest {
                     }
                   });
     }
-    assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    assertThat(tagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
     // When we run the runnable we will have the TagMap in the current Context.
     runnable.run();
   }

@@ -26,8 +26,17 @@ import javax.annotation.concurrent.Immutable;
 public class EmptyTagMap implements TagMap {
   private static final Iterator<Tag> EMPTY_ITERATOR = Collections.<Tag>emptyList().iterator();
 
-  /** Returns the single instance of the {@link EmptyTagMap} class. */
-  public static final TagMap INSTANCE = new EmptyTagMap();
+  /**
+   * Returns the single instance of the {@link EmptyTagMap} class.
+   *
+   * @return the single instance of the {@code EmptyTagMap} class.
+   * @since 0.1.0
+   */
+  public static TagMap getInstance() {
+    return INSTANCE;
+  }
+
+  private static final TagMap INSTANCE = new EmptyTagMap();
 
   @Override
   public Iterator<Tag> getIterator() {

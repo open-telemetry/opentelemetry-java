@@ -31,7 +31,7 @@ import io.opentelemetry.tags.TagMap;
  */
 public final class ContextUtils {
   private static final Context.Key<TagMap> TAG_MAP_KEY =
-      Context.keyWithDefault("opentelemetry-tag-map-key", EmptyTagMap.INSTANCE);
+      Context.keyWithDefault("opentelemetry-tag-map-key", EmptyTagMap.getInstance());
 
   /**
    * Creates a new {@code Context} with the given value set.
