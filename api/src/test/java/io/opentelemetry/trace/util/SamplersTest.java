@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.samplers;
+package io.opentelemetry.trace.util;
 
 import static io.opentelemetry.trace.TestUtils.generateRandomSpanId;
 import static io.opentelemetry.trace.TestUtils.generateRandomTraceId;
@@ -26,14 +26,13 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
-import io.opentelemetry.trace.util.Samplers;
 import java.util.Collections;
 import java.util.Random;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link Samplers}. */
+/** Unit tests for {@link io.opentelemetry.trace.util.Samplers}. */
 @RunWith(JUnit4.class)
 public class SamplersTest {
   private final Random random = new Random(1234);
