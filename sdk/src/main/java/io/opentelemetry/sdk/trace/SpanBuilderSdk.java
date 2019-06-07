@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Span;
@@ -25,6 +26,7 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
 class SpanBuilderSdk implements Span.Builder {
@@ -76,22 +78,27 @@ class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
+  public Builder addLink(SpanContext spanContext) {
+    Utils.checkNotNull(spanContext, "spanContext");
+    addLink(Link.create(spanContext));
+    return this;
+  }
+
+  @Override
+  public Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
+    Utils.checkNotNull(spanContext, "spanContext");
+    Utils.checkNotNull(attributes, "attributes");
+    addLink(Link.create(spanContext, attributes));
+    return this;
+  }
+
+  @Override
   public Builder addLink(Link link) {
     Utils.checkNotNull(link, "link");
     if (links == null) {
       links = new ArrayList<>();
     }
     links.add(link);
-    return this;
-  }
-
-  @Override
-  public Builder addLinks(List<Link> links) {
-    Utils.checkNotNull(links, "links");
-    if (this.links == null) {
-      this.links = new ArrayList<>();
-    }
-    this.links.addAll(links);
     return this;
   }
 

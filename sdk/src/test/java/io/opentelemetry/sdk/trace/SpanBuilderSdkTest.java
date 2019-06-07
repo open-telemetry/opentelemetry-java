@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import org.junit.Rule;
@@ -59,12 +60,18 @@ public class SpanBuilderSdkTest {
   @Test
   public void addLink_null() {
     thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).addLink(null);
+    tracer.spanBuilder(SPAN_NAME).addLink((Link) null);
   }
 
   @Test
-  public void addLinks_null() {
+  public void addLinkSpanContext_null() {
     thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).addLinks(null);
+    tracer.spanBuilder(SPAN_NAME).addLink((SpanContext) null);
+  }
+
+  @Test
+  public void addLinkSpanContextAttributes_null() {
+    thrown.expect(NullPointerException.class);
+    tracer.spanBuilder(SPAN_NAME).addLink(null, null);
   }
 }
