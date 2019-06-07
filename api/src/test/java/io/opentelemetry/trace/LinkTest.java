@@ -49,7 +49,7 @@ public class LinkTest {
 
   @Test
   public void create() {
-    Link link = Link.create(spanContext, attributesMap);
+    Link link = SpanData.Link.create(spanContext, attributesMap);
     assertThat(link.getContext()).isEqualTo(spanContext);
     assertThat(link.getAttributes()).isEqualTo(attributesMap);
   }
@@ -58,16 +58,17 @@ public class LinkTest {
   public void link_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester
-        .addEqualityGroup(Link.create(spanContext), Link.create(spanContext))
-        .addEqualityGroup(Link.create(SpanContext.getInvalid()))
+        .addEqualityGroup(SpanData.Link.create(spanContext), SpanData.Link.create(spanContext))
+        .addEqualityGroup(SpanData.Link.create(SpanContext.getInvalid()))
         .addEqualityGroup(
-            Link.create(spanContext, attributesMap), Link.create(spanContext, attributesMap));
+            SpanData.Link.create(spanContext, attributesMap),
+            SpanData.Link.create(spanContext, attributesMap));
     tester.testEquals();
   }
 
   @Test
   public void link_ToString() {
-    Link link = Link.create(spanContext, attributesMap);
+    Link link = SpanData.Link.create(spanContext, attributesMap);
     assertThat(link.toString()).contains(spanContext.getTraceId().toString());
     assertThat(link.toString()).contains(spanContext.getSpanId().toString());
     assertThat(link.toString()).contains(attributesMap.toString());
