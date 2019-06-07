@@ -29,7 +29,7 @@ import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link Link}. */
 @RunWith(JUnit4.class)
-public class LinkTest {
+public class SpanDataLinkTest {
   private final Map<String, AttributeValue> attributesMap = new HashMap<>();
   private final Random random = new Random(1234);
   private final Tracestate tracestate = Tracestate.builder().build();
