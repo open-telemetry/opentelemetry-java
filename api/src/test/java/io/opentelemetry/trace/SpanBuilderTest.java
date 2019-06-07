@@ -19,7 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.samplers.Samplers;
+import io.opentelemetry.trace.util.Samplers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
