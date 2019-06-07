@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link io.opentelemetry.trace.util.Samplers}. */
+/** Unit tests for {@link Samplers}. */
 @RunWith(JUnit4.class)
 public class SamplersTest {
   private final Random random = new Random(1234);
