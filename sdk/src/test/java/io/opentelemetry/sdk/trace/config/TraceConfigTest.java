@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.proto.trace.v1.ConstantSampler;
 import io.opentelemetry.proto.trace.v1.ConstantSampler.ConstantDecision;
-import io.opentelemetry.trace.samplers.Samplers;
+import io.opentelemetry.trace.util.Samplers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

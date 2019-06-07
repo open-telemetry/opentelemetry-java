@@ -23,7 +23,7 @@ import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.samplers.Samplers;
+import io.opentelemetry.trace.util.Samplers;
 import javax.annotation.concurrent.Immutable;
 
 /** Class that holds global trace parameters. */

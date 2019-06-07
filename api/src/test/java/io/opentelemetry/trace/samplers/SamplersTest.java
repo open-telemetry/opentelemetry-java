@@ -26,6 +26,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.util.Samplers;
 import java.util.Collections;
 import java.util.Random;
 import org.junit.Test;
