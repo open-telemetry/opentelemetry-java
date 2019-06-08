@@ -32,7 +32,8 @@ import io.opentelemetry.distributedcontext.EmptyDistributedContext;
  */
 public final class ContextUtils {
   private static final Context.Key<DistributedContext> DIST_CONTEXT_KEY =
-      Context.keyWithDefault("opentelemetry-dist-context-key", EmptyDistributedContext.INSTANCE);
+      Context.keyWithDefault(
+          "opentelemetry-dist-context-key", EmptyDistributedContext.getInstance());
 
   /**
    * Creates a new {@code Context} with the given value set.

@@ -28,8 +28,17 @@ import javax.annotation.concurrent.Immutable;
 public class EmptyDistributedContext implements DistributedContext {
   private static final Iterator<Entry> EMPTY_ITERATOR = Collections.<Entry>emptyList().iterator();
 
-  /** Returns the single instance of the {@link EmptyDistributedContext} class. */
-  public static final DistributedContext INSTANCE = new EmptyDistributedContext();
+  /**
+   * Returns the single instance of the {@link EmptyDistributedContext} class.
+   *
+   * @return the single instance of the {@code EmptyDistributedContext} class.
+   * @since 0.1.0
+   */
+  public static DistributedContext getInstance() {
+    return INSTANCE;
+  }
+
+  private static final DistributedContext INSTANCE = new EmptyDistributedContext();
 
   @Override
   public Iterator<Entry> getIterator() {

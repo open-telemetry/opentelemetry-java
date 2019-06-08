@@ -44,7 +44,7 @@ public class DistributedContextManagerSdkTest {
   @Test
   public void testGetCurrentContext_DefaultContext() {
     assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+        .isSameInstanceAs(EmptyDistributedContext.getInstance());
   }
 
   @Test
@@ -62,12 +62,12 @@ public class DistributedContextManagerSdkTest {
   @Test
   public void testWithDistributedContext() {
     assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+        .isSameInstanceAs(EmptyDistributedContext.getInstance());
     try (Scope wtm = contextManager.withContext(distContext)) {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
     }
     assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+        .isSameInstanceAs(EmptyDistributedContext.getInstance());
   }
 
   @Test
@@ -86,7 +86,7 @@ public class DistributedContextManagerSdkTest {
                   });
     }
     assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+        .isSameInstanceAs(EmptyDistributedContext.getInstance());
     // When we run the runnable we will have the DistributedContext in the current Context.
     runnable.run();
   }

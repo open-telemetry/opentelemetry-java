@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.samplers;
+package io.opentelemetry.trace.util;
 
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Sampler;

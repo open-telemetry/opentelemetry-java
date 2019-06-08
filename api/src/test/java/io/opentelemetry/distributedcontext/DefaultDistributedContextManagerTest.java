@@ -66,7 +66,7 @@ public final class DefaultDistributedContextManagerTest {
   @Test
   public void getCurrentContext_DefaultContext() {
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+        .isSameInstanceAs(EmptyDistributedContext.getInstance());
   }
 
   @Test
@@ -84,7 +84,7 @@ public final class DefaultDistributedContextManagerTest {
   @Test
   public void withContext() {
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+        .isSameInstanceAs(EmptyDistributedContext.getInstance());
     Scope wtm = defaultDistributedContextManager.withContext(DIST_CONTEXT);
     try {
       assertThat(defaultDistributedContextManager.getCurrentContext())
@@ -93,22 +93,22 @@ public final class DefaultDistributedContextManagerTest {
       wtm.close();
     }
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+        .isSameInstanceAs(EmptyDistributedContext.getInstance());
   }
 
   @Test
-  public void withContext_nullDistributedContex() {
+  public void withContext_nullContext() {
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+        .isSameInstanceAs(EmptyDistributedContext.getInstance());
     Scope wtm = defaultDistributedContextManager.withContext(null);
     try {
       assertThat(defaultDistributedContextManager.getCurrentContext())
-          .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+          .isSameInstanceAs(EmptyDistributedContext.getInstance());
     } finally {
       wtm.close();
     }
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+        .isSameInstanceAs(EmptyDistributedContext.getInstance());
   }
 
   @Test
@@ -132,41 +132,41 @@ public final class DefaultDistributedContextManagerTest {
       wtm.close();
     }
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.INSTANCE);
+        .isSameInstanceAs(EmptyDistributedContext.getInstance());
     // When we run the runnable we will have the DistributedContext in the current Context.
     runnable.run();
   }
 
   @Test
-  public void noopDistributedContexBuilder_SetParent_DisallowsNullKey() {
+  public void noopContextBuilder_SetParent_DisallowsNullKey() {
     DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.setParent(null);
   }
 
   @Test
-  public void noopDistributedContexBuilder_Put_DisallowsNullKey() {
+  public void noopContextBuilder_Put_DisallowsNullKey() {
     DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(null, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
-  public void noopDistributedContexBuilder_Put_DisallowsNullValue() {
+  public void noopContextBuilder_Put_DisallowsNullValue() {
     DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(KEY, null, Entry.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
-  public void noopDistributedContexBuilder_Put_DisallowsNullEntryMetadata() {
+  public void noopContextBuilder_Put_DisallowsNullEntryMetadata() {
     DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(KEY, VALUE, null);
   }
 
   @Test
-  public void noopDistributedContexBuilder_Remove_DisallowsNullKey() {
+  public void noopContextBuilder_Remove_DisallowsNullKey() {
     DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.remove(null);

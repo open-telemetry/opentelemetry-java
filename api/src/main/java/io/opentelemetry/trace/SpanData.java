@@ -179,6 +179,43 @@ public abstract class SpanData {
   SpanData() {}
 
   /**
+   * An immutable implementation of {@link io.opentelemetry.trace.Link}.
+   *
+   * @since 0.1.0
+   */
+  @Immutable
+  @AutoValue
+  public abstract static class Link implements io.opentelemetry.trace.Link {
+    private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES = Collections.emptyMap();
+
+    /**
+     * Returns a new {@code Link}.
+     *
+     * @param context the context of the linked {@code Span}.
+     * @return a new {@code Link}.
+     * @since 0.1.0
+     */
+    public static Link create(SpanContext context) {
+      return new AutoValue_SpanData_Link(context, EMPTY_ATTRIBUTES);
+    }
+
+    /**
+     * Returns a new {@code Link}.
+     *
+     * @param context the context of the linked {@code Span}.
+     * @param attributes the attributes of the {@code Link}.
+     * @return a new {@code Link}.
+     * @since 0.1.0
+     */
+    public static Link create(SpanContext context, Map<String, AttributeValue> attributes) {
+      return new AutoValue_SpanData_Link(
+          context, Collections.unmodifiableMap(new HashMap<>(attributes)));
+    }
+
+    Link() {}
+  }
+
+  /**
    * An immutable implementation of the {@link io.opentelemetry.trace.Event}.
    *
    * @since 0.1.0

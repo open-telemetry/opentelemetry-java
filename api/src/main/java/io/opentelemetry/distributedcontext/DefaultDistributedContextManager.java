@@ -92,10 +92,10 @@ public final class DefaultDistributedContextManager implements DistributedContex
 
     @Override
     public DistributedContext.Builder put(
-        EntryKey key, EntryValue value, EntryMetadata entryMetadata) {
+        EntryKey key, EntryValue value, EntryMetadata tagMetadata) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");
-      Utils.checkNotNull(entryMetadata, "entryMetadata");
+      Utils.checkNotNull(tagMetadata, "tagMetadata");
       return this;
     }
 
@@ -107,12 +107,12 @@ public final class DefaultDistributedContextManager implements DistributedContex
 
     @Override
     public DistributedContext build() {
-      return EmptyDistributedContext.INSTANCE;
+      return EmptyDistributedContext.getInstance();
     }
 
     @Override
     public Scope buildScoped() {
-      return NoopScope.INSTANCE;
+      return NoopScope.getInstance();
     }
   }
 
@@ -129,7 +129,7 @@ public final class DefaultDistributedContextManager implements DistributedContex
     @Override
     public DistributedContext fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return EmptyDistributedContext.INSTANCE;
+      return EmptyDistributedContext.getInstance();
     }
   }
 
@@ -151,7 +151,7 @@ public final class DefaultDistributedContextManager implements DistributedContex
     public <C> DistributedContext extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
-      return EmptyDistributedContext.INSTANCE;
+      return EmptyDistributedContext.getInstance();
     }
   }
 }

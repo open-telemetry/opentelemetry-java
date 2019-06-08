@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.samplers;
+package io.opentelemetry.trace.util;
 
 import static io.opentelemetry.trace.TestUtils.generateRandomSpanId;
 import static io.opentelemetry.trace.TestUtils.generateRandomTraceId;
