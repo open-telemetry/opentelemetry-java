@@ -30,7 +30,12 @@ final class ScopeManagerShim implements ScopeManager {
 
   @Override
   public Span activeSpan() {
-    return new SpanShim(tracer.getCurrentSpan());
+    io.opentelemetry.trace.Span span = tracer.getCurrentSpan();
+    if (span instanceof io.opentelemetry.trace.DefaultSpan) {
+      return null;
+    }
+
+    return new SpanShim(span);
   }
 
   @Override
