@@ -69,20 +69,6 @@ public final class InMemoryTracer implements Tracer {
   }
 
   @Override
-  public Resource getResource() {
-    synchronized (this) {
-      return resource;
-    }
-  }
-
-  @Override
-  public void setResource(Resource resource) {
-    synchronized (this) {
-      this.resource = resource;
-    }
-  }
-
-  @Override
   public void recordSpanData(SpanData spanData) {
     synchronized (this) {
       finishedSpanDataItems.add(spanData);
