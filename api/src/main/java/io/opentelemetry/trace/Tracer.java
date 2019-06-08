@@ -20,7 +20,6 @@ import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.resources.Resource;
 
 /**
  * Tracer is a simple, interface for {@link Span} creation and in-process context interaction.
@@ -93,7 +92,7 @@ public interface Tracer {
    *
    * <p>Supports try-with-resource idiom.
    *
-   * <p>Can be called with {@link BlankSpan} to enter a scope of code where tracing is stopped.
+   * <p>Can be called with {@link DefaultSpan} to enter a scope of code where tracing is stopped.
    *
    * <p>Example of usage:
    *
@@ -151,23 +150,6 @@ public interface Tracer {
    * @since 0.1.0
    */
   Span.Builder spanBuilder(String spanName);
-
-  /**
-   * Sets the {@link Resource} to be associated with all {@link Span} and {@link SpanData} objects
-   * recorded by this {@link Tracer}.
-   *
-   * @param resource Resource to be associated with all {@link Span} and {@link SpanData} objects.
-   */
-  void setResource(Resource resource);
-
-  /**
-   * Gets the {@link Resource} that is associating with all the {@link Span} and {@link SpanData}
-   * objects recorded by this {@link Tracer}.
-   *
-   * @return {@link Resource} that is associating with all {@link Span} and {@link SpanData}
-   *     objects.
-   */
-  Resource getResource();
 
   /**
    * Records a {@link SpanData}. This API allows to send a pre-populated span object to the

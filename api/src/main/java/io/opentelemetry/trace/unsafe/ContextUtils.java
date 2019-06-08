@@ -18,7 +18,7 @@ package io.opentelemetry.trace.unsafe;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.trace.BlankSpan;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 
@@ -26,13 +26,13 @@ import io.opentelemetry.trace.Tracer;
  * Util methods/functionality to interact with the {@link io.grpc.Context}.
  *
  * <p>Users must interact with the current Context via the public APIs in {@link Tracer} and avoid
- * usages of the {@link #CONTEXT_SPAN_KEY} directly.
+ * accessing this class directly.
  *
  * @since 0.1.0
  */
 public final class ContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
-      Context.keyWithDefault("opentelemetry-trace-span-key", BlankSpan.INSTANCE);
+      Context.<Span>keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.create());
 
   /**
    * Creates a new {@code Context} with the given value set.

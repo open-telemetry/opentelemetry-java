@@ -89,7 +89,7 @@ public class TraceContextFormatTest {
   public void inject_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     traceContextFormat.inject(
-        SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.DEFAULT, TRACESTATE_DEFAULT),
+        SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_DEFAULT),
         carrier,
         setter);
     assertThat(carrier).containsExactly(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
@@ -111,7 +111,7 @@ public class TraceContextFormatTest {
   public void inject_NotSampledContext_WithTraceState() {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     traceContextFormat.inject(
-        SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.DEFAULT, TRACESTATE_NOT_DEFAULT),
+        SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_NOT_DEFAULT),
         carrier,
         setter);
     assertThat(carrier)
@@ -136,7 +136,8 @@ public class TraceContextFormatTest {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     assertThat(traceContextFormat.extract(carrier, getter))
-        .isEqualTo(SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.DEFAULT, TRACESTATE_DEFAULT));
+        .isEqualTo(
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_DEFAULT));
   }
 
   @Test
@@ -156,7 +157,8 @@ public class TraceContextFormatTest {
     carrier.put(TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING);
     assertThat(traceContextFormat.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.DEFAULT, TRACESTATE_NOT_DEFAULT));
+            SpanContext.create(
+                TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_NOT_DEFAULT));
   }
 
   @Test
@@ -164,7 +166,8 @@ public class TraceContextFormatTest {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     carrier.put(TRACEPARENT, "01-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-02");
     assertThat(traceContextFormat.extract(carrier, getter))
-        .isEqualTo(SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.DEFAULT, TRACESTATE_DEFAULT));
+        .isEqualTo(
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_DEFAULT));
   }
 
   @Test
@@ -173,7 +176,8 @@ public class TraceContextFormatTest {
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     carrier.put(TRACESTATE, "");
     assertThat(traceContextFormat.extract(carrier, getter))
-        .isEqualTo(SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.DEFAULT, TRACESTATE_DEFAULT));
+        .isEqualTo(
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_DEFAULT));
   }
 
   @Test
@@ -183,7 +187,8 @@ public class TraceContextFormatTest {
     carrier.put(TRACESTATE, "foo=bar   ,    bar=baz");
     assertThat(traceContextFormat.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.DEFAULT, TRACESTATE_NOT_DEFAULT));
+            SpanContext.create(
+                TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_NOT_DEFAULT));
   }
 
   @Test

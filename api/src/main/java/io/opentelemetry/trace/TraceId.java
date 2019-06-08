@@ -28,30 +28,54 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class TraceId implements Comparable<TraceId> {
-  /**
-   * The size in bytes of the {@code TraceId}.
-   *
-   * @since 0.1.0
-   */
-  public static final int SIZE = 16;
 
+  private static final int SIZE = 16;
   private static final int BASE16_SIZE = 2 * BigendianEncoding.LONG_BASE16;
   private static final long INVALID_ID = 0;
-
-  /**
-   * The invalid {@code TraceId}. All bytes are '\0'.
-   *
-   * @since 0.1.0
-   */
-  public static final TraceId INVALID = new TraceId(INVALID_ID, INVALID_ID);
+  private static final TraceId INVALID = new TraceId(INVALID_ID, INVALID_ID);
 
   // The internal representation of the TraceId.
   private final long idHi;
   private final long idLo;
 
-  private TraceId(long idHi, long idLo) {
+  /**
+   * Constructs a {@code TraceId} whose representation is specified by two long values representing
+   * the lower and higher parts.
+   *
+   * <p>There is no restriction on the specified values, other than the already established validity
+   * rules applying to {@code TraceId}. Specifying 0 for both values will effectively make the new
+   * {@code TraceId} invalid.
+   *
+   * <p>This is equivalent to calling {@link #fromBytes(byte[], int)} with the specified values
+   * stored as big-endian.
+   *
+   * @param idHi the higher part of the {@code TraceId}.
+   * @param idLo the lower part of the {@code TraceId}.
+   * @since 0.1.0
+   */
+  public TraceId(long idHi, long idLo) {
     this.idHi = idHi;
     this.idLo = idLo;
+  }
+
+  /**
+   * Returns the size in bytes of the {@code TraceId}.
+   *
+   * @return the size in bytes of the {@code TraceId}.
+   * @since 0.1.0
+   */
+  public static int getSize() {
+    return SIZE;
+  }
+
+  /**
+   * Returns the invalid {@code TraceId}. All bytes are '\0'.
+   *
+   * @return the invalid {@code TraceId}.
+   * @since 0.1.0
+   */
+  public static TraceId getInvalid() {
+    return INVALID;
   }
 
   /**
@@ -63,7 +87,7 @@ public final class TraceId implements Comparable<TraceId> {
    *     begins.
    * @return a {@code TraceId} whose representation is copied from the buffer.
    * @throws NullPointerException if {@code src} is null.
-   * @throws IndexOutOfBoundsException if {@code srcOffset+TraceId.SIZE} is greater than {@code
+   * @throws IndexOutOfBoundsException if {@code srcOffset+TraceId.getSize()} is greater than {@code
    *     src.length}.
    * @since 0.1.0
    */
@@ -81,8 +105,8 @@ public final class TraceId implements Comparable<TraceId> {
    * @param dest the destination buffer.
    * @param destOffset the starting offset in the destination buffer.
    * @throws NullPointerException if {@code dest} is null.
-   * @throws IndexOutOfBoundsException if {@code destOffset+TraceId.SIZE} is greater than {@code
-   *     dest.length}.
+   * @throws IndexOutOfBoundsException if {@code destOffset+TraceId.getSize()} is greater than
+   *     {@code dest.length}.
    * @since 0.1.0
    */
   public void copyBytesTo(byte[] dest, int destOffset) {
@@ -115,7 +139,7 @@ public final class TraceId implements Comparable<TraceId> {
    *
    * @param dest the destination buffer.
    * @param destOffset the starting offset in the destination buffer.
-   * @throws IndexOutOfBoundsException if {@code destOffset + 2 * TraceId.SIZE} is greater than
+   * @throws IndexOutOfBoundsException if {@code destOffset + 2 * TraceId.getSize()} is greater than
    *     {@code dest.length}.
    * @since 0.1.0
    */

@@ -21,30 +21,36 @@ import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * The {@code BlankSpan} is the default {@link Span} that is used when no {@code Span}
+ * The {@code DefaultSpan} is the default {@link Span} that is used when no {@code Span}
  * implementation is available. All operations are no-op except context propagation.
- *
- * <p>When no valid context ({@code null} or {@link SpanContext#BLANK}) is available then
- * implementation propagates {@link BlankSpan#INSTANCE} which encapsulates {@link
- * SpanContext#BLANK}.
  *
  * <p>Used also to stop tracing, see {@link Tracer#withSpan}.
  *
  * @since 0.1.0
  */
 @Immutable
-public final class BlankSpan implements Span {
+public final class DefaultSpan implements Span {
+
   /**
-   * An instance of this class. If there is no {@code SpanContext} or {@link SpanContext#BLANK} to
-   * propagate this instance is used.
+   * Creates an instance of this class.
    *
+   * <p>Each instance will have a unique and valid {@link SpanId}.
+   *
+   * @return a {@link DefaultSpan}.
    * @since 0.1.0
    */
-  public static final Span INSTANCE = new BlankSpan(SpanContext.BLANK);
+  public static DefaultSpan create() {
+    return new DefaultSpan(
+        SpanContext.create(
+            TraceId.getInvalid(),
+            SpanId.getInvalid(),
+            TraceOptions.getDefault(),
+            Tracestate.getDefault()));
+  }
 
   private final SpanContext spanContext;
 
-  BlankSpan(SpanContext spanContext) {
+  DefaultSpan(SpanContext spanContext) {
     this.spanContext = spanContext;
   }
 
@@ -90,6 +96,17 @@ public final class BlankSpan implements Span {
   }
 
   @Override
+  public void addLink(SpanContext spanContext) {
+    Utils.checkNotNull(spanContext, "spanContext");
+  }
+
+  @Override
+  public void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
+    Utils.checkNotNull(spanContext, "spanContext");
+    Utils.checkNotNull(attributes, "attributes");
+  }
+
+  @Override
   public void addLink(Link link) {
     Utils.checkNotNull(link, "link");
   }
@@ -119,6 +136,6 @@ public final class BlankSpan implements Span {
 
   @Override
   public String toString() {
-    return "BlankSpan";
+    return "DefaultSpan";
   }
 }

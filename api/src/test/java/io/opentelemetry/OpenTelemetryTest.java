@@ -31,7 +31,6 @@ import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.metrics.Measurement;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.spi.MeterProvider;
-import io.opentelemetry.resources.Resource;
 import io.opentelemetry.tags.DefaultTagger;
 import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.tags.Tagger;
@@ -212,14 +211,6 @@ public class OpenTelemetryTest {
 
     @Override
     public Span.Builder spanBuilder(String spanName) {
-      return null;
-    }
-
-    @Override
-    public void setResource(Resource resource) {}
-
-    @Override
-    public Resource getResource() {
       return null;
     }
 

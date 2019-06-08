@@ -64,7 +64,7 @@ public final class DefaultTaggerTest {
 
   @Test
   public void getCurrentTagMap_DefaultContext() {
-    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
   }
 
   @Test
@@ -81,26 +81,26 @@ public final class DefaultTaggerTest {
 
   @Test
   public void withTagMap() {
-    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
     Scope wtm = defaultTagger.withTagMap(TAG_MAP);
     try {
       assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(TAG_MAP);
     } finally {
       wtm.close();
     }
-    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
   }
 
   @Test
   public void withTagMap_nullTagMap() {
-    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
     Scope wtm = defaultTagger.withTagMap(null);
     try {
-      assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+      assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
     } finally {
       wtm.close();
     }
-    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
   }
 
   @Test
@@ -121,7 +121,7 @@ public final class DefaultTaggerTest {
     } finally {
       wtm.close();
     }
-    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.INSTANCE);
+    assertThat(defaultTagger.getCurrentTagMap()).isSameInstanceAs(EmptyTagMap.getInstance());
     // When we run the runnable we will have the TagMap in the current Context.
     runnable.run();
   }

@@ -53,7 +53,7 @@ public class ProbabilitySamplerTest {
       SpanContext.create(
           traceId, parentSpanId, TraceOptions.builder().setIsSampled(true).build(), tracestate);
   private final SpanContext notSampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceOptions.DEFAULT, tracestate);
+      SpanContext.create(traceId, parentSpanId, TraceOptions.getDefault(), tracestate);
   private final Span sampledSpan =
       new Span() {
         @Override
@@ -79,6 +79,12 @@ public class ProbabilitySamplerTest {
 
         @Override
         public void addEvent(Event event) {}
+
+        @Override
+        public void addLink(SpanContext spanContext) {}
+
+        @Override
+        public void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {}
 
         @Override
         public void addLink(Link link) {}

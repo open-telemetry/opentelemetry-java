@@ -37,24 +37,24 @@ public class DefaultTracerTest {
       SpanContext.create(
           TraceId.fromBytes(firstBytes, 0),
           SpanId.fromBytes(firstBytes, 8),
-          TraceOptions.DEFAULT,
-          Tracestate.builder().build());
+          TraceOptions.getDefault(),
+          Tracestate.getDefault());
 
   @Test
   public void defaultGetCurrentSpan() {
-    assertThat(defaultTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void getCurrentSpan_WithSpan() {
-    assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
-    Scope ws = defaultTracer.withSpan(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    Scope ws = defaultTracer.withSpan(DefaultSpan.create());
     try {
-      assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+      assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     } finally {
       ws.close();
     }
-    assertThat(defaultTracer.getCurrentSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test(expected = NullPointerException.class)
@@ -64,8 +64,7 @@ public class DefaultTracerTest {
 
   @Test
   public void defaultSpanBuilderWithName() {
-    assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan())
-        .isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -80,18 +79,17 @@ public class DefaultTracerTest {
     try {
       assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
       Span secondSpan = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-      Scope secondScope = defaultTracer.withSpan(span);
+      Scope secondScope = defaultTracer.withSpan(secondSpan);
       try {
         assertThat(defaultTracer.getCurrentSpan()).isEqualTo(secondSpan);
-        secondScope.close();
-        assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
       } finally {
         secondScope.close();
+        assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
       }
     } finally {
       scope.close();
     }
-    assertThat(defaultTracer.getCurrentSpan()).isEqualTo(BlankSpan.INSTANCE);
+    assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -102,7 +100,7 @@ public class DefaultTracerTest {
 
   @Test
   public void testSpanContextPropagation() {
-    BlankSpan parent = new BlankSpan(spanContext);
+    DefaultSpan parent = new DefaultSpan(spanContext);
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
     assertThat(span.getContext()).isSameInstanceAs(spanContext);
@@ -110,7 +108,7 @@ public class DefaultTracerTest {
 
   @Test
   public void testSpanContextPropagationCurrentSpan() {
-    BlankSpan parent = new BlankSpan(spanContext);
+    DefaultSpan parent = new DefaultSpan(spanContext);
     Scope scope = defaultTracer.withSpan(parent);
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();

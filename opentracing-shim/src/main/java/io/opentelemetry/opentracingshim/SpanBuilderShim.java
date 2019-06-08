@@ -19,6 +19,7 @@ package io.opentelemetry.opentracingshim;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import io.opentracing.Span;
@@ -61,7 +62,7 @@ final class SpanBuilderShim implements SpanBuilder {
     if (parentSpan == null && parentSpanContext == null) {
       parentSpan = actualParent;
     } else {
-      parentLinks.add(Link.create(actualParent.getContext()));
+      parentLinks.add(SpanData.Link.create(actualParent.getContext()));
     }
 
     return this;
@@ -84,7 +85,7 @@ final class SpanBuilderShim implements SpanBuilder {
     if (parentSpan == null && parentSpanContext == null) {
       parentSpanContext = actualContext;
     } else {
-      parentLinks.add(Link.create(actualContext));
+      parentLinks.add(SpanData.Link.create(actualContext));
     }
 
     return this;
@@ -188,11 +189,14 @@ final class SpanBuilderShim implements SpanBuilder {
       builder.setParent(parentSpanContext);
     }
 
-    if (!parentLinks.isEmpty()) {
-      builder.addLinks(parentLinks);
+    for (Link link : parentLinks) {
+      builder.addLink(link);
     }
 
-    builder.setSpanKind(spanKind);
+    if (spanKind != null) {
+      builder.setSpanKind(spanKind);
+    }
+
     io.opentelemetry.trace.Span span = builder.startSpan();
 
     for (int i = 0; i < this.spanBuilderAttributeKeys.size(); i++) {

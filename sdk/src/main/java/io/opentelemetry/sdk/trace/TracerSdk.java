@@ -20,7 +20,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.context.propagation.TraceContextFormat;
-import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -48,14 +47,6 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return null;
-  }
-
-  @Override
-  public void setResource(Resource resource) {}
-
-  @Override
-  public Resource getResource() {
     return null;
   }
 

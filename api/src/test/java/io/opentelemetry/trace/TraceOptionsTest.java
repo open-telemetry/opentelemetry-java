@@ -32,7 +32,7 @@ public class TraceOptionsTest {
 
   @Test
   public void getByte() {
-    assertThat(TraceOptions.DEFAULT.getByte()).isEqualTo(0);
+    assertThat(TraceOptions.getDefault().getByte()).isEqualTo(0);
     assertThat(TraceOptions.builder().setIsSampled(false).build().getByte()).isEqualTo(0);
     assertThat(TraceOptions.builder().setIsSampled(true).build().getByte()).isEqualTo(1);
     assertThat(TraceOptions.builder().setIsSampled(true).setIsSampled(false).build().getByte())
@@ -44,7 +44,7 @@ public class TraceOptionsTest {
 
   @Test
   public void isSampled() {
-    assertThat(TraceOptions.DEFAULT.isSampled()).isFalse();
+    assertThat(TraceOptions.getDefault().isSampled()).isFalse();
     assertThat(TraceOptions.builder().setIsSampled(true).build().isSampled()).isTrue();
   }
 
@@ -75,7 +75,7 @@ public class TraceOptionsTest {
   @Test
   public void traceOptions_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
-    tester.addEqualityGroup(TraceOptions.DEFAULT);
+    tester.addEqualityGroup(TraceOptions.getDefault());
     tester.addEqualityGroup(
         TraceOptions.fromByte(SECOND_BYTE), TraceOptions.builder().setIsSampled(true).build());
     tester.addEqualityGroup(TraceOptions.fromByte(FIRST_BYTE));
@@ -84,7 +84,7 @@ public class TraceOptionsTest {
 
   @Test
   public void traceOptions_ToString() {
-    assertThat(TraceOptions.DEFAULT.toString()).contains("sampled=false");
+    assertThat(TraceOptions.getDefault().toString()).contains("sampled=false");
     assertThat(TraceOptions.builder().setIsSampled(true).build().toString())
         .contains("sampled=true");
   }

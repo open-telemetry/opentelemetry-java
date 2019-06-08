@@ -19,7 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.samplers.Samplers;
+import io.opentelemetry.trace.util.Samplers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -37,10 +37,10 @@ public class SpanBuilderTest {
     spanBuilder.setRecordEvents(true);
     spanBuilder.setSampler(Samplers.alwaysSample());
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(BlankSpan.INSTANCE);
-    spanBuilder.setParent(BlankSpan.INSTANCE.getContext());
+    spanBuilder.setParent(DefaultSpan.create());
+    spanBuilder.setParent(DefaultSpan.create().getContext());
     spanBuilder.setNoParent();
-    assertThat(spanBuilder.startSpan()).isSameInstanceAs(BlankSpan.INSTANCE);
+    assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Rule public final ExpectedException thrown = ExpectedException.none();

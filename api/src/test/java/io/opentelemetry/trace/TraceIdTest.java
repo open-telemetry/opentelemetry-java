@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,16 +33,18 @@ public class TraceIdTest {
   private static final byte[] secondBytes =
       new byte[] {(byte) 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A'};
   private static final TraceId first = TraceId.fromBytes(firstBytes, 0);
-  private static final TraceId second = TraceId.fromBytes(secondBytes, 0);
+  private static final TraceId second =
+      new TraceId(
+          ByteBuffer.wrap(secondBytes).getLong(), ByteBuffer.wrap(secondBytes, 8, 8).getLong());
 
   @Test
   public void invalidTraceId() {
-    assertThat(TraceId.INVALID.getLowerLong()).isEqualTo(0);
+    assertThat(TraceId.getInvalid().getLowerLong()).isEqualTo(0);
   }
 
   @Test
   public void isValid() {
-    assertThat(TraceId.INVALID.isValid()).isFalse();
+    assertThat(TraceId.getInvalid().isValid()).isFalse();
     assertThat(first.isValid()).isTrue();
     assertThat(second.isValid()).isTrue();
   }
@@ -55,7 +58,7 @@ public class TraceIdTest {
   @Test
   public void fromLowerBase16() {
     assertThat(TraceId.fromLowerBase16("00000000000000000000000000000000", 0))
-        .isEqualTo(TraceId.INVALID);
+        .isEqualTo(TraceId.getInvalid());
     assertThat(TraceId.fromLowerBase16("00000000000000000000000000000061", 0)).isEqualTo(first);
     assertThat(TraceId.fromLowerBase16("ff000000000000000000000000000041", 0)).isEqualTo(second);
   }
@@ -63,7 +66,7 @@ public class TraceIdTest {
   @Test
   public void fromLowerBase16_WithOffset() {
     assertThat(TraceId.fromLowerBase16("XX00000000000000000000000000000000CC", 2))
-        .isEqualTo(TraceId.INVALID);
+        .isEqualTo(TraceId.getInvalid());
     assertThat(TraceId.fromLowerBase16("YY00000000000000000000000000000061AA", 2)).isEqualTo(first);
     assertThat(TraceId.fromLowerBase16("ZZff000000000000000000000000000041BB", 2))
         .isEqualTo(second);
@@ -71,7 +74,7 @@ public class TraceIdTest {
 
   @Test
   public void toLowerBase16() {
-    assertThat(TraceId.INVALID.toLowerBase16()).isEqualTo("00000000000000000000000000000000");
+    assertThat(TraceId.getInvalid().toLowerBase16()).isEqualTo("00000000000000000000000000000000");
     assertThat(first.toLowerBase16()).isEqualTo("00000000000000000000000000000061");
     assertThat(second.toLowerBase16()).isEqualTo("ff000000000000000000000000000041");
   }
@@ -86,7 +89,7 @@ public class TraceIdTest {
   @Test
   public void traceId_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
-    tester.addEqualityGroup(TraceId.INVALID, TraceId.INVALID);
+    tester.addEqualityGroup(TraceId.getInvalid(), TraceId.getInvalid());
     tester.addEqualityGroup(
         first, TraceId.fromBytes(Arrays.copyOf(firstBytes, firstBytes.length), 0));
     tester.addEqualityGroup(
@@ -96,7 +99,7 @@ public class TraceIdTest {
 
   @Test
   public void traceId_ToString() {
-    assertThat(TraceId.INVALID.toString()).contains("00000000000000000000000000000000");
+    assertThat(TraceId.getInvalid().toString()).contains("00000000000000000000000000000000");
     assertThat(first.toString()).contains("00000000000000000000000000000061");
     assertThat(second.toString()).contains("ff000000000000000000000000000041");
   }

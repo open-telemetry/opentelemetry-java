@@ -16,11 +16,7 @@
 
 package io.opentelemetry.trace;
 
-import com.google.auto.value.AutoValue;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.concurrent.Immutable;
 
 /**
  * A link to a {@link Span}.
@@ -30,34 +26,7 @@ import javax.annotation.concurrent.Immutable;
  *
  * @since 0.1.0
  */
-@Immutable
-@AutoValue
-public abstract class Link {
-  private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES = Collections.emptyMap();
-
-  /**
-   * Returns a new {@code Link}.
-   *
-   * @param context the context of the linked {@code Span}.
-   * @return a new {@code Link}.
-   * @since 0.1.0
-   */
-  public static Link create(SpanContext context) {
-    return new AutoValue_Link(context, EMPTY_ATTRIBUTES);
-  }
-
-  /**
-   * Returns a new {@code Link}.
-   *
-   * @param context the context of the linked {@code Span}.
-   * @param attributes the attributes of the {@code Link}.
-   * @return a new {@code Link}.
-   * @since 0.1.0
-   */
-  public static Link create(SpanContext context, Map<String, AttributeValue> attributes) {
-    return new AutoValue_Link(context, Collections.unmodifiableMap(new HashMap<>(attributes)));
-  }
-
+public interface Link {
   /**
    * Returns the {@code TraceId}.
    *
@@ -73,6 +42,4 @@ public abstract class Link {
    * @since 0.1.0
    */
   public abstract Map<String, AttributeValue> getAttributes();
-
-  Link() {}
 }
