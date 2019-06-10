@@ -16,12 +16,12 @@
 
 package io.opentelemetry;
 
+import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
+import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
 import io.opentelemetry.metrics.DefaultMeter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.spi.MeterProvider;
-import io.opentelemetry.tags.DefaultTagger;
-import io.opentelemetry.tags.Tagger;
-import io.opentelemetry.tags.spi.TaggerProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.spi.TracerProvider;
@@ -30,13 +30,13 @@ import javax.annotation.Nullable;
 
 /**
  * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link Meter}
- * and {@link Tagger}.
+ * and {@link DistributedContextManager}.
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
  * @see TracerProvider
  * @see MeterProvider
- * @see TaggerProvider
+ * @see DistributedContextManagerProvider
  */
 public final class OpenTelemetry {
 
@@ -44,7 +44,7 @@ public final class OpenTelemetry {
 
   private final Tracer tracer;
   private final Meter meter;
-  private final Tagger tagger;
+  private final DistributedContextManager contextManager;
 
   /**
    * Returns a singleton {@link Tracer}.
@@ -69,14 +69,16 @@ public final class OpenTelemetry {
   }
 
   /**
-   * Returns a singleton {@link Tagger}.
+   * Returns a singleton {@link DistributedContextManager}.
    *
-   * @return registered meter or default via {@link DefaultTagger#getInstance()}.
-   * @throws IllegalStateException if a specified meter (via system properties) could not be found.
+   * @return registered manager or default via {@link
+   *     DefaultDistributedContextManager#getInstance()}.
+   * @throws IllegalStateException if a specified manager (via system properties) could not be
+   *     found.
    * @since 0.1.0
    */
-  public static Tagger getTagger() {
-    return getInstance().tagger;
+  public static DistributedContextManager getDistributedContextManager() {
+    return getInstance().contextManager;
   }
 
   /**
@@ -120,8 +122,12 @@ public final class OpenTelemetry {
     tracer = tracerProvider != null ? tracerProvider.create() : DefaultTracer.getInstance();
     MeterProvider meterProvider = loadSpi(MeterProvider.class);
     meter = meterProvider != null ? meterProvider.create() : DefaultMeter.getInstance();
-    TaggerProvider taggerProvider = loadSpi(TaggerProvider.class);
-    tagger = taggerProvider != null ? taggerProvider.create() : DefaultTagger.getInstance();
+    DistributedContextManagerProvider contextManagerProvider =
+        loadSpi(DistributedContextManagerProvider.class);
+    contextManager =
+        contextManagerProvider != null
+            ? contextManagerProvider.create()
+            : DefaultDistributedContextManager.getInstance();
   }
 
   // for testing

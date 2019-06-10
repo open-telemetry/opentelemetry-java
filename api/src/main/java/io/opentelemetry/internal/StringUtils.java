@@ -16,7 +16,7 @@
 
 package io.opentelemetry.internal;
 
-/** Internal utility methods for working with tag keys, tag values, and metric names. */
+/** Internal utility methods for working with attribute keys, attribute values, and metric names. */
 public final class StringUtils {
 
   /**
