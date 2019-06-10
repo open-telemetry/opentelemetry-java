@@ -19,7 +19,6 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import java.util.Collections;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -30,16 +29,15 @@ public class DefaultSpanTest {
   @Test
   public void hasInvalidContextAndDefaultSpanOptions() {
     SpanContext context = DefaultSpan.create().getContext();
-    assertThat(context.getTraceId()).isEqualTo(TraceId.getInvalid());
     assertThat(context.getTraceOptions()).isEqualTo(TraceOptions.getDefault());
     assertThat(context.getTracestate()).isEqualTo(Tracestate.getDefault());
   }
 
-  @Ignore
   @Test
-  public void hasUniqueSpanId() {
+  public void hasUniqueTraceIdAndSpanId() {
     DefaultSpan span1 = DefaultSpan.create();
     DefaultSpan span2 = DefaultSpan.create();
+    assertThat(span1.getContext().getTraceId()).isNotEqualTo(span2.getContext().getTraceId());
     assertThat(span1.getContext().getSpanId()).isNotEqualTo(span2.getContext().getSpanId());
   }
 

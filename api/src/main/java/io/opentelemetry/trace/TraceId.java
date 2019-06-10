@@ -17,6 +17,7 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.internal.Utils;
+import java.util.Random;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -76,6 +77,22 @@ public final class TraceId implements Comparable<TraceId> {
    */
   public static TraceId getInvalid() {
     return INVALID;
+  }
+
+  /**
+   * Generates a new random {@code TraceId}.
+   *
+   * @param random the random number generator.
+   * @return a new valid {@code TraceId}.
+   */
+  static TraceId generateRandomId(Random random) {
+    long idHi;
+    long idLo;
+    do {
+      idHi = random.nextLong();
+      idLo = random.nextLong();
+    } while (idHi == INVALID_ID && idLo == INVALID_ID);
+    return new TraceId(idHi, idLo);
   }
 
   /**
