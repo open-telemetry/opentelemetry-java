@@ -29,7 +29,11 @@ final class ScopeManagerShim implements ScopeManager {
   }
 
   @Override
+  @SuppressWarnings("ReturnMissingNullable")
   public Span activeSpan() {
+    // As OpenTracing simply returns null when no active instance is available,
+    // we need to do an explicit check against DefaultSpan,
+    // which is used in OpenTelemetry for this very case.
     io.opentelemetry.trace.Span span = tracer.getCurrentSpan();
     if (span instanceof io.opentelemetry.trace.DefaultSpan) {
       return null;
