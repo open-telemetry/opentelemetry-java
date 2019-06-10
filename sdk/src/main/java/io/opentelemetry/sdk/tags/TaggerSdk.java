@@ -33,7 +33,7 @@ public class TaggerSdk implements Tagger {
 
   @Override
   public TagMap.Builder tagMapBuilder() {
-    return null;
+    return new TagMapSdk.Builder();
   }
 
   @Override
