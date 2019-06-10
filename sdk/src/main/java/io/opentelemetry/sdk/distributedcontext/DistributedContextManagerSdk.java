@@ -35,7 +35,7 @@ public class DistributedContextManagerSdk implements DistributedContextManager {
 
   @Override
   public DistributedContext.Builder contextBuilder() {
-    return null;
+    return new TagMapSdk.Builder();
   }
 
   @Override
