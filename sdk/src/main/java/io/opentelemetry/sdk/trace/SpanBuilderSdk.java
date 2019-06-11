@@ -24,6 +24,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Builder;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ class SpanBuilderSdk implements Span.Builder {
   private boolean recordEvents;
   private Sampler sampler;
   private final String spanName;
-  private boolean noParent;
+  private ParentType parentType = ParentType.CURRENT_SPAN;
 
   SpanBuilderSdk(String spanName) {
     this.spanName = spanName;
@@ -46,21 +47,20 @@ class SpanBuilderSdk implements Span.Builder {
   @Override
   public Builder setParent(Span parent) {
     Utils.checkNotNull(parent, "parent");
-    this.parent = parent.getContext();
-    this.noParent = false;
+    this.setParent(parent.getContext());
     return this;
   }
 
   @Override
   public Builder setParent(SpanContext remoteParent) {
     this.parent = Utils.checkNotNull(remoteParent, "remoteParent");
-    this.noParent = false;
+    this.parentType = ParentType.PARENT;
     return this;
   }
 
   @Override
   public Builder setNoParent() {
-    this.noParent = true;
+    this.parentType = ParentType.NO_PARENT;
     this.parent = null;
     return this;
   }
@@ -80,7 +80,7 @@ class SpanBuilderSdk implements Span.Builder {
   @Override
   public Builder addLink(SpanContext spanContext) {
     Utils.checkNotNull(spanContext, "spanContext");
-    addLink(Link.create(spanContext));
+    addLink(SpanData.Link.create(spanContext));
     return this;
   }
 
@@ -88,7 +88,7 @@ class SpanBuilderSdk implements Span.Builder {
   public Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
     Utils.checkNotNull(spanContext, "spanContext");
     Utils.checkNotNull(attributes, "attributes");
-    addLink(Link.create(spanContext, attributes));
+    addLink(SpanData.Link.create(spanContext, attributes));
     return this;
   }
 
@@ -112,5 +112,11 @@ class SpanBuilderSdk implements Span.Builder {
   public SpanSdk startSpan() {
     // TODO get parent span from the context if noParent=false and parent/remoteParents are null
     return null;
+  }
+
+  private enum ParentType {
+    CURRENT_SPAN,
+    PARENT,
+    NO_PARENT,
   }
 }
