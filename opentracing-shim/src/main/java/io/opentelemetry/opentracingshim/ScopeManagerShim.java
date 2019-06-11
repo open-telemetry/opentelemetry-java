@@ -35,7 +35,7 @@ final class ScopeManagerShim implements ScopeManager {
     // we need to do an explicit check against DefaultSpan,
     // which is used in OpenTelemetry for this very case.
     io.opentelemetry.trace.Span span = tracer.getCurrentSpan();
-    if (span instanceof io.opentelemetry.trace.DefaultSpan) {
+    if (io.opentelemetry.trace.DefaultSpan.getInvalid().equals(span)) {
       return null;
     }
 
