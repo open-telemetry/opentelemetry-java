@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.metrics.CounterDouble;
 import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.GaugeDouble;
@@ -23,7 +24,6 @@ import io.opentelemetry.metrics.GaugeLong.Builder;
 import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.metrics.Measurement;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.tags.TagMap;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 
@@ -59,8 +59,9 @@ public class MeterSdk implements Meter {
   public void record(List<Measurement> measurements) {}
 
   @Override
-  public void record(List<Measurement> measurements, TagMap tags) {}
+  public void record(List<Measurement> measurements, DistributedContext distContext) {}
 
   @Override
-  public void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext) {}
+  public void record(
+      List<Measurement> measurements, DistributedContext distContext, SpanContext spanContext) {}
 }

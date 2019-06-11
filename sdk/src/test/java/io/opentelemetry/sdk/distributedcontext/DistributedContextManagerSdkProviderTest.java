@@ -14,26 +14,20 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk;
+package io.opentelemetry.sdk.distributedcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
-import io.opentelemetry.sdk.metrics.MeterSdk;
-import io.opentelemetry.sdk.trace.TracerSdk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class OpenTelemetryTest {
+public class DistributedContextManagerSdkProviderTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracer()).isInstanceOf(TracerSdk.class);
-    assertThat(OpenTelemetry.getDistributedContextManager())
+    assertThat(new DistributedContextManagerSdkProvider().create())
         .isInstanceOf(DistributedContextManagerSdk.class);
-    assertThat(OpenTelemetry.getMeter()).isInstanceOf(MeterSdk.class);
   }
 }

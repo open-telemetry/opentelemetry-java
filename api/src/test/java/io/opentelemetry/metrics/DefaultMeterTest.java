@@ -16,10 +16,10 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.tags.Tag;
-import io.opentelemetry.tags.TagKey;
-import io.opentelemetry.tags.TagMap;
-import io.opentelemetry.tags.TagValue;
+import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.distributedcontext.Entry;
+import io.opentelemetry.distributedcontext.EntryKey;
+import io.opentelemetry.distributedcontext.EntryValue;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -33,9 +33,9 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link DefaultMeter}. */
 @RunWith(JUnit4.class)
 public final class DefaultMeterTest {
-  private static final Tag TAG =
-      Tag.create(
-          TagKey.create("key"), TagValue.create("value"), Tag.METADATA_UNLIMITED_PROPAGATION);
+  private static final Entry ENTRY =
+      Entry.create(
+          EntryKey.create("key"), EntryValue.create("value"), Entry.METADATA_UNLIMITED_PROPAGATION);
 
   private static final Meter defaultMeter = DefaultMeter.getInstance();
 
@@ -47,18 +47,18 @@ public final class DefaultMeterTest {
           .setUnit("1")
           .build();
 
-  private final TagMap tagMap =
-      new TagMap() {
+  private final DistributedContext distContext =
+      new DistributedContext() {
 
         @Override
-        public Iterator<Tag> getIterator() {
-          return Collections.singleton(TAG).iterator();
+        public Iterator<Entry> getIterator() {
+          return Collections.singleton(ENTRY).iterator();
         }
 
         @Nullable
         @Override
-        public TagValue getTagValue(TagKey tagKey) {
-          return TagValue.create("value");
+        public EntryValue getEntryValue(EntryKey entryKey) {
+          return EntryValue.create("value");
         }
       };
 
@@ -97,7 +97,7 @@ public final class DefaultMeterTest {
   @Test
   public void noopStatsRecorder_Record() {
     List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(5));
-    defaultMeter.record(measurements, tagMap);
+    defaultMeter.record(measurements, distContext);
   }
 
   // The NoopStatsRecorder should do nothing, so this test just checks that record doesn't throw an
@@ -109,10 +109,10 @@ public final class DefaultMeterTest {
   }
 
   @Test
-  public void noopStatsRecorder_Record_DisallowNulltagMap() {
+  public void noopStatsRecorder_Record_DisallowNulldistContext() {
     List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(6));
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("tags");
+    thrown.expectMessage("distContext");
     defaultMeter.record(measurements, null);
   }
 }
