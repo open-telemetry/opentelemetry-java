@@ -35,7 +35,15 @@ import java.util.List;
 public final class InMemoryTracer implements Tracer {
   private final List<SpanData> finishedSpanDataItems = new ArrayList<>();
   private final HttpTextFormat<SpanContext> textFormat = new TraceContextFormat();
-  private Resource resource = Resource.getEmpty();
+  private final Resource resource;
+
+  public InMemoryTracer() {
+    this(Resource.getEmpty());
+  }
+
+  public InMemoryTracer(Resource resource) {
+    this.resource = resource;
+  }
 
   static final class InMemoryScope implements Scope {
     final Context context;

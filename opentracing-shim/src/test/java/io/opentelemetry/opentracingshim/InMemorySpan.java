@@ -308,7 +308,6 @@ final class InMemorySpan implements Span {
     }
 
     static SpanId createSpanId() {
-      SpanId invalidSpanId = SpanId.getInvalid();
       SpanId spanId;
       do {
         ByteBuffer buff = ByteBuffer.allocate(SpanId.getSize());
