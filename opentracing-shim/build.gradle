@@ -5,6 +5,7 @@ dependencies {
             libraries.opentracing
 
     testImplementation libraries.junit,
+            libraries.assertj,
             libraries.slf4j,
             libraries.awaitility
 }

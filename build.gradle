@@ -110,6 +110,7 @@ subprojects {
 
                 // Compatibility layer
                 opentracing: "io.opentracing:opentracing-api:${opentracingVersion}",
+                assertj: "org.assertj:assertj-core:3.8.0",
                 slf4j: 'org.slf4j:slf4j-api:1.7.25', // Testing
                 awaitility: 'org.awaitility:awaitility:3.0.0', // Testing
 
