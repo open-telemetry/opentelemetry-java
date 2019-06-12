@@ -69,7 +69,7 @@ public abstract class SpanData {
       Timestamp startTimestamp,
       Map<String, AttributeValue> attributes,
       List<TimedEvent> timedEvents,
-      List<Link> links,
+      List<io.opentelemetry.trace.Link> links,
       Status status,
       Timestamp endTimestamp) {
     return new AutoValue_SpanData(
@@ -158,7 +158,7 @@ public abstract class SpanData {
    * @return links recorded for this {@code Span}.
    * @since 0.1.0
    */
-  public abstract List<Link> getLinks();
+  public abstract List<io.opentelemetry.trace.Link> getLinks();
 
   /**
    * Returns the {@code Status}.
