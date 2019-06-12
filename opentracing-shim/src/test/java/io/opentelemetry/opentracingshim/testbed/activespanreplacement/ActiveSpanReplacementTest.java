@@ -39,7 +39,7 @@ import org.junit.Test;
 public class ActiveSpanReplacementTest {
 
   private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.newTracerShim(mockTracer);
+  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test

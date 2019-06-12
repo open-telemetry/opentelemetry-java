@@ -52,6 +52,10 @@ public final class InMemoryTracer implements Tracer {
     }
   }
 
+  Resource getResource() {
+    return resource;
+  }
+
   @Override
   public Span getCurrentSpan() {
     return ContextUtils.getValue(Context.current());

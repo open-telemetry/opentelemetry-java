@@ -43,7 +43,7 @@ import org.junit.Test;
 public final class ErrorReportingTest {
 
   private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.newTracerShim(mockTracer);
+  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   /* Very simple error handling **/

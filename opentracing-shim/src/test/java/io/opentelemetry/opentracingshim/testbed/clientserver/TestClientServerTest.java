@@ -36,7 +36,7 @@ import org.junit.Test;
 public class TestClientServerTest {
 
   private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.newTracerShim(mockTracer);
+  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
   private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(10);
   private Server server;
 

@@ -42,7 +42,7 @@ import org.junit.Test;
 public class HandlerTest {
 
   private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.newTracerShim(mockTracer);
+  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
   private final Client client = new Client(new RequestHandler(tracer));
 
   @Before

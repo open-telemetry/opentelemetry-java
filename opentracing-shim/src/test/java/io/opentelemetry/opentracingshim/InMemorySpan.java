@@ -31,7 +31,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
-import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.Tracestate;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ import java.util.Random;
 // TODO - Use sampler to create TraceOptions.
 final class InMemorySpan implements Span {
   private String name;
-  private final Tracer tracer;
+  private final InMemoryTracer tracer;
   private final SpanContext context;
   private final SpanId parentSpanId;
   private final Resource resource;
@@ -56,7 +55,7 @@ final class InMemorySpan implements Span {
   private boolean ended;
 
   InMemorySpan(
-      Tracer tracer,
+      InMemoryTracer tracer,
       SpanContext context,
       SpanId parentSpanId,
       Resource resource,
@@ -130,6 +129,22 @@ final class InMemorySpan implements Span {
   }
 
   @Override
+  public void addLink(SpanContext spanContext) {
+    synchronized (this) {
+      endedCheck();
+      links.add(SpanData.Link.create(spanContext));
+    }
+  }
+
+  @Override
+  public void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
+    synchronized (this) {
+      endedCheck();
+      links.add(SpanData.Link.create(spanContext, attributes));
+    }
+  }
+
+  @Override
   public void setStatus(Status status) {
     if (status == null) {
       throw new NullPointerException("status");
@@ -188,7 +203,7 @@ final class InMemorySpan implements Span {
 
   // TODO - Use recordEvents and sampler.
   static final class Builder implements Span.Builder {
-    final Tracer tracer;
+    final InMemoryTracer tracer;
     final String name;
     final List<Link> links = new ArrayList<>();
     SpanContext parentContext;
@@ -197,7 +212,7 @@ final class InMemorySpan implements Span {
 
     static final Random random = new Random();
 
-    Builder(Tracer tracer, String name) {
+    Builder(InMemoryTracer tracer, String name) {
       this.tracer = tracer;
       this.name = name;
     }
@@ -226,14 +241,20 @@ final class InMemorySpan implements Span {
     }
 
     @Override
-    public Builder addLink(Link link) {
-      links.add(link);
+    public Builder addLink(SpanContext spanContext) {
+      links.add(SpanData.Link.create(spanContext));
       return this;
     }
 
     @Override
-    public Builder addLinks(List<Link> links) {
-      this.links.addAll(links);
+    public Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
+      links.add(SpanData.Link.create(spanContext, attributes));
+      return this;
+    }
+
+    @Override
+    public Builder addLink(Link link) {
+      links.add(link);
       return this;
     }
 
@@ -266,7 +287,7 @@ final class InMemorySpan implements Span {
         parentSpanId = parentContext.getSpanId();
       }
 
-      if (traceId == null || TraceId.INVALID.equals(traceId)) {
+      if (traceId == null || TraceId.getInvalid().equals(traceId)) {
         traceId = createTraceId();
         parentSpanId = null;
       }
@@ -274,7 +295,7 @@ final class InMemorySpan implements Span {
       // TODO - Create properly the remaining SpanContext members.
       SpanContext context =
           SpanContext.create(
-              traceId, createSpanId(), TraceOptions.DEFAULT, Tracestate.builder().build());
+              traceId, createSpanId(), TraceOptions.getDefault(), Tracestate.getDefault());
       return new InMemorySpan(
           tracer,
           context,
@@ -287,11 +308,12 @@ final class InMemorySpan implements Span {
     }
 
     static SpanId createSpanId() {
+      SpanId invalidSpanId = SpanId.getInvalid();
       SpanId spanId;
       do {
-        ByteBuffer buff = ByteBuffer.allocate(SpanId.SIZE);
+        ByteBuffer buff = ByteBuffer.allocate(SpanId.getSize());
         spanId = SpanId.fromBytes(buff.putLong(random.nextLong()).array(), 0);
-      } while (spanId.equals(SpanId.INVALID));
+      } while (spanId.equals(SpanId.getInvalid()));
 
       return spanId;
     }
@@ -299,11 +321,11 @@ final class InMemorySpan implements Span {
     static TraceId createTraceId() {
       TraceId traceId;
       do {
-        ByteBuffer buff = ByteBuffer.allocate(TraceId.SIZE);
+        ByteBuffer buff = ByteBuffer.allocate(TraceId.getSize());
         traceId =
             TraceId.fromBytes(
                 buff.putLong(random.nextLong()).putLong(random.nextLong()).array(), 0);
-      } while (traceId.equals(TraceId.INVALID));
+      } while (traceId.equals(TraceId.getInvalid()));
 
       return traceId;
     }
