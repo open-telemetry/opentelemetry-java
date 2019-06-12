@@ -14,47 +14,48 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.unsafe;
+package io.opentelemetry.distributedcontext.unsafe;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.distributedcontext.EmptyDistributedContext;
 
 /**
- * Util methods/functionality to interact with the {@link io.grpc.Context}.
+ * Utility methods for accessing the {@link DistributedContext} contained in the {@link
+ * io.grpc.Context}.
  *
- * <p>Users must interact with the current Context via the public APIs in {@link Tracer} and avoid
- * accessing this class directly.
+ * <p>Most code should interact with the current context via the public APIs in {@link
+ * DistributedContext} and avoid accessing this class directly.
  *
  * @since 0.1.0
  */
 public final class ContextUtils {
-  private static final Context.Key<Span> CONTEXT_SPAN_KEY =
-      Context.<Span>keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.getInvalid());
+  private static final Context.Key<DistributedContext> DIST_CONTEXT_KEY =
+      Context.keyWithDefault(
+          "opentelemetry-dist-context-key", EmptyDistributedContext.getInstance());
 
   /**
    * Creates a new {@code Context} with the given value set.
    *
-   * @param span the value to be set.
+   * @param distContext the value to be set.
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(Span span) {
-    return Context.current().withValue(CONTEXT_SPAN_KEY, span);
+  public static Context withValue(DistributedContext distContext) {
+    return Context.current().withValue(DIST_CONTEXT_KEY, distContext);
   }
 
   /**
    * Creates a new {@code Context} with the given value set.
    *
-   * @param span the value to be set.
+   * @param distContext the value to be set.
    * @param context the parent {@code Context}.
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(Span span, Context context) {
-    return context.withValue(CONTEXT_SPAN_KEY, span);
+  public static Context withValue(DistributedContext distContext, Context context) {
+    return context.withValue(DIST_CONTEXT_KEY, distContext);
   }
 
   /**
@@ -63,8 +64,8 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static Span getValue() {
-    return CONTEXT_SPAN_KEY.get();
+  public static DistributedContext getValue() {
+    return DIST_CONTEXT_KEY.get();
   }
 
   /**
@@ -74,20 +75,20 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static Span getValue(Context context) {
-    return CONTEXT_SPAN_KEY.get(context);
+  public static DistributedContext getValue(Context context) {
+    return DIST_CONTEXT_KEY.get(context);
   }
 
   /**
-   * Returns a new {@link Scope} encapsulating the provided {@code Span} added to the current {@code
-   * Context}.
+   * Returns a new {@link Scope} encapsulating the provided {@code DistributedContext} added to the
+   * current {@code Context}.
    *
-   * @param span the {@code Span} to be added to the current {@code Context}.
+   * @param distContext the {@code DistributedContext} to be added to the current {@code Context}.
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */
-  public static Scope withSpan(Span span) {
-    return SpanInScope.create(span);
+  public static Scope withDistributedContext(DistributedContext distContext) {
+    return DistributedContextInScope.create(distContext);
   }
 
   private ContextUtils() {}

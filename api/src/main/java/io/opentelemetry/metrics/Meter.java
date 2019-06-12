@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.tags.TagMap;
+import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 
@@ -165,7 +165,7 @@ public interface Meter {
 
   /**
    * Records all given measurements, with the current {@link
-   * io.opentelemetry.tags.Tagger#getCurrentTagMap}.
+   * io.opentelemetry.distributedcontext.DistributedContextManager#getCurrentContext}.
    *
    * @param measurements the list of {@code io.opentelemetry.metrics.Measurement}s to record.
    * @since 0.1.0
@@ -173,24 +173,25 @@ public interface Meter {
   void record(List<Measurement> measurements);
 
   /**
-   * Records all given measurements, with an explicit {@link TagMap}.
+   * Records all given measurements, with an explicit {@link DistributedContext}.
    *
    * @param measurements the list of {@code io.opentelemetry.metrics.Measurement}s to record.
-   * @param tags the tags associated with the measurements.
+   * @param distContext the distContext associated with the measurements.
    * @since 0.1.0
    */
-  void record(List<Measurement> measurements, TagMap tags);
+  void record(List<Measurement> measurements, DistributedContext distContext);
 
   /**
-   * Records all given measurements, with an explicit {@link TagMap}. These measurements are
-   * associated with the given {@code SpanContext}.
+   * Records all given measurements, with an explicit {@link DistributedContext}. These measurements
+   * are associated with the given {@code SpanContext}.
    *
    * @param measurements the list of {@code io.opentelemetry.metrics.Measurement}s to record.
-   * @param tags the tags associated with the measurements.
+   * @param distContext the distContext associated with the measurements.
    * @param spanContext the {@code SpanContext} that identifies the {@code Span} for which the
    *     measurements are associated with.
    * @since 0.1.0
    */
   // TODO: Avoid tracing dependency and accept Attachments as in OpenCensus.
-  void record(List<Measurement> measurements, TagMap tags, SpanContext spanContext);
+  void record(
+      List<Measurement> measurements, DistributedContext distContext, SpanContext spanContext);
 }

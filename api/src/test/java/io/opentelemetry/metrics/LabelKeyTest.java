@@ -42,7 +42,8 @@ public class LabelKeyTest {
 
   @Test
   public void create_NoLengthConstraint() {
-    // We have a length constraint of 256-characters for TagKey. That constraint doesn't apply to
+    // We have a length constraint of 256-characters for EntryKey. That constraint doesn't apply
+    // to
     // LabelKey.
     char[] chars = new char[300];
     Arrays.fill(chars, 'k');
