@@ -17,6 +17,7 @@
 package io.opentelemetry.opentracingshim.testbed;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.opentracingshim.InMemoryTracer;
 import io.opentelemetry.trace.AttributeValue;
@@ -158,8 +159,10 @@ public final class TestUtils {
   /** A line so that Javadoc does not complain. */
   public static void assertSameTrace(List<SpanData> spans) {
     for (int i = 0; i < spans.size() - 1; i++) {
-      // assertEquals(true, spans.get(spans.size() - 1).getEndTimestamp() >=
-      // spans.get(i).finishMicros());
+      // TODO - Include nanos in this comparison.
+      assertTrue(
+          spans.get(spans.size() - 1).getEndTimestamp().getSeconds()
+              >= spans.get(i).getEndTimestamp().getSeconds());
       assertEquals(
           spans.get(spans.size() - 1).getContext().getTraceId(),
           spans.get(i).getContext().getTraceId());
