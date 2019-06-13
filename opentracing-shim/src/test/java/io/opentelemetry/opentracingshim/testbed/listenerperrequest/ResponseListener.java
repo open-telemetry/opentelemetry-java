@@ -19,7 +19,7 @@ package io.opentelemetry.opentracingshim.testbed.listenerperrequest;
 import io.opentracing.Span;
 
 /** Response listener per request. Executed in a thread different from 'send' thread */
-class ResponseListener {
+final class ResponseListener {
   private final Span span;
 
   public ResponseListener(Span span) {

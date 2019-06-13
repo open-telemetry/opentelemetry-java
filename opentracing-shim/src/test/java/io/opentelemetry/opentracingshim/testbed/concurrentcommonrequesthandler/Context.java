@@ -18,4 +18,4 @@ package io.opentelemetry.opentracingshim.testbed.concurrentcommonrequesthandler;
 
 import java.util.HashMap;
 
-class Context extends HashMap<String, Object> {}
+final class Context extends HashMap<String, Object> {}

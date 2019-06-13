@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * one 'send', but as these methods do not expose any object storing state, a thread-local field in
  * 'RequestHandler' itself is used to contain the Scope related to Span activation.
  */
-public final class RequestHandler {
+final class RequestHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 

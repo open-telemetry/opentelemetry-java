@@ -24,10 +24,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class Client {
-
-  // can we get rid of this one? or needed only during the tests?
-  // Actually, how does this works under Gradle, compared to the Maven 'test' profile?
+final class Client {
   private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
   private final ExecutorService executor = Executors.newCachedThreadPool();

@@ -24,7 +24,7 @@ import io.opentracing.tag.Tags;
 import java.util.ArrayList;
 import java.util.Collection;
 
-class Promise<T> {
+final class Promise<T> {
   private final PromiseContext context;
   private final Tracer tracer;
   private final Span parentSpan;

@@ -18,4 +18,4 @@ package io.opentelemetry.opentracingshim.testbed.clientserver;
 
 import java.util.HashMap;
 
-public class Message extends HashMap<String, String> {}
+final class Message extends HashMap<String, String> {}

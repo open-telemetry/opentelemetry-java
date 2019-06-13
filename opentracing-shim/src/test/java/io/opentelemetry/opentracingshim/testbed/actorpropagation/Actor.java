@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
 
-class Actor implements AutoCloseable {
+final class Actor implements AutoCloseable {
   private final ExecutorService executor;
   private final Tracer tracer;
   private final Phaser phaser;

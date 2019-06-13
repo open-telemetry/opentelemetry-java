@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * One instance per Client. Executed concurrently for all requests of one client. 'beforeRequest'
  * and 'afterResponse' are executed in different threads for one 'send'
  */
-class RequestHandler {
+final class RequestHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(RequestHandler.class);
 

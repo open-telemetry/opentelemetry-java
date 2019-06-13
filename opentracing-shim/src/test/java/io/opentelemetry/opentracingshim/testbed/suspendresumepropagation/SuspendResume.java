@@ -21,7 +21,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 
-class SuspendResume {
+final class SuspendResume {
   private final Tracer tracer;
   private final Span span;
 

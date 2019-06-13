@@ -25,7 +25,7 @@ import io.opentracing.propagation.TextMapExtractAdapter;
 import io.opentracing.tag.Tags;
 import java.util.concurrent.ArrayBlockingQueue;
 
-class Server extends Thread {
+final class Server extends Thread {
 
   private final ArrayBlockingQueue<Message> queue;
   private final Tracer tracer;

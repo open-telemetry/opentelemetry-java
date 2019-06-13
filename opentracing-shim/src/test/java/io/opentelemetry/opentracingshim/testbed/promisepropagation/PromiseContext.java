@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Phaser;
 
-class PromiseContext implements AutoCloseable {
+final class PromiseContext implements AutoCloseable {
   private final Phaser phaser;
   private final ExecutorService executor;
 
