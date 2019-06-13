@@ -33,7 +33,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class DefaultSpan implements Span {
 
-  private static final Random random = ThreadLocalRandom.current();
   private static final DefaultSpan INVALID = new DefaultSpan(SpanContext.getInvalid());
 
   /**
@@ -54,6 +53,7 @@ public final class DefaultSpan implements Span {
    * @return a {@link DefaultSpan}.
    */
   static DefaultSpan create() {
+    final Random random = ThreadLocalRandom.current();
     return new DefaultSpan(
         SpanContext.create(
             TraceId.generateRandomId(random),
