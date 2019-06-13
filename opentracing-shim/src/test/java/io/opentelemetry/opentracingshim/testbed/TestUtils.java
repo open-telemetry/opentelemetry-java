@@ -19,8 +19,10 @@ package io.opentelemetry.opentracingshim.testbed;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.opentracingshim.InMemoryTracer;
+import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanData.Timestamp;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -41,29 +43,41 @@ public final class TestUtils {
     };
   }
 
-  /*
-  public static List<MockSpan> getByTag(List<SpanData> spans, AbstractTag key, Object value) {
+  /** A line so that Javadoc does not complain. */
+  public static List<SpanData> getByAttr(List<SpanData> spans, String key, String value) {
+    return getByAttr(spans, key, AttributeValue.stringAttributeValue(value));
+  }
+
+  /** A line so that Javadoc does not complain. */
+  public static List<SpanData> getByAttr(List<SpanData> spans, String key, AttributeValue value) {
     List<SpanData> found = new ArrayList<>(spans.size());
     for (SpanData span : spans) {
-      if (span.tags().get(key.getKey()).equals(value)) {
+      if (span.getAttributes().get(key).equals(value)) {
         found.add(span);
       }
     }
     return found;
   }
 
-  public static MockSpan getOneByTag(List<MockSpan> spans, AbstractTag key, Object value) {
-    List<SpanData> found = getByTag(spans, key, value);
+  /** A line so that Javadoc does not complain. */
+  public static SpanData getOneByAttr(List<SpanData> spans, String key, String value) {
+    return getOneByAttr(spans, key, AttributeValue.stringAttributeValue(value));
+  }
+
+  /** A line so that Javadoc does not complain. */
+  public static SpanData getOneByAttr(List<SpanData> spans, String key, AttributeValue value) {
+    List<SpanData> found = getByAttr(spans, key, value);
     if (found.size() > 1) {
-      throw new IllegalArgumentException("there is more than one span with tag '"
-          + key.getKey() + "' and value '" + value + "'");
+      throw new IllegalArgumentException(
+          "there is more than one span with tag '" + key + "' and value '" + value + "'");
     }
+
     if (found.isEmpty()) {
       return null;
     } else {
       return found.get(0);
     }
-  }*/
+  }
 
   /** A line so that Javadoc does not complain. */
   public static void sleep() {
