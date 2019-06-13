@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.opentracingshim.InMemoryTracer;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanData.Timestamp;
 import java.util.ArrayList;
@@ -49,14 +50,16 @@ public final class TestUtils {
   }
 
   /** A line so that Javadoc does not complain. */
-  public static List<SpanData> getByAttr(List<SpanData> spans, String key, AttributeValue value) {
-    List<SpanData> found = new ArrayList<>(spans.size());
-    for (SpanData span : spans) {
-      if (span.getAttributes().get(key).equals(value)) {
-        found.add(span);
-      }
-    }
-    return found;
+  public static List<SpanData> getByAttr(
+      List<SpanData> spans, final String key, final AttributeValue value) {
+    return getByCondition(
+        spans,
+        new Condition() {
+          @Override
+          public boolean check(SpanData span) {
+            return span.getAttributes().get(key).equals(value);
+          }
+        });
   }
 
   /** A line so that Javadoc does not complain. */
@@ -72,11 +75,45 @@ public final class TestUtils {
           "there is more than one span with tag '" + key + "' and value '" + value + "'");
     }
 
-    if (found.isEmpty()) {
-      return null;
-    } else {
-      return found.get(0);
+    return found.isEmpty() ? null : found.get(0);
+  }
+
+  /** A line so that Javadoc does not complain. */
+  public static List<SpanData> getByKind(List<SpanData> spans, final Kind kind) {
+    return getByCondition(
+        spans,
+        new Condition() {
+          @Override
+          public boolean check(SpanData span) {
+            return span.getKind() == kind;
+          }
+        });
+  }
+
+  /** A line so that Javadoc does not complain. */
+  public static SpanData getOneByKind(List<SpanData> spans, final Kind kind) {
+
+    List<SpanData> found = getByKind(spans, kind);
+    if (found.size() > 1) {
+      throw new IllegalArgumentException("there is more than one span with kind '" + kind + "'");
     }
+
+    return found.isEmpty() ? null : found.get(0);
+  }
+
+  interface Condition {
+    boolean check(SpanData span);
+  }
+
+  static List<SpanData> getByCondition(List<SpanData> spans, Condition cond) {
+    List<SpanData> found = new ArrayList<>();
+    for (SpanData span : spans) {
+      if (cond.check(span)) {
+        found.add(span);
+      }
+    }
+
+    return found;
   }
 
   /** A line so that Javadoc does not complain. */
