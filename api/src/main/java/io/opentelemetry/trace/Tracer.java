@@ -162,19 +162,17 @@ public interface Tracer {
   void recordSpanData(SpanData span);
 
   /**
-   * Returns the {@link BinaryFormat} for this implementation.
+   * Returns the {@link BinaryFormat} for this tracer implementation.
    *
-   * <p>If no implementation is provided then no-op implementation will be used.
-   *
-   * <p>Usually this will be the W3C Trace Context as the binary format. For more details, see <a
-   * href="https://github.com/w3c/trace-context">trace-context</a>.
+   * <p>If no tracer implementation is provided, this defaults to the W3C Trace Context binary
+   * format. For more details see <a href="https://w3c.github.io/trace-context-binary/">W3C Trace
+   * Context binary protocol</a>.
    *
    * <p>Example of usage on the client:
    *
    * <pre>{@code
    * private static final Tracer tracer = OpenTelemetry.getTracer();
-   * private static final BinaryFormat binaryFormat =
-   *     OpenTelemetry.getTracer().getBinaryFormat();
+   * private static final BinaryFormat binaryFormat = tracer.getBinaryFormat();
    * void onSendRequest() {
    *   Span span = tracer.spanBuilder("MyRequest").setSpanKind(Span.Kind.CLIENT).startSpan();
    *   try (Scope ss = tracer.withSpan(span)) {
@@ -190,8 +188,7 @@ public interface Tracer {
    *
    * <pre>{@code
    * private static final Tracer tracer = OpenTelemetry.getTracer();
-   * private static final BinaryFormat binaryFormat =
-   *     OpenTelemetry.getTracer().getBinaryFormat();
+   * private static final BinaryFormat binaryFormat = tracer.getBinaryFormat();
    * void onRequestReceived() {
    *   // Get the binaryValue from the request.
    *   SpanContext spanContext = SpanContext.INVALID;
@@ -215,18 +212,17 @@ public interface Tracer {
   BinaryFormat<SpanContext> getBinaryFormat();
 
   /**
-   * Returns the {@link HttpTextFormat} for this implementation.
+   * Returns the {@link HttpTextFormat} for this tracer implementation.
    *
-   * <p>If no implementation is provided then no-op implementation will be used.
-   *
-   * <p>Usually this will be the W3C Trace Context as the HTTP text format. For more details, see <a
-   * href="https://github.com/w3c/trace-context">trace-context</a>.
+   * <p>If no tracer implementation is provided, this defaults to the W3C Trace Context HTTP text
+   * format ({@link io.opentelemetry.context.propagation.TraceContextFormat}). For more details see
+   * <a href="https://w3c.github.io/trace-context/">W3C Trace Context</a>.
    *
    * <p>Example of usage on the client:
    *
    * <pre>{@code
    * private static final Tracer tracer = OpenTelemetry.getTracer();
-   * private static final HttpTextFormat textFormat = OpenTelemetry.getTracer().getHttpTextFormat();
+   * private static final HttpTextFormat textFormat = tracer.getHttpTextFormat();
    * private static final HttpTextFormat.Setter setter =
    *         new HttpTextFormat.Setter<HttpURLConnection>() {
    *   public void put(HttpURLConnection carrier, String key, String value) {
@@ -250,7 +246,7 @@ public interface Tracer {
    *
    * <pre>{@code
    * private static final Tracer tracer = OpenTelemetry.getTracer();
-   * private static final HttpTextFormat textFormat = OpenTelemetry.getTracer().getHttpTextFormat();
+   * private static final HttpTextFormat textFormat = tracer.getHttpTextFormat();
    * private static final HttpTextFormat.Getter<HttpRequest> getter = ...;
    *
    * void onRequestReceived(HttpRequest request) {
