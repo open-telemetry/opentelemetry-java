@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
-import com.google.protobuf.Timestamp;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
@@ -33,11 +32,7 @@ import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +42,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
-public final class RecordEventsSpanImpl implements SpanSdk {
+final class RecordEventsSpanImpl implements SpanSdk {
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
   // Contains the identifiers associated with this Span.
@@ -119,7 +114,7 @@ public final class RecordEventsSpanImpl implements SpanSdk {
    * @return a new and started span.
    */
   @VisibleForTesting
-  public static RecordEventsSpanImpl startSpan(
+  static RecordEventsSpanImpl startSpan(
       SpanContext context,
       String name,
       Kind kind,
@@ -168,7 +163,8 @@ public final class RecordEventsSpanImpl implements SpanSdk {
    *
    * @return the status of the {@code Span}.
    */
-  public Status getStatus() {
+  @VisibleForTesting
+  Status getStatus() {
     synchronized (this) {
       return getStatusWithDefault();
     }
@@ -180,7 +176,7 @@ public final class RecordEventsSpanImpl implements SpanSdk {
    *
    * @return the end nano time.
    */
-  public long getEndNanoTime() {
+  long getEndNanoTime() {
     synchronized (this) {
       return hasBeenEnded ? endNanoTime : clock.nowNanos();
     }
@@ -192,7 +188,7 @@ public final class RecordEventsSpanImpl implements SpanSdk {
    *
    * @return the latency of the {@code Span} in nanos.
    */
-  public long getLatencyNs() {
+  long getLatencyNs() {
     synchronized (this) {
       return hasBeenEnded ? endNanoTime - startNanoTime : clock.nowNanos() - startNanoTime;
     }
@@ -203,7 +199,8 @@ public final class RecordEventsSpanImpl implements SpanSdk {
    *
    * @return the kind of this {@code Span}.
    */
-  public Kind getKind() {
+  @VisibleForTesting
+  Kind getKind() {
     return kind;
   }
 
@@ -215,39 +212,6 @@ public final class RecordEventsSpanImpl implements SpanSdk {
   @Nullable
   TimestampConverter getTimestampConverter() {
     return timestampConverter;
-  }
-
-  /**
-   * Returns an immutable representation of all the data from this {@code Span}.
-   *
-   * <p>This should only be called with an ended {@code Span}.
-   *
-   * @return an immutable representation of all the data from this {@code Span}.
-   * @throws IllegalStateException if the Span doesn't have RECORD_EVENTS option.
-   */
-  public SpanData toSpanData() {
-    synchronized (this) {
-      Preconditions.checkState(
-          hasBeenEnded, "Calling toSpanData() on a running span is not supported.");
-      return SpanData.create(
-          getContext(),
-          parentSpanId,
-          resource,
-          name,
-          kind,
-          toSpanDataTimestamp(timestampConverter, startNanoTime),
-          attributes == null
-              ? Collections.<String, AttributeValue>emptyMap()
-              : Collections.unmodifiableMap(attributes),
-          events == null
-              ? Collections.<SpanData.TimedEvent>emptyList()
-              : toSpanDataTimedEvents(events, timestampConverter),
-          links == null
-              ? Collections.<Link>emptyList()
-              : Collections.unmodifiableList(new ArrayList<Link>(links)),
-          getStatusWithDefault(),
-          toSpanDataTimestamp(timestampConverter, endNanoTime));
-    }
   }
 
   @Override
@@ -307,18 +271,6 @@ public final class RecordEventsSpanImpl implements SpanSdk {
       getInitializedEvents().add(timedEvent);
       totalRecordedEvents++;
     }
-  }
-
-  private static List<SpanData.TimedEvent> toSpanDataTimedEvents(
-      Collection<TimedEvent> timedEvents, TimestampConverter converter) {
-    List<SpanData.TimedEvent> spanDataTimedEvents = new ArrayList<>(timedEvents.size());
-    for (TimedEvent timedEvent : timedEvents) {
-      spanDataTimedEvents.add(
-          SpanData.TimedEvent.create(
-              toSpanDataTimestamp(converter, timedEvent.getNanotime()),
-              SpanData.Event.create(timedEvent.getName(), timedEvent.getAttributes())));
-    }
-    return Collections.unmodifiableList(spanDataTimedEvents);
   }
 
   @Override
@@ -500,11 +452,5 @@ public final class RecordEventsSpanImpl implements SpanSdk {
       }
     }
     super.finalize();
-  }
-
-  private static SpanData.Timestamp toSpanDataTimestamp(
-      TimestampConverter timestampConverter, long nanoTime) {
-    Timestamp protoTimestamp = timestampConverter.convertNanoTime(nanoTime);
-    return SpanData.Timestamp.create(protoTimestamp.getSeconds(), protoTimestamp.getNanos());
   }
 }

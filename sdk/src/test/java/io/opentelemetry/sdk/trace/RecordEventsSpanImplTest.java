@@ -106,30 +106,6 @@ public class RecordEventsSpanImplTest {
                 SpanId.getInvalid(),
                 TraceOptions.getDefault(),
                 Tracestate.getDefault())));
-    SpanData spanData = span.toSpanData();
-    assertThat(spanData.getStartTimestamp()).isEqualTo(toSpanDataTimestamp(timestamp));
-    assertThat(spanData.getAttributes()).isEmpty();
-    assertThat(spanData.getTimedEvents()).isEmpty();
-    assertThat(spanData.getLinks()).isEmpty();
-    assertThat(spanData.getStatus()).isEqualTo(Status.OK);
-    assertThat(spanData.getEndTimestamp()).isEqualTo(toSpanDataTimestamp(timestamp));
-  }
-
-  @Test
-  public void toSpanData_ActiveSpan() {
-    RecordEventsSpanImpl span =
-        RecordEventsSpanImpl.startSpan(
-            spanContext,
-            SPAN_NAME,
-            Kind.INTERNAL,
-            parentSpanId,
-            TraceConfig.DEFAULT,
-            spanProcessor,
-            timestampConverter,
-            testClock,
-            resource);
-    thrown.expect(IllegalStateException.class);
-    span.toSpanData();
   }
 
   @Test
@@ -163,18 +139,6 @@ public class RecordEventsSpanImplTest {
     span.setStatus(Status.CANCELLED);
     span.end();
     Mockito.verify(spanProcessor, Mockito.times(1)).onEndSync(span);
-    SpanData spanData = span.toSpanData();
-    assertThat(spanData.getContext()).isEqualTo(spanContext);
-    assertThat(spanData.getName()).isEqualTo(SPAN_NAME);
-    assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
-    assertThat(spanData.getAttributes()).isEqualTo(expectedAttributes);
-    assertThat(spanData.getTimedEvents().size()).isEqualTo(1);
-    assertThat(spanData.getTimedEvents().get(0).getEvent()).isEqualTo(expectdEvent);
-    assertThat(spanData.getLinks().size()).isEqualTo(1);
-    assertThat(spanData.getLinks().get(0)).isEqualTo(link);
-    assertThat(spanData.getStartTimestamp()).isEqualTo(toSpanDataTimestamp(timestamp));
-    assertThat(spanData.getStatus()).isEqualTo(Status.CANCELLED);
-    assertThat(spanData.getEndTimestamp()).isEqualTo(toSpanDataTimestamp(testClock.now()));
   }
 
   @Test
@@ -213,10 +177,6 @@ public class RecordEventsSpanImplTest {
             testClock,
             resource);
     assertThat(span.getKind()).isEqualTo(Kind.SERVER);
-  }
-
-  private static SpanData.Timestamp toSpanDataTimestamp(Timestamp protoTimestamp) {
-    return SpanData.Timestamp.create(protoTimestamp.getSeconds(), protoTimestamp.getNanos());
   }
 
   private static final class SimpleEvent implements Event {
