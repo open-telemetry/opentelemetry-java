@@ -28,9 +28,9 @@ import java.util.Map;
  */
 public interface Link {
   /**
-   * Returns the {@code TraceId}.
+   * Returns the {@code SpanContext}.
    *
-   * @return the {@code TraceId}.
+   * @return the {@code SpanContext}.
    * @since 0.1.0
    */
   public abstract SpanContext getContext();
