@@ -206,8 +206,8 @@ final class InMemorySpan implements Span {
     final InMemoryTracer tracer;
     final String name;
     final List<Link> links = new ArrayList<>();
-    SpanContext parentContext;
-    boolean isRootSpan;
+    SpanContext explicitParent;
+    ParentType parentType = ParentType.CURRENT;
     Kind kind = Kind.INTERNAL;
 
     static final Random random = new Random();
@@ -219,19 +219,30 @@ final class InMemorySpan implements Span {
 
     @Override
     public Builder setParent(Span parent) {
-      parentContext = parent.getContext();
+      if (parent == null) {
+        throw new NullPointerException("parent");
+      }
+
+      explicitParent = parent.getContext();
+      parentType = ParentType.EXPLICIT;
       return this;
     }
 
     @Override
     public Builder setParent(SpanContext remoteParent) {
-      parentContext = remoteParent;
+      if (remoteParent == null) {
+        throw new NullPointerException("remoteParent");
+      }
+
+      explicitParent = remoteParent;
+      parentType = ParentType.EXPLICIT;
       return this;
     }
 
     @Override
     public Builder setNoParent() {
-      isRootSpan = true;
+      explicitParent = null;
+      parentType = ParentType.NONE;
       return this;
     }
 
@@ -275,8 +286,18 @@ final class InMemorySpan implements Span {
 
     @Override
     public Span startSpan() {
-      if (parentContext == null && !isRootSpan) {
-        parentContext = tracer.getCurrentSpan().getContext();
+      SpanContext parentContext = null;
+
+      switch (parentType) {
+        case CURRENT:
+          parentContext = tracer.getCurrentSpan().getContext();
+          break;
+        case NONE:
+          parentContext = null;
+          break;
+        case EXPLICIT:
+          parentContext = explicitParent;
+          break;
       }
 
       TraceId traceId = null;
@@ -327,6 +348,12 @@ final class InMemorySpan implements Span {
       } while (traceId.equals(TraceId.getInvalid()));
 
       return traceId;
+    }
+
+    enum ParentType {
+      CURRENT,
+      EXPLICIT,
+      NONE,
     }
   }
 }
