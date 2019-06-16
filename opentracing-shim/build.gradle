@@ -6,7 +6,7 @@ dependencies {
 
     testImplementation libraries.junit,
             libraries.assertj,
-            libraries.slf4j,
+            libraries.slf4jsimple,
             libraries.awaitility
 }
 test {
