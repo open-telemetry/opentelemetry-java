@@ -32,7 +32,6 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -329,25 +328,23 @@ final class InMemorySpan implements Span {
     }
 
     static SpanId createSpanId() {
-      SpanId spanId;
+      long id;
       do {
-        ByteBuffer buff = ByteBuffer.allocate(SpanId.getSize());
-        spanId = SpanId.fromBytes(buff.putLong(random.nextLong()).array(), 0);
-      } while (spanId.equals(SpanId.getInvalid()));
+        id = random.nextLong();
+      } while (id == 0);
 
-      return spanId;
+      return new SpanId(id);
     }
 
     static TraceId createTraceId() {
-      TraceId traceId;
+      long idHi;
+      long idLo;
       do {
-        ByteBuffer buff = ByteBuffer.allocate(TraceId.getSize());
-        traceId =
-            TraceId.fromBytes(
-                buff.putLong(random.nextLong()).putLong(random.nextLong()).array(), 0);
-      } while (traceId.equals(TraceId.getInvalid()));
+        idHi = random.nextLong();
+        idLo = random.nextLong();
+      } while (idHi == 0 && idLo == 0);
 
-      return traceId;
+      return new TraceId(idHi, idLo);
     }
 
     enum ParentType {
