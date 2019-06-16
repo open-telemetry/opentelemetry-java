@@ -191,7 +191,7 @@ final class InMemorySpan implements Span {
 
   @Override
   public boolean isRecordingEvents() {
-    return false;
+    return true;
   }
 
   private void endedCheck() {
