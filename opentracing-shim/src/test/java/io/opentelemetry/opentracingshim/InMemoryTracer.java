@@ -99,14 +99,14 @@ public final class InMemoryTracer implements Tracer {
     return textFormat;
   }
 
-  /** A comment so javadoc does NOT complain during heavy development. */
+  /** Returns a {@code List} of the finished {@code Span}s, represented by {@code SpanData}. */
   public List<SpanData> getFinishedSpanDataItems() {
     synchronized (this) {
       return new ArrayList<>(finishedSpanDataItems);
     }
   }
 
-  /** A comment so javadoc does NOT complain during heavy development. */
+  /** Clears the internal {@code List} of finished {@code Span}s. */
   public void reset() {
     synchronized (this) {
       finishedSpanDataItems.clear();

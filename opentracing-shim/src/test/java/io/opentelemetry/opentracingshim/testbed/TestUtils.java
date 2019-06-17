@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
 public final class TestUtils {
   private TestUtils() {}
 
-  /** A line so that Javadoc does not complain. */
+  /** Returns the number of finished {@code Span}s in the specified {@code InMemoryTracer}. */
   public static Callable<Integer> finishedSpansSize(final InMemoryTracer tracer) {
     return new Callable<Integer>() {
       @Override
@@ -46,12 +46,12 @@ public final class TestUtils {
     };
   }
 
-  /** A line so that Javadoc does not complain. */
+  /** Returns a {@code List} with the {@code SpanData} matching the specified attribute. */
   public static List<SpanData> getByAttr(List<SpanData> spans, String key, String value) {
     return getByAttr(spans, key, AttributeValue.stringAttributeValue(value));
   }
 
-  /** A line so that Javadoc does not complain. */
+  /** Returns a {@code List} with the {@code SpanData} matching the specified attribute. */
   public static List<SpanData> getByAttr(
       List<SpanData> spans, final String key, final AttributeValue value) {
     return getByCondition(
@@ -64,13 +64,19 @@ public final class TestUtils {
         });
   }
 
-  /** A line so that Javadoc does not complain. */
+  /**
+   * Returns one {@code SpanData} instance matching the specified attribute. In case of more than
+   * one instance being matched, an {@code IllegalArgumentException} will be thrown.
+   */
   @Nullable
   public static SpanData getOneByAttr(List<SpanData> spans, String key, String value) {
     return getOneByAttr(spans, key, AttributeValue.stringAttributeValue(value));
   }
 
-  /** A line so that Javadoc does not complain. */
+  /**
+   * Returns one {@code SpanData} instance matching the specified attribute. In case of more than
+   * one instance being matched, an {@code IllegalArgumentException} will be thrown.
+   */
   @Nullable
   public static SpanData getOneByAttr(List<SpanData> spans, String key, AttributeValue value) {
     List<SpanData> found = getByAttr(spans, key, value);
@@ -82,7 +88,7 @@ public final class TestUtils {
     return found.isEmpty() ? null : found.get(0);
   }
 
-  /** A line so that Javadoc does not complain. */
+  /** Returns a {@code List} with the {@code SpanData} matching the specified kind. */
   public static List<SpanData> getByKind(List<SpanData> spans, final Kind kind) {
     return getByCondition(
         spans,
@@ -94,7 +100,10 @@ public final class TestUtils {
         });
   }
 
-  /** A line so that Javadoc does not complain. */
+  /**
+   * Returns one {@code SpanData} instance matching the specified kind. In case of more than one
+   * instance being matched, an {@code IllegalArgumentException} will be thrown.
+   */
   @Nullable
   public static SpanData getOneByKind(List<SpanData> spans, final Kind kind) {
 
@@ -121,7 +130,7 @@ public final class TestUtils {
     return found;
   }
 
-  /** A line so that Javadoc does not complain. */
+  /** Sleeps for a random period of time, expected to be under 1 second. */
   public static void sleep() {
     try {
       TimeUnit.MILLISECONDS.sleep(new Random().nextInt(500));
@@ -131,7 +140,7 @@ public final class TestUtils {
     }
   }
 
-  /** A line so that Javadoc does not complain. */
+  /** Sleeps the specified milliseconds. */
   public static void sleep(long milliseconds) {
     try {
       TimeUnit.MILLISECONDS.sleep(milliseconds);
@@ -141,7 +150,10 @@ public final class TestUtils {
     }
   }
 
-  /** A line so that Javadoc does not complain. */
+  /**
+   * Sorts the specified {@code List} of {@code SpanData} by their {@code SpanData.Timestamp}
+   * values.
+   */
   public static void sortByStartTime(List<SpanData> spans) {
     Collections.sort(
         spans,
@@ -160,7 +172,7 @@ public final class TestUtils {
         });
   }
 
-  /** A line so that Javadoc does not complain. */
+  /** Asserts the specified {@code List} of {@code SpanData} belongs to the same trace. */
   public static void assertSameTrace(List<SpanData> spans) {
     for (int i = 0; i < spans.size() - 1; i++) {
       // TODO - Include nanos in this comparison.
