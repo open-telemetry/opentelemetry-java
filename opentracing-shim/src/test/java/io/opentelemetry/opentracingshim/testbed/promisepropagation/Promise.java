@@ -48,6 +48,7 @@ final class Promise<T> {
     errorCallbacks.add(errorCallback);
   }
 
+  @SuppressWarnings("FutureReturnValueIgnored")
   public void success(final T result) {
     for (final SuccessCallback<T> callback : successCallbacks) {
       context.submit(
@@ -71,6 +72,7 @@ final class Promise<T> {
     }
   }
 
+  @SuppressWarnings("FutureReturnValueIgnored")
   public void error(final Throwable error) {
     for (final ErrorCallback callback : errorCallbacks) {
       context.submit(

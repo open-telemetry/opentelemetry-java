@@ -45,10 +45,10 @@ final class Actor implements AutoCloseable {
     executor.shutdown();
   }
 
-  public void tell(final String message) {
+  public Future<?> tell(final String message) {
     final Span parent = tracer.scopeManager().activeSpan();
     phaser.register();
-    executor.submit(
+    return executor.submit(
         new Runnable() {
           @Override
           public void run() {

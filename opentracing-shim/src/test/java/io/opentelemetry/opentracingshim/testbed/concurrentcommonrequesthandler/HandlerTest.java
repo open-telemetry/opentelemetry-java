@@ -31,6 +31,7 @@ import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -134,6 +135,7 @@ public class HandlerTest {
     assertEquals(parent.getContext().getSpanId(), finished.get(2).getParentSpanId());
   }
 
+  @Nullable
   private static SpanData getOneByOperationName(List<SpanData> spans, String name) {
     SpanData found = null;
     for (SpanData span : spans) {

@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
+@SuppressWarnings("FutureReturnValueIgnored")
 public class ActiveSpanReplacementTest {
 
   private final InMemoryTracer mockTracer = new InMemoryTracer();

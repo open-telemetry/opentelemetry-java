@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
+@SuppressWarnings("FutureReturnValueIgnored")
 public class MultipleCallbacksTest {
   private final InMemoryTracer mockTracer = new InMemoryTracer();
   private final Tracer tracer = TraceShim.createTracerShim(mockTracer);

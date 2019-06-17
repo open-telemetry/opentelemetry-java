@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
+@SuppressWarnings("FutureReturnValueIgnored")
 public final class LateSpanFinishTest {
   private final InMemoryTracer mockTracer = new InMemoryTracer();
   private final Tracer tracer = TraceShim.createTracerShim(mockTracer);

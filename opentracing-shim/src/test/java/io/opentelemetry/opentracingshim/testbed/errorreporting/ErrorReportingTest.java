@@ -40,6 +40,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
+@SuppressWarnings("FutureReturnValueIgnored")
 public final class ErrorReportingTest {
 
   private final InMemoryTracer mockTracer = new InMemoryTracer();

@@ -44,6 +44,7 @@ import org.junit.Test;
  *
  * @author tylerbenson
  */
+@SuppressWarnings("FutureReturnValueIgnored")
 public class ActorPropagationTest {
   private final InMemoryTracer mockTracer = new InMemoryTracer();
   private final Tracer tracer = TraceShim.createTracerShim(mockTracer);

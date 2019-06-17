@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 public final class TestUtils {
   private TestUtils() {}
@@ -64,11 +65,13 @@ public final class TestUtils {
   }
 
   /** A line so that Javadoc does not complain. */
+  @Nullable
   public static SpanData getOneByAttr(List<SpanData> spans, String key, String value) {
     return getOneByAttr(spans, key, AttributeValue.stringAttributeValue(value));
   }
 
   /** A line so that Javadoc does not complain. */
+  @Nullable
   public static SpanData getOneByAttr(List<SpanData> spans, String key, AttributeValue value) {
     List<SpanData> found = getByAttr(spans, key, value);
     if (found.size() > 1) {
@@ -92,6 +95,7 @@ public final class TestUtils {
   }
 
   /** A line so that Javadoc does not complain. */
+  @Nullable
   public static SpanData getOneByKind(List<SpanData> spans, final Kind kind) {
 
     List<SpanData> found = getByKind(spans, kind);

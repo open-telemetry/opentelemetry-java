@@ -18,6 +18,7 @@ package io.opentelemetry.opentracingshim.testbed.promisepropagation;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
 
 final class PromiseContext implements AutoCloseable {
@@ -34,9 +35,9 @@ final class PromiseContext implements AutoCloseable {
     executor.shutdown();
   }
 
-  public void submit(Runnable runnable) {
+  public Future<?> submit(Runnable runnable) {
     phaser.register(); // register the work to be done on the executor
-    executor.submit(runnable);
+    return executor.submit(runnable);
   }
 
   public Phaser getPhaser() {

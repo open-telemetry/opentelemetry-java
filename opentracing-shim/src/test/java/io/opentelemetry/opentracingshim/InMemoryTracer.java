@@ -88,6 +88,7 @@ public final class InMemoryTracer implements Tracer {
   }
 
   @Override
+  @SuppressWarnings("ReturnMissingNullable")
   public BinaryFormat<SpanContext> getBinaryFormat() {
     // TODO
     return null;

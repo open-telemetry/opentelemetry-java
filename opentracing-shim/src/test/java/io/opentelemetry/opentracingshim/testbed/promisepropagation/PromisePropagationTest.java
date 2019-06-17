@@ -86,7 +86,7 @@ public class PromisePropagationTest {
               }
             });
 
-        Promise errorPromise = new Promise(context, tracer);
+        Promise<String> errorPromise = new Promise<>(context, tracer);
 
         errorPromise.onError(
             new Promise.ErrorCallback() {

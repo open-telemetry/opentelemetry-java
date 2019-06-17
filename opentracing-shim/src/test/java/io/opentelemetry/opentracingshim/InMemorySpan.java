@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import javax.annotation.Nullable;
 
 // TODO - Use sampler to create TraceOptions.
 final class InMemorySpan implements Span {
@@ -205,7 +206,7 @@ final class InMemorySpan implements Span {
     final InMemoryTracer tracer;
     final String name;
     final List<Link> links = new ArrayList<>();
-    SpanContext explicitParent;
+    @Nullable SpanContext explicitParent;
     ParentType parentType = ParentType.CURRENT;
     Kind kind = Kind.INTERNAL;
 
