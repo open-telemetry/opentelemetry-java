@@ -34,6 +34,7 @@ import org.mockito.MockitoAnnotations;
 /** Unit tests for {@link TracerSdk}. */
 @RunWith(JUnit4.class)
 public class TracerSdkTest {
+  private static final String SPAN_NAME = "span_name";
   @Mock private Span span;
   private final TracerSdk tracer = new TracerSdk();
 
@@ -45,6 +46,11 @@ public class TracerSdkTest {
   @Test
   public void defaultGetCurrentSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+  }
+
+  @Test
+  public void defaultSpanBuilder() {
+    assertThat(tracer.spanBuilder(SPAN_NAME)).isInstanceOf(SpanBuilderSdk.class);
   }
 
   @Test

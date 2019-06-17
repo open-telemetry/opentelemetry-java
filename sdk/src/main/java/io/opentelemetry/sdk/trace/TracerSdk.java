@@ -47,7 +47,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return null;
+    return new SpanBuilderSdk(spanName);
   }
 
   @Override
