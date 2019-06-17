@@ -115,6 +115,33 @@ public final class TestUtils {
     return found.isEmpty() ? null : found.get(0);
   }
 
+  /** Returns a {@code List} with the {@code SpanData} matching the specified name. */
+  public static List<SpanData> getByName(List<SpanData> spans, final String name) {
+    return getByCondition(
+        spans,
+        new Condition() {
+          @Override
+          public boolean check(SpanData span) {
+            return span.getName().equals(name);
+          }
+        });
+  }
+
+  /**
+   * Returns one {@code SpanData} instance matching the specified name. In case of more than one
+   * instance being matched, an {@code IllegalArgumentException} will be thrown.
+   */
+  @Nullable
+  public static SpanData getOneByName(List<SpanData> spans, final String name) {
+
+    List<SpanData> found = getByName(spans, name);
+    if (found.size() > 1) {
+      throw new IllegalArgumentException("there is more than one span with name '" + name + "'");
+    }
+
+    return found.isEmpty() ? null : found.get(0);
+  }
+
   interface Condition {
     boolean check(SpanData span);
   }

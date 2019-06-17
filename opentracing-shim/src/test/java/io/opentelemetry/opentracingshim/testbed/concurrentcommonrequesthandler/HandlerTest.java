@@ -16,6 +16,7 @@
 
 package io.opentelemetry.opentracingshim.testbed.concurrentcommonrequesthandler;
 
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByName;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -31,7 +32,6 @@ import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -88,10 +88,10 @@ public class HandlerTest {
     List<SpanData> finished = mockTracer.getFinishedSpanDataItems();
     assertEquals(2, finished.size());
 
-    SpanData child = getOneByOperationName(finished, RequestHandler.OPERATION_NAME);
+    SpanData child = getOneByName(finished, RequestHandler.OPERATION_NAME);
     assertNotNull(child);
 
-    SpanData parent = getOneByOperationName(finished, "parent");
+    SpanData parent = getOneByName(finished, "parent");
     assertNotNull(parent);
 
     // Here check that there is no parent-child relation although it should be because child is
@@ -125,7 +125,7 @@ public class HandlerTest {
 
     sortByStartTime(finished);
 
-    SpanData parent = getOneByOperationName(finished, "parent");
+    SpanData parent = getOneByName(finished, "parent");
     assertNotNull(parent);
 
     // now there is parent/child relation between first and second span:
@@ -133,20 +133,5 @@ public class HandlerTest {
 
     // third span should not have parent, but it has, damn it
     assertEquals(parent.getContext().getSpanId(), finished.get(2).getParentSpanId());
-  }
-
-  @Nullable
-  private static SpanData getOneByOperationName(List<SpanData> spans, String name) {
-    SpanData found = null;
-    for (SpanData span : spans) {
-      if (name.equals(span.getName())) {
-        if (found != null) {
-          throw new IllegalArgumentException(
-              "there is more than one span with operation name '" + name + "'");
-        }
-        found = span;
-      }
-    }
-    return found;
   }
 }
