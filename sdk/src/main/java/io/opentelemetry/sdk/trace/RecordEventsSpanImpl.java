@@ -81,7 +81,7 @@ final class RecordEventsSpanImpl implements SpanSdk {
   // List of recorded links to parent and child spans.
   @GuardedBy("this")
   @Nullable
-  private EvictingQueue<SpanData.Link> links;
+  private EvictingQueue<Link> links;
   // Number of link recorded.
   @GuardedBy("this")
   private int totalRecordedLinks = 0;
@@ -289,7 +289,7 @@ final class RecordEventsSpanImpl implements SpanSdk {
     addLinkInternal(SpanData.Link.create(spanContext, attributes));
   }
 
-  private void addLinkInternal(SpanData.Link link) {
+  private void addLinkInternal(Link link) {
     synchronized (this) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling addLink() on an ended Span.");
@@ -370,9 +370,9 @@ final class RecordEventsSpanImpl implements SpanSdk {
   }
 
   @GuardedBy("this")
-  private EvictingQueue<SpanData.Link> getInitializedLinks() {
+  private EvictingQueue<Link> getInitializedLinks() {
     if (links == null) {
-      links = EvictingQueue.<SpanData.Link>create((int) traceConfig.getMaxNumberOfLinks());
+      links = EvictingQueue.<Link>create((int) traceConfig.getMaxNumberOfLinks());
     }
     return links;
   }
