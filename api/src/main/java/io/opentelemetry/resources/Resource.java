@@ -20,6 +20,7 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,11 +43,16 @@ public abstract class Resource {
           + " characters.";
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
-  private static final Resource EMPTY =
-      new AutoValue_Resource(Collections.<String, String>emptyMap());
+  private static final Resource EMPTY = create(new HashMap<String, String>());
 
   Resource() {}
 
+  /**
+   * Returns an empty {@link Resource}.
+   *
+   * @return an empty {@code Resource}.
+   * @since 0.1.0
+   */
   public static Resource getEmpty() {
     return EMPTY;
   }
@@ -80,6 +86,7 @@ public abstract class Resource {
    *
    * @param other the {@code Resource} that will be merged with {@code this}.
    * @return the newly merged {@code Resource}.
+   * @since 0.1.0
    */
   public Resource merge(@Nullable Resource other) {
     if (other == null) {
