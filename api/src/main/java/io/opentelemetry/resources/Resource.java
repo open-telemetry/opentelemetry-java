@@ -20,7 +20,6 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,7 +42,7 @@ public abstract class Resource {
           + " characters.";
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
-  private static final Resource EMPTY = create(new HashMap<String, String>());
+  private static final Resource EMPTY = create(Collections.<String, String>emptyMap());
 
   Resource() {}
 
