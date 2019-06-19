@@ -105,16 +105,30 @@ message Span {
   // Type of span. Can be used to specify additional relationships between spans
   // in addition to a parent/child relationship.
   enum SpanKind {
-    // Unspecified.
+    // Unspecified. Do NOT use as default.
+    // Implementations MAY assume SpanKind to be INTERNAL when receiving UNSPECIFIED.
     SPAN_KIND_UNSPECIFIED = 0;
+
+    // Indicates that the span is used internally. Default value.
+    INTERNAL = 1;
 
     // Indicates that the span covers server-side handling of an RPC or other
     // remote network request.
-    SERVER = 1;
+    SERVER = 2;
 
     // Indicates that the span covers the client-side wrapper around an RPC or
     // other remote request.
-    CLIENT = 2;
+    CLIENT = 3;
+
+    // Indicates that the span describes producer sending a message to a broker.
+    // Unlike client and  server, there is no direct critical path latency relationship
+    // between producer and consumer spans.
+    PRODUCER = 4;
+
+    // Indicates that the span describes consumer recieving a message from a broker.
+    // Unlike client and  server, there is no direct critical path latency relationship
+    // between producer and consumer spans.
+    CONSUMER = 5;
   }
 
   // Distinguishes between spans generated in a particular context. For example,
