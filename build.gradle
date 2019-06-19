@@ -70,6 +70,9 @@ subprojects {
         it.options.compilerArgs += ["-Xep:ExpectedExceptionRefactoring:OFF"]
         it.options.compilerArgs += ["-Xep:TestExceptionRefactoring:OFF"]
         it.options.encoding = "UTF-8"
+
+        // Ignore warnings for protobuf generated files.
+        it.options.compilerArgs += ["-XepExcludedPaths:.*/sdk/build/generated/source/proto/.*"]
     }
 
     compileTestJava {

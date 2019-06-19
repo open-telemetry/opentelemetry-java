@@ -37,8 +37,8 @@ import javax.annotation.concurrent.Immutable;
 public final class Samplers {
   private static final Sampler ALWAYS_SAMPLE = new AlwaysSampleSampler();
   private static final Sampler NEVER_SAMPLE = new NeverSampleSampler();
-  private static final Decision ALWAYS_ON_DECISION = new SimpleDecision(true);
-  private static final Decision ALWAYS_OFF_DECISION = new SimpleDecision(false);
+  private static final Decision ALWAYS_ON_DECISION = new SimpleDecision(/* decision= */ true);
+  private static final Decision ALWAYS_OFF_DECISION = new SimpleDecision(/* decision= */ false);
 
   // No instance of this class.
   private Samplers() {}

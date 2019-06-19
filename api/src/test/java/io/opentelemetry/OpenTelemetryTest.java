@@ -47,14 +47,19 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class OpenTelemetryTest {
+
+  @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @BeforeClass
   public static void beforeClass() {
@@ -106,9 +111,10 @@ public class OpenTelemetryTest {
     }
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void testTracerNotFound() {
     System.setProperty(TracerProvider.class.getName(), "io.does.not.exists");
+    thrown.expect(IllegalStateException.class);
     OpenTelemetry.getTracer();
   }
 
@@ -137,9 +143,10 @@ public class OpenTelemetryTest {
     }
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void testMeterNotFound() {
     System.setProperty(MeterProvider.class.getName(), "io.does.not.exists");
+    thrown.expect(IllegalStateException.class);
     OpenTelemetry.getMeter();
   }
 
@@ -182,9 +189,10 @@ public class OpenTelemetryTest {
     }
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void testDistributedContextManagerNotFound() {
     System.setProperty(DistributedContextManagerProvider.class.getName(), "io.does.not.exists");
+    thrown.expect(IllegalStateException.class);
     OpenTelemetry.getDistributedContextManager();
   }
 
@@ -193,6 +201,7 @@ public class OpenTelemetryTest {
     File file = new File(location.getPath() + "META-INF/services/" + service.getName());
     file.getParentFile().mkdirs();
 
+    @SuppressWarnings("DefaultCharset")
     Writer output = new FileWriter(file);
     for (Class<?> impl : impls) {
       output.write(impl.getName());
@@ -215,16 +224,19 @@ public class OpenTelemetryTest {
       return new FirstTracer();
     }
 
+    @Nullable
     @Override
     public Span getCurrentSpan() {
       return null;
     }
 
+    @Nullable
     @Override
     public Scope withSpan(Span span) {
       return null;
     }
 
+    @Nullable
     @Override
     public Span.Builder spanBuilder(String spanName) {
       return null;
@@ -233,11 +245,13 @@ public class OpenTelemetryTest {
     @Override
     public void recordSpanData(SpanData span) {}
 
+    @Nullable
     @Override
     public BinaryFormat<SpanContext> getBinaryFormat() {
       return null;
     }
 
+    @Nullable
     @Override
     public HttpTextFormat<SpanContext> getHttpTextFormat() {
       return null;
@@ -257,26 +271,31 @@ public class OpenTelemetryTest {
       return new FirstMeter();
     }
 
+    @Nullable
     @Override
     public GaugeLong.Builder gaugeLongBuilder(String name) {
       return null;
     }
 
+    @Nullable
     @Override
     public GaugeDouble.Builder gaugeDoubleBuilder(String name) {
       return null;
     }
 
+    @Nullable
     @Override
     public CounterDouble.Builder counterDoubleBuilder(String name) {
       return null;
     }
 
+    @Nullable
     @Override
     public CounterLong.Builder counterLongBuilder(String name) {
       return null;
     }
 
+    @Nullable
     @Override
     public Measure.Builder measureBuilder(String name) {
       return null;
@@ -307,26 +326,31 @@ public class OpenTelemetryTest {
       return new FirstDistributedContextManager();
     }
 
+    @Nullable
     @Override
     public DistributedContext getCurrentContext() {
       return null;
     }
 
+    @Nullable
     @Override
     public DistributedContext.Builder contextBuilder() {
       return null;
     }
 
+    @Nullable
     @Override
     public Scope withContext(DistributedContext distContext) {
       return null;
     }
 
+    @Nullable
     @Override
     public BinaryFormat<DistributedContext> getBinaryFormat() {
       return null;
     }
 
+    @Nullable
     @Override
     public HttpTextFormat<DistributedContext> getHttpTextFormat() {
       return null;

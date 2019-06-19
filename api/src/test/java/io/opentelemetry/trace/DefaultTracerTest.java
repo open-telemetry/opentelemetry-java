@@ -20,7 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TraceContextFormat;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -40,6 +42,8 @@ public class DefaultTracerTest {
           TraceOptions.getDefault(),
           Tracestate.getDefault());
 
+  @Rule public final ExpectedException thrown = ExpectedException.none();
+
   @Test
   public void defaultGetCurrentSpan() {
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
@@ -57,8 +61,9 @@ public class DefaultTracerTest {
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void spanBuilderWithName_NullName() {
+    thrown.expect(NullPointerException.class);
     defaultTracer.spanBuilder(null);
   }
 
