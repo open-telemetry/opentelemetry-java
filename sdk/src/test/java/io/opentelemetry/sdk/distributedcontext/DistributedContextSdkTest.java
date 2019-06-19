@@ -64,7 +64,7 @@ public class DistributedContextSdkTest {
 
   @Test
   public void getIterator_empty() {
-    DistributedContextSdk distContext = new DistributedContextSdk.Builder().build();
+    DistributedContextSdk distContext = DistributedContextSdk.builder().build();
     assertThat(distContextToList(distContext)).isEmpty();
   }
 
@@ -141,7 +141,7 @@ public class DistributedContextSdkTest {
 
   @Test
   public void remove_existingKey() {
-    DistributedContextSdk.Builder builder = new DistributedContextSdk.Builder();
+    DistributedContextSdk.Builder builder = DistributedContextSdk.builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
@@ -150,7 +150,7 @@ public class DistributedContextSdkTest {
 
   @Test
   public void remove_differentKey() {
-    DistributedContextSdk.Builder builder = new DistributedContextSdk.Builder();
+    DistributedContextSdk.Builder builder = DistributedContextSdk.builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 

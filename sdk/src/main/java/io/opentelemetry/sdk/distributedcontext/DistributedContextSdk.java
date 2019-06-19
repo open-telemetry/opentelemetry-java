@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.distributedcontext;
 
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
+import com.google.auto.value.AutoValue;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.Entry;
 import io.opentelemetry.distributedcontext.EntryKey;
@@ -31,31 +33,31 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-// TODO: Migrate to AutoValue
-// @AutoValue
-class DistributedContextSdk implements DistributedContext {
+@AutoValue
+abstract class DistributedContextSdk implements DistributedContext {
+
+  DistributedContextSdk() {}
 
   // The types of the EntryKey and Entry must match for each entry.
-  private final Map<EntryKey, Entry> entries;
-  @Nullable private final DistributedContext parent;
+  abstract Map<EntryKey, Entry> getEntries();
+
+  @Nullable
+  abstract DistributedContext getParent();
 
   /**
-   * Creates a new {@link DistributedContextSdk} with the given entries.
+   * Returns a new {@link Builder}.
    *
-   * @param entries the initial entries for this {@code DistributedContextSdk}.
-   * @param parent providing a default set of entries
+   * @return a {@code Builder}.
    */
-  private DistributedContextSdk(
-      Map<? extends EntryKey, ? extends Entry> entries, DistributedContext parent) {
-    this.entries = Collections.unmodifiableMap(new HashMap<>(checkNotNull(entries, "entries")));
-    this.parent = parent;
+  static Builder builder() {
+    return new AutoValue_DistributedContextSdk.Builder().setEntries(new HashMap<EntryKey, Entry>());
   }
 
   @Override
   public Iterator<Entry> getIterator() {
-    Map<EntryKey, Entry> combined = new HashMap<>(entries);
-    if (parent != null) {
-      for (Iterator<Entry> it = parent.getIterator(); it.hasNext(); ) {
+    Map<EntryKey, Entry> combined = new HashMap<>(getEntries());
+    if (getParent() != null) {
+      for (Iterator<Entry> it = getParent().getIterator(); it.hasNext(); ) {
         Entry entry = it.next();
         if (!combined.containsKey(entry.getKey())) {
           combined.put(entry.getKey(), entry);
@@ -75,84 +77,63 @@ class DistributedContextSdk implements DistributedContext {
   @Nullable
   @Override
   public EntryValue getEntryValue(EntryKey entryKey) {
-    Entry entry = entries.get(entryKey);
+    Entry entry = getEntries().get(entryKey);
     if (entry != null) {
       return entry.getValue();
     } else {
-      return parent == null ? null : parent.getEntryValue(entryKey);
+      return getParent() == null ? null : getParent().getEntryValue(entryKey);
     }
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || !(o instanceof DistributedContextSdk)) {
-      return false;
-    }
+  @AutoValue.Builder
+  abstract static class Builder implements DistributedContext.Builder {
 
-    DistributedContextSdk distContextSdk = (DistributedContextSdk) o;
+    Builder() {}
 
-    if (!entries.equals(distContextSdk.entries)) {
-      return false;
-    }
-    return parent != null ? parent.equals(distContextSdk.parent) : distContextSdk.parent == null;
-  }
+    abstract DistributedContextSdk autoBuild();
 
-  @Override
-  public int hashCode() {
-    int result = entries.hashCode();
-    result = 31 * result + (parent != null ? parent.hashCode() : 0);
-    return result;
-  }
+    abstract DistributedContextSdk.Builder setEntries(Map<EntryKey, Entry> entries);
 
-  // TODO: Migrate to AutoValue.Builder
-  // @AutoValue.Builder
-  static class Builder implements DistributedContext.Builder {
-    @Nullable private DistributedContext parent;
-    private final Map<EntryKey, Entry> entries;
+    abstract Map<EntryKey, Entry> getEntries();
 
-    /** Create a new empty DistributedContext builder. */
-    Builder() {
-      this.entries = new HashMap<>();
+    @Nullable
+    abstract DistributedContext getParent();
+
+    @Override
+    public abstract DistributedContextSdk.Builder setParent(@Nullable DistributedContext parent);
+
+    @Override
+    public DistributedContextSdk.Builder setNoParent() {
+      return setParent(null);
     }
 
     @Override
-    public DistributedContext.Builder setParent(DistributedContext parent) {
-      this.parent = parent;
-      return this;
-    }
-
-    @Override
-    public DistributedContext.Builder setNoParent() {
-      parent = null;
-      return this;
-    }
-
-    @Override
-    public DistributedContext.Builder put(
+    public DistributedContextSdk.Builder put(
         EntryKey key, EntryValue value, EntryMetadata entryMetadata) {
-      entries.put(
-          checkNotNull(key, "key"),
-          Entry.create(
-              key, checkNotNull(value, "value"), checkNotNull(entryMetadata, "entryMetadata")));
+      getEntries()
+          .put(
+              checkNotNull(key, "key"),
+              Entry.create(
+                  key, checkNotNull(value, "value"), checkNotNull(entryMetadata, "entryMetadata")));
       return this;
     }
 
     @Override
-    public DistributedContext.Builder remove(EntryKey key) {
-      entries.remove(checkNotNull(key, "key"));
-      if (parent != null && parent.getEntryValue(key) != null) {
-        entries.put(key, null);
+    public DistributedContextSdk.Builder remove(EntryKey key) {
+      getEntries().remove(checkNotNull(key, "key"));
+      if (getParent() != null && getParent().getEntryValue(key) != null) {
+        getEntries().put(key, null);
       }
       return this;
     }
 
     @Override
     public DistributedContextSdk build() {
-      // TODO if (parent == null) parent = DistributedContextManager.getCurrentContext();
-      return new DistributedContextSdk(entries, parent);
+      if (getParent() == null) {
+        setParent(OpenTelemetry.getDistributedContextManager().getCurrentContext());
+      }
+      setEntries(Collections.unmodifiableMap(new HashMap<EntryKey, Entry>(getEntries())));
+      return autoBuild();
     }
   }
 }

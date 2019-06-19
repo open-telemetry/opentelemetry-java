@@ -30,7 +30,7 @@ class DistributedContextTestUtil {
   }
 
   static DistributedContextSdk listToDistributedContext(List<Entry> entries) {
-    DistributedContextSdk.Builder builder = new DistributedContextSdk.Builder();
+    DistributedContextSdk.Builder builder = DistributedContextSdk.builder();
     for (Entry entry : entries) {
       builder.put(entry.getKey(), entry.getValue(), entry.getEntryMetadata());
     }
