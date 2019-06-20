@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
+import com.google.protobuf.UInt32Value;
+import io.opentelemetry.proto.trace.v1.TruncatableString;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
@@ -42,7 +44,6 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
-@SuppressWarnings("unused") // TODO(songya): remove this annotation after finishing implementation
 final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
@@ -105,6 +106,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    *
    * @param context supplies the trace_id and span_id for the newly started span.
    * @param name the displayed name for the new span.
+   * @param kind the span kind.
    * @param parentSpanId the span_id of the parent span, or null if the new span is a root span.
    * @param traceConfig trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
@@ -112,6 +114,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    *     parent is sampled, we should use the same converter to ensure ordering between tracing
    *     events.
    * @param clock the clock used to get the time.
+   * @param resource the resource associated with this span.
    * @return a new and started span.
    */
   @VisibleForTesting
@@ -161,7 +164,39 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
 
   @Override
   public io.opentelemetry.proto.trace.v1.Span toSpanProto() {
-    throw new UnsupportedOperationException("to be implemented");
+    synchronized (this) {
+      io.opentelemetry.proto.trace.v1.Span.Builder builder =
+          io.opentelemetry.proto.trace.v1.Span.newBuilder()
+              .setTraceId(TraceProtoUtils.toProtoTraceId(context.getTraceId()))
+              .setSpanId(TraceProtoUtils.toProtoSpanId(context.getSpanId()))
+              .setTracestate(TraceProtoUtils.toProtoTracestate(context.getTracestate()))
+              .setResource(TraceProtoUtils.toProtoResource(resource))
+              .setName(TruncatableString.newBuilder().setValue(name).build())
+              .setKind(TraceProtoUtils.toProtoKind(kind))
+              .setStartTime(timestampConverter.convertNanoTime(startNanoTime))
+              .setEndTime(timestampConverter.convertNanoTime(getEndNanoTime()))
+              .setChildSpanCount(UInt32Value.of(numberOfChildren));
+      if (parentSpanId != null) {
+        builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(parentSpanId));
+      }
+      if (attributes != null) {
+        builder.setAttributes(
+            TraceProtoUtils.toProtoAttributes(
+                attributes, attributes.getNumberOfDroppedAttributes()));
+      }
+      if (events != null) {
+        builder.setTimeEvents(
+            TraceProtoUtils.toProtoTimedEvents(
+                events, totalRecordedEvents - events.size(), timestampConverter));
+      }
+      if (links != null) {
+        builder.setLinks(TraceProtoUtils.toProtoLinks(links, totalRecordedLinks - links.size()));
+      }
+      if (hasBeenEnded) {
+        builder.setStatus(TraceProtoUtils.toProtoStatus(getStatusWithDefault()));
+      }
+      return builder.build();
+    }
   }
 
   /**
@@ -184,7 +219,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    */
   long getEndNanoTime() {
     synchronized (this) {
-      return hasBeenEnded ? endNanoTime : clock.nowNanos();
+      return getEndNanoTimeInternal();
     }
   }
 
@@ -196,8 +231,14 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    */
   long getLatencyNs() {
     synchronized (this) {
-      return hasBeenEnded ? endNanoTime - startNanoTime : clock.nowNanos() - startNanoTime;
+      return getEndNanoTimeInternal() - startNanoTime;
     }
+  }
+
+  // Use getEndNanoTimeInternal to avoid over-locking.
+  @GuardedBy("this")
+  private long getEndNanoTimeInternal() {
+    return hasBeenEnded ? endNanoTime : clock.nowNanos();
   }
 
   /**
@@ -322,6 +363,10 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
   public void updateName(String name) {
     Preconditions.checkNotNull(name, "name");
     synchronized (this) {
+      if (hasBeenEnded) {
+        logger.log(Level.FINE, "Calling updateName() on an ended Span.");
+        return;
+      }
       this.name = name;
     }
   }
