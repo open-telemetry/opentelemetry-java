@@ -75,7 +75,10 @@ subprojects {
         it.options.compilerArgs += ["-XepExcludedPaths:.*/sdk/build/generated/source/proto/.*"]
 
         // Enforce errorprone warnings to be errors.
-        it.options.compilerArgs += ["-Werror"]
+        if (!JavaVersion.current().isJava9() && !JavaVersion.current().isJava10()) {
+            // TODO: Enable -Werror for Java 9+
+            it.options.compilerArgs += ["-Werror"]
+        }
     }
 
     compileTestJava {
