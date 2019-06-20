@@ -130,8 +130,6 @@ public class RecordEventsSpanImplTest {
     }
     testClock.advanceMillis(1000);
     Event event = new SimpleEvent("event2", Collections.<String, AttributeValue>emptyMap());
-    Event expectdEvent =
-        SpanData.Event.create("event2", Collections.<String, AttributeValue>emptyMap());
     span.addEvent(event);
     Link link = SpanData.Link.create(spanContext);
     span.addLink(link);

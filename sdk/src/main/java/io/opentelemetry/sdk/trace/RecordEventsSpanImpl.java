@@ -42,6 +42,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
+@SuppressWarnings("unused") // TODO(songya): remove this annotation after finishing implementation
 final class RecordEventsSpanImpl implements SpanSdk {
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
