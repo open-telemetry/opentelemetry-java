@@ -43,7 +43,7 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
 @SuppressWarnings("unused") // TODO(songya): remove this annotation after finishing implementation
-final class RecordEventsSpanImpl implements SpanSdk {
+final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
   // Contains the identifiers associated with this Span.
@@ -115,7 +115,7 @@ final class RecordEventsSpanImpl implements SpanSdk {
    * @return a new and started span.
    */
   @VisibleForTesting
-  static RecordEventsSpanImpl startSpan(
+  static RecordEventsReadableSpanImpl startSpan(
       SpanContext context,
       String name,
       Kind kind,
@@ -125,8 +125,8 @@ final class RecordEventsSpanImpl implements SpanSdk {
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
       Resource resource) {
-    RecordEventsSpanImpl span =
-        new RecordEventsSpanImpl(
+    RecordEventsReadableSpanImpl span =
+        new RecordEventsReadableSpanImpl(
             context,
             name,
             kind,
@@ -140,6 +140,11 @@ final class RecordEventsSpanImpl implements SpanSdk {
     // initialized.
     spanProcessor.onStartSync(span);
     return span;
+  }
+
+  @Override
+  public SpanContext getSpanContext() {
+    return getContext();
   }
 
   /**
@@ -419,7 +424,7 @@ final class RecordEventsSpanImpl implements SpanSdk {
     }
   }
 
-  private RecordEventsSpanImpl(
+  private RecordEventsReadableSpanImpl(
       SpanContext context,
       String name,
       Kind kind,
