@@ -42,6 +42,7 @@ import io.opentelemetry.trace.Tracestate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Rule;
@@ -58,8 +59,8 @@ import org.mockito.MockitoAnnotations;
 public class RecordEventsReadableSpanImplTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
-  private static final long NANOS_PER_SECOND = (long) 1e9;
-  private static final long MILLIS_PER_SECOND = 1000;
+  private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
+  private static final long MILLIS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
   private final TraceId traceId = TestUtils.generateRandomTraceId();
   private final SpanId spanId = TestUtils.generateRandomSpanId();
   private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
@@ -356,7 +357,7 @@ public class RecordEventsReadableSpanImplTest {
           .isEqualTo(TraceProtoUtils.toProtoLink(link));
     }
   }
-  
+
   private RecordEventsReadableSpanImpl createTestRootSpan() {
     return createTestSpan(Kind.INTERNAL, TraceConfig.getDefault(), null);
   }
