@@ -59,6 +59,7 @@ public class RecordEventsReadableSpanImplTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
   private static final long NANOS_PER_SECOND = (long) 1e9;
+  private static final long MILLIS_PER_SECOND = 1000;
   private final TraceId traceId = TestUtils.generateRandomTraceId();
   private final SpanId spanId = TestUtils.generateRandomSpanId();
   private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
@@ -163,7 +164,7 @@ public class RecordEventsReadableSpanImplTest {
   @Test
   public void setStatus() {
     RecordEventsReadableSpanImpl span = createTestSpan(Kind.CONSUMER);
-    testClock.advanceMillis(10);
+    testClock.advanceMillis(MILLIS_PER_SECOND);
     assertThat(span.getStatus()).isEqualTo(Status.OK);
     span.setStatus(Status.CANCELLED);
     assertThat(span.getStatus()).isEqualTo(Status.CANCELLED);
@@ -180,11 +181,11 @@ public class RecordEventsReadableSpanImplTest {
   @Test
   public void getLatencyNs_ActiveSpan() {
     RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
-    testClock.advanceMillis(1000);
+    testClock.advanceMillis(MILLIS_PER_SECOND);
     long elapsedTimeNanos1 =
         (testClock.now().getSeconds() - startTime.getSeconds()) * NANOS_PER_SECOND;
     assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos1);
-    testClock.advanceMillis(1000);
+    testClock.advanceMillis(MILLIS_PER_SECOND);
     long elapsedTimeNanos2 =
         (testClock.now().getSeconds() - startTime.getSeconds()) * NANOS_PER_SECOND;
     assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos2);
@@ -193,12 +194,12 @@ public class RecordEventsReadableSpanImplTest {
   @Test
   public void getLatencyNs_EndedSpan() {
     RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
-    testClock.advanceMillis(1000);
+    testClock.advanceMillis(MILLIS_PER_SECOND);
     span.end();
     long elapsedTimeNanos =
         (testClock.now().getSeconds() - startTime.getSeconds()) * NANOS_PER_SECOND;
     assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos);
-    testClock.advanceMillis(1000);
+    testClock.advanceMillis(MILLIS_PER_SECOND);
     assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos);
   }
 
@@ -304,7 +305,7 @@ public class RecordEventsReadableSpanImplTest {
 
     for (int i = 0; i < 2 * maxNumberOfEvents; i++) {
       span.addEvent(event);
-      testClock.advanceMillis(1000);
+      testClock.advanceMillis(MILLIS_PER_SECOND);
     }
     Span spanProto = span.toSpanProto();
     assertThat(spanProto.getTimeEvents().getDroppedTimedEventsCount()).isEqualTo(maxNumberOfEvents);
@@ -392,10 +393,10 @@ public class RecordEventsReadableSpanImplTest {
     for (Map.Entry<String, AttributeValue> attribute : attributes.entrySet()) {
       span.setAttribute(attribute.getKey(), attribute.getValue());
     }
-    testClock.advanceMillis(1000);
+    testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addEvent(event);
     span.addLink(link);
-    testClock.advanceMillis(1000);
+    testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addChild();
     span.updateName(SPAN_NEW_NAME);
     if (status != null) {
