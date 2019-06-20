@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO - Use the Nullable annotation everywhere.
-public final class InMemoryTracer implements Tracer {
+final class InMemoryTracer implements Tracer {
   private final List<SpanData> finishedSpanDataItems = new ArrayList<>();
   private final HttpTextFormat<SpanContext> textFormat = new TraceContextFormat();
   private final Resource resource;
