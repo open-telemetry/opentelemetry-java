@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.Attributes;
@@ -96,7 +97,8 @@ final class TraceProtoUtils {
     return builder.build();
   }
 
-  private static io.opentelemetry.proto.trace.v1.AttributeValue toProtoAttributeValue(
+  @VisibleForTesting
+  static io.opentelemetry.proto.trace.v1.AttributeValue toProtoAttributeValue(
       AttributeValue attributeValue) {
     io.opentelemetry.proto.trace.v1.AttributeValue.Builder builder =
         io.opentelemetry.proto.trace.v1.AttributeValue.newBuilder();
@@ -127,8 +129,8 @@ final class TraceProtoUtils {
     return builder.build();
   }
 
-  private static Span.TimedEvent toProtoTimedEvent(
-      TimedEvent timedEvent, TimestampConverter converter) {
+  @VisibleForTesting
+  static Span.TimedEvent toProtoTimedEvent(TimedEvent timedEvent, TimestampConverter converter) {
     Span.TimedEvent.Builder builder = Span.TimedEvent.newBuilder();
     builder.setTime(converter.convertNanoTime(timedEvent.getNanotime()));
     builder.setEvent(
@@ -148,7 +150,8 @@ final class TraceProtoUtils {
     return builder.build();
   }
 
-  private static Span.Link toProtoLink(Link link) {
+  @VisibleForTesting
+  static Span.Link toProtoLink(Link link) {
     Span.Link.Builder builder = Span.Link.newBuilder();
     SpanContext context = link.getContext();
     builder
@@ -160,9 +163,12 @@ final class TraceProtoUtils {
   }
 
   static io.opentelemetry.proto.trace.v1.Status toProtoStatus(Status status) {
-    return io.opentelemetry.proto.trace.v1.Status.newBuilder()
-        .setCode(status.getCanonicalCode().value())
-        .setMessage(status.getDescription())
-        .build();
+    io.opentelemetry.proto.trace.v1.Status.Builder builder =
+        io.opentelemetry.proto.trace.v1.Status.newBuilder()
+            .setCode(status.getCanonicalCode().value());
+    if (status.getDescription() != null) {
+      builder.setMessage(status.getDescription());
+    }
+    return builder.build();
   }
 }
