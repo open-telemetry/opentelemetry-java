@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.Attributes;
@@ -63,8 +64,8 @@ public class RecordEventsReadableSpanImplTest {
   private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceOptions.getDefault(), Tracestate.getDefault());
-  private final Timestamp timestamp = Timestamp.newBuilder().setSeconds(1000).build();
-  private final TestClock testClock = TestClock.create(timestamp);
+  private final Timestamp startTime = Timestamp.newBuilder().setSeconds(1000).build();
+  private final TestClock testClock = TestClock.create(startTime);
   private final TimestampConverter timestampConverter = TimestampConverter.now(testClock);
   private final Resource resource = Resource.getEmpty();
   private final Map<String, AttributeValue> attributes = new HashMap<String, AttributeValue>();
@@ -103,8 +104,8 @@ public class RecordEventsReadableSpanImplTest {
         TimedEvents.getDefaultInstance(),
         Links.getDefaultInstance(),
         SPAN_NAME,
-        timestamp,
-        timestamp,
+        startTime,
+        startTime,
         Status.OK,
         0);
   }
@@ -114,7 +115,7 @@ public class RecordEventsReadableSpanImplTest {
     RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
     spanDoWork(span, null);
     Span spanProto = span.toSpanProto();
-    long timeInNanos = (timestamp.getSeconds() + 1) * NANOS_PER_SECOND;
+    long timeInNanos = (startTime.getSeconds() + 1) * NANOS_PER_SECOND;
     TimedEvent timedEvent = TimedEvent.create(timeInNanos, event);
     verifySpanProto(
         spanProto,
@@ -123,7 +124,7 @@ public class RecordEventsReadableSpanImplTest {
             Collections.singletonList(timedEvent), 0, timestampConverter),
         TraceProtoUtils.toProtoLinks(Collections.singletonList(link), 0),
         SPAN_NEW_NAME,
-        timestamp,
+        startTime,
         testClock.now(),
         Status.OK,
         1);
@@ -136,7 +137,7 @@ public class RecordEventsReadableSpanImplTest {
     span.end();
     Mockito.verify(spanProcessor, Mockito.times(1)).onEndSync(span);
     Span spanProto = span.toSpanProto();
-    long timeInNanos = (timestamp.getSeconds() + 1) * NANOS_PER_SECOND;
+    long timeInNanos = (startTime.getSeconds() + 1) * NANOS_PER_SECOND;
     TimedEvent timedEvent = TimedEvent.create(timeInNanos, event);
     verifySpanProto(
         spanProto,
@@ -145,10 +146,18 @@ public class RecordEventsReadableSpanImplTest {
             Collections.singletonList(timedEvent), 0, timestampConverter),
         TraceProtoUtils.toProtoLinks(Collections.singletonList(link), 0),
         SPAN_NEW_NAME,
-        timestamp,
+        startTime,
         testClock.now(),
         Status.CANCELLED,
         1);
+  }
+
+  @Test
+  public void toSpanProto_RootSpan() {
+    RecordEventsReadableSpanImpl span = createTestRootSpan();
+    spanDoWork(span, null);
+    Span spanProto = span.toSpanProto();
+    assertThat(spanProto.getParentSpanId()).isEqualTo(ByteString.EMPTY);
   }
 
   @Test
@@ -166,6 +175,31 @@ public class RecordEventsReadableSpanImplTest {
   public void getSpanKind() {
     RecordEventsReadableSpanImpl span = createTestSpan(Kind.SERVER);
     assertThat(span.getKind()).isEqualTo(Kind.SERVER);
+  }
+
+  @Test
+  public void getLatencyNs_ActiveSpan() {
+    RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
+    testClock.advanceMillis(1000);
+    long elapsedTimeNanos1 =
+        (testClock.now().getSeconds() - startTime.getSeconds()) * NANOS_PER_SECOND;
+    assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos1);
+    testClock.advanceMillis(1000);
+    long elapsedTimeNanos2 =
+        (testClock.now().getSeconds() - startTime.getSeconds()) * NANOS_PER_SECOND;
+    assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos2);
+  }
+
+  @Test
+  public void getLatencyNs_EndedSpan() {
+    RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
+    testClock.advanceMillis(1000);
+    span.end();
+    long elapsedTimeNanos =
+        (testClock.now().getSeconds() - startTime.getSeconds()) * NANOS_PER_SECOND;
+    assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos);
+    testClock.advanceMillis(1000);
+    assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos);
   }
 
   @Test
@@ -277,7 +311,7 @@ public class RecordEventsReadableSpanImplTest {
 
     assertThat(spanProto.getTimeEvents().getTimedEventList().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
-      long timeInNanos = (timestamp.getSeconds() + maxNumberOfEvents + i) * NANOS_PER_SECOND;
+      long timeInNanos = (startTime.getSeconds() + maxNumberOfEvents + i) * NANOS_PER_SECOND;
       Span.TimedEvent expectedEvent =
           TraceProtoUtils.toProtoTimedEvent(
               TimedEvent.create(timeInNanos, event), timestampConverter);
@@ -288,7 +322,7 @@ public class RecordEventsReadableSpanImplTest {
     assertThat(spanProto.getTimeEvents().getDroppedTimedEventsCount()).isEqualTo(maxNumberOfEvents);
     assertThat(spanProto.getTimeEvents().getTimedEventList().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
-      long timeInNanos = (timestamp.getSeconds() + maxNumberOfEvents + i) * NANOS_PER_SECOND;
+      long timeInNanos = (startTime.getSeconds() + maxNumberOfEvents + i) * NANOS_PER_SECOND;
       Span.TimedEvent expectedEvent =
           TraceProtoUtils.toProtoTimedEvent(
               TimedEvent.create(timeInNanos, event), timestampConverter);
@@ -321,16 +355,21 @@ public class RecordEventsReadableSpanImplTest {
           .isEqualTo(TraceProtoUtils.toProtoLink(link));
     }
   }
+  
+  private RecordEventsReadableSpanImpl createTestRootSpan() {
+    return createTestSpan(Kind.INTERNAL, TraceConfig.getDefault(), null);
+  }
 
   private RecordEventsReadableSpanImpl createTestSpan(Kind kind) {
-    return createTestSpan(kind, TraceConfig.getDefault());
+    return createTestSpan(kind, TraceConfig.getDefault(), parentSpanId);
   }
 
   private RecordEventsReadableSpanImpl createTestSpan(TraceConfig config) {
-    return createTestSpan(Kind.INTERNAL, config);
+    return createTestSpan(Kind.INTERNAL, config, parentSpanId);
   }
 
-  private RecordEventsReadableSpanImpl createTestSpan(Kind kind, TraceConfig config) {
+  private RecordEventsReadableSpanImpl createTestSpan(
+      Kind kind, TraceConfig config, @Nullable SpanId parentSpanId) {
     RecordEventsReadableSpanImpl span =
         RecordEventsReadableSpanImpl.startSpan(
             spanContext,

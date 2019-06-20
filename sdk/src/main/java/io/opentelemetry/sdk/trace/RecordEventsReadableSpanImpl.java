@@ -219,7 +219,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    */
   long getEndNanoTime() {
     synchronized (this) {
-      return hasBeenEnded ? endNanoTime : clock.nowNanos();
+      return getEndNanoTimeInternal();
     }
   }
 
@@ -231,8 +231,14 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    */
   long getLatencyNs() {
     synchronized (this) {
-      return getEndNanoTime() - startNanoTime;
+      return getEndNanoTimeInternal() - startNanoTime;
     }
+  }
+
+  // Use getEndNanoTimeInternal to avoid over-locking.
+  @GuardedBy("this")
+  private long getEndNanoTimeInternal() {
+    return hasBeenEnded ? endNanoTime : clock.nowNanos();
   }
 
   /**
