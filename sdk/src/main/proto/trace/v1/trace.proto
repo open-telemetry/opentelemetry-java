@@ -32,7 +32,7 @@ option java_outer_classname = "TraceProto";
 // multiple root spans, or none at all. Spans do not need to be
 // contiguous - there may be gaps or overlaps between spans in a trace.
 //
-// The next id is 16.
+// The next id is 15.
 message Span {
   // A unique identifier for a trace. All spans from the same trace share
   // the same `trace_id`. The ID is a 16-byte array. An ID with all zeroes
@@ -251,16 +251,9 @@ message Span {
   // Status.Ok (code = 0).
   Status status = 13;
 
-  // A highly recommended but not required flag that identifies when a
-  // trace crosses a process boundary. True when the parent_span belongs
-  // to the same process as the current span. This flag is most commonly
-  // used to indicate the need to adjust time as clocks in different
-  // processes may not be synchronized.
-  google.protobuf.BoolValue same_process_as_parent_span = 14;
-
   // An optional number of child spans that were generated while this span
   // was active. If set, allows an implementation to detect missing child spans.
-  google.protobuf.UInt32Value child_span_count = 15;
+  google.protobuf.UInt32Value child_span_count = 14;
 }
 
 // The `Status` type defines a logical error model that is suitable for different
