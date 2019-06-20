@@ -73,6 +73,9 @@ subprojects {
 
         // Ignore warnings for protobuf generated files.
         it.options.compilerArgs += ["-XepExcludedPaths:.*/sdk/build/generated/source/proto/.*"]
+
+        // Enforce errorprone warnings to be errors.
+        it.options.compilerArgs += ["-Werror"]
     }
 
     compileTestJava {
