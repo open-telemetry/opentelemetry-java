@@ -39,8 +39,17 @@ public abstract class TraceConfig {
   private static final long DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
   private static final long DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
 
-  /** Default {@code TraceConfig}. */
-  public static final TraceConfig DEFAULT =
+  /**
+   * Returns the default {@code TraceConfig}.
+   *
+   * @return the default {@code TraceConfig}.
+   * @since 0.1.0
+   */
+  public static final TraceConfig getDefault() {
+    return DEFAULT;
+  }
+
+  private static final TraceConfig DEFAULT =
       TraceConfig.builder()
           .setSampler(DEFAULT_SAMPLER)
           .setMaxNumberOfAttributes(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES)

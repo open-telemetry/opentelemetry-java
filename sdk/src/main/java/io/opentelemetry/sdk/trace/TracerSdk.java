@@ -33,7 +33,7 @@ public class TracerSdk implements Tracer {
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
-  private volatile TraceConfig activeTraceConfig = TraceConfig.DEFAULT;
+  private volatile TraceConfig activeTraceConfig = TraceConfig.getDefault();
 
   @Override
   public Span getCurrentSpan() {

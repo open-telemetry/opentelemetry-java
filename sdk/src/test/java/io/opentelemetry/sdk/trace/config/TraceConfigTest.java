@@ -46,54 +46,54 @@ public class TraceConfigTest {
 
   @Test
   public void defaultTraceConfig() {
-    assertThat(TraceConfig.DEFAULT.getSampler()).isEqualTo(Samplers.alwaysSample());
-    assertThat(TraceConfig.DEFAULT.getMaxNumberOfAttributes()).isEqualTo(32);
-    assertThat(TraceConfig.DEFAULT.getMaxNumberOfEvents()).isEqualTo(128);
-    assertThat(TraceConfig.DEFAULT.getMaxNumberOfLinks()).isEqualTo(32);
-    assertThat(TraceConfig.DEFAULT.getMaxNumberOfAttributesPerEvent()).isEqualTo(32);
-    assertThat(TraceConfig.DEFAULT.getMaxNumberOfAttributesPerLink()).isEqualTo(32);
+    assertThat(TraceConfig.getDefault().getSampler()).isEqualTo(Samplers.alwaysSample());
+    assertThat(TraceConfig.getDefault().getMaxNumberOfAttributes()).isEqualTo(32);
+    assertThat(TraceConfig.getDefault().getMaxNumberOfEvents()).isEqualTo(128);
+    assertThat(TraceConfig.getDefault().getMaxNumberOfLinks()).isEqualTo(32);
+    assertThat(TraceConfig.getDefault().getMaxNumberOfAttributesPerEvent()).isEqualTo(32);
+    assertThat(TraceConfig.getDefault().getMaxNumberOfAttributesPerLink()).isEqualTo(32);
   }
 
   @Test
   public void updateTraceConfig_NullSampler() {
     thrown.expect(NullPointerException.class);
-    TraceConfig.DEFAULT.toBuilder().setSampler(null).build();
+    TraceConfig.getDefault().toBuilder().setSampler(null).build();
   }
 
   @Test
   public void updateTraceConfig_NonPositiveMaxNumberOfAttributes() {
     thrown.expect(IllegalArgumentException.class);
-    TraceConfig.DEFAULT.toBuilder().setMaxNumberOfAttributes(0).build();
+    TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributes(0).build();
   }
 
   @Test
   public void updateTraceConfig_NonPositiveMaxNumberOfEvents() {
     thrown.expect(IllegalArgumentException.class);
-    TraceConfig.DEFAULT.toBuilder().setMaxNumberOfEvents(0).build();
+    TraceConfig.getDefault().toBuilder().setMaxNumberOfEvents(0).build();
   }
 
   @Test
   public void updateTraceConfig_NonPositiveMaxNumberOfLinks() {
     thrown.expect(IllegalArgumentException.class);
-    TraceConfig.DEFAULT.toBuilder().setMaxNumberOfLinks(0).build();
+    TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(0).build();
   }
 
   @Test
   public void updateTraceConfig_NonPositiveMaxNumberOfAttributesPerEvent() {
     thrown.expect(IllegalArgumentException.class);
-    TraceConfig.DEFAULT.toBuilder().setMaxNumberOfAttributesPerEvent(0).build();
+    TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributesPerEvent(0).build();
   }
 
   @Test
   public void updateTraceConfig_NonPositiveMaxNumberOfAttributesPerLink() {
     thrown.expect(IllegalArgumentException.class);
-    TraceConfig.DEFAULT.toBuilder().setMaxNumberOfAttributesPerLink(0).build();
+    TraceConfig.getDefault().toBuilder().setMaxNumberOfAttributesPerLink(0).build();
   }
 
   @Test
   public void updateTraceConfig_All() {
     TraceConfig traceConfig =
-        TraceConfig.DEFAULT
+        TraceConfig.getDefault()
             .toBuilder()
             .setSampler(Samplers.neverSample())
             .setMaxNumberOfAttributes(8)
