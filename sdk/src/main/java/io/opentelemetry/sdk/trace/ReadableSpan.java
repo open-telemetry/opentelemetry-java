@@ -17,9 +17,19 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanContext;
 
 /** The extend Span interface used by the SDK. */
-public interface SpanSdk extends Span {
+public interface ReadableSpan {
+
+  /**
+   * Returns the {@link SpanContext} of the {@code Span}.
+   *
+   * <p>Equivalent with {@link Span#getContext()}.
+   *
+   * @return the {@link SpanContext} of the {@code Span}.
+   */
+  SpanContext getSpanContext();
 
   /**
    * Returns the name of the {@code Span}.

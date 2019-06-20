@@ -110,7 +110,7 @@ class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public SpanSdk startSpan() {
+  public Span startSpan() {
     // TODO get parent span from the context if noParent=false and parent/remoteParents are null
     throw new UnsupportedOperationException("to be implemented");
   }

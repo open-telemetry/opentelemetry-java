@@ -30,9 +30,9 @@ public interface SpanProcessor {
    * <p>This method is called synchronously on the execution thread, should not throw or block the
    * execution thread.
    *
-   * @param span the {@code SpanSdk} that just started.
+   * @param span the {@code ReadableSpan} that just started.
    */
-  void onStartSync(SpanSdk span);
+  void onStartSync(ReadableSpan span);
 
   /**
    * Called when a {@link io.opentelemetry.trace.Span} is ended, if the {@link
@@ -41,9 +41,9 @@ public interface SpanProcessor {
    * <p>This method is called synchronously on the execution thread, should not throw or block the
    * execution thread.
    *
-   * @param span the {@code SpanSdk} that just ended.
+   * @param span the {@code ReadableSpan} that just ended.
    */
-  void onEndSync(SpanSdk span);
+  void onEndSync(ReadableSpan span);
 
   /** Called when {@link TracerSdk#shutdown()} is called. */
   void shutdown();

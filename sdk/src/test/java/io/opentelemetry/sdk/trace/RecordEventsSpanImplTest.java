@@ -47,7 +47,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link RecordEventsSpanImpl}. */
+/** Unit tests for {@link RecordEventsReadableSpanImpl}. */
 @RunWith(JUnit4.class)
 public class RecordEventsSpanImplTest {
   private static final String SPAN_NAME = "MySpanName";
@@ -81,8 +81,8 @@ public class RecordEventsSpanImplTest {
 
   @Test
   public void noEventsRecordedAfterEnd() {
-    RecordEventsSpanImpl span =
-        RecordEventsSpanImpl.startSpan(
+    RecordEventsReadableSpanImpl span =
+        RecordEventsReadableSpanImpl.startSpan(
             spanContext,
             SPAN_NAME,
             Kind.INTERNAL,
@@ -110,8 +110,8 @@ public class RecordEventsSpanImplTest {
 
   @Test
   public void toSpanData_EndedSpan() {
-    RecordEventsSpanImpl span =
-        RecordEventsSpanImpl.startSpan(
+    RecordEventsReadableSpanImpl span =
+        RecordEventsReadableSpanImpl.startSpan(
             spanContext,
             SPAN_NAME,
             Kind.INTERNAL,
@@ -141,8 +141,8 @@ public class RecordEventsSpanImplTest {
 
   @Test
   public void status_ViaSetStatus() {
-    RecordEventsSpanImpl span =
-        RecordEventsSpanImpl.startSpan(
+    RecordEventsReadableSpanImpl span =
+        RecordEventsReadableSpanImpl.startSpan(
             spanContext,
             SPAN_NAME,
             Kind.INTERNAL,
@@ -163,8 +163,8 @@ public class RecordEventsSpanImplTest {
 
   @Test
   public void getSpanKind() {
-    RecordEventsSpanImpl span =
-        RecordEventsSpanImpl.startSpan(
+    RecordEventsReadableSpanImpl span =
+        RecordEventsReadableSpanImpl.startSpan(
             spanContext,
             SPAN_NAME,
             Kind.SERVER,
