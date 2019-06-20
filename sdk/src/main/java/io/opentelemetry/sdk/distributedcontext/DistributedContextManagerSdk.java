@@ -45,11 +45,11 @@ public class DistributedContextManagerSdk implements DistributedContextManager {
 
   @Override
   public BinaryFormat<DistributedContext> getBinaryFormat() {
-    return null;
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
   public HttpTextFormat<DistributedContext> getHttpTextFormat() {
-    return null;
+    throw new UnsupportedOperationException("to be implemented");
   }
 }

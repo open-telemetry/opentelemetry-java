@@ -20,7 +20,7 @@ import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.metrics.CounterDouble;
 import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.GaugeDouble;
-import io.opentelemetry.metrics.GaugeLong.Builder;
+import io.opentelemetry.metrics.GaugeLong;
 import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.metrics.Measurement;
 import io.opentelemetry.metrics.Meter;
@@ -31,28 +31,28 @@ import java.util.List;
 public class MeterSdk implements Meter {
 
   @Override
-  public Builder gaugeLongBuilder(String name) {
-    return null;
+  public GaugeLong.Builder gaugeLongBuilder(String name) {
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
   public GaugeDouble.Builder gaugeDoubleBuilder(String name) {
-    return null;
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
   public CounterDouble.Builder counterDoubleBuilder(String name) {
-    return null;
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
   public CounterLong.Builder counterLongBuilder(String name) {
-    return null;
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
   public Measure.Builder measureBuilder(String name) {
-    return null;
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override

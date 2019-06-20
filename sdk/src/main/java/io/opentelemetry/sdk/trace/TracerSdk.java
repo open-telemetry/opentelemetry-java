@@ -55,7 +55,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public BinaryFormat<SpanContext> getBinaryFormat() {
-    return null;
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
