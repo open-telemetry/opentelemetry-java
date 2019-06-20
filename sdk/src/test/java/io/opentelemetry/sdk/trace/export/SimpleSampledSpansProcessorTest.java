@@ -72,7 +72,7 @@ public class SimpleSampledSpansProcessorTest {
 
   @Test
   public void onEndSync_SampledSpan() {
-    when(readableSpan.getContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanProto())
         .thenReturn(Span.getDefaultInstance())
         .thenThrow(new RuntimeException());
@@ -82,7 +82,7 @@ public class SimpleSampledSpansProcessorTest {
 
   @Test
   public void onEndSync_NotSampledSpan() {
-    when(readableSpan.getContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanProto())
         .thenReturn(Span.getDefaultInstance())
         .thenThrow(new RuntimeException());
@@ -92,7 +92,7 @@ public class SimpleSampledSpansProcessorTest {
 
   @Test
   public void onEndSync_ExporterReturnError() {
-    when(readableSpan.getContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     when(readableSpan.toSpanProto())
         .thenReturn(Span.getDefaultInstance())
         .thenReturn(Span.getDefaultInstance())
