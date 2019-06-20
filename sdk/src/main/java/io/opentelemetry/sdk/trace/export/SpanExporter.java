@@ -25,7 +25,7 @@ import java.util.List;
  * their own format.
  *
  * <p>To export data this MUST be register to the {@code TracerSdk} using a {@link
- * SimpleSampledSpansProcessor} or a {@code BatchSampledSpans}.
+ * SimpleSampledSpansProcessor} or a {@code BatchSampledSpansProcessor}.
  */
 // TODO: Change {@code BatchSampledSpansExporter} to {@link BatchSampledSpansExporter} when the
 //  class is available.
