@@ -17,6 +17,8 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.resources.Resource;
+import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
@@ -25,6 +27,10 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceOptions;
+import io.opentelemetry.trace.Tracestate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +43,8 @@ class SpanBuilderSdk implements Span.Builder {
   private final SpanProcessor spanProcessor;
   private final TraceConfig traceConfig;
 
-  @Nullable private SpanContext parent;
+  @Nullable private Span parent;
+  @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
   @Nullable private List<Link> links;
   private boolean recordEvents;
@@ -52,22 +59,23 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setParent(Span parent) {
-    Utils.checkNotNull(parent, "parent");
-    this.setParent(parent.getContext());
+    Utils.checkNotNull(parent, "remoteParent");
+    this.parent = parent;
+    this.parentType = ParentType.EXPLICIT_REMOTE_PARENT;
     return this;
   }
 
   @Override
   public Span.Builder setParent(SpanContext remoteParent) {
-    this.parent = Utils.checkNotNull(remoteParent, "remoteParent");
-    this.parentType = ParentType.EXPLICIT_PARENT;
+    this.remoteParent = Utils.checkNotNull(remoteParent, "remoteParent");
+    this.parentType = ParentType.EXPLICIT_REMOTE_PARENT;
     return this;
   }
 
   @Override
   public Span.Builder setNoParent() {
     this.parentType = ParentType.NO_PARENT;
-    this.parent = null;
+    this.remoteParent = null;
     return this;
   }
 
@@ -116,13 +124,31 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span startSpan() {
-    // TODO get parent span from the context if noParent=false and parent/remoteParents are null
-    throw new UnsupportedOperationException("to be implemented");
+    // TODO: get remoteParent span from the context if noParent=false and remoteParent/remoteParents
+    // are null
+    // TODO: correctly implement this.
+    SpanContext context =
+        SpanContext.create(
+            TraceId.fromBytes(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1}, 0),
+            SpanId.fromBytes(new byte[] {1, 2, 3, 4, 5, 6, 7, 8}, 0),
+            TraceOptions.builder().setIsSampled(true).build(),
+            Tracestate.getDefault());
+    return RecordEventsReadableSpanImpl.startSpan(
+        context,
+        spanName,
+        spanKind,
+        null,
+        traceConfig,
+        spanProcessor,
+        null,
+        MillisClock.getInstance(),
+        Resource.getEmpty());
   }
 
   private enum ParentType {
     CURRENT_SPAN,
     EXPLICIT_PARENT,
+    EXPLICIT_REMOTE_PARENT,
     NO_PARENT,
   }
 }
