@@ -26,6 +26,9 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.unsafe.ContextUtils;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.concurrent.GuardedBy;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
@@ -34,6 +37,10 @@ public class TracerSdk implements Tracer {
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
   private volatile TraceConfig activeTraceConfig = TraceConfig.getDefault();
+  private volatile SpanProcessor activeSpanProcessor = NoopSpanProcessor.getInstance();
+
+  @GuardedBy("this")
+  private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
 
   @Override
   public Span getCurrentSpan() {
@@ -47,7 +54,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return new SpanBuilderSdk(spanName);
+    return new SpanBuilderSdk(spanName, activeSpanProcessor, activeTraceConfig);
   }
 
   @Override
@@ -90,5 +97,21 @@ public class TracerSdk implements Tracer {
    */
   public void updateActiveTraceConfig(TraceConfig traceConfig) {
     activeTraceConfig = traceConfig;
+  }
+
+  /**
+   * Adds a new {@code SpanProcessor} to this {@code Tracer}.
+   *
+   * <p>Any registered processor cause overhead, consider to use an async/batch processor especially
+   * for span exporting, and export to multiple backends using the {@link
+   * io.opentelemetry.sdk.trace.export.MultiSpanExporter}.
+   *
+   * @param spanProcessor the new {@code SpanProcessor} to be added.
+   */
+  public void addSpanProcessor(SpanProcessor spanProcessor) {
+    synchronized (this) {
+      registeredSpanProcessors.add(spanProcessor);
+      activeSpanProcessor = MultiSpanProcessor.create(registeredSpanProcessors);
+    }
   }
 }

@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
@@ -32,17 +33,21 @@ import javax.annotation.Nullable;
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
 @SuppressWarnings("unused") // TODO: finish implementation
 class SpanBuilderSdk implements Span.Builder {
+  private final String spanName;
+  private final SpanProcessor spanProcessor;
+  private final TraceConfig traceConfig;
 
   @Nullable private SpanContext parent;
-  private Kind spanKind;
+  private Kind spanKind = Kind.INTERNAL;
   @Nullable private List<Link> links;
   private boolean recordEvents;
   private Sampler sampler;
-  private final String spanName;
   private ParentType parentType = ParentType.CURRENT_SPAN;
 
-  SpanBuilderSdk(String spanName) {
+  SpanBuilderSdk(String spanName, SpanProcessor spanProcessor, TraceConfig traceConfig) {
     this.spanName = spanName;
+    this.spanProcessor = spanProcessor;
+    this.traceConfig = traceConfig;
   }
 
   @Override
