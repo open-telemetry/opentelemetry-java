@@ -3,4 +3,13 @@ description = 'OpenTelemetry OpenTracing Bridge'
 dependencies {
     api project(':opentelemetry-api'),
             libraries.opentracing
+
+    testImplementation libraries.junit,
+            libraries.assertj,
+            libraries.slf4jsimple,
+            libraries.awaitility
+}
+test {
+    dependsOn cleanTest
+    testLogging.showStandardStreams = true
 }
