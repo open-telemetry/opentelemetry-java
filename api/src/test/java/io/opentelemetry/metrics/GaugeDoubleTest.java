@@ -55,21 +55,6 @@ public class GaugeDoubleTest {
   }
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullElement() {
-    List<LabelValue> labelValues = Collections.singletonList(null);
-    GaugeDouble gaugeDouble =
-        meter
-            .gaugeDoubleBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValue");
-    gaugeDouble.getOrCreateTimeSeries(labelValues);
-  }
-
-  @Test
   public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
     GaugeDouble gaugeDouble =
         meter

@@ -39,7 +39,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .build();
  *   // It is recommended to keep a reference of a TimeSeries.
  *   private static final GaugeDouble.TimeSeries inboundTimeSeries =
- *       gauge.getOrCreateTimeSeries(Collections.singletonList(LabelValue.create("SomeWork")));
+ *       gauge.getOrCreateTimeSeries(Collections.singletonList("SomeWork"));
  *    private static final GaugeDouble.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
  *
  *   void doDefault() {

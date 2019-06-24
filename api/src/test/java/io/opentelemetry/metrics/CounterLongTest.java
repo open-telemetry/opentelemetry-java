@@ -55,21 +55,6 @@ public class CounterLongTest {
   }
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullElement() {
-    List<LabelValue> labelValues = Collections.singletonList(null);
-    CounterLong counterLong =
-        meter
-            .counterLongBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValue");
-    counterLong.getOrCreateTimeSeries(labelValues);
-  }
-
-  @Test
   public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
     CounterLong counterLong =
         meter

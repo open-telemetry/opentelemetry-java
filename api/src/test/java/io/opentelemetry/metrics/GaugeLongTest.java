@@ -55,21 +55,6 @@ public class GaugeLongTest {
   }
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullElement() {
-    List<LabelValue> labelValues = Collections.singletonList(null);
-    GaugeLong gaugeLong =
-        meter
-            .gaugeLongBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValue");
-    gaugeLong.getOrCreateTimeSeries(labelValues);
-  }
-
-  @Test
   public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
     GaugeLong gaugeLong =
         meter

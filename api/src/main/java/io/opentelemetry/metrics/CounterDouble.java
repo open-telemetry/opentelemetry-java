@@ -38,7 +38,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .build();
  *   // It is recommended to keep a reference of a TimeSeries.
  *   private static final CounterDouble.TimeSeries inboundTimeSeries =
- *       counter.getOrCreateTimeSeries(Collections.singletonList(LabelValue.create("SomeWork")));
+ *       counter.getOrCreateTimeSeries(Collections.singletonList("SomeWork"));
  *   private static final CounterDouble.TimeSeries defaultTimeSeries =
  *       counter.getDefaultTimeSeries();
  *

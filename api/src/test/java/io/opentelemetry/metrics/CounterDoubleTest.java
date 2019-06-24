@@ -55,21 +55,6 @@ public class CounterDoubleTest {
   }
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullElement() {
-    List<LabelValue> labelValues = Collections.singletonList(null);
-    CounterDouble counterDouble =
-        meter
-            .counterDoubleBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValue");
-    counterDouble.getOrCreateTimeSeries(labelValues);
-  }
-
-  @Test
   public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
     CounterDouble counterDouble =
         meter
