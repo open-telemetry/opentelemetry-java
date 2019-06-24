@@ -59,7 +59,7 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setParent(Span parent) {
-    Utils.checkNotNull(parent, "remoteParent");
+    this.parent = Utils.checkNotNull(parent, "parent");
     this.parent = parent;
     this.parentType = ParentType.EXPLICIT_REMOTE_PARENT;
     return this;
