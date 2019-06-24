@@ -107,6 +107,8 @@ public class SimpleSampledSpansProcessorTest {
     verify(spanExporter, times(2)).export(Collections.singletonList(Span.getDefaultInstance()));
   }
 
+  // TODO: Add tests for recorded metrics when the InMemoryMetricsExporter is available.
+
   @Test
   public void shutdown() {
     simpleSampledSpansProcessor.shutdown();

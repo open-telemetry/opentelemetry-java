@@ -17,10 +17,13 @@
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.metrics.CounterLong;
+import io.opentelemetry.metrics.LabelValue;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.trace.TraceOptions;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,9 +39,12 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
       Logger.getLogger(SimpleSampledSpansProcessor.class.getName());
 
   private final SpanExporter spanExporter;
+  private final CounterLong.TimeSeries pushedSpans;
 
-  private SimpleSampledSpansProcessor(SpanExporter spanExporter) {
+  private SimpleSampledSpansProcessor(SpanExporter spanExporter, String name) {
+    List<LabelValue> labelValueList = Collections.singletonList(LabelValue.create(name));
     this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+    this.pushedSpans = ExportMetrics.getPushedSpans().getOrCreateTimeSeries(labelValueList);
   }
 
   @Override
@@ -52,8 +58,11 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
       return;
     }
     try {
+      pushedSpans.add(1);
       spanExporter.export(Collections.singletonList(span.toSpanProto()));
     } catch (Throwable e) {
+      // TODO: Do we want to export a metric for this case or we rely on the exporter to expose this
+      //  metric? If we do it here we don't know how many spans were correctly exported vs dropped.
       logger.log(Level.WARNING, "Exception thrown by the export.", e);
     }
   }
@@ -77,12 +86,24 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
   /** Builder class for {@link SimpleSampledSpansProcessor}. */
   public static final class Builder {
     private final SpanExporter spanExporter;
+    private String name = SimpleSampledSpansProcessor.class.getName();
 
     private Builder(SpanExporter spanExporter) {
       this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
     }
 
-    // TODO: Add metrics for total exported spans.
+    /**
+     * Name is used as a metric label value for all the metrics exported by the newly created {@code
+     * SimpleSampledSpansProcessor}.
+     *
+     * @param name the name used as a metric label value.
+     * @return this.
+     */
+    public Builder setName(String name) {
+      this.name = Utils.checkNotNull(name, "name");
+      return this;
+    }
+
     // TODO: Consider to add support for constant Attributes and/or Resource.
 
     /**
@@ -93,7 +114,7 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
     public SimpleSampledSpansProcessor build() {
-      return new SimpleSampledSpansProcessor(spanExporter);
+      return new SimpleSampledSpansProcessor(spanExporter, name);
     }
   }
 }
