@@ -75,6 +75,7 @@ class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder setNoParent() {
     this.parentType = ParentType.NO_PARENT;
+    this.parent = null;
     this.remoteParent = null;
     return this;
   }
