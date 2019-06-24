@@ -42,10 +42,8 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
-@SuppressWarnings("unused") // TODO: finish implementation
+@SuppressWarnings("unused")
 class SpanBuilderSdk implements Span.Builder {
-  private static final long INVALID_ID = 0;
-
   private final String spanName;
   private final SpanProcessor spanProcessor;
   private final TraceConfig traceConfig;
