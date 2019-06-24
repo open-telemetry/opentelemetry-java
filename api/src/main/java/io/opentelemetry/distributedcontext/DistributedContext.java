@@ -16,7 +16,6 @@
 
 package io.opentelemetry.distributedcontext;
 
-import io.opentelemetry.context.Scope;
 import java.util.Iterator;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -57,9 +56,7 @@ public interface DistributedContext {
    */
   interface Builder {
     /**
-     * Sets the parent {@code DistributedContext} to use. If not set, the value of {@code
-     * Entryger.getCurrentDistributedContext()} at {@link #build()} or {@link #buildScoped()} time
-     * will be used as parent.
+     * Sets the parent {@code DistributedContext} to use.
      *
      * <p>This <b>must</b> be used to create a {@code DistributedContext} when manual Context
      * propagation is used.
@@ -75,9 +72,7 @@ public interface DistributedContext {
     Builder setParent(DistributedContext parent);
 
     /**
-     * Sets the option to become a {@code DistributedContext} with no parent. If not set, the value
-     * of {@code Entryger.getCurrentDistributedContext()} at {@link #build()} or {@link
-     * #buildScoped()} time will be used as parent.
+     * Sets the option to become a {@code DistributedContext} with no parent.
      *
      * @return this.
      * @since 0.1.0
@@ -111,16 +106,5 @@ public interface DistributedContext {
      * @since 0.1.0
      */
     DistributedContext build();
-
-    /**
-     * Enters the scope of code where the {@link DistributedContext} created from this builder is in
-     * the current context and returns an object that represents that scope. The scope is exited
-     * when the returned object is closed.
-     *
-     * @return an object that defines a scope where the {@code DistributedContext} created from this
-     *     builder is set to the current context.
-     * @since 0.1.0
-     */
-    Scope buildScoped();
   }
 }

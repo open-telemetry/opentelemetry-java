@@ -93,13 +93,12 @@ public class ScopedDistributedContextTest {
   @Test
   public void setCurrentEntriesWithBuilder() {
     assertThat(distContextToList(contextManager.getCurrentContext())).isEmpty();
-    try (Scope scope =
-        contextManager
-            .contextBuilder()
-            .put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION)
-            .buildScoped()) {
+    DistributedContext scopedDistContext =
+        contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+    try (Scope scope = contextManager.withContext(scopedDistContext)) {
       assertThat(distContextToList(contextManager.getCurrentContext()))
           .containsExactly(Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION));
+      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
     }
     assertThat(distContextToList(contextManager.getCurrentContext())).isEmpty();
   }
@@ -109,16 +108,18 @@ public class ScopedDistributedContextTest {
     DistributedContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope1 = contextManager.withContext(scopedDistContext)) {
-      try (Scope scope2 =
+      DistributedContext innerDistContext =
           contextManager
               .contextBuilder()
               .setParent(contextManager.getCurrentContext())
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
-              .buildScoped()) {
+              .build();
+      try (Scope scope2 = contextManager.withContext(innerDistContext)) {
         assertThat(distContextToList(contextManager.getCurrentContext()))
             .containsExactly(
                 Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
                 Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
+        assertThat(contextManager.getCurrentContext()).isSameInstanceAs(innerDistContext);
       }
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
     }
@@ -132,19 +133,21 @@ public class ScopedDistributedContextTest {
             .put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION)
             .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
             .build();
-    try (Scope scope1 = contextManager.withContext(scopedDistContext)) { // Scope 1
-      try (Scope scope2 =
+    try (Scope scope1 = contextManager.withContext(scopedDistContext)) {
+      DistributedContext innerDistContext =
           contextManager
               .contextBuilder()
               .setParent(contextManager.getCurrentContext())
               .put(KEY_3, VALUE_3, METADATA_NO_PROPAGATION)
               .put(KEY_2, VALUE_4, METADATA_NO_PROPAGATION)
-              .buildScoped()) { // Scope 2
+              .build();
+      try (Scope scope2 = contextManager.withContext(innerDistContext)) {
         assertThat(distContextToList(contextManager.getCurrentContext()))
             .containsExactly(
                 Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
                 Entry.create(KEY_2, VALUE_4, METADATA_NO_PROPAGATION),
                 Entry.create(KEY_3, VALUE_3, METADATA_NO_PROPAGATION));
+        assertThat(contextManager.getCurrentContext()).isSameInstanceAs(innerDistContext);
       }
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
     }

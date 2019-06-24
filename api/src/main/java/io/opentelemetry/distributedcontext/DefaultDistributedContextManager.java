@@ -16,7 +16,6 @@
 
 package io.opentelemetry.distributedcontext;
 
-import io.opentelemetry.context.NoopScope;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
@@ -108,11 +107,6 @@ public final class DefaultDistributedContextManager implements DistributedContex
     @Override
     public DistributedContext build() {
       return EmptyDistributedContext.getInstance();
-    }
-
-    @Override
-    public Scope buildScoped() {
-      return NoopScope.getInstance();
     }
   }
 
