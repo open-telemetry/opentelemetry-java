@@ -382,7 +382,8 @@ public class RecordEventsReadableSpanImplTest {
             spanProcessor,
             timestampConverter,
             testClock,
-            resource);
+            resource,
+            false);
     Mockito.verify(spanProcessor, Mockito.times(1)).onStartSync(span);
     return span;
   }

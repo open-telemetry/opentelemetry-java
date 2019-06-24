@@ -80,8 +80,9 @@ public final class SpanId implements Comparable<SpanId> {
    *
    * @param random The random number generator.
    * @return a valid new {@code SpanId}.
+   * @since 0.1.0
    */
-  static SpanId generateRandomId(Random random) {
+  public static SpanId generateRandomId(Random random) {
     long id;
     do {
       id = random.nextLong();

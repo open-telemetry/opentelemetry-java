@@ -16,9 +16,14 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.util.Samplers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -73,5 +78,118 @@ public class SpanBuilderSdkTest {
   public void addLinkSpanContextAttributes_null() {
     thrown.expect(NullPointerException.class);
     tracer.spanBuilder(SPAN_NAME).addLink(null, null);
+  }
+
+  @Test
+  public void recordEvents_default() {
+    RecordEventsReadableSpanImpl span =
+        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    assertThat(span.isRecordingEvents()).isTrue();
+  }
+
+  @Test
+  public void recordEvents_neverSample() {
+    RecordEventsReadableSpanImpl span =
+        (RecordEventsReadableSpanImpl)
+            tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
+    assertThat(span.isRecordingEvents()).isFalse();
+  }
+
+  @Test
+  public void recordEvents() {
+    RecordEventsReadableSpanImpl span =
+        (RecordEventsReadableSpanImpl)
+            tracer
+                .spanBuilder(SPAN_NAME)
+                .setRecordEvents(false)
+                .setSampler(Samplers.alwaysSample())
+                .startSpan();
+    assertThat(span.isRecordingEvents()).isFalse();
+  }
+
+  @Test
+  public void kind_default() {
+    RecordEventsReadableSpanImpl span =
+        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    assertThat(span.getKind()).isEqualTo(Kind.INTERNAL);
+  }
+
+  @Test
+  public void kind() {
+    RecordEventsReadableSpanImpl span =
+        (RecordEventsReadableSpanImpl)
+            tracer.spanBuilder(SPAN_NAME).setSpanKind(Kind.CONSUMER).startSpan();
+    assertThat(span.getKind()).isEqualTo(Kind.CONSUMER);
+  }
+
+  @Test
+  public void sampler() {
+    RecordEventsReadableSpanImpl span =
+        (RecordEventsReadableSpanImpl)
+            tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
+    assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+  }
+
+  @Test
+  public void noParent() {
+    RecordEventsReadableSpanImpl parent =
+        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    Scope scope = tracer.withSpan(parent);
+    try {
+      RecordEventsReadableSpanImpl span =
+          (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).setNoParent().startSpan();
+      assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
+
+      span =
+          (RecordEventsReadableSpanImpl)
+              tracer
+                  .spanBuilder(SPAN_NAME)
+                  .setNoParent()
+                  .setParent(parent)
+                  .setNoParent()
+                  .startSpan();
+      assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
+    } finally {
+      scope.close();
+    }
+  }
+
+  @Test
+  public void noParent_override() {
+    RecordEventsReadableSpanImpl parent =
+        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    RecordEventsReadableSpanImpl span =
+        (RecordEventsReadableSpanImpl)
+            tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent).startSpan();
+    assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
+
+    span =
+        (RecordEventsReadableSpanImpl)
+            tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent.getContext()).startSpan();
+    assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
+  }
+
+  @Test
+  public void overrideNoParent_remoteParent() {
+    RecordEventsReadableSpanImpl parent =
+        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    RecordEventsReadableSpanImpl span =
+        (RecordEventsReadableSpanImpl)
+            tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent.getContext()).startSpan();
+    assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
+  }
+
+  @Test
+  public void parentCurrentSpan() {
+    RecordEventsReadableSpanImpl parent =
+        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    Scope scope = tracer.withSpan(parent);
+    try {
+      RecordEventsReadableSpanImpl span =
+          (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+      assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
+    } finally {
+      scope.close();
+    }
   }
 }
