@@ -16,8 +16,8 @@
 
 package io.opentelemetry.distributedcontext;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -26,7 +26,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public class EmptyDistributedContext implements DistributedContext {
-  private static final Iterator<Entry> EMPTY_ITERATOR = Collections.<Entry>emptyList().iterator();
+  private static final Collection<Entry> EMPTY_COLLECTION = Collections.<Entry>emptyList();
 
   /**
    * Returns the single instance of the {@link EmptyDistributedContext} class.
@@ -41,8 +41,8 @@ public class EmptyDistributedContext implements DistributedContext {
   private static final DistributedContext INSTANCE = new EmptyDistributedContext();
 
   @Override
-  public Iterator<Entry> getIterator() {
-    return EMPTY_ITERATOR;
+  public Collection<Entry> getEntries() {
+    return EMPTY_COLLECTION;
   }
 
   @Nullable

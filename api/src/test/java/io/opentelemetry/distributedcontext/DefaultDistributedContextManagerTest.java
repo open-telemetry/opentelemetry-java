@@ -18,13 +18,11 @@ package io.opentelemetry.distributedcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.collect.Lists;
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Collection;
 import javax.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,9 +42,8 @@ public final class DefaultDistributedContextManagerTest {
       new DistributedContext() {
 
         @Override
-        public Iterator<Entry> getIterator() {
-          return Arrays.asList(Entry.create(KEY, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION))
-              .iterator();
+        public Collection<Entry> getEntries() {
+          return Arrays.asList(Entry.create(KEY, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION));
         }
 
         @Nullable
@@ -60,7 +57,7 @@ public final class DefaultDistributedContextManagerTest {
 
   @Test
   public void builderMethod() {
-    assertThat(asList(defaultDistributedContextManager.contextBuilder().build())).isEmpty();
+    assertThat(defaultDistributedContextManager.contextBuilder().build().getEntries()).isEmpty();
   }
 
   @Test
@@ -75,7 +72,7 @@ public final class DefaultDistributedContextManagerTest {
     try {
       DistributedContext distContext = defaultDistributedContextManager.getCurrentContext();
       assertThat(distContext).isNotNull();
-      assertThat(distContext.getIterator().hasNext()).isFalse();
+      assertThat(distContext.getEntries()).isEmpty();
     } finally {
       Context.current().detach(orig);
     }
@@ -170,9 +167,5 @@ public final class DefaultDistributedContextManagerTest {
     DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.remove(null);
-  }
-
-  private static List<Entry> asList(DistributedContext distContext) {
-    return Lists.newArrayList(distContext.getIterator());
   }
 }

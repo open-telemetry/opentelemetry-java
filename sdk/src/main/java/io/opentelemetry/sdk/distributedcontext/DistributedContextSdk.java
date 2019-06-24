@@ -23,6 +23,7 @@ import io.opentelemetry.distributedcontext.Entry;
 import io.opentelemetry.distributedcontext.EntryKey;
 import io.opentelemetry.distributedcontext.EntryMetadata;
 import io.opentelemetry.distributedcontext.EntryValue;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -52,11 +53,10 @@ class DistributedContextSdk implements DistributedContext {
   }
 
   @Override
-  public Iterator<Entry> getIterator() {
+  public Collection<Entry> getEntries() {
     Map<EntryKey, Entry> combined = new HashMap<>(entries);
     if (parent != null) {
-      for (Iterator<Entry> it = parent.getIterator(); it.hasNext(); ) {
-        Entry entry = it.next();
+      for (Entry entry : parent.getEntries()) {
         if (!combined.containsKey(entry.getKey())) {
           combined.put(entry.getKey(), entry);
         }
@@ -69,7 +69,7 @@ class DistributedContextSdk implements DistributedContext {
       }
     }
 
-    return Collections.unmodifiableCollection(combined.values()).iterator();
+    return Collections.unmodifiableCollection(combined.values());
   }
 
   @Nullable

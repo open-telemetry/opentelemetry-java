@@ -16,9 +16,6 @@
 
 package io.opentelemetry.sdk.distributedcontext;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.Entry;
 import java.util.Arrays;
 import java.util.List;
@@ -35,10 +32,6 @@ class DistributedContextTestUtil {
       builder.put(entry.getKey(), entry.getValue(), entry.getEntryMetadata());
     }
     return builder.build();
-  }
-
-  static List<Entry> distContextToList(DistributedContext distContext) {
-    return newArrayList(distContext.getIterator());
   }
 
   private DistributedContextTestUtil() {}

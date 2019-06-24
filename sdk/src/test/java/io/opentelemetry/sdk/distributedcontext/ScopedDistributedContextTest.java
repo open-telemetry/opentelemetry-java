@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.distributedcontext;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.sdk.distributedcontext.DistributedContextTestUtil.distContextToList;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.distributedcontext.DistributedContext;
@@ -56,19 +55,19 @@ public class ScopedDistributedContextTest {
   @Test
   public void emptyDistributedContext() {
     DistributedContext defaultDistributedContext = contextManager.getCurrentContext();
-    assertThat(distContextToList(defaultDistributedContext)).isEmpty();
+    assertThat(defaultDistributedContext.getEntries()).isEmpty();
     assertThat(defaultDistributedContext).isInstanceOf(EmptyDistributedContext.class);
   }
 
   @Test
   public void withContext() {
-    assertThat(distContextToList(contextManager.getCurrentContext())).isEmpty();
+    assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
     DistributedContext scopedEntries =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedEntries)) {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedEntries);
     }
-    assertThat(distContextToList(contextManager.getCurrentContext())).isEmpty();
+    assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
   }
 
   @Test
@@ -82,7 +81,7 @@ public class ScopedDistributedContextTest {
               .setParent(contextManager.getCurrentContext())
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
-      assertThat(distContextToList(newEntries))
+      assertThat(newEntries.getEntries())
           .containsExactly(
               Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
               Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
@@ -92,15 +91,15 @@ public class ScopedDistributedContextTest {
 
   @Test
   public void setCurrentEntriesWithBuilder() {
-    assertThat(distContextToList(contextManager.getCurrentContext())).isEmpty();
+    assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
     DistributedContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedDistContext)) {
-      assertThat(distContextToList(contextManager.getCurrentContext()))
+      assertThat(contextManager.getCurrentContext().getEntries())
           .containsExactly(Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION));
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
     }
-    assertThat(distContextToList(contextManager.getCurrentContext())).isEmpty();
+    assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
   }
 
   @Test
@@ -115,7 +114,7 @@ public class ScopedDistributedContextTest {
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
       try (Scope scope2 = contextManager.withContext(innerDistContext)) {
-        assertThat(distContextToList(contextManager.getCurrentContext()))
+        assertThat(contextManager.getCurrentContext().getEntries())
             .containsExactly(
                 Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
                 Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
@@ -142,7 +141,7 @@ public class ScopedDistributedContextTest {
               .put(KEY_2, VALUE_4, METADATA_NO_PROPAGATION)
               .build();
       try (Scope scope2 = contextManager.withContext(innerDistContext)) {
-        assertThat(distContextToList(contextManager.getCurrentContext()))
+        assertThat(contextManager.getCurrentContext().getEntries())
             .containsExactly(
                 Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
                 Entry.create(KEY_2, VALUE_4, METADATA_NO_PROPAGATION),

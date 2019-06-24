@@ -16,7 +16,7 @@
 
 package io.opentelemetry.distributedcontext;
 
-import java.util.Iterator;
+import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -32,12 +32,12 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface DistributedContext {
   /**
-   * Returns an iterator over the entries in this {@code DistributedContext}.
+   * Returns the entries in this {@code DistributedContext}. Order of entries is not guaranteed.
    *
-   * @return an iterator over the entries in this {@code DistributedContext}.
+   * @return the entries in this {@code DistributedContext}.
    * @since 0.1.0
    */
-  Iterator<Entry> getIterator();
+  Collection<Entry> getEntries();
 
   /**
    * Returns the {@code EntryValue} associated with the given {@code EntryKey}.
