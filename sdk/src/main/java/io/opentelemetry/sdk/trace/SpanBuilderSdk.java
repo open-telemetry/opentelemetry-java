@@ -192,7 +192,7 @@ class SpanBuilderSdk implements Span.Builder {
             traceId,
             spanId,
             name,
-            // TODO links in span builder contain only context
+            // TODO links in span builder contain only span context
             Collections.<Span>emptyList());
     return SpanContext.create(
         traceId,
