@@ -32,9 +32,10 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface DistributedContext {
   /**
-   * Returns the entries in this {@code DistributedContext}. Order of entries is not guaranteed.
+   * Returns an immutable collection of the entries in this {@code DistributedContext}. Order of
+   * entries is not guaranteed.
    *
-   * @return the entries in this {@code DistributedContext}.
+   * @return an immutable collection of the entries in this {@code DistributedContext}.
    * @since 0.1.0
    */
   Collection<Entry> getEntries();
