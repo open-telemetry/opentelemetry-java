@@ -84,9 +84,8 @@ public final class TraceId implements Comparable<TraceId> {
    *
    * @param random the random number generator.
    * @return a new valid {@code TraceId}.
-   * @since 0.1.0
    */
-  public static TraceId generateRandomId(Random random) {
+  static TraceId generateRandomId(Random random) {
     long idHi;
     long idLo;
     do {

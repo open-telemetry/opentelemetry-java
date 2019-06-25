@@ -69,8 +69,6 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
   private final Resource resource;
   // The start time of the span.
   private final long startNanoTime;
-  // Whether span is recording events
-  private final boolean recordEvents;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
   @GuardedBy("this")
   @Nullable
@@ -129,8 +127,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
-      Resource resource,
-      boolean recordEvents) {
+      Resource resource) {
     RecordEventsReadableSpanImpl span =
         new RecordEventsReadableSpanImpl(
             context,
@@ -141,8 +138,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
             spanProcessor,
             timestampConverter,
             clock,
-            resource,
-            recordEvents);
+            resource);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     spanProcessor.onStartSync(span);
@@ -395,7 +391,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
 
   @Override
   public boolean isRecordingEvents() {
-    return recordEvents;
+    return true;
   }
 
   void addChild() {
@@ -482,8 +478,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
-      Resource resource,
-      boolean recordEvents) {
+      Resource resource) {
     this.context = context;
     this.parentSpanId = parentSpanId;
     this.name = name;
@@ -497,7 +492,6 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
     this.timestampConverter =
         timestampConverter != null ? timestampConverter : TimestampConverter.now(clock);
     startNanoTime = clock.nowNanos();
-    this.recordEvents = recordEvents;
   }
 
   @SuppressWarnings("NoFinalizer")

@@ -48,7 +48,7 @@ public final class SpanId implements Comparable<SpanId> {
    * <p>This is equivalent to calling {@link #fromBytes(byte[], int)} with the specified value
    * stored as big-endian.
    *
-   * @param id the long represenation of the {@code TraceId}.
+   * @param id the long representation of the {@code TraceId}.
    * @since 0.1.0
    */
   public SpanId(long id) {
@@ -80,9 +80,8 @@ public final class SpanId implements Comparable<SpanId> {
    *
    * @param random The random number generator.
    * @return a valid new {@code SpanId}.
-   * @since 0.1.0
    */
-  public static SpanId generateRandomId(Random random) {
+  static SpanId generateRandomId(Random random) {
     long id;
     do {
       id = random.nextLong();

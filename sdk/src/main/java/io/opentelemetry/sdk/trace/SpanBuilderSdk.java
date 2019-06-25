@@ -44,6 +44,8 @@ import javax.annotation.Nullable;
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
 @SuppressWarnings("unused")
 class SpanBuilderSdk implements Span.Builder {
+  private static final long INVALID_ID = 0;
+
   private final String spanName;
   private final SpanProcessor spanProcessor;
   private final TraceConfig traceConfig;
@@ -154,6 +156,7 @@ class SpanBuilderSdk implements Span.Builder {
     SpanContext spanContext = createSpanContext(spanName, parentContext, sampler);
     boolean recordEvents =
         this.recordEvents != null ? this.recordEvents : spanContext.getTraceOptions().isSampled();
+    // TODO return DefaultSpan if not recording events
     TimestampConverter timestampConverter = getTimestampConverter(parent);
     return RecordEventsReadableSpanImpl.startSpan(
         spanContext,
@@ -164,18 +167,17 @@ class SpanBuilderSdk implements Span.Builder {
         spanProcessor,
         timestampConverter,
         clock,
-        resource,
-        recordEvents);
+        resource);
   }
 
   private SpanContext createSpanContext(String name, SpanContext parentContext, Sampler sampler) {
     TraceId traceId;
-    SpanId spanId = SpanId.generateRandomId(random);
+    SpanId spanId = generateRandomSpanId(random);
     Tracestate tracestate = Tracestate.getDefault();
     Boolean hasRemoteParent = false;
     if (parentContext == null || !parentContext.isValid()) {
       // New root span.
-      traceId = TraceId.generateRandomId(random);
+      traceId = generateRandomTraceId(random);
       // This is a root span so no remote or local parent.
       hasRemoteParent = null;
     } else {
@@ -224,6 +226,36 @@ class SpanBuilderSdk implements Span.Builder {
         return remoteParent;
     }
     throw new IllegalStateException("Unknown parent type");
+  }
+
+  /**
+   * Generates a new random {@code SpanId}.
+   *
+   * @param random The random number generator.
+   * @return a valid new {@code SpanId}.
+   */
+  static SpanId generateRandomSpanId(Random random) {
+    long id;
+    do {
+      id = random.nextLong();
+    } while (id == 0);
+    return new SpanId(id);
+  }
+
+  /**
+   * Generates a new random {@code TraceIde}.
+   *
+   * @param random The random number generator.
+   * @return a valid new {@code TraceId}.
+   */
+  static TraceId generateRandomTraceId(Random random) {
+    long idHi;
+    long idLo;
+    do {
+      idHi = random.nextLong();
+      idLo = random.nextLong();
+    } while (idHi == INVALID_ID && idLo == INVALID_ID);
+    return new TraceId(idHi, idLo);
   }
 
   private enum ParentType {

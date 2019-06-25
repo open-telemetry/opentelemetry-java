@@ -93,19 +93,7 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpanImpl span =
         (RecordEventsReadableSpanImpl)
             tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
-    assertThat(span.isRecordingEvents()).isFalse();
-  }
-
-  @Test
-  public void recordEvents() {
-    RecordEventsReadableSpanImpl span =
-        (RecordEventsReadableSpanImpl)
-            tracer
-                .spanBuilder(SPAN_NAME)
-                .setRecordEvents(false)
-                .setSampler(Samplers.alwaysSample())
-                .startSpan();
-    assertThat(span.isRecordingEvents()).isFalse();
+    assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
   }
 
   @Test
