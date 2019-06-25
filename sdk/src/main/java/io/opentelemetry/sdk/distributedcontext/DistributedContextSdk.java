@@ -18,13 +18,11 @@ package io.opentelemetry.sdk.distributedcontext;
 
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.Entry;
 import io.opentelemetry.distributedcontext.EntryKey;
 import io.opentelemetry.distributedcontext.EntryMetadata;
 import io.opentelemetry.distributedcontext.EntryValue;
-import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -153,12 +151,8 @@ class DistributedContextSdk implements DistributedContext {
 
     @Override
     public DistributedContextSdk build() {
+      // TODO if (parent == null) parent = DistributedContextManager.getCurrentContext();
       return new DistributedContextSdk(entries, parent);
-    }
-
-    @Override
-    public Scope buildScoped() {
-      return ContextUtils.withDistributedContext(build());
     }
   }
 }
