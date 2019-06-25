@@ -60,7 +60,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface GaugeLong extends Metric<GaugeLong.TimeSeries> {
 
   @Override
-  TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
+  TimeSeries getOrCreateTimeSeries(List<String> labelValues);
 
   @Override
   TimeSeries getDefaultTimeSeries();

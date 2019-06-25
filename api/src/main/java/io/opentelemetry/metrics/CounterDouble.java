@@ -61,7 +61,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface CounterDouble extends Metric<CounterDouble.TimeSeries> {
 
   @Override
-  TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
+  TimeSeries getOrCreateTimeSeries(List<String> labelValues);
 
   @Override
   TimeSeries getDefaultTimeSeries();

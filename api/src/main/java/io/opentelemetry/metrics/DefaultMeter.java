@@ -111,7 +111,7 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
+    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
@@ -205,7 +205,7 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
+    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
@@ -299,7 +299,7 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
+    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
@@ -395,7 +395,7 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
+    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");

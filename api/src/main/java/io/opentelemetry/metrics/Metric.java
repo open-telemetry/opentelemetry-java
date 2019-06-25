@@ -40,7 +40,7 @@ public interface Metric<T> {
    *     keys.
    * @since 0.1.0
    */
-  T getOrCreateTimeSeries(List<LabelValue> labelValues);
+  T getOrCreateTimeSeries(List<String> labelValues);
 
   /**
    * Returns a {@code TimeSeries} for a metric with all labels not set (default label value).

@@ -19,7 +19,6 @@ package io.opentelemetry.contrib.metrics.runtime;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.GaugeLong;
 import io.opentelemetry.metrics.LabelKey;
-import io.opentelemetry.metrics.LabelValue;
 import io.opentelemetry.metrics.Meter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -49,11 +48,11 @@ public final class MemoryPools {
   private static final LabelKey TYPE = LabelKey.create("type", "");
   private static final LabelKey AREA = LabelKey.create("area", "");
   private static final LabelKey POOL = LabelKey.create("pool", "");
-  private static final LabelValue USED = LabelValue.create("used");
-  private static final LabelValue COMMITTED = LabelValue.create("committed");
-  private static final LabelValue MAX = LabelValue.create("max");
-  private static final LabelValue HEAP = LabelValue.create("heap");
-  private static final LabelValue NON_HEAP = LabelValue.create("non_heap");
+  private static final String USED = "used";
+  private static final String COMMITTED = "committed";
+  private static final String MAX = "max";
+  private static final String HEAP = "heap";
+  private static final String NON_HEAP = "non_heap";
 
   private final MemoryMXBean memoryBean;
   private final List<MemoryPoolMXBean> poolBeans;
@@ -124,17 +123,16 @@ public final class MemoryPools {
           public void run() {
             for (final MemoryPoolMXBean pool : poolBeans) {
               MemoryUsage poolUsage = pool.getUsage();
-              LabelValue poolName = LabelValue.create(pool.getName());
               poolMetric
-                  .getOrCreateTimeSeries(Arrays.asList(USED, poolName))
+                  .getOrCreateTimeSeries(Arrays.asList(USED, pool.getName()))
                   .set(poolUsage.getUsed());
               poolMetric
-                  .getOrCreateTimeSeries(Arrays.asList(COMMITTED, poolName))
+                  .getOrCreateTimeSeries(Arrays.asList(COMMITTED, pool.getName()))
                   .set(poolUsage.getUsed());
               // TODO: Decide if max is needed or not. May be derived with some approximation from
               //  max(used).
               poolMetric
-                  .getOrCreateTimeSeries(Arrays.asList(MAX, poolName))
+                  .getOrCreateTimeSeries(Arrays.asList(MAX, pool.getName()))
                   .set(poolUsage.getUsed());
             }
           }
