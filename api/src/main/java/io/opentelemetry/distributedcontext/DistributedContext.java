@@ -56,14 +56,16 @@ public interface DistributedContext {
    */
   interface Builder {
     /**
-     * Sets the parent {@code DistributedContext} to use.
+     * Sets the parent {@link DistributedContext} to use. If not set, the value of {@link
+     * DistributedContextManager#getCurrentContext()} at {@link #build()} time will be used as
+     * parent.
      *
-     * <p>This <b>must</b> be used to create a {@code DistributedContext} when manual Context
+     * <p>This <b>must</b> be used to create a {@link DistributedContext} when manual Context
      * propagation is used.
      *
      * <p>If called multiple times, only the last specified value will be used.
      *
-     * @param parent the {@code DistributedContext} used as parent.
+     * @param parent the {@link DistributedContext} used as parent.
      * @return this.
      * @throws NullPointerException if {@code parent} is {@code null}.
      * @see #setNoParent()
@@ -72,7 +74,9 @@ public interface DistributedContext {
     Builder setParent(DistributedContext parent);
 
     /**
-     * Sets the option to become a {@code DistributedContext} with no parent.
+     * Sets the option to become a {@link DistributedContext} with no parent. If not set, the value
+     * of {@link DistributedContextManager#getCurrentContext()} at {@link #build()} time will be
+     * used as parent.
      *
      * @return this.
      * @since 0.1.0

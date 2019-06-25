@@ -151,6 +151,7 @@ class DistributedContextSdk implements DistributedContext {
 
     @Override
     public DistributedContextSdk build() {
+      // TODO if (parent == null) parent = DistributedContextManager.getCurrentContext();
       return new DistributedContextSdk(entries, parent);
     }
   }
