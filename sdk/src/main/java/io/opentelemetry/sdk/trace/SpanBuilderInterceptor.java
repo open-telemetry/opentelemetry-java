@@ -29,28 +29,30 @@ public interface SpanBuilderInterceptor {
   /**
    * Intercept {@link SpanBuilder#startSpan()} calls.
    *
-   * @param chain interceptor chain.
-   * @return original or modified span context for newly generated span.
+   * @param startAction actions available during {@link SpanBuilder#startSpan()} invocation.
+   * @return {@link SpanContext} of newly started span. Implementations are allowed to modify {@link
+   *     SpanContext} returned from {@link StartAction#generateContext(SpanBuilder)}.
    * @since 0.1.0
    */
-  SpanContext onStartSpan(Chain chain);
+  SpanContext onStartSpan(StartAction startAction);
 
   /**
-   * Chain ties together execution of {@link SpanBuilderInterceptor}s.
+   * {@link StartAction} exposes actions or steps available during {@link SpanBuilder#startSpan()}
+   * call.
    *
    * @since 0.1.0
    */
-  interface Chain {
+  interface StartAction {
 
     /**
-     * Proceed to the next interceptor.
+     * Generate span context. Implementation has to call this method. The rer
      *
-     * @param spanBuilder span builder associated with the request.
-     * @return SpanContext of the span which is being started or modified {@link SpanContext} from
-     *     the previous interceptor.
+     * @param spanBuilder span builder associated with the request. It can be obtained via {@link
+     *     #spanBuilder()}.
+     * @return SpanContext of the span which is being started.
      * @since 0.1.0
      */
-    SpanContext proceed(SpanBuilder spanBuilder);
+    SpanContext generateContext(SpanBuilder spanBuilder);
 
     /**
      * Returns a {@link SpanBuilder} associated with the chain.
