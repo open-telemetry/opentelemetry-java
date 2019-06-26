@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
-import com.google.rpc.Code;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.Attributes;
 import io.opentelemetry.proto.trace.v1.Span.Links;
@@ -179,12 +178,12 @@ public class TraceProtoUtilsTest {
   public void toProtoStatus() {
     io.opentelemetry.proto.trace.v1.Status expected1 =
         io.opentelemetry.proto.trace.v1.Status.newBuilder()
-            .setCode(Code.DEADLINE_EXCEEDED.getNumber())
+            .setCode(Status.DEADLINE_EXCEEDED.getCanonicalCode().value())
             .setMessage("TooSlow")
             .build();
     io.opentelemetry.proto.trace.v1.Status expected2 =
         io.opentelemetry.proto.trace.v1.Status.newBuilder()
-            .setCode(Code.ABORTED.getNumber())
+            .setCode(Status.ABORTED.getCanonicalCode().value())
             .build();
     assertThat(TraceProtoUtils.toProtoStatus(STATUS)).isEqualTo(expected1);
     assertThat(TraceProtoUtils.toProtoStatus(Status.ABORTED)).isEqualTo(expected2);

@@ -18,9 +18,7 @@ dependencies {
     api project(':opentelemetry-api')
 
     implementation "com.google.protobuf:protobuf-java:${protobufVersion}",
-            "com.google.protobuf:protobuf-java-util:${protobufVersion}",
-            "io.grpc:grpc-protobuf:${grpcVersion}",
-            "io.grpc:grpc-stub:${grpcVersion}"
+            "com.google.protobuf:protobuf-java-util:${protobufVersion}"
 
     annotationProcessor libraries.auto_value
 
@@ -40,17 +38,6 @@ protobuf {
         // The artifact spec for the Protobuf Compiler
         artifact = "com.google.protobuf:protoc:${protocVersion}"
     }
-    plugins {
-        grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
-        }
-    }
-    generateProtoTasks {
-        all()*.plugins {
-            grpc {}
-        }
-        ofSourceSet('main')
-    }
 }
 
 // IntelliJ complains that the generated classes are not found, ask IntelliJ to include the
@@ -58,7 +45,6 @@ protobuf {
 idea {
     module {
         sourceDirs += file("build/generated/source/proto/main/java");
-        sourceDirs += file("build/generated/source/proto/main/grpc");
         // If you have additional sourceSets and/or codegen plugins, add all of them
     }
 }
