@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.distributedcontext;
 
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.Entry;
 import io.opentelemetry.distributedcontext.EntryKey;
@@ -151,7 +152,9 @@ class DistributedContextSdk implements DistributedContext {
 
     @Override
     public DistributedContextSdk build() {
-      // TODO if (parent == null) parent = DistributedContextManager.getCurrentContext();
+      if (parent == null) {
+        parent = OpenTelemetry.getDistributedContextManager().getCurrentContext();
+      }
       return new DistributedContextSdk(entries, parent);
     }
   }
