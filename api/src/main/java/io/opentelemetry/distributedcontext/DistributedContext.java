@@ -75,9 +75,7 @@ public interface DistributedContext {
     Builder setParent(DistributedContext parent);
 
     /**
-     * Sets the option to become a {@link DistributedContext} with no parent. If not set, the value
-     * of {@link DistributedContextManager#getCurrentContext()} at {@link #build()} time will be
-     * used as parent.
+     * Sets the option to become a root {@link DistributedContext} with no parent.
      *
      * @return this.
      * @since 0.1.0

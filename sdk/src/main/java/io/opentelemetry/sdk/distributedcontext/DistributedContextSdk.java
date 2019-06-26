@@ -112,6 +112,7 @@ class DistributedContextSdk implements DistributedContext {
   // @AutoValue.Builder
   static class Builder implements DistributedContext.Builder {
     @Nullable private DistributedContext parent;
+    private boolean noImplicitParent;
     private final Map<EntryKey, Entry> entries;
 
     /** Create a new empty DistributedContext builder. */
@@ -127,7 +128,8 @@ class DistributedContextSdk implements DistributedContext {
 
     @Override
     public DistributedContext.Builder setNoParent() {
-      parent = null;
+      this.parent = null;
+      noImplicitParent = true;
       return this;
     }
 
@@ -152,7 +154,7 @@ class DistributedContextSdk implements DistributedContext {
 
     @Override
     public DistributedContextSdk build() {
-      if (parent == null) {
+      if (parent == null && !noImplicitParent) {
         parent = OpenTelemetry.getDistributedContextManager().getCurrentContext();
       }
       return new DistributedContextSdk(entries, parent);

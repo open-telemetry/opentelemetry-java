@@ -148,4 +148,22 @@ public class ScopedDistributedContextTest {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
     }
   }
+
+  @Test
+  public void setNoParent_doesNotInheritContext() {
+    assertThat(distContextToList(contextManager.getCurrentContext())).isEmpty();
+    DistributedContext scopedDistContext =
+        contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+    try (Scope scope = contextManager.withContext(scopedDistContext)) {
+      DistributedContext innerDistContext =
+          contextManager
+              .contextBuilder()
+              .setNoParent()
+              .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
+              .build();
+      assertThat(distContextToList(innerDistContext))
+          .containsExactly(Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
+    }
+    assertThat(distContextToList(contextManager.getCurrentContext())).isEmpty();
+  }
 }
