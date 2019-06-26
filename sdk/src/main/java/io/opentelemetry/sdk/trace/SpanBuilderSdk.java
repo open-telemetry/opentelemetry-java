@@ -42,9 +42,13 @@ import java.util.Random;
 import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
-@SuppressWarnings("unused")
 class SpanBuilderSdk implements Span.Builder {
   private static final long INVALID_ID = 0;
+
+  private static final TraceOptions TRACE_OPTIONS_SAMPLED =
+      TraceOptions.builder().setIsSampled(true).build();
+  private static final TraceOptions TRACE_OPTIONS_NOT_SAMPLED =
+      TraceOptions.builder().setIsSampled(false).build();
 
   private final String spanName;
   private final SpanProcessor spanProcessor;
@@ -52,13 +56,14 @@ class SpanBuilderSdk implements Span.Builder {
   private final Resource resource;
 
   private final Clock clock;
+  // TODO change with ThreadLocal version
+  // https://github.com/open-telemetry/opentelemetry-java/issues/406
   private final Random random;
 
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
   @Nullable private List<Link> links;
-  private Boolean recordEvents;
   private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
 
@@ -67,14 +72,13 @@ class SpanBuilderSdk implements Span.Builder {
       SpanProcessor spanProcessor,
       TraceConfig traceConfig,
       Resource resource,
-      Sampler sampler,
       Random random,
       Clock clock) {
     this.spanName = spanName;
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
-    this.sampler = sampler;
+    this.sampler = traceConfig.getSampler();
     this.random = random;
     this.clock = clock;
   }
@@ -142,20 +146,13 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setRecordEvents(boolean recordEvents) {
-    this.recordEvents = recordEvents;
     return this;
   }
 
   @Override
   public Span startSpan() {
-    Span currentSpan = null;
-    if (parentType == ParentType.CURRENT_SPAN) {
-      currentSpan = ContextUtils.getValue();
-    }
-    SpanContext parentContext = parent(parentType, currentSpan, parent, remoteParent);
+    SpanContext parentContext = parent(parentType, parent, remoteParent);
     SpanContext spanContext = createSpanContext(spanName, parentContext, sampler);
-    boolean recordEvents =
-        this.recordEvents != null ? this.recordEvents : spanContext.getTraceOptions().isSampled();
     // TODO return DefaultSpan if not recording events
     TimestampConverter timestampConverter = getTimestampConverter(parent);
     return RecordEventsReadableSpanImpl.startSpan(
@@ -174,12 +171,10 @@ class SpanBuilderSdk implements Span.Builder {
     TraceId traceId;
     SpanId spanId = generateRandomSpanId(random);
     Tracestate tracestate = Tracestate.getDefault();
-    Boolean hasRemoteParent = false;
     if (parentContext == null || !parentContext.isValid()) {
       // New root span.
       traceId = generateRandomTraceId(random);
       // This is a root span so no remote or local parent.
-      hasRemoteParent = null;
     } else {
       // New child span.
       traceId = parentContext.getTraceId();
@@ -188,7 +183,7 @@ class SpanBuilderSdk implements Span.Builder {
     Decision samplingDecision =
         sampler.shouldSample(
             parentContext,
-            hasRemoteParent,
+            false,
             traceId,
             spanId,
             name,
@@ -197,7 +192,7 @@ class SpanBuilderSdk implements Span.Builder {
     return SpanContext.create(
         traceId,
         spanId,
-        TraceOptions.builder().setIsSampled(samplingDecision.isSampled()).build(),
+        samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
         tracestate);
   }
 
@@ -214,7 +209,8 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Nullable
   private static SpanContext parent(
-      ParentType parentType, Span currentSpan, Span explicitParent, SpanContext remoteParent) {
+      ParentType parentType, Span explicitParent, SpanContext remoteParent) {
+    Span currentSpan = ContextUtils.getValue();
     switch (parentType) {
       case NO_PARENT:
         return null;

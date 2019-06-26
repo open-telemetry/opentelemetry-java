@@ -63,13 +63,7 @@ public class TracerSdk implements Tracer {
   @Override
   public Span.Builder spanBuilder(String spanName) {
     return new SpanBuilderSdk(
-        spanName,
-        activeSpanProcessor,
-        activeTraceConfig,
-        resource,
-        activeTraceConfig.getSampler(),
-        random,
-        clock);
+        spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock);
   }
 
   @Override
