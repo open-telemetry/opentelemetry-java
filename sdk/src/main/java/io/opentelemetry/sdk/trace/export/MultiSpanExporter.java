@@ -20,6 +20,8 @@ import io.opentelemetry.proto.trace.v1.Span;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementation of the {@code SpanExporter} that simply forwards all received spans to a list of
@@ -29,6 +31,7 @@ import java.util.List;
  * SimpleSampledSpansProcessor} or a {@code BatchSampledSpansProcessor}.
  */
 public final class MultiSpanExporter implements SpanExporter {
+  private static final Logger logger = Logger.getLogger(MultiSpanExporter.class.getName());
   private final List<SpanExporter> spanExporters;
 
   static SpanExporter create(List<SpanExporter> spanExporters) {
@@ -38,7 +41,11 @@ public final class MultiSpanExporter implements SpanExporter {
   @Override
   public void export(List<Span> spans) {
     for (SpanExporter spanExporter : spanExporters) {
-      spanExporter.export(spans);
+      try {
+        spanExporter.export(spans);
+      } catch (Throwable t) {
+        logger.log(Level.WARNING, "Exception thrown by the export.", t);
+      }
     }
   }
 
