@@ -33,7 +33,7 @@ public interface Link {
    * @return the {@code SpanContext}.
    * @since 0.1.0
    */
-  public abstract SpanContext getContext();
+  SpanContext getContext();
 
   /**
    * Returns the set of attributes.
@@ -41,5 +41,5 @@ public interface Link {
    * @return the set of attributes.
    * @since 0.1.0
    */
-  public abstract Map<String, AttributeValue> getAttributes();
+  Map<String, AttributeValue> getAttributes();
 }

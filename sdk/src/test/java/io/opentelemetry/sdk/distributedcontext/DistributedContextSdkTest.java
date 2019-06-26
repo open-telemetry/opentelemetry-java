@@ -41,7 +41,7 @@ import org.junit.runners.JUnit4;
 /**
  * Tests for {@link DistributedContextSdk} and {@link DistributedContextSdk.Builder}.
  *
- * <p>Tests for {@link DistributedContextSdk.Builder#buildScoped()} are in {@link
+ * <p>Tests for scope management with {@link DistributedContextManagerSdk} are in {@link
  * ScopedDistributedContextTest}.
  */
 @RunWith(JUnit4.class)
