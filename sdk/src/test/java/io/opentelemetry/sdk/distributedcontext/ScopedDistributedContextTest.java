@@ -151,7 +151,7 @@ public class ScopedDistributedContextTest {
 
   @Test
   public void setNoParent_doesNotInheritContext() {
-    assertThat(distContextToList(contextManager.getCurrentContext())).isEmpty();
+    assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
     DistributedContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedDistContext)) {
@@ -161,9 +161,9 @@ public class ScopedDistributedContextTest {
               .setNoParent()
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
-      assertThat(distContextToList(innerDistContext))
+      assertThat(innerDistContext.getEntries())
           .containsExactly(Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
     }
-    assertThat(distContextToList(contextManager.getCurrentContext())).isEmpty();
+    assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
   }
 }

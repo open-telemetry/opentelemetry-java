@@ -128,9 +128,8 @@ public class DistributedContextSdkTest {
   @Test
   public void setParent_nullValue() {
     DistributedContextSdk parent = listToDistributedContext(T1);
-    DistributedContext distContext =
-        contextManager.contextBuilder().setParent(parent).setParent(null).build();
-    assertThat(distContext.getEntries()).isEmpty();
+    thrown.expect(NullPointerException.class);
+    contextManager.contextBuilder().setParent(parent).setParent(null).build();
   }
 
   @Test

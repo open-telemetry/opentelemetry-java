@@ -24,6 +24,7 @@ import io.opentelemetry.distributedcontext.Entry;
 import io.opentelemetry.distributedcontext.EntryKey;
 import io.opentelemetry.distributedcontext.EntryMetadata;
 import io.opentelemetry.distributedcontext.EntryValue;
+import io.opentelemetry.internal.Utils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -122,7 +123,7 @@ class DistributedContextSdk implements DistributedContext {
 
     @Override
     public DistributedContext.Builder setParent(DistributedContext parent) {
-      this.parent = parent;
+      this.parent = Utils.checkNotNull(parent, "parent");
       return this;
     }
 
