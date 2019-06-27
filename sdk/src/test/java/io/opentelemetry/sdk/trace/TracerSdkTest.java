@@ -134,4 +134,26 @@ public class TracerSdkTest {
     tracer.updateActiveTraceConfig(newConfig);
     assertThat(tracer.getActiveTraceConfig()).isEqualTo(newConfig);
   }
+
+  @Test
+  public void shutdown() {
+    try {
+      tracer.shutdown();
+      Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
+    } finally {
+      tracer.unsafeRestart();
+    }
+  }
+
+  @Test
+  public void returnNoopSpanAfterShutdown() {
+    try {
+      tracer.shutdown();
+      Span span = tracer.spanBuilder("span").startSpan();
+      assertThat(span).isInstanceOf(DefaultSpan.class);
+      span.end();
+    } finally {
+      tracer.unsafeRestart();
+    }
+  }
 }

@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.BinaryTraceContext;
@@ -34,10 +35,14 @@ import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
+  private static final Logger logger = Logger.getLogger(TracerSdk.class.getName());
+
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final Clock clock = MillisClock.getInstance();
@@ -52,6 +57,9 @@ public class TracerSdk implements Tracer {
   @GuardedBy("this")
   private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
 
+  @GuardedBy("this")
+  private boolean isStopped = false;
+
   @Override
   public Span getCurrentSpan() {
     return ContextUtils.getValue();
@@ -64,8 +72,15 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return new SpanBuilderSdk(
-        spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock);
+    SpanBuilderSdk builderSdk =
+        new SpanBuilderSdk(
+            spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock);
+    synchronized (this) {
+      if (isStopped) {
+        builderSdk.setRecordEvents(false);
+      }
+    }
+    return builderSdk;
   }
 
   @Override
@@ -92,7 +107,26 @@ public class TracerSdk implements Tracer {
    *
    * <p>After this is called all the newly created {@code Span}s will be no-op.
    */
-  public void shutdown() {}
+  public void shutdown() {
+    synchronized (this) {
+      if (isStopped) {
+        logger.log(Level.WARNING, "Calling shutdown() multiple times.");
+        return;
+      }
+      for (SpanProcessor spanProcessor : registeredSpanProcessors) {
+        spanProcessor.shutdown();
+      }
+      isStopped = true;
+    }
+  }
+
+  // Restarts all the activity for this Tracer. Only used for unit testing.
+  @VisibleForTesting
+  void unsafeRestart() {
+    synchronized (this) {
+      isStopped = false;
+    }
+  }
 
   /**
    * Returns the active {@code TraceConfig}.
