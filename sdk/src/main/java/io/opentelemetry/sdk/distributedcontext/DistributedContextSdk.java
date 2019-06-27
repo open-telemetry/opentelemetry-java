@@ -18,11 +18,13 @@ package io.opentelemetry.sdk.distributedcontext;
 
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.Entry;
 import io.opentelemetry.distributedcontext.EntryKey;
 import io.opentelemetry.distributedcontext.EntryMetadata;
 import io.opentelemetry.distributedcontext.EntryValue;
+import io.opentelemetry.internal.Utils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -111,6 +113,7 @@ class DistributedContextSdk implements DistributedContext {
   // @AutoValue.Builder
   static class Builder implements DistributedContext.Builder {
     @Nullable private DistributedContext parent;
+    private boolean noImplicitParent;
     private final Map<EntryKey, Entry> entries;
 
     /** Create a new empty DistributedContext builder. */
@@ -120,13 +123,14 @@ class DistributedContextSdk implements DistributedContext {
 
     @Override
     public DistributedContext.Builder setParent(DistributedContext parent) {
-      this.parent = parent;
+      this.parent = Utils.checkNotNull(parent, "parent");
       return this;
     }
 
     @Override
     public DistributedContext.Builder setNoParent() {
-      parent = null;
+      this.parent = null;
+      noImplicitParent = true;
       return this;
     }
 
@@ -151,7 +155,9 @@ class DistributedContextSdk implements DistributedContext {
 
     @Override
     public DistributedContextSdk build() {
-      // TODO if (parent == null) parent = DistributedContextManager.getCurrentContext();
+      if (parent == null && !noImplicitParent) {
+        parent = OpenTelemetry.getDistributedContextManager().getCurrentContext();
+      }
       return new DistributedContextSdk(entries, parent);
     }
   }

@@ -135,7 +135,7 @@ public final class DefaultDistributedContextManagerTest {
   }
 
   @Test
-  public void noopContextBuilder_SetParent_DisallowsNullKey() {
+  public void noopContextBuilder_SetParent_DisallowsNullParent() {
     DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.setParent(null);

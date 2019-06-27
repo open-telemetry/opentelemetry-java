@@ -78,7 +78,6 @@ public class ScopedDistributedContextTest {
       DistributedContext newEntries =
           contextManager
               .contextBuilder()
-              .setParent(contextManager.getCurrentContext())
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
       assertThat(newEntries.getEntries())
@@ -110,7 +109,6 @@ public class ScopedDistributedContextTest {
       DistributedContext innerDistContext =
           contextManager
               .contextBuilder()
-              .setParent(contextManager.getCurrentContext())
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
       try (Scope scope2 = contextManager.withContext(innerDistContext)) {
@@ -136,7 +134,6 @@ public class ScopedDistributedContextTest {
       DistributedContext innerDistContext =
           contextManager
               .contextBuilder()
-              .setParent(contextManager.getCurrentContext())
               .put(KEY_3, VALUE_3, METADATA_NO_PROPAGATION)
               .put(KEY_2, VALUE_4, METADATA_NO_PROPAGATION)
               .build();
@@ -150,5 +147,23 @@ public class ScopedDistributedContextTest {
       }
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
     }
+  }
+
+  @Test
+  public void setNoParent_doesNotInheritContext() {
+    assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
+    DistributedContext scopedDistContext =
+        contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
+    try (Scope scope = contextManager.withContext(scopedDistContext)) {
+      DistributedContext innerDistContext =
+          contextManager
+              .contextBuilder()
+              .setNoParent()
+              .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
+              .build();
+      assertThat(innerDistContext.getEntries())
+          .containsExactly(Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
+    }
+    assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
   }
 }
