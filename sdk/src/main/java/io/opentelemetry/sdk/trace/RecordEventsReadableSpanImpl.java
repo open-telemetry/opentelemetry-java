@@ -20,7 +20,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import com.google.protobuf.UInt32Value;
-import io.opentelemetry.proto.trace.v1.TruncatableString;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
@@ -173,7 +172,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
               .setSpanId(TraceProtoUtils.toProtoSpanId(context.getSpanId()))
               .setTracestate(TraceProtoUtils.toProtoTracestate(context.getTracestate()))
               .setResource(TraceProtoUtils.toProtoResource(resource))
-              .setName(TruncatableString.newBuilder().setValue(name).build())
+              .setName(name)
               .setKind(TraceProtoUtils.toProtoKind(kind))
               .setStartTime(timestampConverter.convertNanoTime(startNanoTime))
               .setEndTime(timestampConverter.convertNanoTime(getEndNanoTime()))

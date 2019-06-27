@@ -92,7 +92,11 @@ public class SpanBuilderSdkTest {
   public void recordEvents_default() {
     RecordEventsReadableSpanImpl span =
         (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
-    assertThat(span.isRecordingEvents()).isTrue();
+    try {
+      assertThat(span.isRecordingEvents()).isTrue();
+    } finally {
+      span.end();
+    }
   }
 
   @Test
@@ -100,14 +104,22 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpanImpl span =
         (RecordEventsReadableSpanImpl)
             tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
-    assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+    try {
+      assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+    } finally {
+      span.end();
+    }
   }
 
   @Test
   public void kind_default() {
     RecordEventsReadableSpanImpl span =
         (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
-    assertThat(span.getKind()).isEqualTo(Kind.INTERNAL);
+    try {
+      assertThat(span.getKind()).isEqualTo(Kind.INTERNAL);
+    } finally {
+      span.end();
+    }
   }
 
   @Test
@@ -115,7 +127,11 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpanImpl span =
         (RecordEventsReadableSpanImpl)
             tracer.spanBuilder(SPAN_NAME).setSpanKind(Kind.CONSUMER).startSpan();
-    assertThat(span.getKind()).isEqualTo(Kind.CONSUMER);
+    try {
+      assertThat(span.getKind()).isEqualTo(Kind.CONSUMER);
+    } finally {
+      span.end();
+    }
   }
 
   @Test
@@ -123,7 +139,11 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpanImpl span =
         (RecordEventsReadableSpanImpl)
             tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
-    assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+    try {
+      assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+    } finally {
+      span.end();
+    }
   }
 
   @Test
@@ -164,9 +184,13 @@ public class SpanBuilderSdkTest {
                       }
                     })
                 .startSpan();
-    assertThat(span.getContext().getTraceOptions().isSampled()).isTrue();
-    assertThat(span.toSpanProto().getAttributes().getAttributeMapMap())
-        .containsKey("sampler-attribute");
+    try {
+      assertThat(span.getContext().getTraceOptions().isSampled()).isTrue();
+      assertThat(span.toSpanProto().getAttributes().getAttributeMapMap())
+          .containsKey("sampler-attribute");
+    } finally {
+      span.end();
+    }
   }
 
   @Test
@@ -177,19 +201,28 @@ public class SpanBuilderSdkTest {
     try {
       RecordEventsReadableSpanImpl span =
           (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).setNoParent().startSpan();
-      assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
+      try {
+        assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
 
-      span =
-          (RecordEventsReadableSpanImpl)
-              tracer
-                  .spanBuilder(SPAN_NAME)
-                  .setNoParent()
-                  .setParent(parent)
-                  .setNoParent()
-                  .startSpan();
-      assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
+        RecordEventsReadableSpanImpl spanNoParent =
+            (RecordEventsReadableSpanImpl)
+                tracer
+                    .spanBuilder(SPAN_NAME)
+                    .setNoParent()
+                    .setParent(parent)
+                    .setNoParent()
+                    .startSpan();
+        try {
+          assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
+        } finally {
+          spanNoParent.end();
+        }
+      } finally {
+        span.end();
+      }
     } finally {
       scope.close();
+      parent.end();
     }
   }
 
@@ -197,31 +230,60 @@ public class SpanBuilderSdkTest {
   public void noParent_override() {
     RecordEventsReadableSpanImpl parent =
         (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
-    RecordEventsReadableSpanImpl span =
-        (RecordEventsReadableSpanImpl)
-            tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent).startSpan();
-    io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
-    assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
-    assertThat(SpanId.fromBytes(spanProto.getParentSpanId().toByteArray(), 0))
-        .isEqualTo(parent.getContext().getSpanId());
+    try {
+      RecordEventsReadableSpanImpl span =
+          (RecordEventsReadableSpanImpl)
+              tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent).startSpan();
+      try {
+        io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
+        assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
+        assertThat(SpanId.fromBytes(spanProto.getParentSpanId().toByteArray(), 0))
+            .isEqualTo(parent.getContext().getSpanId());
 
-    span =
-        (RecordEventsReadableSpanImpl)
-            tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent.getContext()).startSpan();
-    assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
+        RecordEventsReadableSpanImpl span2 =
+            (RecordEventsReadableSpanImpl)
+                tracer
+                    .spanBuilder(SPAN_NAME)
+                    .setNoParent()
+                    .setParent(parent.getContext())
+                    .startSpan();
+        try {
+          assertThat(span2.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
+        } finally {
+          span2.end();
+        }
+      } finally {
+        span.end();
+      }
+    } finally {
+      parent.end();
+    }
   }
 
   @Test
   public void overrideNoParent_remoteParent() {
     RecordEventsReadableSpanImpl parent =
         (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
-    RecordEventsReadableSpanImpl span =
-        (RecordEventsReadableSpanImpl)
-            tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent.getContext()).startSpan();
-    io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
-    assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
-    assertThat(SpanId.fromBytes(spanProto.getParentSpanId().toByteArray(), 0))
-        .isEqualTo(parent.getContext().getSpanId());
+    try {
+
+      RecordEventsReadableSpanImpl span =
+          (RecordEventsReadableSpanImpl)
+              tracer
+                  .spanBuilder(SPAN_NAME)
+                  .setNoParent()
+                  .setParent(parent.getContext())
+                  .startSpan();
+      try {
+        io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
+        assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
+        assertThat(SpanId.fromBytes(spanProto.getParentSpanId().toByteArray(), 0))
+            .isEqualTo(parent.getContext().getSpanId());
+      } finally {
+        span.end();
+      }
+    } finally {
+      parent.end();
+    }
   }
 
   @Test
@@ -232,12 +294,17 @@ public class SpanBuilderSdkTest {
     try {
       RecordEventsReadableSpanImpl span =
           (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
-      io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
-      assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
-      assertThat(SpanId.fromBytes(spanProto.getParentSpanId().toByteArray(), 0))
-          .isEqualTo(parent.getContext().getSpanId());
+      try {
+        io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
+        assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
+        assertThat(SpanId.fromBytes(spanProto.getParentSpanId().toByteArray(), 0))
+            .isEqualTo(parent.getContext().getSpanId());
+      } finally {
+        span.end();
+      }
     } finally {
       scope.close();
+      parent.end();
     }
   }
 }

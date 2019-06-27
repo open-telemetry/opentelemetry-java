@@ -23,7 +23,6 @@ import io.opentelemetry.proto.trace.v1.Span.Attributes;
 import io.opentelemetry.proto.trace.v1.Span.Links;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Span.TimedEvents;
-import io.opentelemetry.proto.trace.v1.TruncatableString;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.trace.AttributeValue;
@@ -113,8 +112,7 @@ final class TraceProtoUtils {
         builder.setIntValue(attributeValue.getLongValue());
         break;
       case STRING:
-        builder.setStringValue(
-            TruncatableString.newBuilder().setValue(attributeValue.getStringValue()).build());
+        builder.setStringValue(attributeValue.getStringValue());
     }
     return builder.build();
   }
@@ -135,7 +133,7 @@ final class TraceProtoUtils {
     builder.setTime(converter.convertNanoTime(timedEvent.getNanotime()));
     builder.setEvent(
         Span.TimedEvent.Event.newBuilder()
-            .setName(TruncatableString.newBuilder().setValue(timedEvent.getName()).build())
+            .setName(timedEvent.getName())
             .setAttributes(toProtoAttributes(timedEvent.getAttributes(), 0))
             .build());
     return builder.build();
