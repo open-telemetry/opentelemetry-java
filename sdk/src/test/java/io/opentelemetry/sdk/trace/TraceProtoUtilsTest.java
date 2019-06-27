@@ -27,7 +27,6 @@ import io.opentelemetry.proto.trace.v1.Span.Attributes;
 import io.opentelemetry.proto.trace.v1.Span.Links;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Span.TimedEvents;
-import io.opentelemetry.proto.trace.v1.TruncatableString;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
@@ -150,7 +149,7 @@ public class TraceProtoUtilsTest {
                     .setEvent(
                         Span.TimedEvent.Event.newBuilder()
                             .setAttributes(Attributes.getDefaultInstance())
-                            .setName(TruncatableString.newBuilder().setValue("event"))))
+                            .setName("event")))
             .build();
     assertThat(
             TraceProtoUtils.toProtoTimedEvents(

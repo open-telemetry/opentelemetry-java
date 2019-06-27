@@ -100,7 +100,7 @@ message Span {
   // receiver to fix the empty span name.
   //
   // This field is required.
-  TruncatableString name = 6;
+  string name = 6;
 
   // Type of span. Can be used to specify additional relationships between spans
   // in addition to a parent/child relationship.
@@ -189,7 +189,7 @@ message Span {
     // A text annotation with a set of attributes.
     message Event {
       // A user-supplied name describing the event.
-      TruncatableString name = 1;
+      string name = 1;
 
       // A set of attributes on the event.
       Attributes attributes = 2;
@@ -275,7 +275,7 @@ message AttributeValue {
   // The type of the value.
   oneof value {
     // A string up to 256 bytes long.
-    TruncatableString string_value = 1;
+    string string_value = 1;
     // A 64-bit signed integer.
     int64 int_value = 2;
     // A Boolean value represented by `true` or `false`.
@@ -283,19 +283,4 @@ message AttributeValue {
     // A double value.
     double double_value = 4;
   }
-}
-
-// A string that might be shortened to a specified length.
-message TruncatableString {
-  // The shortened string. For example, if the original string was 500 bytes long and
-  // the limit of the string was 128 bytes, then this value contains the first 128
-  // bytes of the 500-byte string. Note that truncation always happens on a
-  // character boundary, to ensure that a truncated string is still valid UTF-8.
-  // Because it may contain multi-byte characters, the size of the truncated string
-  // may be less than the truncation limit.
-  string value = 1;
-
-  // The number of bytes removed from the original string. If this
-  // value is 0, then the string was not shortened.
-  int32 truncated_byte_count = 2;
 }

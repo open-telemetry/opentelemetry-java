@@ -45,9 +45,9 @@ public class InMemorySpanExporterTest {
     List<io.opentelemetry.proto.trace.v1.Span> spanItems = exporter.getFinishedSpanItems();
     assertThat(spanItems).isNotNull();
     assertThat(spanItems.size()).isEqualTo(3);
-    assertThat(spanItems.get(0).getName().getValue()).isEqualTo("one");
-    assertThat(spanItems.get(1).getName().getValue()).isEqualTo("two");
-    assertThat(spanItems.get(2).getName().getValue()).isEqualTo("three");
+    assertThat(spanItems.get(0).getName()).isEqualTo("one");
+    assertThat(spanItems.get(1).getName()).isEqualTo("two");
+    assertThat(spanItems.get(2).getName()).isEqualTo("three");
   }
 
   @Test
