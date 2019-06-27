@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.TraceBinaryFormat;
 import io.opentelemetry.context.propagation.TraceContextFormat;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.Clock;
@@ -38,6 +39,7 @@ import javax.annotation.concurrent.GuardedBy;
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new TraceContextFormat();
+  private static final BinaryFormat<SpanContext> BINARY_FORMAT = new TraceBinaryFormat();
   private final Clock clock = MillisClock.getInstance();
   private final Random random = new Random();
   private final Resource resource = EnvVarResource.getResource();
@@ -71,7 +73,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public BinaryFormat<SpanContext> getBinaryFormat() {
-    throw new UnsupportedOperationException("to be implemented");
+    return BINARY_FORMAT;
   }
 
   @Override
