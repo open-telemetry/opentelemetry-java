@@ -127,7 +127,8 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
-      Resource resource) {
+      Resource resource,
+      Map<String, AttributeValue> attributes) {
     RecordEventsReadableSpanImpl span =
         new RecordEventsReadableSpanImpl(
             context,
@@ -138,7 +139,8 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
             spanProcessor,
             timestampConverter,
             clock,
-            resource);
+            resource,
+            attributes);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     spanProcessor.onStartSync(span);
@@ -478,7 +480,8 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
-      Resource resource) {
+      Resource resource,
+      Map<String, AttributeValue> attributes) {
     this.context = context;
     this.parentSpanId = parentSpanId;
     this.name = name;
@@ -492,6 +495,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
     this.timestampConverter =
         timestampConverter != null ? timestampConverter : TimestampConverter.now(clock);
     startNanoTime = clock.nowNanos();
+    getInitializedAttributes().putAll(attributes);
   }
 
   @SuppressWarnings("NoFinalizer")

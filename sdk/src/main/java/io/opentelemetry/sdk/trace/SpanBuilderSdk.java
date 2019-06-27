@@ -67,6 +67,11 @@ class SpanBuilderSdk implements Span.Builder {
   private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
 
+  // TODO when true return default span
+  // https://github.com/open-telemetry/opentelemetry-java/issues/438
+  @SuppressWarnings("unused")
+  private boolean recordEvents;
+
   SpanBuilderSdk(
       String spanName,
       SpanProcessor spanProcessor,
@@ -146,28 +151,13 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setRecordEvents(boolean recordEvents) {
+    this.recordEvents = true;
     return this;
   }
 
   @Override
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
-    SpanContext spanContext = createSpanContext(spanName, parentContext, sampler);
-    // TODO return DefaultSpan if not recording events
-    TimestampConverter timestampConverter = getTimestampConverter(parent);
-    return RecordEventsReadableSpanImpl.startSpan(
-        spanContext,
-        spanName,
-        spanKind,
-        parentContext != null ? parentContext.getSpanId() : null,
-        traceConfig,
-        spanProcessor,
-        timestampConverter,
-        clock,
-        resource);
-  }
-
-  private SpanContext createSpanContext(String name, SpanContext parentContext, Sampler sampler) {
     TraceId traceId;
     SpanId spanId = generateRandomSpanId(random);
     Tracestate tracestate = Tracestate.getDefault();
@@ -186,14 +176,30 @@ class SpanBuilderSdk implements Span.Builder {
             false,
             traceId,
             spanId,
-            name,
+            spanName,
             // TODO links in span builder contain only span context
             Collections.<Span>emptyList());
-    return SpanContext.create(
-        traceId,
-        spanId,
-        samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
-        tracestate);
+    SpanContext spanContext =
+        SpanContext.create(
+            traceId,
+            spanId,
+            samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
+            tracestate);
+
+    TimestampConverter timestampConverter = getTimestampConverter(parent);
+    // TODO return DefaultSpan if not recording events
+    // https://github.com/open-telemetry/opentelemetry-java/issues/438
+    return RecordEventsReadableSpanImpl.startSpan(
+        spanContext,
+        spanName,
+        spanKind,
+        parentContext != null ? parentContext.getSpanId() : null,
+        traceConfig,
+        spanProcessor,
+        timestampConverter,
+        clock,
+        resource,
+        samplingDecision.attributes());
   }
 
   @Nullable
