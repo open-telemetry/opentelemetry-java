@@ -20,8 +20,8 @@ import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.Entry;
 import io.opentelemetry.distributedcontext.EntryKey;
 import io.opentelemetry.distributedcontext.EntryValue;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.Rule;
@@ -51,8 +51,8 @@ public final class DefaultMeterTest {
       new DistributedContext() {
 
         @Override
-        public Iterator<Entry> getIterator() {
-          return Collections.singleton(ENTRY).iterator();
+        public Collection<Entry> getEntries() {
+          return Collections.singleton(ENTRY);
         }
 
         @Nullable

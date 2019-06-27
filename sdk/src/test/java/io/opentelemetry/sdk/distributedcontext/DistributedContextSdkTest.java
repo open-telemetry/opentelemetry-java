@@ -17,10 +17,7 @@
 package io.opentelemetry.sdk.distributedcontext;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.sdk.distributedcontext.DistributedContextTestUtil.distContextToList;
 import static io.opentelemetry.sdk.distributedcontext.DistributedContextTestUtil.listToDistributedContext;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.distributedcontext.DistributedContext;
@@ -29,9 +26,6 @@ import io.opentelemetry.distributedcontext.Entry;
 import io.opentelemetry.distributedcontext.EntryKey;
 import io.opentelemetry.distributedcontext.EntryMetadata;
 import io.opentelemetry.distributedcontext.EntryValue;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -63,19 +57,19 @@ public class DistributedContextSdkTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void getIterator_empty() {
+  public void getEntries_empty() {
     DistributedContextSdk distContext = new DistributedContextSdk.Builder().build();
-    assertThat(distContextToList(distContext)).isEmpty();
+    assertThat(distContext.getEntries()).isEmpty();
   }
 
   @Test
-  public void getIterator_nonEmpty() {
+  public void getEntries_nonEmpty() {
     DistributedContextSdk distContext = listToDistributedContext(T1, T2);
-    assertThat(distContextToList(distContext)).containsExactly(T1, T2);
+    assertThat(distContext.getEntries()).containsExactly(T1, T2);
   }
 
   @Test
-  public void getIterator_chain() {
+  public void getEntries_chain() {
     Entry t1alt = Entry.create(K1, V2, TMD);
     DistributedContextSdk parent = listToDistributedContext(T1, T2);
     DistributedContext distContext =
@@ -84,15 +78,19 @@ public class DistributedContextSdkTest {
             .setParent(parent)
             .put(t1alt.getKey(), t1alt.getValue(), t1alt.getEntryMetadata())
             .build();
-    assertThat(distContextToList(distContext)).containsExactly(t1alt, T2);
+    assertThat(distContext.getEntries()).containsExactly(t1alt, T2);
   }
 
   @Test
   public void put_newKey() {
     DistributedContextSdk distContext = listToDistributedContext(T1);
     assertThat(
-            distContextToList(
-                contextManager.contextBuilder().setParent(distContext).put(K2, V2, TMD).build()))
+            contextManager
+                .contextBuilder()
+                .setParent(distContext)
+                .put(K2, V2, TMD)
+                .build()
+                .getEntries())
         .containsExactly(T1, T2);
   }
 
@@ -100,8 +98,12 @@ public class DistributedContextSdkTest {
   public void put_existingKey() {
     DistributedContextSdk distContext = listToDistributedContext(T1);
     assertThat(
-            distContextToList(
-                contextManager.contextBuilder().setParent(distContext).put(K1, V2, TMD).build()))
+            contextManager
+                .contextBuilder()
+                .setParent(distContext)
+                .put(K1, V2, TMD)
+                .build()
+                .getEntries())
         .containsExactly(Entry.create(K1, V2, TMD));
   }
 
@@ -128,7 +130,7 @@ public class DistributedContextSdkTest {
     DistributedContextSdk parent = listToDistributedContext(T1);
     DistributedContext distContext =
         contextManager.contextBuilder().setParent(parent).setParent(null).build();
-    assertThat(distContextToList(distContext)).isEmpty();
+    assertThat(distContext.getEntries()).isEmpty();
   }
 
   @Test
@@ -136,7 +138,7 @@ public class DistributedContextSdkTest {
     DistributedContextSdk parent = listToDistributedContext(T1);
     DistributedContext distContext =
         contextManager.contextBuilder().setParent(parent).setNoParent().build();
-    assertThat(distContextToList(distContext)).isEmpty();
+    assertThat(distContext.getEntries()).isEmpty();
   }
 
   @Test
@@ -145,7 +147,7 @@ public class DistributedContextSdkTest {
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
-    assertThat(distContextToList(builder.remove(K1).build())).containsExactly(T2);
+    assertThat(builder.remove(K1).build().getEntries()).containsExactly(T2);
   }
 
   @Test
@@ -154,15 +156,14 @@ public class DistributedContextSdkTest {
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
-    assertThat(distContextToList(builder.remove(K2).build())).containsExactly(T1);
+    assertThat(builder.remove(K2).build().getEntries()).containsExactly(T1);
   }
 
   @Test
   public void remove_keyFromParent() {
     DistributedContextSdk distContext = listToDistributedContext(T1, T2);
     assertThat(
-            distContextToList(
-                contextManager.contextBuilder().setParent(distContext).remove(K1).build()))
+            contextManager.contextBuilder().setParent(distContext).remove(K1).build().getEntries())
         .containsExactly(T2);
   }
 
@@ -172,35 +173,6 @@ public class DistributedContextSdkTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("key");
     builder.remove(null);
-  }
-
-  @Test
-  public void testIterator() {
-    DistributedContext distContext =
-        contextManager
-            .contextBuilder()
-            .setParent(listToDistributedContext(T1))
-            .put(T2.getKey(), T2.getValue(), T2.getEntryMetadata())
-            .build();
-    Iterator<Entry> i = distContext.getIterator();
-    assertTrue(i.hasNext());
-    Entry entry1 = i.next();
-    assertTrue(i.hasNext());
-    Entry entry2 = i.next();
-    assertFalse(i.hasNext());
-    assertThat(Arrays.asList(entry1, entry2))
-        .containsExactly(Entry.create(K1, V1, TMD), Entry.create(K2, V2, TMD));
-    thrown.expect(NoSuchElementException.class);
-    i.next();
-  }
-
-  @Test
-  public void disallowCallingRemoveOnIterator() {
-    DistributedContextSdk distContext = listToDistributedContext(T1, T2);
-    Iterator<Entry> i = distContext.getIterator();
-    i.next();
-    thrown.expect(UnsupportedOperationException.class);
-    i.remove();
   }
 
   @Test
