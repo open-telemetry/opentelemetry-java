@@ -18,11 +18,13 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.resources.Resource;
-import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.internal.Clock;
+import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
+import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -31,30 +33,58 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
-@SuppressWarnings("unused") // TODO: finish implementation
 class SpanBuilderSdk implements Span.Builder {
+  private static final long INVALID_ID = 0;
+
+  private static final TraceOptions TRACE_OPTIONS_SAMPLED =
+      TraceOptions.builder().setIsSampled(true).build();
+  private static final TraceOptions TRACE_OPTIONS_NOT_SAMPLED =
+      TraceOptions.builder().setIsSampled(false).build();
+
   private final String spanName;
   private final SpanProcessor spanProcessor;
   private final TraceConfig traceConfig;
+  private final Resource resource;
+
+  private final Clock clock;
+  // TODO change with ThreadLocal version
+  // https://github.com/open-telemetry/opentelemetry-java/issues/406
+  private final Random random;
 
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
   @Nullable private List<Link> links;
-  private boolean recordEvents;
   private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
+  // TODO when true return default span
+  // https://github.com/open-telemetry/opentelemetry-java/issues/438
+  @SuppressWarnings("unused")
+  private boolean recordEvents;
 
-  SpanBuilderSdk(String spanName, SpanProcessor spanProcessor, TraceConfig traceConfig) {
+  SpanBuilderSdk(
+      String spanName,
+      SpanProcessor spanProcessor,
+      TraceConfig traceConfig,
+      Resource resource,
+      Random random,
+      Clock clock) {
     this.spanName = spanName;
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
+    this.resource = resource;
+    this.sampler = traceConfig.getSampler();
+    this.random = random;
+    this.clock = clock;
   }
 
   @Override
@@ -120,31 +150,113 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setRecordEvents(boolean recordEvents) {
-    this.recordEvents = recordEvents;
+    this.recordEvents = true;
     return this;
   }
 
   @Override
   public Span startSpan() {
-    // TODO: get remoteParent span from the context if noParent=false and remoteParent/remoteParents
-    // are null
-    // TODO: correctly implement this.
-    SpanContext context =
+    SpanContext parentContext = parent(parentType, parent, remoteParent);
+    TraceId traceId;
+    SpanId spanId = generateRandomSpanId(random);
+    Tracestate tracestate = Tracestate.getDefault();
+    if (parentContext == null || !parentContext.isValid()) {
+      // New root span.
+      traceId = generateRandomTraceId(random);
+      // This is a root span so no remote or local parent.
+    } else {
+      // New child span.
+      traceId = parentContext.getTraceId();
+      tracestate = parentContext.getTracestate();
+    }
+    Decision samplingDecision =
+        sampler.shouldSample(
+            parentContext,
+            false,
+            traceId,
+            spanId,
+            spanName,
+            // TODO links in span builder contain only span context
+            Collections.<Span>emptyList());
+    SpanContext spanContext =
         SpanContext.create(
-            TraceId.fromBytes(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1}, 0),
-            SpanId.fromBytes(new byte[] {1, 2, 3, 4, 5, 6, 7, 8}, 0),
-            TraceOptions.builder().setIsSampled(true).build(),
-            Tracestate.getDefault());
+            traceId,
+            spanId,
+            samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
+            tracestate);
+
+    TimestampConverter timestampConverter = getTimestampConverter(parent);
+    // TODO return DefaultSpan if not recording events
+    // https://github.com/open-telemetry/opentelemetry-java/issues/438
     return RecordEventsReadableSpanImpl.startSpan(
-        context,
+        spanContext,
         spanName,
         spanKind,
-        null,
+        parentContext != null ? parentContext.getSpanId() : null,
         traceConfig,
         spanProcessor,
-        null,
-        MillisClock.getInstance(),
-        Resource.getEmpty());
+        timestampConverter,
+        clock,
+        resource,
+        samplingDecision.attributes());
+  }
+
+  @Nullable
+  private static TimestampConverter getTimestampConverter(Span parent) {
+    TimestampConverter timestampConverter = null;
+    if (parent instanceof RecordEventsReadableSpanImpl) {
+      RecordEventsReadableSpanImpl parentRecordEventsSpan = (RecordEventsReadableSpanImpl) parent;
+      timestampConverter = parentRecordEventsSpan.getTimestampConverter();
+      parentRecordEventsSpan.addChild();
+    }
+    return timestampConverter;
+  }
+
+  @Nullable
+  private static SpanContext parent(
+      ParentType parentType, Span explicitParent, SpanContext remoteParent) {
+    Span currentSpan = ContextUtils.getValue();
+    switch (parentType) {
+      case NO_PARENT:
+        return null;
+      case CURRENT_SPAN:
+        return currentSpan != null ? currentSpan.getContext() : null;
+      case EXPLICIT_PARENT:
+        return explicitParent.getContext();
+      case EXPLICIT_REMOTE_PARENT:
+        return remoteParent;
+    }
+    throw new IllegalStateException("Unknown parent type");
+  }
+
+  /**
+   * Generates a new random {@code SpanId}.
+   *
+   * @param random The random number generator.
+   * @return a valid new {@code SpanId}.
+   */
+  static SpanId generateRandomSpanId(Random random) {
+    long id;
+    do {
+      id = random.nextLong();
+    } while (id == 0);
+    return new SpanId(id);
+  }
+
+  /**
+   * Generates a new random {@code TraceIde}.
+   *
+   * @param random The random number generator.
+   * @return a valid new {@code TraceId}.
+   */
+  static TraceId generateRandomTraceId(Random random) {
+    long idHi;
+    long idLo;
+    do {
+      idHi = random.nextLong();
+      idLo = random.nextLong();
+    } while (idHi == INVALID_ID && idLo == INVALID_ID);
+    return new TraceId(idHi, idLo);
   }
 
   private enum ParentType {

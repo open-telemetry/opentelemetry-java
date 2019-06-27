@@ -20,6 +20,10 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.context.propagation.TraceContextFormat;
+import io.opentelemetry.resources.Resource;
+import io.opentelemetry.sdk.internal.Clock;
+import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -28,11 +32,15 @@ import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import javax.annotation.concurrent.GuardedBy;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new TraceContextFormat();
+  private final Clock clock = MillisClock.getInstance();
+  private final Random random = new Random();
+  private final Resource resource = EnvVarResource.getResource();
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
@@ -54,7 +62,8 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return new SpanBuilderSdk(spanName, activeSpanProcessor, activeTraceConfig);
+    return new SpanBuilderSdk(
+        spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock);
   }
 
   @Override
