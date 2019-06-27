@@ -66,7 +66,6 @@ class SpanBuilderSdk implements Span.Builder {
   @Nullable private List<Link> links;
   private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
-
   // TODO when true return default span
   // https://github.com/open-telemetry/opentelemetry-java/issues/438
   @SuppressWarnings("unused")
