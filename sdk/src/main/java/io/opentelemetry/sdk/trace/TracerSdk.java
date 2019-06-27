@@ -50,6 +50,10 @@ public class TracerSdk implements Tracer {
   @GuardedBy("this")
   private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
 
+  // TODO: export readableSpans to exporters and add buffer size
+  @GuardedBy("this")
+  private final List<ReadableSpan> readableSpans = new ArrayList<>();
+
   @Override
   public Span getCurrentSpan() {
     return ContextUtils.getValue();
@@ -67,7 +71,11 @@ public class TracerSdk implements Tracer {
   }
 
   @Override
-  public void recordSpanData(SpanData span) {}
+  public void recordSpanData(SpanData spanData) {
+    synchronized (this) {
+      readableSpans.add(ReadableSpanData.create(spanData));
+    }
+  }
 
   @Override
   public BinaryFormat<SpanContext> getBinaryFormat() {
