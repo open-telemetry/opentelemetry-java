@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context.propagation;
+package io.opentelemetry.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkArgument;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
+import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;

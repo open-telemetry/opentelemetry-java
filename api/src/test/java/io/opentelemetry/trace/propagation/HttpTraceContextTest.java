@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context.propagation;
+package io.opentelemetry.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.context.propagation.HttpTraceContext.TRACEPARENT;
-import static io.opentelemetry.context.propagation.HttpTraceContext.TRACESTATE;
+import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACEPARENT;
+import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACESTATE;
 
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
@@ -37,7 +37,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link HttpTraceContext}. */
+/** Unit tests for {@link io.opentelemetry.trace.propagation.HttpTraceContext}. */
 @RunWith(JUnit4.class)
 public class HttpTraceContextTest {
 

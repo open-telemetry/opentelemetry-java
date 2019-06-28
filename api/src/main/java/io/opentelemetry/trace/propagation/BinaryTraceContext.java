@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context.propagation;
+package io.opentelemetry.trace.propagation;
 
+import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;

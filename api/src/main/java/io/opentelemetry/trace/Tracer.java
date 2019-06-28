@@ -20,7 +20,7 @@ import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.context.propagation.HttpTraceContext;
+import io.opentelemetry.trace.propagation.HttpTraceContext;
 
 /**
  * Tracer is a simple, interface for {@link Span} creation and in-process context interaction.
