@@ -21,6 +21,7 @@ import static io.opentelemetry.sdk.trace.TestUtils.generateRandomSpanId;
 import static io.opentelemetry.sdk.trace.TestUtils.generateRandomTraceId;
 
 import io.opentelemetry.trace.Sampler;
+import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
@@ -175,17 +176,16 @@ public class ProbabilitySamplerTest {
               0
             },
             0);
-    assertThat(
-            defaultProbability
-                .shouldSample(
-                    null,
-                    false,
-                    notSampledtraceId,
-                    generateRandomSpanId(),
-                    SPAN_NAME,
-                    Collections.<SpanContext>emptyList())
-                .isSampled())
-        .isFalse();
+    Decision decision1 =
+        defaultProbability.shouldSample(
+            null,
+            false,
+            notSampledtraceId,
+            generateRandomSpanId(),
+            SPAN_NAME,
+            Collections.<SpanContext>emptyList());
+    assertThat(decision1.isSampled()).isFalse();
+    assertThat(decision1.attributes()).isEmpty();
     // This traceId will be sampled by the ProbabilitySampler because the first 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     TraceId sampledtraceId =
@@ -209,16 +209,15 @@ public class ProbabilitySamplerTest {
               0
             },
             0);
-    assertThat(
-            defaultProbability
-                .shouldSample(
-                    null,
-                    false,
-                    sampledtraceId,
-                    generateRandomSpanId(),
-                    SPAN_NAME,
-                    Collections.<SpanContext>emptyList())
-                .isSampled())
-        .isTrue();
+    Decision decision2 =
+        defaultProbability.shouldSample(
+            null,
+            false,
+            sampledtraceId,
+            generateRandomSpanId(),
+            SPAN_NAME,
+            Collections.<SpanContext>emptyList());
+    assertThat(decision2.isSampled()).isTrue();
+    assertThat(decision2.attributes()).isEmpty();
   }
 }

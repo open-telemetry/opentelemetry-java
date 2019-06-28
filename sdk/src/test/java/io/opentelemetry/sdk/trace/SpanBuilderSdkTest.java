@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.trace.samplers.ProbabilitySampler;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
@@ -29,6 +30,8 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceOptions;
+import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.util.Samplers;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -45,6 +48,13 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class SpanBuilderSdkTest {
   private static final String SPAN_NAME = "span_name";
+  private final SpanContext sampledSpanContext =
+      SpanContext.create(
+          new TraceId(1000, 1000),
+          new SpanId(3000),
+          TraceOptions.builder().setIsSampled(true).build(),
+          Tracestate.getDefault());
+
   private final TracerSdk tracer = new TracerSdk();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
@@ -219,6 +229,22 @@ public class SpanBuilderSdkTest {
       assertThat(span.getContext().getTraceOptions().isSampled()).isTrue();
       assertThat(span.toSpanProto().getAttributes().getAttributeMapMap())
           .containsKey("sampler-attribute");
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  public void sampledViaParentLinks() {
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
+            tracer
+                .spanBuilder(SPAN_NAME)
+                .setSampler(ProbabilitySampler.create(0.0))
+                .addLink(SpanData.Link.create(sampledSpanContext))
+                .startSpan();
+    try {
+      assertThat(span.getContext().getTraceOptions().isSampled()).isTrue();
     } finally {
       span.end();
     }
