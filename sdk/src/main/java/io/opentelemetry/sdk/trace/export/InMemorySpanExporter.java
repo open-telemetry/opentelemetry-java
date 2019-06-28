@@ -35,7 +35,11 @@ public final class InMemorySpanExporter implements SpanExporter {
     }
   }
 
-  /** Clears the internal {@code List} of finished {@code Span}s. */
+  /**
+   * Clears the internal {@code List} of finished {@code Span}s.
+   *
+   * <p>Does not reset the state of this exporter if already shutdown.
+   */
   public void reset() {
     synchronized (this) {
       finishedSpanDataItems.clear();
