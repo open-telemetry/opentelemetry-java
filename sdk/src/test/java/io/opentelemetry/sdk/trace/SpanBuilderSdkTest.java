@@ -20,14 +20,17 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.util.Samplers;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +74,16 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
+  public void addLink() {
+    // Verify methods do not crash.
+    Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
+    spanBuilder.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
+    spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
+    spanBuilder.addLink(
+        DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
+  }
+
+  @Test
   public void addLink_null() {
     thrown.expect(NullPointerException.class);
     tracer.spanBuilder(SPAN_NAME).addLink((Link) null);
@@ -83,9 +96,15 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void addLinkSpanContextAttributes_null() {
+  public void addLinkSpanContextAttributes_nullContext() {
     thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).addLink(null, null);
+    tracer.spanBuilder(SPAN_NAME).addLink(null, Collections.<String, AttributeValue>emptyMap());
+  }
+
+  @Test
+  public void addLinkSpanContextAttributes_nullAttributes() {
+    thrown.expect(NullPointerException.class);
+    tracer.spanBuilder(SPAN_NAME).addLink(DefaultSpan.getInvalid().getContext(), null);
   }
 
   @Test

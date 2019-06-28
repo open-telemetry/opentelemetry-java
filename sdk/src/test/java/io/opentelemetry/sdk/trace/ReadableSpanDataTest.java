@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.Attributes;
@@ -118,5 +119,27 @@ public class ReadableSpanDataTest {
     assertThat(spanProto.getStartTime()).isEqualTo(Timestamp.newBuilder().setSeconds(10).build());
     assertThat(spanProto.getEndTime()).isEqualTo(Timestamp.newBuilder().setSeconds(20).build());
     assertThat(spanProto.getStatus().getCode()).isEqualTo(Status.OK.getCanonicalCode().value());
+  }
+
+  @Test
+  public void toSpanProto_NoParentSpan() {
+    SpanData spanData =
+        SpanData.create(
+            spanContext,
+            null,
+            resource,
+            SPAN_NAME,
+            Kind.CLIENT,
+            startTime,
+            Collections.<String, AttributeValue>emptyMap(),
+            Collections.singletonList(timedEvent),
+            Collections.<Link>emptyList(),
+            Status.OK,
+            endTime);
+    ReadableSpanData readableSpanData = ReadableSpanData.create(spanData);
+    Span spanProto = readableSpanData.toSpanProto();
+    assertThat(spanProto.getTraceId()).isEqualTo(TraceProtoUtils.toProtoTraceId(traceId));
+    assertThat(spanProto.getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(spanId));
+    assertThat(spanProto.getParentSpanId()).isEqualTo(ByteString.EMPTY);
   }
 }

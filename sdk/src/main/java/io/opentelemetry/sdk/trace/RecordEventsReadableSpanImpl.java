@@ -494,7 +494,9 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
     this.timestampConverter =
         timestampConverter != null ? timestampConverter : TimestampConverter.now(clock);
     startNanoTime = clock.nowNanos();
-    getInitializedAttributes().putAll(attributes);
+    if (!attributes.isEmpty()) {
+      getInitializedAttributes().putAll(attributes);
+    }
   }
 
   @SuppressWarnings("NoFinalizer")

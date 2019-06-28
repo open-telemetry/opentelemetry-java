@@ -29,6 +29,7 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
@@ -112,6 +113,13 @@ public class RecordEventsReadableSpanImplTest {
   }
 
   @Test
+  public void endSpanTwice_DoNotCrash() {
+    RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
+    span.end();
+    span.end();
+  }
+
+  @Test
   public void toSpanProto_ActiveSpan() {
     RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
     try {
@@ -173,6 +181,14 @@ public class RecordEventsReadableSpanImplTest {
   }
 
   @Test
+  public void toSpanProto_WithInitialAttributes() {
+    RecordEventsReadableSpanImpl span = createTestSpanWithAttributes(attributes);
+    span.end();
+    Span spanProto = span.toSpanProto();
+    assertThat(spanProto.getAttributes().getAttributeMapCount()).isEqualTo(attributes.size());
+  }
+
+  @Test
   public void setStatus() {
     RecordEventsReadableSpanImpl span = createTestSpan(Kind.CONSUMER);
     try {
@@ -191,6 +207,18 @@ public class RecordEventsReadableSpanImplTest {
     RecordEventsReadableSpanImpl span = createTestSpan(Kind.SERVER);
     try {
       assertThat(span.getKind()).isEqualTo(Kind.SERVER);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  public void getAndUpdateSpanName() {
+    RecordEventsReadableSpanImpl span = createTestRootSpan();
+    try {
+      assertThat(span.getName()).isEqualTo(SPAN_NAME);
+      span.updateName(SPAN_NEW_NAME);
+      assertThat(span.getName()).isEqualTo(SPAN_NEW_NAME);
     } finally {
       span.end();
     }
@@ -223,6 +251,49 @@ public class RecordEventsReadableSpanImplTest {
     assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos);
+  }
+
+  @Test
+  public void setAttribute() {
+    RecordEventsReadableSpanImpl span = createTestRootSpan();
+    try {
+      span.setAttribute("StringKey", "StringVal");
+      span.setAttribute("LongKey", 1000L);
+      span.setAttribute("DoubleKey", 10.0);
+      span.setAttribute("BooleanKey", false);
+    } finally {
+      span.end();
+    }
+    Span spanProto = span.toSpanProto();
+    assertThat(spanProto.getAttributes().getAttributeMapCount()).isEqualTo(4);
+  }
+
+  @Test
+  public void addEvent() {
+    RecordEventsReadableSpanImpl span = createTestRootSpan();
+    try {
+      span.addEvent("event1");
+      span.addEvent("event2", attributes);
+      span.addEvent(SpanData.Event.create("event3"));
+    } finally {
+      span.end();
+    }
+    Span spanProto = span.toSpanProto();
+    assertThat(spanProto.getTimeEvents().getTimedEventCount()).isEqualTo(3);
+  }
+
+  @Test
+  public void addLink() {
+    RecordEventsReadableSpanImpl span = createTestRootSpan();
+    try {
+      span.addLink(DefaultSpan.getInvalid().getContext());
+      span.addLink(spanContext, attributes);
+      span.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
+    } finally {
+      span.end();
+    }
+    Span spanProto = span.toSpanProto();
+    assertThat(spanProto.getLinks().getLinkCount()).isEqualTo(3);
   }
 
   @Test
@@ -392,20 +463,37 @@ public class RecordEventsReadableSpanImplTest {
     }
   }
 
+  private RecordEventsReadableSpanImpl createTestSpanWithAttributes(
+      Map<String, AttributeValue> attributes) {
+    return createTestSpan(Kind.INTERNAL, TraceConfig.getDefault(), null, attributes);
+  }
+
   private RecordEventsReadableSpanImpl createTestRootSpan() {
-    return createTestSpan(Kind.INTERNAL, TraceConfig.getDefault(), null);
+    return createTestSpan(
+        Kind.INTERNAL,
+        TraceConfig.getDefault(),
+        null,
+        Collections.<String, AttributeValue>emptyMap());
   }
 
   private RecordEventsReadableSpanImpl createTestSpan(Kind kind) {
-    return createTestSpan(kind, TraceConfig.getDefault(), parentSpanId);
+    return createTestSpan(
+        kind,
+        TraceConfig.getDefault(),
+        parentSpanId,
+        Collections.<String, AttributeValue>emptyMap());
   }
 
   private RecordEventsReadableSpanImpl createTestSpan(TraceConfig config) {
-    return createTestSpan(Kind.INTERNAL, config, parentSpanId);
+    return createTestSpan(
+        Kind.INTERNAL, config, parentSpanId, Collections.<String, AttributeValue>emptyMap());
   }
 
   private RecordEventsReadableSpanImpl createTestSpan(
-      Kind kind, TraceConfig config, @Nullable SpanId parentSpanId) {
+      Kind kind,
+      TraceConfig config,
+      @Nullable SpanId parentSpanId,
+      Map<String, AttributeValue> attributes) {
     RecordEventsReadableSpanImpl span =
         RecordEventsReadableSpanImpl.startSpan(
             spanContext,
@@ -417,7 +505,7 @@ public class RecordEventsReadableSpanImplTest {
             timestampConverter,
             testClock,
             resource,
-            Collections.<String, AttributeValue>emptyMap());
+            attributes);
     Mockito.verify(spanProcessor, Mockito.times(1)).onStartSync(span);
     return span;
   }
