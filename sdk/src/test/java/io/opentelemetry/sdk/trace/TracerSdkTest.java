@@ -146,6 +146,18 @@ public class TracerSdkTest {
   }
 
   @Test
+  public void shutdownTwice_OnlyFlushSpanProcessorOnce() {
+    try {
+      tracer.shutdown();
+      Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
+      tracer.shutdown(); // the second call will be ignored
+      Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
+    } finally {
+      tracer.unsafeRestart();
+    }
+  }
+
+  @Test
   public void returnNoopSpanAfterShutdown() {
     try {
       tracer.shutdown();
