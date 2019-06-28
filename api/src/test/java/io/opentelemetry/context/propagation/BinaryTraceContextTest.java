@@ -31,9 +31,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link TraceBinaryFormat}. */
+/** Tests for {@link BinaryTraceContext}. */
 @RunWith(JUnit4.class)
-public class TraceBinaryFormatTest {
+public class BinaryTraceContextTest {
 
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79};
@@ -51,7 +51,7 @@ public class TraceBinaryFormatTest {
       SpanContext.create(TRACE_ID, SPAN_ID, TRACE_OPTIONS, Tracestate.getDefault());
   private static final SpanContext INVALID_SPAN_CONTEXT = DefaultSpan.getInvalid().getContext();
   @Rule public ExpectedException expectedException = ExpectedException.none();
-  private final BinaryFormat<SpanContext> binaryFormat = new TraceBinaryFormat();
+  private final BinaryFormat<SpanContext> binaryFormat = new BinaryTraceContext();
 
   private void testSpanContextConversion(SpanContext spanContext) {
     SpanContext propagatedBinarySpanContext =
@@ -124,7 +124,8 @@ public class TraceBinaryFormatTest {
   public void fromBinaryValue_UnsupportedFieldIdFirst() {
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage(
-        "Invalid input: expected trace ID at offset " + TraceBinaryFormat.TRACE_ID_FIELD_ID_OFFSET);
+        "Invalid input: expected trace ID at offset "
+            + BinaryTraceContext.TRACE_ID_FIELD_ID_OFFSET);
     binaryFormat.fromByteArray(
         new byte[] {
           0, 4, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 1, 97, 98, 99, 100,
@@ -136,7 +137,7 @@ public class TraceBinaryFormatTest {
   public void fromBinaryValue_UnsupportedFieldIdSecond() {
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage(
-        "Invalid input: expected span ID at offset " + TraceBinaryFormat.SPAN_ID_FIELD_ID_OFFSET);
+        "Invalid input: expected span ID at offset " + BinaryTraceContext.SPAN_ID_FIELD_ID_OFFSET);
     binaryFormat.fromByteArray(
         new byte[] {
           0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 3, 97, 98, 99, 100,

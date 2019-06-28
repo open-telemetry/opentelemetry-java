@@ -57,7 +57,7 @@ import io.opentelemetry.trace.Tracestate;
  *       </ul>
  * </ul>
  */
-public final class TraceBinaryFormat implements BinaryFormat<SpanContext> {
+public final class BinaryTraceContext implements BinaryFormat<SpanContext> {
 
   private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
   private static final byte VERSION_ID = 0;
