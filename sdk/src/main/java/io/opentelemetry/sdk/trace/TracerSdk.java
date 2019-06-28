@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
@@ -71,8 +72,11 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
+    if (isStopped) {
+      return DefaultTracer.getInstance().spanBuilder(spanName);
+    }
     return new SpanBuilderSdk(
-        spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock, isStopped);
+        spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock);
   }
 
   @Override
@@ -100,14 +104,12 @@ public class TracerSdk implements Tracer {
    * <p>After this is called all the newly created {@code Span}s will be no-op.
    */
   public void shutdown() {
-    if (isStopped) {
-      logger.log(Level.WARNING, "Calling shutdown() multiple times.");
-      return;
-    }
     synchronized (this) {
-      for (SpanProcessor spanProcessor : registeredSpanProcessors) {
-        spanProcessor.shutdown();
+      if (isStopped) {
+        logger.log(Level.WARNING, "Calling shutdown() multiple times.");
+        return;
       }
+      activeSpanProcessor.shutdown();
       isStopped = true;
     }
   }
