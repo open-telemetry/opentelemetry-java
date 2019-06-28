@@ -55,6 +55,7 @@ class SpanBuilderSdk implements Span.Builder {
   private final SpanProcessor spanProcessor;
   private final TraceConfig traceConfig;
   private final Resource resource;
+  private final boolean isStopped;
 
   private final Clock clock;
   // TODO change with ThreadLocal version
@@ -75,7 +76,8 @@ class SpanBuilderSdk implements Span.Builder {
       TraceConfig traceConfig,
       Resource resource,
       Random random,
-      Clock clock) {
+      Clock clock,
+      boolean isStopped) {
     this.spanName = spanName;
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
@@ -83,6 +85,7 @@ class SpanBuilderSdk implements Span.Builder {
     this.sampler = traceConfig.getSampler();
     this.random = random;
     this.clock = clock;
+    this.isStopped = isStopped;
   }
 
   @Override
@@ -183,7 +186,7 @@ class SpanBuilderSdk implements Span.Builder {
             samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
             tracestate);
 
-    if (!recordEvents && !samplingDecision.isSampled()) {
+    if (isStopped || (!recordEvents && !samplingDecision.isSampled())) {
       return DefaultSpan.create(spanContext);
     }
     TimestampConverter timestampConverter = getTimestampConverter(parent);

@@ -32,7 +32,6 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.unsafe.ContextUtils;
-import io.opentelemetry.trace.util.Samplers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -72,13 +71,8 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    SpanBuilderSdk builderSdk =
-        new SpanBuilderSdk(
-            spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock);
-    if (isStopped) {
-      builderSdk.setRecordEvents(false).setSampler(Samplers.neverSample());
-    }
-    return builderSdk;
+    return new SpanBuilderSdk(
+        spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock, isStopped);
   }
 
   @Override
