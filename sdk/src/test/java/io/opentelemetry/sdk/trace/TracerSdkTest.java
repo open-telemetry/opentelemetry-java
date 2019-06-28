@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.BinaryTraceContext;
 import io.opentelemetry.context.propagation.TraceContextFormat;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
@@ -56,6 +57,11 @@ public class TracerSdkTest {
   @Test
   public void defaultHttpTextFormat() {
     assertThat(tracer.getHttpTextFormat()).isInstanceOf(TraceContextFormat.class);
+  }
+
+  @Test
+  public void defaultBinaryFormat() {
+    assertThat(tracer.getBinaryFormat()).isInstanceOf(BinaryTraceContext.class);
   }
 
   @Test
