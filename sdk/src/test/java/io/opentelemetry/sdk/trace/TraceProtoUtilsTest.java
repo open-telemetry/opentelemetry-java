@@ -59,6 +59,7 @@ public class TraceProtoUtilsTest {
   private static final Resource RESOURCE =
       Resource.create(Collections.<String, String>singletonMap("key", "val"));
   private static final Status STATUS = Status.DEADLINE_EXCEEDED.withDescription("TooSlow");
+  private static final SpanData.Timestamp SPANDATA_TIMESTAMP = SpanData.Timestamp.create(100, 200);
 
   private static final String ATTRIBUTE_KEY_1 = "MyAttributeKey1";
   private static final String ATTRIBUTE_KEY_2 = "MyAttributeKey2";
@@ -77,6 +78,9 @@ public class TraceProtoUtilsTest {
       ImmutableList.<TimedEvent>of(TimedEvent.create(100, "event"));
   private static final List<Link> links =
       ImmutableList.<Link>of(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
+  private static final List<SpanData.TimedEvent> spanDataEvents =
+      Collections.<SpanData.TimedEvent>singletonList(
+          SpanData.TimedEvent.create(SPANDATA_TIMESTAMP, SpanData.Event.create("event")));
 
   private static final TestClock testClock = TestClock.create(Timestamp.getDefaultInstance());
   private static final TimestampConverter timestampConverter = TimestampConverter.now(testClock);
@@ -186,5 +190,21 @@ public class TraceProtoUtilsTest {
             .build();
     assertThat(TraceProtoUtils.toProtoStatus(STATUS)).isEqualTo(expected1);
     assertThat(TraceProtoUtils.toProtoStatus(Status.ABORTED)).isEqualTo(expected2);
+  }
+
+  @Test
+  public void spanDataEventsToProtoTimedEvents() {
+    TimedEvents expected =
+        TimedEvents.newBuilder()
+            .addTimedEvent(
+                Span.TimedEvent.newBuilder()
+                    .setTime(Timestamp.newBuilder().setSeconds(100).setNanos(200))
+                    .setEvent(
+                        Span.TimedEvent.Event.newBuilder()
+                            .setAttributes(Attributes.getDefaultInstance())
+                            .setName("event")))
+            .build();
+    assertThat(TraceProtoUtils.spanDataEventsToProtoTimedEvents(spanDataEvents))
+        .isEqualTo(expected);
   }
 }

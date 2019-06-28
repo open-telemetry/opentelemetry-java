@@ -69,7 +69,9 @@ public class TracerSdk implements Tracer {
   }
 
   @Override
-  public void recordSpanData(SpanData span) {}
+  public void recordSpanData(SpanData spanData) {
+    activeSpanProcessor.onEndSync(ReadableSpanData.create(spanData));
+  }
 
   @Override
   public BinaryFormat<SpanContext> getBinaryFormat() {
