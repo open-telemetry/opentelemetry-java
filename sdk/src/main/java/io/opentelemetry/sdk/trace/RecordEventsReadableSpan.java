@@ -43,7 +43,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
-final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
+final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
   // Contains the identifiers associated with this Span.
@@ -117,7 +117,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    * @return a new and started span.
    */
   @VisibleForTesting
-  static RecordEventsReadableSpanImpl startSpan(
+  static RecordEventsReadableSpan startSpan(
       SpanContext context,
       String name,
       Kind kind,
@@ -128,8 +128,8 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
       Clock clock,
       Resource resource,
       Map<String, AttributeValue> attributes) {
-    RecordEventsReadableSpanImpl span =
-        new RecordEventsReadableSpanImpl(
+    RecordEventsReadableSpan span =
+        new RecordEventsReadableSpan(
             context,
             name,
             kind,
@@ -218,7 +218,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    *
    * @return the end nano time.
    */
-  long getEndNanoTime() {
+  private long getEndNanoTime() {
     synchronized (this) {
       return getEndNanoTimeInternal();
     }
@@ -416,7 +416,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
   @GuardedBy("this")
   private EvictingQueue<TimedEvent> getInitializedEvents() {
     if (events == null) {
-      events = EvictingQueue.<TimedEvent>create((int) traceConfig.getMaxNumberOfEvents());
+      events = EvictingQueue.create((int) traceConfig.getMaxNumberOfEvents());
     }
     return events;
   }
@@ -424,7 +424,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
   @GuardedBy("this")
   private EvictingQueue<Link> getInitializedLinks() {
     if (links == null) {
-      links = EvictingQueue.<Link>create((int) traceConfig.getMaxNumberOfLinks());
+      links = EvictingQueue.create((int) traceConfig.getMaxNumberOfLinks());
     }
     return links;
   }
@@ -470,7 +470,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
     }
   }
 
-  private RecordEventsReadableSpanImpl(
+  private RecordEventsReadableSpan(
       SpanContext context,
       String name,
       Kind kind,
