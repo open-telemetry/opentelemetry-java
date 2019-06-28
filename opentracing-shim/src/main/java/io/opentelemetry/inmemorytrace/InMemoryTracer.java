@@ -20,7 +20,7 @@ import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.context.propagation.TraceContextFormat;
+import io.opentelemetry.context.propagation.HttpTraceContext;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -33,7 +33,7 @@ import java.util.List;
 // TODO - Use the Nullable annotation everywhere.
 final class InMemoryTracer implements Tracer {
   private final List<SpanData> finishedSpanDataItems = new ArrayList<>();
-  private final HttpTextFormat<SpanContext> textFormat = new TraceContextFormat();
+  private final HttpTextFormat<SpanContext> textFormat = new HttpTraceContext();
   private final Resource resource;
 
   public InMemoryTracer() {

@@ -20,7 +20,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.BinaryTraceContext;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.context.propagation.TraceContextFormat;
+import io.opentelemetry.context.propagation.HttpTraceContext;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
@@ -38,8 +38,8 @@ import javax.annotation.concurrent.GuardedBy;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
-  private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new TraceContextFormat();
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
+  private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final Clock clock = MillisClock.getInstance();
   private final Random random = new Random();
   private final Resource resource = EnvVarResource.getResource();

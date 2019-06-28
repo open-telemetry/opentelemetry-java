@@ -21,7 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryTraceContext;
-import io.opentelemetry.context.propagation.TraceContextFormat;
+import io.opentelemetry.context.propagation.HttpTraceContext;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
@@ -68,7 +68,7 @@ public class TracerSdkTest {
 
   @Test
   public void defaultHttpTextFormat() {
-    assertThat(tracer.getHttpTextFormat()).isInstanceOf(TraceContextFormat.class);
+    assertThat(tracer.getHttpTextFormat()).isInstanceOf(HttpTraceContext.class);
   }
 
   @Test
