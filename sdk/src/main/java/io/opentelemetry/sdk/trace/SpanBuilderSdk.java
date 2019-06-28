@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Sampler.Decision;
@@ -66,10 +67,7 @@ class SpanBuilderSdk implements Span.Builder {
   @Nullable private List<Link> links;
   private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
-  // TODO when true return default span
-  // https://github.com/open-telemetry/opentelemetry-java/issues/438
-  @SuppressWarnings("unused")
-  private boolean recordEvents;
+  private boolean recordEvents = false;
 
   SpanBuilderSdk(
       String spanName,
@@ -150,7 +148,7 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setRecordEvents(boolean recordEvents) {
-    this.recordEvents = true;
+    this.recordEvents = recordEvents;
     return this;
   }
 
@@ -185,9 +183,10 @@ class SpanBuilderSdk implements Span.Builder {
             samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
             tracestate);
 
+    if (!recordEvents && !samplingDecision.isSampled()) {
+      return DefaultSpan.create(spanContext);
+    }
     TimestampConverter timestampConverter = getTimestampConverter(parent);
-    // TODO return DefaultSpan if not recording events
-    // https://github.com/open-telemetry/opentelemetry-java/issues/438
     return RecordEventsReadableSpanImpl.startSpan(
         spanContext,
         spanName,

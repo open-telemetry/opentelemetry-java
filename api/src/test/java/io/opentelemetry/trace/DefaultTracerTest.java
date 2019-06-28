@@ -52,7 +52,7 @@ public class DefaultTracerTest {
   @Test
   public void getCurrentSpan_WithSpan() {
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Scope ws = defaultTracer.withSpan(DefaultSpan.create());
+    Scope ws = defaultTracer.withSpan(DefaultSpan.createRandom());
     try {
       assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
     } finally {

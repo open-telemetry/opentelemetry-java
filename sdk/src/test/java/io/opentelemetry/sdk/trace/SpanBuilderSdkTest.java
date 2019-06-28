@@ -90,8 +90,7 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void recordEvents_default() {
-    RecordEventsReadableSpanImpl span =
-        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
     try {
       assertThat(span.isRecordingEvents()).isTrue();
     } finally {
@@ -101,11 +100,25 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void recordEvents_neverSample() {
-    RecordEventsReadableSpanImpl span =
-        (RecordEventsReadableSpanImpl)
-            tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
+    Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
     try {
       assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  public void notSampledButRecordingEvents() {
+    Span span =
+        tracer
+            .spanBuilder(SPAN_NAME)
+            .setSampler(Samplers.neverSample())
+            .setRecordEvents(true)
+            .startSpan();
+    try {
+      assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+      assertThat(span.isRecordingEvents()).isTrue();
     } finally {
       span.end();
     }
@@ -136,9 +149,8 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void sampler() {
-    RecordEventsReadableSpanImpl span =
-        (RecordEventsReadableSpanImpl)
-            tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
+    Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
+
     try {
       assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
     } finally {
@@ -195,23 +207,15 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void noParent() {
-    RecordEventsReadableSpanImpl parent =
-        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
     Scope scope = tracer.withSpan(parent);
     try {
-      RecordEventsReadableSpanImpl span =
-          (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).setNoParent().startSpan();
+      Span span = tracer.spanBuilder(SPAN_NAME).setNoParent().startSpan();
       try {
         assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
 
-        RecordEventsReadableSpanImpl spanNoParent =
-            (RecordEventsReadableSpanImpl)
-                tracer
-                    .spanBuilder(SPAN_NAME)
-                    .setNoParent()
-                    .setParent(parent)
-                    .setNoParent()
-                    .startSpan();
+        Span spanNoParent =
+            tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent).setNoParent().startSpan();
         try {
           assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
         } finally {
@@ -228,8 +232,7 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void noParent_override() {
-    RecordEventsReadableSpanImpl parent =
-        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
     try {
       RecordEventsReadableSpanImpl span =
           (RecordEventsReadableSpanImpl)
@@ -262,8 +265,7 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void overrideNoParent_remoteParent() {
-    RecordEventsReadableSpanImpl parent =
-        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
     try {
 
       RecordEventsReadableSpanImpl span =
@@ -288,8 +290,7 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void parentCurrentSpan() {
-    RecordEventsReadableSpanImpl parent =
-        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
     Scope scope = tracer.withSpan(parent);
     try {
       RecordEventsReadableSpanImpl span =
