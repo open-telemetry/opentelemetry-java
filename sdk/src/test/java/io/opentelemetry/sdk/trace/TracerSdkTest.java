@@ -20,8 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryTraceContext;
-import io.opentelemetry.context.propagation.HttpTraceContext;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
@@ -31,6 +29,8 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.propagation.BinaryTraceContext;
+import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import io.opentelemetry.trace.util.Samplers;
 import java.util.Collections;

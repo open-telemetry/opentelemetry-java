@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context.propagation;
+package io.opentelemetry.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
+import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -31,7 +32,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link BinaryTraceContext}. */
+/** Tests for {@link io.opentelemetry.trace.propagation.BinaryTraceContext}. */
 @RunWith(JUnit4.class)
 public class BinaryTraceContextTest {
 
