@@ -60,7 +60,22 @@ public class InMemorySpanExporterTest {
     assertThat(spanItems.size()).isEqualTo(3);
     // Reset then expect no items in memory.
     exporter.reset();
-    spanItems = exporter.getFinishedSpanItems();
-    assertThat(spanItems).isEmpty();
+    assertThat(exporter.getFinishedSpanItems()).isEmpty();
+  }
+
+  @Test
+  public void shutdown() {
+    tracer.spanBuilder("one").startSpan().end();
+    tracer.spanBuilder("two").startSpan().end();
+    tracer.spanBuilder("three").startSpan().end();
+    List<io.opentelemetry.proto.trace.v1.Span> spanItems = exporter.getFinishedSpanItems();
+    assertThat(spanItems).isNotNull();
+    assertThat(spanItems.size()).isEqualTo(3);
+    // Shutdown then expect no items in memory.
+    exporter.shutdown();
+    assertThat(exporter.getFinishedSpanItems()).isEmpty();
+    // Cannot add new elements after the shutdown.
+    tracer.spanBuilder("one").startSpan().end();
+    assertThat(exporter.getFinishedSpanItems()).isEmpty();
   }
 }
