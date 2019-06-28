@@ -218,7 +218,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    *
    * @return the end nano time.
    */
-  long getEndNanoTime() {
+  private long getEndNanoTime() {
     synchronized (this) {
       return getEndNanoTimeInternal();
     }
@@ -416,7 +416,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
   @GuardedBy("this")
   private EvictingQueue<TimedEvent> getInitializedEvents() {
     if (events == null) {
-      events = EvictingQueue.<TimedEvent>create((int) traceConfig.getMaxNumberOfEvents());
+      events = EvictingQueue.create((int) traceConfig.getMaxNumberOfEvents());
     }
     return events;
   }
@@ -424,7 +424,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
   @GuardedBy("this")
   private EvictingQueue<Link> getInitializedLinks() {
     if (links == null) {
-      links = EvictingQueue.<Link>create((int) traceConfig.getMaxNumberOfLinks());
+      links = EvictingQueue.create((int) traceConfig.getMaxNumberOfLinks());
     }
     return links;
   }
