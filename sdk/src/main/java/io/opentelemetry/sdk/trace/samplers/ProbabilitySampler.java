@@ -20,7 +20,6 @@ import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Sampler;
-import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
@@ -80,15 +79,15 @@ public abstract class ProbabilitySampler implements Sampler {
       TraceId traceId,
       SpanId spanId,
       String name,
-      @Nullable List<Span> parentLinks) {
+      @Nullable List<SpanContext> parentLinks) {
     // If the parent is sampled keep the sampling decision.
     if (parentContext != null && parentContext.getTraceOptions().isSampled()) {
       return new SimpleDecision(/* decision= */ true);
     }
     if (parentLinks != null) {
       // If any parent link is sampled keep the sampling decision.
-      for (Span parentLink : parentLinks) {
-        if (parentLink.getContext().getTraceOptions().isSampled()) {
+      for (SpanContext parentLink : parentLinks) {
+        if (parentLink.getTraceOptions().isSampled()) {
           return new SimpleDecision(/* decision= */ true);
         }
       }

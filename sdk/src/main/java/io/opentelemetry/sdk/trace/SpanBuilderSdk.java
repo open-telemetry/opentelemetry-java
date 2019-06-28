@@ -169,13 +169,7 @@ class SpanBuilderSdk implements Span.Builder {
     }
     Decision samplingDecision =
         sampler.shouldSample(
-            parentContext,
-            false,
-            traceId,
-            spanId,
-            spanName,
-            // TODO links in span builder contain only span context
-            Collections.<Span>emptyList());
+            parentContext, false, traceId, spanId, spanName, getSpanContextsFromLinks(links));
     SpanContext spanContext =
         SpanContext.create(
             traceId,
@@ -198,6 +192,17 @@ class SpanBuilderSdk implements Span.Builder {
         clock,
         resource,
         samplingDecision.attributes());
+  }
+
+  private static List<SpanContext> getSpanContextsFromLinks(List<Link> links) {
+    if (links == null || links.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<SpanContext> spanContexts = new ArrayList<>(links.size());
+    for (Link link : links) {
+      spanContexts.add(link.getContext());
+    }
+    return spanContexts;
   }
 
   @Nullable

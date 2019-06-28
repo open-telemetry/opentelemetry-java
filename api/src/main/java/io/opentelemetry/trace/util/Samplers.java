@@ -75,7 +75,7 @@ public final class Samplers {
         TraceId traceId,
         SpanId spanId,
         String name,
-        List<Span> parentLinks) {
+        List<SpanContext> parentLinks) {
       return ALWAYS_ON_DECISION;
     }
 
@@ -102,7 +102,7 @@ public final class Samplers {
         TraceId traceId,
         SpanId spanId,
         String name,
-        List<Span> parentLinks) {
+        List<SpanContext> parentLinks) {
       return ALWAYS_OFF_DECISION;
     }
 

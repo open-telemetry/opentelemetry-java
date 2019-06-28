@@ -47,7 +47,7 @@ public interface Sampler {
       TraceId traceId,
       SpanId spanId,
       String name,
-      List<Span> parentLinks);
+      List<SpanContext> parentLinks);
 
   /**
    * Returns the description of this {@code Sampler}. This may be displayed on debug pages or in the
