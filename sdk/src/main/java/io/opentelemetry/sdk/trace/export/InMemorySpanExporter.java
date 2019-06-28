@@ -23,6 +23,7 @@ import java.util.List;
 
 public final class InMemorySpanExporter implements SpanExporter {
   private final List<Span> finishedSpanDataItems = new ArrayList<>();
+  private boolean isStopped = false;
 
   /**
    * Returns a {@code List} of the finished {@code Span}s, represented by {@code
@@ -34,7 +35,11 @@ public final class InMemorySpanExporter implements SpanExporter {
     }
   }
 
-  /** Clears the internal {@code List} of finished {@code Span}s. */
+  /**
+   * Clears the internal {@code List} of finished {@code Span}s.
+   *
+   * <p>Does not reset the state of this exporter if already shutdown.
+   */
   public void reset() {
     synchronized (this) {
       finishedSpanDataItems.clear();
@@ -44,7 +49,9 @@ public final class InMemorySpanExporter implements SpanExporter {
   @Override
   public void export(List<Span> spans) {
     synchronized (this) {
-      finishedSpanDataItems.addAll(spans);
+      if (!isStopped) {
+        finishedSpanDataItems.addAll(spans);
+      }
     }
   }
 
@@ -52,6 +59,7 @@ public final class InMemorySpanExporter implements SpanExporter {
   public void shutdown() {
     synchronized (this) {
       finishedSpanDataItems.clear();
+      isStopped = true;
     }
   }
 }
