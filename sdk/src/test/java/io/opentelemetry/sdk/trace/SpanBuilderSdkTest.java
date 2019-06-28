@@ -145,8 +145,8 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void kind_default() {
-    RecordEventsReadableSpanImpl span =
-        (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
     try {
       assertThat(span.getKind()).isEqualTo(Kind.INTERNAL);
     } finally {
@@ -156,8 +156,8 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void kind() {
-    RecordEventsReadableSpanImpl span =
-        (RecordEventsReadableSpanImpl)
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
             tracer.spanBuilder(SPAN_NAME).setSpanKind(Kind.CONSUMER).startSpan();
     try {
       assertThat(span.getKind()).isEqualTo(Kind.CONSUMER);
@@ -179,8 +179,8 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void sampler_decisionAttributes() {
-    RecordEventsReadableSpanImpl span =
-        (RecordEventsReadableSpanImpl)
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
             tracer
                 .spanBuilder(SPAN_NAME)
                 .setSampler(
@@ -253,8 +253,8 @@ public class SpanBuilderSdkTest {
   public void noParent_override() {
     Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
     try {
-      RecordEventsReadableSpanImpl span =
-          (RecordEventsReadableSpanImpl)
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan)
               tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent).startSpan();
       try {
         io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
@@ -262,8 +262,8 @@ public class SpanBuilderSdkTest {
         assertThat(SpanId.fromBytes(spanProto.getParentSpanId().toByteArray(), 0))
             .isEqualTo(parent.getContext().getSpanId());
 
-        RecordEventsReadableSpanImpl span2 =
-            (RecordEventsReadableSpanImpl)
+        RecordEventsReadableSpan span2 =
+            (RecordEventsReadableSpan)
                 tracer
                     .spanBuilder(SPAN_NAME)
                     .setNoParent()
@@ -287,8 +287,8 @@ public class SpanBuilderSdkTest {
     Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
     try {
 
-      RecordEventsReadableSpanImpl span =
-          (RecordEventsReadableSpanImpl)
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan)
               tracer
                   .spanBuilder(SPAN_NAME)
                   .setNoParent()
@@ -312,8 +312,8 @@ public class SpanBuilderSdkTest {
     Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
     Scope scope = tracer.withSpan(parent);
     try {
-      RecordEventsReadableSpanImpl span =
-          (RecordEventsReadableSpanImpl) tracer.spanBuilder(SPAN_NAME).startSpan();
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
       try {
         io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());

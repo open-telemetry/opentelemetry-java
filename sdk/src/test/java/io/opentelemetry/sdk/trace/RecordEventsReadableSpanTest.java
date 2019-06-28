@@ -55,9 +55,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link RecordEventsReadableSpanImpl}. */
+/** Unit tests for {@link RecordEventsReadableSpan}. */
 @RunWith(JUnit4.class)
-public class RecordEventsReadableSpanImplTest {
+public class RecordEventsReadableSpanTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final String SPAN_NEW_NAME = "NewName";
   private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
@@ -94,7 +94,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void nothingChangedAfterEnd() {
-    RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     span.end();
     // Check that adding trace events or update fields after Span#end() does not throw any thrown
     // and are ignored.
@@ -114,14 +114,14 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void endSpanTwice_DoNotCrash() {
-    RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     span.end();
     span.end();
   }
 
   @Test
   public void toSpanProto_ActiveSpan() {
-    RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       spanDoWork(span, null);
       Span spanProto = span.toSpanProto();
@@ -145,7 +145,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void toSpanProto_EndedSpan() {
-    RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       spanDoWork(span, Status.CANCELLED);
     } finally {
@@ -170,7 +170,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void toSpanProto_RootSpan() {
-    RecordEventsReadableSpanImpl span = createTestRootSpan();
+    RecordEventsReadableSpan span = createTestRootSpan();
     try {
       spanDoWork(span, null);
     } finally {
@@ -182,7 +182,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void toSpanProto_WithInitialAttributes() {
-    RecordEventsReadableSpanImpl span = createTestSpanWithAttributes(attributes);
+    RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
     span.end();
     Span spanProto = span.toSpanProto();
     assertThat(spanProto.getAttributes().getAttributeMapCount()).isEqualTo(attributes.size());
@@ -190,7 +190,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void setStatus() {
-    RecordEventsReadableSpanImpl span = createTestSpan(Kind.CONSUMER);
+    RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
       assertThat(span.getStatus()).isEqualTo(Status.OK);
@@ -204,7 +204,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void getSpanKind() {
-    RecordEventsReadableSpanImpl span = createTestSpan(Kind.SERVER);
+    RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
     try {
       assertThat(span.getKind()).isEqualTo(Kind.SERVER);
     } finally {
@@ -214,7 +214,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void getAndUpdateSpanName() {
-    RecordEventsReadableSpanImpl span = createTestRootSpan();
+    RecordEventsReadableSpan span = createTestRootSpan();
     try {
       assertThat(span.getName()).isEqualTo(SPAN_NAME);
       span.updateName(SPAN_NEW_NAME);
@@ -226,7 +226,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void getLatencyNs_ActiveSpan() {
-    RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
       long elapsedTimeNanos1 =
@@ -243,7 +243,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void getLatencyNs_EndedSpan() {
-    RecordEventsReadableSpanImpl span = createTestSpan(Kind.INTERNAL);
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.end();
     long elapsedTimeNanos =
@@ -255,7 +255,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void setAttribute() {
-    RecordEventsReadableSpanImpl span = createTestRootSpan();
+    RecordEventsReadableSpan span = createTestRootSpan();
     try {
       span.setAttribute("StringKey", "StringVal");
       span.setAttribute("LongKey", 1000L);
@@ -270,7 +270,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void addEvent() {
-    RecordEventsReadableSpanImpl span = createTestRootSpan();
+    RecordEventsReadableSpan span = createTestRootSpan();
     try {
       span.addEvent("event1");
       span.addEvent("event2", attributes);
@@ -284,7 +284,7 @@ public class RecordEventsReadableSpanImplTest {
 
   @Test
   public void addLink() {
-    RecordEventsReadableSpanImpl span = createTestRootSpan();
+    RecordEventsReadableSpan span = createTestRootSpan();
     try {
       span.addLink(DefaultSpan.getInvalid().getContext());
       span.addLink(spanContext, attributes);
@@ -304,7 +304,7 @@ public class RecordEventsReadableSpanImplTest {
             .toBuilder()
             .setMaxNumberOfAttributes(maxNumberOfAttributes)
             .build();
-    RecordEventsReadableSpanImpl span = createTestSpan(traceConfig);
+    RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
         span.setAttribute("MyStringAttributeKey" + i, AttributeValue.longAttributeValue(i));
@@ -350,7 +350,7 @@ public class RecordEventsReadableSpanImplTest {
             .toBuilder()
             .setMaxNumberOfAttributes(maxNumberOfAttributes)
             .build();
-    RecordEventsReadableSpanImpl span = createTestSpan(traceConfig);
+    RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
         span.setAttribute("MyStringAttributeKey" + i, AttributeValue.longAttributeValue(i));
@@ -401,7 +401,7 @@ public class RecordEventsReadableSpanImplTest {
     final int maxNumberOfEvents = 8;
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setMaxNumberOfEvents(maxNumberOfEvents).build();
-    RecordEventsReadableSpanImpl span = createTestSpan(traceConfig);
+    RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfEvents; i++) {
         span.addEvent(event);
@@ -439,7 +439,7 @@ public class RecordEventsReadableSpanImplTest {
     final int maxNumberOfLinks = 8;
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(maxNumberOfLinks).build();
-    RecordEventsReadableSpanImpl span = createTestSpan(traceConfig);
+    RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
         span.addLink(link);
@@ -463,12 +463,12 @@ public class RecordEventsReadableSpanImplTest {
     }
   }
 
-  private RecordEventsReadableSpanImpl createTestSpanWithAttributes(
+  private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<String, AttributeValue> attributes) {
     return createTestSpan(Kind.INTERNAL, TraceConfig.getDefault(), null, attributes);
   }
 
-  private RecordEventsReadableSpanImpl createTestRootSpan() {
+  private RecordEventsReadableSpan createTestRootSpan() {
     return createTestSpan(
         Kind.INTERNAL,
         TraceConfig.getDefault(),
@@ -476,7 +476,7 @@ public class RecordEventsReadableSpanImplTest {
         Collections.<String, AttributeValue>emptyMap());
   }
 
-  private RecordEventsReadableSpanImpl createTestSpan(Kind kind) {
+  private RecordEventsReadableSpan createTestSpan(Kind kind) {
     return createTestSpan(
         kind,
         TraceConfig.getDefault(),
@@ -484,18 +484,18 @@ public class RecordEventsReadableSpanImplTest {
         Collections.<String, AttributeValue>emptyMap());
   }
 
-  private RecordEventsReadableSpanImpl createTestSpan(TraceConfig config) {
+  private RecordEventsReadableSpan createTestSpan(TraceConfig config) {
     return createTestSpan(
         Kind.INTERNAL, config, parentSpanId, Collections.<String, AttributeValue>emptyMap());
   }
 
-  private RecordEventsReadableSpanImpl createTestSpan(
+  private RecordEventsReadableSpan createTestSpan(
       Kind kind,
       TraceConfig config,
       @Nullable SpanId parentSpanId,
       Map<String, AttributeValue> attributes) {
-    RecordEventsReadableSpanImpl span =
-        RecordEventsReadableSpanImpl.startSpan(
+    RecordEventsReadableSpan span =
+        RecordEventsReadableSpan.startSpan(
             spanContext,
             SPAN_NAME,
             kind,
@@ -510,7 +510,7 @@ public class RecordEventsReadableSpanImplTest {
     return span;
   }
 
-  private void spanDoWork(RecordEventsReadableSpanImpl span, @Nullable Status status) {
+  private void spanDoWork(RecordEventsReadableSpan span, @Nullable Status status) {
     span.setAttribute(
         "MySingleStringAttributeKey",
         AttributeValue.stringAttributeValue("MySingleStringAttributeValue"));

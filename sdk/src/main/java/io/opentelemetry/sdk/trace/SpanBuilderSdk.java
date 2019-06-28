@@ -187,7 +187,7 @@ class SpanBuilderSdk implements Span.Builder {
       return DefaultSpan.create(spanContext);
     }
     TimestampConverter timestampConverter = getTimestampConverter(parent);
-    return RecordEventsReadableSpanImpl.startSpan(
+    return RecordEventsReadableSpan.startSpan(
         spanContext,
         spanName,
         spanKind,
@@ -203,8 +203,8 @@ class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static TimestampConverter getTimestampConverter(Span parent) {
     TimestampConverter timestampConverter = null;
-    if (parent instanceof RecordEventsReadableSpanImpl) {
-      RecordEventsReadableSpanImpl parentRecordEventsSpan = (RecordEventsReadableSpanImpl) parent;
+    if (parent instanceof RecordEventsReadableSpan) {
+      RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
       timestampConverter = parentRecordEventsSpan.getTimestampConverter();
       parentRecordEventsSpan.addChild();
     }
