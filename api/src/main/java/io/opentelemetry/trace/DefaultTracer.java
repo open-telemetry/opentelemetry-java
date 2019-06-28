@@ -19,7 +19,7 @@ package io.opentelemetry.trace;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.context.propagation.TraceContextFormat;
+import io.opentelemetry.context.propagation.HttpTraceContext;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.Map;
@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
 public final class DefaultTracer implements Tracer {
   private static final DefaultTracer INSTANCE = new DefaultTracer();
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();
-  private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new TraceContextFormat();
+  private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
 
   /**
    * Returns a {@code Tracer} singleton that is the default implementations for {@link Tracer}.

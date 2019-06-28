@@ -19,7 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.TraceContextFormat;
+import io.opentelemetry.context.propagation.HttpTraceContext;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -74,7 +74,7 @@ public class DefaultTracerTest {
 
   @Test
   public void defaultHttpTextFormat() {
-    assertThat(defaultTracer.getHttpTextFormat()).isInstanceOf(TraceContextFormat.class);
+    assertThat(defaultTracer.getHttpTextFormat()).isInstanceOf(HttpTraceContext.class);
   }
 
   @Test

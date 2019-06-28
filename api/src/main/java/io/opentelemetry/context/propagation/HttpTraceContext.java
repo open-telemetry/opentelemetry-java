@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  * Implementation of the TraceContext propagation protocol. See <a
  * href=https://github.com/w3c/distributed-tracing>w3c/distributed-tracing</a>.
  */
-public class TraceContextFormat implements HttpTextFormat<SpanContext> {
+public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
   static final String TRACEPARENT = "traceparent";
   static final String TRACESTATE = "tracestate";
