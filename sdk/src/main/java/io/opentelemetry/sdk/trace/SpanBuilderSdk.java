@@ -67,7 +67,7 @@ class SpanBuilderSdk implements Span.Builder {
   @Nullable private List<Link> links;
   private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
-  private boolean recordEvents = true;
+  private boolean recordEvents = false;
 
   SpanBuilderSdk(
       String spanName,
@@ -183,7 +183,7 @@ class SpanBuilderSdk implements Span.Builder {
             samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
             tracestate);
 
-    if (!recordEvents) {
+    if (!recordEvents && !samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
     }
     TimestampConverter timestampConverter = getTimestampConverter(parent);

@@ -32,6 +32,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.util.Samplers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -57,8 +58,7 @@ public class TracerSdk implements Tracer {
   @GuardedBy("this")
   private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
 
-  @GuardedBy("this")
-  private boolean isStopped = false;
+  private volatile boolean isStopped = false;
 
   @Override
   public Span getCurrentSpan() {
@@ -75,10 +75,8 @@ public class TracerSdk implements Tracer {
     SpanBuilderSdk builderSdk =
         new SpanBuilderSdk(
             spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock);
-    synchronized (this) {
-      if (isStopped) {
-        builderSdk.setRecordEvents(false);
-      }
+    if (isStopped) {
+      builderSdk.setRecordEvents(false).setSampler(Samplers.neverSample());
     }
     return builderSdk;
   }
@@ -108,11 +106,11 @@ public class TracerSdk implements Tracer {
    * <p>After this is called all the newly created {@code Span}s will be no-op.
    */
   public void shutdown() {
+    if (isStopped) {
+      logger.log(Level.WARNING, "Calling shutdown() multiple times.");
+      return;
+    }
     synchronized (this) {
-      if (isStopped) {
-        logger.log(Level.WARNING, "Calling shutdown() multiple times.");
-        return;
-      }
       for (SpanProcessor spanProcessor : registeredSpanProcessors) {
         spanProcessor.shutdown();
       }
@@ -123,9 +121,7 @@ public class TracerSdk implements Tracer {
   // Restarts all the activity for this Tracer. Only used for unit testing.
   @VisibleForTesting
   void unsafeRestart() {
-    synchronized (this) {
-      isStopped = false;
-    }
+    isStopped = false;
   }
 
   /**
