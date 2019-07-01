@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 import io.opentelemetry.proto.trace.v1.Span;
@@ -27,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -72,5 +74,17 @@ public class MultiSpanExporterTest {
     multiSpanExporter.shutdown();
     verify(spanExporter1).shutdown();
     verify(spanExporter2).shutdown();
+  }
+
+  @Test
+  public void twoSpanExporter_FirstThrows() {
+    doThrow(new IllegalArgumentException("No export for you."))
+        .when(spanExporter1)
+        .export(ArgumentMatchers.<Span>anyList());
+    SpanExporter multiSpanExporter =
+        MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
+    multiSpanExporter.export(SPAN_LIST);
+    verify(spanExporter1).export(same(SPAN_LIST));
+    verify(spanExporter2).export(same(SPAN_LIST));
   }
 }
