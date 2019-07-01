@@ -31,14 +31,14 @@ public final class ContextUtilsTest {
   public void testGetCurrentDistributedContex_DefaultContext() {
     DistributedContext distContext = ContextUtils.getValue(Context.current());
     assertThat(distContext).isNotNull();
-    assertThat(distContext.getIterator().hasNext()).isFalse();
+    assertThat(distContext.getEntries()).isEmpty();
   }
 
   @Test
   public void testGetCurrentDistributedContex_DefaultContext_WithoutExplicitContext() {
     DistributedContext distContext = ContextUtils.getValue();
     assertThat(distContext).isNotNull();
-    assertThat(distContext.getIterator().hasNext()).isFalse();
+    assertThat(distContext.getEntries()).isEmpty();
   }
 
   @Test
@@ -47,7 +47,7 @@ public final class ContextUtilsTest {
     try {
       DistributedContext distContext = ContextUtils.getValue(Context.current());
       assertThat(distContext).isNotNull();
-      assertThat(distContext.getIterator().hasNext()).isFalse();
+      assertThat(distContext.getEntries()).isEmpty();
     } finally {
       Context.current().detach(orig);
     }
@@ -59,7 +59,7 @@ public final class ContextUtilsTest {
     try {
       DistributedContext distContext = ContextUtils.getValue();
       assertThat(distContext).isNotNull();
-      assertThat(distContext.getIterator().hasNext()).isFalse();
+      assertThat(distContext.getEntries()).isEmpty();
     } finally {
       Context.current().detach(orig);
     }

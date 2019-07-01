@@ -20,6 +20,7 @@ import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.trace.propagation.HttpTraceContext;
 
 /**
  * Tracer is a simple, interface for {@link Span} creation and in-process context interaction.
@@ -215,8 +216,8 @@ public interface Tracer {
    * Returns the {@link HttpTextFormat} for this tracer implementation.
    *
    * <p>If no tracer implementation is provided, this defaults to the W3C Trace Context HTTP text
-   * format ({@link io.opentelemetry.context.propagation.TraceContextFormat}). For more details see
-   * <a href="https://w3c.github.io/trace-context/">W3C Trace Context</a>.
+   * format ({@link HttpTraceContext}). For more details see <a
+   * href="https://w3c.github.io/trace-context/">W3C Trace Context</a>.
    *
    * <p>Example of usage on the client:
    *

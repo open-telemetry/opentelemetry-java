@@ -43,6 +43,7 @@ public interface SpanProcessor {
    *
    * @param span the {@code ReadableSpan} that just ended.
    */
+  // TODO: Consider checking whether the given span is processed with onStartSync().
   void onEndSync(ReadableSpan span);
 
   /** Called when {@link TracerSdk#shutdown()} is called. */

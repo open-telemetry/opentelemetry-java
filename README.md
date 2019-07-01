@@ -1,6 +1,8 @@
 # OpenTelemetry
 [![Gitter chat][gitter-image]][gitter-url]
 [![Build Status][travis-image]][travis-url]
+[![Coverage Status][codecov-image]][codecov-url]
+[![Maven Central][maven-image]][maven-url]
 
 OpenTelemetry is a working name of a combined OpenCensus and OpenTracing
 project.
@@ -88,3 +90,7 @@ managed better. We are open to feedback and suggestions from all of you!
 [travis-url]: https://travis-ci.org/open-telemetry/opentelemetry-java 
 [gitter-image]: https://badges.gitter.im/open-telemetry/opentelemetry-java.svg 
 [gitter-url]: https://gitter.im/open-telemetry/opentelemetry-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+[codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/
+[maven-image]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api/badge.svg
+[maven-url]: https://maven-badges.herokuapp.com/maven-central/io.opentelemetry/opentelemetry-api

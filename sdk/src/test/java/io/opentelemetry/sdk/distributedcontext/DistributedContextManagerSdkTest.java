@@ -53,7 +53,7 @@ public class DistributedContextManagerSdkTest {
     try {
       DistributedContext distContext = contextManager.getCurrentContext();
       assertThat(distContext).isNotNull();
-      assertThat(distContext.getIterator().hasNext()).isFalse();
+      assertThat(distContext.getEntries()).isEmpty();
     } finally {
       Context.current().detach(orig);
     }

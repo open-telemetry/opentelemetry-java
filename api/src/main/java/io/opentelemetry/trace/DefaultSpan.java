@@ -46,13 +46,17 @@ public final class DefaultSpan implements Span {
   }
 
   /**
-   * Creates an instance of this class.
+   * Creates an instance of this class with the {@link SpanContext}.
    *
-   * <p>Each instance will have unique and valid {@link TraceId} and {@link SpanId}.
-   *
+   * @param spanContext the {@code SpanContext}.
    * @return a {@link DefaultSpan}.
+   * @since 0.1.0
    */
-  static DefaultSpan create() {
+  public static DefaultSpan create(SpanContext spanContext) {
+    return new DefaultSpan(spanContext);
+  }
+
+  static DefaultSpan createRandom() {
     return new DefaultSpan(
         SpanContext.create(
             TraceId.generateRandomId(random),

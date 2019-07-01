@@ -20,15 +20,26 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.TraceContextFormat;
+import io.opentelemetry.resources.Resource;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanData;
+import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.propagation.BinaryTraceContext;
+import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.util.Samplers;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link TracerSdk}. */
@@ -36,11 +47,13 @@ import org.mockito.MockitoAnnotations;
 public class TracerSdkTest {
   private static final String SPAN_NAME = "span_name";
   @Mock private Span span;
+  @Mock private SpanProcessor spanProcessor;
   private final TracerSdk tracer = new TracerSdk();
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
+    tracer.addSpanProcessor(spanProcessor);
   }
 
   @Test
@@ -55,7 +68,12 @@ public class TracerSdkTest {
 
   @Test
   public void defaultHttpTextFormat() {
-    assertThat(tracer.getHttpTextFormat()).isInstanceOf(TraceContextFormat.class);
+    assertThat(tracer.getHttpTextFormat()).isInstanceOf(HttpTraceContext.class);
+  }
+
+  @Test
+  public void defaultBinaryFormat() {
+    assertThat(tracer.getBinaryFormat()).isInstanceOf(BinaryTraceContext.class);
   }
 
   @Test
@@ -87,5 +105,72 @@ public class TracerSdkTest {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+  }
+
+  @Test
+  public void recordSpanData() {
+    SpanData spanData =
+        SpanData.create(
+            DefaultSpan.getInvalid().getContext(),
+            null,
+            Resource.getEmpty(),
+            SPAN_NAME,
+            Kind.CLIENT,
+            SpanData.Timestamp.create(1, 0),
+            Collections.<String, AttributeValue>emptyMap(),
+            Collections.<SpanData.TimedEvent>emptyList(),
+            Collections.<Link>emptyList(),
+            Status.OK,
+            SpanData.Timestamp.create(2, 0));
+    tracer.recordSpanData(spanData);
+    Mockito.verify(spanProcessor, Mockito.times(1)).onEndSync(Mockito.any(ReadableSpanData.class));
+  }
+
+  @Test
+  public void updateActiveTraceConfig() {
+    assertThat(tracer.getActiveTraceConfig()).isEqualTo(TraceConfig.getDefault());
+    TraceConfig newConfig =
+        TraceConfig.getDefault().toBuilder().setSampler(Samplers.neverSample()).build();
+    tracer.updateActiveTraceConfig(newConfig);
+    assertThat(tracer.getActiveTraceConfig()).isEqualTo(newConfig);
+  }
+
+  @Test
+  public void shutdown() {
+    try {
+      tracer.shutdown();
+      Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
+    } finally {
+      tracer.unsafeRestart();
+    }
+  }
+
+  @Test
+  public void shutdownTwice_OnlyFlushSpanProcessorOnce() {
+    try {
+      tracer.shutdown();
+      Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
+      tracer.shutdown(); // the second call will be ignored
+      Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
+    } finally {
+      tracer.unsafeRestart();
+    }
+  }
+
+  @Test
+  public void returnNoopSpanAfterShutdown() {
+    try {
+      tracer.shutdown();
+      Span span =
+          tracer
+              .spanBuilder("span")
+              .setRecordEvents(true)
+              .setSampler(Samplers.alwaysSample())
+              .startSpan();
+      assertThat(span).isInstanceOf(DefaultSpan.class);
+      span.end();
+    } finally {
+      tracer.unsafeRestart();
+    }
   }
 }

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context.propagation;
+package io.opentelemetry.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkArgument;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
+import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
@@ -33,7 +34,7 @@ import java.util.regex.Pattern;
  * Implementation of the TraceContext propagation protocol. See <a
  * href=https://github.com/w3c/distributed-tracing>w3c/distributed-tracing</a>.
  */
-public class TraceContextFormat implements HttpTextFormat<SpanContext> {
+public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
   static final String TRACEPARENT = "traceparent";
   static final String TRACESTATE = "tracestate";

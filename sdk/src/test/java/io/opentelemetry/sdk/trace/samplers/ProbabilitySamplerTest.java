@@ -113,6 +113,18 @@ public class ProbabilitySamplerTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
+  public void probabilitySampler_AlwaysSample() {
+    ProbabilitySampler sampler = ProbabilitySampler.create(1);
+    assertThat(sampler.getIdUpperBound()).isEqualTo(Long.MAX_VALUE);
+  }
+
+  @Test
+  public void probabilitySampler_NeverSample() {
+    ProbabilitySampler sampler = ProbabilitySampler.create(0);
+    assertThat(sampler.getIdUpperBound()).isEqualTo(Long.MIN_VALUE);
+  }
+
+  @Test
   public void probabilitySampler_outOfRangeHighProbability() {
     thrown.expect(IllegalArgumentException.class);
     ProbabilitySampler.create(1.01);

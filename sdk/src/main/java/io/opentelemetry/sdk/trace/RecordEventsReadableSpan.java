@@ -20,7 +20,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import com.google.protobuf.UInt32Value;
-import io.opentelemetry.proto.trace.v1.TruncatableString;
 import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
@@ -44,7 +43,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
-final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
+final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
   // Contains the identifiers associated with this Span.
@@ -118,7 +117,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    * @return a new and started span.
    */
   @VisibleForTesting
-  static RecordEventsReadableSpanImpl startSpan(
+  static RecordEventsReadableSpan startSpan(
       SpanContext context,
       String name,
       Kind kind,
@@ -127,9 +126,10 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
-      Resource resource) {
-    RecordEventsReadableSpanImpl span =
-        new RecordEventsReadableSpanImpl(
+      Resource resource,
+      Map<String, AttributeValue> attributes) {
+    RecordEventsReadableSpan span =
+        new RecordEventsReadableSpan(
             context,
             name,
             kind,
@@ -138,7 +138,8 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
             spanProcessor,
             timestampConverter,
             clock,
-            resource);
+            resource,
+            attributes);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     spanProcessor.onStartSync(span);
@@ -171,7 +172,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
               .setSpanId(TraceProtoUtils.toProtoSpanId(context.getSpanId()))
               .setTracestate(TraceProtoUtils.toProtoTracestate(context.getTracestate()))
               .setResource(TraceProtoUtils.toProtoResource(resource))
-              .setName(TruncatableString.newBuilder().setValue(name).build())
+              .setName(name)
               .setKind(TraceProtoUtils.toProtoKind(kind))
               .setStartTime(timestampConverter.convertNanoTime(startNanoTime))
               .setEndTime(timestampConverter.convertNanoTime(getEndNanoTime()))
@@ -217,7 +218,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
    *
    * @return the end nano time.
    */
-  long getEndNanoTime() {
+  private long getEndNanoTime() {
     synchronized (this) {
       return getEndNanoTimeInternal();
     }
@@ -415,7 +416,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
   @GuardedBy("this")
   private EvictingQueue<TimedEvent> getInitializedEvents() {
     if (events == null) {
-      events = EvictingQueue.<TimedEvent>create((int) traceConfig.getMaxNumberOfEvents());
+      events = EvictingQueue.create((int) traceConfig.getMaxNumberOfEvents());
     }
     return events;
   }
@@ -423,7 +424,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
   @GuardedBy("this")
   private EvictingQueue<Link> getInitializedLinks() {
     if (links == null) {
-      links = EvictingQueue.<Link>create((int) traceConfig.getMaxNumberOfLinks());
+      links = EvictingQueue.create((int) traceConfig.getMaxNumberOfLinks());
     }
     return links;
   }
@@ -469,7 +470,7 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
     }
   }
 
-  private RecordEventsReadableSpanImpl(
+  private RecordEventsReadableSpan(
       SpanContext context,
       String name,
       Kind kind,
@@ -478,7 +479,8 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
-      Resource resource) {
+      Resource resource,
+      Map<String, AttributeValue> attributes) {
     this.context = context;
     this.parentSpanId = parentSpanId;
     this.name = name;
@@ -492,6 +494,9 @@ final class RecordEventsReadableSpanImpl implements ReadableSpan, Span {
     this.timestampConverter =
         timestampConverter != null ? timestampConverter : TimestampConverter.now(clock);
     startNanoTime = clock.nowNanos();
+    if (!attributes.isEmpty()) {
+      getInitializedAttributes().putAll(attributes);
+    }
   }
 
   @SuppressWarnings("NoFinalizer")

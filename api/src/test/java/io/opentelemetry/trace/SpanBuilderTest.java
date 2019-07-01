@@ -37,8 +37,8 @@ public class SpanBuilderTest {
     spanBuilder.setRecordEvents(true);
     spanBuilder.setSampler(Samplers.alwaysSample());
     spanBuilder.setSpanKind(Kind.SERVER);
-    spanBuilder.setParent(DefaultSpan.create());
-    spanBuilder.setParent(DefaultSpan.create().getContext());
+    spanBuilder.setParent(DefaultSpan.createRandom());
+    spanBuilder.setParent(DefaultSpan.createRandom().getContext());
     spanBuilder.setNoParent();
     assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
   }
