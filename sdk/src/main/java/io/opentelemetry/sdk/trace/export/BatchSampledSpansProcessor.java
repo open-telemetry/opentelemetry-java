@@ -88,10 +88,13 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
 
   /** Builder class for {@link BatchSampledSpansProcessor}. */
   public static final class Builder {
+    private static final long SCHEDULE_DELAY_MILLIS = 5000;
+    private static final int MAX_QUEUE_SIZE = 2048;
+    private static final int MAX_EXPORT_BATCH_SIZE = 512;
     private final SpanExporter spanExporter;
-    private long scheduleDelayMillis = 5000;
-    private int maxQueueSize = 2048;
-    private int maxExportBatchSize = 512;
+    private long scheduleDelayMillis = SCHEDULE_DELAY_MILLIS;
+    private int maxQueueSize = MAX_QUEUE_SIZE;
+    private int maxExportBatchSize = MAX_EXPORT_BATCH_SIZE;
 
     private Builder(SpanExporter spanExporter) {
       this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
@@ -102,6 +105,8 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
     /**
      * Sets the delay interval between two consecutive exports. The actual interval may be shorter
      * if the batch size is getting larger than {@code maxQueuedSpans / 2}.
+     *
+     * <p>Default value is {@code 5000}ms.
      *
      * @param scheduleDelayMillis the delay interval between two consecutive exports.
      * @return this.
@@ -117,6 +122,8 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
      * <p>See the BatchSampledSpansProcessor class description for a high-level design description
      * of this class.
      *
+     * <p>Default value is {@code 2048}.
+     *
      * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
      *     dropping.
      * @return this.
@@ -129,6 +136,8 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
     /**
      * Sets the maximum batch size for every export. This must be smaller or equal to {@code
      * maxQueuedSpans}.
+     *
+     * <p>Default value is {@code 512}.
      *
      * @param maxExportBatchSize the maximum batch size for every export.
      * @return this.
