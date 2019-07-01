@@ -36,7 +36,6 @@ import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -168,14 +167,7 @@ class SpanBuilderSdk implements Span.Builder {
       tracestate = parentContext.getTracestate();
     }
     Decision samplingDecision =
-        sampler.shouldSample(
-            parentContext,
-            false,
-            traceId,
-            spanId,
-            spanName,
-            // TODO links in span builder contain only span context
-            Collections.<Span>emptyList());
+        sampler.shouldSample(parentContext, false, traceId, spanId, spanName, links);
     SpanContext spanContext =
         SpanContext.create(
             traceId,
