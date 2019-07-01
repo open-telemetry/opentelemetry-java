@@ -36,7 +36,6 @@ import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -168,8 +167,7 @@ class SpanBuilderSdk implements Span.Builder {
       tracestate = parentContext.getTracestate();
     }
     Decision samplingDecision =
-        sampler.shouldSample(
-            parentContext, false, traceId, spanId, spanName, getSpanContextsFromLinks(links));
+        sampler.shouldSample(parentContext, false, traceId, spanId, spanName, links);
     SpanContext spanContext =
         SpanContext.create(
             traceId,
@@ -192,17 +190,6 @@ class SpanBuilderSdk implements Span.Builder {
         clock,
         resource,
         samplingDecision.attributes());
-  }
-
-  private static List<SpanContext> getSpanContextsFromLinks(List<Link> links) {
-    if (links == null || links.isEmpty()) {
-      return Collections.emptyList();
-    }
-    List<SpanContext> spanContexts = new ArrayList<>(links.size());
-    for (Link link : links) {
-      spanContexts.add(link.getContext());
-    }
-    return spanContexts;
   }
 
   @Nullable

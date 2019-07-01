@@ -202,7 +202,7 @@ public class SpanBuilderSdkTest {
                           TraceId traceId,
                           SpanId spanId,
                           String name,
-                          List<SpanContext> parentLinks) {
+                          List<Link> parentLinks) {
                         return new Decision() {
                           @Override
                           public boolean isSampled() {

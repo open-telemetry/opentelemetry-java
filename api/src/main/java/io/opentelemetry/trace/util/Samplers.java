@@ -17,6 +17,7 @@
 package io.opentelemetry.trace.util;
 
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.Span;
@@ -75,7 +76,7 @@ public final class Samplers {
         TraceId traceId,
         SpanId spanId,
         String name,
-        List<SpanContext> parentLinks) {
+        List<Link> parentLinks) {
       return ALWAYS_ON_DECISION;
     }
 
@@ -102,7 +103,7 @@ public final class Samplers {
         TraceId traceId,
         SpanId spanId,
         String name,
-        List<SpanContext> parentLinks) {
+        List<Link> parentLinks) {
       return ALWAYS_OFF_DECISION;
     }
 

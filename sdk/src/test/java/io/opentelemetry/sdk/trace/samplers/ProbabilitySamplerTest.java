@@ -20,9 +20,11 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.trace.TestUtils.generateRandomSpanId;
 import static io.opentelemetry.sdk.trace.TestUtils.generateRandomTraceId;
 
+import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
@@ -50,6 +52,7 @@ public class ProbabilitySamplerTest {
           traceId, parentSpanId, TraceOptions.builder().setIsSampled(true).build(), tracestate);
   private final SpanContext notSampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceOptions.getDefault(), tracestate);
+  private final Link sampledParentLink = SpanData.Link.create(sampledSpanContext);
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -90,7 +93,7 @@ public class ProbabilitySamplerTest {
 
   // Applies the given sampler to NUM_SAMPLE_TRIES random traceId/spanId pairs.
   private static void assertSamplerSamplesWithProbability(
-      Sampler sampler, SpanContext parent, List<SpanContext> parentLinks, double probability) {
+      Sampler sampler, SpanContext parent, List<Link> parentLinks, double probability) {
     int count = 0; // Count of spans with sampling enabled
     for (int i = 0; i < NUM_SAMPLE_TRIES; i++) {
       if (sampler
@@ -115,39 +118,39 @@ public class ProbabilitySamplerTest {
   public void probabilitySampler_DifferentProbabilities_NotSampledParent() {
     final Sampler fiftyPercentSample = ProbabilitySampler.create(0.5);
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample, notSampledSpanContext, Collections.<SpanContext>emptyList(), 0.5);
+        fiftyPercentSample, notSampledSpanContext, Collections.<Link>emptyList(), 0.5);
     final Sampler twentyPercentSample = ProbabilitySampler.create(0.2);
     assertSamplerSamplesWithProbability(
-        twentyPercentSample, notSampledSpanContext, Collections.<SpanContext>emptyList(), 0.2);
+        twentyPercentSample, notSampledSpanContext, Collections.<Link>emptyList(), 0.2);
     final Sampler twoThirdsSample = ProbabilitySampler.create(2.0 / 3.0);
     assertSamplerSamplesWithProbability(
-        twoThirdsSample, notSampledSpanContext, Collections.<SpanContext>emptyList(), 2.0 / 3.0);
+        twoThirdsSample, notSampledSpanContext, Collections.<Link>emptyList(), 2.0 / 3.0);
   }
 
   @Test
   public void probabilitySampler_DifferentProbabilities_SampledParent() {
     final Sampler fiftyPercentSample = ProbabilitySampler.create(0.5);
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample, sampledSpanContext, Collections.<SpanContext>emptyList(), 1.0);
+        fiftyPercentSample, sampledSpanContext, Collections.<Link>emptyList(), 1.0);
     final Sampler twentyPercentSample = ProbabilitySampler.create(0.2);
     assertSamplerSamplesWithProbability(
-        twentyPercentSample, sampledSpanContext, Collections.<SpanContext>emptyList(), 1.0);
+        twentyPercentSample, sampledSpanContext, Collections.<Link>emptyList(), 1.0);
     final Sampler twoThirdsSample = ProbabilitySampler.create(2.0 / 3.0);
     assertSamplerSamplesWithProbability(
-        twoThirdsSample, sampledSpanContext, Collections.<SpanContext>emptyList(), 1.0);
+        twoThirdsSample, sampledSpanContext, Collections.<Link>emptyList(), 1.0);
   }
 
   @Test
   public void probabilitySampler_DifferentProbabilities_SampledParentLink() {
     final Sampler fiftyPercentSample = ProbabilitySampler.create(0.5);
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample, notSampledSpanContext, Arrays.asList(sampledSpanContext), 1.0);
+        fiftyPercentSample, notSampledSpanContext, Arrays.asList(sampledParentLink), 1.0);
     final Sampler twentyPercentSample = ProbabilitySampler.create(0.2);
     assertSamplerSamplesWithProbability(
-        twentyPercentSample, notSampledSpanContext, Arrays.asList(sampledSpanContext), 1.0);
+        twentyPercentSample, notSampledSpanContext, Arrays.asList(sampledParentLink), 1.0);
     final Sampler twoThirdsSample = ProbabilitySampler.create(2.0 / 3.0);
     assertSamplerSamplesWithProbability(
-        twoThirdsSample, notSampledSpanContext, Arrays.asList(sampledSpanContext), 1.0);
+        twoThirdsSample, notSampledSpanContext, Arrays.asList(sampledParentLink), 1.0);
   }
 
   @Test
@@ -183,7 +186,7 @@ public class ProbabilitySamplerTest {
             notSampledtraceId,
             generateRandomSpanId(),
             SPAN_NAME,
-            Collections.<SpanContext>emptyList());
+            Collections.<Link>emptyList());
     assertThat(decision1.isSampled()).isFalse();
     assertThat(decision1.attributes()).isEmpty();
     // This traceId will be sampled by the ProbabilitySampler because the first 8 bytes as long
@@ -216,7 +219,7 @@ public class ProbabilitySamplerTest {
             sampledtraceId,
             generateRandomSpanId(),
             SPAN_NAME,
-            Collections.<SpanContext>emptyList());
+            Collections.<Link>emptyList());
     assertThat(decision2.isSampled()).isTrue();
     assertThat(decision2.attributes()).isEmpty();
   }
