@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * Implementation of the {@link SpanProcessor} that batches spans exported by the SDK the pushes
+ * Implementation of the {@link SpanProcessor} that batches spans exported by the SDK then pushes
  * them to the exporter pipeline.
  *
  * <p>All spans reported by the SDK implementation are first added to a synchronized queue (with a
