@@ -311,7 +311,6 @@ public class BatchSampledSpansProcessorTest {
      * @param numberOfSpans the number of minimum spans to be collected.
      * @return the list of exported {@link Span} objects, otherwise {@code null} if the current
      *     thread is interrupted.
-     * @since 0.9
      */
     @Nullable
     private List<Span> waitForExport(int numberOfSpans) {
