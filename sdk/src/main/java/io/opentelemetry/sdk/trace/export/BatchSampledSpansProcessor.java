@@ -143,6 +143,7 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
      * @return this.
      */
     public Builder setMaxExportBatchSize(int maxExportBatchSize) {
+      Utils.checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
       this.maxExportBatchSize = maxExportBatchSize;
       return this;
     }
@@ -258,24 +259,20 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
     private void exportBatches(ArrayList<ReadableSpan> spanList) {
       ArrayList<Span> spansProtoList = new ArrayList<>(maxExportBatchSize);
       // TODO: Record a counter for pushed spans.
-      for (int i = 0; i < spanList.size(); i++) {
-        spansProtoList.add(spanList.get(i).toSpanProto());
-        // Remove the reference to the RecordEventsSpanImpl to allow GC to free the memory.
-        spanList.set(i, null);
-        if (spansProtoList.size() == maxExportBatchSize) {
-          // One full batch, export it now. Wrap the list with unmodifiableList to ensure exporter
-          // does not change the list.
-          onBatchExport(Collections.unmodifiableList(spansProtoList));
-          // Cannot clear because the exporter may still have a reference to this list (e.g. async
-          // scheduled work), so just create a new list.
-          spansProtoList = new ArrayList<>(maxExportBatchSize);
+      for (int i = 0; i < spanList.size(); ) {
+        int batchSizeLimit = Math.min(i + maxExportBatchSize, spanList.size());
+        for (int j = i; j < batchSizeLimit; j++) {
+          spansProtoList.add(spanList.get(j).toSpanProto());
+          // Remove the reference to the RecordEventsSpanImpl to allow GC to free the memory.
+          spanList.set(j, null);
         }
-      }
-      // Last incomplete batch, send this as well.
-      if (!spansProtoList.isEmpty()) {
-        // Wrap the list with unmodifiableList to ensure exporter does not change the list.
+        // One full batch, export it now. Wrap the list with unmodifiableList to ensure exporter
+        // does not change the list.
         onBatchExport(Collections.unmodifiableList(spansProtoList));
-        spansProtoList.clear();
+        // Cannot clear because the exporter may still have a reference to this list (e.g. async
+        // scheduled work), so just create a new list.
+        spansProtoList = new ArrayList<>(maxExportBatchSize);
+        i = batchSizeLimit;
       }
     }
 
