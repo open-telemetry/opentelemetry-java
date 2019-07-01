@@ -302,7 +302,6 @@ public class BatchSampledSpansProcessorTest {
     private final Object monitor = new Object();
 
     @GuardedBy("monitor")
-    @SuppressWarnings("JdkObsolete")
     private final List<Span> spanDataList = new ArrayList<>();
 
     /**
