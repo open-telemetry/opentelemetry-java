@@ -32,8 +32,19 @@ public interface Measure {
    * @since 0.1.0
    */
   enum Type {
-    LONG,
-    DOUBLE
+    /**
+     * Double typed {@code Measure} or {@code Measurement}.
+     *
+     * @since 0.1.0
+     */
+    DOUBLE,
+
+    /**
+     * Long typed {@code Measure} or {@code Measurement}.
+     *
+     * @since 0.1.0
+     */
+    LONG
   }
 
   /**
