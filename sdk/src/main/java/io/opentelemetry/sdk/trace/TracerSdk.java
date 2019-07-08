@@ -81,7 +81,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public void recordSpanData(SpanData spanData) {
-    activeSpanProcessor.onEndSync(ReadableSpanData.create(spanData));
+    activeSpanProcessor.onEnd(ReadableSpanData.create(spanData));
   }
 
   @Override

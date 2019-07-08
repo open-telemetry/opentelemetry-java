@@ -28,16 +28,16 @@ final class MultiSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStartSync(ReadableSpan readableSpan) {
+  public void onStart(ReadableSpan readableSpan) {
     for (SpanProcessor spanProcessor : spanProcessors) {
-      spanProcessor.onStartSync(readableSpan);
+      spanProcessor.onStart(readableSpan);
     }
   }
 
   @Override
-  public void onEndSync(ReadableSpan readableSpan) {
+  public void onEnd(ReadableSpan readableSpan) {
     for (SpanProcessor spanProcessor : spanProcessors) {
-      spanProcessor.onEndSync(readableSpan);
+      spanProcessor.onEnd(readableSpan);
     }
   }
 
