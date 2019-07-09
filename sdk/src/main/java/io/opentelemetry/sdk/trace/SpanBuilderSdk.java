@@ -162,6 +162,7 @@ class SpanBuilderSdk implements Span.Builder {
       // New root span.
       traceId = generateRandomTraceId(random);
       // This is a root span so no remote or local parent.
+      parentContext = null;
     } else {
       // New child span.
       traceId = parentContext.getTraceId();

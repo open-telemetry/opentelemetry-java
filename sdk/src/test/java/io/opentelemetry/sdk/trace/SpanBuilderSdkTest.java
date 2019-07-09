@@ -327,4 +327,20 @@ public class SpanBuilderSdkTest {
       parent.end();
     }
   }
+
+  @Test
+  public void parent_invalidContext() {
+    Span parent = DefaultSpan.getInvalid();
+
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
+            tracer.spanBuilder(SPAN_NAME).setParent(parent.getContext()).startSpan();
+    try {
+      io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
+      assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
+      assertThat(spanProto.getParentSpanId().isEmpty()).isTrue();
+    } finally {
+      span.end();
+    }
+  }
 }
