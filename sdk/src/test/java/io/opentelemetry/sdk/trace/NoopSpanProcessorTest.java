@@ -36,8 +36,8 @@ public class NoopSpanProcessorTest {
   @Test
   public void noCrash() {
     SpanProcessor noopSpanProcessor = NoopSpanProcessor.getInstance();
-    noopSpanProcessor.onStartSync(readableSpan);
-    noopSpanProcessor.onEndSync(readableSpan);
+    noopSpanProcessor.onStart(readableSpan);
+    noopSpanProcessor.onEnd(readableSpan);
     noopSpanProcessor.shutdown();
   }
 }

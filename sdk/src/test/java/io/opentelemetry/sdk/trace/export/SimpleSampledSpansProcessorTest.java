@@ -66,7 +66,7 @@ public class SimpleSampledSpansProcessorTest {
 
   @Test
   public void onStartSync() {
-    simpleSampledSpansProcessor.onStartSync(readableSpan);
+    simpleSampledSpansProcessor.onStart(readableSpan);
     verifyZeroInteractions(spanExporter);
   }
 
@@ -76,7 +76,7 @@ public class SimpleSampledSpansProcessorTest {
     when(readableSpan.toSpanProto())
         .thenReturn(Span.getDefaultInstance())
         .thenThrow(new RuntimeException());
-    simpleSampledSpansProcessor.onEndSync(readableSpan);
+    simpleSampledSpansProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(Span.getDefaultInstance()));
   }
 
@@ -86,7 +86,7 @@ public class SimpleSampledSpansProcessorTest {
     when(readableSpan.toSpanProto())
         .thenReturn(Span.getDefaultInstance())
         .thenThrow(new RuntimeException());
-    simpleSampledSpansProcessor.onEndSync(readableSpan);
+    simpleSampledSpansProcessor.onEnd(readableSpan);
     verifyZeroInteractions(spanExporter);
   }
 
@@ -101,9 +101,9 @@ public class SimpleSampledSpansProcessorTest {
         .doNothing()
         .when(spanExporter)
         .export(ArgumentMatchers.<Span>anyList());
-    simpleSampledSpansProcessor.onEndSync(readableSpan);
+    simpleSampledSpansProcessor.onEnd(readableSpan);
     // Try again, now will no longer return error.
-    simpleSampledSpansProcessor.onEndSync(readableSpan);
+    simpleSampledSpansProcessor.onEnd(readableSpan);
     verify(spanExporter, times(2)).export(Collections.singletonList(Span.getDefaultInstance()));
   }
 

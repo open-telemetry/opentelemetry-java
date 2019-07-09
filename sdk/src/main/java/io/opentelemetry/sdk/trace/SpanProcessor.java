@@ -32,7 +32,7 @@ public interface SpanProcessor {
    *
    * @param span the {@code ReadableSpan} that just started.
    */
-  void onStartSync(ReadableSpan span);
+  void onStart(ReadableSpan span);
 
   /**
    * Called when a {@link io.opentelemetry.trace.Span} is ended, if the {@link
@@ -43,8 +43,8 @@ public interface SpanProcessor {
    *
    * @param span the {@code ReadableSpan} that just ended.
    */
-  // TODO: Consider checking whether the given span is processed with onStartSync().
-  void onEndSync(ReadableSpan span);
+  // TODO: Consider checking whether the given span is processed with onStart().
+  void onEnd(ReadableSpan span);
 
   /** Called when {@link TracerSdk#shutdown()} is called. */
   void shutdown();

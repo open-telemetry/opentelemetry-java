@@ -123,7 +123,7 @@ public class TracerSdkTest {
             Status.OK,
             SpanData.Timestamp.create(2, 0));
     tracer.recordSpanData(spanData);
-    Mockito.verify(spanProcessor, Mockito.times(1)).onEndSync(Mockito.any(ReadableSpanData.class));
+    Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(Mockito.any(ReadableSpanData.class));
   }
 
   @Test

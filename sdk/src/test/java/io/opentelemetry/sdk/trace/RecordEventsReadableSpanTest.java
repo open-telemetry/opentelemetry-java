@@ -151,7 +151,7 @@ public class RecordEventsReadableSpanTest {
     } finally {
       span.end();
     }
-    Mockito.verify(spanProcessor, Mockito.times(1)).onEndSync(span);
+    Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     Span spanProto = span.toSpanProto();
     long timeInNanos = (startTime.getSeconds() + 1) * NANOS_PER_SECOND;
     TimedEvent timedEvent = TimedEvent.create(timeInNanos, event);
@@ -506,7 +506,7 @@ public class RecordEventsReadableSpanTest {
             testClock,
             resource,
             attributes);
-    Mockito.verify(spanProcessor, Mockito.times(1)).onStartSync(span);
+    Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span);
     return span;
   }
 
