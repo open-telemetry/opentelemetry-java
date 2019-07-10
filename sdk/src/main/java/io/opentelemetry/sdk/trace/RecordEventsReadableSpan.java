@@ -142,7 +142,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             attributes);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
-    spanProcessor.onStartSync(span);
+    spanProcessor.onStart(span);
     return span;
   }
 
@@ -382,7 +382,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       endNanoTime = clock.nowNanos();
       hasBeenEnded = true;
     }
-    spanProcessor.onEndSync(this);
+    spanProcessor.onEnd(this);
   }
 
   @Override

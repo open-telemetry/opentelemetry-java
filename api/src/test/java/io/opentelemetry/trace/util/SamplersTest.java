@@ -20,7 +20,7 @@ import static io.opentelemetry.trace.TestUtils.generateRandomSpanId;
 import static io.opentelemetry.trace.TestUtils.generateRandomTraceId;
 
 import com.google.common.truth.Truth;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
@@ -57,7 +57,7 @@ public class SamplersTest {
                     traceId,
                     spanId,
                     "Another name",
-                    Collections.<Span>emptyList())
+                    Collections.<Link>emptyList())
                 .isSampled())
         .isTrue();
     // Not sampled parent.
@@ -69,7 +69,7 @@ public class SamplersTest {
                     traceId,
                     spanId,
                     "Yet another name",
-                    Collections.<Span>emptyList())
+                    Collections.<Link>emptyList())
                 .isSampled())
         .isTrue();
   }
@@ -90,7 +90,7 @@ public class SamplersTest {
                     traceId,
                     spanId,
                     "bar",
-                    Collections.<Span>emptyList())
+                    Collections.<Link>emptyList())
                 .isSampled())
         .isFalse();
     // Not sampled parent.
@@ -102,7 +102,7 @@ public class SamplersTest {
                     traceId,
                     spanId,
                     "quux",
-                    Collections.<Span>emptyList())
+                    Collections.<Link>emptyList())
                 .isSampled())
         .isFalse();
   }

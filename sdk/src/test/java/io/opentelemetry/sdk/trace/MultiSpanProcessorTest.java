@@ -44,8 +44,8 @@ public class MultiSpanProcessorTest {
   public void empty() {
     SpanProcessor multiSpanProcessor =
         MultiSpanProcessor.create(Collections.<SpanProcessor>emptyList());
-    multiSpanProcessor.onStartSync(readableSpan);
-    multiSpanProcessor.onEndSync(readableSpan);
+    multiSpanProcessor.onStart(readableSpan);
+    multiSpanProcessor.onEnd(readableSpan);
     multiSpanProcessor.shutdown();
   }
 
@@ -53,11 +53,11 @@ public class MultiSpanProcessorTest {
   public void oneSpanProcessor() {
     SpanProcessor multiSpanProcessor =
         MultiSpanProcessor.create(Collections.singletonList(spanProcessor1));
-    multiSpanProcessor.onStartSync(readableSpan);
-    verify(spanProcessor1).onStartSync(same(readableSpan));
+    multiSpanProcessor.onStart(readableSpan);
+    verify(spanProcessor1).onStart(same(readableSpan));
 
-    multiSpanProcessor.onEndSync(readableSpan);
-    verify(spanProcessor1).onEndSync(same(readableSpan));
+    multiSpanProcessor.onEnd(readableSpan);
+    verify(spanProcessor1).onEnd(same(readableSpan));
 
     multiSpanProcessor.shutdown();
     verify(spanProcessor1).shutdown();
@@ -67,13 +67,13 @@ public class MultiSpanProcessorTest {
   public void twoSpanProcessor() {
     SpanProcessor multiSpanProcessor =
         MultiSpanProcessor.create(Arrays.asList(spanProcessor1, spanProcessor2));
-    multiSpanProcessor.onStartSync(readableSpan);
-    verify(spanProcessor1).onStartSync(same(readableSpan));
-    verify(spanProcessor2).onStartSync(same(readableSpan));
+    multiSpanProcessor.onStart(readableSpan);
+    verify(spanProcessor1).onStart(same(readableSpan));
+    verify(spanProcessor2).onStart(same(readableSpan));
 
-    multiSpanProcessor.onEndSync(readableSpan);
-    verify(spanProcessor1).onEndSync(same(readableSpan));
-    verify(spanProcessor2).onEndSync(same(readableSpan));
+    multiSpanProcessor.onEnd(readableSpan);
+    verify(spanProcessor1).onEnd(same(readableSpan));
+    verify(spanProcessor2).onEnd(same(readableSpan));
 
     multiSpanProcessor.shutdown();
     verify(spanProcessor1).shutdown();

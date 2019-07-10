@@ -42,12 +42,12 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStartSync(ReadableSpan span) {
+  public void onStart(ReadableSpan span) {
     // Do nothing.
   }
 
   @Override
-  public void onEndSync(ReadableSpan span) {
+  public void onEnd(ReadableSpan span) {
     if (!span.getSpanContext().getTraceOptions().isSampled()) {
       return;
     }

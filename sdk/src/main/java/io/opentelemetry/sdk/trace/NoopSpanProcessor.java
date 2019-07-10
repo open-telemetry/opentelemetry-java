@@ -24,10 +24,10 @@ final class NoopSpanProcessor implements SpanProcessor {
   }
 
   @Override
-  public void onStartSync(ReadableSpan span) {}
+  public void onStart(ReadableSpan span) {}
 
   @Override
-  public void onEndSync(ReadableSpan span) {}
+  public void onEnd(ReadableSpan span) {}
 
   @Override
   public void shutdown() {}
