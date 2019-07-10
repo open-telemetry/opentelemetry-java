@@ -2,14 +2,16 @@ description = "OpenTelemetry All"
 
 def subprojects = [
         project(':opentelemetry-api'),
-        project(':opentelemetry-contrib'),
+        project(':opentelemetry-contrib-runtime-metrics'),
+        project(':opentelemetry-contrib-trace-utils'),
         project(':opentelemetry-sdk'),
 ]
 
 // A subset of subprojects for which we want to publish javadoc.
 def subprojects_javadoc = [
         project(':opentelemetry-api'),
-        project(':opentelemetry-contrib'),
+        project(':opentelemetry-contrib-runtime-metrics'),
+        project(':opentelemetry-contrib-trace-utils'),
         project(':opentelemetry-sdk'),
 ]
 

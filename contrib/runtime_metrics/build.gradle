@@ -1,4 +1,4 @@
-description = 'OpenTelemetry Contrib'
+description = 'OpenTelemetry Contrib Runtime Metrics'
 
 dependencies {
     compile project(':opentelemetry-api')
