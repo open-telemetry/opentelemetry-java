@@ -17,13 +17,12 @@
 package io.opentelemetry.opentracingshim.testbed.latespanfinish;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.assertSameTrace;
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.inmemorytrace.InMemoryTracer;
-import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.trace.SpanData;
+import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -35,8 +34,8 @@ import org.junit.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class LateSpanFinishTest {
-  private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
+  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final Tracer tracer = createTracerShim(exporter);
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -52,7 +51,7 @@ public final class LateSpanFinishTest {
     // Late-finish the parent Span now
     parentSpan.finish();
 
-    List<SpanData> spans = mockTracer.getFinishedSpanDataItems();
+    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
     assertEquals(3, spans.size());
     assertEquals("task1", spans.get(0).getName());
     assertEquals("task2", spans.get(1).getName());

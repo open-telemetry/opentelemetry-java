@@ -16,16 +16,14 @@
 
 package io.opentelemetry.opentracingshim.testbed.errorreporting;
 
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.inmemorytrace.InMemoryTracer;
-import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.trace.SpanData;
+import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -43,8 +41,8 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class ErrorReportingTest {
 
-  private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
+  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final Tracer tracer = createTracerShim(exporter);
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   /* Very simple error handling **/
@@ -61,9 +59,9 @@ public final class ErrorReportingTest {
 
     assertNull(tracer.scopeManager().activeSpan());
 
-    List<SpanData> spans = mockTracer.getFinishedSpanDataItems();
+    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus(), Status.UNKNOWN);
+    assertEquals(spans.get(0).getStatus().getCode(), Status.UNKNOWN.getCanonicalCode().value());
   }
 
   /* Error handling in a callback capturing/activating the Span */
@@ -84,11 +82,11 @@ public final class ErrorReportingTest {
           }
         });
 
-    await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(mockTracer), equalTo(1));
+    await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(1));
 
-    List<SpanData> spans = mockTracer.getFinishedSpanDataItems();
+    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus(), Status.UNKNOWN);
+    assertEquals(spans.get(0).getStatus().getCode(), Status.UNKNOWN.getCanonicalCode().value());
   }
 
   /* Error handling for a max-retries task (such as url fetching).
@@ -121,14 +119,16 @@ public final class ErrorReportingTest {
 
     assertNull(tracer.scopeManager().activeSpan());
 
-    List<SpanData> spans = mockTracer.getFinishedSpanDataItems();
+    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus(), Status.UNKNOWN);
+    assertEquals(spans.get(0).getStatus().getCode(), Status.UNKNOWN.getCanonicalCode().value());
 
-    List<SpanData.TimedEvent> events = spans.get(0).getTimedEvents();
+    List<io.opentelemetry.proto.trace.v1.Span.TimedEvent> events =
+        spans.get(0).getTimeEvents().getTimedEventList();
     assertEquals(events.size(), maxRetries);
     assertEquals(events.get(0).getEvent().getName(), Tags.ERROR.getKey());
-    assertNotNull(events.get(0).getEvent().getAttributes().get(Fields.ERROR_OBJECT));
+    /* TODO: Handle actual objects being passed to log/events. */
+    /*assertNotNull(events.get(0).getEvent().getAttributes().get(Fields.ERROR_OBJECT));*/
   }
 
   /* Error handling for a mocked layer automatically capturing/activating
@@ -156,11 +156,11 @@ public final class ErrorReportingTest {
               tracer));
     }
 
-    await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(mockTracer), equalTo(1));
+    await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(1));
 
-    List<SpanData> spans = mockTracer.getFinishedSpanDataItems();
+    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus(), Status.UNKNOWN);
+    assertEquals(spans.get(0).getStatus().getCode(), Status.UNKNOWN.getCanonicalCode().value());
   }
 
   static class ScopedRunnable implements Runnable {

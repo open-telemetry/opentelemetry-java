@@ -16,15 +16,15 @@
 
 package io.opentelemetry.opentracingshim.testbed.clientserver;
 
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.inmemorytrace.InMemoryTracer;
-import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.trace.SpanData;
+import io.opentelemetry.proto.trace.v1.Span.SpanKind;
+import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -35,8 +35,8 @@ import org.junit.Test;
 
 public class TestClientServerTest {
 
-  private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
+  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final Tracer tracer = createTracerShim(exporter);
   private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(10);
   private Server server;
 
@@ -57,14 +57,14 @@ public class TestClientServerTest {
     Client client = new Client(queue, tracer);
     client.send();
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(mockTracer), equalTo(2));
+    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(2));
 
-    List<SpanData> finished = mockTracer.getFinishedSpanDataItems();
+    List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
     assertEquals(2, finished.size());
-    assertEquals(
-        finished.get(0).getContext().getTraceId(), finished.get(1).getContext().getTraceId());
-    assertEquals(io.opentelemetry.trace.Span.Kind.CLIENT, finished.get(0).getKind());
-    assertEquals(io.opentelemetry.trace.Span.Kind.SERVER, finished.get(1).getKind());
+    assertEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
+    assertEquals(SpanKind.CLIENT, finished.get(0).getKind());
+    assertEquals(SpanKind.SERVER, finished.get(1).getKind());
+
     assertNull(tracer.scopeManager().activeSpan());
   }
 }

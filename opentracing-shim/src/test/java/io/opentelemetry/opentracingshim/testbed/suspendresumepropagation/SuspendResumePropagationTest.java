@@ -16,11 +16,10 @@
 
 package io.opentelemetry.opentracingshim.testbed.suspendresumepropagation;
 
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.inmemorytrace.InMemoryTracer;
-import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.trace.SpanData;
+import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Tracer;
 import java.util.List;
 import org.junit.Before;
@@ -33,8 +32,8 @@ import org.junit.Test;
  * @author tylerbenson
  */
 public class SuspendResumePropagationTest {
-  private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
+  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final Tracer tracer = createTracerShim(exporter);
 
   @Before
   public void before() {}
@@ -55,13 +54,13 @@ public class SuspendResumePropagationTest {
     job1.done();
     job2.done();
 
-    List<SpanData> finished = mockTracer.getFinishedSpanDataItems();
+    List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
     assertThat(finished.size()).isEqualTo(2);
 
     assertThat(finished.get(0).getName()).isEqualTo("job 1");
     assertThat(finished.get(1).getName()).isEqualTo("job 2");
 
-    assertThat(finished.get(0).getParentSpanId()).isNull();
-    assertThat(finished.get(1).getParentSpanId()).isNull();
+    assertThat(finished.get(0).getParentSpanId().isEmpty()).isTrue();
+    assertThat(finished.get(1).getParentSpanId().isEmpty()).isTrue();
   }
 }

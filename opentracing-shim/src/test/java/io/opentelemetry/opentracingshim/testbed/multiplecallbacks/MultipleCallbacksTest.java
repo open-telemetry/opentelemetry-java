@@ -16,15 +16,14 @@
 
 package io.opentelemetry.opentracingshim.testbed.multiplecallbacks;
 
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.inmemorytrace.InMemoryTracer;
-import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.trace.SpanData;
+import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -34,8 +33,8 @@ import org.junit.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public class MultipleCallbacksTest {
-  private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
+  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final Tracer tracer = createTracerShim(exporter);
 
   @Test
   public void test() throws Exception {
@@ -49,16 +48,16 @@ public class MultipleCallbacksTest {
       span.finish();
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(mockTracer), equalTo(4));
+    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(4));
 
-    List<SpanData> spans = mockTracer.getFinishedSpanDataItems();
+    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
     assertEquals(4, spans.size());
     assertEquals("parent", spans.get(0).getName());
 
-    SpanData parentSpan = spans.get(0);
+    io.opentelemetry.proto.trace.v1.Span parentSpan = spans.get(0);
     for (int i = 1; i < 4; i++) {
-      assertEquals(parentSpan.getContext().getTraceId(), spans.get(i).getContext().getTraceId());
-      assertEquals(parentSpan.getContext().getSpanId(), spans.get(i).getParentSpanId());
+      assertEquals(parentSpan.getTraceId(), spans.get(i).getTraceId());
+      assertEquals(parentSpan.getSpanId(), spans.get(i).getParentSpanId());
     }
 
     assertNull(tracer.scopeManager().activeSpan());

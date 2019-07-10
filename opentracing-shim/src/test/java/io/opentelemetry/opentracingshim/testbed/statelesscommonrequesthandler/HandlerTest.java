@@ -16,11 +16,10 @@
 
 package io.opentelemetry.opentracingshim.testbed.statelesscommonrequesthandler;
 
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static org.junit.Assert.assertEquals;
 
-import io.opentelemetry.inmemorytrace.InMemoryTracer;
-import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.trace.SpanData;
+import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -34,13 +33,13 @@ import org.junit.Test;
  */
 public final class HandlerTest {
 
-  private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
+  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final Tracer tracer = createTracerShim(exporter);
   private final Client client = new Client(new RequestHandler(tracer));
 
   @Before
   public void before() {
-    mockTracer.reset();
+    exporter.reset();
   }
 
   @Test
@@ -53,7 +52,7 @@ public final class HandlerTest {
     assertEquals("message2:response", responseFuture2.get(5, TimeUnit.SECONDS));
     assertEquals("message:response", responseFuture.get(5, TimeUnit.SECONDS));
 
-    List<SpanData> finished = mockTracer.getFinishedSpanDataItems();
+    List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
     assertEquals(3, finished.size());
   }
 }

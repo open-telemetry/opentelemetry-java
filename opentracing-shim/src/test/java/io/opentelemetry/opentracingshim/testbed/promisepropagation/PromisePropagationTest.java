@@ -16,14 +16,13 @@
 
 package io.opentelemetry.opentracingshim.testbed.promisepropagation;
 
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByAttr;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByAttr;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.opentelemetry.inmemorytrace.InMemoryTracer;
-import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.trace.SpanData;
-import io.opentelemetry.trace.SpanId;
+import com.google.protobuf.ByteString;
+import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -44,8 +43,8 @@ import org.junit.Test;
  * @author tylerbenson
  */
 public class PromisePropagationTest {
-  private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
+  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final Tracer tracer = createTracerShim(exporter);
   private Phaser phaser;
 
   @Before
@@ -97,7 +96,7 @@ public class PromisePropagationTest {
               }
             });
 
-        assertThat(mockTracer.getFinishedSpanDataItems().size()).isEqualTo(0);
+        assertThat(exporter.getFinishedSpanItems().size()).isEqualTo(0);
         successPromise.success("success!");
         errorPromise.error(new Exception("some error."));
       } finally {
@@ -111,17 +110,17 @@ public class PromisePropagationTest {
 
       phaser.arriveAndAwaitAdvance(); // wait for traces to be reported
 
-      List<SpanData> finished = mockTracer.getFinishedSpanDataItems();
+      List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
       assertThat(finished.size()).isEqualTo(4);
 
       String component = Tags.COMPONENT.getKey();
       assertThat(getOneByAttr(finished, component, "example-promises")).isNotNull();
-      assertThat(getOneByAttr(finished, component, "example-promises").getParentSpanId()).isNull();
+      assertThat(getOneByAttr(finished, component, "example-promises").getParentSpanId().isEmpty())
+          .isTrue();
       assertThat(getByAttr(finished, component, "success")).hasSize(2);
 
-      SpanId parentId =
-          getOneByAttr(finished, component, "example-promises").getContext().getSpanId();
-      for (SpanData span : getByAttr(finished, component, "success")) {
+      ByteString parentId = getOneByAttr(finished, component, "example-promises").getSpanId();
+      for (io.opentelemetry.proto.trace.v1.Span span : getByAttr(finished, component, "success")) {
         assertThat(span.getParentSpanId()).isEqualTo(parentId);
       }
 

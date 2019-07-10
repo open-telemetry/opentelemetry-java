@@ -16,16 +16,15 @@
 
 package io.opentelemetry.opentracingshim.testbed.nestedcallbacks;
 
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.inmemorytrace.InMemoryTracer;
-import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.SpanData;
+import io.opentelemetry.proto.trace.v1.AttributeValue;
+import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -39,8 +38,8 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class NestedCallbacksTest {
 
-  private final InMemoryTracer mockTracer = new InMemoryTracer();
-  private final Tracer tracer = TraceShim.createTracerShim(mockTracer);
+  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final Tracer tracer = createTracerShim(exporter);
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -49,13 +48,13 @@ public final class NestedCallbacksTest {
     Span span = tracer.buildSpan("one").start();
     submitCallbacks(span);
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(mockTracer), equalTo(1));
+    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(1));
 
-    List<SpanData> spans = mockTracer.getFinishedSpanDataItems();
+    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
     assertEquals(1, spans.size());
     assertEquals("one", spans.get(0).getName());
 
-    Map<String, AttributeValue> attrs = spans.get(0).getAttributes();
+    Map<String, AttributeValue> attrs = spans.get(0).getAttributes().getAttributeMap();
     assertEquals(3, attrs.size());
     for (int i = 1; i <= 3; i++) {
       assertEquals(Integer.toString(i), attrs.get("key" + i).getStringValue());
