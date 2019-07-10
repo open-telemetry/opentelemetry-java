@@ -22,11 +22,11 @@ install: true
 script:
   - case "$TASK" in
       "BUILD")
-        ./gradlew verGJF ;
+        ./gradlew verGJF &&
         ./gradlew clean assemble check --stacktrace ;;
       "BUILD_AND_COVERAGE")
-        ./gradlew verGJF ;
-        ./gradlew clean assemble check --stacktrace ;
+        ./gradlew verGJF &&
+        ./gradlew clean assemble check --stacktrace &&
         ./gradlew check :opentelemetry-all:jacocoTestReport ;;
       esac
 
