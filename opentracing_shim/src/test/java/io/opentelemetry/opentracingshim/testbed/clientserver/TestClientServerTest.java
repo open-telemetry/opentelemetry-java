@@ -18,6 +18,7 @@ package io.opentelemetry.opentracingshim.testbed.clientserver;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -61,6 +62,8 @@ public class TestClientServerTest {
 
     List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
     assertEquals(2, finished.size());
+
+    finished = sortByStartTime(finished);
     assertEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
     assertEquals(SpanKind.CLIENT, finished.get(0).getKind());
     assertEquals(SpanKind.SERVER, finished.get(1).getKind());
