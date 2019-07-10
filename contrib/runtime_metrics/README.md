@@ -1,4 +1,4 @@
-OpenTelemetry Contrib For Runtime Metrics
+OpenTelemetry Contrib Runtime Metrics
 ======================================================
 
 * Java 7 compatible.

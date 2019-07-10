@@ -1,4 +1,4 @@
-OpenTelemetry Contrib For Trace Utils
+OpenTelemetry Contrib Trace Utils
 ======================================================
 
 * Java 7 compatible.
