@@ -32,7 +32,7 @@ import org.junit.Test;
  * @author tylerbenson
  */
 public class SuspendResumePropagationTest {
-  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
   private final Tracer tracer = createTracerShim(exporter);
 
   @Before

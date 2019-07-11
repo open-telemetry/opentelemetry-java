@@ -34,7 +34,7 @@ import org.junit.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class LateSpanFinishTest {
-  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
   private final Tracer tracer = createTracerShim(exporter);
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
