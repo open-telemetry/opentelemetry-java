@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.inmemorytrace;
+package io.opentelemetry.opentracingshim.testbed.listenerperrequest;
 
-final class Check {
-  private Check() {}
+import io.opentracing.Span;
 
-  public static void isNotNull(Object value, String valueName) {
-    if (value == null) {
-      throw new NullPointerException(valueName);
-    }
+/** Response listener per request. Executed in a thread different from 'send' thread */
+final class ResponseListener {
+  private final Span span;
+
+  public ResponseListener(Span span) {
+    this.span = span;
+  }
+
+  /** executed when response is received from server. Any thread. */
+  public void onResponse(Object response) {
+    span.finish();
   }
 }

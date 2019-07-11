@@ -1,6 +1,19 @@
 description = 'OpenTelemetry OpenTracing Bridge'
 
+def protobufVersion = '3.7.1'
+
 dependencies {
     api project(':opentelemetry-api'),
             libraries.opentracing
+
+    testImplementation project(':opentelemetry-sdk'),
+            "com.google.protobuf:protobuf-java:${protobufVersion}",
+            libraries.junit,
+            libraries.assertj,
+            libraries.slf4jsimple,
+            libraries.awaitility
+}
+test {
+    dependsOn cleanTest
+    testLogging.showStandardStreams = true
 }
