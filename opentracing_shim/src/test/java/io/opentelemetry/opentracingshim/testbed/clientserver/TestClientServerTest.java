@@ -36,7 +36,7 @@ import org.junit.Test;
 
 public class TestClientServerTest {
 
-  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
   private final Tracer tracer = createTracerShim(exporter);
   private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(10);
   private Server server;

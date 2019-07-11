@@ -45,7 +45,7 @@ import org.junit.Test;
  */
 @SuppressWarnings("FutureReturnValueIgnored")
 public class ActorPropagationTest {
-  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
   private final Tracer tracer = createTracerShim(exporter);
   private Phaser phaser;
 

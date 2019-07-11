@@ -28,7 +28,7 @@ import org.junit.Test;
 
 /** Each request has own instance of ResponseListener. */
 public class ListenerTest {
-  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
   private final Tracer tracer = createTracerShim(exporter);
 
   @Test
