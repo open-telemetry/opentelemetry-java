@@ -29,7 +29,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class InMemorySpanExporterTest {
   private final TracerSdk tracer = new TracerSdk();
-  private final InMemorySpanExporter exporter = new InMemorySpanExporter();
+  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
 
   @Before
   public void setup() {

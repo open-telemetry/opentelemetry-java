@@ -21,13 +21,50 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * A {@link SpanExporter} implementation that can be used to test OpenTelemetry integration.
+ *
+ * <p>Example usage:
+ *
+ * <pre><code>
+ * class MyClassTest {
+ *   private final Tracer tracer = new TracerSdk();
+ *   private final InMemorySpanExporter testExporter = InMemorySpanExporter.create();
+ *
+ *   {@literal @}Before
+ *   public void setup() {
+ *     tracer.addSpanProcessor(SimpleSampledSpansProcessor.newBuilder(testExporter).build());
+ *   }
+ *
+ *   {@literal @}Test
+ *   public void getFinishedSpanData() {
+ *     tracer.spanBuilder("span").startSpan().end();
+ *
+ *     {@code List<Span> spanItems} = exporter.getFinishedSpanItems();
+ *     assertThat(spanItems).isNotNull();
+ *     assertThat(spanItems.size()).isEqualTo(1);
+ *     assertThat(spanItems.get(0).getName()).isEqualTo("span");
+ *   }
+ * </code></pre>
+ */
 public final class InMemorySpanExporter implements SpanExporter {
   private final List<Span> finishedSpanDataItems = new ArrayList<>();
   private boolean isStopped = false;
 
   /**
+   * Returns a new instance of the {@code InMemorySpanExporter}.
+   *
+   * @return a new instance of the {@code InMemorySpanExporter}.
+   */
+  public static InMemorySpanExporter create() {
+    return new InMemorySpanExporter();
+  }
+
+  /**
    * Returns a {@code List} of the finished {@code Span}s, represented by {@code
    * io.opentelemetry.proto.trace.v1.Span}.
+   *
+   * @return a {@code List} of the finished {@code Span}s.
    */
   public List<Span> getFinishedSpanItems() {
     synchronized (this) {
@@ -62,4 +99,6 @@ public final class InMemorySpanExporter implements SpanExporter {
       isStopped = true;
     }
   }
+
+  private InMemorySpanExporter() {}
 }
