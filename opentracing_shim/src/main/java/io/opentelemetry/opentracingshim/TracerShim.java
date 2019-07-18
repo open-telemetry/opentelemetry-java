@@ -27,12 +27,14 @@ import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 
 final class TracerShim implements Tracer {
-  private final io.opentelemetry.trace.Tracer tracer;
+  private final TelemetryInfo telemetryInfo;
   private final ScopeManager scopeManagerShim;
+  private final Propagation propagation;
 
-  TracerShim(io.opentelemetry.trace.Tracer tracer) {
-    this.tracer = tracer;
-    this.scopeManagerShim = new ScopeManagerShim(tracer);
+  TracerShim(TelemetryInfo telemetryInfo) {
+    this.telemetryInfo = telemetryInfo;
+    this.scopeManagerShim = new ScopeManagerShim(telemetryInfo);
+    this.propagation = new Propagation(telemetryInfo);
   }
 
   @Override
@@ -52,22 +54,21 @@ final class TracerShim implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(String operationName) {
-    return new SpanBuilderShim(tracer, operationName);
+    return new SpanBuilderShim(telemetryInfo, operationName);
   }
 
   // TODO - do not fail in case the context was null!
   @Override
   public <C> void inject(SpanContext context, Format<C> format, C carrier) {
-    io.opentelemetry.trace.SpanContext actualContext = getActualContext(context);
+    SpanContextShim contextShim = getContextShim(context);
 
     // TODO - Shall we expect to get no-op objects if a given format is not supported at all?
     if (format == Format.Builtin.TEXT_MAP
         || format == Format.Builtin.TEXT_MAP_INJECT
         || format == Format.Builtin.HTTP_HEADERS) {
-      Propagation.injectTextFormat(
-          tracer.getHttpTextFormat(), actualContext, (TextMapInject) carrier);
+      propagation.injectTextFormat(contextShim, (TextMapInject) carrier);
     } else if (format == Format.Builtin.BINARY) {
-      Propagation.injectBinaryFormat(tracer.getBinaryFormat(), actualContext, (Binary) carrier);
+      propagation.injectBinaryFormat(contextShim, (Binary) carrier);
     }
   }
 
@@ -79,9 +80,9 @@ final class TracerShim implements Tracer {
     if (format == Format.Builtin.TEXT_MAP
         || format == Format.Builtin.TEXT_MAP_EXTRACT
         || format == Format.Builtin.HTTP_HEADERS) {
-      context = Propagation.extractTextFormat(tracer.getHttpTextFormat(), (TextMapExtract) carrier);
+      context = propagation.extractTextFormat((TextMapExtract) carrier);
     } else if (format == Format.Builtin.BINARY) {
-      context = Propagation.extractBinaryFormat(tracer.getBinaryFormat(), (Binary) carrier);
+      context = propagation.extractBinaryFormat((Binary) carrier);
     }
 
     return context;
@@ -92,11 +93,11 @@ final class TracerShim implements Tracer {
     // TODO
   }
 
-  static io.opentelemetry.trace.SpanContext getActualContext(SpanContext context) {
+  static SpanContextShim getContextShim(SpanContext context) {
     if (!(context instanceof SpanContextShim)) {
       throw new IllegalArgumentException("context is not a valid SpanContextShim object");
     }
 
-    return ((SpanContextShim) context).getSpanContext();
+    return (SpanContextShim) context;
   }
 }

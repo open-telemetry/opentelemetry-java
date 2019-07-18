@@ -21,7 +21,6 @@ import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.Tracer;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer.SpanBuilder;
@@ -31,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 final class SpanBuilderShim implements SpanBuilder {
-  private final Tracer tracer;
+  private final TelemetryInfo telemetryInfo;
   private final String spanName;
 
   // The parent will be either a Span or a SpanContext.
@@ -45,8 +44,8 @@ final class SpanBuilderShim implements SpanBuilder {
   private Kind spanKind;
   private boolean error;
 
-  public SpanBuilderShim(Tracer tracer, String spanName) {
-    this.tracer = tracer;
+  public SpanBuilderShim(TelemetryInfo telemetryInfo, String spanName) {
+    this.telemetryInfo = telemetryInfo;
     this.spanName = spanName;
   }
 
@@ -179,7 +178,7 @@ final class SpanBuilderShim implements SpanBuilder {
 
   @Override
   public Span start() {
-    io.opentelemetry.trace.Span.Builder builder = tracer.spanBuilder(spanName);
+    io.opentelemetry.trace.Span.Builder builder = telemetryInfo.tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
@@ -208,7 +207,7 @@ final class SpanBuilderShim implements SpanBuilder {
       span.setStatus(Status.UNKNOWN);
     }
 
-    return new SpanShim(span);
+    return new SpanShim(telemetryInfo, span);
   }
 
   static io.opentelemetry.trace.Span getActualSpan(Span span) {

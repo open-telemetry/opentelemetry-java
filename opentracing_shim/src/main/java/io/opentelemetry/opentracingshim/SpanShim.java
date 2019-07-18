@@ -16,6 +16,8 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.distributedcontext.EmptyDistributedContext;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Span;
@@ -26,15 +28,23 @@ import io.opentracing.tag.Tags;
 import java.util.HashMap;
 import java.util.Map;
 
+// Should we also store TelemetryInfo?
 final class SpanShim implements Span {
   private static final String DEFAULT_EVENT_NAME = "log";
 
   private final io.opentelemetry.trace.Span span;
-  private final SpanContextShim contextShim;
+  private SpanContextShim contextShim;
 
-  public SpanShim(io.opentelemetry.trace.Span span) {
+  public SpanShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.Span span) {
+    this(telemetryInfo, span, EmptyDistributedContext.getInstance());
+  }
+
+  public SpanShim(
+      TelemetryInfo telemetryInfo,
+      io.opentelemetry.trace.Span span,
+      DistributedContext distContext) {
     this.span = span;
-    this.contextShim = new SpanContextShim(span.getContext());
+    this.contextShim = new SpanContextShim(telemetryInfo, span.getContext(), distContext);
   }
 
   io.opentelemetry.trace.Span getSpan() {
@@ -43,7 +53,9 @@ final class SpanShim implements Span {
 
   @Override
   public SpanContext context() {
-    return contextShim;
+    synchronized (this) {
+      return contextShim;
+    }
   }
 
   @Override
@@ -122,15 +134,23 @@ final class SpanShim implements Span {
 
   @Override
   public Span setBaggageItem(String key, String value) {
-    // TODO
+    // TagKey nor TagValue can be created with null values.
+    if (key == null || value == null) {
+      return this;
+    }
+
+    synchronized (this) {
+      contextShim = contextShim.newWithKeyValue(key, value);
+    }
+
     return this;
   }
 
   @Override
-  @SuppressWarnings("ReturnMissingNullable")
   public String getBaggageItem(String key) {
-    // TODO
-    return null;
+    synchronized (this) {
+      return contextShim.getBaggageItem(key);
+    }
   }
 
   @Override

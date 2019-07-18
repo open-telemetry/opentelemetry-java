@@ -16,18 +16,50 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.distributedcontext.EmptyDistributedContext;
+import io.opentelemetry.distributedcontext.Entry;
+import io.opentelemetry.distributedcontext.EntryKey;
+import io.opentelemetry.distributedcontext.EntryMetadata;
+import io.opentelemetry.distributedcontext.EntryValue;
 import io.opentracing.SpanContext;
+import java.util.Iterator;
 import java.util.Map;
 
 final class SpanContextShim implements SpanContext {
-  io.opentelemetry.trace.SpanContext context;
+  static final EntryMetadata DEFAULT_ENTRY_METADATA =
+      EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
 
-  public SpanContextShim(io.opentelemetry.trace.SpanContext context) {
+  private final TelemetryInfo telemetryInfo;
+  private final io.opentelemetry.trace.SpanContext context;
+  private final DistributedContext distContext;
+
+  public SpanContextShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.SpanContext context) {
+    this(telemetryInfo, context, EmptyDistributedContext.getInstance());
+  }
+
+  public SpanContextShim(
+      TelemetryInfo telemetryInfo,
+      io.opentelemetry.trace.SpanContext context,
+      DistributedContext distContext) {
+    this.telemetryInfo = telemetryInfo;
     this.context = context;
+    this.distContext = distContext;
+  }
+
+  SpanContextShim newWithKeyValue(String key, String value) {
+    DistributedContext.Builder builder =
+        telemetryInfo.contextManager().contextBuilder().setParent(distContext);
+    builder.put(EntryKey.create(key), EntryValue.create(value), DEFAULT_ENTRY_METADATA);
+    return new SpanContextShim(telemetryInfo, context, builder.build());
   }
 
   io.opentelemetry.trace.SpanContext getSpanContext() {
     return context;
+  }
+
+  DistributedContext getDistributedContext() {
+    return distContext;
   }
 
   @Override
@@ -40,10 +72,61 @@ final class SpanContextShim implements SpanContext {
     return context.getSpanId().toString();
   }
 
-  @SuppressWarnings("ReturnMissingNullable")
   @Override
   public Iterable<Map.Entry<String, String>> baggageItems() {
-    // TODO
-    return null;
+    final Iterator<Entry> iterator = distContext.getEntries().iterator();
+    return new BaggageIterable(iterator);
+  }
+
+  @SuppressWarnings("ReturnMissingNullable")
+  String getBaggageItem(String key) {
+    EntryValue value = distContext.getEntryValue(EntryKey.create(key));
+    return value == null ? null : value.asString();
+  }
+
+  static class BaggageIterable implements Iterable<Map.Entry<String, String>> {
+    final Iterator<Entry> iterator;
+
+    BaggageIterable(Iterator<Entry> iterator) {
+      this.iterator = iterator;
+    }
+
+    @Override
+    public Iterator<Map.Entry<String, String>> iterator() {
+      return new Iterator<Map.Entry<String, String>>() {
+        @Override
+        public boolean hasNext() {
+          return iterator.hasNext();
+        }
+
+        @Override
+        public Map.Entry<String, String> next() {
+          return new BaggageEntry(iterator.next());
+        }
+      };
+    }
+  }
+
+  static class BaggageEntry implements Map.Entry<String, String> {
+    final Entry entry;
+
+    BaggageEntry(Entry entry) {
+      this.entry = entry;
+    }
+
+    @Override
+    public String getKey() {
+      return entry.getKey().getName();
+    }
+
+    @Override
+    public String getValue() {
+      return entry.getValue().asString();
+    }
+
+    @Override
+    public String setValue(String value) {
+      return getValue();
+    }
   }
 }

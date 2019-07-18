@@ -16,16 +16,15 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.trace.Tracer;
 import io.opentracing.Scope;
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 
 final class ScopeManagerShim implements ScopeManager {
-  private final Tracer tracer;
+  private final TelemetryInfo telemetryInfo;
 
-  public ScopeManagerShim(Tracer tracer) {
-    this.tracer = tracer;
+  public ScopeManagerShim(TelemetryInfo telemetryInfo) {
+    this.telemetryInfo = telemetryInfo;
   }
 
   @Override
@@ -34,19 +33,20 @@ final class ScopeManagerShim implements ScopeManager {
     // As OpenTracing simply returns null when no active instance is available,
     // we need to do an explicit check against DefaultSpan,
     // which is used in OpenTelemetry for this very case.
-    io.opentelemetry.trace.Span span = tracer.getCurrentSpan();
+    io.opentelemetry.trace.Span span = telemetryInfo.tracer().getCurrentSpan();
     if (io.opentelemetry.trace.DefaultSpan.getInvalid().equals(span)) {
       return null;
     }
 
-    return new SpanShim(span);
+    // TODO: Properly include the bagagge/distributedContext.
+    return new SpanShim(telemetryInfo, span);
   }
 
   @Override
   @SuppressWarnings("MustBeClosedChecker")
   public Scope activate(Span span) {
     io.opentelemetry.trace.Span actualSpan = getActualSpan(span);
-    return new ScopeShim(tracer.withSpan(actualSpan));
+    return new ScopeShim(telemetryInfo.tracer().withSpan(actualSpan));
   }
 
   static io.opentelemetry.trace.Span getActualSpan(Span span) {
