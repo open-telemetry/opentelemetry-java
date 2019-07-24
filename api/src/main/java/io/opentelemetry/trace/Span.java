@@ -229,7 +229,7 @@ public interface Span {
   SpanContext getContext();
 
   /**
-   * Returns {@code true} if this {@code Span} records events (e.g, {@link #addEvent(String)}.
+   * Returns {@code true} if this {@code Span} records events (e.g. {@link #addEvent(String)}).
    *
    * @return {@code true} if this {@code Span} records events.
    * @since 0.1.0
