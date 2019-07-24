@@ -18,10 +18,10 @@ package io.opentelemetry.sdk.contrib.trace.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
@@ -103,9 +103,9 @@ public class DisruptorAsyncSpanProcessorTest {
   public void incrementOnce() {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor();
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(
-                Collections.<SpanProcessor>singletonList(incrementSpanProcessor))
-            .build();
+        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
+    incrementSpanProcessor.checkCounterOnStart(0);
+    incrementSpanProcessor.checkCounterOnEnd(0);
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
     disruptorAsyncSpanProcessor.shutdown();
@@ -118,9 +118,7 @@ public class DisruptorAsyncSpanProcessorTest {
   public void shutdownIsCalledOnlyOnce() {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor();
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(
-                Collections.<SpanProcessor>singletonList(incrementSpanProcessor))
-            .build();
+        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
     disruptorAsyncSpanProcessor.shutdown();
     disruptorAsyncSpanProcessor.shutdown();
     disruptorAsyncSpanProcessor.shutdown();
@@ -130,31 +128,10 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void incrementMultiSpanProcessor() {
-    IncrementSpanProcessor incrementSpanProcessor1 = new IncrementSpanProcessor();
-    IncrementSpanProcessor incrementSpanProcessor2 = new IncrementSpanProcessor();
-    DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(
-                Arrays.<SpanProcessor>asList(incrementSpanProcessor1, incrementSpanProcessor2))
-            .build();
-    disruptorAsyncSpanProcessor.onStart(readableSpan);
-    disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    disruptorAsyncSpanProcessor.shutdown();
-    incrementSpanProcessor1.checkCounterOnStart(1);
-    incrementSpanProcessor1.checkCounterOnEnd(1);
-    incrementSpanProcessor1.checkCounterOnShutdown(1);
-    incrementSpanProcessor2.checkCounterOnStart(1);
-    incrementSpanProcessor2.checkCounterOnEnd(1);
-    incrementSpanProcessor2.checkCounterOnShutdown(1);
-  }
-
-  @Test
   public void incrementAfterShutdown() {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor();
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(
-                Collections.<SpanProcessor>singletonList(incrementSpanProcessor))
-            .build();
+        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
     disruptorAsyncSpanProcessor.shutdown();
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
@@ -169,9 +146,7 @@ public class DisruptorAsyncSpanProcessorTest {
     final int tenK = 10000;
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor();
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-        DisruptorAsyncSpanProcessor.newBuilder(
-                Collections.<SpanProcessor>singletonList(incrementSpanProcessor))
-            .build();
+        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
     for (int i = 0; i < tenK; i++) {
       disruptorAsyncSpanProcessor.onStart(readableSpan);
       disruptorAsyncSpanProcessor.onEnd(readableSpan);
@@ -183,12 +158,13 @@ public class DisruptorAsyncSpanProcessorTest {
   }
 
   @Test
-  public void incrementMultipleProcessors() {
+  public void incrementMultiSpanProcessor() {
     IncrementSpanProcessor incrementSpanProcessor1 = new IncrementSpanProcessor();
     IncrementSpanProcessor incrementSpanProcessor2 = new IncrementSpanProcessor();
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.newBuilder(
-                Arrays.<SpanProcessor>asList(incrementSpanProcessor1, incrementSpanProcessor2))
+                MultiSpanProcessor.create(
+                    Arrays.<SpanProcessor>asList(incrementSpanProcessor1, incrementSpanProcessor2)))
             .build();
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);

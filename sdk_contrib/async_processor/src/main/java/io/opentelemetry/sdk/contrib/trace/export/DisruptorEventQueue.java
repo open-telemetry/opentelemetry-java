@@ -26,7 +26,6 @@ import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import java.util.List;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -47,28 +46,23 @@ final class DisruptorEventQueue {
   // The event queue is built on this {@link Disruptor}.
   private final Disruptor<DisruptorEvent> disruptor;
   private final RingBuffer<DisruptorEvent> ringBuffer;
-  private final List<SpanProcessor> spanProcessorList;
+  private final SpanProcessor spanProcessor;
   private final AtomicBoolean loggedShutdownMessage = new AtomicBoolean(false);
   private volatile boolean isShutdown = false;
   private final boolean blocking;
 
   // Creates a new EventQueue. Private to prevent creation of non-singleton instance.
   private DisruptorEventQueue(
-      Disruptor<DisruptorEvent> disruptor,
-      List<SpanProcessor> spanProcessorList,
-      boolean blocking) {
+      Disruptor<DisruptorEvent> disruptor, SpanProcessor spanProcessor, boolean blocking) {
     this.disruptor = disruptor;
     this.ringBuffer = disruptor.getRingBuffer();
-    this.spanProcessorList = spanProcessorList;
+    this.spanProcessor = spanProcessor;
     this.blocking = blocking;
   }
 
   // Creates a new EventQueue. Private to prevent creation of non-singleton instance.
   static DisruptorEventQueue create(
-      int bufferSize,
-      WaitStrategy waitStrategy,
-      List<SpanProcessor> spanProcessorList,
-      boolean blocking) {
+      int bufferSize, WaitStrategy waitStrategy, SpanProcessor spanProcessor, boolean blocking) {
     // Create new Disruptor for processing. Note that Disruptor creates a single thread per
     // consumer (see https://github.com/LMAX-Exchange/disruptor/issues/121 for details);
     // this ensures that the event handler can take unsynchronized actions whenever possible.
@@ -80,10 +74,10 @@ final class DisruptorEventQueue {
             ProducerType.MULTI,
             waitStrategy);
     disruptor.handleEventsWith(
-        new DisruptorEventHandler[] {new DisruptorEventHandler(spanProcessorList)});
+        new DisruptorEventHandler[] {new DisruptorEventHandler(spanProcessor)});
     disruptor.start();
 
-    return new DisruptorEventQueue(disruptor, spanProcessorList, blocking);
+    return new DisruptorEventQueue(disruptor, spanProcessor, blocking);
   }
 
   // Enqueues an event on the {@link DisruptorEventQueue}.
@@ -94,29 +88,24 @@ final class DisruptorEventQueue {
       }
     }
 
+    long sequence;
+
     if (blocking) {
-      long sequence = ringBuffer.next();
-      try {
-        DisruptorEvent event = ringBuffer.get(sequence);
-        event.setEntry(readableSpan, isStart);
-      } finally {
-        ringBuffer.publish(sequence);
-      }
+      sequence = ringBuffer.next();
     } else {
-      long sequence;
       try {
         sequence = ringBuffer.tryNext();
       } catch (InsufficientCapacityException e) {
         // TODO: Add metrics for dropped events.
         return;
       }
+    }
 
-      try {
-        DisruptorEvent event = ringBuffer.get(sequence);
-        event.setEntry(readableSpan, isStart);
-      } finally {
-        ringBuffer.publish(sequence);
-      }
+    try {
+      DisruptorEvent event = ringBuffer.get(sequence);
+      event.setEntry(readableSpan, isStart);
+    } finally {
+      ringBuffer.publish(sequence);
     }
   }
 
@@ -129,11 +118,9 @@ final class DisruptorEventQueue {
       if (isShutdown) {
         return;
       }
-      disruptor.shutdown();
-      for (SpanProcessor spanProcessor : spanProcessorList) {
-        spanProcessor.shutdown();
-      }
       isShutdown = true;
+      disruptor.shutdown();
+      spanProcessor.shutdown();
     }
   }
 
@@ -170,10 +157,10 @@ final class DisruptorEventQueue {
   }
 
   private static final class DisruptorEventHandler implements EventHandler<DisruptorEvent> {
-    private final List<SpanProcessor> spanProcessorList;
+    private final SpanProcessor spanProcessor;
 
-    private DisruptorEventHandler(List<SpanProcessor> spanProcessorList) {
-      this.spanProcessorList = spanProcessorList;
+    private DisruptorEventHandler(SpanProcessor spanProcessor) {
+      this.spanProcessor = spanProcessor;
     }
 
     @Override
@@ -181,13 +168,11 @@ final class DisruptorEventQueue {
       final ReadableSpan readableSpan = event.getReadableSpan();
       try {
         if (event.getIsStart()) {
-          for (SpanProcessor spanProcessor : spanProcessorList) {
-            spanProcessor.onStart(readableSpan);
-          }
+          spanProcessor.onStart(readableSpan);
+          System.out.println("onStart");
         } else {
-          for (SpanProcessor spanProcessor : spanProcessorList) {
-            spanProcessor.onEnd(readableSpan);
-          }
+          spanProcessor.onEnd(readableSpan);
+          System.out.println("onEnd");
         }
       } finally {
         // Remove the reference to the previous entry to allow the memory to be gc'ed.

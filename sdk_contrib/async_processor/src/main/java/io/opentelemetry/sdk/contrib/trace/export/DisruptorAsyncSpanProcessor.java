@@ -21,9 +21,6 @@ import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.WaitStrategy;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -64,27 +61,24 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
   /**
    * Returns a new Builder for {@link DisruptorAsyncSpanProcessor}.
    *
-   * @param spanProcessorList the {@code List<SpanProcessor>} to where the Span's events are pushed.
+   * @param spanProcessor the {@code List<SpanProcessor>} to where the Span's events are pushed.
    * @return a new {@link DisruptorAsyncSpanProcessor}.
-   * @throws NullPointerException if the {@code spanExporter} is {@code null}.
+   * @throws NullPointerException if the {@code spanProcessor} is {@code null}.
    */
-  public static Builder newBuilder(List<SpanProcessor> spanProcessorList) {
-    return new Builder(spanProcessorList);
+  public static Builder newBuilder(SpanProcessor spanProcessor) {
+    return new Builder(Preconditions.checkNotNull(spanProcessor));
   }
 
   /** Builder class for {@link DisruptorAsyncSpanProcessor}. */
   public static final class Builder {
-    private final List<SpanProcessor> spanProcessorList;
+    private final SpanProcessor spanProcessor;
     private int bufferSize = DEFAULT_DISRUPTOR_BUFFER_SIZE;
     private boolean blocking = DEFAULT_BLOCKING;
     private WaitStrategy waitStrategy =
         new SleepingWaitStrategy(DEFAULT_NUM_RETRIES, DEFAULT_SLEEPING_TIME_NS);
 
-    private Builder(List<SpanProcessor> spanProcessorList) {
-      Preconditions.checkArgument(
-          !Preconditions.checkNotNull(spanProcessorList, "spanProcessorList").isEmpty(),
-          "spanProcessorList cannot be empty");
-      this.spanProcessorList = Collections.unmodifiableList(new ArrayList<>(spanProcessorList));
+    private Builder(SpanProcessor spanProcessor) {
+      this.spanProcessor = spanProcessor;
     }
 
     /**
@@ -122,15 +116,13 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
     }
 
     /**
-     * Returns a new {@link DisruptorAsyncSpanProcessor} that converts spans to proto and forwards
-     * them to the given {@code spanExporter}.
+     * Returns a new {@link DisruptorAsyncSpanProcessor}.
      *
      * @return a new {@link DisruptorAsyncSpanProcessor}.
-     * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
     public DisruptorAsyncSpanProcessor build() {
       return new DisruptorAsyncSpanProcessor(
-          DisruptorEventQueue.create(bufferSize, waitStrategy, spanProcessorList, blocking));
+          DisruptorEventQueue.create(bufferSize, waitStrategy, spanProcessor, blocking));
     }
   }
 
