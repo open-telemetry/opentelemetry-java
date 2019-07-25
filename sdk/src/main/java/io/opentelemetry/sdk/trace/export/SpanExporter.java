@@ -31,23 +31,15 @@ import java.util.List;
 //  class is available.
 public interface SpanExporter {
 
-  /**
-   * The possible results for the export method.
-   */
+  /** The possible results for the export method. */
   enum ResultCode {
-    /**
-     * The export operation finished successfully.
-     */
+    /** The export operation finished successfully. */
     SUCCESS,
 
-    /**
-     * The export operation finished with an error, but retrying my succeed.
-     */
+    /** The export operation finished with an error, but retrying my succeed. */
     FAILED_RETRYABLE,
 
-    /**
-     * The export operation finished with an error, retrying will not succeed.
-     */
+    /** The export operation finished with an error, retrying will not succeed. */
     FAILED_NONE_RETRYABLE
   }
 
