@@ -31,9 +31,23 @@ import java.util.List;
 //  class is available.
 public interface SpanExporter {
 
+  /**
+   * The possible results for the export method.
+   */
   enum ResultCode {
+    /**
+     * The export operation finished successfully.
+     */
     SUCCESS,
+
+    /**
+     * The export operation finished with an error, but retrying my succeed.
+     */
     FAILED_RETRYABLE,
+
+    /**
+     * The export operation finished with an error, retrying will not succeed.
+     */
     FAILED_NONE_RETRYABLE
   }
 
@@ -41,7 +55,7 @@ public interface SpanExporter {
    * Called to export sampled {@code Span}s.
    *
    * @param spans the list of sampled Spans to be exported.
-   * @return the result of the export. If
+   * @return the result of the export.
    */
   ResultCode export(List<Span> spans);
 
