@@ -16,11 +16,14 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.proto.trace.v1.Span;
+import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +59,8 @@ public class MultiSpanExporterTest {
   public void oneSpanExporter() {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Collections.singletonList(spanExporter1));
-    multiSpanExporter.export(SPAN_LIST);
+    when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
+    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.SUCCESS);
     verify(spanExporter1).export(same(SPAN_LIST));
 
     multiSpanExporter.shutdown();
@@ -67,7 +71,9 @@ public class MultiSpanExporterTest {
   public void twoSpanExporter() {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
-    multiSpanExporter.export(SPAN_LIST);
+    when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
+    when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
+    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.SUCCESS);
     verify(spanExporter1).export(same(SPAN_LIST));
     verify(spanExporter2).export(same(SPAN_LIST));
 
@@ -77,13 +83,35 @@ public class MultiSpanExporterTest {
   }
 
   @Test
+  public void twoSpanExporter_OneReturnNoneRetryable() {
+    SpanExporter multiSpanExporter =
+        MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
+    when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
+    when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.FAILED_NONE_RETRYABLE);
+    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILED_NONE_RETRYABLE);
+    verify(spanExporter1).export(same(SPAN_LIST));
+    verify(spanExporter2).export(same(SPAN_LIST));
+  }
+
+  @Test
+  public void twoSpanExporter_OneReturnRetryable() {
+    SpanExporter multiSpanExporter =
+        MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
+    when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
+    when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.FAILED_RETRYABLE);
+    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILED_RETRYABLE);
+    verify(spanExporter1).export(same(SPAN_LIST));
+    verify(spanExporter2).export(same(SPAN_LIST));
+  }
+
+  @Test
   public void twoSpanExporter_FirstThrows() {
     doThrow(new IllegalArgumentException("No export for you."))
         .when(spanExporter1)
         .export(ArgumentMatchers.<Span>anyList());
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
-    multiSpanExporter.export(SPAN_LIST);
+    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILED_NONE_RETRYABLE);
     verify(spanExporter1).export(same(SPAN_LIST));
     verify(spanExporter2).export(same(SPAN_LIST));
   }
