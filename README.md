@@ -11,12 +11,11 @@ This project contains the following top level components:
 
 * [api](api/): The OpenTelemetry API.
   * [trace](api/src/main/java/io/opentelemetry/trace/): The tracing api. Includes `Tracer`, `Span` and `SpanContext`.
-  * [tags](api/src/main/java/io/opentelemetry/tags/): Key-value pairs of data that can be propagated to provide contextual information.
+  * [distributedcontext](api/src/main/java/io/opentelemetry/distributedcontext/): Collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
   * [context](api/src/main/java/io/opentelemetry/context/): In-process and inter-process propagation layer.
   * [metrics](api/src/main/java/io/opentelemetry/metrics/): Metrics layer.
 * [sdk](sdk/): The reference implementation complying to the OpenTelemetry API.
-* [OpenTracing shim](opentracing-shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
-* [OpenCensus shim](opencensus-shim): A bridge layer from OpenTelemetry to the OpenCensus API.
+* [OpenTracing shim](opentracing_shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
 
 We would love to hear from the larger community: please provide feedback proactively.
 
