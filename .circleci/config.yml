@@ -1,0 +1,59 @@
+version: 2
+defaults: &defaults
+  steps:
+    - checkout
+
+    - restore_cache:
+        keys:
+          - gradle-{{ checksum "build.gradle" }}
+
+    - run:
+        name: Build and cover
+        command: |
+          if \[ "$TASK" == "BUILD_AND_COVERAGE" \]; then
+            ./gradlew verGJF && \
+            ./gradlew clean assemble check --stacktrace && \
+            ./gradlew check :opentelemetry-all:jacocoTestReport
+          fi
+
+    - run:
+       name: Build
+       command: |
+         if \[ "$TASK" == "BUILD" \]; then
+           ./gradlew verGJF && \
+           ./gradlew clean assemble check --stacktrace
+         fi
+
+    - run:
+        name: Publish coverage
+        command: |
+          if \[ "$TASK" == "BUILD_AND_COVERAGE" \]; then
+            bash <(curl -s https://codecov.io/bash) ;
+          fi
+
+    - save_cache:
+        paths:
+          - ~/.gradle
+        key: gradle-{{ checksum "build.gradle" }}
+
+jobs:
+  build:
+    <<: *defaults
+    docker:
+      - image: circleci/openjdk:8-jdk
+    environment:
+      TASK: BUILD_AND_COVERAGE
+
+  java_9:
+    <<: *defaults
+    docker:
+      - image: circleci/openjdk:9-jdk
+    environment:
+      TASK: BUILD
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - java_9
