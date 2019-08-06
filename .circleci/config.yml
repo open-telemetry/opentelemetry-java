@@ -9,8 +9,14 @@ jobs:
           keys:
             - gradle-{{ checksum "build.gradle" }}
       - run:
-          name: Build and cover
-          command: ./gradlew verGJF && ./gradlew clean assemble check --stacktrace && ./gradlew check :opentelemetry-all:jacocoTestReport
+          name: Verify Google Java Format
+          command: ./gradlew verGJF
+      - run:
+          name: Build
+          command: ./gradlew clean assemble check --stacktrace
+      - run:
+          name: Cover
+          command: ./gradlew check :opentelemetry-all:jacocoTestReport
       - run:
           name: Publish coverage
           command:  bash <(curl -s https://codecov.io/bash)
@@ -27,8 +33,11 @@ jobs:
           keys:
             - java9-gradle-{{ checksum "build.gradle" }}
       - run:
+          name: Verify Google Java Format
+          command: ./gradlew verGJF
+      - run:
           name: Build
-          command: ./gradlew verGJF &&  ./gradlew clean assemble check --stacktrace
+          command: ./gradlew clean assemble check --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
