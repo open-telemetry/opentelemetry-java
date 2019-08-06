@@ -1,4 +1,7 @@
 version: 2
+build_task: &build_task
+  name: Build
+  command: ./gradlew clean assemble check --stacktrace
 jobs:
   build:
     docker:
@@ -12,8 +15,7 @@ jobs:
           name: Verify Google Java Format
           command: ./gradlew verGJF
       - run:
-          name: Build
-          command: ./gradlew clean assemble check --stacktrace
+          <<: *build_task
       - run:
           name: Cover
           command: ./gradlew check :opentelemetry-all:jacocoTestReport
@@ -36,8 +38,7 @@ jobs:
           name: Verify Google Java Format
           command: ./gradlew verGJF
       - run:
-          name: Build
-          command: ./gradlew clean assemble check --stacktrace
+          <<: *build_task
       - save_cache:
           paths:
             - ~/.gradle
