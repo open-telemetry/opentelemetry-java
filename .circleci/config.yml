@@ -1,7 +1,12 @@
 version: 2
+
 build_task: &build_task
   name: Build
   command: ./gradlew clean assemble check --stacktrace
+verify_task: &verify_task
+  name: Verify Google Java Format
+  command: ./gradlew verGJF
+
 jobs:
   build:
     docker:
@@ -12,8 +17,7 @@ jobs:
           keys:
             - gradle-{{ checksum "build.gradle" }}
       - run:
-          name: Verify Google Java Format
-          command: ./gradlew verGJF
+          <<: *verify_task
       - run:
           <<: *build_task
       - run:
@@ -35,15 +39,13 @@ jobs:
           keys:
             - java9-gradle-{{ checksum "build.gradle" }}
       - run:
-          name: Verify Google Java Format
-          command: ./gradlew verGJF
+          <<: *verify_task
       - run:
           <<: *build_task
       - save_cache:
           paths:
             - ~/.gradle
           key: java9-gradle-{{ checksum "build.gradle" }}
-
 
 workflows:
   version: 2
