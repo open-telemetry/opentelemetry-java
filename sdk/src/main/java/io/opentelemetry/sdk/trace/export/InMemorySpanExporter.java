@@ -84,12 +84,14 @@ public final class InMemorySpanExporter implements SpanExporter {
   }
 
   @Override
-  public void export(List<Span> spans) {
+  public ResultCode export(List<Span> spans) {
     synchronized (this) {
-      if (!isStopped) {
-        finishedSpanDataItems.addAll(spans);
+      if (isStopped) {
+        return ResultCode.FAILED_NONE_RETRYABLE;
       }
+      finishedSpanDataItems.addAll(spans);
     }
+    return ResultCode.SUCCESS;
   }
 
   @Override

@@ -97,10 +97,7 @@ public class SimpleSampledSpansProcessorTest {
         .thenReturn(Span.getDefaultInstance())
         .thenReturn(Span.getDefaultInstance())
         .thenThrow(new RuntimeException());
-    doThrow(new RuntimeException())
-        .doNothing()
-        .when(spanExporter)
-        .export(ArgumentMatchers.<Span>anyList());
+    doThrow(new RuntimeException()).when(spanExporter).export(ArgumentMatchers.<Span>anyList());
     simpleSampledSpansProcessor.onEnd(readableSpan);
     // Try again, now will no longer return error.
     simpleSampledSpansProcessor.onEnd(readableSpan);

@@ -18,7 +18,10 @@ package io.opentelemetry.sdk.trace.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +45,7 @@ public class InMemorySpanExporterTest {
     tracer.spanBuilder("two").startSpan().end();
     tracer.spanBuilder("three").startSpan().end();
 
-    List<io.opentelemetry.proto.trace.v1.Span> spanItems = exporter.getFinishedSpanItems();
+    List<Span> spanItems = exporter.getFinishedSpanItems();
     assertThat(spanItems).isNotNull();
     assertThat(spanItems.size()).isEqualTo(3);
     assertThat(spanItems.get(0).getName()).isEqualTo("one");
@@ -55,7 +58,7 @@ public class InMemorySpanExporterTest {
     tracer.spanBuilder("one").startSpan().end();
     tracer.spanBuilder("two").startSpan().end();
     tracer.spanBuilder("three").startSpan().end();
-    List<io.opentelemetry.proto.trace.v1.Span> spanItems = exporter.getFinishedSpanItems();
+    List<Span> spanItems = exporter.getFinishedSpanItems();
     assertThat(spanItems).isNotNull();
     assertThat(spanItems.size()).isEqualTo(3);
     // Reset then expect no items in memory.
@@ -68,7 +71,7 @@ public class InMemorySpanExporterTest {
     tracer.spanBuilder("one").startSpan().end();
     tracer.spanBuilder("two").startSpan().end();
     tracer.spanBuilder("three").startSpan().end();
-    List<io.opentelemetry.proto.trace.v1.Span> spanItems = exporter.getFinishedSpanItems();
+    List<Span> spanItems = exporter.getFinishedSpanItems();
     assertThat(spanItems).isNotNull();
     assertThat(spanItems.size()).isEqualTo(3);
     // Shutdown then expect no items in memory.
@@ -77,5 +80,19 @@ public class InMemorySpanExporterTest {
     // Cannot add new elements after the shutdown.
     tracer.spanBuilder("one").startSpan().end();
     assertThat(exporter.getFinishedSpanItems()).isEmpty();
+  }
+
+  @Test
+  public void export_ReturnCode() {
+    assertThat(exporter.export(Collections.singletonList(Span.newBuilder().build())))
+        .isEqualTo(ResultCode.SUCCESS);
+    exporter.shutdown();
+    // After shutdown no more export.
+    assertThat(exporter.export(Collections.singletonList(Span.newBuilder().build())))
+        .isEqualTo(ResultCode.FAILED_NONE_RETRYABLE);
+    exporter.reset();
+    // Reset does not do anything if already shutdown.
+    assertThat(exporter.export(Collections.singletonList(Span.newBuilder().build())))
+        .isEqualTo(ResultCode.FAILED_NONE_RETRYABLE);
   }
 }

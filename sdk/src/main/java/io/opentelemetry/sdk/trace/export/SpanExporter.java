@@ -31,12 +31,28 @@ import java.util.List;
 //  class is available.
 public interface SpanExporter {
 
+  /** The possible results for the export method. */
+  enum ResultCode {
+    /** The export operation finished successfully. */
+    SUCCESS,
+
+    /** The export operation finished with an error, but retrying may succeed. */
+    FAILED_RETRYABLE,
+
+    /**
+     * The export operation finished with an error, the caller should not try to export the same
+     * data again.
+     */
+    FAILED_NONE_RETRYABLE
+  }
+
   /**
    * Called to export sampled {@code Span}s.
    *
    * @param spans the list of sampled Spans to be exported.
+   * @return the result of the export.
    */
-  void export(List<Span> spans);
+  ResultCode export(List<Span> spans);
 
   /**
    * Called when {@link TracerSdk#shutdown()} is called, if this {@code SpanExporter} is register to

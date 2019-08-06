@@ -258,7 +258,7 @@ public class BatchSampledSpansProcessorTest {
     State state = State.WAIT_TO_BLOCK;
 
     @Override
-    public void export(List<Span> spanDataList) {
+    public ResultCode export(List<Span> spanDataList) {
       synchronized (monitor) {
         while (state != State.UNBLOCKED) {
           try {
@@ -271,6 +271,7 @@ public class BatchSampledSpansProcessorTest {
           }
         }
       }
+      return ResultCode.SUCCESS;
     }
 
     private void waitUntilIsBlocked() {
@@ -332,11 +333,12 @@ public class BatchSampledSpansProcessorTest {
     }
 
     @Override
-    public void export(List<Span> spans) {
+    public ResultCode export(List<Span> spans) {
       synchronized (monitor) {
         this.spanDataList.addAll(spans);
         monitor.notifyAll();
       }
+      return ResultCode.SUCCESS;
     }
 
     @Override
