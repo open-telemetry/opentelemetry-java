@@ -26,13 +26,12 @@ import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 
-final class TracerShim implements Tracer {
-  private final TelemetryInfo telemetryInfo;
+final class TracerShim extends BaseShimObject implements Tracer {
   private final ScopeManager scopeManagerShim;
   private final Propagation propagation;
 
   TracerShim(TelemetryInfo telemetryInfo) {
-    this.telemetryInfo = telemetryInfo;
+    super(telemetryInfo);
     this.scopeManagerShim = new ScopeManagerShim(telemetryInfo);
     this.propagation = new Propagation(telemetryInfo);
   }

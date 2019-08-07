@@ -28,8 +28,7 @@ import io.opentracing.tag.Tags;
 import java.util.HashMap;
 import java.util.Map;
 
-// Should we also store TelemetryInfo?
-final class SpanShim implements Span {
+final class SpanShim extends BaseShimObject implements Span {
   private static final String DEFAULT_EVENT_NAME = "log";
 
   private final io.opentelemetry.trace.Span span;
@@ -43,6 +42,7 @@ final class SpanShim implements Span {
       TelemetryInfo telemetryInfo,
       io.opentelemetry.trace.Span span,
       DistributedContext distContext) {
+    super(telemetryInfo);
     this.span = span;
     this.contextShim = new SpanContextShim(telemetryInfo, span.getContext(), distContext);
   }

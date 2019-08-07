@@ -26,11 +26,10 @@ import io.opentracing.SpanContext;
 import java.util.Iterator;
 import java.util.Map;
 
-final class SpanContextShim implements SpanContext {
+final class SpanContextShim extends BaseShimObject implements SpanContext {
   static final EntryMetadata DEFAULT_ENTRY_METADATA =
       EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
 
-  private final TelemetryInfo telemetryInfo;
   private final io.opentelemetry.trace.SpanContext context;
   private final DistributedContext distContext;
 
@@ -42,16 +41,16 @@ final class SpanContextShim implements SpanContext {
       TelemetryInfo telemetryInfo,
       io.opentelemetry.trace.SpanContext context,
       DistributedContext distContext) {
-    this.telemetryInfo = telemetryInfo;
+    super(telemetryInfo);
     this.context = context;
     this.distContext = distContext;
   }
 
   SpanContextShim newWithKeyValue(String key, String value) {
-    DistributedContext.Builder builder =
-        telemetryInfo.contextManager().contextBuilder().setParent(distContext);
+    DistributedContext.Builder builder = contextManager().contextBuilder().setParent(distContext);
     builder.put(EntryKey.create(key), EntryValue.create(value), DEFAULT_ENTRY_METADATA);
-    return new SpanContextShim(telemetryInfo, context, builder.build());
+
+    return new SpanContextShim(telemetryInfo(), context, builder.build());
   }
 
   io.opentelemetry.trace.SpanContext getSpanContext() {

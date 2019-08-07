@@ -24,20 +24,16 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-final class Propagation {
-  private final TelemetryInfo telemetryInfo;
-
+final class Propagation extends BaseShimObject {
   Propagation(TelemetryInfo telemetryInfo) {
-    this.telemetryInfo = telemetryInfo;
+    super(telemetryInfo);
   }
 
   public void injectTextFormat(SpanContextShim contextShim, TextMapInject carrier) {
-    telemetryInfo
-        .tracer()
+    tracer()
         .getHttpTextFormat()
         .inject(contextShim.getSpanContext(), carrier, TextMapSetter.INSTANCE);
-    telemetryInfo
-        .contextManager()
+    contextManager()
         .getHttpTextFormat()
         .inject(contextShim.getDistributedContext(), carrier, TextMapSetter.INSTANCE);
   }
@@ -49,12 +45,9 @@ final class Propagation {
     }
 
     io.opentelemetry.trace.SpanContext context =
-        telemetryInfo.tracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
+        tracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
     io.opentelemetry.distributedcontext.DistributedContext distContext =
-        telemetryInfo
-            .contextManager()
-            .getHttpTextFormat()
-            .extract(carrierMap, TextMapGetter.INSTANCE);
+        contextManager().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
 
     return new SpanContextShim(telemetryInfo, context, distContext);
   }
@@ -84,8 +77,7 @@ final class Propagation {
   }
 
   public void injectBinaryFormat(SpanContextShim context, Binary carrier) {
-    byte[] contextBuff =
-        telemetryInfo.tracer().getBinaryFormat().toByteArray(context.getSpanContext());
+    byte[] contextBuff = tracer().getBinaryFormat().toByteArray(context.getSpanContext());
     ByteBuffer byteBuff = carrier.injectionBuffer(contextBuff.length);
     byteBuff.put(contextBuff);
   }
@@ -96,7 +88,6 @@ final class Propagation {
     byte[] buff = new byte[byteBuff.remaining()];
     byteBuff.get(buff);
 
-    return new SpanContextShim(
-        telemetryInfo, telemetryInfo.tracer().getBinaryFormat().fromByteArray(buff));
+    return new SpanContextShim(telemetryInfo, tracer().getBinaryFormat().fromByteArray(buff));
   }
 }
