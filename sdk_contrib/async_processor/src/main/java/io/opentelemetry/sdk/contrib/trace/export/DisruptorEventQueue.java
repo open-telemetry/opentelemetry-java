@@ -169,10 +169,8 @@ final class DisruptorEventQueue {
       try {
         if (event.getIsStart()) {
           spanProcessor.onStart(readableSpan);
-          System.out.println("onStart");
         } else {
           spanProcessor.onEnd(readableSpan);
-          System.out.println("onEnd");
         }
       } finally {
         // Remove the reference to the previous entry to allow the memory to be gc'ed.

@@ -40,62 +40,37 @@ public class DisruptorAsyncSpanProcessorTest {
     MockitoAnnotations.initMocks(this);
   }
 
-  // Simple class to use that keeps an incrementing counter. Will fail with an assertion if
-  // increment is used from multiple threads, or if the stored value is different from that expected
-  // by the caller.
-  private static class Counter {
-    private final AtomicInteger count = new AtomicInteger(0);
-    private volatile long id; // stores thread ID used in first increment operation.
-
-    private Counter() {
-      id = -1;
-    }
-
-    // Increments counter by 1. Will fail in assertion if multiple different threads are used
-    // (the EventQueue backend should be single-threaded).
-    private void increment() {
-      long tid = Thread.currentThread().getId();
-      if (id == -1) {
-        assertThat(count.get()).isEqualTo(0);
-        id = tid;
-      } else {
-        assertThat(id).isEqualTo(tid);
-      }
-      count.incrementAndGet();
-    }
-  }
-
   // EventQueueEntry for incrementing a Counter.
   private static class IncrementSpanProcessor implements SpanProcessor {
-    private final Counter counterOnStart = new Counter();
-    private final Counter counterOnEnd = new Counter();
-    private final Counter counterOnShutdown = new Counter();
+    private final AtomicInteger counterOnStart = new AtomicInteger(0);
+    private final AtomicInteger counterOnEnd = new AtomicInteger(0);
+    private final AtomicInteger counterOnShutdown = new AtomicInteger(0);
 
     @Override
     public void onStart(ReadableSpan span) {
-      counterOnStart.increment();
+      counterOnStart.incrementAndGet();
     }
 
     @Override
     public void onEnd(ReadableSpan span) {
-      counterOnEnd.increment();
+      counterOnEnd.incrementAndGet();
     }
 
     @Override
     public void shutdown() {
-      counterOnShutdown.increment();
+      counterOnShutdown.incrementAndGet();
     }
 
-    private void checkCounterOnStart(int value) {
-      assertThat(counterOnStart.count.get()).isEqualTo(value);
+    private int getCounterOnStart() {
+      return counterOnStart.get();
     }
 
-    private void checkCounterOnEnd(int value) {
-      assertThat(counterOnEnd.count.get()).isEqualTo(value);
+    private int getCounterOnEnd() {
+      return counterOnEnd.get();
     }
 
-    private void checkCounterOnShutdown(int value) {
-      assertThat(counterOnShutdown.count.get()).isEqualTo(value);
+    private int getCounterOnShutdown() {
+      return counterOnShutdown.get();
     }
   }
 
@@ -104,14 +79,14 @@ public class DisruptorAsyncSpanProcessorTest {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor();
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
-    incrementSpanProcessor.checkCounterOnStart(0);
-    incrementSpanProcessor.checkCounterOnEnd(0);
+    assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
+    assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
     disruptorAsyncSpanProcessor.shutdown();
-    incrementSpanProcessor.checkCounterOnStart(1);
-    incrementSpanProcessor.checkCounterOnEnd(1);
-    incrementSpanProcessor.checkCounterOnShutdown(1);
+    assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(1);
+    assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(1);
+    assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 
   @Test
@@ -124,7 +99,7 @@ public class DisruptorAsyncSpanProcessorTest {
     disruptorAsyncSpanProcessor.shutdown();
     disruptorAsyncSpanProcessor.shutdown();
     disruptorAsyncSpanProcessor.shutdown();
-    incrementSpanProcessor.checkCounterOnShutdown(1);
+    assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 
   @Test
@@ -135,10 +110,10 @@ public class DisruptorAsyncSpanProcessorTest {
     disruptorAsyncSpanProcessor.shutdown();
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    incrementSpanProcessor.checkCounterOnStart(0);
-    incrementSpanProcessor.checkCounterOnEnd(0);
+    assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
+    assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
     disruptorAsyncSpanProcessor.shutdown();
-    incrementSpanProcessor.checkCounterOnShutdown(1);
+    assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 
   @Test
@@ -152,9 +127,9 @@ public class DisruptorAsyncSpanProcessorTest {
       disruptorAsyncSpanProcessor.onEnd(readableSpan);
     }
     disruptorAsyncSpanProcessor.shutdown();
-    incrementSpanProcessor.checkCounterOnStart(tenK);
-    incrementSpanProcessor.checkCounterOnEnd(tenK);
-    incrementSpanProcessor.checkCounterOnShutdown(1);
+    assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(tenK);
+    assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(tenK);
+    assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 
   @Test
@@ -169,11 +144,11 @@ public class DisruptorAsyncSpanProcessorTest {
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
     disruptorAsyncSpanProcessor.shutdown();
-    incrementSpanProcessor1.checkCounterOnStart(1);
-    incrementSpanProcessor1.checkCounterOnEnd(1);
-    incrementSpanProcessor1.checkCounterOnShutdown(1);
-    incrementSpanProcessor2.checkCounterOnStart(1);
-    incrementSpanProcessor2.checkCounterOnEnd(1);
-    incrementSpanProcessor2.checkCounterOnShutdown(1);
+    assertThat(incrementSpanProcessor1.getCounterOnStart()).isEqualTo(1);
+    assertThat(incrementSpanProcessor1.getCounterOnEnd()).isEqualTo(1);
+    assertThat(incrementSpanProcessor1.getCounterOnShutdown()).isEqualTo(1);
+    assertThat(incrementSpanProcessor2.getCounterOnStart()).isEqualTo(1);
+    assertThat(incrementSpanProcessor2.getCounterOnEnd()).isEqualTo(1);
+    assertThat(incrementSpanProcessor2.getCounterOnShutdown()).isEqualTo(1);
   }
 }
