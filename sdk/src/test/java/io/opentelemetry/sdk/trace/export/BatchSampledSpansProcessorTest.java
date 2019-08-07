@@ -88,7 +88,7 @@ public class BatchSampledSpansProcessorTest {
   public void exportMoreSpansThanTheBufferSize() {
     tracerSdk.addSpanProcessor(
         BatchSampledSpansProcessor.newBuilder(waitingSpanExporter)
-            .setMaxQueueSieze(6)
+            .setMaxQueueSize(6)
             .setMaxExportBatchSize(2)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
@@ -135,7 +135,7 @@ public class BatchSampledSpansProcessorTest {
         BatchSampledSpansProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-            .setMaxQueueSieze(maxQueuedSpans)
+            .setMaxQueueSize(maxQueuedSpans)
             .setMaxExportBatchSize(maxQueuedSpans / 2)
             .build());
 
