@@ -128,7 +128,7 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
      *     dropping.
      * @return this.
      */
-    public Builder setMaxQueueSieze(int maxQueueSize) {
+    public Builder setMaxQueueSize(int maxQueueSize) {
       this.maxQueueSize = maxQueueSize;
       return this;
     }
