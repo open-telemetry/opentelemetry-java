@@ -1,6 +1,6 @@
 # OpenTelemetry
 [![Gitter chat][gitter-image]][gitter-url]
-[![Build Status][travis-image]][travis-url]
+[![Build Status][circleci-image]][circleci-url]
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
 
@@ -85,8 +85,8 @@ We plan to merge projects and pave the path for future improvements as a unified
 community of tracing vendors, users and library authors who wants apps be
 managed better. We are open to feedback and suggestions from all of you!
 
-[travis-image]: https://travis-ci.org/open-telemetry/opentelemetry-java.svg?branch=master
-[travis-url]: https://travis-ci.org/open-telemetry/opentelemetry-java 
+[circleci-image]: https://circleci.com/gh/open-telemetry/opentelemetry-java.svg?style=svg 
+[circleci-url]: https://circleci.com/gh/open-telemetry/opentelemetry-java
 [gitter-image]: https://badges.gitter.im/open-telemetry/opentelemetry-java.svg 
 [gitter-url]: https://gitter.im/open-telemetry/opentelemetry-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/graph/badge.svg

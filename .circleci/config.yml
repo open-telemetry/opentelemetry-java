@@ -1,0 +1,55 @@
+version: 2
+
+build_task: &build_task
+  name: Build
+  command: ./gradlew clean assemble check --stacktrace
+verify_task: &verify_task
+  name: Verify Google Java Format
+  command: ./gradlew verGJF
+
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gradle-{{ checksum "build.gradle" }}
+      - run:
+          <<: *verify_task
+      - run:
+          <<: *build_task
+      - run:
+          name: Cover
+          command: ./gradlew check :opentelemetry-all:jacocoTestReport
+      - run:
+          name: Publish coverage
+          command:  bash <(curl -s https://codecov.io/bash)
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}
+  java9:
+    docker:
+      - image: circleci/openjdk:9-jdk
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - java9-gradle-{{ checksum "build.gradle" }}
+      - run:
+          <<: *verify_task
+      - run:
+          <<: *build_task
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: java9-gradle-{{ checksum "build.gradle" }}
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - java9
