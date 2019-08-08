@@ -1,50 +1,15 @@
 description = 'OpenTelemetry SDK'
 
-apply plugin: 'com.google.protobuf'
-
 def protobufVersion = '3.7.1'
-def protocVersion = '3.7.1'
-
-buildscript {
-    repositories {
-        maven { url "https://plugins.gradle.org/m2/" }
-    }
-    dependencies {
-        classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.8"
-    }
-}
 
 dependencies {
     api project(':opentelemetry-api')
 
-    implementation "com.google.protobuf:protobuf-java:${protobufVersion}",
+    implementation libraries.opentelemetry_proto,
             "com.google.protobuf:protobuf-java-util:${protobufVersion}"
 
     annotationProcessor libraries.auto_value
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
-}
-
-animalsniffer {
-    // Don't check sourceSets.jmh and sourceSets.test
-    sourceSets = [
-            sourceSets.main
-    ]
-}
-
-protobuf {
-    protoc {
-        // The artifact spec for the Protobuf Compiler
-        artifact = "com.google.protobuf:protoc:${protocVersion}"
-    }
-}
-
-// IntelliJ complains that the generated classes are not found, ask IntelliJ to include the
-// generated Java directories as source folders.
-idea {
-    module {
-        sourceDirs += file("build/generated/source/proto/main/java");
-        // If you have additional sourceSets and/or codegen plugins, add all of them
-    }
 }
