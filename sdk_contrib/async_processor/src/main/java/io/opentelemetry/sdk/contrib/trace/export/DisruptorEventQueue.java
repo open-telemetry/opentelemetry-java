@@ -19,16 +19,16 @@ package io.opentelemetry.sdk.contrib.trace.export;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.InsufficientCapacityException;
+import com.lmax.disruptor.EventTranslatorTwoArg;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -42,70 +42,68 @@ import javax.annotation.concurrent.ThreadSafe;
 final class DisruptorEventQueue {
   private static final Logger logger = Logger.getLogger(DisruptorEventQueue.class.getName());
   private static final String WORKER_THREAD_NAME = "DisruptorEventQueue_WorkerThread";
+  private static final EventTranslatorTwoArg<DisruptorEvent, ReadableSpan, EventType>
+      TRANSLATOR_TWO_ARG =
+          new EventTranslatorTwoArg<DisruptorEvent, ReadableSpan, EventType>() {
+            @Override
+            public void translateTo(
+                DisruptorEvent event, long sequence, ReadableSpan arg0, EventType arg1) {
+              event.setEntry(arg0, arg1);
+            }
+          };
+  private static final EventFactory<DisruptorEvent> EVENT_FACTORY =
+      new EventFactory<DisruptorEvent>() {
+        @Override
+        public DisruptorEvent newInstance() {
+          return new DisruptorEvent();
+        }
+      };
 
   // The event queue is built on this {@link Disruptor}.
   private final Disruptor<DisruptorEvent> disruptor;
   private final RingBuffer<DisruptorEvent> ringBuffer;
-  private final SpanProcessor spanProcessor;
   private final AtomicBoolean loggedShutdownMessage = new AtomicBoolean(false);
+  private final CountDownLatch shutdownCounter = new CountDownLatch(1); // only one processor.
   private volatile boolean isShutdown = false;
   private final boolean blocking;
 
-  // Creates a new EventQueue. Private to prevent creation of non-singleton instance.
-  private DisruptorEventQueue(
-      Disruptor<DisruptorEvent> disruptor, SpanProcessor spanProcessor, boolean blocking) {
-    this.disruptor = disruptor;
-    this.ringBuffer = disruptor.getRingBuffer();
-    this.spanProcessor = spanProcessor;
-    this.blocking = blocking;
+  enum EventType {
+    ON_START,
+    ON_END,
+    ON_SHUTDOWN
   }
 
   // Creates a new EventQueue. Private to prevent creation of non-singleton instance.
-  static DisruptorEventQueue create(
+  DisruptorEventQueue(
       int bufferSize, WaitStrategy waitStrategy, SpanProcessor spanProcessor, boolean blocking) {
     // Create new Disruptor for processing. Note that Disruptor creates a single thread per
     // consumer (see https://github.com/LMAX-Exchange/disruptor/issues/121 for details);
     // this ensures that the event handler can take unsynchronized actions whenever possible.
-    Disruptor<DisruptorEvent> disruptor =
+    this.disruptor =
         new Disruptor<>(
-            DisruptorEventFactory.INSTANCE,
+            EVENT_FACTORY,
             bufferSize,
             new ThreadFactoryWithName(WORKER_THREAD_NAME),
             ProducerType.MULTI,
             waitStrategy);
-    disruptor.handleEventsWith(
-        new DisruptorEventHandler[] {new DisruptorEventHandler(spanProcessor)});
-    disruptor.start();
-
-    return new DisruptorEventQueue(disruptor, spanProcessor, blocking);
+    disruptor.handleEventsWith(new DisruptorEventHandler(spanProcessor, shutdownCounter));
+    this.ringBuffer = disruptor.start();
+    this.blocking = blocking;
   }
 
   // Enqueues an event on the {@link DisruptorEventQueue}.
-  void enqueue(ReadableSpan readableSpan, boolean isStart) {
+  void enqueue(ReadableSpan readableSpan, EventType eventType) {
     if (isShutdown) {
       if (!loggedShutdownMessage.getAndSet(true)) {
-        logger.log(Level.INFO, "Attempted to enqueue entry after Disruptor shutdown.");
+        logger.info("Attempted to enqueue entry after Disruptor shutdown.");
       }
     }
-
-    long sequence;
 
     if (blocking) {
-      sequence = ringBuffer.next();
+      ringBuffer.publishEvent(TRANSLATOR_TWO_ARG, readableSpan, eventType);
     } else {
-      try {
-        sequence = ringBuffer.tryNext();
-      } catch (InsufficientCapacityException e) {
-        // TODO: Add metrics for dropped events.
-        return;
-      }
-    }
-
-    try {
-      DisruptorEvent event = ringBuffer.get(sequence);
-      event.setEntry(readableSpan, isStart);
-    } finally {
-      ringBuffer.publish(sequence);
+      // TODO: Record metrics if element not added.
+      ringBuffer.tryPublishEvent(TRANSLATOR_TWO_ARG, readableSpan, eventType);
     }
   }
 
@@ -118,63 +116,73 @@ final class DisruptorEventQueue {
       if (isShutdown) {
         return;
       }
+      enqueue(null, EventType.ON_SHUTDOWN);
       isShutdown = true;
-      disruptor.shutdown();
-      spanProcessor.shutdown();
+      try {
+        shutdownCounter.await();
+      } catch (InterruptedException e) {
+        // Preserve the interruption.
+        Thread.currentThread().interrupt();
+        logger.warning("Thread interrupted, shutdown may not finished.");
+      }
     }
   }
 
   // An event in the {@link EventQueue}. Just holds a reference to an EventQueue.Entry.
   private static final class DisruptorEvent {
     @Nullable private ReadableSpan readableSpan = null;
-    private boolean isStart = false;
+    @Nullable private EventType eventType = null;
 
     // Sets the EventQueueEntry associated with this DisruptorEvent.
-    void setEntry(ReadableSpan readableSpan, boolean isStart) {
+    void setEntry(@Nullable ReadableSpan readableSpan, @Nullable EventType eventType) {
       this.readableSpan = readableSpan;
-      this.isStart = isStart;
+      this.eventType = eventType;
     }
 
-    // Returns the ReadableSpan associated with this DisruptorEvent.
     @Nullable
     ReadableSpan getReadableSpan() {
       return readableSpan;
     }
 
-    boolean getIsStart() {
-      return isStart;
-    }
-  }
-
-  // Factory for DisruptorEvent.
-  private enum DisruptorEventFactory implements EventFactory<DisruptorEvent> {
-    INSTANCE;
-
-    @Override
-    public DisruptorEvent newInstance() {
-      return new DisruptorEvent();
+    @Nullable
+    EventType getEventType() {
+      return eventType;
     }
   }
 
   private static final class DisruptorEventHandler implements EventHandler<DisruptorEvent> {
     private final SpanProcessor spanProcessor;
+    private final CountDownLatch shutdownCounter;
 
-    private DisruptorEventHandler(SpanProcessor spanProcessor) {
+    private DisruptorEventHandler(SpanProcessor spanProcessor, CountDownLatch shutdownCounter) {
       this.spanProcessor = spanProcessor;
+      this.shutdownCounter = shutdownCounter;
     }
 
     @Override
     public void onEvent(DisruptorEvent event, long sequence, boolean endOfBatch) {
       final ReadableSpan readableSpan = event.getReadableSpan();
+      final EventType eventType = event.getEventType();
+      if (eventType == null) {
+        logger.warning("Disruptor enqueued null element type.");
+        return;
+      }
       try {
-        if (event.getIsStart()) {
-          spanProcessor.onStart(readableSpan);
-        } else {
-          spanProcessor.onEnd(readableSpan);
+        switch (eventType) {
+          case ON_START:
+            spanProcessor.onStart(readableSpan);
+            break;
+          case ON_END:
+            spanProcessor.onEnd(readableSpan);
+            break;
+          case ON_SHUTDOWN:
+            spanProcessor.shutdown();
+            shutdownCounter.countDown();
+            break;
         }
       } finally {
         // Remove the reference to the previous entry to allow the memory to be gc'ed.
-        event.setEntry(null, /* isStart= */ false);
+        event.setEntry(null, null);
       }
     }
   }
