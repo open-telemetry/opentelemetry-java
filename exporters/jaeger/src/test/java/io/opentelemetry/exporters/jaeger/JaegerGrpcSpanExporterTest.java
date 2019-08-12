@@ -88,7 +88,8 @@ public class JaegerGrpcSpanExporterTest {
             .build();
 
     // test
-    JaegerGrpcSpanExporter exporter = new JaegerGrpcSpanExporter("test", channel);
+    JaegerGrpcSpanExporter exporter =
+        JaegerGrpcSpanExporter.newBuilder().setServiceName("test").setChannel(channel).build();
     exporter.export(Collections.singletonList(span));
 
     // verify

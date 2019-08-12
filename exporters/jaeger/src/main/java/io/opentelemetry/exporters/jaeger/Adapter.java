@@ -16,8 +16,8 @@
 
 package io.opentelemetry.exporters.jaeger;
 
-import com.google.protobuf.Duration;
-import com.google.protobuf.Timestamp;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.proto.trace.v1.AttributeValue;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -27,7 +27,12 @@ import java.util.List;
 import java.util.Map;
 
 /** Adapts OpenTelemetry objects to Jaeger objects. */
-class Adapter {
+final class Adapter {
+  private static final String KEY_LOG_MESSAGE = "message";
+  private static final String KEY_SPAN_KIND = "span.kind";
+  private static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
+  private static final String KEY_SPAN_STATUS_CODE = "span.status.code";
+
   private Adapter() {}
 
   /**
@@ -58,7 +63,7 @@ class Adapter {
     target.setSpanId(span.getSpanId());
     target.setOperationName(span.getName());
     target.setStartTime(span.getStartTime());
-    target.setDuration(getDuration(span.getStartTime(), span.getEndTime()));
+    target.setDuration(Timestamps.between(span.getStartTime(), span.getEndTime()));
 
     target.addAllTags(toKeyValues(span.getAttributes()));
     target.addAllLogs(toJaegerLogs(span.getTimeEvents()));
@@ -67,10 +72,22 @@ class Adapter {
     if (span.getKind() != Span.SpanKind.SPAN_KIND_UNSPECIFIED) {
       target.addTags(
           Model.KeyValue.newBuilder()
-              .setKey("span.kind")
+              .setKey(KEY_SPAN_KIND)
               .setVStr(span.getKind().getValueDescriptor().getName())
               .build());
     }
+
+    target.addTags(
+        Model.KeyValue.newBuilder()
+            .setKey(KEY_SPAN_STATUS_MESSAGE)
+            .setVStr(span.getStatus().getMessage())
+            .build());
+
+    target.addTags(
+        Model.KeyValue.newBuilder()
+            .setKey(KEY_SPAN_STATUS_CODE)
+            .setVInt64(span.getStatus().getCode())
+            .build());
 
     return target.build();
   }
@@ -82,6 +99,7 @@ class Adapter {
    * @return a collection of Jaeger logs
    * @see #toJaegerLog(Span.TimedEvent)
    */
+  @VisibleForTesting
   static Collection<Model.Log> toJaegerLogs(Span.TimedEvents timeEvents) {
     List<Model.Log> logs = new ArrayList<>(timeEvents.getTimedEventCount());
     for (Span.TimedEvent e : timeEvents.getTimedEventList()) {
@@ -96,6 +114,7 @@ class Adapter {
    * @param timeEvent the timed event to be converted
    * @return a Jaeger log
    */
+  @VisibleForTesting
   static Model.Log toJaegerLog(Span.TimedEvent timeEvent) {
     Model.Log.Builder builder = Model.Log.newBuilder();
     builder.setTimestamp(timeEvent.getTime());
@@ -104,7 +123,7 @@ class Adapter {
 
     // name is a top-level property in OpenTelemetry
     builder.addFields(
-        Model.KeyValue.newBuilder().setKey("message").setVStr(event.getName()).build());
+        Model.KeyValue.newBuilder().setKey(KEY_LOG_MESSAGE).setVStr(event.getName()).build());
     builder.addAllFields(toKeyValues(event.getAttributes()));
 
     return builder.build();
@@ -117,6 +136,7 @@ class Adapter {
    * @return a collection of Jaeger key values
    * @see #toKeyValue(String, AttributeValue)
    */
+  @VisibleForTesting
   static Collection<Model.KeyValue> toKeyValues(Span.Attributes attributes) {
     ArrayList<Model.KeyValue> tags = new ArrayList<>(attributes.getAttributeMapCount());
     for (Map.Entry<String, AttributeValue> entry : attributes.getAttributeMapMap().entrySet()) {
@@ -132,6 +152,7 @@ class Adapter {
    * @param value the entry value
    * @return a Jaeger key value
    */
+  @VisibleForTesting
   static Model.KeyValue toKeyValue(String key, AttributeValue value) {
     Model.KeyValue.Builder builder = Model.KeyValue.newBuilder();
     builder.setKey(key);
@@ -162,6 +183,7 @@ class Adapter {
    * @param links the span's links property to be converted
    * @return a collection of Jaeger span references
    */
+  @VisibleForTesting
   static Collection<Model.SpanRef> toSpanRefs(Span.Links links) {
     List<Model.SpanRef> spanRefs = new ArrayList<>(links.getLinkCount());
     for (Span.Link link : links.getLinkList()) {
@@ -176,6 +198,7 @@ class Adapter {
    * @param link the OpenTelemetry link to be converted
    * @return the Jaeger span reference
    */
+  @VisibleForTesting
   static Model.SpanRef toSpanRef(Span.Link link) {
     Model.SpanRef.Builder builder = Model.SpanRef.newBuilder();
     builder.setTraceId(link.getTraceId());
@@ -186,27 +209,5 @@ class Adapter {
     builder.setRefType(Model.SpanRefType.CHILD_OF);
 
     return builder.build();
-  }
-
-  /**
-   * Calculates the duration between two timestamps.
-   *
-   * @param start the timestamp representing the span's start time
-   * @param end the timestamp representing the span's end time
-   * @return the span's duration
-   */
-  static Duration getDuration(Timestamp start, Timestamp end) {
-    long secs = end.getSeconds() - start.getSeconds();
-    int nanos = end.getNanos() - start.getNanos();
-
-    if (secs < 0 && nanos > 0) { // this happens when the end is *before* the start
-      secs += 1;
-      nanos -= 1000000000;
-    } else if (secs > 0 && nanos < 0) {
-      secs -= 1;
-      nanos += 1000000000;
-    }
-
-    return Duration.newBuilder().setSeconds(secs).setNanos(nanos).build();
   }
 }

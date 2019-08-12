@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.proto.trace.v1.AttributeValue;
@@ -28,6 +27,7 @@ import io.opentelemetry.proto.trace.v1.Span;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.junit.Test;
 
 public class AdapterTest {
@@ -67,41 +67,15 @@ public class AdapterTest {
     assertEquals(startTime, jaegerSpan.getStartTime());
     assertEquals(duration, jaegerSpan.getDuration().getNanos() / 1000000);
 
-    assertEquals(2, jaegerSpan.getTagsCount());
-
-    boolean foundSpanKind = false;
-    boolean foundAttribute = false;
-    for (Model.KeyValue kv : jaegerSpan.getTagsList()) {
-      if (kv.getKey().equals("span.kind")) {
-        foundSpanKind = true;
-        // TODO(jpkroehling) check if it's OK to have a different case here
-        // most of the current instrumentation libraries use lower case
-        assertEquals("SERVER", kv.getVStr());
-      }
-      if (kv.getKey().equals("valueB")) {
-        foundAttribute = true;
-        assertTrue(kv.getVBool());
-      }
-    }
-    assertTrue("tag 'valueB' wasn't set", foundAttribute);
-    assertTrue("tag 'span.kind' wasn't set", foundSpanKind);
+    assertEquals(4, jaegerSpan.getTagsCount());
+    assertEquals("SERVER", getValue(jaegerSpan.getTagsList(), "span.kind").getVStr());
+    assertEquals(0, getValue(jaegerSpan.getTagsList(), "span.status.code").getVInt64());
+    assertEquals("", getValue(jaegerSpan.getTagsList(), "span.status.message").getVStr());
 
     assertEquals(1, jaegerSpan.getLogsCount());
     Model.Log log = jaegerSpan.getLogs(0);
-    boolean foundMessage = false;
-    boolean foundTag = false;
-    for (Model.KeyValue kv : log.getFieldsList()) {
-      if (kv.getKey().equals("message")) {
-        foundMessage = true;
-        assertEquals("the log message", kv.getVStr());
-      }
-      if (kv.getKey().equals("foo")) {
-        foundTag = true;
-        assertEquals("bar", kv.getVStr());
-      }
-    }
-    assertTrue("log message wasn't set", foundMessage);
-    assertTrue("log tag 'foo' wasn't set", foundTag);
+    assertEquals("the log message", getValue(log.getFieldsList(), "message").getVStr());
+    assertEquals("bar", getValue(log.getFieldsList(), "foo").getVStr());
 
     assertEquals(1, jaegerSpan.getReferencesCount());
     assertEquals(Model.SpanRefType.CHILD_OF, jaegerSpan.getReferences(0).getRefType());
@@ -132,22 +106,8 @@ public class AdapterTest {
     // verify
     assertEquals(2, log.getFieldsCount());
 
-    boolean foundMessage = false;
-    boolean foundTag = false;
-    for (Model.KeyValue kv : log.getFieldsList()) {
-      if (kv.getKey().equals("message")) {
-        foundMessage = true;
-        assertEquals("the log message", kv.getVStr());
-      }
-
-      if (kv.getKey().equals("foo")) {
-        foundTag = true;
-        assertEquals("bar", kv.getVStr());
-      }
-    }
-
-    assertTrue("Could not find the 'name' key", foundMessage);
-    assertTrue("Could not find the 'foo' key", foundTag);
+    assertEquals("the log message", getValue(log.getFieldsList(), "message").getVStr());
+    assertEquals("bar", getValue(log.getFieldsList(), "foo").getVStr());
   }
 
   @Test
@@ -223,56 +183,6 @@ public class AdapterTest {
     assertEquals(Model.SpanRefType.CHILD_OF, spanRef.getRefType());
   }
 
-  @Test
-  public void testDurationUnderOneSec() {
-    // prepare
-    long startM = System.currentTimeMillis();
-    long endM = startM + 900; // 900ms after...
-    Timestamp start = toTimestamp(startM);
-    Timestamp end = toTimestamp(endM);
-
-    // test
-    Duration duration = Adapter.getDuration(start, end);
-
-    // verify
-    assertEquals(900, duration.getNanos() / 1000000);
-    assertEquals(0, duration.getSeconds());
-  }
-
-  @Test
-  public void testDurationOverOneSec() {
-    // prepare
-    long startM = System.currentTimeMillis();
-    long endM = startM + 1900; // 1900ms after...
-    Timestamp start = toTimestamp(startM);
-    Timestamp end = toTimestamp(endM);
-
-    // test
-    Duration duration = Adapter.getDuration(start, end);
-
-    // verify
-    assertEquals(900, duration.getNanos() / 1000000);
-    assertEquals(1, duration.getSeconds());
-  }
-
-  @Test
-  public void testNegativeDuration() {
-    // prepare
-    // this test is just to ensure the logic inside the duration:
-    // "negative duration" should never happen in real life
-    long endM = System.currentTimeMillis();
-    long startM = endM + 900;
-    Timestamp start = toTimestamp(startM);
-    Timestamp end = toTimestamp(endM);
-
-    // test
-    Duration duration = Adapter.getDuration(start, end);
-
-    // verify
-    assertEquals(-900, duration.getNanos() / 1000000);
-    assertEquals(0, duration.getSeconds());
-  }
-
   public Span.TimedEvents getTimedEvents() {
     Span.TimedEvent timedEvent = getTimedEvent();
     return Span.TimedEvents.newBuilder().addTimedEvent(timedEvent).build();
@@ -326,5 +236,15 @@ public class AdapterTest {
         .setSeconds(ms / 1000)
         .setNanos((int) ((ms % 1000) * 1000000))
         .build();
+  }
+
+  @Nullable
+  private static Model.KeyValue getValue(List<Model.KeyValue> tagsList, String s) {
+    for (Model.KeyValue kv : tagsList) {
+      if (kv.getKey().equals(s)) {
+        return kv;
+      }
+    }
+    return null;
   }
 }

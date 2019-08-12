@@ -25,11 +25,17 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Exports spans to Jaeger via gRPC, using Jaeger's protobuf model. */
 public class JaegerGrpcSpanExporter implements SpanExporter {
+  private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
+
   private final CollectorServiceGrpc.CollectorServiceBlockingStub blockingStub;
   private final Model.Process process;
+  private final ManagedChannel managedChannel;
 
   /**
    * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.
@@ -37,7 +43,7 @@ public class JaegerGrpcSpanExporter implements SpanExporter {
    * @param serviceName this service's name
    * @param channel the channel to use when communicating with the Jaeger Collector
    */
-  public JaegerGrpcSpanExporter(String serviceName, ManagedChannel channel) {
+  private JaegerGrpcSpanExporter(String serviceName, ManagedChannel channel) {
     String hostname;
     String ipv4;
 
@@ -68,6 +74,7 @@ public class JaegerGrpcSpanExporter implements SpanExporter {
             .addTags(ipv4Tag)
             .addTags(hostnameTag)
             .build();
+    this.managedChannel = channel;
     this.blockingStub = CollectorServiceGrpc.newBlockingStub(channel);
   }
 
@@ -93,6 +100,35 @@ public class JaegerGrpcSpanExporter implements SpanExporter {
     }
   }
 
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
   @Override
-  public void shutdown() {}
+  public void shutdown() {
+    try {
+      managedChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      logger.log(Level.WARNING, "Failed to shutdown the gRPC channel", e);
+    }
+  }
+
+  public static class Builder {
+    private String serviceName;
+    private ManagedChannel channel;
+
+    public Builder setServiceName(String serviceName) {
+      this.serviceName = serviceName;
+      return this;
+    }
+
+    public Builder setChannel(ManagedChannel channel) {
+      this.channel = channel;
+      return this;
+    }
+
+    public JaegerGrpcSpanExporter build() {
+      return new JaegerGrpcSpanExporter(serviceName, channel);
+    }
+  }
 }
