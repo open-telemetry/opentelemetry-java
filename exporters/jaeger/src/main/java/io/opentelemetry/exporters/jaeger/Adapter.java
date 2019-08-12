@@ -69,6 +69,13 @@ final class Adapter {
     target.addAllLogs(toJaegerLogs(span.getTimeEvents()));
     target.addAllReferences(toSpanRefs(span.getLinks()));
 
+    // add the parent span
+    target.addReferences(
+        Model.SpanRef.newBuilder()
+            .setTraceId(span.getTraceId())
+            .setSpanId(span.getParentSpanId())
+            .setRefType(Model.SpanRefType.CHILD_OF));
+
     if (span.getKind() != Span.SpanKind.SPAN_KIND_UNSPECIFIED) {
       target.addTags(
           Model.KeyValue.newBuilder()
@@ -204,9 +211,10 @@ final class Adapter {
     builder.setTraceId(link.getTraceId());
     builder.setSpanId(link.getSpanId());
 
-    // we can assume that all links are parents
+    // we can assume that all links are *follows from*
     // https://github.com/open-telemetry/opentelemetry-java/issues/475
-    builder.setRefType(Model.SpanRefType.CHILD_OF);
+    // https://github.com/open-telemetry/opentelemetry-java/pull/481/files#r312577862
+    builder.setRefType(Model.SpanRefType.FOLLOWS_FROM);
 
     return builder.build();
   }

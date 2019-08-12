@@ -77,10 +77,10 @@ public class AdapterTest {
     assertEquals("the log message", getValue(log.getFieldsList(), "message").getVStr());
     assertEquals("bar", getValue(log.getFieldsList(), "foo").getVStr());
 
-    assertEquals(1, jaegerSpan.getReferencesCount());
-    assertEquals(Model.SpanRefType.CHILD_OF, jaegerSpan.getReferences(0).getRefType());
-    assertEquals("parent123", jaegerSpan.getReferences(0).getTraceId().toStringUtf8());
-    assertEquals("parent456", jaegerSpan.getReferences(0).getSpanId().toStringUtf8());
+    assertEquals(2, jaegerSpan.getReferencesCount());
+
+    assertHasFollowsFrom(jaegerSpan);
+    assertHasParent(jaegerSpan);
   }
 
   @Test
@@ -180,7 +180,7 @@ public class AdapterTest {
     // verify
     assertEquals("abc123", spanRef.getSpanId().toStringUtf8());
     assertEquals("def456", spanRef.getTraceId().toStringUtf8());
-    assertEquals(Model.SpanRefType.CHILD_OF, spanRef.getRefType());
+    assertEquals(Model.SpanRefType.FOLLOWS_FROM, spanRef.getRefType());
   }
 
   public Span.TimedEvents getTimedEvents() {
@@ -221,6 +221,7 @@ public class AdapterTest {
     return Span.newBuilder()
         .setTraceId(ByteString.copyFromUtf8("abc123"))
         .setSpanId(ByteString.copyFromUtf8("def456"))
+        .setParentSpanId(ByteString.copyFromUtf8("parent789"))
         .setName("GET /api/endpoint")
         .setStartTime(startTime)
         .setEndTime(endTime)
@@ -246,5 +247,29 @@ public class AdapterTest {
       }
     }
     return null;
+  }
+
+  private static void assertHasFollowsFrom(Model.Span jaegerSpan) {
+    boolean found = false;
+    for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
+      if (Model.SpanRefType.FOLLOWS_FROM.equals(spanRef.getRefType())) {
+        assertEquals("parent123", spanRef.getTraceId().toStringUtf8());
+        assertEquals("parent456", spanRef.getSpanId().toStringUtf8());
+        found = true;
+      }
+    }
+    assertTrue("Should have found the follows-from reference", found);
+  }
+
+  private static void assertHasParent(Model.Span jaegerSpan) {
+    boolean found = false;
+    for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
+      if (Model.SpanRefType.CHILD_OF.equals(spanRef.getRefType())) {
+        assertEquals("abc123", spanRef.getTraceId().toStringUtf8());
+        assertEquals("parent789", spanRef.getSpanId().toStringUtf8());
+        found = true;
+      }
+    }
+    assertTrue("Should have found the parent reference", found);
   }
 }
