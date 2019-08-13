@@ -1,0 +1,11 @@
+description = 'OpenTelemetry SDK Contrib'
+
+dependencies {
+    api project(':opentelemetry-api'),
+            project(':opentelemetry-sdk')
+
+    implementation libraries.guava,
+            libraries.disruptor
+
+    signature "org.codehaus.mojo.signature:java18:1.0@signature"
+}
