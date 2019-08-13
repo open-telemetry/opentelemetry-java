@@ -111,8 +111,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
+    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
       return new NoopTimeSeries();
@@ -129,7 +129,7 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
+    public void removeTimeSeries(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
 
@@ -170,8 +170,8 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
-        Utils.checkMapElementNotNull(
+      public Builder setConstantLabels(Map<LabelKey, String> constantLabels) {
+        Utils.checkMapKeysNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
         return this;
       }
@@ -205,8 +205,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
+    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
       return new NoopTimeSeries();
@@ -223,7 +223,7 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
+    public void removeTimeSeries(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
 
@@ -264,8 +264,8 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
-        Utils.checkMapElementNotNull(
+      public Builder setConstantLabels(Map<LabelKey, String> constantLabels) {
+        Utils.checkMapKeysNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
         return this;
       }
@@ -299,8 +299,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
+    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
       return NoopTimeSeries.INSTANCE;
@@ -317,7 +317,7 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
+    public void removeTimeSeries(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
 
@@ -360,8 +360,8 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
-        Utils.checkMapElementNotNull(
+      public Builder setConstantLabels(Map<LabelKey, String> constantLabels) {
+        Utils.checkMapKeysNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
         return this;
       }
@@ -395,8 +395,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelValues, "labelValues"), "labelValue");
+    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
       return NoopTimeSeries.INSTANCE;
@@ -413,7 +413,7 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeTimeSeries(List<LabelValue> labelValues) {
+    public void removeTimeSeries(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
 
@@ -456,8 +456,8 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
-        Utils.checkMapElementNotNull(
+      public Builder setConstantLabels(Map<LabelKey, String> constantLabels) {
+        Utils.checkMapKeysNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
         return this;
       }

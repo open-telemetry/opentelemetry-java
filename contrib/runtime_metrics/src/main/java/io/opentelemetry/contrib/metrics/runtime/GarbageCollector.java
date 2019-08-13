@@ -19,7 +19,6 @@ package io.opentelemetry.contrib.metrics.runtime;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.LabelKey;
-import io.opentelemetry.metrics.LabelValue;
 import io.opentelemetry.metrics.Meter;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -70,9 +69,8 @@ public final class GarbageCollector {
           @Override
           public void run() {
             for (final GarbageCollectorMXBean gc : garbageCollectors) {
-              LabelValue gcName = LabelValue.create(gc.getName());
               collectionMetric
-                  .getOrCreateTimeSeries(Collections.singletonList(gcName))
+                  .getOrCreateTimeSeries(Collections.singletonList(gc.getName()))
                   .set(gc.getCollectionTime());
             }
           }

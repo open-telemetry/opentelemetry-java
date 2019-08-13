@@ -38,7 +38,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .build();
  *   // It is recommended to keep a reference of a TimeSeries.
  *   private static final GaugeLong.TimeSeries inboundTimeSeries =
- *       gauge.getOrCreateTimeSeries(Collections.singletonList(LabelValue.create("SomeWork")));
+ *       gauge.getOrCreateTimeSeries(Collections.singletonList("SomeWork"));
  *    private static final GaugeLong.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
  *
  *   void doDefault() {
@@ -60,7 +60,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface GaugeLong extends Metric<GaugeLong.TimeSeries> {
 
   @Override
-  TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
+  TimeSeries getOrCreateTimeSeries(List<String> labelValues);
 
   @Override
   TimeSeries getDefaultTimeSeries();

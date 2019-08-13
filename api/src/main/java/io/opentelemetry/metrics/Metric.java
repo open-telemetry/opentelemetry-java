@@ -40,7 +40,7 @@ public interface Metric<T> {
    *     keys.
    * @since 0.1.0
    */
-  T getOrCreateTimeSeries(List<LabelValue> labelValues);
+  T getOrCreateTimeSeries(List<String> labelValues);
 
   /**
    * Returns a {@code TimeSeries} for a metric with all labels not set (default label value).
@@ -64,11 +64,12 @@ public interface Metric<T> {
    * Removes the {@code TimeSeries} from the metric, if it is present. i.e. references to previous
    * {@code TimeSeries} are invalid (not part of the metric).
    *
+   * <p>If value is missing for one of the predefined keys {@code null} must be used for that value.
+   *
    * @param labelValues the list of label values.
-   * @throws NullPointerException if {@code labelValues} is null.
    * @since 0.1.0
    */
-  void removeTimeSeries(List<LabelValue> labelValues);
+  void removeTimeSeries(List<String> labelValues);
 
   /**
    * Removes all {@code TimeSeries} from the metric. i.e. references to all previous {@code
@@ -117,7 +118,7 @@ public interface Metric<T> {
      * @param constantLabels the map of constant labels for the Metric.
      * @return this.
      */
-    B setConstantLabels(Map<LabelKey, LabelValue> constantLabels);
+    B setConstantLabels(Map<LabelKey, String> constantLabels);
 
     /**
      * Sets the name of the component that reports this {@code Metric}.

@@ -137,10 +137,10 @@ public final class Utils {
    * @param errorMessage the message to use for the exception. Will be converted to a string using
    *     {@link String#valueOf(Object)}.
    */
-  public static <K, V> void checkMapElementNotNull(
+  public static <K, V> void checkMapKeysNotNull(
       Map<K, V> map, @javax.annotation.Nullable Object errorMessage) {
     for (Map.Entry<K, V> entry : map.entrySet()) {
-      if (entry.getKey() == null || entry.getValue() == null) {
+      if (entry.getKey() == null) {
         throw new NullPointerException(String.valueOf(errorMessage));
       }
     }
