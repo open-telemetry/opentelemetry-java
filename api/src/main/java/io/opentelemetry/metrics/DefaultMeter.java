@@ -23,7 +23,6 @@ import io.opentelemetry.resources.Resource;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -75,30 +74,21 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public Measure.Builder measureBuilder(String name) {
+  public MeasureDouble.Builder measureDoubleBuilder(String name) {
+    Utils.checkNotNull(name, "name");
     Utils.checkArgument(
         StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
         ERROR_MESSAGE_INVALID_NAME);
-    return new NoopMeasure.NoopBuilder();
+    return new NoopMeasureDouble.NoopBuilder();
   }
 
   @Override
-  public void record(List<Measurement> measurements) {
-    Utils.checkNotNull(measurements, "measurements");
-  }
-
-  @Override
-  public void record(List<Measurement> measurements, DistributedContext distContext) {
-    Utils.checkNotNull(measurements, "measurements");
-    Utils.checkNotNull(distContext, "distContext");
-  }
-
-  @Override
-  public void record(
-      List<Measurement> measurements, DistributedContext distContext, SpanContext spanContext) {
-    Utils.checkNotNull(distContext, "distContext");
-    Utils.checkNotNull(measurements, "measurements");
-    Utils.checkNotNull(spanContext, "spanContext");
+  public MeasureLong.Builder measureLongBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
+    return new NoopMeasureLong.NoopBuilder();
   }
 
   /** No-op implementations of GaugeLong class. */
@@ -482,34 +472,29 @@ public final class DefaultMeter implements Meter {
   }
 
   @ThreadSafe
-  private static final class NoopMeasure implements Measure {
-    private final Type type;
+  private static final class NoopMeasureDouble implements MeasureDouble {
+    private NoopMeasureDouble() {}
 
-    private NoopMeasure(Type type) {
-      this.type = type;
+    @Override
+    public void record(double measurement) {
+      Utils.checkArgument(measurement >= 0.0, "Unsupported negative values.");
     }
 
     @Override
-    public Measurement createDoubleMeasurement(double value) {
-      if (type != Type.DOUBLE) {
-        throw new UnsupportedOperationException("This type can only create double measurement");
-      }
-      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-      return NoopMeasurement.INSTANCE;
+    public void record(double measurement, DistributedContext distContext) {
+      Utils.checkArgument(measurement >= 0.0, "Unsupported negative values.");
+      Utils.checkNotNull(distContext, "distContext");
     }
 
     @Override
-    public Measurement createLongMeasurement(long value) {
-      if (type != Type.LONG) {
-        throw new UnsupportedOperationException("This type can only create long measurement");
-      }
-      Utils.checkArgument(value >= 0, "Unsupported negative values.");
-      return NoopMeasurement.INSTANCE;
+    public void record(
+        double measurement, DistributedContext distContext, SpanContext spanContext) {
+      Utils.checkArgument(measurement >= 0.0, "Unsupported negative values.");
+      Utils.checkNotNull(distContext, "distContext");
+      Utils.checkNotNull(spanContext, "spanContext");
     }
 
-    private static final class NoopBuilder implements Measure.Builder {
-      private Type type = Type.DOUBLE;
-
+    private static final class NoopBuilder implements MeasureDouble.Builder {
       @Override
       public Builder setDescription(String description) {
         Utils.checkNotNull(description, "description");
@@ -523,20 +508,63 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setType(Type type) {
-        this.type = Utils.checkNotNull(type, "type");
+      public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
+        Utils.checkNotNull(constantLabels, "constantLabels");
         return this;
       }
 
       @Override
-      public Measure build() {
-        return new NoopMeasure(type);
+      public NoopMeasureDouble build() {
+        return new NoopMeasureDouble();
       }
     }
   }
 
-  @Immutable
-  private static final class NoopMeasurement implements Measurement {
-    private static final Measurement INSTANCE = new NoopMeasurement();
+  @ThreadSafe
+  private static final class NoopMeasureLong implements MeasureLong {
+    private NoopMeasureLong() {}
+
+    @Override
+    public void record(long measurement) {
+      Utils.checkArgument(measurement >= 0, "Unsupported negative values.");
+    }
+
+    @Override
+    public void record(long measurement, DistributedContext distContext) {
+      Utils.checkArgument(measurement >= 0, "Unsupported negative values.");
+      Utils.checkNotNull(distContext, "distContext");
+    }
+
+    @Override
+    public void record(long measurement, DistributedContext distContext, SpanContext spanContext) {
+      Utils.checkArgument(measurement >= 0, "Unsupported negative values.");
+      Utils.checkNotNull(distContext, "distContext");
+      Utils.checkNotNull(spanContext, "spanContext");
+    }
+
+    private static final class NoopBuilder implements MeasureLong.Builder {
+      @Override
+      public Builder setDescription(String description) {
+        Utils.checkNotNull(description, "description");
+        return this;
+      }
+
+      @Override
+      public Builder setUnit(String unit) {
+        Utils.checkNotNull(unit, "unit");
+        return this;
+      }
+
+      @Override
+      public Builder setConstantLabels(Map<LabelKey, LabelValue> constantLabels) {
+        Utils.checkNotNull(constantLabels, "constantLabels");
+        return this;
+      }
+
+      @Override
+      public NoopMeasureLong build() {
+        return new NoopMeasureLong();
+      }
+    }
   }
 }

@@ -20,8 +20,14 @@ import io.opentelemetry.resources.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.concurrent.ThreadSafe;
 
-/** Base interface for all metrics defined in this package. */
+/**
+ * Base interface for all metrics defined in this package.
+ *
+ * @since 0.1.0
+ */
+@ThreadSafe
 public interface Metric<T> {
   /**
    * Creates a {@code TimeSeries} and returns a {@code TimeSeries} if the specified {@code
@@ -57,6 +63,7 @@ public interface Metric<T> {
    * never be called.
    *
    * @param metricUpdater the callback to be executed before export.
+   * @since 0.1.0
    */
   void setCallback(Runnable metricUpdater);
 
@@ -147,9 +154,9 @@ public interface Metric<T> {
     B setResource(Resource resource);
 
     /**
-     * Builds and returns a metric with the desired options.
+     * Builds and returns a {@code Metric} with the desired options.
      *
-     * @return a metric with the desired options.
+     * @return a {@code Metric} with the desired options.
      */
     V build();
   }
