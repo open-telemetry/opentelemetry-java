@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.concurrent.ThreadSafe;
 
 /** Adapts OpenTelemetry objects to Jaeger objects. */
+@ThreadSafe
 final class Adapter {
   private static final String KEY_LOG_MESSAGE = "message";
   private static final String KEY_SPAN_KIND = "span.kind";
