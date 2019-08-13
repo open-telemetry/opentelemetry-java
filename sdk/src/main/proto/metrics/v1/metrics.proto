@@ -98,16 +98,7 @@ message MetricDescriptor {
   Type type = 4;
 
   // The label keys associated with the metric descriptor.
-  repeated LabelKey label_keys = 5;
-}
-
-// Defines a label key associated with a metric descriptor.
-message LabelKey {
-  // The key for the label.
-  string key = 1;
-
-  // A human-readable description of what this label key represents.
-  string description = 2;
+  repeated string label_keys = 5;
 }
 
 // A collection of data points that describes the time-varying values

@@ -18,7 +18,6 @@ package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.GaugeLong;
-import io.opentelemetry.metrics.LabelKey;
 import io.opentelemetry.metrics.Meter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -45,9 +44,9 @@ import java.util.List;
  * </pre>
  */
 public final class MemoryPools {
-  private static final LabelKey TYPE = LabelKey.create("type", "");
-  private static final LabelKey AREA = LabelKey.create("area", "");
-  private static final LabelKey POOL = LabelKey.create("pool", "");
+  private static final String TYPE_LABEL_KEY = "type";
+  private static final String AREA_LABEL_KEY = "area";
+  private static final String POOL_LABEL_KEY = "pool";
   private static final String USED = "used";
   private static final String COMMITTED = "committed";
   private static final String MAX = "max";
@@ -76,7 +75,7 @@ public final class MemoryPools {
             .gaugeLongBuilder("area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
-            .setLabelKeys(Arrays.asList(TYPE, AREA))
+            .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
             .setComponent("jvm_memory")
             .build();
     final GaugeLong.TimeSeries usedHeap =
@@ -114,7 +113,7 @@ public final class MemoryPools {
             .gaugeLongBuilder("pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
-            .setLabelKeys(Arrays.asList(TYPE, POOL))
+            .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))
             .setComponent("jvm_memory")
             .build();
     poolMetric.setCallback(

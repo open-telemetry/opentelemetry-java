@@ -34,7 +34,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .counterDoubleBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
- *           .setLabelKeys(Collections.singletonList(LabelKey.create("Name", "desc")))
+ *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
  *   // It is recommended to keep a reference of a TimeSeries.
  *   private static final CounterDouble.TimeSeries inboundTimeSeries =
