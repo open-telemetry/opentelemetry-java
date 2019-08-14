@@ -46,6 +46,27 @@ public final class MeasureDoubleTest {
   }
 
   @Test
+  public void preventNull_Description() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("constantLabels");
+    meter.measureDoubleBuilder("metric").setDescription(null).build();
+  }
+
+  @Test
+  public void preventNull_Unit() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("constantLabels");
+    meter.measureDoubleBuilder("metric").setUnit(null).build();
+  }
+
+  @Test
+  public void preventNull_ConstantLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("constantLabels");
+    meter.measureDoubleBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
   public void preventNegativeValue() {
     MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
