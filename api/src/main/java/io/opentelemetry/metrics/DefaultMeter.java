@@ -163,14 +163,14 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setLabelKeys(List<LabelKey> labelKeys) {
+      public Builder setLabelKeys(List<String> labelKeys) {
         Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
         labelKeysSize = labelKeys.size();
         return this;
       }
 
       @Override
-      public Builder setConstantLabels(Map<LabelKey, String> constantLabels) {
+      public Builder setConstantLabels(Map<String, String> constantLabels) {
         Utils.checkMapKeysNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
         return this;
@@ -257,14 +257,14 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setLabelKeys(List<LabelKey> labelKeys) {
+      public Builder setLabelKeys(List<String> labelKeys) {
         Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
         labelKeysSize = labelKeys.size();
         return this;
       }
 
       @Override
-      public Builder setConstantLabels(Map<LabelKey, String> constantLabels) {
+      public Builder setConstantLabels(Map<String, String> constantLabels) {
         Utils.checkMapKeysNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
         return this;
@@ -353,14 +353,14 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setLabelKeys(List<LabelKey> labelKeys) {
+      public Builder setLabelKeys(List<String> labelKeys) {
         Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
         labelKeysSize = labelKeys.size();
         return this;
       }
 
       @Override
-      public Builder setConstantLabels(Map<LabelKey, String> constantLabels) {
+      public Builder setConstantLabels(Map<String, String> constantLabels) {
         Utils.checkMapKeysNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
         return this;
@@ -449,14 +449,14 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setLabelKeys(List<LabelKey> labelKeys) {
+      public Builder setLabelKeys(List<String> labelKeys) {
         Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
         labelKeysSize = labelKeys.size();
         return this;
       }
 
       @Override
-      public Builder setConstantLabels(Map<LabelKey, String> constantLabels) {
+      public Builder setConstantLabels(Map<String, String> constantLabels) {
         Utils.checkMapKeysNotNull(
             Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
         return this;

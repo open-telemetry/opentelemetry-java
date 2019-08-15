@@ -86,10 +86,15 @@ import java.util.List;
  * <pre>{@code
  * class YourClass {
  *   private static final Meter meter = Metrics.getMeter();
- *   private static final List<LabelKey> keys = Arrays.asList(LabelKey.create("Name", "desc"));
- *   private static final List<LabelValue> values = Arrays.asList(LabelValue.create("Inbound"));
- *   private static final GaugeDouble gauge = metricRegistry.gaugeLongBuilder(
- *       "queue_size", "Pending jobs", "1", labelKeys);
+ *   private static final List<String> keys = Collections.singletonList("Name");
+ *   private static final List<String> values = Collections.singletonList("Inbound");
+ *   private static final GaugeDouble gauge =
+ *       meter
+ *           .gaugeLongBuilder("queue_size")
+ *           .setDescription("Pending jobs")
+ *           .setUnit("1")
+ *           .setLabelKeys(labelKeys)
+ *           .build();
  *
  *   // It is recommended to keep a reference of a TimeSeries.
  *   GaugeDouble.TimeSeries inboundTimeSeries = gauge.getOrCreateTimeSeries(labelValues);

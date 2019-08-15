@@ -108,7 +108,7 @@ public interface Metric<T> {
      * @param labelKeys the list of label keys for the Metric.
      * @return this.
      */
-    B setLabelKeys(List<LabelKey> labelKeys);
+    B setLabelKeys(List<String> labelKeys);
 
     /**
      * Sets the map of constant labels (they will be added to all the TimeSeries) for the Metric.
@@ -118,7 +118,7 @@ public interface Metric<T> {
      * @param constantLabels the map of constant labels for the Metric.
      * @return this.
      */
-    B setConstantLabels(Map<LabelKey, String> constantLabels);
+    B setConstantLabels(Map<String, String> constantLabels);
 
     /**
      * Sets the name of the component that reports this {@code Metric}.
