@@ -23,9 +23,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link io.opentelemetry.metrics.Measure}. */
+/** Tests for {@link MeasureDouble}. */
 @RunWith(JUnit4.class)
-public final class MeasureTest {
+public final class MeasureDoubleTest {
   private static final Meter meter = DefaultMeter.getInstance();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
@@ -36,19 +36,40 @@ public final class MeasureTest {
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
-    meter.measureBuilder(longName).build();
+    meter.measureDoubleBuilder(longName).build();
   }
 
   @Test
   public void preventNonPrintableMeasureName() {
     thrown.expect(IllegalArgumentException.class);
-    meter.measureBuilder("\2").build();
+    meter.measureDoubleBuilder("\2").build();
+  }
+
+  @Test
+  public void preventNull_Description() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("description");
+    meter.measureDoubleBuilder("metric").setDescription(null).build();
+  }
+
+  @Test
+  public void preventNull_Unit() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("unit");
+    meter.measureDoubleBuilder("metric").setUnit(null).build();
+  }
+
+  @Test
+  public void preventNull_ConstantLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("constantLabels");
+    meter.measureDoubleBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
   public void preventNegativeValue() {
-    Measure myMeasure = meter.measureBuilder("MyMeasure").build();
+    MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
-    myMeasure.createDoubleMeasurement(-5);
+    myMeasure.record(-5.0);
   }
 }

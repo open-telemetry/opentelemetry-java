@@ -16,10 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.trace.SpanContext;
-import java.util.List;
-
 /**
  * Meter is a simple, interface that allows users to record measurements (metrics).
  *
@@ -38,11 +34,11 @@ import java.util.List;
  * <pre>{@code
  * class MyClass {
  *   private static final Meter meter = Metrics.getMeter();
- *   private static final Measure cacheHit = meter.measureBuilder("cache_hit").build();
+ *   private static final MeasureDouble cacheHit = meter.measureDoubleBuilder("cache_hit").build();
  *
  *   Response serverHandler(Request request) {
  *     if (inCache(request)) {
- *       meter.record(Collections.singletonList(cacheHit.createMeasurement(1)));
+ *       cacheHit.record(1);
  *       return fromCache(request);
  *     }
  *     ...  // do other work
@@ -115,7 +111,7 @@ import java.util.List;
 public interface Meter {
 
   /**
-   * Returns a builder for a {@link GaugeLong} to be added to the registry.
+   * Returns a builder for a {@link GaugeLong}.
    *
    * @param name the name of the metric.
    * @return a {@code GaugeLong.Builder}.
@@ -126,7 +122,7 @@ public interface Meter {
   GaugeLong.Builder gaugeLongBuilder(String name);
 
   /**
-   * Returns a builder for a {@link GaugeDouble} to be added to the registry.
+   * Returns a builder for a {@link GaugeDouble}.
    *
    * @param name the name of the metric.
    * @return a {@code GaugeDouble.Builder}.
@@ -137,7 +133,7 @@ public interface Meter {
   GaugeDouble.Builder gaugeDoubleBuilder(String name);
 
   /**
-   * Returns a builder for a {@link CounterDouble} to be added to the registry.
+   * Returns a builder for a {@link CounterDouble}.
    *
    * @param name the name of the metric.
    * @return a {@code CounterDouble.Builder}.
@@ -148,7 +144,7 @@ public interface Meter {
   CounterDouble.Builder counterDoubleBuilder(String name);
 
   /**
-   * Returns a builder for a {@link CounterLong} to be added to the registry.
+   * Returns a builder for a {@link CounterLong}.
    *
    * @param name the name of the metric.
    * @return a {@code CounterLong.Builder}.
@@ -159,44 +155,22 @@ public interface Meter {
   CounterLong.Builder counterLongBuilder(String name);
 
   /**
-   * Returns a new builder for a {@code Measure}.
+   * Returns a new builder for a {@link MeasureDouble}.
    *
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
    * @return a new builder for a {@code Measure}.
    * @since 0.1.0
    */
-  Measure.Builder measureBuilder(String name);
+  MeasureDouble.Builder measureDoubleBuilder(String name);
 
   /**
-   * Records all given measurements, with the current {@link
-   * io.opentelemetry.distributedcontext.DistributedContextManager#getCurrentContext}.
+   * Returns a new builder for a {@link MeasureLong}.
    *
-   * @param measurements the list of {@code io.opentelemetry.metrics.Measurement}s to record.
+   * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
+   *     greater than 255 characters.
+   * @return a new builder for a {@code Measure}.
    * @since 0.1.0
    */
-  void record(List<Measurement> measurements);
-
-  /**
-   * Records all given measurements, with an explicit {@link DistributedContext}.
-   *
-   * @param measurements the list of {@code io.opentelemetry.metrics.Measurement}s to record.
-   * @param distContext the distContext associated with the measurements.
-   * @since 0.1.0
-   */
-  void record(List<Measurement> measurements, DistributedContext distContext);
-
-  /**
-   * Records all given measurements, with an explicit {@link DistributedContext}. These measurements
-   * are associated with the given {@code SpanContext}.
-   *
-   * @param measurements the list of {@code io.opentelemetry.metrics.Measurement}s to record.
-   * @param distContext the distContext associated with the measurements.
-   * @param spanContext the {@code SpanContext} that identifies the {@code Span} for which the
-   *     measurements are associated with.
-   * @since 0.1.0
-   */
-  // TODO: Avoid tracing dependency and accept Attachments as in OpenCensus.
-  void record(
-      List<Measurement> measurements, DistributedContext distContext, SpanContext spanContext);
+  MeasureLong.Builder measureLongBuilder(String name);
 }
