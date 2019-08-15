@@ -1,0 +1,9 @@
+description = 'OpenTelemetry InMemory Utility'
+
+def protobufVersion = '3.7.1'
+
+dependencies {
+    api project(':opentelemetry-sdk')
+
+    testImplementation "com.google.protobuf:protobuf-java:${protobufVersion}"
+}

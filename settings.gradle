@@ -6,6 +6,7 @@ include ":opentelemetry-contrib-runtime-metrics"
 include ":opentelemetry-contrib-trace-utils"
 include ":opentelemetry-opentracing-shim"
 include ":opentelemetry-sdk"
+include ":opentelemetry-inmemory"
 
 project(':opentelemetry-all').projectDir = "$rootDir/all" as File
 project(':opentelemetry-api').projectDir = "$rootDir/api" as File
@@ -14,3 +15,4 @@ project(':opentelemetry-contrib-runtime-metrics').projectDir =
 project(':opentelemetry-contrib-trace-utils').projectDir = "$rootDir/contrib/trace_utils" as File
 project(':opentelemetry-opentracing-shim').projectDir = "$rootDir/opentracing_shim" as File
 project(':opentelemetry-sdk').projectDir = "$rootDir/sdk" as File
+project(':opentelemetry-inmemory').projectDir = "$rootDir/inmemory" as File
