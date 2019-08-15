@@ -25,6 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * Static class to create {@link Event} objects.
+ *
+ * @since 0.1.0
+ */
 public class Events {
   private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES =
       Collections.unmodifiableMap(Collections.<String, AttributeValue>emptyMap());
