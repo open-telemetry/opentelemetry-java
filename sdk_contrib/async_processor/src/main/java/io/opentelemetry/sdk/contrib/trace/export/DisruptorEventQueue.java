@@ -97,6 +97,7 @@ final class DisruptorEventQueue {
       if (!loggedShutdownMessage.getAndSet(true)) {
         logger.info("Attempted to enqueue entry after Disruptor shutdown.");
       }
+      return;
     }
 
     if (blocking) {
