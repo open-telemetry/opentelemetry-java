@@ -100,7 +100,8 @@ public final class OpenTelemetry {
       }
     }
     if (specifiedProvider != null) {
-      throw new IllegalStateException(String.format("Service provider %s not found", specifiedProvider));
+      throw new IllegalStateException(
+          String.format("Service provider %s not found", specifiedProvider));
     }
     return null;
   }
