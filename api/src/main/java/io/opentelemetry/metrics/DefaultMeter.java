@@ -508,7 +508,7 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setConstantLabels(Map<LabelKey, String> constantLabels) {
+      public Builder setConstantLabels(Map<String, String> constantLabels) {
         Utils.checkNotNull(constantLabels, "constantLabels");
         return this;
       }
@@ -556,7 +556,7 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setConstantLabels(Map<LabelKey, String> constantLabels) {
+      public Builder setConstantLabels(Map<String, String> constantLabels) {
         Utils.checkNotNull(constantLabels, "constantLabels");
         return this;
       }

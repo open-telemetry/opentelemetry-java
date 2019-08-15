@@ -71,7 +71,7 @@ public interface Measure {
      * @param constantLabels the map of constant labels for the Metric.
      * @return this.
      */
-    B setConstantLabels(Map<LabelKey, String> constantLabels);
+    B setConstantLabels(Map<String, String> constantLabels);
 
     /**
      * Builds and returns a {@code Measure} with the desired options.
