@@ -20,20 +20,13 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanData;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import io.opentelemetry.trace.util.Samplers;
-import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -105,25 +98,6 @@ public class TracerSdkTest {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-  }
-
-  @Test
-  public void recordSpanData() {
-    SpanData spanData =
-        SpanData.create(
-            DefaultSpan.getInvalid().getContext(),
-            null,
-            Resource.getEmpty(),
-            SPAN_NAME,
-            Kind.CLIENT,
-            SpanData.Timestamp.create(1, 0),
-            Collections.<String, AttributeValue>emptyMap(),
-            Collections.<SpanData.TimedEvent>emptyList(),
-            Collections.<Link>emptyList(),
-            Status.OK,
-            SpanData.Timestamp.create(2, 0));
-    tracer.recordSpanData(spanData);
-    Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(Mockito.any(ReadableSpanData.class));
   }
 
   @Test

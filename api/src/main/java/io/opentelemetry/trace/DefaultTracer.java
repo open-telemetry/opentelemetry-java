@@ -61,11 +61,6 @@ public final class DefaultTracer implements Tracer {
   }
 
   @Override
-  public void recordSpanData(SpanData spanData) {
-    Utils.checkNotNull(spanData, "spanData");
-  }
-
-  @Override
   public BinaryFormat<SpanContext> getBinaryFormat() {
     return BINARY_FORMAT;
   }

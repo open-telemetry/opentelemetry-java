@@ -29,10 +29,10 @@ import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.util.Links;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -324,17 +324,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void addLink(Link link) {
     Preconditions.checkNotNull(link, "link");
-    addLinkInternal(SpanData.Link.create(link.getContext(), link.getAttributes()));
+    addLinkInternal(Links.create(link.getContext(), link.getAttributes()));
   }
 
   @Override
   public void addLink(SpanContext spanContext) {
-    addLinkInternal(SpanData.Link.create(spanContext));
+    addLinkInternal(Links.create(spanContext));
   }
 
   @Override
   public void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-    addLinkInternal(SpanData.Link.create(spanContext, attributes));
+    addLinkInternal(Links.create(spanContext, attributes));
   }
 
   private void addLinkInternal(Link link) {
