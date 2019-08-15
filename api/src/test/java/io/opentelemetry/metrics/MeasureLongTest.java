@@ -48,14 +48,14 @@ public final class MeasureLongTest {
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("constantLabels");
+    thrown.expectMessage("description");
     meter.measureLongBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("constantLabels");
+    thrown.expectMessage("unit");
     meter.measureLongBuilder("metric").setUnit(null).build();
   }
 
