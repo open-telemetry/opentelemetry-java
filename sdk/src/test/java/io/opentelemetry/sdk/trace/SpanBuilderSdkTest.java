@@ -369,4 +369,34 @@ public class SpanBuilderSdkTest {
       span.end();
     }
   }
+
+  @Test
+  public void parent_timestampConverter() {
+    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
+    try {
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
+
+      assertThat(span.getTimestampConverter())
+          .isEqualTo(((RecordEventsReadableSpan) parent).getTimestampConverter());
+    } finally {
+      parent.end();
+    }
+  }
+
+  @Test
+  public void parentCurrentSpan_timestampConverter() {
+    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
+    Scope scope = tracer.withSpan(parent);
+    try {
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
+
+      assertThat(span.getTimestampConverter())
+          .isEqualTo(((RecordEventsReadableSpan) parent).getTimestampConverter());
+    } finally {
+      scope.close();
+      parent.end();
+    }
+  }
 }
