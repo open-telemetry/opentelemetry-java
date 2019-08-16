@@ -37,7 +37,7 @@ import io.opentelemetry.trace.Tracestate;
 import java.util.Collection;
 import java.util.Map;
 
-// Utilities to convert Span SDK and SpanData to trace protos.
+// Utilities to convert Span SDK to proto representation of the Span.
 final class TraceProtoUtils {
 
   private TraceProtoUtils() {}
