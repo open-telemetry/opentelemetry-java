@@ -186,4 +186,12 @@ public class TraceProtoUtilsTest {
     assertThat(TraceProtoUtils.toProtoStatus(STATUS)).isEqualTo(expected1);
     assertThat(TraceProtoUtils.toProtoStatus(Status.ABORTED)).isEqualTo(expected2);
   }
+
+  @Test
+  public void toProtoTimestamp() {
+    Timestamp expected = Timestamp.newBuilder().setSeconds(123).setNanos(345678).build();
+    assertThat(
+            TraceProtoUtils.toProtoTimestamp(io.opentelemetry.trace.Timestamp.create(123, 345678)))
+        .isEqualTo(expected);
+  }
 }
