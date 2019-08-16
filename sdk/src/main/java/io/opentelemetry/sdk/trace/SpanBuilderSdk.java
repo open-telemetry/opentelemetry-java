@@ -179,7 +179,7 @@ class SpanBuilderSdk implements Span.Builder {
     if (!recordEvents && !samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
     }
-    TimestampConverter timestampConverter = getTimestampConverter(parent);
+    TimestampConverter timestampConverter = getTimestampConverter(parentSpan(parentType, parent));
     return RecordEventsReadableSpan.startSpan(
         spanContext,
         spanName,
@@ -219,6 +219,18 @@ class SpanBuilderSdk implements Span.Builder {
         return remoteParent;
     }
     throw new IllegalStateException("Unknown parent type");
+  }
+
+  @Nullable
+  private static Span parentSpan(ParentType parentType, Span explicitParent) {
+    switch (parentType) {
+      case CURRENT_SPAN:
+        return ContextUtils.getValue();
+      case EXPLICIT_PARENT:
+        return explicitParent;
+      default:
+        return null;
+    }
   }
 
   /**
