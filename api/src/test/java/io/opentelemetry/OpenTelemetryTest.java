@@ -38,7 +38,6 @@ import io.opentelemetry.metrics.spi.MeterProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.spi.TracerProvider;
 import java.io.File;
@@ -240,9 +239,6 @@ public class OpenTelemetryTest {
     public Span.Builder spanBuilder(String spanName) {
       return null;
     }
-
-    @Override
-    public void recordSpanData(SpanData span) {}
 
     @Nullable
     @Override

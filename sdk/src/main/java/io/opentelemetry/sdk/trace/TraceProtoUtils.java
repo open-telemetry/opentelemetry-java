@@ -30,7 +30,6 @@ import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
@@ -38,7 +37,7 @@ import io.opentelemetry.trace.Tracestate;
 import java.util.Collection;
 import java.util.Map;
 
-// Utilities to convert Span SDK and SpanData to trace protos.
+// Utilities to convert Span SDK to proto representation of the Span.
 final class TraceProtoUtils {
 
   private TraceProtoUtils() {}
@@ -172,29 +171,10 @@ final class TraceProtoUtils {
     return builder.build();
   }
 
-  static Timestamp toProtoTimestamp(SpanData.Timestamp timestamp) {
+  static Timestamp toProtoTimestamp(io.opentelemetry.trace.Timestamp timestamp) {
     return Timestamp.newBuilder()
         .setSeconds(timestamp.getSeconds())
         .setNanos(timestamp.getNanos())
         .build();
-  }
-
-  static TimedEvents spanDataEventsToProtoTimedEvents(Collection<SpanData.TimedEvent> events) {
-    TimedEvents.Builder builder = TimedEvents.newBuilder();
-    for (SpanData.TimedEvent timedEvent : events) {
-      builder.addTimedEvent(spanDataEventToProtoTimedEvent(timedEvent));
-    }
-    return builder.build();
-  }
-
-  private static Span.TimedEvent spanDataEventToProtoTimedEvent(SpanData.TimedEvent timedEvent) {
-    Span.TimedEvent.Builder builder = Span.TimedEvent.newBuilder();
-    builder.setTime(toProtoTimestamp(timedEvent.getTimestamp()));
-    builder.setEvent(
-        Span.TimedEvent.Event.newBuilder()
-            .setName(timedEvent.getEvent().getName())
-            .setAttributes(toProtoAttributes(timedEvent.getEvent().getAttributes(), 0))
-            .build());
-    return builder.build();
   }
 }

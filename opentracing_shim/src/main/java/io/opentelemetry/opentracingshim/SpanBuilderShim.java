@@ -17,9 +17,7 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import io.opentracing.Span;
@@ -39,13 +37,13 @@ final class SpanBuilderShim implements SpanBuilder {
   private io.opentelemetry.trace.SpanContext parentSpanContext;
   private boolean ignoreActiveSpan;
 
-  private final List<Link> parentLinks = new ArrayList<>();
+  private final List<io.opentelemetry.trace.SpanContext> parentLinks = new ArrayList<>();
   private final List<String> spanBuilderAttributeKeys = new ArrayList<>();
   private final List<AttributeValue> spanBuilderAttributeValues = new ArrayList<>();
   private Kind spanKind;
   private boolean error;
 
-  public SpanBuilderShim(Tracer tracer, String spanName) {
+  SpanBuilderShim(Tracer tracer, String spanName) {
     this.tracer = tracer;
     this.spanName = spanName;
   }
@@ -62,7 +60,7 @@ final class SpanBuilderShim implements SpanBuilder {
     if (parentSpan == null && parentSpanContext == null) {
       parentSpan = actualParent;
     } else {
-      parentLinks.add(SpanData.Link.create(actualParent.getContext()));
+      parentLinks.add(actualParent.getContext());
     }
 
     return this;
@@ -85,7 +83,7 @@ final class SpanBuilderShim implements SpanBuilder {
     if (parentSpan == null && parentSpanContext == null) {
       parentSpanContext = actualContext;
     } else {
-      parentLinks.add(SpanData.Link.create(actualContext));
+      parentLinks.add(actualContext);
     }
 
     return this;
@@ -189,7 +187,7 @@ final class SpanBuilderShim implements SpanBuilder {
       builder.setParent(parentSpanContext);
     }
 
-    for (Link link : parentLinks) {
+    for (io.opentelemetry.trace.SpanContext link : parentLinks) {
       builder.addLink(link);
     }
 
@@ -211,7 +209,7 @@ final class SpanBuilderShim implements SpanBuilder {
     return new SpanShim(span);
   }
 
-  static io.opentelemetry.trace.Span getActualSpan(Span span) {
+  private static io.opentelemetry.trace.Span getActualSpan(Span span) {
     if (!(span instanceof SpanShim)) {
       throw new IllegalArgumentException("span is not a valid SpanShim object");
     }
@@ -219,7 +217,7 @@ final class SpanBuilderShim implements SpanBuilder {
     return ((SpanShim) span).getSpan();
   }
 
-  static io.opentelemetry.trace.SpanContext getActualContext(SpanContext context) {
+  private static io.opentelemetry.trace.SpanContext getActualContext(SpanContext context) {
     if (!(context instanceof SpanContextShim)) {
       throw new IllegalArgumentException("context is not a valid SpanContextShim object");
     }

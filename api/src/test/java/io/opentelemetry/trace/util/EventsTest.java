@@ -14,31 +14,24 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace;
+package io.opentelemetry.trace.util;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.Event;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link Link}. */
+/** Unit tests for {@link Events}. */
 @RunWith(JUnit4.class)
-public class SpanDataLinkTest {
+public class EventsTest {
   private final Map<String, AttributeValue> attributesMap = new HashMap<>();
-  private final Random random = new Random(1234);
-  private final Tracestate tracestate = Tracestate.builder().build();
-  private final SpanContext spanContext =
-      SpanContext.create(
-          TestUtils.generateRandomTraceId(random),
-          TestUtils.generateRandomSpanId(random),
-          TraceOptions.getDefault(),
-          tracestate);
 
   @Before
   public void setUp() {
@@ -49,28 +42,32 @@ public class SpanDataLinkTest {
 
   @Test
   public void create() {
-    Link link = SpanData.Link.create(spanContext, attributesMap);
-    assertThat(link.getContext()).isEqualTo(spanContext);
-    assertThat(link.getAttributes()).isEqualTo(attributesMap);
+    Event event = Events.create("test", attributesMap);
+    assertThat(event.getName()).isEqualTo("test");
+    assertThat(event.getAttributes()).isEqualTo(attributesMap);
+  }
+
+  @Test
+  public void create_NoAttributes() {
+    Event event = Events.create("test");
+    assertThat(event.getName()).isEqualTo("test");
+    assertThat(event.getAttributes()).isEmpty();
   }
 
   @Test
   public void link_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester
-        .addEqualityGroup(SpanData.Link.create(spanContext), SpanData.Link.create(spanContext))
-        .addEqualityGroup(SpanData.Link.create(SpanContext.getInvalid()))
+        .addEqualityGroup(Events.create("test"), Events.create("test"))
         .addEqualityGroup(
-            SpanData.Link.create(spanContext, attributesMap),
-            SpanData.Link.create(spanContext, attributesMap));
+            Events.create("test", attributesMap), Events.create("test", attributesMap));
     tester.testEquals();
   }
 
   @Test
   public void link_ToString() {
-    Link link = SpanData.Link.create(spanContext, attributesMap);
-    assertThat(link.toString()).contains(spanContext.getTraceId().toString());
-    assertThat(link.toString()).contains(spanContext.getSpanId().toString());
-    assertThat(link.toString()).contains(attributesMap.toString());
+    Event event = Events.create("test", attributesMap);
+    assertThat(event.toString()).contains("test");
+    assertThat(event.toString()).contains(attributesMap.toString());
   }
 }

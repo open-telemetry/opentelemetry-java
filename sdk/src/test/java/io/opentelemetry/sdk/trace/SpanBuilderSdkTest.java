@@ -27,11 +27,11 @@ import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.util.Links;
 import io.opentelemetry.trace.util.Samplers;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -87,7 +87,7 @@ public class SpanBuilderSdkTest {
   public void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
-    spanBuilder.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
+    spanBuilder.addLink(Links.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
         DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
@@ -241,7 +241,7 @@ public class SpanBuilderSdkTest {
             tracer
                 .spanBuilder(SPAN_NAME)
                 .setSampler(ProbabilitySampler.create(0.0))
-                .addLink(SpanData.Link.create(sampledSpanContext))
+                .addLink(Links.create(sampledSpanContext))
                 .startSpan();
     try {
       assertThat(span.getContext().getTraceOptions().isSampled()).isTrue();

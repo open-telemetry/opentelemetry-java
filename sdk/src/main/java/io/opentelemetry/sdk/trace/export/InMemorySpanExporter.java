@@ -48,7 +48,7 @@ import java.util.List;
  * </code></pre>
  */
 public final class InMemorySpanExporter implements SpanExporter {
-  private final List<Span> finishedSpanDataItems = new ArrayList<>();
+  private final List<Span> finishedSpanItems = new ArrayList<>();
   private boolean isStopped = false;
 
   /**
@@ -68,7 +68,7 @@ public final class InMemorySpanExporter implements SpanExporter {
    */
   public List<Span> getFinishedSpanItems() {
     synchronized (this) {
-      return Collections.unmodifiableList(new ArrayList<>(finishedSpanDataItems));
+      return Collections.unmodifiableList(new ArrayList<>(finishedSpanItems));
     }
   }
 
@@ -79,7 +79,7 @@ public final class InMemorySpanExporter implements SpanExporter {
    */
   public void reset() {
     synchronized (this) {
-      finishedSpanDataItems.clear();
+      finishedSpanItems.clear();
     }
   }
 
@@ -89,7 +89,7 @@ public final class InMemorySpanExporter implements SpanExporter {
       if (isStopped) {
         return ResultCode.FAILED_NONE_RETRYABLE;
       }
-      finishedSpanDataItems.addAll(spans);
+      finishedSpanItems.addAll(spans);
     }
     return ResultCode.SUCCESS;
   }
@@ -97,7 +97,7 @@ public final class InMemorySpanExporter implements SpanExporter {
   @Override
   public void shutdown() {
     synchronized (this) {
-      finishedSpanDataItems.clear();
+      finishedSpanItems.clear();
       isStopped = true;
     }
   }
