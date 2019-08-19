@@ -52,19 +52,19 @@ public interface MeasureLong extends Measure {
    * Records the given measurement, with the current {@link
    * io.opentelemetry.distributedcontext.DistributedContextManager#getCurrentContext}.
    *
-   * @param measurement the measurement to record.
+   * @param value the measurement to record.
    * @since 0.1.0
    */
-  void record(long measurement);
+  void record(long value);
 
   /**
    * Records the given measurement, with an explicit {@link DistributedContext}.
    *
-   * @param measurement the measurement to record.
+   * @param value the measurement to record.
    * @param distContext the distContext associated with the measurements.
    * @since 0.1.0
    */
-  void record(long measurement, DistributedContext distContext);
+  void record(long value, DistributedContext distContext);
 
   /**
    * Records the given measurements, with an explicit {@link DistributedContext}. This measurement

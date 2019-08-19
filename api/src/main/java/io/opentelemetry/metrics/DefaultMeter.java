@@ -91,6 +91,11 @@ public final class DefaultMeter implements Meter {
     return new NoopMeasureLong.NoopBuilder();
   }
 
+  @Override
+  public MeasureBatchRecorder recordMeasureBatch() {
+    return new NoopMeasureBatchRecorder();
+  }
+
   /** No-op implementations of GaugeLong class. */
   private static final class NoopGaugeLong implements GaugeLong {
     private final int labelKeysSize;
@@ -476,20 +481,19 @@ public final class DefaultMeter implements Meter {
     private NoopMeasureDouble() {}
 
     @Override
-    public void record(double measurement) {
-      Utils.checkArgument(measurement >= 0.0, "Unsupported negative values.");
+    public void record(double value) {
+      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
     }
 
     @Override
-    public void record(double measurement, DistributedContext distContext) {
-      Utils.checkArgument(measurement >= 0.0, "Unsupported negative values.");
+    public void record(double value, DistributedContext distContext) {
+      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
       Utils.checkNotNull(distContext, "distContext");
     }
 
     @Override
-    public void record(
-        double measurement, DistributedContext distContext, SpanContext spanContext) {
-      Utils.checkArgument(measurement >= 0.0, "Unsupported negative values.");
+    public void record(double value, DistributedContext distContext, SpanContext spanContext) {
+      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
       Utils.checkNotNull(distContext, "distContext");
       Utils.checkNotNull(spanContext, "spanContext");
     }
@@ -525,19 +529,19 @@ public final class DefaultMeter implements Meter {
     private NoopMeasureLong() {}
 
     @Override
-    public void record(long measurement) {
-      Utils.checkArgument(measurement >= 0, "Unsupported negative values.");
+    public void record(long value) {
+      Utils.checkArgument(value >= 0, "Unsupported negative values.");
     }
 
     @Override
-    public void record(long measurement, DistributedContext distContext) {
-      Utils.checkArgument(measurement >= 0, "Unsupported negative values.");
+    public void record(long value, DistributedContext distContext) {
+      Utils.checkArgument(value >= 0, "Unsupported negative values.");
       Utils.checkNotNull(distContext, "distContext");
     }
 
     @Override
-    public void record(long measurement, DistributedContext distContext, SpanContext spanContext) {
-      Utils.checkArgument(measurement >= 0, "Unsupported negative values.");
+    public void record(long value, DistributedContext distContext, SpanContext spanContext) {
+      Utils.checkArgument(value >= 0, "Unsupported negative values.");
       Utils.checkNotNull(distContext, "distContext");
       Utils.checkNotNull(spanContext, "spanContext");
     }
@@ -566,5 +570,32 @@ public final class DefaultMeter implements Meter {
         return new NoopMeasureLong();
       }
     }
+  }
+
+  private static final class NoopMeasureBatchRecorder implements MeasureBatchRecorder {
+    private NoopMeasureBatchRecorder() {}
+
+    @Override
+    public MeasureBatchRecorder put(MeasureLong measure, long value) {
+      Utils.checkNotNull(measure, "measure");
+      Utils.checkArgument(value >= 0, "Unsupported negative values.");
+      return this;
+    }
+
+    @Override
+    public MeasureBatchRecorder put(MeasureDouble measure, double value) {
+      Utils.checkNotNull(measure, "measure");
+      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+      return this;
+    }
+
+    @Override
+    public MeasureBatchRecorder setDistributedContext(DistributedContext distContext) {
+      Utils.checkNotNull(distContext, "distContext");
+      return this;
+    }
+
+    @Override
+    public void record() {}
   }
 }
