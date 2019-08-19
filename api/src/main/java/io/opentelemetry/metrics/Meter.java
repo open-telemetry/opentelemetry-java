@@ -173,4 +173,13 @@ public interface Meter {
    * @since 0.1.0
    */
   MeasureLong.Builder measureLongBuilder(String name);
+
+  /**
+   * Utility method that allows users to atomically record measurements to a set of Measures.
+   *
+   * @return a {@code MeasureBatchRecorder} that can be use to atomically record a set of
+   *     measurements associated with different Measures.
+   * @since 0.1.0
+   */
+  MeasureBatchRecorder newMeasureBatchRecorder();
 }
