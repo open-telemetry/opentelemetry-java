@@ -26,6 +26,9 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class MeasureBatchRecorderTest {
   private static final Meter meter = DefaultMeter.getInstance();
+  private static final MeasureLong measureLong = meter.measureLongBuilder("measure_long").build();
+  private static final MeasureDouble measureDouble =
+      meter.measureDoubleBuilder("measure_double").build();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -33,20 +36,34 @@ public class MeasureBatchRecorderTest {
   public void preventNull_MeasureLong() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("measure");
-    meter.recordMeasureBatch().put((MeasureLong) null, 5L).record();
+    meter.newMeasureBatchRecorder().put((MeasureLong) null, 5L).record();
+  }
+
+  @Test
+  public void preventNegativeValues_MeasureLong() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Unsupported negative values");
+    meter.newMeasureBatchRecorder().put(measureLong, -5L).record();
   }
 
   @Test
   public void preventNull_MeasureDouble() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("measure");
-    meter.recordMeasureBatch().put((MeasureDouble) null, 5L).record();
+    meter.newMeasureBatchRecorder().put((MeasureDouble) null, 5L).record();
+  }
+
+  @Test
+  public void preventNegativeValues_MeasureDouble() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Unsupported negative values");
+    meter.newMeasureBatchRecorder().put(measureDouble, -5.0).record();
   }
 
   @Test
   public void preventNull_DistributedContext() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("distContext");
-    meter.recordMeasureBatch().setDistributedContext(null).record();
+    meter.newMeasureBatchRecorder().setDistributedContext(null).record();
   }
 }

@@ -32,6 +32,7 @@ public interface MeasureBatchRecorder {
    * @param measure the {@link MeasureLong}.
    * @param value the value to be associated with {@code measure}.
    * @return this.
+   * @throws IllegalArgumentException if value is negative.
    * @since 0.1.0
    */
   MeasureBatchRecorder put(MeasureLong measure, long value);
@@ -43,6 +44,7 @@ public interface MeasureBatchRecorder {
    * @param measure the {@link MeasureDouble}.
    * @param value the value to be associated with {@code measure}.
    * @return this.
+   * @throws IllegalArgumentException if value is negative.
    * @since 0.1.0
    */
   MeasureBatchRecorder put(MeasureDouble measure, double value);

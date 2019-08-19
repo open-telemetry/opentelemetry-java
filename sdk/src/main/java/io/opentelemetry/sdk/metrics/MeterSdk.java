@@ -59,7 +59,7 @@ public class MeterSdk implements Meter {
   }
 
   @Override
-  public MeasureBatchRecorder recordMeasureBatch() {
+  public MeasureBatchRecorder newMeasureBatchRecorder() {
     throw new UnsupportedOperationException("to be implemented");
   }
 }

@@ -181,5 +181,5 @@ public interface Meter {
    *     measurements associated with different Measures.
    * @since 0.1.0
    */
-  MeasureBatchRecorder recordMeasureBatch();
+  MeasureBatchRecorder newMeasureBatchRecorder();
 }

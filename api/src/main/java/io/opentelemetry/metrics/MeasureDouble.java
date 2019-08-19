@@ -53,6 +53,7 @@ public interface MeasureDouble extends Measure {
    * io.opentelemetry.distributedcontext.DistributedContextManager#getCurrentContext}.
    *
    * @param value the measurement to record.
+   * @throws IllegalArgumentException if value is negative.
    * @since 0.1.0
    */
   void record(double value);
@@ -62,6 +63,7 @@ public interface MeasureDouble extends Measure {
    *
    * @param value the measurement to record.
    * @param distContext the distContext associated with the measurements.
+   * @throws IllegalArgumentException if value is negative.
    * @since 0.1.0
    */
   void record(double value, DistributedContext distContext);
@@ -74,6 +76,7 @@ public interface MeasureDouble extends Measure {
    * @param distContext the distContext associated with the measurements.
    * @param spanContext the {@code SpanContext} that identifies the {@code Span} for which the
    *     measurements are associated with.
+   * @throws IllegalArgumentException if value is negative.
    * @since 0.1.0
    */
   // TODO: Avoid tracing dependency and accept Attachments as in OpenCensus.
