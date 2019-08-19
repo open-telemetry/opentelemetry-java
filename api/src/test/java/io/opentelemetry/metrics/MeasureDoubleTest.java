@@ -79,6 +79,12 @@ public final class MeasureDoubleTest {
   }
 
   @Test
+  public void doesNotThrow() {
+    MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
+    myMeasure.record(5.0);
+  }
+
+  @Test
   public void preventNegativeValue_RecordWithContext() {
     MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
@@ -92,5 +98,11 @@ public final class MeasureDoubleTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("distContext");
     myMeasure.record(5.0, null);
+  }
+
+  @Test
+  public void doesNotThrow_RecordWithContext() {
+    MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
+    myMeasure.record(5.0, distContextManager.getCurrentContext());
   }
 }

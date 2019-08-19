@@ -79,6 +79,12 @@ public final class MeasureLongTest {
   }
 
   @Test
+  public void doesNotThrow() {
+    MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
+    myMeasure.record(5);
+  }
+
+  @Test
   public void preventNegativeValue_RecordWithContext() {
     MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
@@ -92,5 +98,11 @@ public final class MeasureLongTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("distContext");
     myMeasure.record(5, null);
+  }
+
+  @Test
+  public void doesNotThrow_RecordWithContext() {
+    MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
+    myMeasure.record(5, distContextManager.getCurrentContext());
   }
 }
