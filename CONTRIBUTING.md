@@ -70,6 +70,8 @@ $ git commit -m "Update javadoc for API."
 Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.
 
+Before running the build init repository dependencies by running `make init`.
+
 Run the following commands to build, run tests and most static analysis, and
 check formatting:
 

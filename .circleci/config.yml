@@ -1,8 +1,11 @@
 version: 2
 
+init_task: &init_task
+  name: Init git submodules
+  command: make init
 build_task: &build_task
   name: Build
-  command: ./gradlew clean assemble check --stacktrace
+  command: make test
 verify_task: &verify_task
   name: Verify Google Java Format
   command: ./gradlew verGJF
@@ -16,6 +19,8 @@ jobs:
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle" }}
+      - run:
+          <<: *init_task
       - run:
           <<: *verify_task
       - run:
@@ -38,6 +43,8 @@ jobs:
       - restore_cache:
           keys:
             - java9-gradle-{{ checksum "build.gradle" }}
+      - run:
+          <<: *init_task
       - run:
           <<: *verify_task
       - run:
