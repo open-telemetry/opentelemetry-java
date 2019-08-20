@@ -17,6 +17,7 @@
 package io.opentelemetry.trace;
 
 import java.util.Map;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * An interface that represents a span. It has an associated {@link SpanContext}.
@@ -27,6 +28,7 @@ import java.util.Map;
  *
  * @since 0.1.0
  */
+@ThreadSafe
 public interface Span {
   /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a

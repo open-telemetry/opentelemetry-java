@@ -35,6 +35,7 @@ import javax.annotation.concurrent.Immutable;
  *
  * @since 0.1.0
  */
+@Immutable
 public final class Samplers {
   private static final Sampler ALWAYS_SAMPLE = new AlwaysSampleSampler();
   private static final Sampler NEVER_SAMPLE = new NeverSampleSampler();

@@ -17,6 +17,7 @@
 package io.opentelemetry.metrics.spi;
 
 import io.opentelemetry.metrics.Meter;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * MeterProvider is a service provider for {@link Meter}. Fully qualified class name of the
@@ -28,6 +29,7 @@ import io.opentelemetry.metrics.Meter;
  *
  * @see io.opentelemetry.OpenTelemetry
  */
+@ThreadSafe
 public interface MeterProvider {
 
   /**

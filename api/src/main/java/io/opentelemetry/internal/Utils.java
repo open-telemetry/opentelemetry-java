@@ -18,8 +18,10 @@ package io.opentelemetry.internal;
 
 import java.util.List;
 import java.util.Map;
+import javax.annotation.concurrent.Immutable;
 
 /** General internal utility methods. */
+@Immutable
 public final class Utils {
 
   private Utils() {}

@@ -20,6 +20,7 @@ import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.EmptyDistributedContext;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Utility methods for accessing the {@link DistributedContext} contained in the {@link
@@ -30,6 +31,7 @@ import io.opentelemetry.distributedcontext.EmptyDistributedContext;
  *
  * @since 0.1.0
  */
+@Immutable
 public final class ContextUtils {
   private static final Context.Key<DistributedContext> DIST_CONTEXT_KEY =
       Context.keyWithDefault(

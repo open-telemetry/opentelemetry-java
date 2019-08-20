@@ -24,12 +24,14 @@ import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.Map;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * No-op implementations of {@link Tracer}.
  *
  * @since 0.1.0
  */
+@ThreadSafe
 public final class DefaultTracer implements Tracer {
   private static final DefaultTracer INSTANCE = new DefaultTracer();
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new NoopBinaryFormat();

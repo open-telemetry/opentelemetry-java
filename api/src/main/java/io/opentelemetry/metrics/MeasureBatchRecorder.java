@@ -17,6 +17,7 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.distributedcontext.DistributedContext;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Util class that can be use to atomically record measurements associated with a set of Measures.
@@ -24,6 +25,7 @@ import io.opentelemetry.distributedcontext.DistributedContext;
  * <p>This class is equivalent with individually calling record on every Measure, but has the
  * advantage that all these operations are recorded atomically and it is more efficient.
  */
+@ThreadSafe
 public interface MeasureBatchRecorder {
   /**
    * Associates the {@link MeasureLong} with the given value. Subsequent updates to the same {@link
