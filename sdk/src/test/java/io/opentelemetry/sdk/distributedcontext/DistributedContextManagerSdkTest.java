@@ -32,6 +32,9 @@ import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link DistributedContextManagerSdk}. */
 @RunWith(JUnit4.class)
+// Need to suppress warnings for MustBeClosed because Android 14 does not support
+// try-with-resources.
+@SuppressWarnings("MustBeClosedChecker")
 public class DistributedContextManagerSdkTest {
   @Mock private DistributedContext distContext;
   private final DistributedContextManagerSdk contextManager = new DistributedContextManagerSdk();
@@ -63,8 +66,11 @@ public class DistributedContextManagerSdkTest {
   public void testWithDistributedContext() {
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyDistributedContext.getInstance());
-    try (Scope wtm = contextManager.withContext(distContext)) {
+    Scope wtm = contextManager.withContext(distContext);
+    try {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
+    } finally {
+      wtm.close();
     }
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyDistributedContext.getInstance());
@@ -73,7 +79,8 @@ public class DistributedContextManagerSdkTest {
   @Test
   public void testWithDistributedContextUsingWrap() {
     Runnable runnable;
-    try (Scope wtm = contextManager.withContext(distContext)) {
+    Scope wtm = contextManager.withContext(distContext);
+    try {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
       runnable =
           Context.current()
@@ -84,6 +91,8 @@ public class DistributedContextManagerSdkTest {
                       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
                     }
                   });
+    } finally {
+      wtm.close();
     }
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyDistributedContext.getInstance());

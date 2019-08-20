@@ -37,6 +37,9 @@ import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link TracerSdk}. */
 @RunWith(JUnit4.class)
+// Need to suppress warnings for MustBeClosed because Android 14 does not support
+// try-with-resources.
+@SuppressWarnings("MustBeClosedChecker")
 public class TracerSdkTest {
   private static final String SPAN_NAME = "span_name";
   @Mock private Span span;
@@ -85,8 +88,11 @@ public class TracerSdkTest {
   @Test
   public void withSpan_NullSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    try (Scope ws = tracer.withSpan(null)) {
+    Scope ws = tracer.withSpan(null);
+    try {
       assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    } finally {
+      ws.close();
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -94,8 +100,11 @@ public class TracerSdkTest {
   @Test
   public void getCurrentSpan_WithSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    try (Scope ws = tracer.withSpan(span)) {
+    Scope ws = tracer.withSpan(span);
+    try {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
+    } finally {
+      ws.close();
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
