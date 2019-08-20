@@ -27,6 +27,7 @@ import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.spi.TracerProvider;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link Meter}
@@ -38,6 +39,7 @@ import javax.annotation.Nullable;
  * @see MeterProvider
  * @see DistributedContextManagerProvider
  */
+@ThreadSafe
 public final class OpenTelemetry {
 
   @Nullable private static volatile OpenTelemetry instance;

@@ -30,6 +30,7 @@ import javax.annotation.concurrent.Immutable;
  *
  * @since 0.1.0
  */
+@Immutable
 public final class Links {
   private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES = Collections.emptyMap();
 

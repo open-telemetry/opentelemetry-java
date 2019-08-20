@@ -16,6 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
  * Meter is a simple, interface that allows users to record measurements (metrics).
  *
@@ -108,6 +110,7 @@ package io.opentelemetry.metrics;
  * }
  * }</pre>
  */
+@ThreadSafe
 public interface Meter {
 
   /**

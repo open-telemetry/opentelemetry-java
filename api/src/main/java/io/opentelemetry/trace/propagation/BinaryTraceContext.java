@@ -23,6 +23,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Implementation of the binary propagation protocol on {@link SpanContext}.
@@ -58,6 +59,7 @@ import io.opentelemetry.trace.Tracestate;
  *       </ul>
  * </ul>
  */
+@Immutable
 public final class BinaryTraceContext implements BinaryFormat<SpanContext> {
 
   private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();

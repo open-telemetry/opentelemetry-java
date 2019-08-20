@@ -17,6 +17,7 @@
 package io.opentelemetry.trace;
 
 import java.util.Map;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A link to a {@link Span}.
@@ -26,6 +27,7 @@ import java.util.Map;
  *
  * @since 0.1.0
  */
+@ThreadSafe
 public interface Link {
   /**
    * Returns the {@code SpanContext}.
