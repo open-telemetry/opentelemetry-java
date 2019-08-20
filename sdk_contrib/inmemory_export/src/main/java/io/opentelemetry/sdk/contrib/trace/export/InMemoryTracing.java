@@ -20,7 +20,7 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.export.SimpleSampledSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 
@@ -70,7 +70,7 @@ public final class InMemoryTracing {
 
     this.tracer = tracer;
     this.exporter = InMemorySpanExporter.create();
-    tracer.addSpanProcessor(SimpleSampledSpansProcessor.newBuilder(exporter).build());
+    tracer.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
   }
 
   /**

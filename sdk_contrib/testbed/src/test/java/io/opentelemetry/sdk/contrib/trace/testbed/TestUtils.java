@@ -24,7 +24,7 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.export.SimpleSampledSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +44,7 @@ public final class TestUtils {
    */
   public static Tracer createTracerShim(InMemorySpanExporter exporter) {
     TracerSdk tracer = new TracerSdk();
-    tracer.addSpanProcessor(SimpleSampledSpansProcessor.newBuilder(exporter).build());
+    tracer.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
     return tracer;
   }
 
