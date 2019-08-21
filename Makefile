@@ -2,7 +2,7 @@
 
 .PHONY: test
 test:
-	 ./gradlew clean assemble check --stacktrace
+	./gradlew clean assemble check --stacktrace
 
 .PHONY: init
 init:
