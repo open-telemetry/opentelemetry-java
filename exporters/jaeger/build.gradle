@@ -14,7 +14,6 @@ buildscript {
 
 dependencies {
     api project(':opentelemetry-sdk')
-    api project(':opentelemetry-proto')
 
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
