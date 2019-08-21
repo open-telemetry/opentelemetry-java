@@ -18,6 +18,7 @@ package io.opentelemetry.opentracingshim.testbed.multiplecallbacks;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
+import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -50,7 +51,9 @@ public class MultipleCallbacksTest {
 
     await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(4));
 
+    // Finish order is not guaranteed, so we rely on *start time* to fetch the parent.
     List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    spans = sortByStartTime(spans);
     assertEquals(4, spans.size());
     assertEquals("parent", spans.get(0).getName());
 
