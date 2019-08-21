@@ -4,7 +4,11 @@
 test:
 	./gradlew clean assemble check --stacktrace
 
-.PHONY: init
-init:
+.PHONY: init-git-submodules
+init-git-submodules:
 	git submodule init
 	git submodule update
+
+.PHONY: verify-format
+verify-format:
+	./gradlew verGJF

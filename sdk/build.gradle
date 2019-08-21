@@ -1,11 +1,10 @@
 description = 'OpenTelemetry SDK'
 
 dependencies {
-    api project(':opentelemetry-api')
+    api project(':opentelemetry-api'),
+            libraries.protobuf,
+            libraries.protobuf_util
     api project(':opentelemetry-proto')
-
-    implementation "com.google.protobuf:protobuf-java:${protobufVersion}",
-            "com.google.protobuf:protobuf-java-util:${protobufVersion}"
 
     annotationProcessor libraries.auto_value
 

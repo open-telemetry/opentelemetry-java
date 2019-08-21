@@ -13,14 +13,13 @@ buildscript {
 }
 
 dependencies {
-    api project(':opentelemetry-sdk')
+    api project(':opentelemetry-sdk'),
+            libraries.protobuf,
+            libraries.protobuf_util
 
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     
-    implementation "com.google.protobuf:protobuf-java:${protobufVersion}",
-            "com.google.protobuf:protobuf-java-util:${protobufVersion}"
-
     annotationProcessor libraries.auto_value
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}"

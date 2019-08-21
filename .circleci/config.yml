@@ -2,13 +2,13 @@ version: 2
 
 init_task: &init_task
   name: Init git submodules
-  command: make init
+  command: make init-git-submodules
 build_task: &build_task
   name: Build
   command: make test
 verify_task: &verify_task
   name: Verify Google Java Format
-  command: ./gradlew verGJF
+  command: make verify-format
 
 jobs:
   build:
