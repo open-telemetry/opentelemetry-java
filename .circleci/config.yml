@@ -43,6 +43,7 @@ jobs:
       - restore_cache:
           keys:
             - java9-gradle-{{ checksum "build.gradle" }}
+      - run: sudo apt-get update && sudo apt-get install -y make
       - run:
           <<: *init_task
       - run:
