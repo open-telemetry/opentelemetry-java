@@ -108,6 +108,8 @@ subprojects {
         grpcVersion = '1.20.0'
         autoValueVersion = '1.6.2'
         opentracingVersion = '0.33.0'
+        protobufVersion = '3.7.1'
+        protocVersion = '3.7.1'
         guavaVersion = '26.0-android'
 
         libraries = [
@@ -119,6 +121,8 @@ subprojects {
                 grpc_context: "io.grpc:grpc-context:${grpcVersion}",
                 guava: "com.google.guava:guava:${guavaVersion}",
                 jsr305: "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
+                protobuf: "com.google.protobuf:protobuf-java:${protobufVersion}",
+                protobuf_util: "com.google.protobuf:protobuf-java-util:${protobufVersion}",
 
                 // Compatibility layer
                 opentracing: "io.opentracing:opentracing-api:${opentracingVersion}",

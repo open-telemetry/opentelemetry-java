@@ -7,7 +7,7 @@ dependencies {
             libraries.opentracing
 
     testImplementation project(':opentelemetry-sdk'),
-            "com.google.protobuf:protobuf-java:${protobufVersion}",
+            libraries.protobuf,
             libraries.junit,
             libraries.assertj,
             libraries.slf4jsimple,
