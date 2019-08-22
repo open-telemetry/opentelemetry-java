@@ -64,7 +64,7 @@ public interface Measure {
     B setUnit(String unit);
 
     /**
-     * Sets the map of constant labels (they will be added to all the TimeSeries) for the Metric.
+     * Sets the map of constant labels (they will be added to all the Handle) for the Metric.
      *
      * <p>Default value is {@link Collections#emptyMap()}.
      *

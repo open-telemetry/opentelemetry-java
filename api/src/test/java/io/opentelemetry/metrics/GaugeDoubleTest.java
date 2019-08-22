@@ -39,7 +39,7 @@ public class GaugeDoubleTest {
   private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullLabelValues() {
+  public void noopGetHandle_WithNullLabelValues() {
     GaugeDouble gaugeDouble =
         meter
             .gaugeDoubleBuilder(NAME)
@@ -49,11 +49,11 @@ public class GaugeDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    gaugeDouble.getOrCreateTimeSeries(null);
+    gaugeDouble.getHandle(null);
   }
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
+  public void noopGetHandle_WithInvalidLabelSize() {
     GaugeDouble gaugeDouble =
         meter
             .gaugeDoubleBuilder(NAME)
@@ -63,11 +63,11 @@ public class GaugeDoubleTest {
             .build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    gaugeDouble.getOrCreateTimeSeries(EMPTY_LABEL_VALUES);
+    gaugeDouble.getHandle(EMPTY_LABEL_VALUES);
   }
 
   @Test
-  public void noopRemoveTimeSeries_WithNullLabelValues() {
+  public void noopRemoveHandle_WithNullLabelValues() {
     GaugeDouble gaugeDouble =
         meter
             .gaugeDoubleBuilder(NAME)
@@ -77,6 +77,6 @@ public class GaugeDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    gaugeDouble.removeTimeSeries(null);
+    gaugeDouble.removeHandle(null);
   }
 }

@@ -70,7 +70,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *             for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
  *               LabelValue gcName = LabelValue.create(gc.getName());
  *               collectionMetric
- *                   .getOrCreateTimeSeries(Collections.singletonList(gcName))
+ *                   .getHandle(Collections.singletonList(gcName))
  *                   .set(gc.getCollectionTime());
  *             }
  *           }
@@ -94,16 +94,16 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setLabelKeys(labelKeys)
  *           .build();
  *
- *   // It is recommended to keep a reference of a TimeSeries.
- *   GaugeDouble.TimeSeries inboundTimeSeries = gauge.getOrCreateTimeSeries(labelValues);
+ *   // It is recommended to keep a reference of a Handle.
+ *   GaugeDouble.Handle inboundHandle = gauge.getHandle(labelValues);
  *
  *   void doAddElement() {
  *      // Your code here.
- *      inboundTimeSeries.add(1);
+ *      inboundHandle.add(1);
  *   }
  *
  *   void doRemoveElement() {
- *      inboundTimeSeries.add(-1);
+ *      inboundHandle.add(-1);
  *      // Your code here.
  *   }
  *

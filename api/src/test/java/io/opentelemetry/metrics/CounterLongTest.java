@@ -39,7 +39,7 @@ public class CounterLongTest {
   private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullLabelValues() {
+  public void noopGetHandle_WithNullLabelValues() {
     CounterLong counterLong =
         meter
             .counterLongBuilder(NAME)
@@ -49,11 +49,11 @@ public class CounterLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    counterLong.getOrCreateTimeSeries(null);
+    counterLong.getHandle(null);
   }
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
+  public void noopGetHandle_WithInvalidLabelSize() {
     CounterLong counterLong =
         meter
             .counterLongBuilder(NAME)
@@ -63,11 +63,11 @@ public class CounterLongTest {
             .build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    counterLong.getOrCreateTimeSeries(EMPTY_LABEL_VALUES);
+    counterLong.getHandle(EMPTY_LABEL_VALUES);
   }
 
   @Test
-  public void noopRemoveTimeSeries_WithNullLabelValues() {
+  public void noopRemoveHandle_WithNullLabelValues() {
     CounterLong counterLong =
         meter
             .counterLongBuilder(NAME)
@@ -77,6 +77,6 @@ public class CounterLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    counterLong.removeTimeSeries(null);
+    counterLong.removeHandle(null);
   }
 }
