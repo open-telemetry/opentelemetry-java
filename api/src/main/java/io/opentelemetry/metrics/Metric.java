@@ -77,14 +77,6 @@ public interface Metric<T> {
    */
   void removeHandle(List<String> labelValues);
 
-  /**
-   * Removes all {@code Handle} from the metric. i.e. references to all previous {@code Handle} are
-   * invalid (not part of the metric).
-   *
-   * @since 0.1.0
-   */
-  void clear();
-
   interface Builder<B extends Builder<B, V>, V> {
     /**
      * Sets the description of the {@code Metric}.
