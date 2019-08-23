@@ -100,22 +100,22 @@ public final class DefaultMeter implements Meter {
   private static final class NoopGaugeLong implements GaugeLong {
     private final int labelKeysSize;
 
-    /** Creates a new {@code NoopTimeSeries}. */
+    /** Creates a new {@code NoopHandle}. */
     private NoopGaugeLong(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
+    public NoopHandle getHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      return new NoopTimeSeries();
+      return new NoopHandle();
     }
 
     @Override
-    public NoopTimeSeries getDefaultTimeSeries() {
-      return new NoopTimeSeries();
+    public NoopHandle getDefaultHandle() {
+      return new NoopHandle();
     }
 
     @Override
@@ -124,16 +124,16 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeTimeSeries(List<String> labelValues) {
+    public void removeHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
 
     @Override
     public void clear() {}
 
-    /** No-op implementations of TimeSeries class. */
-    private static final class NoopTimeSeries implements TimeSeries {
-      private NoopTimeSeries() {}
+    /** No-op implementations of Handle class. */
+    private static final class NoopHandle implements Handle {
+      private NoopHandle() {}
 
       @Override
       public void add(long amt) {}
@@ -194,22 +194,22 @@ public final class DefaultMeter implements Meter {
   private static final class NoopGaugeDouble implements GaugeDouble {
     private final int labelKeysSize;
 
-    /** Creates a new {@code NoopTimeSeries}. */
+    /** Creates a new {@code NoopHandle}. */
     private NoopGaugeDouble(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
+    public NoopHandle getHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      return new NoopTimeSeries();
+      return new NoopHandle();
     }
 
     @Override
-    public NoopTimeSeries getDefaultTimeSeries() {
-      return new NoopTimeSeries();
+    public NoopHandle getDefaultHandle() {
+      return new NoopHandle();
     }
 
     @Override
@@ -218,16 +218,16 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeTimeSeries(List<String> labelValues) {
+    public void removeHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
 
     @Override
     public void clear() {}
 
-    /** No-op implementations of TimeSeries class. */
-    private static final class NoopTimeSeries implements TimeSeries {
-      private NoopTimeSeries() {}
+    /** No-op implementations of Handle class. */
+    private static final class NoopHandle implements Handle {
+      private NoopHandle() {}
 
       @Override
       public void add(double amt) {}
@@ -288,22 +288,22 @@ public final class DefaultMeter implements Meter {
   private static final class NoopCounterDouble implements CounterDouble {
     private final int labelKeysSize;
 
-    /** Creates a new {@code NoopTimeSeries}. */
+    /** Creates a new {@code NoopHandle}. */
     private NoopCounterDouble(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
+    public NoopHandle getHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      return NoopTimeSeries.INSTANCE;
+      return NoopHandle.INSTANCE;
     }
 
     @Override
-    public NoopTimeSeries getDefaultTimeSeries() {
-      return NoopTimeSeries.INSTANCE;
+    public NoopHandle getDefaultHandle() {
+      return NoopHandle.INSTANCE;
     }
 
     @Override
@@ -312,18 +312,18 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeTimeSeries(List<String> labelValues) {
+    public void removeHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
 
     @Override
     public void clear() {}
 
-    /** No-op implementations of TimeSeries class. */
-    private static final class NoopTimeSeries implements TimeSeries {
-      private static final NoopTimeSeries INSTANCE = new NoopTimeSeries();
+    /** No-op implementations of Handle class. */
+    private static final class NoopHandle implements Handle {
+      private static final NoopHandle INSTANCE = new NoopHandle();
 
-      private NoopTimeSeries() {}
+      private NoopHandle() {}
 
       @Override
       public void add(double delta) {}
@@ -384,22 +384,22 @@ public final class DefaultMeter implements Meter {
   private static final class NoopCounterLong implements CounterLong {
     private final int labelKeysSize;
 
-    /** Creates a new {@code NoopTimeSeries}. */
+    /** Creates a new {@code NoopHandle}. */
     private NoopCounterLong(int labelKeysSize) {
       this.labelKeysSize = labelKeysSize;
     }
 
     @Override
-    public NoopTimeSeries getOrCreateTimeSeries(List<String> labelValues) {
+    public NoopHandle getHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
       Utils.checkArgument(
           labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
-      return NoopTimeSeries.INSTANCE;
+      return NoopHandle.INSTANCE;
     }
 
     @Override
-    public NoopTimeSeries getDefaultTimeSeries() {
-      return NoopTimeSeries.INSTANCE;
+    public NoopHandle getDefaultHandle() {
+      return NoopHandle.INSTANCE;
     }
 
     @Override
@@ -408,18 +408,18 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeTimeSeries(List<String> labelValues) {
+    public void removeHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
 
     @Override
     public void clear() {}
 
-    /** No-op implementations of TimeSeries class. */
-    private static final class NoopTimeSeries implements TimeSeries {
-      private static final NoopTimeSeries INSTANCE = new NoopTimeSeries();
+    /** No-op implementations of Handle class. */
+    private static final class NoopHandle implements Handle {
+      private static final NoopHandle INSTANCE = new NoopHandle();
 
-      private NoopTimeSeries() {}
+      private NoopHandle() {}
 
       @Override
       public void add(long delta) {}

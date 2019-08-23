@@ -69,7 +69,7 @@ public final class GarbageCollector {
           public void run() {
             for (final GarbageCollectorMXBean gc : garbageCollectors) {
               collectionMetric
-                  .getOrCreateTimeSeries(Collections.singletonList(gc.getName()))
+                  .getHandle(Collections.singletonList(gc.getName()))
                   .set(gc.getCollectionTime());
             }
           }
