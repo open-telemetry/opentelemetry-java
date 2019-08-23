@@ -39,6 +39,27 @@ public class GaugeDoubleTest {
   private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
+  public void preventNull_Description() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("description");
+    meter.gaugeDoubleBuilder("metric").setDescription(null).build();
+  }
+
+  @Test
+  public void preventNull_Unit() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("unit");
+    meter.gaugeDoubleBuilder("metric").setUnit(null).build();
+  }
+
+  @Test
+  public void preventNull_ConstantLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("constantLabels");
+    meter.gaugeDoubleBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
   public void noopGetHandle_WithNullLabelValues() {
     GaugeDouble gaugeDouble =
         meter

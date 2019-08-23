@@ -40,13 +40,13 @@ public final class MeasureLongTest {
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
-    meter.measureDoubleBuilder(longName).build();
+    meter.measureLongBuilder(longName).build();
   }
 
   @Test
   public void preventNonPrintableMeasureName() {
     thrown.expect(IllegalArgumentException.class);
-    meter.measureDoubleBuilder("\2").build();
+    meter.measureLongBuilder("\2").build();
   }
 
   @Test
