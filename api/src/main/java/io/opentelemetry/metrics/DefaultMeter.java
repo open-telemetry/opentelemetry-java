@@ -34,7 +34,7 @@ public final class DefaultMeter implements Meter {
   private static final DefaultMeter INSTANCE = new DefaultMeter();
 
   /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
-  private static final String ERROR_MESSAGE_INVALID_NAME =
+  /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
       "Name should be a ASCII string with a length no greater than "
           + NAME_MAX_LENGTH
           + " characters.";
@@ -52,24 +52,36 @@ public final class DefaultMeter implements Meter {
   @Override
   public GaugeLong.Builder gaugeLongBuilder(String name) {
     Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
     return new NoopGaugeLong.NoopBuilder();
   }
 
   @Override
   public GaugeDouble.Builder gaugeDoubleBuilder(String name) {
     Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
     return new NoopGaugeDouble.NoopBuilder();
   }
 
   @Override
   public CounterDouble.Builder counterDoubleBuilder(String name) {
     Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
     return new NoopCounterDouble.NoopBuilder();
   }
 
   @Override
   public CounterLong.Builder counterLongBuilder(String name) {
     Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
     return new NoopCounterLong.NoopBuilder();
   }
 

@@ -116,10 +116,12 @@ public interface Meter {
   /**
    * Returns a builder for a {@link GaugeLong}.
    *
-   * @param name the name of the metric.
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
    * @return a {@code GaugeLong.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
   GaugeLong.Builder gaugeLongBuilder(String name);
@@ -127,10 +129,12 @@ public interface Meter {
   /**
    * Returns a builder for a {@link GaugeDouble}.
    *
-   * @param name the name of the metric.
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
    * @return a {@code GaugeDouble.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
   GaugeDouble.Builder gaugeDoubleBuilder(String name);
@@ -138,10 +142,12 @@ public interface Meter {
   /**
    * Returns a builder for a {@link CounterDouble}.
    *
-   * @param name the name of the metric.
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
    * @return a {@code CounterDouble.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
   CounterDouble.Builder counterDoubleBuilder(String name);
@@ -149,10 +155,12 @@ public interface Meter {
   /**
    * Returns a builder for a {@link CounterLong}.
    *
-   * @param name the name of the metric.
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
    * @return a {@code CounterLong.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
   CounterLong.Builder counterLongBuilder(String name);
@@ -163,6 +171,9 @@ public interface Meter {
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
    * @return a new builder for a {@code Measure}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
   MeasureDouble.Builder measureDoubleBuilder(String name);
@@ -173,6 +184,9 @@ public interface Meter {
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
    * @return a new builder for a {@code Measure}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
   MeasureLong.Builder measureLongBuilder(String name);
