@@ -17,6 +17,7 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -42,6 +43,16 @@ public class GaugeLongTest {
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
     meter.gaugeLongBuilder("\2").build();
+  }
+
+  @Test
+  public void preventTooLongMeasureName() {
+    char[] chars = new char[DefaultMeter.NAME_MAX_LENGTH + 1];
+    Arrays.fill(chars, 'a');
+    String longName = String.valueOf(chars);
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.gaugeLongBuilder(longName).build();
   }
 
   @Test

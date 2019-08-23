@@ -34,7 +34,7 @@ public final class DefaultMeter implements Meter {
   private static final DefaultMeter INSTANCE = new DefaultMeter();
 
   /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
-  private static final String ERROR_MESSAGE_INVALID_NAME =
+  /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
       "Name should be a ASCII string with a length no greater than "
           + NAME_MAX_LENGTH
           + " characters.";
