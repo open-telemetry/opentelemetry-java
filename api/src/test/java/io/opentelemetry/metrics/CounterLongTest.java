@@ -39,6 +39,27 @@ public class CounterLongTest {
   private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
+  public void preventNull_Description() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("description");
+    meter.counterLongBuilder("metric").setDescription(null).build();
+  }
+
+  @Test
+  public void preventNull_Unit() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("unit");
+    meter.counterLongBuilder("metric").setUnit(null).build();
+  }
+
+  @Test
+  public void preventNull_ConstantLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("constantLabels");
+    meter.counterLongBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
   public void noopGetHandle_WithNullLabelValues() {
     CounterLong counterLong =
         meter

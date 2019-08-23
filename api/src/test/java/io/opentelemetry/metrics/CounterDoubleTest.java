@@ -39,6 +39,27 @@ public class CounterDoubleTest {
   private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
+  public void preventNull_Description() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("description");
+    meter.counterDoubleBuilder("metric").setDescription(null).build();
+  }
+
+  @Test
+  public void preventNull_Unit() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("unit");
+    meter.counterDoubleBuilder("metric").setUnit(null).build();
+  }
+
+  @Test
+  public void preventNull_ConstantLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("constantLabels");
+    meter.counterDoubleBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
   public void noopGetHandle_WithNullLabelValues() {
     CounterDouble counterDouble =
         meter

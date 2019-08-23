@@ -39,6 +39,27 @@ public class GaugeLongTest {
   private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
+  public void preventNull_Description() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("description");
+    meter.gaugeLongBuilder("metric").setDescription(null).build();
+  }
+
+  @Test
+  public void preventNull_Unit() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("unit");
+    meter.gaugeLongBuilder("metric").setUnit(null).build();
+  }
+
+  @Test
+  public void preventNull_ConstantLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("constantLabels");
+    meter.gaugeLongBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
   public void noopGetHandle_WithNullLabelValues() {
     GaugeLong gaugeLong =
         meter
