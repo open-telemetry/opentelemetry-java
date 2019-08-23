@@ -1,6 +1,4 @@
-description = 'OpenTelemetry InMemory Utility'
-
-def protobufVersion = '3.7.1'
+description = 'OpenTelemetry InMemory Export'
 
 dependencies {
     api project(':opentelemetry-sdk')

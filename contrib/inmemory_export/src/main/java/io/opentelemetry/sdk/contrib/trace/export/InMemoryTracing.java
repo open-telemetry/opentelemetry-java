@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.inmemory.trace;
+package io.opentelemetry.sdk.contrib.trace.export;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.proto.trace.v1.Span;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.inmemory.trace;
+package io.opentelemetry.sdk.contrib.trace.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
