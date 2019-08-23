@@ -128,9 +128,6 @@ public final class DefaultMeter implements Meter {
       Utils.checkNotNull(labelValues, "labelValues");
     }
 
-    @Override
-    public void clear() {}
-
     /** No-op implementations of Handle class. */
     private static final class NoopHandle implements Handle {
       private NoopHandle() {}
@@ -222,9 +219,6 @@ public final class DefaultMeter implements Meter {
       Utils.checkNotNull(labelValues, "labelValues");
     }
 
-    @Override
-    public void clear() {}
-
     /** No-op implementations of Handle class. */
     private static final class NoopHandle implements Handle {
       private NoopHandle() {}
@@ -315,9 +309,6 @@ public final class DefaultMeter implements Meter {
     public void removeHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
-
-    @Override
-    public void clear() {}
 
     /** No-op implementations of Handle class. */
     private static final class NoopHandle implements Handle {
@@ -411,9 +402,6 @@ public final class DefaultMeter implements Meter {
     public void removeHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
-
-    @Override
-    public void clear() {}
 
     /** No-op implementations of Handle class. */
     private static final class NoopHandle implements Handle {
