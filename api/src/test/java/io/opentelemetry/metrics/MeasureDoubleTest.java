@@ -44,7 +44,7 @@ public final class MeasureDoubleTest {
   }
 
   @Test
-  public void preventNonPrintableMeasureName() {
+  public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
     meter.measureDoubleBuilder("\2").build();
   }

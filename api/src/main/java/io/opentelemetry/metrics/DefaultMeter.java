@@ -52,24 +52,36 @@ public final class DefaultMeter implements Meter {
   @Override
   public GaugeLong.Builder gaugeLongBuilder(String name) {
     Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
     return new NoopGaugeLong.NoopBuilder();
   }
 
   @Override
   public GaugeDouble.Builder gaugeDoubleBuilder(String name) {
     Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
     return new NoopGaugeDouble.NoopBuilder();
   }
 
   @Override
   public CounterDouble.Builder counterDoubleBuilder(String name) {
     Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
     return new NoopCounterDouble.NoopBuilder();
   }
 
   @Override
   public CounterLong.Builder counterLongBuilder(String name) {
     Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
     return new NoopCounterLong.NoopBuilder();
   }
 

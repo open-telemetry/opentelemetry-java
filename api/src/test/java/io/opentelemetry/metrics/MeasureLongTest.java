@@ -35,7 +35,7 @@ public final class MeasureLongTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void preventTooLongMeasureName() {
+  public void preventTooLongName() {
     char[] chars = new char[256];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);

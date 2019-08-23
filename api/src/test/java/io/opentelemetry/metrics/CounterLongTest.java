@@ -39,6 +39,12 @@ public class CounterLongTest {
   private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
+  public void preventNonPrintableName() {
+    thrown.expect(IllegalArgumentException.class);
+    meter.counterLongBuilder("\2").build();
+  }
+
+  @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
