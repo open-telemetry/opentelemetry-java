@@ -40,7 +40,7 @@ public class InMemorySpanExporterTest {
   }
 
   @Test
-  public void getFinishedSpanDataItems() {
+  public void getFinishedSpanItems() {
     tracer.spanBuilder("one").startSpan().end();
     tracer.spanBuilder("two").startSpan().end();
     tracer.spanBuilder("three").startSpan().end();

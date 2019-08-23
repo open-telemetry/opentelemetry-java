@@ -16,16 +16,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.metrics.CounterDouble;
 import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.GaugeDouble;
 import io.opentelemetry.metrics.GaugeLong;
-import io.opentelemetry.metrics.Measure;
-import io.opentelemetry.metrics.Measurement;
+import io.opentelemetry.metrics.MeasureBatchRecorder;
+import io.opentelemetry.metrics.MeasureDouble;
+import io.opentelemetry.metrics.MeasureLong;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.trace.SpanContext;
-import java.util.List;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
 public class MeterSdk implements Meter {
@@ -51,17 +49,17 @@ public class MeterSdk implements Meter {
   }
 
   @Override
-  public Measure.Builder measureBuilder(String name) {
+  public MeasureDouble.Builder measureDoubleBuilder(String name) {
     throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
-  public void record(List<Measurement> measurements) {}
+  public MeasureLong.Builder measureLongBuilder(String name) {
+    throw new UnsupportedOperationException("to be implemented");
+  }
 
   @Override
-  public void record(List<Measurement> measurements, DistributedContext distContext) {}
-
-  @Override
-  public void record(
-      List<Measurement> measurements, DistributedContext distContext, SpanContext spanContext) {}
+  public MeasureBatchRecorder newMeasureBatchRecorder() {
+    throw new UnsupportedOperationException("to be implemented");
+  }
 }

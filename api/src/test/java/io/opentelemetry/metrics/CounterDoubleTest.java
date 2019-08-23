@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -34,14 +33,13 @@ public class CounterDoubleTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final List<LabelKey> LABEL_KEY =
-      Collections.singletonList(LabelKey.create("key", "key description"));
-  private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<>();
+  private static final List<String> LABEL_KEY = Collections.singletonList("key");
+  private static final List<String> EMPTY_LABEL_VALUES = Collections.emptyList();
 
   private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullLabelValues() {
+  public void noopGetHandle_WithNullLabelValues() {
     CounterDouble counterDouble =
         meter
             .counterDoubleBuilder(NAME)
@@ -51,26 +49,11 @@ public class CounterDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    counterDouble.getOrCreateTimeSeries(null);
+    counterDouble.getHandle(null);
   }
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullElement() {
-    List<LabelValue> labelValues = Collections.singletonList(null);
-    CounterDouble counterDouble =
-        meter
-            .counterDoubleBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValue");
-    counterDouble.getOrCreateTimeSeries(labelValues);
-  }
-
-  @Test
-  public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
+  public void noopGetHandle_WithInvalidLabelSize() {
     CounterDouble counterDouble =
         meter
             .counterDoubleBuilder(NAME)
@@ -80,11 +63,11 @@ public class CounterDoubleTest {
             .build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    counterDouble.getOrCreateTimeSeries(EMPTY_LABEL_VALUES);
+    counterDouble.getHandle(EMPTY_LABEL_VALUES);
   }
 
   @Test
-  public void noopRemoveTimeSeries_WithNullLabelValues() {
+  public void noopRemoveHandle_WithNullLabelValues() {
     CounterDouble counterDouble =
         meter
             .counterDoubleBuilder(NAME)
@@ -94,6 +77,6 @@ public class CounterDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    counterDouble.removeTimeSeries(null);
+    counterDouble.removeHandle(null);
   }
 }

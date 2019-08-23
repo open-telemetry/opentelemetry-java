@@ -18,8 +18,6 @@ package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.CounterLong;
-import io.opentelemetry.metrics.LabelKey;
-import io.opentelemetry.metrics.LabelValue;
 import io.opentelemetry.metrics.Meter;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -42,7 +40,7 @@ import java.util.List;
  * </pre>
  */
 public final class GarbageCollector {
-  private static final LabelKey GC = LabelKey.create("gc", "");
+  private static final String GC_LABEL_KEY = "gc";
 
   private final List<GarbageCollectorMXBean> garbageCollectors;
   private final Meter meter;
@@ -62,7 +60,7 @@ public final class GarbageCollector {
             .counterLongBuilder("collection")
             .setDescription("Time spent in a given JVM garbage collector in milliseconds.")
             .setUnit("ms")
-            .setLabelKeys(Collections.singletonList(GC))
+            .setLabelKeys(Collections.singletonList(GC_LABEL_KEY))
             .setComponent("jvm_gc")
             .build();
     collectionMetric.setCallback(
@@ -70,9 +68,8 @@ public final class GarbageCollector {
           @Override
           public void run() {
             for (final GarbageCollectorMXBean gc : garbageCollectors) {
-              LabelValue gcName = LabelValue.create(gc.getName());
               collectionMetric
-                  .getOrCreateTimeSeries(Collections.singletonList(gcName))
+                  .getHandle(Collections.singletonList(gc.getName()))
                   .set(gc.getCollectionTime());
             }
           }

@@ -17,6 +17,7 @@
 package io.opentelemetry.trace.spi;
 
 import io.opentelemetry.trace.Tracer;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * TracerProvider is a service provider for {@link Tracer}. Fully qualified class name of the
@@ -28,6 +29,7 @@ import io.opentelemetry.trace.Tracer;
  *
  * @see io.opentelemetry.OpenTelemetry
  */
+@ThreadSafe
 public interface TracerProvider {
 
   /**

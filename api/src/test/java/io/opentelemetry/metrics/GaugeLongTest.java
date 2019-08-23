@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -34,14 +33,13 @@ public class GaugeLongTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final List<LabelKey> LABEL_KEY =
-      Collections.singletonList(LabelKey.create("key", "key description"));
-  private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<>();
+  private static final List<String> LABEL_KEY = Collections.singletonList("key");
+  private static final List<String> EMPTY_LABEL_VALUES = Collections.emptyList();
 
   private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullLabelValues() {
+  public void noopGetHandle_WithNullLabelValues() {
     GaugeLong gaugeLong =
         meter
             .gaugeLongBuilder(NAME)
@@ -51,26 +49,11 @@ public class GaugeLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    gaugeLong.getOrCreateTimeSeries(null);
+    gaugeLong.getHandle(null);
   }
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullElement() {
-    List<LabelValue> labelValues = Collections.singletonList(null);
-    GaugeLong gaugeLong =
-        meter
-            .gaugeLongBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValue");
-    gaugeLong.getOrCreateTimeSeries(labelValues);
-  }
-
-  @Test
-  public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
+  public void noopGetHandle_WithInvalidLabelSize() {
     GaugeLong gaugeLong =
         meter
             .gaugeLongBuilder(NAME)
@@ -80,11 +63,11 @@ public class GaugeLongTest {
             .build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    gaugeLong.getOrCreateTimeSeries(EMPTY_LABEL_VALUES);
+    gaugeLong.getHandle(EMPTY_LABEL_VALUES);
   }
 
   @Test
-  public void noopRemoveTimeSeries_WithNullLabelValues() {
+  public void noopRemoveHandle_WithNullLabelValues() {
     GaugeLong gaugeLong =
         meter
             .gaugeLongBuilder(NAME)
@@ -94,6 +77,6 @@ public class GaugeLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    gaugeLong.removeTimeSeries(null);
+    gaugeLong.removeHandle(null);
   }
 }

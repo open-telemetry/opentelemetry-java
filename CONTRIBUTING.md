@@ -1,11 +1,18 @@
 # Contributing
 
-This repository is NOT open for pull requests outside of the limited set of
-people due to missing CLA. Please file issues instead for proposals and issues
-reporting. We are working on removing this limitation and allowing
-contributions.
+We welcome contributions to this repository!
 
-## Style
+Have a look at our [community repo](https://github.com/open-telemetry/community) to get started with OpenTelemetry.
+
+If you want to add new features or change behavior, please make sure your changes follow the [OpenTelemetry Specification](https://github.com/open-telemetry/opentelemetry-specification).
+Otherwise file an issue or submit a PR to the specification repo first.
+
+Make sure to review the projects [license](LICENSE) and sign the [CNCF CLA](https://identity.linuxfoundation.org/projects/cncf).
+A signed CLA will be enforced by an automatic check once you submit a PR, but you can also sign it after opening your PR.
+
+See our general [contribution guidelines](https://github.com/open-telemetry/community/blob/master/CONTRIBUTING.md) for more information.
+
+## Style guideline
 
 We follow the [Google Java Style
 Guide](https://google.github.io/styleguide/javaguide.html). Our build
@@ -63,12 +70,14 @@ $ git commit -m "Update javadoc for API."
 Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.
 
+Before running the build init repository dependencies by running `make init-git-submodules`.
+
 Run the following commands to build, run tests and most static analysis, and
 check formatting:
 
 ### OS X or Linux
 
-`./gradlew clean assemble check verGJF`
+`make test verify-format`
 
 ### Windows
 

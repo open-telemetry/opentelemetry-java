@@ -19,12 +19,14 @@ package io.opentelemetry.trace;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Sampler is used to make decisions on {@link Span} sampling.
  *
  * @since 0.1.0
  */
+@ThreadSafe
 public interface Sampler {
   /**
    * Called during {@link Span} creation to make a sampling decision.

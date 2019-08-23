@@ -16,14 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.Entry;
-import io.opentelemetry.distributedcontext.EntryKey;
-import io.opentelemetry.distributedcontext.EntryValue;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import javax.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,35 +25,7 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link DefaultMeter}. */
 @RunWith(JUnit4.class)
 public final class DefaultMeterTest {
-  private static final Entry ENTRY =
-      Entry.create(
-          EntryKey.create("key"), EntryValue.create("value"), Entry.METADATA_UNLIMITED_PROPAGATION);
-
   private static final Meter defaultMeter = DefaultMeter.getInstance();
-
-  private static final Measure MEASURE =
-      defaultMeter
-          .measureBuilder("my measure")
-          .setDescription("description")
-          .setType(Measure.Type.DOUBLE)
-          .setUnit("1")
-          .build();
-
-  private final DistributedContext distContext =
-      new DistributedContext() {
-
-        @Override
-        public Collection<Entry> getEntries() {
-          return Collections.singleton(ENTRY);
-        }
-
-        @Nullable
-        @Override
-        public EntryValue getEntryValue(EntryKey entryKey) {
-          return EntryValue.create("value");
-        }
-      };
-
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
@@ -92,27 +56,17 @@ public final class DefaultMeterTest {
     defaultMeter.counterLongBuilder(null);
   }
 
-  // The NoopStatsRecorder should do nothing, so this test just checks that record doesn't throw an
-  // exception.
   @Test
-  public void noopStatsRecorder_Record() {
-    List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(5));
-    defaultMeter.record(measurements, distContext);
-  }
-
-  // The NoopStatsRecorder should do nothing, so this test just checks that record doesn't throw an
-  // exception.
-  @Test
-  public void noopStatsRecorder_RecordWithCurrentContext() {
-    List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(6));
-    defaultMeter.record(measurements);
-  }
-
-  @Test
-  public void noopStatsRecorder_Record_DisallowNulldistContext() {
-    List<Measurement> measurements = Collections.singletonList(MEASURE.createDoubleMeasurement(6));
+  public void noopAddMeasureDouble_NullName() {
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("distContext");
-    defaultMeter.record(measurements, null);
+    thrown.expectMessage("name");
+    defaultMeter.measureDoubleBuilder(null);
+  }
+
+  @Test
+  public void noopAddMeasureLong_NullName() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    defaultMeter.measureLongBuilder(null);
   }
 }

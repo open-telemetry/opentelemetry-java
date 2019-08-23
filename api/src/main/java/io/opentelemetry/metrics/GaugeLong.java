@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.GaugeLong.Handle;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -34,21 +35,21 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .gaugeLongBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
- *           .setLabelKeys(Collections.singletonList(LabelKey.create("Name", "desc")))
+ *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a TimeSeries.
- *   private static final GaugeLong.TimeSeries inboundTimeSeries =
- *       gauge.getOrCreateTimeSeries(Collections.singletonList(LabelValue.create("SomeWork")));
- *    private static final GaugeLong.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
+ *   // It is recommended to keep a reference of a Handle.
+ *   private static final GaugeLong.Handle inboundHandle =
+ *       gauge.getHandle(Collections.singletonList("SomeWork"));
+ *    private static final GaugeLong.Handle defaultHandle = gauge.getDefaultHandle();
  *
  *   void doDefault() {
  *      // Your code here.
- *      defaultTimeSeries.add(10);
+ *      defaultHandle.add(10);
  *   }
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      inboundTimeSeries.set(15);
+ *      inboundHandle.set(15);
  *   }
  *
  * }
@@ -57,20 +58,20 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface GaugeLong extends Metric<GaugeLong.TimeSeries> {
+public interface GaugeLong extends Metric<Handle> {
 
   @Override
-  TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
+  Handle getHandle(List<String> labelValues);
 
   @Override
-  TimeSeries getDefaultTimeSeries();
+  Handle getDefaultHandle();
 
   /**
-   * The value of a single point in the Gauge.TimeSeries.
+   * A {@code Handle} for a {@code GaugeLong}.
    *
    * @since 0.1.0
    */
-  interface TimeSeries {
+  interface Handle {
 
     /**
      * Adds the given value to the current value. The values can be negative.

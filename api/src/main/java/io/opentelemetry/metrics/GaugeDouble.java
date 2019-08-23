@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.GaugeDouble.TimeSeries;
+import io.opentelemetry.metrics.GaugeDouble.Handle;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -35,21 +35,21 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .gaugeDoubleBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
- *           .setLabelKeys(Collections.singletonList(LabelKey.create("Name", "desc")))
+ *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a TimeSeries.
- *   private static final GaugeDouble.TimeSeries inboundTimeSeries =
- *       gauge.getOrCreateTimeSeries(Collections.singletonList(LabelValue.create("SomeWork")));
- *    private static final GaugeDouble.TimeSeries defaultTimeSeries = gauge.getDefaultTimeSeries();
+ *   // It is recommended to keep a reference of a Handle.
+ *   private static final GaugeDouble.Handle inboundHandle =
+ *       gauge.getHandle(Collections.singletonList("SomeWork"));
+ *    private static final GaugeDouble.Handle defaultHandle = gauge.getDefaultHandle();
  *
  *   void doDefault() {
  *      // Your code here.
- *      defaultTimeSeries.add(10);
+ *      defaultHandle.add(10);
  *   }
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      inboundTimeSeries.set(15);
+ *      inboundHandle.set(15);
  *   }
  *
  * }
@@ -58,20 +58,20 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface GaugeDouble extends Metric<TimeSeries> {
+public interface GaugeDouble extends Metric<Handle> {
 
   @Override
-  TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
+  Handle getHandle(List<String> labelValues);
 
   @Override
-  TimeSeries getDefaultTimeSeries();
+  Handle getDefaultHandle();
 
   /**
-   * A {@code TimeSeries} for a {@code GaugeDouble}.
+   * A {@code Handle} for a {@code GaugeDouble}.
    *
    * @since 0.1.0
    */
-  interface TimeSeries {
+  interface Handle {
 
     /**
      * Adds the given value to the current value. The values can be negative.

@@ -29,12 +29,12 @@ import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.util.Links;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -123,7 +123,7 @@ class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder addLink(SpanContext spanContext) {
     Utils.checkNotNull(spanContext, "spanContext");
-    addLink(SpanData.Link.create(spanContext));
+    addLink(Links.create(spanContext));
     return this;
   }
 
@@ -131,7 +131,7 @@ class SpanBuilderSdk implements Span.Builder {
   public Span.Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
     Utils.checkNotNull(spanContext, "spanContext");
     Utils.checkNotNull(attributes, "attributes");
-    addLink(SpanData.Link.create(spanContext, attributes));
+    addLink(Links.create(spanContext, attributes));
     return this;
   }
 
@@ -179,7 +179,7 @@ class SpanBuilderSdk implements Span.Builder {
     if (!recordEvents && !samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
     }
-    TimestampConverter timestampConverter = getTimestampConverter(parent);
+    TimestampConverter timestampConverter = getTimestampConverter(parentSpan(parentType, parent));
     return RecordEventsReadableSpan.startSpan(
         spanContext,
         spanName,
@@ -219,6 +219,18 @@ class SpanBuilderSdk implements Span.Builder {
         return remoteParent;
     }
     throw new IllegalStateException("Unknown parent type");
+  }
+
+  @Nullable
+  private static Span parentSpan(ParentType parentType, Span explicitParent) {
+    switch (parentType) {
+      case CURRENT_SPAN:
+        return ContextUtils.getValue();
+      case EXPLICIT_PARENT:
+        return explicitParent;
+      default:
+        return null;
+    }
   }
 
   /**

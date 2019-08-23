@@ -34,12 +34,12 @@ import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.util.Events;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,7 +75,7 @@ public class RecordEventsReadableSpanTest {
   private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
   private final Event event =
       new SimpleEvent("event2", Collections.<String, AttributeValue>emptyMap());
-  private final Link link = SpanData.Link.create(spanContext);
+  private final Link link = io.opentelemetry.trace.util.Links.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -274,7 +274,7 @@ public class RecordEventsReadableSpanTest {
     try {
       span.addEvent("event1");
       span.addEvent("event2", attributes);
-      span.addEvent(SpanData.Event.create("event3"));
+      span.addEvent(Events.create("event3"));
     } finally {
       span.end();
     }
@@ -288,7 +288,7 @@ public class RecordEventsReadableSpanTest {
     try {
       span.addLink(DefaultSpan.getInvalid().getContext());
       span.addLink(spanContext, attributes);
-      span.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
+      span.addLink(io.opentelemetry.trace.util.Links.create(DefaultSpan.getInvalid().getContext()));
     } finally {
       span.end();
     }

@@ -29,11 +29,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Implementation of the TraceContext propagation protocol. See <a
  * href=https://github.com/w3c/distributed-tracing>w3c/distributed-tracing</a>.
  */
+@Immutable
 public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
   static final String TRACEPARENT = "traceparent";

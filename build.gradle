@@ -72,7 +72,7 @@ subprojects {
         it.options.encoding = "UTF-8"
 
         // Ignore warnings for protobuf generated files.
-        it.options.compilerArgs += ["-XepExcludedPaths:.*/sdk/build/generated/source/proto/.*"]
+        it.options.compilerArgs += ["-XepExcludedPaths:.*/build/generated/source/proto/.*"]
 
         // Enforce errorprone warnings to be errors.
         if (!JavaVersion.current().isJava9() && !JavaVersion.current().isJava10()) {
@@ -108,14 +108,21 @@ subprojects {
         grpcVersion = '1.20.0'
         autoValueVersion = '1.6.2'
         opentracingVersion = '0.33.0'
+        protobufVersion = '3.7.1'
+        protocVersion = '3.7.1'
         guavaVersion = '26.0-android'
 
         libraries = [
                 auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
                 auto_value_annotation: "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
+                disruptor: 'com.lmax:disruptor:3.4.2',
                 errorprone_annotation: "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
+                grpc_api: "io.grpc:grpc-api:${grpcVersion}",
                 grpc_context: "io.grpc:grpc-context:${grpcVersion}",
+                guava: "com.google.guava:guava:${guavaVersion}",
                 jsr305: "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
+                protobuf: "com.google.protobuf:protobuf-java:${protobufVersion}",
+                protobuf_util: "com.google.protobuf:protobuf-java-util:${protobufVersion}",
 
                 // Compatibility layer
                 opentracing: "io.opentracing:opentracing-api:${opentracingVersion}",
