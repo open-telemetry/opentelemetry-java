@@ -1,0 +1,11 @@
+description = 'OpenTelemetry SDK Testbed'
+
+dependencies {
+    api project(':opentelemetry-api')
+
+    implementation project(':opentelemetry-sdk'),
+            libraries.awaitility,
+            libraries.guava
+
+    signature "org.codehaus.mojo.signature:java18:1.0@signature"
+}
