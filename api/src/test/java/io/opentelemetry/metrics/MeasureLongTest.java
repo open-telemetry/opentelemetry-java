@@ -35,18 +35,20 @@ public final class MeasureLongTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void preventTooLongMeasureName() {
+  public void preventNonPrintableMeasureName() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.measureLongBuilder("\2").build();
+  }
+
+  @Test
+  public void preventTooLongName() {
     char[] chars = new char[256];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
-    meter.measureDoubleBuilder(longName).build();
-  }
-
-  @Test
-  public void preventNonPrintableMeasureName() {
-    thrown.expect(IllegalArgumentException.class);
-    meter.measureDoubleBuilder("\2").build();
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.measureLongBuilder(longName).build();
   }
 
   @Test
