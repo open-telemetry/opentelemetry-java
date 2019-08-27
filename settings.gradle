@@ -9,6 +9,7 @@ include ":opentelemetry-opentracing-shim"
 include ":opentelemetry-proto"
 include ":opentelemetry-sdk"
 include ":opentelemetry-sdk-contrib-async-processor"
+include ":opentelemetry-sdk-contrib-inmemory-export"
 include ":opentelemetry-sdk-contrib-testbed"
 
 project(':opentelemetry-all').projectDir = "$rootDir/all" as File
@@ -22,4 +23,6 @@ project(':opentelemetry-opentracing-shim').projectDir = "$rootDir/opentracing_sh
 project(':opentelemetry-sdk').projectDir = "$rootDir/sdk" as File
 project(':opentelemetry-sdk-contrib-async-processor').projectDir =
         "$rootDir/sdk_contrib/async_processor" as File
+project(':opentelemetry-sdk-contrib-inmemory-export').projectDir =
+        "$rootDir/sdk_contrib/inmemory_export" as File
 project(':opentelemetry-sdk-contrib-testbed').projectDir = "$rootDir/sdk_contrib/testbed" as File
