@@ -14,5 +14,7 @@
  * limitations under the License.
  */
 
-/** Provides common functionality for instrumenting HTTP client and server components. */
+/**
+ * Provides common functionality for instrumenting HTTP client and server components.
+ */
 package io.opentelemetry.contrib.http.core;
