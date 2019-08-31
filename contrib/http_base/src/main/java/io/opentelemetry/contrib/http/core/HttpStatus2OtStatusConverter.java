@@ -19,7 +19,9 @@ package io.opentelemetry.contrib.http.core;
 import io.opentelemetry.trace.Status;
 import javax.annotation.Nullable;
 
-/** Provides standard translation from HTTP status codes to Open Telemetry trace status values. */
+/**
+ * Provides standard translation from HTTP status codes to Open Telemetry trace status values.
+ */
 public class HttpStatus2OtStatusConverter {
 
   /**
@@ -73,6 +75,7 @@ public class HttpStatus2OtStatusConverter {
    */
   @Nullable
   protected Status doCustomConvert(int httpStatus) {
-    return null; // NoOp
+    return null;  // NoOp
   }
+
 }
