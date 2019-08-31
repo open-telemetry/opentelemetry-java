@@ -27,15 +27,11 @@ import io.opentelemetry.distributedcontext.EntryMetadata;
 import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
 import io.opentelemetry.distributedcontext.EntryValue;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.Tracestate;
-import io.opentelemetry.trace.util.Links;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -155,9 +151,10 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
 
     Span span = spanBuilder.setSpanKind(Kind.SERVER).startSpan();
     if (publicEndpoint && spanContext != null) {
-      Map<String, AttributeValue> attributes = new HashMap<>();
-      attributes.put(HttpTraceConstants.LINK_TYPE, HttpTraceConstants.LINK_ATTR_ORIGINATING);
-      span.addLink(Links.create(spanContext, attributes));
+      //      Map<String, AttributeValue> attributes = new HashMap<>();
+      //      attributes.put(HttpTraceConstants.LINK_TYPE,
+      // HttpTraceConstants.LINK_ATTR_ORIGINATING);
+      //      span.addLink(Links.create(spanContext, attributes));
     }
 
     if (span.isRecordingEvents()) {
