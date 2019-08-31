@@ -21,6 +21,8 @@ import javax.annotation.Nullable;
 /**
  * An adaptor to extract information from request and response.
  *
+ * <p>This class provides no-op implementations by default.
+ *
  * <p>Please refer to this <a
  * href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md">document</a>
  * for more information about the HTTP attributes recorded in Open Telemetry.
@@ -31,36 +33,47 @@ import javax.annotation.Nullable;
 public abstract class HttpExtractor<Q, P> {
 
   /**
-   * Returns the request method for use as the value of the <code>http.method</code> span attribute.
+   * Returns the request method.
    *
-   * @param request the HTTP request
-   * @return the HTTP method
+   * @param request the HTTP request.
+   * @return the request method.
    */
+  @Nullable
   public abstract String getMethod(Q request);
 
   /**
-   * Returns the request URL for use as the value of the <code>http.url</code> span attribute.
+   * Returns the request URL.
    *
-   * @param request the HTTP request
-   * @return the request URL
+   * @param request the HTTP request.
+   * @return the request URL.
    */
+  @Nullable
   public abstract String getUrl(Q request);
 
   /**
-   * Returns the request route for use as the span name. This should be in the format <code>
-   * /users/:userID</code> or else the URI path.
+   * Returns the request URL path.
    *
-   * @param request the HTTP request
-   * @return the request route
+   * @param request the HTTP request.
+   * @return the request URL path.
    */
+  @Nullable
+  public abstract String getPath(Q request);
+
+  /**
+   * Returns the request route.
+   *
+   * @param request the HTTP request.
+   * @return the request route.
+   */
+  @Nullable
   public abstract String getRoute(Q request);
 
   /**
-   * Returns the response status code for use as the value of the <code>http.status_code</code> span
-   * attribute. If the response is null, this method should return {@code 0}.
+   * Returns the response status code. If the response is null, this method should return {@code 0}.
    *
-   * @param response the HTTP response
-   * @return the response status code
+   * @param response the HTTP response.
+   * @return the response status code.
    */
   public abstract int getStatusCode(@Nullable P response);
+
 }
