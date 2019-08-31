@@ -1,0 +1,14 @@
+description = 'OpenTelemetry Contrib Http Support'
+
+dependencies {
+    api project(':opentelemetry-api')
+
+    annotationProcessor libraries.auto_value
+
+    testImplementation project(':opentelemetry-sdk-contrib-inmemory-export')
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    // Runtime metrics are not android compatible, because we have only one artifact for contrib,
+    // disable the android requirement for the moment.
+    // signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+}
