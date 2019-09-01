@@ -250,7 +250,7 @@
             <!-- <property name="allowedAnnotations" value="Override, Test"/ -->
             <property name="allowedAnnotations"
                       value="Override, Test, Before, After, BeforeClass, AfterClass, Setup,
-                             TearDown"/>
+                             TearDown, Parameters"/>
             <property name="allowThrowsTagsForSubclasses" value="true"/>
         </module>
         <module name="MethodName">
