@@ -18,9 +18,7 @@ package io.opentelemetry.contrib.http.core;
 
 import io.opentelemetry.trace.AttributeValue;
 
-/**
- * Constants for standard Open Telemetry HTTP attributes.
- */
+/** Constants for standard Open Telemetry HTTP attributes. */
 public class HttpTraceAttributeConstants {
 
   public static final String COMPONENT = "component";
@@ -34,7 +32,5 @@ public class HttpTraceAttributeConstants {
   public static final AttributeValue COMPONENT_ATTR_VALUE =
       AttributeValue.stringAttributeValue(COMPONENT_VALUE);
 
-  private HttpTraceAttributeConstants() {
-  }
-
+  private HttpTraceAttributeConstants() {}
 }
