@@ -75,5 +75,4 @@ public abstract class HttpExtractor<Q, P> {
    * @return the response status code.
    */
   public abstract int getStatusCode(@Nullable P response);
-
 }
