@@ -5,6 +5,9 @@ dependencies {
 
     annotationProcessor libraries.auto_value
 
+    implementation libraries.guava
+
+    testImplementation project(':opentelemetry-sdk')
     testImplementation project(':opentelemetry-sdk-contrib-inmemory-export')
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
