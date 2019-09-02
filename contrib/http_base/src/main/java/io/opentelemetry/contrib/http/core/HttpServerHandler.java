@@ -26,12 +26,15 @@ import io.opentelemetry.distributedcontext.EntryKey;
 import io.opentelemetry.distributedcontext.EntryMetadata;
 import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
 import io.opentelemetry.distributedcontext.EntryValue;
-import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.util.Links;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
@@ -60,7 +63,7 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
    * @param getter the getter used to extract information from the carrier
    */
   public HttpServerHandler(HttpExtractor<Q, P> extractor, HttpTextFormat.Getter<C> getter) {
-    this(extractor, getter, null, null, null, null, null);
+    this(extractor, getter, null, null, null, null);
   }
 
   /**
@@ -71,7 +74,6 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
    * @param statusConverter the HTTP status to OT status translator
    * @param tracer the OT tracer
    * @param contextManager the OT distributed context manager
-   * @param meter the OT meter
    * @param publicEndpoint whether a new trace should be started for all requests or not
    */
   public HttpServerHandler(
@@ -80,9 +82,8 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
       HttpStatus2OtStatusConverter statusConverter,
       Tracer tracer,
       DistributedContextManager contextManager,
-      Meter meter,
       Boolean publicEndpoint) {
-    super(extractor, statusConverter, meter);
+    super(extractor, statusConverter);
     checkNotNull(getter, "getter is required");
     if (tracer == null) {
       this.tracer = OpenTelemetry.getTracer();
@@ -151,7 +152,9 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
 
     Span span = spanBuilder.setSpanKind(Kind.SERVER).startSpan();
     if (publicEndpoint && spanContext != null) {
-      span.setAttribute(HttpTraceConstants.LINK_TYPE, HttpTraceConstants.LINK_ATTR_ORIGINATING);
+      Map<String, AttributeValue> attributes = new HashMap<>();
+      attributes.put(HttpTraceConstants.LINK_TYPE, HttpTraceConstants.LINK_ATTR_ORIGINATING);
+      span.addLink(Links.create(spanContext, attributes));
     }
 
     if (span.isRecordingEvents()) {
@@ -188,7 +191,6 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     checkNotNull(context, "context");
     checkNotNull(request, "request");
     int httpCode = extractor.getStatusCode(response);
-    recordMeasurements(context, httpCode);
     spanEnd(context.span, httpCode, error);
   }
 
