@@ -19,7 +19,7 @@ package io.opentelemetry.contrib.http.core;
 import io.opentelemetry.trace.AttributeValue;
 
 /** Constants for standard Open Telemetry HTTP attributes. */
-public class HttpTraceAttributeConstants {
+public class HttpTraceConstants {
 
   public static final String COMPONENT = "component";
   public static final String COMPONENT_VALUE = "http";
@@ -27,10 +27,26 @@ public class HttpTraceAttributeConstants {
   public static final String HTTP_URL = "http.url";
   public static final String HTTP_ROUTE = "http.route";
   public static final String HTTP_STATUS_CODE = "http.status_code";
-  public static final String HTTP_HOST = "http.status_text";
-
+  public static final String HTTP_STATUS_TEXT = "http.status_text";
   public static final AttributeValue COMPONENT_ATTR_VALUE =
       AttributeValue.stringAttributeValue(COMPONENT_VALUE);
 
-  private HttpTraceAttributeConstants() {}
+  public static final String EVENT_NAME = "message";
+  public static final String EVENT_ATTR_TYPE = "message.type";
+  public static final String EVENT_TYPE_SENT = "SENT";
+  public static final String EVENT_TYPE_RECEIVED = "RECEIVED";
+  public static final String EVENT_ATTR_ID = "message.id";
+  public static final String EVENT_ATTR_COMPRESSED = "message.compressed_size";
+  public static final String EVENT_ATTR_UNCOMPRESSED = "message.uncompressed_size";
+  public static final AttributeValue EVENT_ATTR_SENT =
+      AttributeValue.stringAttributeValue(EVENT_TYPE_SENT);
+  public static final AttributeValue EVENT_ATTR_RECEIVED =
+      AttributeValue.stringAttributeValue(EVENT_TYPE_RECEIVED);
+
+  public static final String LINK_TYPE = "link.type";
+  public static final String LINK_ORIGINATING = "originating";
+  public static final AttributeValue LINK_ATTR_ORIGINATING =
+      AttributeValue.stringAttributeValue(LINK_ORIGINATING);
+
+  private HttpTraceConstants() {}
 }
