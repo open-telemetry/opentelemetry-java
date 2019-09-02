@@ -28,16 +28,25 @@ class TestOnlyMapHttpExtractor extends HttpExtractor<Map<String, String>, Map<St
   public static final String ROUTE = "ROUTE";
   public static final String STATUS = "STATUS";
 
+  @Nullable
   @Override
   public String getMethod(Map<String, String> request) {
     return request.get(METHOD);
   }
 
+  @Nullable
   @Override
   public String getUrl(Map<String, String> request) {
     return request.get(URL);
   }
 
+  @Nullable
+  @Override
+  public String getPath(Map<String, String> request) {
+    return request.get(PATH);
+  }
+
+  @Nullable
   @Override
   public String getRoute(Map<String, String> request) {
     return request.get(ROUTE);
