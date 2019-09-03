@@ -16,28 +16,19 @@
 
 package io.opentelemetry.contrib.http.core;
 
+import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.metrics.MeasureLong;
-import java.util.List;
+import io.opentelemetry.trace.SpanContext;
 
 /** Used to make implementations work until SDK implementation is available. */
 public class TemporaryMeasureLong implements MeasureLong {
 
-  private static final Handle HANDLE =
-      new Handle() {
-        @Override
-        public void record(long value) {}
-      };
+  @Override
+  public void record(long value) {}
 
   @Override
-  public Handle getHandle(List<String> labelValues) {
-    return HANDLE;
-  }
+  public void record(long value, DistributedContext distContext) {}
 
   @Override
-  public Handle getDefaultHandle() {
-    return HANDLE;
-  }
-
-  @Override
-  public void removeHandle(List<String> labelValues) {}
+  public void record(long measurement, DistributedContext distContext, SpanContext spanContext) {}
 }
