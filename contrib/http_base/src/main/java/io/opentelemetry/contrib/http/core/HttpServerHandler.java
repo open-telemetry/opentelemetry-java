@@ -26,6 +26,10 @@ import io.opentelemetry.distributedcontext.EntryKey;
 import io.opentelemetry.distributedcontext.EntryMetadata;
 import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
 import io.opentelemetry.distributedcontext.EntryValue;
+import io.opentelemetry.metrics.MeasureBatchRecorder;
+import io.opentelemetry.metrics.MeasureDouble;
+import io.opentelemetry.metrics.MeasureLong;
+import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -51,10 +55,13 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
 
   private final Tracer tracer;
   private final DistributedContextManager contextManager;
+  private final Meter meter;
   private final HttpTextFormat.Getter<C> getter;
   private final boolean publicEndpoint;
   private final HttpTextFormat<SpanContext> spanContextHttpTextFormat;
   private final HttpTextFormat<DistributedContext> distributedContextHttpTextFormat;
+  private final MeasureDouble measureDuration;
+  private final MeasureLong measureMessageSize;
 
   /**
    * Constructs a handler object.
@@ -63,7 +70,7 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
    * @param getter the getter used to extract information from the carrier
    */
   public HttpServerHandler(HttpExtractor<Q, P> extractor, HttpTextFormat.Getter<C> getter) {
-    this(extractor, getter, null, null, null, null);
+    this(extractor, getter, null, null, null, null, null);
   }
 
   /**
@@ -74,6 +81,7 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
    * @param statusConverter the HTTP status to OT status translator
    * @param tracer the OT tracer
    * @param contextManager the OT distributed context manager
+   * @param meter the OT meter
    * @param publicEndpoint whether a new trace should be started for all requests or not
    */
   public HttpServerHandler(
@@ -82,6 +90,7 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
       HttpStatus2OtStatusConverter statusConverter,
       Tracer tracer,
       DistributedContextManager contextManager,
+      Meter meter,
       Boolean publicEndpoint) {
     super(extractor, statusConverter);
     checkNotNull(getter, "getter is required");
@@ -95,6 +104,11 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     } else {
       this.contextManager = contextManager;
     }
+    if (meter == null) {
+      this.meter = OpenTelemetry.getMeter();
+    } else {
+      this.meter = meter;
+    }
     this.getter = getter;
     if (publicEndpoint == null) {
       this.publicEndpoint = false;
@@ -104,6 +118,15 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     this.spanContextHttpTextFormat = this.tracer.getHttpTextFormat();
     //    this.distributedContextHttpTextFormat = this.contextManager.getHttpTextFormat();
     this.distributedContextHttpTextFormat = new TemporaryDistributedContextTextFormat();
+    //    this.measureDuration =
+    // this.meter.measureDoubleBuilder(HttpTraceConstants.MEASURE_DURATION)
+    //        .setUnit("s")
+    //        .build();
+    this.measureDuration = new TemporaryMeasureDouble();
+    //    this.measureMessageSize = this.meter.measureLongBuilder(HttpTraceConstants.MEASURE_SIZE)
+    //        .setUnit("B")
+    //        .build();
+    this.measureMessageSize = new TemporaryMeasureLong();
   }
 
   /**
@@ -191,7 +214,23 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     checkNotNull(context, "context");
     checkNotNull(request, "request");
     int httpCode = extractor.getStatusCode(response);
+    recordMeasurements(context, httpCode);
     spanEnd(context.span, httpCode, error);
+  }
+
+  private void recordMeasurements(HttpRequestContext context, int httpCode) {
+    //    MeasureBatchRecorder recorder = meter.newMeasureBatchRecorder();
+    try {
+      meter.newMeasureBatchRecorder();
+      meter.counterLongBuilder(HttpTraceConstants.MEASURE_COUNT + httpCode).build();
+    } catch (UnsupportedOperationException ignore) {
+      // NoOp
+    }
+    MeasureBatchRecorder recorder = new TemporaryMeasureBatchRecorder();
+    recorder.setDistributedContext(context.distContext);
+    recorder.put(measureDuration, (System.nanoTime() - context.requestStartTime) / 1000000000.0);
+    recorder.put(measureMessageSize, context.receiveMessageSize.longValue());
+    recorder.record();
   }
 
   @Override
