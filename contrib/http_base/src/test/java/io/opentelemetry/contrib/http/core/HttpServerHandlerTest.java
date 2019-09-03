@@ -21,15 +21,58 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.sdk.contrib.trace.export.InMemoryTracing;
+import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.util.Samplers;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /** Unit tests for {@link HttpServerHandler}. */
 public class HttpServerHandlerTest {
+
+  private static final Logger LOGGER = Logger.getLogger(HttpServerHandlerTest.class.getName());
+  private static InMemoryTracing inMemoryTracing;
+
+  @BeforeClass
+  public static void configureTracing() {
+    TraceConfig traceConfig =
+        TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysSample()).build();
+    TracerSdk tracerSdk = (TracerSdk) OpenTelemetry.getTracer();
+    tracerSdk.updateActiveTraceConfig(traceConfig);
+    inMemoryTracing = new InMemoryTracing(tracerSdk);
+  }
+
+  @AfterClass
+  public static void shutdown() {
+    if (inMemoryTracing != null) {
+      inMemoryTracing.shutdown();
+    }
+  }
+
+  @Before
+  public void reset() {
+    if (inMemoryTracing != null) {
+      inMemoryTracing.reset();
+    }
+  }
+
+  @After
+  public void printSpans() {
+    for (io.opentelemetry.proto.trace.v1.Span span : inMemoryTracing.getFinishedSpanItems()) {
+      LOGGER.log(Level.FINE, span.toString());
+    }
+  }
 
   @Test
   public void shouldStartAndEndSpanWhenRemoteDataIsAvailable() {
@@ -56,6 +99,7 @@ public class HttpServerHandlerTest {
     } finally {
       handler.handleEnd(context, data, data, null);
     }
+    assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
   }
 
   @Test
@@ -88,6 +132,7 @@ public class HttpServerHandlerTest {
     } finally {
       handler.handleEnd(context, data, data, null);
     }
+    assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
   }
 
   @Test
@@ -108,5 +153,40 @@ public class HttpServerHandlerTest {
     } finally {
       handler.handleEnd(context, data, data, null);
     }
+    assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
+  }
+
+  @Test
+  public void shouldAddExceptionInfoToSpanIfProvided() {
+    Map<String, String> data = new HashMap<>();
+    String traceParent = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01";
+    TraceId traceId = TraceId.fromLowerBase16(traceParent, 3);
+    SpanId spanId = SpanId.fromLowerBase16(traceParent, 36);
+    data.put("traceparent", traceParent);
+    data.put("tracestate", "congo=t61rcWkgMzE");
+    data.put(TestOnlyMapHttpExtractor.METHOD, "POST");
+    String url = "https://api.example.com/widgets";
+    data.put(TestOnlyMapHttpExtractor.URL, url);
+    data.put(TestOnlyMapHttpExtractor.PATH, "/widgets");
+    data.put(TestOnlyMapHttpExtractor.ROUTE, "/widgets");
+    data.put(TestOnlyMapHttpExtractor.STATUS, "409");
+    HttpServerHandler<Map<String, String>, Map<String, String>, Map<String, String>> handler =
+        new HttpServerHandler<>(
+            new TestOnlyMapHttpExtractor(),
+            new TestOnlyMapGetterSetter(),
+            new ExtendedHttpStatus2OtStatusConverter(),
+            OpenTelemetry.getTracer(),
+            OpenTelemetry.getDistributedContextManager(),
+            Boolean.FALSE);
+    HttpRequestContext context = handler.handleStart(data, data);
+    Span currentSpan = handler.getSpanFromContext(context);
+    IllegalStateException error = new IllegalStateException("this is a test");
+    try {
+      assertEquals(traceId, currentSpan.getContext().getTraceId());
+      assertFalse(spanId.equals(currentSpan.getContext().getSpanId()));
+    } finally {
+      handler.handleEnd(context, data, data, error);
+    }
+    assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
   }
 }
