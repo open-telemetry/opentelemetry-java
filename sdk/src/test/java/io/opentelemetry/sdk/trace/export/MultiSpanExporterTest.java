@@ -87,8 +87,8 @@ public class MultiSpanExporterTest {
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
-    when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.FAILED_NONE_RETRYABLE);
-    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILED_NONE_RETRYABLE);
+    when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.FAILED_NOT_RETRYABLE);
+    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
     verify(spanExporter1).export(same(SPAN_LIST));
     verify(spanExporter2).export(same(SPAN_LIST));
   }
@@ -111,7 +111,7 @@ public class MultiSpanExporterTest {
         .export(ArgumentMatchers.<Span>anyList());
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
-    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILED_NONE_RETRYABLE);
+    assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
     verify(spanExporter1).export(same(SPAN_LIST));
     verify(spanExporter2).export(same(SPAN_LIST));
   }
