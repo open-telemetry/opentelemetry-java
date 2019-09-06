@@ -12,3 +12,9 @@ init-git-submodules:
 .PHONY: verify-format
 verify-format:
 	./gradlew verGJF
+
+.PHONY: publish-snapshots
+publish-snapshots:
+ifeq ($(CIRCLE_BRANCH),master)
+       ./gradlew artifactoryPublish
+endif
