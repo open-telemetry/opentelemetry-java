@@ -36,8 +36,8 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.util.Events;
 import java.util.Collections;
@@ -66,7 +66,7 @@ public class RecordEventsReadableSpanTest {
   private final SpanId spanId = TestUtils.generateRandomSpanId();
   private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
   private final SpanContext spanContext =
-      SpanContext.create(traceId, spanId, TraceOptions.getDefault(), Tracestate.getDefault());
+      SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
   private final Timestamp startTime = Timestamp.newBuilder().setSeconds(1000).build();
   private final TestClock testClock = TestClock.create(startTime);
   private final TimestampConverter timestampConverter = TimestampConverter.now(testClock);

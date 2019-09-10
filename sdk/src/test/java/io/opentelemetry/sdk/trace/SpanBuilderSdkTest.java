@@ -28,8 +28,8 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.util.Links;
 import io.opentelemetry.trace.util.Samplers;
@@ -52,7 +52,7 @@ public class SpanBuilderSdkTest {
       SpanContext.create(
           new TraceId(1000, 1000),
           new SpanId(3000),
-          TraceOptions.builder().setIsSampled(true).build(),
+          TraceFlags.builder().setIsSampled(true).build(),
           Tracestate.getDefault());
 
   private final TracerSdk tracer = new TracerSdk();
@@ -131,7 +131,7 @@ public class SpanBuilderSdkTest {
   public void recordEvents_neverSample() {
     Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
     try {
-      assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
     } finally {
       span.end();
     }
@@ -146,7 +146,7 @@ public class SpanBuilderSdkTest {
             .setRecordEvents(true)
             .startSpan();
     try {
-      assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
       assertThat(span.isRecordingEvents()).isTrue();
     } finally {
       span.end();
@@ -181,7 +181,7 @@ public class SpanBuilderSdkTest {
     Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
 
     try {
-      assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
     } finally {
       span.end();
     }
@@ -226,7 +226,7 @@ public class SpanBuilderSdkTest {
                     })
                 .startSpan();
     try {
-      assertThat(span.getContext().getTraceOptions().isSampled()).isTrue();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
       assertThat(span.toSpanProto().getAttributes().getAttributeMapMap())
           .containsKey("sampler-attribute");
     } finally {
@@ -244,7 +244,7 @@ public class SpanBuilderSdkTest {
                 .addLink(Links.create(sampledSpanContext))
                 .startSpan();
     try {
-      assertThat(span.getContext().getTraceOptions().isSampled()).isTrue();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
     } finally {
       span.end();
     }

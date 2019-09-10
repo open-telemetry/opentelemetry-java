@@ -26,8 +26,8 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import java.util.Collections;
 import org.junit.Before;
@@ -47,13 +47,13 @@ public class SimpleSampledSpansProcessorTest {
       SpanContext.create(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
-          TraceOptions.builder().setIsSampled(true).build(),
+          TraceFlags.builder().setIsSampled(true).build(),
           Tracestate.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
-          TraceOptions.builder().build(),
+          TraceFlags.builder().build(),
           Tracestate.builder().build());
 
   private SimpleSampledSpansProcessor simpleSampledSpansProcessor;
