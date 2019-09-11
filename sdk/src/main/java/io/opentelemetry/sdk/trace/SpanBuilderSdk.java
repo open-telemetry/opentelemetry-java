@@ -30,8 +30,8 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import io.opentelemetry.trace.util.Links;
@@ -45,10 +45,10 @@ import javax.annotation.Nullable;
 class SpanBuilderSdk implements Span.Builder {
   private static final long INVALID_ID = 0;
 
-  private static final TraceOptions TRACE_OPTIONS_SAMPLED =
-      TraceOptions.builder().setIsSampled(true).build();
-  private static final TraceOptions TRACE_OPTIONS_NOT_SAMPLED =
-      TraceOptions.builder().setIsSampled(false).build();
+  private static final TraceFlags TRACE_OPTIONS_SAMPLED =
+      TraceFlags.builder().setIsSampled(true).build();
+  private static final TraceFlags TRACE_OPTIONS_NOT_SAMPLED =
+      TraceFlags.builder().setIsSampled(false).build();
 
   private final String spanName;
   private final SpanProcessor spanProcessor;

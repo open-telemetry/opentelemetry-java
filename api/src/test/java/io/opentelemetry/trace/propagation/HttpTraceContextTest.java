@@ -24,8 +24,8 @@ import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -49,8 +49,8 @@ public class HttpTraceContextTest {
   private static final String SPAN_ID_BASE16 = "ff00000000000041";
   private static final SpanId SPAN_ID = SpanId.fromLowerBase16(SPAN_ID_BASE16, 0);
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
-  private static final TraceOptions SAMPLED_TRACE_OPTIONS =
-      TraceOptions.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
+  private static final TraceFlags SAMPLED_TRACE_OPTIONS =
+      TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
   private static final String TRACEPARENT_HEADER_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01";
   private static final String TRACEPARENT_HEADER_NOT_SAMPLED =
@@ -89,7 +89,7 @@ public class HttpTraceContextTest {
   public void inject_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     httpTraceContext.inject(
-        SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_DEFAULT),
+        SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT),
         carrier,
         setter);
     assertThat(carrier).containsExactly(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
@@ -111,7 +111,7 @@ public class HttpTraceContextTest {
   public void inject_NotSampledContext_WithTraceState() {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     httpTraceContext.inject(
-        SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_NOT_DEFAULT),
+        SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT),
         carrier,
         setter);
     assertThat(carrier)
@@ -137,7 +137,7 @@ public class HttpTraceContextTest {
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_DEFAULT));
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
   }
 
   @Test
@@ -157,8 +157,7 @@ public class HttpTraceContextTest {
     carrier.put(TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING);
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(
-                TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_NOT_DEFAULT));
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
   }
 
   @Test
@@ -167,7 +166,7 @@ public class HttpTraceContextTest {
     carrier.put(TRACEPARENT, "01-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-02");
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_DEFAULT));
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
   }
 
   @Test
@@ -177,7 +176,7 @@ public class HttpTraceContextTest {
     carrier.put(TRACESTATE, "");
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_DEFAULT));
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
   }
 
   @Test
@@ -187,8 +186,7 @@ public class HttpTraceContextTest {
     carrier.put(TRACESTATE, "foo=bar   ,    bar=baz");
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(
-                TRACE_ID, SPAN_ID, TraceOptions.getDefault(), TRACESTATE_NOT_DEFAULT));
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
   }
 
   @Test
@@ -238,7 +236,7 @@ public class HttpTraceContextTest {
   }
 
   @Test
-  public void extract_InvalidTraceOptions() {
+  public void extract_InvalidTraceFlags() {
     Map<String, String> invalidHeaders = new HashMap<String, String>();
     invalidHeaders.put(TRACEPARENT, "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-gh");
     thrown.expect(IllegalArgumentException.class);
@@ -248,7 +246,7 @@ public class HttpTraceContextTest {
   }
 
   @Test
-  public void extract_InvalidTraceOptions_Size() {
+  public void extract_InvalidTraceFlags_Size() {
     Map<String, String> invalidHeaders = new HashMap<String, String>();
     invalidHeaders.put(TRACEPARENT, "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-0100");
     thrown.expect(IllegalArgumentException.class);

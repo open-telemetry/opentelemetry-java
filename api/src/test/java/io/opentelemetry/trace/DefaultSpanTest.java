@@ -31,7 +31,7 @@ public class DefaultSpanTest {
   @Test
   public void hasInvalidContextAndDefaultSpanOptions() {
     SpanContext context = DefaultSpan.createRandom().getContext();
-    assertThat(context.getTraceOptions()).isEqualTo(TraceOptions.getDefault());
+    assertThat(context.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
     assertThat(context.getTracestate()).isEqualTo(Tracestate.getDefault());
   }
 

@@ -23,7 +23,7 @@ import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TestUtils;
-import io.opentelemetry.trace.TraceOptions;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.Tracestate;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +43,7 @@ public class LinksTest {
       SpanContext.create(
           TestUtils.generateRandomTraceId(random),
           TestUtils.generateRandomSpanId(random),
-          TraceOptions.getDefault(),
+          TraceFlags.getDefault(),
           tracestate);
 
   @Before

@@ -39,20 +39,20 @@ public class SpanContextTest {
       SpanContext.create(
           TraceId.fromBytes(firstTraceIdBytes, 0),
           SpanId.fromBytes(firstSpanIdBytes, 0),
-          TraceOptions.getDefault(),
+          TraceFlags.getDefault(),
           firstTracestate);
   private static final SpanContext second =
       SpanContext.create(
           TraceId.fromBytes(secondTraceIdBytes, 0),
           SpanId.fromBytes(secondSpanIdBytes, 0),
-          TraceOptions.builder().setIsSampled(true).build(),
+          TraceFlags.builder().setIsSampled(true).build(),
           secondTracestate);
 
   @Test
   public void invalidSpanContext() {
     assertThat(SpanContext.getInvalid().getTraceId()).isEqualTo(TraceId.getInvalid());
     assertThat(SpanContext.getInvalid().getSpanId()).isEqualTo(SpanId.getInvalid());
-    assertThat(SpanContext.getInvalid().getTraceOptions()).isEqualTo(TraceOptions.getDefault());
+    assertThat(SpanContext.getInvalid().getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
 
   @Test
@@ -62,7 +62,7 @@ public class SpanContextTest {
             SpanContext.create(
                     TraceId.fromBytes(firstTraceIdBytes, 0),
                     SpanId.getInvalid(),
-                    TraceOptions.getDefault(),
+                    TraceFlags.getDefault(),
                     emptyTracestate)
                 .isValid())
         .isFalse();
@@ -70,7 +70,7 @@ public class SpanContextTest {
             SpanContext.create(
                     TraceId.getInvalid(),
                     SpanId.fromBytes(firstSpanIdBytes, 0),
-                    TraceOptions.getDefault(),
+                    TraceFlags.getDefault(),
                     emptyTracestate)
                 .isValid())
         .isFalse();
@@ -91,10 +91,9 @@ public class SpanContextTest {
   }
 
   @Test
-  public void getTraceOptions() {
-    assertThat(first.getTraceOptions()).isEqualTo(TraceOptions.getDefault());
-    assertThat(second.getTraceOptions())
-        .isEqualTo(TraceOptions.builder().setIsSampled(true).build());
+  public void getTraceFlags() {
+    assertThat(first.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
+    assertThat(second.getTraceFlags()).isEqualTo(TraceFlags.builder().setIsSampled(true).build());
   }
 
   @Test
@@ -111,19 +110,19 @@ public class SpanContextTest {
         SpanContext.create(
             TraceId.fromBytes(firstTraceIdBytes, 0),
             SpanId.fromBytes(firstSpanIdBytes, 0),
-            TraceOptions.getDefault(),
+            TraceFlags.getDefault(),
             emptyTracestate),
         SpanContext.create(
             TraceId.fromBytes(firstTraceIdBytes, 0),
             SpanId.fromBytes(firstSpanIdBytes, 0),
-            TraceOptions.builder().setIsSampled(false).build(),
+            TraceFlags.builder().setIsSampled(false).build(),
             firstTracestate));
     tester.addEqualityGroup(
         second,
         SpanContext.create(
             TraceId.fromBytes(secondTraceIdBytes, 0),
             SpanId.fromBytes(secondSpanIdBytes, 0),
-            TraceOptions.builder().setIsSampled(true).build(),
+            TraceFlags.builder().setIsSampled(true).build(),
             secondTracestate));
     tester.testEquals();
   }
@@ -132,10 +131,10 @@ public class SpanContextTest {
   public void spanContext_ToString() {
     assertThat(first.toString()).contains(TraceId.fromBytes(firstTraceIdBytes, 0).toString());
     assertThat(first.toString()).contains(SpanId.fromBytes(firstSpanIdBytes, 0).toString());
-    assertThat(first.toString()).contains(TraceOptions.getDefault().toString());
+    assertThat(first.toString()).contains(TraceFlags.getDefault().toString());
     assertThat(second.toString()).contains(TraceId.fromBytes(secondTraceIdBytes, 0).toString());
     assertThat(second.toString()).contains(SpanId.fromBytes(secondSpanIdBytes, 0).toString());
     assertThat(second.toString())
-        .contains(TraceOptions.builder().setIsSampled(true).build().toString());
+        .contains(TraceFlags.builder().setIsSampled(true).build().toString());
   }
 }

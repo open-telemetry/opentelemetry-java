@@ -24,7 +24,7 @@ import javax.annotation.concurrent.Immutable;
  * A class that represents a span context. A span context contains the state that must propagate to
  * child {@link Span}s and across process boundaries. It contains the identifiers (a {@link TraceId
  * trace_id} and {@link SpanId span_id}) associated with the {@link Span} and a set of {@link
- * TraceOptions options}.
+ * TraceFlags options}.
  *
  * @since 0.1.0
  */
@@ -35,12 +35,12 @@ public final class SpanContext {
       new SpanContext(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
-          TraceOptions.getDefault(),
+          TraceFlags.getDefault(),
           Tracestate.getDefault());
 
   private final TraceId traceId;
   private final SpanId spanId;
-  private final TraceOptions traceOptions;
+  private final TraceFlags traceFlags;
   private final Tracestate tracestate;
 
   /**
@@ -57,14 +57,14 @@ public final class SpanContext {
    *
    * @param traceId the trace identifier of the span context.
    * @param spanId the span identifier of the span context.
-   * @param traceOptions the trace options for the span context.
+   * @param traceFlags the trace options for the span context.
    * @param tracestate the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    * @since 0.1.0
    */
   public static SpanContext create(
-      TraceId traceId, SpanId spanId, TraceOptions traceOptions, Tracestate tracestate) {
-    return new SpanContext(traceId, spanId, traceOptions, tracestate);
+      TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
+    return new SpanContext(traceId, spanId, traceFlags, tracestate);
   }
 
   /**
@@ -88,13 +88,13 @@ public final class SpanContext {
   }
 
   /**
-   * Returns the {@code TraceOptions} associated with this {@code SpanContext}.
+   * Returns the {@code TraceFlags} associated with this {@code SpanContext}.
    *
-   * @return the {@code TraceOptions} associated with this {@code SpanContext}.
+   * @return the {@code TraceFlags} associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public TraceOptions getTraceOptions() {
-    return traceOptions;
+  public TraceFlags getTraceFlags() {
+    return traceFlags;
   }
 
   /**
@@ -130,12 +130,12 @@ public final class SpanContext {
     SpanContext that = (SpanContext) obj;
     return traceId.equals(that.traceId)
         && spanId.equals(that.spanId)
-        && traceOptions.equals(that.traceOptions);
+        && traceFlags.equals(that.traceFlags);
   }
 
   @Override
   public int hashCode() {
-    return Arrays.hashCode(new Object[] {traceId, spanId, traceOptions});
+    return Arrays.hashCode(new Object[] {traceId, spanId, traceFlags});
   }
 
   @Override
@@ -144,16 +144,16 @@ public final class SpanContext {
         + traceId
         + ", spanId="
         + spanId
-        + ", traceOptions="
-        + traceOptions
+        + ", traceFlags="
+        + traceFlags
         + "}";
   }
 
   private SpanContext(
-      TraceId traceId, SpanId spanId, TraceOptions traceOptions, Tracestate tracestate) {
+      TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
     this.traceId = traceId;
     this.spanId = spanId;
-    this.traceOptions = traceOptions;
+    this.traceFlags = traceFlags;
     this.tracestate = tracestate;
   }
 }

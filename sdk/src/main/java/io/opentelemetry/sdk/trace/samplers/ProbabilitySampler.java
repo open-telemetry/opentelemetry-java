@@ -82,13 +82,13 @@ public abstract class ProbabilitySampler implements Sampler {
       String name,
       @Nullable List<Link> parentLinks) {
     // If the parent is sampled keep the sampling decision.
-    if (parentContext != null && parentContext.getTraceOptions().isSampled()) {
+    if (parentContext != null && parentContext.getTraceFlags().isSampled()) {
       return new SimpleDecision(/* decision= */ true);
     }
     if (parentLinks != null) {
       // If any parent link is sampled keep the sampling decision.
       for (Link parentLink : parentLinks) {
-        if (parentLink.getContext().getTraceOptions().isSampled()) {
+        if (parentLink.getContext().getTraceFlags().isSampled()) {
           return new SimpleDecision(/* decision= */ true);
         }
       }

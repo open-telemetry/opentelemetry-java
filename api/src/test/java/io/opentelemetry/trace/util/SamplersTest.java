@@ -23,8 +23,8 @@ import com.google.common.truth.Truth;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import java.util.Collections;
 import java.util.Random;
@@ -42,9 +42,9 @@ public class SamplersTest {
   private final Tracestate tracestate = Tracestate.builder().build();
   private final SpanContext sampledSpanContext =
       SpanContext.create(
-          traceId, parentSpanId, TraceOptions.builder().setIsSampled(true).build(), tracestate);
+          traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), tracestate);
   private final SpanContext notSampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceOptions.getDefault(), tracestate);
+      SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), tracestate);
 
   @Test
   public void alwaysSampleSampler_AlwaysReturnTrue() {

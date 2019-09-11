@@ -29,7 +29,7 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 @Immutable
-public final class TraceOptions {
+public final class TraceFlags {
   // Default options. Nothing set.
   private static final byte DEFAULT_OPTIONS = 0;
   // Bit to represent whether trace is sampled or not.
@@ -37,20 +37,20 @@ public final class TraceOptions {
 
   private static final int SIZE = 1;
   private static final int BASE16_SIZE = 2 * SIZE;
-  private static final TraceOptions DEFAULT = fromByte(DEFAULT_OPTIONS);
+  private static final TraceFlags DEFAULT = fromByte(DEFAULT_OPTIONS);
 
   // The set of enabled features is determined by all the enabled bits.
   private final byte options;
 
-  // Creates a new {@code TraceOptions} with the given options.
-  private TraceOptions(byte options) {
+  // Creates a new {@code TraceFlags} with the given options.
+  private TraceFlags(byte options) {
     this.options = options;
   }
 
   /**
-   * Returns the size in bytes of the {@code TraceOptions}.
+   * Returns the size in bytes of the {@code TraceFlags}.
    *
-   * @return the size in bytes of the {@code TraceOptions}.
+   * @return the size in bytes of the {@code TraceFlags}.
    * @since 0.1.0
    */
   public static int getSize() {
@@ -58,31 +58,31 @@ public final class TraceOptions {
   }
 
   /**
-   * Returns the default {@code TraceOptions}.
+   * Returns the default {@code TraceFlags}.
    *
-   * @return the default {@code TraceOptions}.
+   * @return the default {@code TraceFlags}.
    * @since 0.1.0
    */
-  public static TraceOptions getDefault() {
+  public static TraceFlags getDefault() {
     return DEFAULT;
   }
 
   /**
-   * Returns a {@code TraceOptions} whose representation is {@code src}.
+   * Returns a {@code TraceFlags} whose representation is {@code src}.
    *
-   * @param src the byte representation of the {@code TraceOptions}.
-   * @return a {@code TraceOptions} whose representation is {@code src}.
+   * @param src the byte representation of the {@code TraceFlags}.
+   * @return a {@code TraceFlags} whose representation is {@code src}.
    * @since 0.1.0
    */
-  public static TraceOptions fromByte(byte src) {
-    return new TraceOptions(src);
+  public static TraceFlags fromByte(byte src) {
+    return new TraceFlags(src);
   }
 
   /**
    * Returns a {@code TraceOption} built from a lowercase base16 representation.
    *
    * @param src the lowercase base16 representation.
-   * @param srcOffset the offset in the buffer where the representation of the {@code TraceOptions}
+   * @param srcOffset the offset in the buffer where the representation of the {@code TraceFlags}
    *     begins.
    * @return a {@code TraceOption} built from a lowercase base16 representation.
    * @throws NullPointerException if {@code src} is null.
@@ -90,14 +90,14 @@ public final class TraceOptions {
    *     if the {@code str} has invalid characters.
    * @since 0.1.0
    */
-  public static TraceOptions fromLowerBase16(CharSequence src, int srcOffset) {
-    return new TraceOptions(BigendianEncoding.byteFromBase16String(src, srcOffset));
+  public static TraceFlags fromLowerBase16(CharSequence src, int srcOffset) {
+    return new TraceFlags(BigendianEncoding.byteFromBase16String(src, srcOffset));
   }
 
   /**
-   * Returns the one byte representation of the {@code TraceOptions}.
+   * Returns the one byte representation of the {@code TraceFlags}.
    *
-   * @return the one byte representation of the {@code TraceOptions}.
+   * @return the one byte representation of the {@code TraceFlags}.
    * @since 0.1.0
    */
   public byte getByte() {
@@ -105,19 +105,19 @@ public final class TraceOptions {
   }
 
   /**
-   * Copies the byte representations of the {@code TraceOptions} into the {@code dest} beginning at
+   * Copies the byte representations of the {@code TraceFlags} into the {@code dest} beginning at
    * the {@code destOffset} offset.
    *
    * <p>Equivalent with (but faster because it avoids any new allocations):
    *
    * <pre>{@code
-   * System.arraycopy(getBytes(), 0, dest, destOffset, TraceOptions.getSize());
+   * System.arraycopy(getBytes(), 0, dest, destOffset, TraceFlags.getSize());
    * }</pre>
    *
    * @param dest the destination buffer.
    * @param destOffset the starting offset in the destination buffer.
    * @throws NullPointerException if {@code dest} is null.
-   * @throws IndexOutOfBoundsException if {@code destOffset+TraceOptions.getSize()} is greater than
+   * @throws IndexOutOfBoundsException if {@code destOffset+TraceFlags.getSize()} is greater than
    *     {@code dest.length}.
    * @since 0.1.0
    */
@@ -141,9 +141,9 @@ public final class TraceOptions {
   }
 
   /**
-   * Returns the lowercase base16 encoding of this {@code TraceOptions}.
+   * Returns the lowercase base16 encoding of this {@code TraceFlags}.
    *
-   * @return the lowercase base16 encoding of this {@code TraceOptions}.
+   * @return the lowercase base16 encoding of this {@code TraceFlags}.
    * @since 0.1.0
    */
   public String toLowerBase16() {
@@ -165,12 +165,12 @@ public final class TraceOptions {
   /**
    * Returns a new {@link Builder} with all given options set.
    *
-   * @param traceOptions the given options set.
+   * @param traceFlags the given options set.
    * @return a new {@code Builder} with all given options set.
    * @since 0.1.0
    */
-  public static Builder builder(TraceOptions traceOptions) {
-    return new Builder(traceOptions.options);
+  public static Builder builder(TraceFlags traceFlags) {
+    return new Builder(traceFlags.options);
   }
 
   /**
@@ -190,11 +190,11 @@ public final class TraceOptions {
       return true;
     }
 
-    if (!(obj instanceof TraceOptions)) {
+    if (!(obj instanceof TraceFlags)) {
       return false;
     }
 
-    TraceOptions that = (TraceOptions) obj;
+    TraceFlags that = (TraceFlags) obj;
     return options == that.options;
   }
 
@@ -205,11 +205,11 @@ public final class TraceOptions {
 
   @Override
   public String toString() {
-    return "TraceOptions{sampled=" + isSampled() + "}";
+    return "TraceFlags{sampled=" + isSampled() + "}";
   }
 
   /**
-   * Builder class for {@link TraceOptions}.
+   * Builder class for {@link TraceFlags}.
    *
    * @since 0.1.0
    */
@@ -238,12 +238,12 @@ public final class TraceOptions {
     }
 
     /**
-     * Builds and returns a {@code TraceOptions} with the desired options.
+     * Builds and returns a {@code TraceFlags} with the desired options.
      *
-     * @return a {@code TraceOptions} with the desired options.
+     * @return a {@code TraceFlags} with the desired options.
      * @since 0.1.0
      */
-    public TraceOptions build() {
+    public TraceFlags build() {
       return fromByte(options);
     }
   }
