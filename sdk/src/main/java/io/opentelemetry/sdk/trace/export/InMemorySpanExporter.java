@@ -87,7 +87,7 @@ public final class InMemorySpanExporter implements SpanExporter {
   public ResultCode export(List<Span> spans) {
     synchronized (this) {
       if (isStopped) {
-        return ResultCode.FAILED_NONE_RETRYABLE;
+        return ResultCode.FAILED_NOT_RETRYABLE;
       }
       finishedSpanItems.addAll(spans);
     }

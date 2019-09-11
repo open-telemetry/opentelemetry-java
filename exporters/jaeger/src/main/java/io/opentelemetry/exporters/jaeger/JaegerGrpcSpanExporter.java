@@ -128,10 +128,10 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
         case UNAVAILABLE:
           return ResultCode.FAILED_RETRYABLE;
         default:
-          return ResultCode.FAILED_NONE_RETRYABLE;
+          return ResultCode.FAILED_NOT_RETRYABLE;
       }
     } catch (Throwable t) {
-      return ResultCode.FAILED_NONE_RETRYABLE;
+      return ResultCode.FAILED_NOT_RETRYABLE;
     }
   }
 
