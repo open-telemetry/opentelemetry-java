@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.resources.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -131,18 +130,6 @@ public interface Metric<T> {
      * @return this.
      */
     B setComponent(String component);
-
-    /**
-     * Sets the {@code Resource} associated with this {@code Metric}.
-     *
-     * <p>This should be set only when reporting out-of-band metrics, otherwise the implementation
-     * will set the {@code Resource} for in-process metrics (or user can do that when initialize the
-     * {@code Meter}).
-     *
-     * @param resource the {@code Resource} associated with this {@code Metric}.
-     * @return this.
-     */
-    B setResource(Resource resource);
 
     /**
      * Builds and returns a {@code Metric} with the desired options.
