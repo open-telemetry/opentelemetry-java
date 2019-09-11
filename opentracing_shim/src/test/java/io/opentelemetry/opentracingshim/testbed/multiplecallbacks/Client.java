@@ -16,14 +16,13 @@
 
 package io.opentelemetry.opentracingshim.testbed.multiplecallbacks;
 
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
-
 import io.opentracing.References;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -34,13 +33,15 @@ class Client {
   private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
   private final ExecutorService executor = Executors.newCachedThreadPool();
+  private final CountDownLatch parentDoneLatch;
   private final Tracer tracer;
 
-  public Client(Tracer tracer) {
+  public Client(Tracer tracer, CountDownLatch parentDoneLatch) {
     this.tracer = tracer;
+    this.parentDoneLatch = parentDoneLatch;
   }
 
-  public Future<Object> send(final Object message, final long milliseconds) {
+  public Future<Object> send(final Object message) {
     final SpanContext parentSpanContext = tracer.activeSpan().context();
 
     return executor.submit(
@@ -55,8 +56,8 @@ class Client {
                     .addReference(References.FOLLOWS_FROM, parentSpanContext)
                     .start();
             try (Scope subtaskScope = tracer.activateSpan(span)) {
-              // Simulate work.
-              sleep(milliseconds);
+              // Simulate work - make sure we finish *after* the parent Span.
+              parentDoneLatch.await();
             } finally {
               span.finish();
             }
