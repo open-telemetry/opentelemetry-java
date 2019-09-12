@@ -1,0 +1,16 @@
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+dependencies {
+    api project(':opentelemetry-sdk')
+    compile("com.newrelic.telemetry:telemetry:0.3.1")
+    compile("com.newrelic.telemetry:telemetry-http-okhttp:0.3.1")
+
+    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.26")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.4.2")
+    testImplementation("org.mockito:mockito-core:3.0.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:3.0.0")
+
+}
