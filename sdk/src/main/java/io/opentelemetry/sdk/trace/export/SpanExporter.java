@@ -24,7 +24,7 @@ import java.util.List;
  * An interface that allows different tracing services to export recorded data for sampled spans in
  * their own format.
  *
- * <p>To export data this MUST be register to the {@code TracerSdk} using a {@link
+ * <p>To export data this MUST be registered to the {@code TracerSdk} using a {@link
  * SimpleSampledSpansProcessor} or a {@code BatchSampledSpansProcessor}.
  */
 // TODO: Change {@code BatchSampledSpansExporter} to {@link BatchSampledSpansExporter} when the
