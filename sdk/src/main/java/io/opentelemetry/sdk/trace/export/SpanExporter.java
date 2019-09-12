@@ -43,7 +43,7 @@ public interface SpanExporter {
      * The export operation finished with an error, the caller should not try to export the same
      * data again.
      */
-    FAILED_NONE_RETRYABLE
+    FAILED_NOT_RETRYABLE
   }
 
   /**

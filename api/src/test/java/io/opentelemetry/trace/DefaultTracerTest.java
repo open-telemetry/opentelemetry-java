@@ -40,7 +40,7 @@ public class DefaultTracerTest {
       SpanContext.create(
           TraceId.fromBytes(firstBytes, 0),
           SpanId.fromBytes(firstBytes, 8),
-          TraceOptions.getDefault(),
+          TraceFlags.getDefault(),
           Tracestate.getDefault());
 
   @Rule public final ExpectedException thrown = ExpectedException.none();

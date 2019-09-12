@@ -19,7 +19,6 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.resources.Resource;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 import java.util.Map;
@@ -187,12 +186,6 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setResource(Resource resource) {
-        Utils.checkNotNull(resource, "resource");
-        return this;
-      }
-
-      @Override
       public GaugeLong build() {
         return new NoopGaugeLong(labelKeysSize);
       }
@@ -274,12 +267,6 @@ public final class DefaultMeter implements Meter {
       @Override
       public Builder setComponent(String component) {
         Utils.checkNotNull(component, "component");
-        return this;
-      }
-
-      @Override
-      public Builder setResource(Resource resource) {
-        Utils.checkNotNull(resource, "resource");
         return this;
       }
 
@@ -371,12 +358,6 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setResource(Resource resource) {
-        Utils.checkNotNull(resource, "resource");
-        return this;
-      }
-
-      @Override
       public CounterDouble build() {
         return new NoopCounterDouble(labelKeysSize);
       }
@@ -460,12 +441,6 @@ public final class DefaultMeter implements Meter {
       @Override
       public Builder setComponent(String component) {
         Utils.checkNotNull(component, "component");
-        return this;
-      }
-
-      @Override
-      public Builder setResource(Resource resource) {
-        Utils.checkNotNull(resource, "resource");
         return this;
       }
 

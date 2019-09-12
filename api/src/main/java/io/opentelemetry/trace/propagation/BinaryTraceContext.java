@@ -20,8 +20,8 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import javax.annotation.concurrent.Immutable;
 
@@ -43,7 +43,7 @@ import javax.annotation.concurrent.Immutable;
  *                   16-byte array representing the trace_id.
  *               <li>SpanId: (field_id = 1, len = 8, default = &#34;00000000&#34;) - 8-byte array
  *                   representing the span_id.
- *               <li>TraceOptions: (field_id = 2, len = 1, default = &#34;0&#34;) - 1-byte array
+ *               <li>TraceFlags: (field_id = 2, len = 1, default = &#34;0&#34;) - 1-byte array
  *                   representing the trace_options.
  *             </ul>
  *         <li>Fields MUST be encoded using the field id order (smaller to higher).
@@ -89,9 +89,9 @@ public final class BinaryTraceContext implements BinaryFormat<SpanContext> {
   /** Version, Trace and Span IDs are required fields. */
   private static final int REQUIRED_FORMAT_LENGTH =
       3 * ID_SIZE + TraceId.getSize() + SpanId.getSize();
-  /** Use {@link TraceOptions#getDefault()} unless its optional field is present. */
+  /** Use {@link TraceFlags#getDefault()} unless its optional field is present. */
   private static final int ALL_FORMAT_LENGTH =
-      REQUIRED_FORMAT_LENGTH + ID_SIZE + TraceOptions.getSize();
+      REQUIRED_FORMAT_LENGTH + ID_SIZE + TraceFlags.getSize();
 
   @Override
   public byte[] toByteArray(SpanContext spanContext) {
@@ -103,7 +103,7 @@ public final class BinaryTraceContext implements BinaryFormat<SpanContext> {
     bytes[SPAN_ID_FIELD_ID_OFFSET] = SPAN_ID_FIELD_ID;
     spanContext.getSpanId().copyBytesTo(bytes, SPAN_ID_OFFSET);
     bytes[TRACE_OPTION_FIELD_ID_OFFSET] = TRACE_OPTION_FIELD_ID;
-    spanContext.getTraceOptions().copyBytesTo(bytes, TRACE_OPTIONS_OFFSET);
+    spanContext.getTraceFlags().copyBytesTo(bytes, TRACE_OPTIONS_OFFSET);
     return bytes;
   }
 
@@ -121,7 +121,7 @@ public final class BinaryTraceContext implements BinaryFormat<SpanContext> {
     // that. If it decides not to, this logic would need to be more like a loop
     TraceId traceId;
     SpanId spanId;
-    TraceOptions traceOptions = TraceOptions.getDefault();
+    TraceFlags traceFlags = TraceFlags.getDefault();
     int pos = 1;
     if (bytes[pos] == TRACE_ID_FIELD_ID) {
       traceId = TraceId.fromBytes(bytes, pos + ID_SIZE);
@@ -144,8 +144,8 @@ public final class BinaryTraceContext implements BinaryFormat<SpanContext> {
       if (bytes.length < ALL_FORMAT_LENGTH) {
         throw new IllegalArgumentException("Invalid input: truncated");
       }
-      traceOptions = TraceOptions.fromByte(bytes[pos + ID_SIZE]);
+      traceFlags = TraceFlags.fromByte(bytes[pos + ID_SIZE]);
     }
-    return SpanContext.create(traceId, spanId, traceOptions, TRACESTATE_DEFAULT);
+    return SpanContext.create(traceId, spanId, traceFlags, TRACESTATE_DEFAULT);
   }
 }

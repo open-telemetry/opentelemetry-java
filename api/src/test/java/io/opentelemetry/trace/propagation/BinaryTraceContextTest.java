@@ -23,8 +23,8 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,7 +42,7 @@ public class BinaryTraceContextTest {
   private static final byte[] SPAN_ID_BYTES = new byte[] {97, 98, 99, 100, 101, 102, 103, 104};
   private static final SpanId SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES, 0);
   private static final byte TRACE_OPTIONS_BYTES = 1;
-  private static final TraceOptions TRACE_OPTIONS = TraceOptions.fromByte(TRACE_OPTIONS_BYTES);
+  private static final TraceFlags TRACE_OPTIONS = TraceFlags.fromByte(TRACE_OPTIONS_BYTES);
   private static final byte[] EXAMPLE_BYTES =
       new byte[] {
         0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 1, 97, 98, 99, 100,
@@ -69,14 +69,14 @@ public class BinaryTraceContextTest {
         SpanContext.create(
             TRACE_ID,
             SPAN_ID,
-            TraceOptions.builder().setIsSampled(true).build(),
+            TraceFlags.builder().setIsSampled(true).build(),
             Tracestate.getDefault()));
   }
 
   @Test
   public void propagate_SpanContextNoTracing() {
     testSpanContextConversion(
-        SpanContext.create(TRACE_ID, SPAN_ID, TraceOptions.getDefault(), Tracestate.getDefault()));
+        SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), Tracestate.getDefault()));
   }
 
   @Test(expected = NullPointerException.class)
@@ -175,7 +175,7 @@ public class BinaryTraceContextTest {
   }
 
   @Test
-  public void fromBinaryValue_ShorterTraceOptions() {
+  public void fromBinaryValue_ShorterTraceFlags() {
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("Invalid input: truncated");
     binaryFormat.fromByteArray(
@@ -186,7 +186,7 @@ public class BinaryTraceContextTest {
   }
 
   @Test
-  public void fromBinaryValue_MissingTraceOptionsOk() {
+  public void fromBinaryValue_MissingTraceFlagsOk() {
     SpanContext extracted =
         binaryFormat.fromByteArray(
             new byte[] {
@@ -195,6 +195,6 @@ public class BinaryTraceContextTest {
             });
 
     assertThat(extracted.isValid()).isTrue();
-    assertThat(extracted.getTraceOptions()).isEqualTo(TraceOptions.getDefault());
+    assertThat(extracted.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
 }

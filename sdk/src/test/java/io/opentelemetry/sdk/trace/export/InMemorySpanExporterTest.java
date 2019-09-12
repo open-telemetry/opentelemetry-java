@@ -89,10 +89,10 @@ public class InMemorySpanExporterTest {
     exporter.shutdown();
     // After shutdown no more export.
     assertThat(exporter.export(Collections.singletonList(Span.newBuilder().build())))
-        .isEqualTo(ResultCode.FAILED_NONE_RETRYABLE);
+        .isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
     exporter.reset();
     // Reset does not do anything if already shutdown.
     assertThat(exporter.export(Collections.singletonList(Span.newBuilder().build())))
-        .isEqualTo(ResultCode.FAILED_NONE_RETRYABLE);
+        .isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
   }
 }
