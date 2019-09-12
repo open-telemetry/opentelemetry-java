@@ -16,5 +16,5 @@ verify-format:
 .PHONY: publish-snapshots
 publish-snapshots:
 ifeq ($(CIRCLE_BRANCH),master)
-       ./gradlew artifactoryPublish
+	./gradlew artifactoryPublish
 endif
