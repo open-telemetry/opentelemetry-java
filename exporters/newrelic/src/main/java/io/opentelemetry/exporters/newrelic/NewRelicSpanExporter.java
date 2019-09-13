@@ -8,11 +8,9 @@ public class NewRelicSpanExporter implements SpanExporter {
 
   @Override
   public ResultCode export(List<Span> spans) {
-    return null;
+    throw new UnsupportedOperationException("implement me");
   }
 
   @Override
-  public void shutdown() {
-
-  }
+  public void shutdown() {}
 }
