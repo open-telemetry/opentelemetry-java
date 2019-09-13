@@ -70,7 +70,25 @@ $ git commit -m "Update javadoc for API."
 Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.
 
-Before running the build init repository dependencies by running `make init-git-submodules`.
+##### Setup the project locally
+
+Fork and clone the project
+```
+git clone <projectpath>
+```
+From the root project directory, initialize repository dependencies 
+```
+make init-git-submodules
+```
+run this gradle build task
+```
+./gradlew opentelemetry-all:build
+```
+If you find the project will not compile due to the jaeger exporter module, then build it
+```
+./gradlew opentelemetry-exporters-jaeger:build
+```
+
 
 Run the following commands to build, run tests and most static analysis, and
 check formatting:

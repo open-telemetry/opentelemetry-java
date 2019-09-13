@@ -79,6 +79,12 @@ quality v1.0 for the merged project:
   backwards compatibility (again, for implementations – callers of the public
   APIs should not be negatively affected by these additions).
 
+### Project setup and contribute
+
+Please refer to the [contribution guide](https://github.com/newrelic-forks/opentelemetry-java/blob/master/CONTRIBUTING.md)
+on how to setup this project and contribute!
+
+
 ### Summary
 
 We plan to merge projects and pave the path for future improvements as a unified
