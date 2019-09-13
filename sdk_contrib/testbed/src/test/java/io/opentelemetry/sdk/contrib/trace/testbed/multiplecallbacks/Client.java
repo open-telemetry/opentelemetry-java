@@ -17,23 +17,25 @@
 package io.opentelemetry.sdk.contrib.trace.testbed.multiplecallbacks;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 class Client {
   private final ExecutorService executor = Executors.newCachedThreadPool();
+  private final CountDownLatch parentDoneLatch;
   private final Tracer tracer;
 
-  public Client(Tracer tracer) {
+  public Client(Tracer tracer, CountDownLatch parentDoneLatch) {
     this.tracer = tracer;
+    this.parentDoneLatch = parentDoneLatch;
   }
 
-  public Future<Object> send(final Object message, final long milliseconds) {
+  public Future<Object> send(final Object message) {
     final Span parent = tracer.getCurrentSpan();
 
     return executor.submit(
@@ -42,8 +44,8 @@ class Client {
           public Object call() throws Exception {
             Span span = tracer.spanBuilder("subtask").setParent(parent).startSpan();
             try (Scope subtaskScope = tracer.withSpan(span)) {
-              // Simulate work.
-              TestUtils.sleep(milliseconds);
+              // Simulate work - make sure we finish *after* the parent Span.
+              parentDoneLatch.await();
             } finally {
               span.end();
             }
