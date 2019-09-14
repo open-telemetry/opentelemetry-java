@@ -15,3 +15,8 @@ dependencies {
     // disable the android requirement for the moment.
     // signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
 }
+
+test {
+    systemProperty("java.util.logging.config.file", "${projectDir}/src/test/resources/test-logging.properties")
+
+}
