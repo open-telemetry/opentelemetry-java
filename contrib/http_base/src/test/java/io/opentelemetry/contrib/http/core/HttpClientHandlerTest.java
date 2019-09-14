@@ -28,7 +28,6 @@ import io.opentelemetry.distributedcontext.EntryMetadata;
 import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
 import io.opentelemetry.distributedcontext.EntryValue;
 import io.opentelemetry.sdk.contrib.trace.export.InMemoryTracing;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
@@ -69,7 +68,7 @@ public class HttpClientHandlerTest {
 
   @After
   public void printSpans() {
-    for (SpanData span : inMemoryTracing.getFinishedSpanItems()) {
+    for (io.opentelemetry.proto.trace.v1.Span span : inMemoryTracing.getFinishedSpanItems()) {
       LOGGER.log(Level.FINE, span.toString());
     }
   }
