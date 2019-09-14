@@ -19,7 +19,12 @@ package io.opentelemetry.contrib.http.core;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.metrics.MeasureBatchRecorder;
+import io.opentelemetry.metrics.MeasureDouble;
+import io.opentelemetry.metrics.MeasureLong;
+import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Span;
@@ -36,9 +41,14 @@ abstract class AbstractHttpHandler<Q, P> {
   @VisibleForTesting final HttpExtractor<Q, P> extractor;
 
   @VisibleForTesting final HttpStatus2OtStatusConverter statusConverter;
+  private final Meter meter;
+  private final MeasureDouble measureDuration;
+  private final MeasureLong measureSentMessageSize;
+  private final MeasureLong measureReceivedMessageSize;
 
   /** Constructor to allow access from same package subclasses only. */
-  AbstractHttpHandler(HttpExtractor<Q, P> extractor, HttpStatus2OtStatusConverter statusConverter) {
+  AbstractHttpHandler(
+      HttpExtractor<Q, P> extractor, HttpStatus2OtStatusConverter statusConverter, Meter meter) {
     checkNotNull(extractor, "extractor is required");
     this.extractor = extractor;
     if (statusConverter == null) {
@@ -46,6 +56,26 @@ abstract class AbstractHttpHandler<Q, P> {
     } else {
       this.statusConverter = statusConverter;
     }
+    if (meter == null) {
+      this.meter = OpenTelemetry.getMeter();
+    } else {
+      this.meter = meter;
+    }
+    this.measureDuration = new TemporaryMeasureDouble();
+    this.measureSentMessageSize = new TemporaryMeasureLong();
+    this.measureReceivedMessageSize = new TemporaryMeasureLong();
+    //    this.measureDuration =
+    // this.meter.measureDoubleBuilder(HttpTraceConstants.MEASURE_DURATION)
+    //        .setUnit("s")
+    //        .build();
+    //    this.measureMessageSize = this.meter
+    //        .measureLongBuilder(HttpTraceConstants.MEASURE_RESP_SIZE)
+    //        .setUnit("B")
+    //        .build();
+    //    this.measureMessageSize = this.meter
+    //        .measureLongBuilder(HttpTraceConstants.MEASURE_REQ_SIZE)
+    //        .setUnit("B")
+    //        .build();
   }
 
   /**
@@ -167,6 +197,22 @@ abstract class AbstractHttpHandler<Q, P> {
       message = error.getClass().getSimpleName();
     }
     return message;
+  }
+
+  protected void recordMeasurements(HttpRequestContext context, int httpCode) {
+    //    MeasureBatchRecorder recorder = meter.newMeasureBatchRecorder();
+    try {
+      meter.newMeasureBatchRecorder();
+      meter.counterLongBuilder(HttpTraceConstants.MEASURE_COUNT + httpCode).build();
+    } catch (UnsupportedOperationException ignore) {
+      // NoOp
+    }
+    MeasureBatchRecorder recorder = new TemporaryMeasureBatchRecorder();
+    recorder.setDistributedContext(context.distContext);
+    recorder.put(measureDuration, (System.nanoTime() - context.requestStartTime) / 1000000000.0);
+    recorder.put(measureReceivedMessageSize, context.receiveMessageSize.longValue());
+    recorder.put(measureSentMessageSize, context.sentMessageSize.longValue());
+    recorder.record();
   }
 
   abstract Logger getLogger();

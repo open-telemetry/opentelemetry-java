@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,13 +50,6 @@ public class HttpServerHandlerTest {
     TracerSdk tracerSdk = (TracerSdk) OpenTelemetry.getTracer();
     tracerSdk.updateActiveTraceConfig(traceConfig);
     inMemoryTracing = new InMemoryTracing(tracerSdk);
-  }
-
-  @AfterClass
-  public static void shutdown() {
-    if (inMemoryTracing != null) {
-      inMemoryTracing.shutdown();
-    }
   }
 
   @Before
