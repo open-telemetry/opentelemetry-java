@@ -5,6 +5,7 @@ include ":opentelemetry-api"
 include ":opentelemetry-contrib-runtime-metrics"
 include ":opentelemetry-contrib-trace-utils"
 include ":opentelemetry-exporters-jaeger"
+include ":opentelemetry-exporters-newrelic"
 include ":opentelemetry-opentracing-shim"
 include ":opentelemetry-proto"
 include ":opentelemetry-sdk"
@@ -19,6 +20,7 @@ project(':opentelemetry-contrib-runtime-metrics').projectDir =
         "$rootDir/contrib/runtime_metrics" as File
 project(':opentelemetry-contrib-trace-utils').projectDir = "$rootDir/contrib/trace_utils" as File
 project(':opentelemetry-exporters-jaeger').projectDir = "$rootDir/exporters/jaeger" as File
+project(':opentelemetry-exporters-newrelic').projectDir = "$rootDir/exporters/newrelic" as File
 project(':opentelemetry-opentracing-shim').projectDir = "$rootDir/opentracing_shim" as File
 project(':opentelemetry-sdk').projectDir = "$rootDir/sdk" as File
 project(':opentelemetry-sdk-contrib-async-processor').projectDir =
