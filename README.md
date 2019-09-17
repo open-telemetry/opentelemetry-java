@@ -19,6 +19,11 @@ This project contains the following top level components:
 
 We would love to hear from the larger community: please provide feedback proactively.
 
+## Project setup and contribute
+
+Please refer to the [contribution guide](https://github.com/newrelic-forks/opentelemetry-java/blob/master/CONTRIBUTING.md)
+on how to setup and contribute!
+
 ## Plan
 
 [Please review the roadmap here](https://medium.com/opentracing/a-roadmap-to-convergence-b074e5815289).
