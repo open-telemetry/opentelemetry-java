@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.resources;
+package io.opentelemetry.sdk.resources;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.StringUtils;

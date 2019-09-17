@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.resources;
 
-import io.opentelemetry.resources.Resource;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
