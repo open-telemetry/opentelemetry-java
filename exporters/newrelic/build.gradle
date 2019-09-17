@@ -1,10 +1,5 @@
 description = 'OpenTelemetry - New Relic Exporter'
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_7
-    targetCompatibility = JavaVersion.VERSION_1_7
-}
-
 test {
     useJUnitPlatform()
 }
@@ -19,5 +14,4 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
     testImplementation("org.mockito:mockito-core:3.0.0")
     testImplementation("org.mockito:mockito-junit-jupiter:3.0.0")
-
 }
