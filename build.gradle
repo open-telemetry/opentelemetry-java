@@ -114,7 +114,7 @@ subprojects {
         opentracingVersion = '0.33.0'
         protobufVersion = '3.7.1'
         protocVersion = '3.7.1'
-        guavaVersion = '26.0-android'
+        guavaVersion = '28.1-android'
 
         libraries = [
                 auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
