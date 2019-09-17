@@ -70,7 +70,7 @@ $ git commit -m "Update javadoc for API."
 Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.
 
-##### Setup the project locally
+##### Building the project locally in IDEA  
 
 Fork and clone the project
 ```
@@ -80,14 +80,17 @@ From the root project directory, initialize repository dependencies
 ```
 make init-git-submodules
 ```
-run this gradle build task
+run the following gradle build tasks
 ```
-./gradlew opentelemetry-all:build
+./gradlew opentelemetry-all:build && ./gradlew opentelemetry-exporters-jaeger:build
 ```
-If you find the project will not compile due to the jaeger exporter module, then build it
-```
-./gradlew opentelemetry-exporters-jaeger:build
-```
+
+If you want to have IDEA build the project, there are certain language and tooling settings to set in _Project Structure_ and _Preferences_. 
+
+1. Set the project SDK level to Java 8
+2. Set the project Language level to 7. 
+3. Set the Gradle JVM to Java 8 
+4. Set the default build runner to IDEA. 
 
 
 Run the following commands to build, run tests and most static analysis, and
