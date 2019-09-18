@@ -57,7 +57,7 @@ subprojects {
         // MutableMethodReturnType can suggest returning Guava types from
         // API methods (https://github.com/google/error-prone/issues/982).
         it.options.compilerArgs += ["-Xep:MutableMethodReturnType:OFF"]
-        
+
 	    // Doesn't currently use Var annotations.
         it.options.compilerArgs += ["-Xep:Var:OFF"]
 
