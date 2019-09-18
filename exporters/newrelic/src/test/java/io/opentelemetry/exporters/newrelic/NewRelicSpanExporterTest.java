@@ -29,9 +29,6 @@ import io.opentelemetry.proto.trace.v1.AttributeValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
-import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -64,7 +61,6 @@ class NewRelicSpanExporterTest {
     SpanBatch expected = new SpanBatch(Collections.singleton(span1), new Attributes());
 
     NewRelicSpanExporter testClass = new NewRelicSpanExporter(spanBatchSender, new Attributes());
-
 
     Span inputSpan =
         Span.newBuilder()
