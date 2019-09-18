@@ -19,6 +19,7 @@ package io.opentelemetry.exporters.newrelic;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 
+import com.google.common.primitives.Longs;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import com.newrelic.telemetry.Attributes;
@@ -28,6 +29,9 @@ import io.opentelemetry.proto.trace.v1.AttributeValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceId;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -43,24 +47,31 @@ class NewRelicSpanExporterTest {
 
   @Test
   void testSendBatchWithSingleSpan() throws Exception {
+    byte[] spanIdBytes = Longs.toByteArray(1234565L);
+    byte[] bigTraceId = new byte[16];
+    System.arraycopy(Longs.toByteArray(6543215L), 0, bigTraceId, 0, 8);
+    System.arraycopy(Longs.toByteArray(939393939L), 0, bigTraceId, 8, 8);
+    byte[] parentSpanIdBytes = Longs.toByteArray(777666777L);
+
     com.newrelic.telemetry.spans.Span span1 =
-        com.newrelic.telemetry.spans.Span.builder("spanIdNumber1")
-            .traceId("traceId")
+        com.newrelic.telemetry.spans.Span.builder("000000000012d685")
+            .traceId("000000000063d76f0000000037fe0393")
             .timestamp(1000456)
             .name("spanName")
-            .parentId("parentSpanId")
+            .parentId("000000002e5a40d9")
             .durationMs(1333.020111d)
             .build();
     SpanBatch expected = new SpanBatch(Collections.singleton(span1), new Attributes());
 
     NewRelicSpanExporter testClass = new NewRelicSpanExporter(spanBatchSender, new Attributes());
 
+
     Span inputSpan =
         Span.newBuilder()
-            .setSpanId(ByteString.copyFromUtf8("spanIdNumber1"))
-            .setTraceId(ByteString.copyFromUtf8("traceId"))
+            .setSpanId(ByteString.copyFrom(spanIdBytes))
+            .setTraceId(ByteString.copyFrom(bigTraceId))
             .setStartTime(Timestamp.newBuilder().setSeconds(1000).setNanos(456_000_000).build())
-            .setParentSpanId(ByteString.copyFromUtf8("parentSpanId"))
+            .setParentSpanId(ByteString.copyFrom(parentSpanIdBytes))
             .setEndTime(Timestamp.newBuilder().setSeconds(1001).setNanos(789_020_111).build())
             .setName("spanName")
             .setStatus(Status.newBuilder().setCode(200).build())
@@ -73,8 +84,9 @@ class NewRelicSpanExporterTest {
 
   @Test
   void testAttributes() throws Exception {
+    byte[] spanIdBytes = Longs.toByteArray(1234565L);
     com.newrelic.telemetry.spans.Span span1 =
-        com.newrelic.telemetry.spans.Span.builder("spanIdNumber1")
+        com.newrelic.telemetry.spans.Span.builder("000000000012d685")
             .timestamp(1000456)
             .attributes(
                 new Attributes()
@@ -89,7 +101,7 @@ class NewRelicSpanExporterTest {
 
     Span inputSpan =
         Span.newBuilder()
-            .setSpanId(ByteString.copyFromUtf8("spanIdNumber1"))
+            .setSpanId(ByteString.copyFrom(spanIdBytes))
             .setStartTime(Timestamp.newBuilder().setSeconds(1000).setNanos(456_000_000).build())
             .setAttributes(
                 Span.Attributes.newBuilder()
@@ -111,9 +123,10 @@ class NewRelicSpanExporterTest {
 
   @Test
   void testMinimalData() throws Exception {
+    byte[] spanIdBytes = Longs.toByteArray(1234565L);
     NewRelicSpanExporter testClass = new NewRelicSpanExporter(spanBatchSender, new Attributes());
 
-    Span inputSpan = Span.newBuilder().setSpanId(ByteString.copyFromUtf8("spanIdNumber1")).build();
+    Span inputSpan = Span.newBuilder().setSpanId(ByteString.copyFrom(spanIdBytes)).build();
     ResultCode result = testClass.export(Collections.singletonList(inputSpan));
 
     assertEquals(ResultCode.SUCCESS, result);
@@ -126,8 +139,9 @@ class NewRelicSpanExporterTest {
 
   @Test
   void testErrors() throws Exception {
+    byte[] spanIdBytes = Longs.toByteArray(1234565L);
     com.newrelic.telemetry.spans.Span span1 =
-        com.newrelic.telemetry.spans.Span.builder("spanIdNumber1")
+        com.newrelic.telemetry.spans.Span.builder("000000000012d685")
             .timestamp(1000456)
             .attributes(new Attributes().put("error.message", "it's broken"))
             .build();
@@ -139,7 +153,7 @@ class NewRelicSpanExporterTest {
 
     Span inputSpan =
         Span.newBuilder()
-            .setSpanId(ByteString.copyFromUtf8("spanIdNumber1"))
+            .setSpanId(ByteString.copyFrom(spanIdBytes))
             .setStartTime(Timestamp.newBuilder().setSeconds(1000).setNanos(456_000_000).build())
             .setStatus(Status.newBuilder().setMessage("it's broken"))
             .build();
