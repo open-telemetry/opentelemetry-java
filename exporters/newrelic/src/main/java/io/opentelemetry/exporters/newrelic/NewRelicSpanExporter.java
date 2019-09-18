@@ -34,6 +34,8 @@ import io.opentelemetry.proto.trace.v1.AttributeValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceId;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -70,10 +72,10 @@ public class NewRelicSpanExporter implements SpanExporter {
 
   private static com.newrelic.telemetry.spans.Span makeNewRelicSpan(Span span) {
     SpanBuilder spanBuilder =
-        com.newrelic.telemetry.spans.Span.builder(safeGetByteStringValue(span.getSpanId()))
+        com.newrelic.telemetry.spans.Span.builder(makeSpanId(span.getSpanId()))
             .name(span.getName().isEmpty() ? null : span.getName())
-            .parentId(safeGetByteStringValue(span.getParentSpanId()))
-            .traceId(safeGetByteStringValue(span.getTraceId()))
+            .parentId(makeSpanId(span.getParentSpanId()))
+            .traceId(makeTraceId(span.getTraceId()))
             .attributes(generateSpanAttributes(span));
 
     if (span.hasStartTime()) {
@@ -134,8 +136,21 @@ public class NewRelicSpanExporter implements SpanExporter {
   }
 
   @Nullable
-  private static String safeGetByteStringValue(ByteString byteString) {
-    return byteString == null || byteString.isEmpty() ? null : byteString.toStringUtf8();
+  private static String makeTraceId(ByteString byteString) {
+    if (byteString.isEmpty()) {
+      return null;
+    }
+    TraceId traceId = TraceId.fromBytes(byteString.toByteArray(), 0);
+    return traceId.toLowerBase16();
+  }
+
+  @Nullable
+  private static String makeSpanId(ByteString byteString) {
+    if (byteString.isEmpty()) {
+      return null;
+    }
+    SpanId spanId = SpanId.fromBytes(byteString.toByteArray(), 0);
+    return spanId.toLowerBase16();
   }
 
   private static long calculateTimestampMillis(Span span) {
