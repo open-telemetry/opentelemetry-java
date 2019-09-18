@@ -62,6 +62,7 @@ public final class MemoryPools {
   public MemoryPools() {
     this.memoryBean = ManagementFactory.getMemoryMXBean();
     this.poolBeans = ManagementFactory.getMemoryPoolMXBeans();
+    // TODO: Set component to "jvm_memory" when available.
     this.meter = OpenTelemetry.getMeter();
   }
 
@@ -77,7 +78,6 @@ public final class MemoryPools {
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
-            .setComponent("jvm_memory")
             .build();
     final Handle usedHeap = areaMetric.getHandle(Arrays.asList(USED, HEAP));
     final Handle usedNonHeap = areaMetric.getHandle(Arrays.asList(USED, NON_HEAP));
@@ -110,7 +110,6 @@ public final class MemoryPools {
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))
-            .setComponent("jvm_memory")
             .build();
     poolMetric.setCallback(
         new Runnable() {

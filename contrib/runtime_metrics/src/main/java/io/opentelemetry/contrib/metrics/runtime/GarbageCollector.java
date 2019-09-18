@@ -48,6 +48,7 @@ public final class GarbageCollector {
   /** Constructs a new module that is capable to export metrics about "jvm_gc". */
   public GarbageCollector() {
     this.garbageCollectors = ManagementFactory.getGarbageCollectorMXBeans();
+    // TODO: Set component to "jvm_gc" when available.
     this.meter = OpenTelemetry.getMeter();
   }
 
@@ -61,7 +62,6 @@ public final class GarbageCollector {
             .setDescription("Time spent in a given JVM garbage collector in milliseconds.")
             .setUnit("ms")
             .setLabelKeys(Collections.singletonList(GC_LABEL_KEY))
-            .setComponent("jvm_gc")
             .build();
     collectionMetric.setCallback(
         new Runnable() {
