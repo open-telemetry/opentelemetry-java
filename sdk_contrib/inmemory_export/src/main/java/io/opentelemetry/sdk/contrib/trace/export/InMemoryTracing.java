@@ -22,6 +22,8 @@ import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSampledSpansProcessor;
 import io.opentelemetry.trace.Tracer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -102,6 +104,23 @@ public final class InMemoryTracing {
    */
   public List<Span> getFinishedSpanItems() {
     return exporter.getFinishedSpanItems();
+  }
+
+  /**
+   * Returns a copy {@code List} of the finished {@code Span}s, represented by {@code SpanData}.
+   *
+   * @return a {@code List} of the finished {@code Span}s.
+   * @since 0.1.0
+   */
+  public List<SpanData> getFinishedSpanDataItems() {
+    List<Span> finishedSpans = exporter.getFinishedSpanItems();
+    List<SpanData> spanDataItems = new ArrayList<>(finishedSpans.size());
+
+    for (Span span : finishedSpans) {
+      spanDataItems.add(SpanDataUtils.getFromProto(span));
+    }
+
+    return Collections.unmodifiableList(spanDataItems);
   }
 
   /**

@@ -3,5 +3,7 @@ description = 'OpenTelemetry InMemory Export'
 dependencies {
     api project(':opentelemetry-sdk')
 
+    annotationProcessor libraries.auto_value
+
     testImplementation "com.google.protobuf:protobuf-java:${protobufVersion}"
 }
