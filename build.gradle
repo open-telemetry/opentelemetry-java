@@ -57,7 +57,7 @@ subprojects {
         // MutableMethodReturnType can suggest returning Guava types from
         // API methods (https://github.com/google/error-prone/issues/982).
         it.options.compilerArgs += ["-Xep:MutableMethodReturnType:OFF"]
-        
+
 	    // Doesn't currently use Var annotations.
         it.options.compilerArgs += ["-Xep:Var:OFF"]
 
@@ -137,7 +137,6 @@ subprojects {
                 mockito: 'org.mockito:mockito-core:2.25.1',
                 truth: 'com.google.truth:truth:1.0',
                 slf4jsimple: 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
-                assertj: "org.assertj:assertj-core:3.8.0", // Compatibility layer
                 awaitility: 'org.awaitility:awaitility:3.0.0', // Compatibility layer
         ]
     }

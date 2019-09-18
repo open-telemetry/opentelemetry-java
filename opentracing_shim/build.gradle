@@ -9,7 +9,7 @@ dependencies {
     testImplementation project(':opentelemetry-sdk'),
             libraries.protobuf,
             libraries.junit,
-            libraries.assertj,
+            libraries.truth,
             libraries.slf4jsimple,
             libraries.awaitility
 }

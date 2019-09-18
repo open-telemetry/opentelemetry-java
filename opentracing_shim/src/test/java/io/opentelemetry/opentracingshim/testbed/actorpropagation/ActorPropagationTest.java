@@ -16,10 +16,10 @@
 
 package io.opentelemetry.opentracingshim.testbed.actorpropagation;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByKind;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByKind;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
