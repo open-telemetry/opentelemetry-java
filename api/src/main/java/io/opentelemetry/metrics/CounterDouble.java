@@ -59,7 +59,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface CounterDouble extends Metric<Handle> {
+public interface CounterDouble extends Counter<Handle> {
 
   @Override
   Handle getHandle(List<String> labelValues);
@@ -95,5 +95,5 @@ public interface CounterDouble extends Metric<Handle> {
   }
 
   /** Builder class for {@link CounterDouble}. */
-  interface Builder extends Metric.Builder<Builder, CounterDouble> {}
+  interface Builder extends Counter.Builder<Builder, CounterDouble> {}
 }

@@ -22,7 +22,7 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.concurrent.ThreadSafe;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * No-op implementations of {@link Meter}.
@@ -108,6 +108,7 @@ public final class DefaultMeter implements Meter {
   }
 
   /** No-op implementations of GaugeLong class. */
+  @Immutable
   private static final class NoopGaugeLong implements GaugeLong {
     private final int labelKeysSize;
 
@@ -140,6 +141,7 @@ public final class DefaultMeter implements Meter {
     }
 
     /** No-op implementations of Handle class. */
+    @Immutable
     private static final class NoopHandle implements Handle {
       private NoopHandle() {}
 
@@ -180,12 +182,6 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setComponent(String component) {
-        Utils.checkNotNull(component, "component");
-        return this;
-      }
-
-      @Override
       public GaugeLong build() {
         return new NoopGaugeLong(labelKeysSize);
       }
@@ -193,6 +189,7 @@ public final class DefaultMeter implements Meter {
   }
 
   /** No-op implementations of GaugeDouble class. */
+  @Immutable
   private static final class NoopGaugeDouble implements GaugeDouble {
     private final int labelKeysSize;
 
@@ -225,6 +222,7 @@ public final class DefaultMeter implements Meter {
     }
 
     /** No-op implementations of Handle class. */
+    @Immutable
     private static final class NoopHandle implements Handle {
       private NoopHandle() {}
 
@@ -265,12 +263,6 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setComponent(String component) {
-        Utils.checkNotNull(component, "component");
-        return this;
-      }
-
-      @Override
       public GaugeDouble build() {
         return new NoopGaugeDouble(labelKeysSize);
       }
@@ -278,6 +270,7 @@ public final class DefaultMeter implements Meter {
   }
 
   /** No-op implementations of CounterDouble class. */
+  @Immutable
   private static final class NoopCounterDouble implements CounterDouble {
     private final int labelKeysSize;
 
@@ -310,6 +303,7 @@ public final class DefaultMeter implements Meter {
     }
 
     /** No-op implementations of Handle class. */
+    @Immutable
     private static final class NoopHandle implements Handle {
       private static final NoopHandle INSTANCE = new NoopHandle();
 
@@ -352,12 +346,6 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setComponent(String component) {
-        Utils.checkNotNull(component, "component");
-        return this;
-      }
-
-      @Override
       public CounterDouble build() {
         return new NoopCounterDouble(labelKeysSize);
       }
@@ -365,6 +353,7 @@ public final class DefaultMeter implements Meter {
   }
 
   /** No-op implementations of CounterLong class. */
+  @Immutable
   private static final class NoopCounterLong implements CounterLong {
     private final int labelKeysSize;
 
@@ -397,6 +386,7 @@ public final class DefaultMeter implements Meter {
     }
 
     /** No-op implementations of Handle class. */
+    @Immutable
     private static final class NoopHandle implements Handle {
       private static final NoopHandle INSTANCE = new NoopHandle();
 
@@ -439,41 +429,71 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setComponent(String component) {
-        Utils.checkNotNull(component, "component");
-        return this;
-      }
-
-      @Override
       public CounterLong build() {
         return new NoopCounterLong(labelKeysSize);
       }
     }
   }
 
-  @ThreadSafe
+  @Immutable
   private static final class NoopMeasureDouble implements MeasureDouble {
-    private NoopMeasureDouble() {}
+    private final int labelKeysSize;
 
-    @Override
-    public void record(double value) {
-      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+    /** Creates a new {@code NoopHandle}. */
+    private NoopMeasureDouble(int labelKeysSize) {
+      this.labelKeysSize = labelKeysSize;
     }
 
     @Override
-    public void record(double value, DistributedContext distContext) {
-      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-      Utils.checkNotNull(distContext, "distContext");
+    public NoopHandle getHandle(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+      Utils.checkArgument(
+          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
+      return NoopHandle.INSTANCE;
     }
 
     @Override
-    public void record(double value, DistributedContext distContext, SpanContext spanContext) {
-      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-      Utils.checkNotNull(distContext, "distContext");
-      Utils.checkNotNull(spanContext, "spanContext");
+    public NoopHandle getDefaultHandle() {
+      return NoopHandle.INSTANCE;
+    }
+
+    @Override
+    public void setCallback(Runnable metricUpdater) {
+      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    }
+
+    @Override
+    public void removeHandle(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+    }
+
+    /** No-op implementations of Handle class. */
+    @Immutable
+    private static final class NoopHandle implements Handle {
+      private static final NoopHandle INSTANCE = new NoopHandle();
+
+      @Override
+      public void record(double value) {
+        Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+      }
+
+      @Override
+      public void record(double value, DistributedContext distContext) {
+        Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+        Utils.checkNotNull(distContext, "distContext");
+      }
+
+      @Override
+      public void record(double value, DistributedContext distContext, SpanContext spanContext) {
+        Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+        Utils.checkNotNull(distContext, "distContext");
+        Utils.checkNotNull(spanContext, "spanContext");
+      }
     }
 
     private static final class NoopBuilder implements MeasureDouble.Builder {
+      private int labelKeysSize = 0;
+
       @Override
       public Builder setDescription(String description) {
         Utils.checkNotNull(description, "description");
@@ -487,62 +507,113 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public Builder setConstantLabels(Map<String, String> constantLabels) {
-        Utils.checkNotNull(constantLabels, "constantLabels");
+      public Builder setLabelKeys(List<String> labelKeys) {
+        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
+        labelKeysSize = labelKeys.size();
         return this;
       }
 
       @Override
-      public NoopMeasureDouble build() {
-        return new NoopMeasureDouble();
+      public Builder setConstantLabels(Map<String, String> constantLabels) {
+        Utils.checkMapKeysNotNull(
+            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+        return this;
+      }
+
+      @Override
+      public MeasureDouble build() {
+        return new NoopMeasureDouble(labelKeysSize);
       }
     }
   }
 
-  @ThreadSafe
+  @Immutable
   private static final class NoopMeasureLong implements MeasureLong {
-    private NoopMeasureLong() {}
+    private final int labelKeysSize;
 
-    @Override
-    public void record(long value) {
-      Utils.checkArgument(value >= 0, "Unsupported negative values.");
+    private NoopMeasureLong(int labelKeysSize) {
+      this.labelKeysSize = labelKeysSize;
     }
 
     @Override
-    public void record(long value, DistributedContext distContext) {
-      Utils.checkArgument(value >= 0, "Unsupported negative values.");
-      Utils.checkNotNull(distContext, "distContext");
+    public NoopHandle getHandle(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+      Utils.checkArgument(
+          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
+      return NoopHandle.INSTANCE;
     }
 
     @Override
-    public void record(long value, DistributedContext distContext, SpanContext spanContext) {
-      Utils.checkArgument(value >= 0, "Unsupported negative values.");
-      Utils.checkNotNull(distContext, "distContext");
-      Utils.checkNotNull(spanContext, "spanContext");
+    public NoopHandle getDefaultHandle() {
+      return NoopHandle.INSTANCE;
+    }
+
+    @Override
+    public void setCallback(Runnable metricUpdater) {
+      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    }
+
+    @Override
+    public void removeHandle(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+    }
+
+    /** No-op implementations of Handle class. */
+    @Immutable
+    private static final class NoopHandle implements Handle {
+      private static final NoopHandle INSTANCE = new NoopHandle();
+
+      @Override
+      public void record(long value) {
+        Utils.checkArgument(value >= 0, "Unsupported negative values.");
+      }
+
+      @Override
+      public void record(long value, DistributedContext distContext) {
+        Utils.checkArgument(value >= 0, "Unsupported negative values.");
+        Utils.checkNotNull(distContext, "distContext");
+      }
+
+      @Override
+      public void record(long value, DistributedContext distContext, SpanContext spanContext) {
+        Utils.checkArgument(value >= 0, "Unsupported negative values.");
+        Utils.checkNotNull(distContext, "distContext");
+        Utils.checkNotNull(spanContext, "spanContext");
+      }
     }
 
     private static final class NoopBuilder implements MeasureLong.Builder {
+      private int labelKeysSize = 0;
+
       @Override
-      public Builder setDescription(String description) {
+      public NoopBuilder setDescription(String description) {
         Utils.checkNotNull(description, "description");
         return this;
       }
 
       @Override
-      public Builder setUnit(String unit) {
+      public NoopBuilder setUnit(String unit) {
         Utils.checkNotNull(unit, "unit");
         return this;
       }
 
       @Override
-      public Builder setConstantLabels(Map<String, String> constantLabels) {
-        Utils.checkNotNull(constantLabels, "constantLabels");
+      public NoopBuilder setLabelKeys(List<String> labelKeys) {
+        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
+        labelKeysSize = labelKeys.size();
         return this;
       }
 
       @Override
-      public NoopMeasureLong build() {
-        return new NoopMeasureLong();
+      public NoopBuilder setConstantLabels(Map<String, String> constantLabels) {
+        Utils.checkMapKeysNotNull(
+            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+        return this;
+      }
+
+      @Override
+      public MeasureLong build() {
+        return new NoopMeasureLong(labelKeysSize);
       }
     }
   }

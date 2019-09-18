@@ -24,10 +24,11 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * Base interface for all metrics defined in this package.
  *
+ * @param <H> the Handle.
  * @since 0.1.0
  */
 @ThreadSafe
-public interface Metric<T> {
+public interface Metric<H> {
   /**
    * Returns a {@code Handle} with associated with specified {@code labelValues}. Multiples requests
    * with the same {@code labelValues} may return the same {@code Handle}.
@@ -44,7 +45,7 @@ public interface Metric<T> {
    *     keys.
    * @since 0.1.0
    */
-  T getHandle(List<String> labelValues);
+  H getHandle(List<String> labelValues);
 
   /**
    * Returns a {@code Handle} for a metric with all labels not set.
@@ -52,7 +53,7 @@ public interface Metric<T> {
    * @return a {@code Handle} for a metric with all labels not set.
    * @since 0.1.0
    */
-  T getDefaultHandle();
+  H getDefaultHandle();
 
   /**
    * Sets a callback that gets executed every time before exporting this metric.
@@ -76,6 +77,12 @@ public interface Metric<T> {
    */
   void removeHandle(List<String> labelValues);
 
+  /**
+   * The {@code Builder} class for the {@code Metric}.
+   *
+   * @param <B> the specific builder object.
+   * @param <V> the return value for {@code build()}.
+   */
   interface Builder<B extends Builder<B, V>, V> {
     /**
      * Sets the description of the {@code Metric}.
@@ -116,20 +123,6 @@ public interface Metric<T> {
      * @return this.
      */
     B setConstantLabels(Map<String, String> constantLabels);
-
-    /**
-     * Sets the name of the component that reports this {@code Metric}.
-     *
-     * <p>The final name of the reported metric will be <code>component + "_" + name</code> if the
-     * component is not empty.
-     *
-     * <p>It is recommended to always set a component name for all the metrics, because some
-     * implementations may filter based on the component.
-     *
-     * @param component the name of the component that reports these metrics.
-     * @return this.
-     */
-    B setComponent(String component);
 
     /**
      * Builds and returns a {@code Metric} with the desired options.

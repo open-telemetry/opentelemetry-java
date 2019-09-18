@@ -58,7 +58,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface GaugeDouble extends Metric<Handle> {
+public interface GaugeDouble extends Gauge<Handle> {
 
   @Override
   Handle getHandle(List<String> labelValues);
@@ -91,5 +91,5 @@ public interface GaugeDouble extends Metric<Handle> {
   }
 
   /** Builder class for {@link GaugeLong}. */
-  interface Builder extends Metric.Builder<Builder, GaugeDouble> {}
+  interface Builder extends Gauge.Builder<Builder, GaugeDouble> {}
 }

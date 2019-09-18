@@ -77,13 +77,13 @@ public final class MeasureDoubleTest {
     MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    myMeasure.record(-5.0);
+    myMeasure.getDefaultHandle().record(-5.0);
   }
 
   @Test
   public void doesNotThrow() {
     MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
-    myMeasure.record(5.0);
+    myMeasure.getDefaultHandle().record(5.0);
   }
 
   @Test
@@ -91,7 +91,7 @@ public final class MeasureDoubleTest {
     MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    myMeasure.record(-5.0, distContextManager.getCurrentContext());
+    myMeasure.getDefaultHandle().record(-5.0, distContextManager.getCurrentContext());
   }
 
   @Test
@@ -99,12 +99,12 @@ public final class MeasureDoubleTest {
     MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("distContext");
-    myMeasure.record(5.0, null);
+    myMeasure.getDefaultHandle().record(5.0, null);
   }
 
   @Test
   public void doesNotThrow_RecordWithContext() {
     MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
-    myMeasure.record(5.0, distContextManager.getCurrentContext());
+    myMeasure.getDefaultHandle().record(5.0, distContextManager.getCurrentContext());
   }
 }
