@@ -194,7 +194,7 @@ public interface Meter {
   /**
    * Returns a new builder for a {@link ObserverDouble}.
    *
-   * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
+   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
    * @return a new builder for a {@code MeasureDouble}.
    * @throws NullPointerException if {@code name} is null.
