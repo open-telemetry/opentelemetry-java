@@ -158,7 +158,7 @@ public final class TraceId implements Comparable<TraceId> {
    * @return A base 16 representation of the trace id.
    * @since 0.1.0
    */
-  public static String asBase16(byte[] bytes) {
+  public static String asLowerBase16(byte[] bytes) {
     long idHi = BigendianEncoding.longFromByteArray(bytes, 0);
     long idLo = BigendianEncoding.longFromByteArray(bytes, SIZE / 2);
     char[] chars = new char[BASE16_SIZE];

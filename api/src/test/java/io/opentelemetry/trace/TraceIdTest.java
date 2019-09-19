@@ -73,6 +73,14 @@ public class TraceIdTest {
   }
 
   @Test
+  public void asLowerBase16() {
+    TraceId traceId = new TraceId(43L, 109L);
+    byte[] idAsBytes = new byte[16];
+    traceId.copyBytesTo(idAsBytes, 0);
+    assertThat(TraceId.asLowerBase16(idAsBytes)).isEqualTo("000000000000002b000000000000006d");
+  }
+
+  @Test
   public void toLowerBase16() {
     assertThat(TraceId.getInvalid().toLowerBase16()).isEqualTo("00000000000000000000000000000000");
     assertThat(first.toLowerBase16()).isEqualTo("00000000000000000000000000000061");
