@@ -192,7 +192,7 @@ public interface Meter {
   MeasureLong.Builder measureLongBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link MeasureDouble}.
+   * Returns a new builder for a {@link ObserverDouble}.
    *
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
