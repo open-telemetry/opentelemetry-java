@@ -77,13 +77,13 @@ public final class MeasureLongTest {
     MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    myMeasure.record(-5);
+    myMeasure.getDefaultHandle().record(-5);
   }
 
   @Test
   public void doesNotThrow() {
     MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
-    myMeasure.record(5);
+    myMeasure.getDefaultHandle().record(5);
   }
 
   @Test
@@ -91,7 +91,7 @@ public final class MeasureLongTest {
     MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    myMeasure.record(-5, distContextManager.getCurrentContext());
+    myMeasure.getDefaultHandle().record(-5, distContextManager.getCurrentContext());
   }
 
   @Test
@@ -99,12 +99,12 @@ public final class MeasureLongTest {
     MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("distContext");
-    myMeasure.record(5, null);
+    myMeasure.getDefaultHandle().record(5, null);
   }
 
   @Test
   public void doesNotThrow_RecordWithContext() {
     MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
-    myMeasure.record(5, distContextManager.getCurrentContext());
+    myMeasure.getDefaultHandle().record(5, distContextManager.getCurrentContext());
   }
 }

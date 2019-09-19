@@ -34,4 +34,4 @@
  * zero. They SHOULD start with a domain name and separate hierarchies with / characters, e.g.
  * k8s.io/namespace/name.
  */
-package io.opentelemetry.resources;
+package io.opentelemetry.sdk.resources;

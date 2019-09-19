@@ -27,9 +27,16 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
+/**
+ * These tests are intended to simulate a task with independent, asynchronous callbacks.
+ *
+ * <p>For improved readability, ignore the CountDownLatch lines as those are there to ensure
+ * deterministic execution for the tests without sleeps.
+ */
 @SuppressWarnings("FutureReturnValueIgnored")
 public class MultipleCallbacksTest {
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
@@ -37,21 +44,22 @@ public class MultipleCallbacksTest {
 
   @Test
   public void test() {
-    Client client = new Client(tracer);
+    CountDownLatch parentDoneLatch = new CountDownLatch(1);
+    Client client = new Client(tracer, parentDoneLatch);
+
     Span span = tracer.spanBuilder("parent").startSpan();
     try (Scope scope = tracer.withSpan(span)) {
-      client.send("task1", 300);
-      client.send("task2", 200);
-      client.send("task3", 100);
+      client.send("task1");
+      client.send("task2");
+      client.send("task3");
     } finally {
       span.end();
+      parentDoneLatch.countDown();
     }
 
     await().atMost(15, TimeUnit.SECONDS).until(TestUtils.finishedSpansSize(exporter), equalTo(4));
 
-    // Finish order is not guaranteed, so we rely on *start time* to fetch the parent.
     List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
-    spans = TestUtils.sortByStartTime(spans);
     assertThat(spans).hasSize(4);
     assertThat(spans.get(0).getName()).isEqualTo("parent");
 

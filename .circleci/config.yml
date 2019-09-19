@@ -9,6 +9,9 @@ build_task: &build_task
 verify_task: &verify_task
   name: Verify Google Java Format
   command: make verify-format
+publish_snapshots_task: &publish_snapshots_task
+  name: Publish Snapshot Artifacts
+  command: make publish-snapshots
 
 jobs:
   build:
@@ -31,6 +34,9 @@ jobs:
       - run:
           name: Publish coverage
           command:  bash <(curl -s https://codecov.io/bash)
+# Publish the snapshots using Java 8 (and only from master).
+      - run:
+          <<: *publish_snapshots_task
       - save_cache:
           paths:
             - ~/.gradle

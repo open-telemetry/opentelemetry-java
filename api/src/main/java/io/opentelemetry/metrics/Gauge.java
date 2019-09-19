@@ -17,13 +17,13 @@
 package io.opentelemetry.metrics;
 
 /**
- * Base interface for all the Measure metrics.
+ * Base interface for all the Gauge metrics.
  *
  * @param <H> the Handle.
  * @since 0.1.0
  */
-public interface Measure<H> extends Metric<H> {
+public interface Gauge<H> extends Metric<H> {
 
-  /** Builder class for {@link Measure}. */
-  interface Builder<B extends Measure.Builder<B, V>, V> extends Metric.Builder<B, V> {}
+  /** Builder class for {@link Gauge}. */
+  interface Builder<B extends Gauge.Builder<B, V>, V> extends Metric.Builder<B, V> {}
 }
