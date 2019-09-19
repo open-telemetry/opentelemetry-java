@@ -91,6 +91,14 @@ public class SpanBuilderSdkTest {
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
         DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    io.opentelemetry.proto.trace.v1.Span protoSpan = span.toSpanProto();
+    try {
+      assertThat(protoSpan.getLinks().getLinkList()).hasSize(3);
+    } finally {
+      span.end();
+    }
   }
 
   @Test
