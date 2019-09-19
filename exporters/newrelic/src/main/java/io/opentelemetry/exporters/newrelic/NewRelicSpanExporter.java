@@ -25,16 +25,36 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.List;
 
+/**
+ * The NewRelicSpanExporter takes a list of Span objects, converts them into a New Relic SpanBatch
+ * instance and then sends it to the New Relic trace ingest API via a SpanBatchSender.
+ *
+ * @since 0.1.0
+ */
 public class NewRelicSpanExporter implements SpanExporter {
 
   private final SpanBatchAdapter adapter;
   private final SpanBatchSender spanBatchSender;
 
+  /**
+   * Constructor for the NewRelicSpanExporter.
+   *
+   * @param adapter An instance of SpanBatchAdapter that can turn list of open telemetry spans into
+   *     New Relic SpanBatch.
+   * @param spanBatchSender An instance that sends a SpanBatch to the New Relic trace ingest API
+   * @since 0.1.0
+   */
   public NewRelicSpanExporter(SpanBatchAdapter adapter, SpanBatchSender spanBatchSender) {
     this.adapter = adapter;
     this.spanBatchSender = spanBatchSender;
   }
 
+  /**
+   * export() is the primary interface action method of all SpanExporters.
+   *
+   * @param openTracingSpans A list of spans to export to New Relic trace ingest API
+   * @return A ResultCode that indicates the execution status of the export operation
+   */
   @Override
   public ResultCode export(List<Span> openTracingSpans) {
     try {
