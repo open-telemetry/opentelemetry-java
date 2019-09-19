@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.contrib.trace.export;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.resources.Resource;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;

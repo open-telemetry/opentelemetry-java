@@ -28,7 +28,7 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.Attributes;
 import io.opentelemetry.proto.trace.v1.Span.TimedEvent;
 import io.opentelemetry.proto.trace.v1.Span.TimedEvent.Event;
-import io.opentelemetry.resources.Resource;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;

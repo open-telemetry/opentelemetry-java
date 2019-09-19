@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.contrib.trace.export;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.proto.trace.v1.Span;
-import io.opentelemetry.resources.Resource;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
