@@ -108,6 +108,21 @@ public final class SpanId implements Comparable<SpanId> {
   }
 
   /**
+   * Transforms a byte[] representation of a span id (eg. from a protobuf) and returns a base 16
+   * representation of the same.
+   *
+   * @param bytes The byte array containing the span id.
+   * @return A base 16 representation of the span id.
+   * @since 0.1.0
+   */
+  public static String asBase16(byte[] bytes) {
+    long longId = BigendianEncoding.longFromByteArray(bytes, 0);
+    char[] chars = new char[BASE16_SIZE];
+    BigendianEncoding.longToBase16String(longId, chars, 0);
+    return new String(chars);
+  }
+
+  /**
    * Copies the byte array representations of the {@code SpanId} into the {@code dest} beginning at
    * the {@code destOffset} offset.
    *

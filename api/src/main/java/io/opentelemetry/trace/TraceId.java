@@ -151,6 +151,23 @@ public final class TraceId implements Comparable<TraceId> {
   }
 
   /**
+   * Transforms a byte[] representation of a trace id (eg. from a protobuf) and returns a base 16
+   * representation of the same.
+   *
+   * @param bytes The byte array containing the trace id.
+   * @return A base 16 representation of the trace id.
+   * @since 0.1.0
+   */
+  public static String asBase16(byte[] bytes) {
+    long idHi = BigendianEncoding.longFromByteArray(bytes, 0);
+    long idLo = BigendianEncoding.longFromByteArray(bytes, SIZE / 2);
+    char[] chars = new char[BASE16_SIZE];
+    BigendianEncoding.longToBase16String(idHi, chars, 0);
+    BigendianEncoding.longToBase16String(idLo, chars, BASE16_SIZE / 2);
+    return new String(chars);
+  }
+
+  /**
    * Copies the lowercase base16 representations of the {@code TraceId} into the {@code dest}
    * beginning at the {@code destOffset} offset.
    *

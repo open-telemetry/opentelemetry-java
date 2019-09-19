@@ -140,8 +140,7 @@ public class NewRelicSpanExporter implements SpanExporter {
     if (byteString.isEmpty()) {
       return null;
     }
-    TraceId traceId = TraceId.fromBytes(byteString.toByteArray(), 0);
-    return traceId.toLowerBase16();
+    return TraceId.asBase16(byteString.toByteArray());
   }
 
   @Nullable
@@ -149,8 +148,7 @@ public class NewRelicSpanExporter implements SpanExporter {
     if (byteString.isEmpty()) {
       return null;
     }
-    SpanId spanId = SpanId.fromBytes(byteString.toByteArray(), 0);
-    return spanId.toLowerBase16();
+    return SpanId.asBase16(byteString.toByteArray());
   }
 
   private static long calculateTimestampMillis(Span span) {
