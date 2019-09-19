@@ -27,14 +27,13 @@ import io.opentelemetry.proto.trace.v1.Span.Attributes;
 import io.opentelemetry.proto.trace.v1.Span.Links;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Span.TimedEvents;
-import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
@@ -59,8 +58,6 @@ public class TraceProtoUtilsTest {
   private static final Resource RESOURCE =
       Resource.create(Collections.<String, String>singletonMap("key", "val"));
   private static final Status STATUS = Status.DEADLINE_EXCEEDED.withDescription("TooSlow");
-  private static final SpanData.Timestamp SPANDATA_TIMESTAMP = SpanData.Timestamp.create(100, 200);
-
   private static final String ATTRIBUTE_KEY_1 = "MyAttributeKey1";
   private static final String ATTRIBUTE_KEY_2 = "MyAttributeKey2";
 
@@ -75,12 +72,10 @@ public class TraceProtoUtilsTest {
           ATTRIBUTE_KEY_2,
           AttributeValue.booleanAttributeValue(true));
   private static final List<TimedEvent> timedEvents =
-      ImmutableList.<TimedEvent>of(TimedEvent.create(100, "event"));
+      ImmutableList.of(TimedEvent.create(100, "event"));
   private static final List<Link> links =
-      ImmutableList.<Link>of(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
-  private static final List<SpanData.TimedEvent> spanDataEvents =
-      Collections.<SpanData.TimedEvent>singletonList(
-          SpanData.TimedEvent.create(SPANDATA_TIMESTAMP, SpanData.Event.create("event")));
+      ImmutableList.of(
+          io.opentelemetry.trace.util.Links.create(DefaultSpan.getInvalid().getContext()));
 
   private static final TestClock testClock = TestClock.create(Timestamp.getDefaultInstance());
   private static final TimestampConverter timestampConverter = TimestampConverter.now(testClock);
@@ -193,18 +188,10 @@ public class TraceProtoUtilsTest {
   }
 
   @Test
-  public void spanDataEventsToProtoTimedEvents() {
-    TimedEvents expected =
-        TimedEvents.newBuilder()
-            .addTimedEvent(
-                Span.TimedEvent.newBuilder()
-                    .setTime(Timestamp.newBuilder().setSeconds(100).setNanos(200))
-                    .setEvent(
-                        Span.TimedEvent.Event.newBuilder()
-                            .setAttributes(Attributes.getDefaultInstance())
-                            .setName("event")))
-            .build();
-    assertThat(TraceProtoUtils.spanDataEventsToProtoTimedEvents(spanDataEvents))
+  public void toProtoTimestamp() {
+    Timestamp expected = Timestamp.newBuilder().setSeconds(123).setNanos(345678).build();
+    assertThat(
+            TraceProtoUtils.toProtoTimestamp(io.opentelemetry.trace.Timestamp.create(123, 345678)))
         .isEqualTo(expected);
   }
 }

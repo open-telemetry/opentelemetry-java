@@ -19,6 +19,7 @@ package io.opentelemetry.distributedcontext;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Object for creating new {@link DistributedContext}s and {@code DistributedContext}s based on the
@@ -33,6 +34,7 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
  *
  * @since 0.1.0
  */
+@ThreadSafe
 public interface DistributedContextManager {
 
   /**

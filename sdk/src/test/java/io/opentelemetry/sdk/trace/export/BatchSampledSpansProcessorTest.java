@@ -88,7 +88,7 @@ public class BatchSampledSpansProcessorTest {
   public void exportMoreSpansThanTheBufferSize() {
     tracerSdk.addSpanProcessor(
         BatchSampledSpansProcessor.newBuilder(waitingSpanExporter)
-            .setMaxQueueSieze(6)
+            .setMaxQueueSize(6)
             .setMaxExportBatchSize(2)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
@@ -135,7 +135,7 @@ public class BatchSampledSpansProcessorTest {
         BatchSampledSpansProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-            .setMaxQueueSieze(maxQueuedSpans)
+            .setMaxQueueSize(maxQueuedSpans)
             .setMaxExportBatchSize(maxQueuedSpans / 2)
             .build());
 
@@ -258,7 +258,7 @@ public class BatchSampledSpansProcessorTest {
     State state = State.WAIT_TO_BLOCK;
 
     @Override
-    public void export(List<Span> spanDataList) {
+    public ResultCode export(List<Span> spanDataList) {
       synchronized (monitor) {
         while (state != State.UNBLOCKED) {
           try {
@@ -271,6 +271,7 @@ public class BatchSampledSpansProcessorTest {
           }
         }
       }
+      return ResultCode.SUCCESS;
     }
 
     private void waitUntilIsBlocked() {
@@ -332,11 +333,12 @@ public class BatchSampledSpansProcessorTest {
     }
 
     @Override
-    public void export(List<Span> spans) {
+    public ResultCode export(List<Span> spans) {
       synchronized (monitor) {
         this.spanDataList.addAll(spans);
         monitor.notifyAll();
       }
+      return ResultCode.SUCCESS;
     }
 
     @Override

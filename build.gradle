@@ -5,12 +5,14 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+        jcenter()
     }
     dependencies {
         classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.5.0'
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.0.16'
         classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
         classpath "gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.8"
+        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.9.8'
     }
 }
 
@@ -26,10 +28,12 @@ subprojects {
     apply plugin: 'idea'
     apply plugin: 'signing'
     apply plugin: 'jacoco'
+    apply plugin: 'maven-publish'
     // The plugin only has an effect if a signature is specified
     apply plugin: 'ru.vyarus.animalsniffer'
     apply plugin: 'com.github.sherter.google-java-format'
     apply plugin: 'net.ltgt.errorprone'
+    apply plugin: 'com.jfrog.artifactory'
 
     group = "io.opentelemetry"
     version = "0.1.0-SNAPSHOT" // CURRENT_VERSION
@@ -53,7 +57,7 @@ subprojects {
         // MutableMethodReturnType can suggest returning Guava types from
         // API methods (https://github.com/google/error-prone/issues/982).
         it.options.compilerArgs += ["-Xep:MutableMethodReturnType:OFF"]
-        
+
 	    // Doesn't currently use Var annotations.
         it.options.compilerArgs += ["-Xep:Var:OFF"]
 
@@ -72,7 +76,7 @@ subprojects {
         it.options.encoding = "UTF-8"
 
         // Ignore warnings for protobuf generated files.
-        it.options.compilerArgs += ["-XepExcludedPaths:.*/sdk/build/generated/source/proto/.*"]
+        it.options.compilerArgs += ["-XepExcludedPaths:.*/build/generated/source/proto/.*"]
 
         // Enforce errorprone warnings to be errors.
         if (!JavaVersion.current().isJava9() && !JavaVersion.current().isJava10()) {
@@ -108,14 +112,21 @@ subprojects {
         grpcVersion = '1.20.0'
         autoValueVersion = '1.6.2'
         opentracingVersion = '0.33.0'
-        guavaVersion = '26.0-android'
+        protobufVersion = '3.7.1'
+        protocVersion = '3.7.1'
+        guavaVersion = '28.1-android'
 
         libraries = [
                 auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
                 auto_value_annotation: "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
+                disruptor: 'com.lmax:disruptor:3.4.2',
                 errorprone_annotation: "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
+                grpc_api: "io.grpc:grpc-api:${grpcVersion}",
                 grpc_context: "io.grpc:grpc-context:${grpcVersion}",
+                guava: "com.google.guava:guava:${guavaVersion}",
                 jsr305: "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
+                protobuf: "com.google.protobuf:protobuf-java:${protobufVersion}",
+                protobuf_util: "com.google.protobuf:protobuf-java-util:${protobufVersion}",
 
                 // Compatibility layer
                 opentracing: "io.opentracing:opentracing-api:${opentracingVersion}",
@@ -124,9 +135,8 @@ subprojects {
                 guava_testlib: "com.google.guava:guava-testlib:${guavaVersion}",
                 junit: 'junit:junit:4.12',
                 mockito: 'org.mockito:mockito-core:2.25.1',
-                truth: 'com.google.truth:truth:0.44',
+                truth: 'com.google.truth:truth:1.0',
                 slf4jsimple: 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
-                assertj: "org.assertj:assertj-core:3.8.0", // Compatibility layer
                 awaitility: 'org.awaitility:awaitility:3.0.0', // Compatibility layer
         ]
     }
@@ -210,4 +220,6 @@ subprojects {
         }
         maxHeapSize = '1500m'
     }
+
+    apply from: "${rootProject.projectDir}/gradle/publish.gradle"
 }

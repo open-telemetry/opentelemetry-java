@@ -28,7 +28,8 @@ import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link DefaultTracer}. */
 @RunWith(JUnit4.class)
-// Need to suppress warnings for MustBeClosed because Java-6 does not support try-with-resources.
+// Need to suppress warnings for MustBeClosed because Android 14 does not support
+// try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
 public class DefaultTracerTest {
   private static final Tracer defaultTracer = DefaultTracer.getInstance();
@@ -39,7 +40,7 @@ public class DefaultTracerTest {
       SpanContext.create(
           TraceId.fromBytes(firstBytes, 0),
           SpanId.fromBytes(firstBytes, 8),
-          TraceOptions.getDefault(),
+          TraceFlags.getDefault(),
           Tracestate.getDefault());
 
   @Rule public final ExpectedException thrown = ExpectedException.none();

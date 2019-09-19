@@ -18,6 +18,7 @@ package io.opentelemetry.context.propagation;
 
 import java.util.List;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Injects and extracts a value as text into carriers that travel in-band across process boundaries.
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
  *
  * @since 0.1.0
  */
+@ThreadSafe
 public interface HttpTextFormat<V> {
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here

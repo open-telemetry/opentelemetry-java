@@ -24,9 +24,9 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.Attributes;
 import io.opentelemetry.proto.trace.v1.Span.Links;
 import io.opentelemetry.proto.trace.v1.Span.TimedEvents;
-import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
@@ -34,12 +34,12 @@ import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.util.Events;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +66,7 @@ public class RecordEventsReadableSpanTest {
   private final SpanId spanId = TestUtils.generateRandomSpanId();
   private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
   private final SpanContext spanContext =
-      SpanContext.create(traceId, spanId, TraceOptions.getDefault(), Tracestate.getDefault());
+      SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
   private final Timestamp startTime = Timestamp.newBuilder().setSeconds(1000).build();
   private final TestClock testClock = TestClock.create(startTime);
   private final TimestampConverter timestampConverter = TimestampConverter.now(testClock);
@@ -75,7 +75,7 @@ public class RecordEventsReadableSpanTest {
   private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
   private final Event event =
       new SimpleEvent("event2", Collections.<String, AttributeValue>emptyMap());
-  private final Link link = SpanData.Link.create(spanContext);
+  private final Link link = io.opentelemetry.trace.util.Links.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -274,7 +274,7 @@ public class RecordEventsReadableSpanTest {
     try {
       span.addEvent("event1");
       span.addEvent("event2", attributes);
-      span.addEvent(SpanData.Event.create("event3"));
+      span.addEvent(Events.create("event3"));
     } finally {
       span.end();
     }
@@ -288,7 +288,7 @@ public class RecordEventsReadableSpanTest {
     try {
       span.addLink(DefaultSpan.getInvalid().getContext());
       span.addLink(spanContext, attributes);
-      span.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
+      span.addLink(io.opentelemetry.trace.util.Links.create(DefaultSpan.getInvalid().getContext()));
     } finally {
       span.end();
     }

@@ -22,18 +22,20 @@ import static io.opentelemetry.internal.Utils.checkNotNull;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Implementation of the TraceContext propagation protocol. See <a
  * href=https://github.com/w3c/distributed-tracing>w3c/distributed-tracing</a>.
  */
+@Immutable
 public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
   static final String TRACEPARENT = "traceparent";
@@ -47,7 +49,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   private static final int TRACEPARENT_DELIMITER_SIZE = 1;
   private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
   private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
-  private static final int TRACE_OPTION_HEX_SIZE = 2 * TraceOptions.getSize();
+  private static final int TRACE_OPTION_HEX_SIZE = 2 * TraceFlags.getSize();
   private static final int TRACE_ID_OFFSET = VERSION_SIZE + TRACEPARENT_DELIMITER_SIZE;
   private static final int SPAN_ID_OFFSET =
       TRACE_ID_OFFSET + TRACE_ID_HEX_SIZE + TRACEPARENT_DELIMITER_SIZE;
@@ -79,7 +81,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.getSpanId().copyLowerBase16To(chars, SPAN_ID_OFFSET);
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
-    spanContext.getTraceOptions().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
+    spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
     setter.put(carrier, TRACEPARENT, new String(chars));
     List<Tracestate.Entry> entries = spanContext.getTracestate().getEntries();
     if (entries.isEmpty()) {
@@ -105,7 +107,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
     checkNotNull(getter, "getter");
     TraceId traceId;
     SpanId spanId;
-    TraceOptions traceOptions;
+    TraceFlags traceFlags;
     String traceparent = getter.get(carrier, TRACEPARENT);
     if (traceparent == null) {
       throw new IllegalArgumentException("Traceparent not present");
@@ -124,7 +126,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
 
       traceId = TraceId.fromLowerBase16(traceparent, TRACE_ID_OFFSET);
       spanId = SpanId.fromLowerBase16(traceparent, SPAN_ID_OFFSET);
-      traceOptions = TraceOptions.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
+      traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid traceparent: " + traceparent, e);
     }
@@ -132,7 +134,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
     String tracestate = getter.get(carrier, TRACESTATE);
     try {
       if (tracestate == null || tracestate.isEmpty()) {
-        return SpanContext.create(traceId, spanId, traceOptions, TRACESTATE_DEFAULT);
+        return SpanContext.create(traceId, spanId, traceFlags, TRACESTATE_DEFAULT);
       }
       Tracestate.Builder tracestateBuilder = Tracestate.builder();
       String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(tracestate);
@@ -147,7 +149,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
         tracestateBuilder.set(
             listMember.substring(0, index), listMember.substring(index + 1, listMember.length()));
       }
-      return SpanContext.create(traceId, spanId, traceOptions, tracestateBuilder.build());
+      return SpanContext.create(traceId, spanId, traceFlags, tracestateBuilder.build());
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid tracestate: " + tracestate, e);
     }

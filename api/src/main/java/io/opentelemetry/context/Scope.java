@@ -17,6 +17,7 @@
 package io.opentelemetry.context;
 
 import java.io.Closeable;
+import javax.annotation.concurrent.NotThreadSafe;
 
 /**
  * A {@link java.io.Closeable} that represents a change to the current context over a scope of code.
@@ -32,6 +33,7 @@ import java.io.Closeable;
  *
  * @since 0.1.0
  */
+@NotThreadSafe
 public interface Scope extends Closeable {
   @Override
   void close();

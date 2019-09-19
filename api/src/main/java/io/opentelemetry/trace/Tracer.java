@@ -21,6 +21,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Tracer is a simple, interface for {@link Span} creation and in-process context interaction.
@@ -72,6 +73,7 @@ import io.opentelemetry.trace.propagation.HttpTraceContext;
  *
  * @since 0.1.0
  */
+@ThreadSafe
 public interface Tracer {
   /**
    * Gets the current Span from the current Context.
@@ -151,16 +153,6 @@ public interface Tracer {
    * @since 0.1.0
    */
   Span.Builder spanBuilder(String spanName);
-
-  /**
-   * Records a {@link SpanData}. This API allows to send a pre-populated span object to the
-   * exporter. Sampling and recording decisions as well as other collection optimizations is a
-   * responsibility of a caller. Note, the {@link SpanContext} object on the span population with
-   * the values that will allow correlation of telemetry is also a caller responsibility.
-   *
-   * @param span Span Data to be reported to all exporters.
-   */
-  void recordSpanData(SpanData span);
 
   /**
    * Returns the {@link BinaryFormat} for this tracer implementation.

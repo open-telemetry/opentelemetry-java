@@ -17,6 +17,7 @@
 package io.opentelemetry.trace;
 
 import java.util.Map;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * An interface that represents a span. It has an associated {@link SpanContext}.
@@ -27,6 +28,7 @@ import java.util.Map;
  *
  * @since 0.1.0
  */
+@ThreadSafe
 public interface Span {
   /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a
@@ -66,7 +68,7 @@ public interface Span {
     PRODUCER,
 
     /**
-     * Indicates that the span describes consumer recieving a message from a broker. Unlike client
+     * Indicates that the span describes consumer receiving a message from a broker. Unlike client
      * and server, there is no direct critical path latency relationship between producer and
      * consumer spans.
      *
@@ -229,7 +231,7 @@ public interface Span {
   SpanContext getContext();
 
   /**
-   * Returns {@code true} if this {@code Span} records events (e.g, {@link #addEvent(String)}.
+   * Returns {@code true} if this {@code Span} records events (e.g. {@link #addEvent(String)}).
    *
    * @return {@code true} if this {@code Span} records events.
    * @since 0.1.0

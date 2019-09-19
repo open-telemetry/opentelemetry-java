@@ -16,7 +16,10 @@
 
 package io.opentelemetry.internal;
 
+import javax.annotation.concurrent.Immutable;
+
 /** Internal utility methods for working with attribute keys, attribute values, and metric names. */
+@Immutable
 public final class StringUtils {
 
   /**

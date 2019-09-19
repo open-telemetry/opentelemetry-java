@@ -16,15 +16,29 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.internal.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-final class MultiSpanProcessor implements SpanProcessor {
+/**
+ * Implementation of the {@code SpanProcessor} that simply forwards all received events to a list of
+ * {@code SpanProcessor}s.
+ */
+public final class MultiSpanProcessor implements SpanProcessor {
   private final List<SpanProcessor> spanProcessors;
 
-  static SpanProcessor create(List<SpanProcessor> spanProcessors) {
-    return new MultiSpanProcessor(Collections.unmodifiableList(new ArrayList<>(spanProcessors)));
+  /**
+   * Creates a new {@code MultiSpanProcessor}.
+   *
+   * @param spanProcessorList the {@code List} of {@code SpanProcessor}s.
+   * @return a new {@code MultiSpanProcessor}.
+   * @throws NullPointerException if the {@code spanProcessorList} is {@code null}.
+   */
+  public static SpanProcessor create(List<SpanProcessor> spanProcessorList) {
+    return new MultiSpanProcessor(
+        Collections.unmodifiableList(
+            new ArrayList<>(Utils.checkNotNull(spanProcessorList, "spanProcessorList"))));
   }
 
   @Override

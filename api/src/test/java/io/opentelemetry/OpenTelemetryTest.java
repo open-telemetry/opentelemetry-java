@@ -31,14 +31,14 @@ import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.DefaultMeter;
 import io.opentelemetry.metrics.GaugeDouble;
 import io.opentelemetry.metrics.GaugeLong;
-import io.opentelemetry.metrics.Measure;
-import io.opentelemetry.metrics.Measurement;
+import io.opentelemetry.metrics.MeasureBatchRecorder;
+import io.opentelemetry.metrics.MeasureDouble;
+import io.opentelemetry.metrics.MeasureLong;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.spi.MeterProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.spi.TracerProvider;
 import java.io.File;
@@ -46,7 +46,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
-import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -242,9 +241,6 @@ public class OpenTelemetryTest {
       return null;
     }
 
-    @Override
-    public void recordSpanData(SpanData span) {}
-
     @Nullable
     @Override
     public BinaryFormat<SpanContext> getBinaryFormat() {
@@ -297,19 +293,21 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public Measure.Builder measureBuilder(String name) {
+    public MeasureDouble.Builder measureDoubleBuilder(String name) {
       return null;
     }
 
+    @Nullable
     @Override
-    public void record(List<Measurement> measurements) {}
+    public MeasureLong.Builder measureLongBuilder(String name) {
+      return null;
+    }
 
+    @Nullable
     @Override
-    public void record(List<Measurement> measurements, DistributedContext distContext) {}
-
-    @Override
-    public void record(
-        List<Measurement> measurements, DistributedContext distContext, SpanContext spanContext) {}
+    public MeasureBatchRecorder newMeasureBatchRecorder() {
+      return null;
+    }
   }
 
   public static class SecondDistributedContextManager extends FirstDistributedContextManager {

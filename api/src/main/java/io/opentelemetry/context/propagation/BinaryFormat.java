@@ -16,11 +16,14 @@
 
 package io.opentelemetry.context.propagation;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
  * Formatter to serializing and deserializing a value with into a binary format.
  *
  * @since 0.1.0
  */
+@ThreadSafe
 public interface BinaryFormat<V> {
 
   /**

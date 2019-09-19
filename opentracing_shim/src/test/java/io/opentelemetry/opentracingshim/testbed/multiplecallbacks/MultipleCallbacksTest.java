@@ -28,9 +28,16 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
+/**
+ * These tests are intended to simulate a task with independent, asynchronous callbacks.
+ *
+ * <p>For improved readability, ignore the CountDownLatch lines as those are there to ensure
+ * deterministic execution for the tests without sleeps.
+ */
 @SuppressWarnings("FutureReturnValueIgnored")
 public class MultipleCallbacksTest {
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
@@ -38,14 +45,17 @@ public class MultipleCallbacksTest {
 
   @Test
   public void test() throws Exception {
-    Client client = new Client(tracer);
+    CountDownLatch parentDoneLatch = new CountDownLatch(1);
+    Client client = new Client(tracer, parentDoneLatch);
+
     Span span = tracer.buildSpan("parent").start();
     try (Scope scope = tracer.activateSpan(span)) {
-      client.send("task1", 300);
-      client.send("task2", 200);
-      client.send("task3", 100);
+      client.send("task1");
+      client.send("task2");
+      client.send("task3");
     } finally {
       span.finish();
+      parentDoneLatch.countDown();
     }
 
     await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(4));

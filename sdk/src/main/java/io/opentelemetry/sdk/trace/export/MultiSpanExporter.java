@@ -16,6 +16,10 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILED_NOT_RETRYABLE;
+import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILED_RETRYABLE;
+import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.SUCCESS;
+
 import io.opentelemetry.proto.trace.v1.Span;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,14 +43,18 @@ public final class MultiSpanExporter implements SpanExporter {
   }
 
   @Override
-  public void export(List<Span> spans) {
+  public ResultCode export(List<Span> spans) {
+    ResultCode currentResultCode = SUCCESS;
     for (SpanExporter spanExporter : spanExporters) {
       try {
-        spanExporter.export(spans);
+        currentResultCode = mergeResultCode(currentResultCode, spanExporter.export(spans));
       } catch (Throwable t) {
+        // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the export.", t);
+        currentResultCode = FAILED_NOT_RETRYABLE;
       }
     }
+    return currentResultCode;
   }
 
   @Override
@@ -54,6 +62,24 @@ public final class MultiSpanExporter implements SpanExporter {
     for (SpanExporter spanExporter : spanExporters) {
       spanExporter.shutdown();
     }
+  }
+
+  // Returns a merged error code, see the rules in the code.
+  private static ResultCode mergeResultCode(
+      ResultCode currentResultCode, ResultCode newResultCode) {
+    // If both errors are success then return success.
+    if (currentResultCode == SUCCESS && newResultCode == SUCCESS) {
+      return SUCCESS;
+    }
+
+    // If any of the codes is none retryable then return none_retryable;
+    if (currentResultCode == FAILED_NOT_RETRYABLE || newResultCode == FAILED_NOT_RETRYABLE) {
+      return FAILED_NOT_RETRYABLE;
+    }
+
+    // At this point at least one of the code is FAILED_RETRYABLE and none are
+    // FAILED_NOT_RETRYABLE, so return FAILED_RETRYABLE.
+    return FAILED_RETRYABLE;
   }
 
   private MultiSpanExporter(List<SpanExporter> spanExporters) {

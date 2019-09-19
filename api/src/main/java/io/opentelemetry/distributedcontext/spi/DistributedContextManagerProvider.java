@@ -17,6 +17,7 @@
 package io.opentelemetry.distributedcontext.spi;
 
 import io.opentelemetry.distributedcontext.DistributedContextManager;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * DistributedContextManagerProvider is a service provider for {@link DistributedContextManager}.
@@ -30,6 +31,7 @@ import io.opentelemetry.distributedcontext.DistributedContextManager;
  *
  * @see io.opentelemetry.OpenTelemetry
  */
+@ThreadSafe
 public interface DistributedContextManagerProvider {
 
   /**

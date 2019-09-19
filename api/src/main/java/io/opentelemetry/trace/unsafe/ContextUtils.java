@@ -21,6 +21,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Util methods/functionality to interact with the {@link io.grpc.Context}.
@@ -30,6 +31,7 @@ import io.opentelemetry.trace.Tracer;
  *
  * @since 0.1.0
  */
+@Immutable
 public final class ContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
       Context.<Span>keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.getInvalid());

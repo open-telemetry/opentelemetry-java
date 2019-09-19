@@ -16,39 +16,44 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.resources.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.concurrent.ThreadSafe;
 
-/** Base interface for all metrics defined in this package. */
-public interface Metric<T> {
+/**
+ * Base interface for all metrics defined in this package.
+ *
+ * @param <H> the Handle.
+ * @since 0.1.0
+ */
+@ThreadSafe
+public interface Metric<H> {
   /**
-   * Creates a {@code TimeSeries} and returns a {@code TimeSeries} if the specified {@code
-   * labelValues} is not already associated with this gauge, else returns an existing {@code
-   * TimeSeries}.
+   * Returns a {@code Handle} with associated with specified {@code labelValues}. Multiples requests
+   * with the same {@code labelValues} may return the same {@code Handle}.
    *
-   * <p>It is recommended to keep a reference to the TimeSeries instead of always calling this
-   * method for every operations.
+   * <p>It is recommended to keep a reference to the Handle instead of always calling this method
+   * for every operations.
    *
    * @param labelValues the list of label values. The number of label values must be the same to
    *     that of the label keys passed to {@link GaugeDouble.Builder#setLabelKeys(List)}.
-   * @return a {@code TimeSeries} the value of single gauge.
+   * @return a {@code Handle} the value of single gauge.
    * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
    *     labelValues} is null.
    * @throws IllegalArgumentException if number of {@code labelValues}s are not equal to the label
    *     keys.
    * @since 0.1.0
    */
-  T getOrCreateTimeSeries(List<LabelValue> labelValues);
+  H getHandle(List<String> labelValues);
 
   /**
-   * Returns a {@code TimeSeries} for a metric with all labels not set (default label value).
+   * Returns a {@code Handle} for a metric with all labels not set.
    *
-   * @return a {@code TimeSeries} for a metric with all labels not set (default label value).
+   * @return a {@code Handle} for a metric with all labels not set.
    * @since 0.1.0
    */
-  T getDefaultTimeSeries();
+  H getDefaultHandle();
 
   /**
    * Sets a callback that gets executed every time before exporting this metric.
@@ -57,27 +62,27 @@ public interface Metric<T> {
    * never be called.
    *
    * @param metricUpdater the callback to be executed before export.
+   * @since 0.1.0
    */
   void setCallback(Runnable metricUpdater);
 
   /**
-   * Removes the {@code TimeSeries} from the metric, if it is present. i.e. references to previous
-   * {@code TimeSeries} are invalid (not part of the metric).
+   * Removes the {@code Handle} from the metric, if it is present. i.e. references to previous
+   * {@code Handle} are invalid (not part of the metric).
+   *
+   * <p>If value is missing for one of the predefined keys {@code null} must be used for that value.
    *
    * @param labelValues the list of label values.
-   * @throws NullPointerException if {@code labelValues} is null.
    * @since 0.1.0
    */
-  void removeTimeSeries(List<LabelValue> labelValues);
+  void removeHandle(List<String> labelValues);
 
   /**
-   * Removes all {@code TimeSeries} from the metric. i.e. references to all previous {@code
-   * TimeSeries} are invalid (not part of the metric).
+   * The {@code Builder} class for the {@code Metric}.
    *
-   * @since 0.1.0
+   * @param <B> the specific builder object.
+   * @param <V> the return value for {@code build()}.
    */
-  void clear();
-
   interface Builder<B extends Builder<B, V>, V> {
     /**
      * Sets the description of the {@code Metric}.
@@ -107,48 +112,22 @@ public interface Metric<T> {
      * @param labelKeys the list of label keys for the Metric.
      * @return this.
      */
-    B setLabelKeys(List<LabelKey> labelKeys);
+    B setLabelKeys(List<String> labelKeys);
 
     /**
-     * Sets the map of constant labels (they will be added to all the TimeSeries) for the Metric.
+     * Sets the map of constant labels (they will be added to all the Handle) for the Metric.
      *
      * <p>Default value is {@link Collections#emptyMap()}.
      *
      * @param constantLabels the map of constant labels for the Metric.
      * @return this.
      */
-    B setConstantLabels(Map<LabelKey, LabelValue> constantLabels);
+    B setConstantLabels(Map<String, String> constantLabels);
 
     /**
-     * Sets the name of the component that reports this {@code Metric}.
+     * Builds and returns a {@code Metric} with the desired options.
      *
-     * <p>The final name of the reported metric will be <code>component + "_" + name</code> if the
-     * component is not empty.
-     *
-     * <p>It is recommended to always set a component name for all the metrics, because some
-     * implementations may filter based on the component.
-     *
-     * @param component the name of the component that reports these metrics.
-     * @return this.
-     */
-    B setComponent(String component);
-
-    /**
-     * Sets the {@code Resource} associated with this {@code Metric}.
-     *
-     * <p>This should be set only when reporting out-of-band metrics, otherwise the implementation
-     * will set the {@code Resource} for in-process metrics (or user can do that when initialize the
-     * {@code Meter}).
-     *
-     * @param resource the {@code Resource} associated with this {@code Metric}.
-     * @return this.
-     */
-    B setResource(Resource resource);
-
-    /**
-     * Builds and returns a metric with the desired options.
-     *
-     * @return a metric with the desired options.
+     * @return a {@code Metric} with the desired options.
      */
     V build();
   }

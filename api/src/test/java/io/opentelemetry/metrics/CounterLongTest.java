@@ -17,7 +17,7 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -34,14 +34,50 @@ public class CounterLongTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final List<LabelKey> LABEL_KEY =
-      Collections.singletonList(LabelKey.create("key", "key description"));
-  private static final List<LabelValue> EMPTY_LABEL_VALUES = new ArrayList<>();
+  private static final List<String> LABEL_KEY = Collections.singletonList("key");
+  private static final List<String> EMPTY_LABEL_VALUES = Collections.emptyList();
 
   private final Meter meter = OpenTelemetry.getMeter();
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullLabelValues() {
+  public void preventNonPrintableName() {
+    thrown.expect(IllegalArgumentException.class);
+    meter.counterLongBuilder("\2").build();
+  }
+
+  @Test
+  public void preventTooLongMeasureName() {
+    char[] chars = new char[DefaultMeter.NAME_MAX_LENGTH + 1];
+    Arrays.fill(chars, 'a');
+    String longName = String.valueOf(chars);
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.counterLongBuilder(longName).build();
+  }
+
+  @Test
+  public void preventNull_Description() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("description");
+    meter.counterLongBuilder("metric").setDescription(null).build();
+  }
+
+  @Test
+  public void preventNull_Unit() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("unit");
+    meter.counterLongBuilder("metric").setUnit(null).build();
+  }
+
+  @Test
+  public void preventNull_ConstantLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("constantLabels");
+    meter.counterLongBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
+  public void noopGetHandle_WithNullLabelValues() {
     CounterLong counterLong =
         meter
             .counterLongBuilder(NAME)
@@ -51,26 +87,11 @@ public class CounterLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    counterLong.getOrCreateTimeSeries(null);
+    counterLong.getHandle(null);
   }
 
   @Test
-  public void noopGetOrCreateTimeSeries_WithNullElement() {
-    List<LabelValue> labelValues = Collections.singletonList(null);
-    CounterLong counterLong =
-        meter
-            .counterLongBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValue");
-    counterLong.getOrCreateTimeSeries(labelValues);
-  }
-
-  @Test
-  public void noopGetOrCreateTimeSeries_WithInvalidLabelSize() {
+  public void noopGetHandle_WithInvalidLabelSize() {
     CounterLong counterLong =
         meter
             .counterLongBuilder(NAME)
@@ -80,11 +101,11 @@ public class CounterLongTest {
             .build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    counterLong.getOrCreateTimeSeries(EMPTY_LABEL_VALUES);
+    counterLong.getHandle(EMPTY_LABEL_VALUES);
   }
 
   @Test
-  public void noopRemoveTimeSeries_WithNullLabelValues() {
+  public void noopRemoveHandle_WithNullLabelValues() {
     CounterLong counterLong =
         meter
             .counterLongBuilder(NAME)
@@ -94,6 +115,6 @@ public class CounterLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    counterLong.removeTimeSeries(null);
+    counterLong.removeHandle(null);
   }
 }

@@ -18,8 +18,7 @@ package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.GaugeLong;
-import io.opentelemetry.metrics.LabelKey;
-import io.opentelemetry.metrics.LabelValue;
+import io.opentelemetry.metrics.GaugeLong.Handle;
 import io.opentelemetry.metrics.Meter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -46,14 +45,14 @@ import java.util.List;
  * </pre>
  */
 public final class MemoryPools {
-  private static final LabelKey TYPE = LabelKey.create("type", "");
-  private static final LabelKey AREA = LabelKey.create("area", "");
-  private static final LabelKey POOL = LabelKey.create("pool", "");
-  private static final LabelValue USED = LabelValue.create("used");
-  private static final LabelValue COMMITTED = LabelValue.create("committed");
-  private static final LabelValue MAX = LabelValue.create("max");
-  private static final LabelValue HEAP = LabelValue.create("heap");
-  private static final LabelValue NON_HEAP = LabelValue.create("non_heap");
+  private static final String TYPE_LABEL_KEY = "type";
+  private static final String AREA_LABEL_KEY = "area";
+  private static final String POOL_LABEL_KEY = "pool";
+  private static final String USED = "used";
+  private static final String COMMITTED = "committed";
+  private static final String MAX = "max";
+  private static final String HEAP = "heap";
+  private static final String NON_HEAP = "non_heap";
 
   private final MemoryMXBean memoryBean;
   private final List<MemoryPoolMXBean> poolBeans;
@@ -63,6 +62,7 @@ public final class MemoryPools {
   public MemoryPools() {
     this.memoryBean = ManagementFactory.getMemoryMXBean();
     this.poolBeans = ManagementFactory.getMemoryPoolMXBeans();
+    // TODO: Set component to "jvm_memory" when available.
     this.meter = OpenTelemetry.getMeter();
   }
 
@@ -77,21 +77,15 @@ public final class MemoryPools {
             .gaugeLongBuilder("area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
-            .setLabelKeys(Arrays.asList(TYPE, AREA))
-            .setComponent("jvm_memory")
+            .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
             .build();
-    final GaugeLong.TimeSeries usedHeap =
-        areaMetric.getOrCreateTimeSeries(Arrays.asList(USED, HEAP));
-    final GaugeLong.TimeSeries usedNonHeap =
-        areaMetric.getOrCreateTimeSeries(Arrays.asList(USED, NON_HEAP));
-    final GaugeLong.TimeSeries committedHeap =
-        areaMetric.getOrCreateTimeSeries(Arrays.asList(COMMITTED, HEAP));
-    final GaugeLong.TimeSeries committedNonHeap =
-        areaMetric.getOrCreateTimeSeries(Arrays.asList(COMMITTED, NON_HEAP));
+    final Handle usedHeap = areaMetric.getHandle(Arrays.asList(USED, HEAP));
+    final Handle usedNonHeap = areaMetric.getHandle(Arrays.asList(USED, NON_HEAP));
+    final Handle committedHeap = areaMetric.getHandle(Arrays.asList(COMMITTED, HEAP));
+    final Handle committedNonHeap = areaMetric.getHandle(Arrays.asList(COMMITTED, NON_HEAP));
     // TODO: Decide if max is needed or not. May be derived with some approximation from max(used).
-    final GaugeLong.TimeSeries maxHeap = areaMetric.getOrCreateTimeSeries(Arrays.asList(MAX, HEAP));
-    final GaugeLong.TimeSeries maxNonHeap =
-        areaMetric.getOrCreateTimeSeries(Arrays.asList(MAX, NON_HEAP));
+    final Handle maxHeap = areaMetric.getHandle(Arrays.asList(MAX, HEAP));
+    final Handle maxNonHeap = areaMetric.getHandle(Arrays.asList(MAX, NON_HEAP));
     areaMetric.setCallback(
         new Runnable() {
           @Override
@@ -115,8 +109,7 @@ public final class MemoryPools {
             .gaugeLongBuilder("pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
-            .setLabelKeys(Arrays.asList(TYPE, POOL))
-            .setComponent("jvm_memory")
+            .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))
             .build();
     poolMetric.setCallback(
         new Runnable() {
@@ -124,18 +117,13 @@ public final class MemoryPools {
           public void run() {
             for (final MemoryPoolMXBean pool : poolBeans) {
               MemoryUsage poolUsage = pool.getUsage();
-              LabelValue poolName = LabelValue.create(pool.getName());
+              poolMetric.getHandle(Arrays.asList(USED, pool.getName())).set(poolUsage.getUsed());
               poolMetric
-                  .getOrCreateTimeSeries(Arrays.asList(USED, poolName))
-                  .set(poolUsage.getUsed());
-              poolMetric
-                  .getOrCreateTimeSeries(Arrays.asList(COMMITTED, poolName))
+                  .getHandle(Arrays.asList(COMMITTED, pool.getName()))
                   .set(poolUsage.getUsed());
               // TODO: Decide if max is needed or not. May be derived with some approximation from
               //  max(used).
-              poolMetric
-                  .getOrCreateTimeSeries(Arrays.asList(MAX, poolName))
-                  .set(poolUsage.getUsed());
+              poolMetric.getHandle(Arrays.asList(MAX, pool.getName())).set(poolUsage.getUsed());
             }
           }
         });

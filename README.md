@@ -1,6 +1,6 @@
 # OpenTelemetry
 [![Gitter chat][gitter-image]][gitter-url]
-[![Build Status][travis-image]][travis-url]
+[![Build Status][circleci-image]][circleci-url]
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
 
@@ -11,14 +11,18 @@ This project contains the following top level components:
 
 * [api](api/): The OpenTelemetry API.
   * [trace](api/src/main/java/io/opentelemetry/trace/): The tracing api. Includes `Tracer`, `Span` and `SpanContext`.
-  * [tags](api/src/main/java/io/opentelemetry/tags/): Key-value pairs of data that can be propagated to provide contextual information.
+  * [distributedcontext](api/src/main/java/io/opentelemetry/distributedcontext/): Collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
   * [context](api/src/main/java/io/opentelemetry/context/): In-process and inter-process propagation layer.
   * [metrics](api/src/main/java/io/opentelemetry/metrics/): Metrics layer.
 * [sdk](sdk/): The reference implementation complying to the OpenTelemetry API.
-* [OpenTracing shim](opentracing-shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
-* [OpenCensus shim](opencensus-shim): A bridge layer from OpenTelemetry to the OpenCensus API.
+* [OpenTracing shim](opentracing_shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
 
 We would love to hear from the larger community: please provide feedback proactively.
+
+## Project setup and contribute
+
+Please refer to the [contribution guide](https://github.com/newrelic-forks/opentelemetry-java/blob/master/CONTRIBUTING.md)
+on how to setup and contribute!
 
 ## Plan
 
@@ -86,8 +90,8 @@ We plan to merge projects and pave the path for future improvements as a unified
 community of tracing vendors, users and library authors who wants apps be
 managed better. We are open to feedback and suggestions from all of you!
 
-[travis-image]: https://travis-ci.org/open-telemetry/opentelemetry-java.svg?branch=master
-[travis-url]: https://travis-ci.org/open-telemetry/opentelemetry-java 
+[circleci-image]: https://circleci.com/gh/open-telemetry/opentelemetry-java.svg?style=svg 
+[circleci-url]: https://circleci.com/gh/open-telemetry/opentelemetry-java
 [gitter-image]: https://badges.gitter.im/open-telemetry/opentelemetry-java.svg 
 [gitter-url]: https://gitter.im/open-telemetry/opentelemetry-java?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [codecov-image]: https://codecov.io/gh/open-telemetry/opentelemetry-java/branch/master/graph/badge.svg

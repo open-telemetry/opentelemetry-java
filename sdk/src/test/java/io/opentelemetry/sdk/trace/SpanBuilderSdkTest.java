@@ -27,11 +27,11 @@ import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.util.Links;
 import io.opentelemetry.trace.util.Samplers;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -52,7 +52,7 @@ public class SpanBuilderSdkTest {
       SpanContext.create(
           new TraceId(1000, 1000),
           new SpanId(3000),
-          TraceOptions.builder().setIsSampled(true).build(),
+          TraceFlags.builder().setIsSampled(true).build(),
           Tracestate.getDefault());
 
   private final TracerSdk tracer = new TracerSdk();
@@ -87,7 +87,7 @@ public class SpanBuilderSdkTest {
   public void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
-    spanBuilder.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
+    spanBuilder.addLink(Links.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
         DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
@@ -131,7 +131,7 @@ public class SpanBuilderSdkTest {
   public void recordEvents_neverSample() {
     Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
     try {
-      assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
     } finally {
       span.end();
     }
@@ -146,7 +146,7 @@ public class SpanBuilderSdkTest {
             .setRecordEvents(true)
             .startSpan();
     try {
-      assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
       assertThat(span.isRecordingEvents()).isTrue();
     } finally {
       span.end();
@@ -181,7 +181,7 @@ public class SpanBuilderSdkTest {
     Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
 
     try {
-      assertThat(span.getContext().getTraceOptions().isSampled()).isFalse();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
     } finally {
       span.end();
     }
@@ -226,7 +226,7 @@ public class SpanBuilderSdkTest {
                     })
                 .startSpan();
     try {
-      assertThat(span.getContext().getTraceOptions().isSampled()).isTrue();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
       assertThat(span.toSpanProto().getAttributes().getAttributeMapMap())
           .containsKey("sampler-attribute");
     } finally {
@@ -241,10 +241,10 @@ public class SpanBuilderSdkTest {
             tracer
                 .spanBuilder(SPAN_NAME)
                 .setSampler(ProbabilitySampler.create(0.0))
-                .addLink(SpanData.Link.create(sampledSpanContext))
+                .addLink(Links.create(sampledSpanContext))
                 .startSpan();
     try {
-      assertThat(span.getContext().getTraceOptions().isSampled()).isTrue();
+      assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
     } finally {
       span.end();
     }
@@ -367,6 +367,36 @@ public class SpanBuilderSdkTest {
       assertThat(spanProto.getParentSpanId().isEmpty()).isTrue();
     } finally {
       span.end();
+    }
+  }
+
+  @Test
+  public void parent_timestampConverter() {
+    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
+    try {
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
+
+      assertThat(span.getTimestampConverter())
+          .isEqualTo(((RecordEventsReadableSpan) parent).getTimestampConverter());
+    } finally {
+      parent.end();
+    }
+  }
+
+  @Test
+  public void parentCurrentSpan_timestampConverter() {
+    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
+    Scope scope = tracer.withSpan(parent);
+    try {
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
+
+      assertThat(span.getTimestampConverter())
+          .isEqualTo(((RecordEventsReadableSpan) parent).getTimestampConverter());
+    } finally {
+      scope.close();
+      parent.end();
     }
   }
 }

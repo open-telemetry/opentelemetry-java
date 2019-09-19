@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.trace.export;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.trace.TraceOptions;
+import io.opentelemetry.trace.TraceFlags;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
  * io.opentelemetry.proto.trace.v1.Span} and passes it to the configured exporter.
  *
- * <p>Only spans that are sampled are converted, {@link TraceOptions#isSampled()} must return {@code
+ * <p>Only spans that are sampled are converted, {@link TraceFlags#isSampled()} must return {@code
  * true}.
  */
 public final class SimpleSampledSpansProcessor implements SpanProcessor {
@@ -48,7 +48,7 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (!span.getSpanContext().getTraceOptions().isSampled()) {
+    if (!span.getSpanContext().getTraceFlags().isSampled()) {
       return;
     }
     try {

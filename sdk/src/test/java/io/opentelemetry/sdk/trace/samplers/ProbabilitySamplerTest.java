@@ -24,11 +24,11 @@ import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceOptions;
 import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.util.Links;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -49,10 +49,10 @@ public class ProbabilitySamplerTest {
   private final Tracestate tracestate = Tracestate.builder().build();
   private final SpanContext sampledSpanContext =
       SpanContext.create(
-          traceId, parentSpanId, TraceOptions.builder().setIsSampled(true).build(), tracestate);
+          traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), tracestate);
   private final SpanContext notSampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceOptions.getDefault(), tracestate);
-  private final Link sampledParentLink = SpanData.Link.create(sampledSpanContext);
+      SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), tracestate);
+  private final Link sampledParentLink = Links.create(sampledSpanContext);
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 

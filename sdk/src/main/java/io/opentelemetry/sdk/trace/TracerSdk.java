@@ -20,15 +20,14 @@ import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.resources.Resource;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.EnvVarResource;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanData;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
@@ -77,11 +76,6 @@ public class TracerSdk implements Tracer {
     }
     return new SpanBuilderSdk(
         spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock);
-  }
-
-  @Override
-  public void recordSpanData(SpanData spanData) {
-    activeSpanProcessor.onEnd(ReadableSpanData.create(spanData));
   }
 
   @Override

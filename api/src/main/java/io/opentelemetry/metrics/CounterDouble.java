@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.CounterDouble.Handle;
 import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -34,22 +35,22 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .counterDoubleBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
- *           .setLabelKeys(Collections.singletonList(LabelKey.create("Name", "desc")))
+ *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a TimeSeries.
- *   private static final CounterDouble.TimeSeries inboundTimeSeries =
- *       counter.getOrCreateTimeSeries(Collections.singletonList(LabelValue.create("SomeWork")));
- *   private static final CounterDouble.TimeSeries defaultTimeSeries =
- *       counter.getDefaultTimeSeries();
+ *   // It is recommended to keep a reference of a Handle.
+ *   private static final CounterDouble.Handle inboundHandle =
+ *       counter.getHandle(Collections.singletonList("SomeWork"));
+ *   private static final CounterDouble.Handle defaultHandle =
+ *       counter.getDefaultHandle();
  *
  *   void doDefaultWork() {
  *      // Your code here.
- *      defaultTimeSeries.add(10);
+ *      defaultHandle.add(10);
  *   }
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      inboundTimeSeries.set(15);
+ *      inboundHandle.set(15);
  *   }
  *
  * }
@@ -58,20 +59,20 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface CounterDouble extends Metric<CounterDouble.TimeSeries> {
+public interface CounterDouble extends Counter<Handle> {
 
   @Override
-  TimeSeries getOrCreateTimeSeries(List<LabelValue> labelValues);
+  Handle getHandle(List<String> labelValues);
 
   @Override
-  TimeSeries getDefaultTimeSeries();
+  Handle getDefaultHandle();
 
   /**
-   * A {@code TimeSeries} for a {@code CounterDouble}.
+   * A {@code Handle} for a {@code CounterDouble}.
    *
    * @since 0.1.0
    */
-  interface TimeSeries {
+  interface Handle {
 
     /**
      * Adds the given value to the current value. The values cannot be negative.
@@ -94,5 +95,5 @@ public interface CounterDouble extends Metric<CounterDouble.TimeSeries> {
   }
 
   /** Builder class for {@link CounterDouble}. */
-  interface Builder extends Metric.Builder<Builder, CounterDouble> {}
+  interface Builder extends Counter.Builder<Builder, CounterDouble> {}
 }

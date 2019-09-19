@@ -16,10 +16,10 @@
 
 package io.opentelemetry.opentracingshim.testbed.promisepropagation;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByAttr;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByAttr;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.protobuf.ByteString;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
@@ -106,7 +106,7 @@ public class PromisePropagationTest {
       phaser.arriveAndAwaitAdvance(); // wait for results to be set
       assertThat(successResult1.get()).isEqualTo("success!");
       assertThat(successResult2.get()).isEqualTo("success!");
-      assertThat(errorResult.get()).hasMessage("some error.");
+      assertThat(errorResult.get()).hasMessageThat().isEqualTo("some error.");
 
       phaser.arriveAndAwaitAdvance(); // wait for traces to be reported
 

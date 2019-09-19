@@ -21,6 +21,7 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShi
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Scope;
@@ -51,10 +52,11 @@ public final class LateSpanFinishTest {
     // Late-finish the parent Span now
     parentSpan.finish();
 
+    // Children finish order is not guaranteed, but parent should finish *last*.
     List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
     assertEquals(3, spans.size());
-    assertEquals("task1", spans.get(0).getName());
-    assertEquals("task2", spans.get(1).getName());
+    assertTrue(spans.get(0).getName().startsWith("task"));
+    assertTrue(spans.get(1).getName().startsWith("task"));
     assertEquals("parent", spans.get(2).getName());
 
     assertSameTrace(spans);

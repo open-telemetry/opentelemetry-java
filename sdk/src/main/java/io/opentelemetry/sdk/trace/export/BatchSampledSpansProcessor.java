@@ -63,7 +63,7 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (!span.getSpanContext().getTraceOptions().isSampled()) {
+    if (!span.getSpanContext().getTraceFlags().isSampled()) {
       return;
     }
     worker.addSpan(span);
@@ -128,7 +128,7 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
      *     dropping.
      * @return this.
      */
-    public Builder setMaxQueueSieze(int maxQueueSize) {
+    public Builder setMaxQueueSize(int maxQueueSize) {
       this.maxQueueSize = maxQueueSize;
       return this;
     }
@@ -276,11 +276,11 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
       }
     }
 
-    // Exports the list of SpanData to all the ServiceHandlers.
-    private void onBatchExport(List<Span> spanDataList) {
+    // Exports the list of Span protos to all the ServiceHandlers.
+    private void onBatchExport(List<Span> spans) {
       // In case of any exception thrown by the service handlers continue to run.
       try {
-        spanExporter.export(spanDataList);
+        spanExporter.export(spans);
       } catch (Throwable t) {
         logger.log(Level.WARNING, "Exception thrown by the export.", t);
       }
