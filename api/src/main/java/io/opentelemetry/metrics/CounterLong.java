@@ -84,9 +84,6 @@ public interface CounterLong extends Metric<Handle> {
     /**
      * Sets the given value. The value must be larger than the current recorded value.
      *
-     * <p>In general should be used in combination with {@link #setCallback(Runnable)} where the
-     * recorded value is guaranteed to be monotonically increasing.
-     *
      * @param val the new value.
      * @since 0.1.0
      */

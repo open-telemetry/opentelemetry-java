@@ -103,6 +103,24 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
+  public ObserverDouble.Builder observerDoubleBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
+    return new NoopObserverDouble.NoopBuilder();
+  }
+
+  @Override
+  public ObserverLong.Builder observerLongBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    Utils.checkArgument(
+        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        ERROR_MESSAGE_INVALID_NAME);
+    return new NoopObserverLong.NoopBuilder();
+  }
+
+  @Override
   public MeasureBatchRecorder newMeasureBatchRecorder() {
     return new NoopMeasureBatchRecorder();
   }
@@ -128,11 +146,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopHandle getDefaultHandle() {
       return new NoopHandle();
-    }
-
-    @Override
-    public void setCallback(Runnable metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
     @Override
@@ -212,11 +225,6 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void setCallback(Runnable metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
-    }
-
-    @Override
     public void removeHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
@@ -290,11 +298,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopHandle getDefaultHandle() {
       return NoopHandle.INSTANCE;
-    }
-
-    @Override
-    public void setCallback(Runnable metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
     @Override
@@ -376,11 +379,6 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void setCallback(Runnable metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
-    }
-
-    @Override
     public void removeHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
@@ -455,11 +453,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopHandle getDefaultHandle() {
       return NoopHandle.INSTANCE;
-    }
-
-    @Override
-    public void setCallback(Runnable metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
     @Override
@@ -549,11 +542,6 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void setCallback(Runnable metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
-    }
-
-    @Override
     public void removeHandle(List<String> labelValues) {
       Utils.checkNotNull(labelValues, "labelValues");
     }
@@ -614,6 +602,152 @@ public final class DefaultMeter implements Meter {
       @Override
       public MeasureLong build() {
         return new NoopMeasureLong(labelKeysSize);
+      }
+    }
+  }
+
+  @Immutable
+  private static final class NoopObserverDouble implements ObserverDouble {
+    private final int labelKeysSize;
+
+    private NoopObserverDouble(int labelKeysSize) {
+      this.labelKeysSize = labelKeysSize;
+    }
+
+    @Override
+    public NoopHandle getHandle(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+      Utils.checkArgument(
+          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
+      return NoopHandle.INSTANCE;
+    }
+
+    @Override
+    public NoopHandle getDefaultHandle() {
+      return NoopHandle.INSTANCE;
+    }
+
+    @Override
+    public void removeHandle(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+    }
+
+    @Override
+    public void setCallback(Callback<Result> metricUpdater) {
+      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    }
+
+    /** No-op implementations of Handle class. */
+    @Immutable
+    private static final class NoopHandle implements Handle {
+      private static final NoopHandle INSTANCE = new NoopHandle();
+    }
+
+    private static final class NoopBuilder implements ObserverDouble.Builder {
+      private int labelKeysSize = 0;
+
+      @Override
+      public NoopBuilder setDescription(String description) {
+        Utils.checkNotNull(description, "description");
+        return this;
+      }
+
+      @Override
+      public NoopBuilder setUnit(String unit) {
+        Utils.checkNotNull(unit, "unit");
+        return this;
+      }
+
+      @Override
+      public NoopBuilder setLabelKeys(List<String> labelKeys) {
+        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
+        labelKeysSize = labelKeys.size();
+        return this;
+      }
+
+      @Override
+      public NoopBuilder setConstantLabels(Map<String, String> constantLabels) {
+        Utils.checkMapKeysNotNull(
+            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+        return this;
+      }
+
+      @Override
+      public ObserverDouble build() {
+        return new NoopObserverDouble(labelKeysSize);
+      }
+    }
+  }
+
+  @Immutable
+  private static final class NoopObserverLong implements ObserverLong {
+    private final int labelKeysSize;
+
+    private NoopObserverLong(int labelKeysSize) {
+      this.labelKeysSize = labelKeysSize;
+    }
+
+    @Override
+    public NoopHandle getHandle(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+      Utils.checkArgument(
+          labelKeysSize == labelValues.size(), "Label Keys and Label Values don't have same size.");
+      return NoopHandle.INSTANCE;
+    }
+
+    @Override
+    public NoopHandle getDefaultHandle() {
+      return NoopHandle.INSTANCE;
+    }
+
+    @Override
+    public void removeHandle(List<String> labelValues) {
+      Utils.checkNotNull(labelValues, "labelValues");
+    }
+
+    @Override
+    public void setCallback(Callback<Result> metricUpdater) {
+      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    }
+
+    /** No-op implementations of Handle class. */
+    @Immutable
+    private static final class NoopHandle implements Handle {
+      private static final NoopHandle INSTANCE = new NoopHandle();
+    }
+
+    private static final class NoopBuilder implements ObserverLong.Builder {
+      private int labelKeysSize = 0;
+
+      @Override
+      public NoopBuilder setDescription(String description) {
+        Utils.checkNotNull(description, "description");
+        return this;
+      }
+
+      @Override
+      public NoopBuilder setUnit(String unit) {
+        Utils.checkNotNull(unit, "unit");
+        return this;
+      }
+
+      @Override
+      public NoopBuilder setLabelKeys(List<String> labelKeys) {
+        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
+        labelKeysSize = labelKeys.size();
+        return this;
+      }
+
+      @Override
+      public NoopBuilder setConstantLabels(Map<String, String> constantLabels) {
+        Utils.checkMapKeysNotNull(
+            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+        return this;
+      }
+
+      @Override
+      public ObserverLong build() {
+        return new NoopObserverLong(labelKeysSize);
       }
     }
   }
