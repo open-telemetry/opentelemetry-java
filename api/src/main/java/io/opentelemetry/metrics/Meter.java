@@ -196,7 +196,7 @@ public interface Meter {
    *
    * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
-   * @return a new builder for a {@code MeasureDouble}.
+   * @return a new builder for a {@code ObserverDouble}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
