@@ -33,9 +33,6 @@ import javax.annotation.concurrent.Immutable;
  *   <li>LastValue
  * </ul>
  *
- * <p>When creating a {@link View}, one {@link Aggregation} needs to be specified as how to
- * aggregate {@code MeasureValue}s.
- *
  * @since 0.1.0
  */
 @Immutable

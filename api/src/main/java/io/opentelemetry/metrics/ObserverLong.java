@@ -23,7 +23,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>Example:
  *
- * <pre><code>
+ * <pre>{@code
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeter();
@@ -36,7 +36,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void init() {
  *     observer.setCallback(
- *         new ObserverLong.Callback<Result>() {
+ *         new ObserverLong.Callback<ObserverLong.Result>() {
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(Result result) {
@@ -45,12 +45,14 @@ import javax.annotation.concurrent.ThreadSafe;
  *         });
  *   }
  * }
- * </code></pre>
+ * }</pre>
  *
  * @since 0.1.0
  */
 @ThreadSafe
 public interface ObserverLong extends Observer<ObserverLong.Result> {
+
+  /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface Result {
     void put(Handle handle, long value);
   }
