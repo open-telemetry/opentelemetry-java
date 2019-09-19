@@ -34,6 +34,7 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.util.Links;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -127,7 +128,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
       Resource resource,
-      Map<String, AttributeValue> attributes) {
+      Map<String, AttributeValue> attributes,
+      List<Link> links) {
     RecordEventsReadableSpan span =
         new RecordEventsReadableSpan(
             context,
@@ -139,7 +141,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             timestampConverter,
             clock,
             resource,
-            attributes);
+            attributes,
+            links);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     spanProcessor.onStart(span);
@@ -480,7 +483,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
       Resource resource,
-      Map<String, AttributeValue> attributes) {
+      Map<String, AttributeValue> attributes,
+      List<Link> links) {
     this.context = context;
     this.parentSpanId = parentSpanId;
     this.name = name;
@@ -496,6 +500,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     startNanoTime = clock.nowNanos();
     if (!attributes.isEmpty()) {
       getInitializedAttributes().putAll(attributes);
+    }
+    if (!links.isEmpty()) {
+      getInitializedLinks().addAll(links);
     }
   }
 

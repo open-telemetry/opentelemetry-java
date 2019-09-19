@@ -36,6 +36,7 @@ import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import io.opentelemetry.trace.util.Links;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -190,7 +191,8 @@ class SpanBuilderSdk implements Span.Builder {
         timestampConverter,
         clock,
         resource,
-        samplingDecision.attributes());
+        samplingDecision.attributes(),
+        links != null ? links : Collections.<Link>emptyList());
   }
 
   @Nullable

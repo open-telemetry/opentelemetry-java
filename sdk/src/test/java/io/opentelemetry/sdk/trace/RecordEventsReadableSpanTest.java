@@ -505,7 +505,8 @@ public class RecordEventsReadableSpanTest {
             timestampConverter,
             testClock,
             resource,
-            attributes);
+            attributes,
+            Collections.<Link>emptyList());
     Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span);
     return span;
   }
