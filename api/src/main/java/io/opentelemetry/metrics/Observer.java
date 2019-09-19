@@ -34,7 +34,7 @@ public interface Observer<R> extends Metric<Observer.Handle> {
   interface Handle {}
 
   /**
-   * A {@code Handle} for a {@code MeasureLong}.
+   * A {@code Callback} for a {@code Observer}.
    *
    * @since 0.1.0
    */
