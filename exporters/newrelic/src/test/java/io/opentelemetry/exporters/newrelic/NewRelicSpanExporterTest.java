@@ -18,11 +18,16 @@ package io.opentelemetry.exporters.newrelic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.common.primitives.Longs;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import com.newrelic.telemetry.Attributes;
+import com.newrelic.telemetry.exceptions.ResponseException;
+import com.newrelic.telemetry.exceptions.RetryWithBackoffException;
+import com.newrelic.telemetry.exceptions.RetryWithRequestedWaitException;
+import com.newrelic.telemetry.exceptions.RetryWithSplitException;
 import com.newrelic.telemetry.spans.SpanBatch;
 import com.newrelic.telemetry.spans.SpanBatchSender;
 import io.opentelemetry.proto.trace.v1.AttributeValue;
@@ -31,6 +36,7 @@ import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -157,5 +163,87 @@ class NewRelicSpanExporterTest {
 
     assertEquals(ResultCode.SUCCESS, result);
     verify(spanBatchSender).sendBatch(expected);
+  }
+
+  @Test
+  void testRetryWithRequestedWaitException() throws ResponseException {
+    byte[] spanIdBytes = Longs.toByteArray(1234565L);
+    com.newrelic.telemetry.spans.Span span1 =
+        com.newrelic.telemetry.spans.Span.builder("000000000012d685")
+            .timestamp(1000456)
+            .attributes(new Attributes().put("error.message", "RetryWithRequestedWaitException"))
+            .build();
+    SpanBatch expected =
+        new SpanBatch(Collections.singleton(span1), new Attributes().put("host", "localhost"));
+
+    NewRelicSpanExporter testClass =
+        new NewRelicSpanExporter(spanBatchSender, new Attributes().put("host", "localhost"));
+
+    Span inputSpan =
+        Span.newBuilder()
+            .setSpanId(ByteString.copyFrom(spanIdBytes))
+            .setStartTime(Timestamp.newBuilder().setSeconds(1000).setNanos(456_000_000).build())
+            .setStatus(Status.newBuilder().setMessage("RetryWithRequestedWaitException"))
+            .build();
+    ;
+    when(spanBatchSender.sendBatch(expected))
+        .thenThrow(new RetryWithRequestedWaitException(1, TimeUnit.SECONDS));
+
+    ResultCode result = testClass.export(Collections.singletonList(inputSpan));
+    assertEquals(ResultCode.FAILED_RETRYABLE, result);
+  }
+
+  @Test
+  void testRetryWithBackoffException() throws ResponseException {
+    byte[] spanIdBytes = Longs.toByteArray(1234565L);
+    com.newrelic.telemetry.spans.Span span1 =
+        com.newrelic.telemetry.spans.Span.builder("000000000012d685")
+            .timestamp(1000456)
+            .attributes(new Attributes().put("error.message", "RetryWithBackoffException"))
+            .build();
+    SpanBatch expected =
+        new SpanBatch(Collections.singleton(span1), new Attributes().put("host", "localhost"));
+
+    NewRelicSpanExporter testClass =
+        new NewRelicSpanExporter(spanBatchSender, new Attributes().put("host", "localhost"));
+
+    Span inputSpan =
+        Span.newBuilder()
+            .setSpanId(ByteString.copyFrom(spanIdBytes))
+            .setStartTime(Timestamp.newBuilder().setSeconds(1000).setNanos(456_000_000).build())
+            .setStatus(Status.newBuilder().setMessage("RetryWithBackoffException"))
+            .build();
+
+    when(spanBatchSender.sendBatch(expected)).thenThrow(new RetryWithBackoffException());
+
+    ResultCode result = testClass.export(Collections.singletonList(inputSpan));
+    assertEquals(ResultCode.FAILED_RETRYABLE, result);
+  }
+
+  @Test
+  void testResultCodeFailedNotRetryable() throws ResponseException {
+    byte[] spanIdBytes = Longs.toByteArray(1234565L);
+    com.newrelic.telemetry.spans.Span span1 =
+        com.newrelic.telemetry.spans.Span.builder("000000000012d685")
+            .timestamp(1000456)
+            .attributes(new Attributes().put("error.message", "Not Retryable"))
+            .build();
+    SpanBatch expected =
+        new SpanBatch(Collections.singleton(span1), new Attributes().put("host", "localhost"));
+
+    NewRelicSpanExporter testClass =
+        new NewRelicSpanExporter(spanBatchSender, new Attributes().put("host", "localhost"));
+
+    Span inputSpan =
+        Span.newBuilder()
+            .setSpanId(ByteString.copyFrom(spanIdBytes))
+            .setStartTime(Timestamp.newBuilder().setSeconds(1000).setNanos(456_000_000).build())
+            .setStatus(Status.newBuilder().setMessage("Not Retryable"))
+            .build();
+
+    when(spanBatchSender.sendBatch(expected)).thenThrow(new RetryWithSplitException());
+
+    ResultCode result = testClass.export(Collections.singletonList(inputSpan));
+    assertEquals(ResultCode.FAILED_NOT_RETRYABLE, result);
   }
 }
