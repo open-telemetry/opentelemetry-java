@@ -38,11 +38,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
 
-public class SpanBatchAdapter {
+class SpanBatchAdapter {
 
   private final Attributes commonAttributes;
 
-  public SpanBatchAdapter(Attributes commonAttributes) {
+  SpanBatchAdapter(Attributes commonAttributes) {
     this.commonAttributes = commonAttributes;
   }
 
