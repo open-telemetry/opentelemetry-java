@@ -56,17 +56,6 @@ public interface Metric<H> {
   H getDefaultHandle();
 
   /**
-   * Sets a callback that gets executed every time before exporting this metric.
-   *
-   * <p>Evaluation is deferred until needed, if this {@code Metric} is not exported then it will
-   * never be called.
-   *
-   * @param metricUpdater the callback to be executed before export.
-   * @since 0.1.0
-   */
-  void setCallback(Runnable metricUpdater);
-
-  /**
    * Removes the {@code Handle} from the metric, if it is present. i.e. references to previous
    * {@code Handle} are invalid (not part of the metric).
    *
