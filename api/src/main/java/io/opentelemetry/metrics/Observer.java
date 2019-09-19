@@ -26,7 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 public interface Observer<R> extends Metric<Observer.Handle> {
   /**
-   * A {@code Handle} for a {@code ObserverDouble}.
+   * A {@code Handle} for a {@code Observer}.
    *
    * @since 0.1.0
    */
