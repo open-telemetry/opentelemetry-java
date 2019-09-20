@@ -29,17 +29,18 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeter();
- *   private static final MeasureLong measure =
+ *   private static final MeasureDouble measure =
  *       meter.
- *           .measureLongBuilder("doWork_latency")
+ *           .measureDoubleBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
+ *   private static final MeasureDouble.Handle defaultHandle = measure.getDefaultHandle();
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
  *      // Your code here.
- *      measure.record((System.nanoTime() - startTime) / 1e6);
+ *      defaultHandle.record((System.nanoTime() - startTime) / 1e6);
  *   }
  * }
  * }</pre>

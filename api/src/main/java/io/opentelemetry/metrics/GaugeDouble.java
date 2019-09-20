@@ -40,7 +40,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   // It is recommended to keep a reference of a Handle.
  *   private static final GaugeDouble.Handle inboundHandle =
  *       gauge.getHandle(Collections.singletonList("SomeWork"));
- *    private static final GaugeDouble.Handle defaultHandle = gauge.getDefaultHandle();
+ *   private static final GaugeDouble.Handle defaultHandle = gauge.getDefaultHandle();
  *
  *   void doDefault() {
  *      // Your code here.
