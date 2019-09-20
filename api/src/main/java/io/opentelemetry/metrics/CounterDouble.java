@@ -40,8 +40,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   // It is recommended to keep a reference of a Handle.
  *   private static final CounterDouble.Handle inboundHandle =
  *       counter.getHandle(Collections.singletonList("SomeWork"));
- *   private static final CounterDouble.Handle defaultHandle =
- *       counter.getDefaultHandle();
+ *   private static final CounterDouble.Handle defaultHandle = counter.getDefaultHandle();
  *
  *   void doDefaultWork() {
  *      // Your code here.
