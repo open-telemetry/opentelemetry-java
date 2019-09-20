@@ -24,53 +24,61 @@ We would love to hear from the larger community: please provide feedback proacti
 Please refer to the [contribution guide](https://github.com/newrelic-forks/opentelemetry-java/blob/master/CONTRIBUTING.md)
 on how to setup and contribute!
 
-## Plan
+## Snapshots
 
-[Please review the roadmap here](https://medium.com/opentracing/a-roadmap-to-convergence-b074e5815289).
+Snapshots based out the `master` branch are available for `opentelemetry-api`, `opentelemetry-sdk` and the rest of the artifacts:
 
-In the coming months [we plan to merge the OpenCensus and OpenTracing
-projects](https://medium.com/opentracing/merging-opentracing-and-opencensus-f0fe9c7ca6f0).
-The technical committee will drive the merge effort. We’ve identified areas that
-require deeper discussion and areas that merely require alignment around
-terminology and usage patterns.
+### Maven
 
-We have a three-step plan for the project merge: 
+```xml
+  <repositories>
+    <repository>
+      <id>oss.sonatype.org-snapshot</id>
+      <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+    </repository>
+  </repositories>
 
-1. spike of merged interfaces,
-2. beta release of new project binaries, and
-3. kicking off the work towards a 1.0 release.
+  <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-sdk</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+```
 
-### Spike of merged interfaces
+### Gradle
 
-Spike API merge will happen in a separate repository, focused on Java
-specifically. The main goal of the spike is to make sure that we have a clear
-path forward, and that there will be no unforeseen technical issues blocking the
-merge of the projects (while staying true to our  declared goals for the merge).
+```groovy
+repositories {
+	maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+}
 
-As a result of the spike we plan to produce:
+dependencies {
+	compile('io.opentelemetry:opentelemetry-sdk:0.1.0-SNAPSHOT')
+}
+```
 
-- Alpha version of a merged interface in new repository.
-- Rough port of OpenCensus implementation as an implementation of choice for
-  this API.
-- Rough OpenTracing bridge to new interface.
-- Supplemental documentation and design documents
+## Release Schedule
 
-We expect this spike will take us a few weeks.
+OpenTelemetry Java is under active development. Our goal is to release an
+_alpha_ version of the library at the end of September 2019. This release isn't
+guaranteed to conform to a specific version of the specification, and future
+releases will not attempt to maintain backwards compatibility with the alpha
+release.
 
-### Beta release of a new project
-
-Once we have cleared out the path - we plan to initiate a transition of active
-contribution and discussions from OpenCensus and OpenTracing to the new project.
-We will
-
-- Clean up OpenCensus into official SDK of new project
-- Release an official OpenTracing bridge to new Interface
-
-We will minimize the duration of this transition so that users can switch to the
-new API as seamlessly as possible, and contributors can quickly ensure that
-their work is compatible with future versions. We will also encourage all
-contributors to start working in the new project once the merger announced. So
-there will be no time of duplicative contributions.
+| Component                   | Version | Target Date       |
+| --------------------------- | ------- | ----------------- |
+| Tracing API                 | Alpha   | September 30 2019 |
+| Tracing SDK                 | Alpha   | September 30 2019 |
+| Metrics API                 | Alpha   | September 30 2019 |
+| Metrics SDK                 | Alpha   | September 30 2019 |
+| Jaeger Trace Exporter       | Alpha   | September 30 2019 |
+| Zipkin Trace Exporter       | Alpha   | Unknown           |
+| Prometheus Metrics Exporter | Alpha   | Unknown           |
+| Context Propagation         | Alpha   | September 30 2019 |
+| OpenTracing Bridge          | Alpha   | September 30 2019 |
+| OpenCensus Bridge           | Alpha   | Unknown           |
 
 ### Kick off the work towards 1.0
 
