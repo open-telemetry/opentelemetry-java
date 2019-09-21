@@ -3,7 +3,6 @@ description = 'OpenTelemetry Contrib Java Servlet Plugin'
 dependencies {
     api project(':opentelemetry-api')
     api project(':opentelemetry-contrib-http-base')
-    api 'io.github.azagniotov:ant-style-path-matcher:1.0.0'
 
     annotationProcessor libraries.auto_value
 
