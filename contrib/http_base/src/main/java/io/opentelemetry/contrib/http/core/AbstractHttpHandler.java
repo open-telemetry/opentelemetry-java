@@ -172,9 +172,6 @@ abstract class AbstractHttpHandler<Q, P> {
   final String getSpanName(Q request) {
     String spanName = extractor.getRoute(request);
     if (spanName == null) {
-      spanName = extractor.getPath(request);
-    }
-    if (spanName == null) {
       spanName = "/";
     }
     if (!spanName.startsWith("/")) {
@@ -222,7 +219,6 @@ abstract class AbstractHttpHandler<Q, P> {
    *
    * @param context request specific {@link HttpRequestContext}
    * @return {@link Span} associated with the request.
-   * @since 0.19
    */
   public Span getSpanFromContext(HttpRequestContext context) {
     checkNotNull(context, "context is required");
