@@ -1,0 +1,24 @@
+description = 'OpenTelemetry Contrib Java Servlet Plugin'
+
+dependencies {
+    api project(':opentelemetry-api')
+    api project(':opentelemetry-contrib-http-base')
+
+    annotationProcessor libraries.auto_value
+
+    implementation libraries.guava
+    implementation 'jakarta.servlet:jakarta.servlet-api:4.0.3'
+
+    testImplementation project(':opentelemetry-sdk')
+    testImplementation project(':opentelemetry-sdk-contrib-inmemory-export')
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    // Runtime metrics are not android compatible, because we have only one artifact for contrib,
+    // disable the android requirement for the moment.
+    // signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+}
+
+test {
+    systemProperty("java.util.logging.config.file", "${projectDir}/src/test/resources/test-logging.properties")
+
+}
