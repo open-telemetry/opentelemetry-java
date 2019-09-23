@@ -62,6 +62,14 @@ public class SpanIdTest {
   }
 
   @Test
+  public void asLowerBase16() {
+    SpanId spanId = new SpanId(43L);
+    byte[] idAsBytes = new byte[8];
+    spanId.copyBytesTo(idAsBytes, 0);
+    assertThat(SpanId.asLowerBase16(idAsBytes)).isEqualTo("000000000000002b");
+  }
+
+  @Test
   public void spanId_CompareTo() {
     assertThat(first.compareTo(second)).isGreaterThan(0);
     assertThat(second.compareTo(first)).isLessThan(0);
