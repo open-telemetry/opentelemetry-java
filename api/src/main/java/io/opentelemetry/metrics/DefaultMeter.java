@@ -165,32 +165,10 @@ public final class DefaultMeter implements Meter {
       public void set(long val) {}
     }
 
-    private static final class NoopBuilder implements GaugeLong.Builder {
-      private int labelKeysSize = 0;
-
+    private static final class NoopBuilder extends NoopAbstractBuilder<Builder, GaugeLong>
+        implements Builder {
       @Override
-      public Builder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public Builder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public Builder setLabelKeys(List<String> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public Builder setConstantLabels(Map<String, String> constantLabels) {
-        Utils.checkMapKeysNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      protected Builder getThis() {
         return this;
       }
 
@@ -241,32 +219,10 @@ public final class DefaultMeter implements Meter {
       public void set(double val) {}
     }
 
-    private static final class NoopBuilder implements GaugeDouble.Builder {
-      private int labelKeysSize = 0;
-
+    private static final class NoopBuilder extends NoopAbstractBuilder<Builder, GaugeDouble>
+        implements Builder {
       @Override
-      public Builder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public Builder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public Builder setLabelKeys(List<String> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public Builder setConstantLabels(Map<String, String> constantLabels) {
-        Utils.checkMapKeysNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      protected Builder getThis() {
         return this;
       }
 
@@ -319,32 +275,10 @@ public final class DefaultMeter implements Meter {
       public void set(double val) {}
     }
 
-    private static final class NoopBuilder implements CounterDouble.Builder {
-      private int labelKeysSize = 0;
-
+    private static final class NoopBuilder extends NoopAbstractBuilder<Builder, CounterDouble>
+        implements Builder {
       @Override
-      public Builder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public Builder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public Builder setLabelKeys(List<String> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public Builder setConstantLabels(Map<String, String> constantLabels) {
-        Utils.checkMapKeysNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      protected Builder getThis() {
         return this;
       }
 
@@ -397,32 +331,10 @@ public final class DefaultMeter implements Meter {
       public void set(long val) {}
     }
 
-    private static final class NoopBuilder implements CounterLong.Builder {
-      private int labelKeysSize = 0;
-
+    private static final class NoopBuilder extends NoopAbstractBuilder<Builder, CounterLong>
+        implements Builder {
       @Override
-      public Builder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public Builder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public Builder setLabelKeys(List<String> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public Builder setConstantLabels(Map<String, String> constantLabels) {
-        Utils.checkMapKeysNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      protected Builder getThis() {
         return this;
       }
 
@@ -484,32 +396,10 @@ public final class DefaultMeter implements Meter {
       }
     }
 
-    private static final class NoopBuilder implements MeasureDouble.Builder {
-      private int labelKeysSize = 0;
-
+    private static final class NoopBuilder extends NoopAbstractBuilder<Builder, MeasureDouble>
+        implements Builder {
       @Override
-      public Builder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public Builder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public Builder setLabelKeys(List<String> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public Builder setConstantLabels(Map<String, String> constantLabels) {
-        Utils.checkMapKeysNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      protected Builder getThis() {
         return this;
       }
 
@@ -570,32 +460,10 @@ public final class DefaultMeter implements Meter {
       }
     }
 
-    private static final class NoopBuilder implements MeasureLong.Builder {
-      private int labelKeysSize = 0;
-
+    private static final class NoopBuilder extends NoopAbstractBuilder<Builder, MeasureLong>
+        implements Builder {
       @Override
-      public NoopBuilder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public NoopBuilder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public NoopBuilder setLabelKeys(List<String> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public NoopBuilder setConstantLabels(Map<String, String> constantLabels) {
-        Utils.checkMapKeysNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      protected Builder getThis() {
         return this;
       }
 
@@ -643,32 +511,10 @@ public final class DefaultMeter implements Meter {
       private static final NoopHandle INSTANCE = new NoopHandle();
     }
 
-    private static final class NoopBuilder implements ObserverDouble.Builder {
-      private int labelKeysSize = 0;
-
+    private static final class NoopBuilder extends NoopAbstractBuilder<Builder, ObserverDouble>
+        implements Builder {
       @Override
-      public NoopBuilder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public NoopBuilder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public NoopBuilder setLabelKeys(List<String> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public NoopBuilder setConstantLabels(Map<String, String> constantLabels) {
-        Utils.checkMapKeysNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      protected Builder getThis() {
         return this;
       }
 
@@ -716,32 +562,10 @@ public final class DefaultMeter implements Meter {
       private static final NoopHandle INSTANCE = new NoopHandle();
     }
 
-    private static final class NoopBuilder implements ObserverLong.Builder {
-      private int labelKeysSize = 0;
-
+    private static final class NoopBuilder extends NoopAbstractBuilder<Builder, ObserverLong>
+        implements Builder {
       @Override
-      public NoopBuilder setDescription(String description) {
-        Utils.checkNotNull(description, "description");
-        return this;
-      }
-
-      @Override
-      public NoopBuilder setUnit(String unit) {
-        Utils.checkNotNull(unit, "unit");
-        return this;
-      }
-
-      @Override
-      public NoopBuilder setLabelKeys(List<String> labelKeys) {
-        Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-        labelKeysSize = labelKeys.size();
-        return this;
-      }
-
-      @Override
-      public NoopBuilder setConstantLabels(Map<String, String> constantLabels) {
-        Utils.checkMapKeysNotNull(
-            Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      protected Builder getThis() {
         return this;
       }
 
@@ -777,5 +601,43 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void record() {}
+  }
+
+  private abstract static class NoopAbstractBuilder<B extends Metric.Builder<B, V>, V>
+      implements Metric.Builder<B, V> {
+    protected int labelKeysSize = 0;
+
+    @Override
+    public B setDescription(String description) {
+      Utils.checkNotNull(description, "description");
+      return getThis();
+    }
+
+    @Override
+    public B setUnit(String unit) {
+      Utils.checkNotNull(unit, "unit");
+      return getThis();
+    }
+
+    @Override
+    public B setLabelKeys(List<String> labelKeys) {
+      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
+      labelKeysSize = labelKeys.size();
+      return getThis();
+    }
+
+    @Override
+    public B setConstantLabels(Map<String, String> constantLabels) {
+      Utils.checkMapKeysNotNull(
+          Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      return getThis();
+    }
+
+    @Override
+    public B setMonotonic(boolean monotonic) {
+      return getThis();
+    }
+
+    protected abstract B getThis();
   }
 }

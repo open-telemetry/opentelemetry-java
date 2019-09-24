@@ -114,6 +114,19 @@ public interface Metric<H> {
     B setConstantLabels(Map<String, String> constantLabels);
 
     /**
+     * Sets the monotonicity property for this {@code Metric}.
+     *
+     * <p>If this is a Gauge or Observer all values should be greater than the previously recorded
+     * values.
+     *
+     * <p>If this is a Counter or Measure all recorded values should be positive.
+     *
+     * @param monotonic {@code true} if this {@code Metric} is monotonically increasing.
+     * @return this.
+     */
+    B setMonotonic(boolean monotonic);
+
+    /**
      * Builds and returns a {@code Metric} with the desired options.
      *
      * @return a {@code Metric} with the desired options.
