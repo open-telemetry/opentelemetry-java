@@ -78,6 +78,7 @@ public final class MemoryPools {
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
+            .setMonotonic(false)
             .build();
     final Handle usedHeap = areaMetric.getHandle(Arrays.asList(USED, HEAP));
     final Handle usedNonHeap = areaMetric.getHandle(Arrays.asList(USED, NON_HEAP));
@@ -111,6 +112,7 @@ public final class MemoryPools {
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))
+            .setMonotonic(false)
             .build();
     final List<Handle> usedHandles = new ArrayList<>(poolBeans.size());
     final List<Handle> committedHandles = new ArrayList<>(poolBeans.size());

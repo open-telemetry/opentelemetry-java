@@ -91,5 +91,5 @@ public interface CounterLong extends Metric<Handle> {
   }
 
   /** Builder class for {@link CounterLong}. */
-  interface Builder extends Metric.Builder<Builder, CounterLong> {}
+  interface Builder extends Counter.Builder<Builder, CounterLong> {}
 }

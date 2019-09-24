@@ -63,6 +63,7 @@ public final class GarbageCollector {
             .setDescription("Time spent in a given JVM garbage collector in milliseconds.")
             .setUnit("ms")
             .setLabelKeys(Collections.singletonList(GC_LABEL_KEY))
+            .setMonotonic(true)
             .build();
     final List<ObserverLong.Handle> handles = new ArrayList<>(garbageCollectors.size());
     for (final GarbageCollectorMXBean gc : garbageCollectors) {
