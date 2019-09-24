@@ -29,7 +29,6 @@ import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
@@ -104,7 +103,7 @@ public class RecordEventsReadableSpanTest {
         spanProto,
         Attributes.getDefaultInstance(),
         TimedEvents.getDefaultInstance(),
-        Links.getDefaultInstance(),
+        TraceProtoUtils.toProtoLinks(Collections.singletonList(link), 0),
         SPAN_NAME,
         startTime,
         startTime,
@@ -283,20 +282,6 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void addLink() {
-    RecordEventsReadableSpan span = createTestRootSpan();
-    try {
-      span.addLink(DefaultSpan.getInvalid().getContext());
-      span.addLink(spanContext, attributes);
-      span.addLink(io.opentelemetry.trace.util.Links.create(DefaultSpan.getInvalid().getContext()));
-    } finally {
-      span.end();
-    }
-    Span spanProto = span.toSpanProto();
-    assertThat(spanProto.getLinks().getLinkCount()).isEqualTo(3);
-  }
-
-  @Test
   public void droppingAttributes() {
     final int maxNumberOfAttributes = 8;
     TraceConfig traceConfig =
@@ -434,35 +419,6 @@ public class RecordEventsReadableSpanTest {
     }
   }
 
-  @Test
-  public void droppingLinks() {
-    final int maxNumberOfLinks = 8;
-    TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(maxNumberOfLinks).build();
-    RecordEventsReadableSpan span = createTestSpan(traceConfig);
-    try {
-      for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
-        span.addLink(link);
-      }
-      Span spanProto = span.toSpanProto();
-      assertThat(spanProto.getLinks().getDroppedLinksCount()).isEqualTo(maxNumberOfLinks);
-      assertThat(spanProto.getLinks().getLinkList().size()).isEqualTo(maxNumberOfLinks);
-      for (int i = 0; i < maxNumberOfLinks; i++) {
-        assertThat(spanProto.getLinks().getLinkList().get(i))
-            .isEqualTo(TraceProtoUtils.toProtoLink(link));
-      }
-    } finally {
-      span.end();
-    }
-    Span spanProto = span.toSpanProto();
-    assertThat(spanProto.getLinks().getDroppedLinksCount()).isEqualTo(maxNumberOfLinks);
-    assertThat(spanProto.getLinks().getLinkList().size()).isEqualTo(maxNumberOfLinks);
-    for (int i = 0; i < maxNumberOfLinks; i++) {
-      assertThat(spanProto.getLinks().getLinkList().get(i))
-          .isEqualTo(TraceProtoUtils.toProtoLink(link));
-    }
-  }
-
   private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<String, AttributeValue> attributes) {
     return createTestSpan(Kind.INTERNAL, TraceConfig.getDefault(), null, attributes);
@@ -506,7 +462,8 @@ public class RecordEventsReadableSpanTest {
             testClock,
             resource,
             attributes,
-            Collections.<Link>emptyList());
+            Collections.singletonList(link),
+            1);
     Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span);
     return span;
   }
@@ -520,7 +477,6 @@ public class RecordEventsReadableSpanTest {
     }
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addEvent(event);
-    span.addLink(link);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addChild();
     span.updateName(SPAN_NEW_NAME);
