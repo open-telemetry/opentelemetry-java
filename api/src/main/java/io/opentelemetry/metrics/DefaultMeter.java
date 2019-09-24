@@ -168,6 +168,11 @@ public final class DefaultMeter implements Meter {
     private static final class NoopBuilder extends NoopAbstractBuilder<Builder, GaugeLong>
         implements Builder {
       @Override
+      public Builder setMonotonic(boolean monotonic) {
+        return getThis();
+      }
+
+      @Override
       protected Builder getThis() {
         return this;
       }
@@ -221,6 +226,11 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder extends NoopAbstractBuilder<Builder, GaugeDouble>
         implements Builder {
+      @Override
+      public Builder setMonotonic(boolean monotonic) {
+        return getThis();
+      }
+
       @Override
       protected Builder getThis() {
         return this;
@@ -278,6 +288,11 @@ public final class DefaultMeter implements Meter {
     private static final class NoopBuilder extends NoopAbstractBuilder<Builder, CounterDouble>
         implements Builder {
       @Override
+      public Builder setMonotonic(boolean monotonic) {
+        return getThis();
+      }
+
+      @Override
       protected Builder getThis() {
         return this;
       }
@@ -333,6 +348,11 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder extends NoopAbstractBuilder<Builder, CounterLong>
         implements Builder {
+      @Override
+      public Builder setMonotonic(boolean monotonic) {
+        return getThis();
+      }
+
       @Override
       protected Builder getThis() {
         return this;
@@ -514,6 +534,11 @@ public final class DefaultMeter implements Meter {
     private static final class NoopBuilder extends NoopAbstractBuilder<Builder, ObserverDouble>
         implements Builder {
       @Override
+      public Builder setMonotonic(boolean monotonic) {
+        return getThis();
+      }
+
+      @Override
       protected Builder getThis() {
         return this;
       }
@@ -564,6 +589,11 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder extends NoopAbstractBuilder<Builder, ObserverLong>
         implements Builder {
+      @Override
+      public Builder setMonotonic(boolean monotonic) {
+        return getThis();
+      }
+
       @Override
       protected Builder getThis() {
         return this;
@@ -630,11 +660,6 @@ public final class DefaultMeter implements Meter {
     public B setConstantLabels(Map<String, String> constantLabels) {
       Utils.checkMapKeysNotNull(
           Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
-      return getThis();
-    }
-
-    @Override
-    public B setMonotonic(boolean monotonic) {
       return getThis();
     }
 

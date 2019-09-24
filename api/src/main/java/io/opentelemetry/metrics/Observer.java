@@ -54,5 +54,16 @@ public interface Observer<R> extends Metric<Observer.Handle> {
   void setCallback(Callback<R> metricUpdater);
 
   /** Builder class for {@link Observer}. */
-  interface Builder<B extends Metric.Builder<B, V>, V> extends Metric.Builder<B, V> {}
+  interface Builder<B extends Metric.Builder<B, V>, V> extends Metric.Builder<B, V> {
+    /**
+     * Sets the monotonicity property for this {@code Metric}. If {@code true} successive values are
+     * expected to rise monotonically.
+     *
+     * <p>Default value is {@code false}
+     *
+     * @param monotonic {@code true} successive values are expected to rise monotonically.
+     * @return this.
+     */
+    B setMonotonic(boolean monotonic);
+  }
 }
