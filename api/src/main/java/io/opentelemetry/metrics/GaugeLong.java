@@ -38,12 +38,12 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
  *   // It is recommended to keep a reference of a Handle.
- *   private static final GaugeLong.Handle inboundHandle =
+ *   private static final GaugeLong.Handle someWorkHandle =
  *       gauge.getHandle(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      inboundHandle.set(15);
+ *      someWorkHandle.set(15);
  *   }
  *
  * }
