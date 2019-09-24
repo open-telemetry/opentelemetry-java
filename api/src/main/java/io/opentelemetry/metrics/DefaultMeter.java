@@ -274,9 +274,6 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void add(double delta) {}
-
-      @Override
-      public void set(double val) {}
     }
 
     private static final class NoopBuilder extends NoopAbstractBuilder<Builder, CounterDouble>
@@ -335,9 +332,6 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void add(long delta) {}
-
-      @Override
-      public void set(long val) {}
     }
 
     private static final class NoopBuilder extends NoopAbstractBuilder<Builder, CounterLong>
