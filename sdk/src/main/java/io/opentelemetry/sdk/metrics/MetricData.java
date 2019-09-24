@@ -20,6 +20,11 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.trace.Timestamp;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * A {@link MetricData} represents the data exported as part of aggregating one {@code Metric}.
+ *
+ * @since 0.1.0
+ */
 @Immutable
 @AutoValue
 public abstract class MetricData {
@@ -32,14 +37,6 @@ public abstract class MetricData {
    * @since 0.1.0
    */
   public abstract MetricDescriptor getMetricDescriptor();
-
-  /**
-   * Returns the type of this metric.
-   *
-   * @return the type of this metric.
-   * @since 0.1.0
-   */
-  public abstract Type getType();
 
   /**
    * Returns the start {@link Timestamp} of this {@code Metric}, usually the time when the metric
@@ -61,44 +58,8 @@ public abstract class MetricData {
 
   // TODO: Add TimeSeries/Point
 
-  /**
-   * The kind of metric. It describes how the data is reported.
-   *
-   * @since 0.1.0
-   */
-  public enum Type {
-
-    /**
-     * An instantaneous measurement of an int64 value.
-     *
-     * @since 0.1.0
-     */
-    NON_MONOTONIC_INT64,
-
-    /**
-     * An instantaneous measurement of a double value.
-     *
-     * @since 0.1.0
-     */
-    NON_MONOTONIC_DOUBLE,
-
-    /**
-     * An cumulative measurement of an int64 value.
-     *
-     * @since 0.1.0
-     */
-    MONOTONIC_INT64,
-
-    /**
-     * An cumulative measurement of a double value.
-     *
-     * @since 0.1.0
-     */
-    MONOTONIC_DOUBLE,
-  }
-
   static MetricData createInternal(
-      MetricDescriptor metricDescriptor, Type type, Timestamp startTimestamp, Timestamp timestamp) {
-    return new AutoValue_MetricData(metricDescriptor, type, startTimestamp, timestamp);
+      MetricDescriptor metricDescriptor, Timestamp startTimestamp, Timestamp timestamp) {
+    return new AutoValue_MetricData(metricDescriptor, startTimestamp, timestamp);
   }
 }

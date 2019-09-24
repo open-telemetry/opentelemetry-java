@@ -17,18 +17,55 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.internal.Utils;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
+/**
+ * {@link MetricDescriptor} defines metadata about the {@code MetricData} type and its schema.
+ *
+ * @since 0.1.0
+ */
 @Immutable
 @AutoValue
 public abstract class MetricDescriptor {
   MetricDescriptor() {}
+
+  /**
+   * The kind of metric. It describes how the data is reported.
+   *
+   * @since 0.1.0
+   */
+  public enum Type {
+
+    /**
+     * An instantaneous measurement of an int64 value.
+     *
+     * @since 0.1.0
+     */
+    NON_MONOTONIC_INT64,
+
+    /**
+     * An instantaneous measurement of a double value.
+     *
+     * @since 0.1.0
+     */
+    NON_MONOTONIC_DOUBLE,
+
+    /**
+     * An cumulative measurement of an int64 value.
+     *
+     * @since 0.1.0
+     */
+    MONOTONIC_INT64,
+
+    /**
+     * An cumulative measurement of a double value.
+     *
+     * @since 0.1.0
+     */
+    MONOTONIC_DOUBLE,
+  }
 
   /**
    * Returns the metric descriptor name.
@@ -55,6 +92,14 @@ public abstract class MetricDescriptor {
   public abstract String getUnit();
 
   /**
+   * Returns the type of this metric descriptor.
+   *
+   * @return the type of this metric descriptor.
+   * @since 0.1.0
+   */
+  public abstract Type getType();
+
+  /**
    * Returns the label keys associated with this metric descriptor.
    *
    * @return the label keys associated with this metric descriptor.
@@ -74,16 +119,9 @@ public abstract class MetricDescriptor {
       String name,
       String description,
       String unit,
+      Type type,
       List<String> labelKeys,
       Map<String, String> constantLabels) {
-    Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-    Utils.checkMapKeysNotNull(
-        Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
-    return new AutoValue_MetricDescriptor(
-        name,
-        description,
-        unit,
-        Collections.unmodifiableList(new ArrayList<>(labelKeys)),
-        Collections.unmodifiableMap(new HashMap<>(constantLabels)));
+    return new AutoValue_MetricDescriptor(name, description, unit, type, labelKeys, constantLabels);
   }
 }

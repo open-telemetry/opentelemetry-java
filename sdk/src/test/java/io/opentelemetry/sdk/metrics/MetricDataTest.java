@@ -18,13 +18,16 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.testing.EqualsTester;
 import io.opentelemetry.trace.Timestamp;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+/** Unit tests for {@link MetricData}. */
+@RunWith(JUnit4.class)
 public class MetricDataTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -33,6 +36,7 @@ public class MetricDataTest {
           "metric_name",
           "metric_description",
           "ms",
+          MetricDescriptor.Type.MONOTONIC_INT64,
           Collections.singletonList("key"),
           Collections.singletonMap("key_const", "value_const"));
   private static final Timestamp START_TIMESTAMP = Timestamp.fromMillis(1000);
@@ -41,10 +45,8 @@ public class MetricDataTest {
   @Test
   public void testGet() {
     MetricData metricData =
-        MetricData.createInternal(
-            METRIC_DESCRIPTOR, MetricData.Type.MONOTONIC_INT64, START_TIMESTAMP, TIMESTAMP);
+        MetricData.createInternal(METRIC_DESCRIPTOR, START_TIMESTAMP, TIMESTAMP);
     assertThat(metricData.getMetricDescriptor()).isEqualTo(METRIC_DESCRIPTOR);
-    assertThat(metricData.getType()).isEqualTo(MetricData.Type.MONOTONIC_INT64);
     assertThat(metricData.getStartTimestamp()).isEqualTo(START_TIMESTAMP);
     assertThat(metricData.getTimestamp()).isEqualTo(TIMESTAMP);
   }
@@ -53,44 +55,20 @@ public class MetricDataTest {
   public void create_NullDescriptor() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("metricDescriptor");
-    MetricData.createInternal(null, MetricData.Type.MONOTONIC_INT64, START_TIMESTAMP, TIMESTAMP);
-  }
-
-  @Test
-  public void create_NullType() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("type");
-    MetricData.createInternal(METRIC_DESCRIPTOR, null, START_TIMESTAMP, TIMESTAMP);
+    MetricData.createInternal(null, START_TIMESTAMP, TIMESTAMP);
   }
 
   @Test
   public void create_NullStartTimestamp() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("startTimestamp");
-    MetricData.createInternal(METRIC_DESCRIPTOR, MetricData.Type.MONOTONIC_INT64, null, TIMESTAMP);
+    MetricData.createInternal(METRIC_DESCRIPTOR, null, TIMESTAMP);
   }
 
   @Test
   public void create_NullTimestamp() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("timestamp");
-    MetricData.createInternal(
-        METRIC_DESCRIPTOR, MetricData.Type.MONOTONIC_INT64, START_TIMESTAMP, null);
-  }
-
-  @Test
-  public void testEquals() {
-    new EqualsTester()
-        .addEqualityGroup(
-            MetricData.createInternal(
-                METRIC_DESCRIPTOR, MetricData.Type.MONOTONIC_INT64, START_TIMESTAMP, TIMESTAMP),
-            MetricData.createInternal(
-                METRIC_DESCRIPTOR, MetricData.Type.MONOTONIC_INT64, START_TIMESTAMP, TIMESTAMP))
-        .addEqualityGroup(
-            MetricData.createInternal(
-                METRIC_DESCRIPTOR, MetricData.Type.NON_MONOTONIC_INT64, START_TIMESTAMP, TIMESTAMP),
-            MetricData.createInternal(
-                METRIC_DESCRIPTOR, MetricData.Type.NON_MONOTONIC_INT64, START_TIMESTAMP, TIMESTAMP))
-        .testEquals();
+    MetricData.createInternal(METRIC_DESCRIPTOR, START_TIMESTAMP, null);
   }
 }

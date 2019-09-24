@@ -18,8 +18,6 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.testing.EqualsTester;
-import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,10 +30,10 @@ import org.junit.runners.JUnit4;
 public class MetricDescriptorTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
-  private static final String METRIC_NAME_1 = "metric1";
-  private static final String METRIC_NAME_2 = "metric2";
+  private static final String METRIC_NAME = "metric";
   private static final String DESCRIPTION = "Metric description.";
   private static final String UNIT = "kb/s";
+  private static final MetricDescriptor.Type TYPE = MetricDescriptor.Type.MONOTONIC_INT64;
   private static final String KEY_1 = "key1";
   private static final String KEY_2 = "key2";
   private static final String VALUE_2 = "key2";
@@ -44,14 +42,16 @@ public class MetricDescriptorTest {
   public void testGet() {
     MetricDescriptor metricDescriptor =
         MetricDescriptor.createInternal(
-            METRIC_NAME_1,
+            METRIC_NAME,
             DESCRIPTION,
             UNIT,
+            TYPE,
             Collections.singletonList(KEY_1),
             Collections.singletonMap(KEY_2, VALUE_2));
-    assertThat(metricDescriptor.getName()).isEqualTo(METRIC_NAME_1);
+    assertThat(metricDescriptor.getName()).isEqualTo(METRIC_NAME);
     assertThat(metricDescriptor.getDescription()).isEqualTo(DESCRIPTION);
     assertThat(metricDescriptor.getUnit()).isEqualTo(UNIT);
+    assertThat(metricDescriptor.getType()).isEqualTo(TYPE);
     assertThat(metricDescriptor.getLabelKeys()).containsExactly(KEY_1);
     assertThat(metricDescriptor.getConstantLabels()).containsExactly(KEY_2, VALUE_2);
   }
@@ -64,6 +64,7 @@ public class MetricDescriptorTest {
         null,
         DESCRIPTION,
         UNIT,
+        TYPE,
         Collections.singletonList(KEY_1),
         Collections.singletonMap(KEY_2, VALUE_2));
   }
@@ -73,9 +74,10 @@ public class MetricDescriptorTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
     MetricDescriptor.createInternal(
-        METRIC_NAME_1,
+        METRIC_NAME,
         null,
         UNIT,
+        TYPE,
         Collections.singletonList(KEY_1),
         Collections.singletonMap(KEY_2, VALUE_2));
   }
@@ -85,8 +87,22 @@ public class MetricDescriptorTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
     MetricDescriptor.createInternal(
-        METRIC_NAME_1,
+        METRIC_NAME,
         DESCRIPTION,
+        null,
+        TYPE,
+        Collections.singletonList(KEY_1),
+        Collections.singletonMap(KEY_2, VALUE_2));
+  }
+
+  @Test
+  public void create_NullType() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("type");
+    MetricDescriptor.createInternal(
+        METRIC_NAME,
+        DESCRIPTION,
+        UNIT,
         null,
         Collections.singletonList(KEY_1),
         Collections.singletonMap(KEY_2, VALUE_2));
@@ -97,7 +113,7 @@ public class MetricDescriptorTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
     MetricDescriptor.createInternal(
-        METRIC_NAME_1, DESCRIPTION, UNIT, null, Collections.singletonMap(KEY_2, VALUE_2));
+        METRIC_NAME, DESCRIPTION, UNIT, TYPE, null, Collections.singletonMap(KEY_2, VALUE_2));
   }
 
   @Test
@@ -105,52 +121,6 @@ public class MetricDescriptorTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
     MetricDescriptor.createInternal(
-        METRIC_NAME_1, DESCRIPTION, UNIT, Collections.singletonList(KEY_1), null);
-  }
-
-  @Test
-  public void testEquals() {
-    new EqualsTester()
-        .addEqualityGroup(
-            MetricDescriptor.createInternal(
-                METRIC_NAME_1,
-                DESCRIPTION,
-                UNIT,
-                Arrays.asList(KEY_1, KEY_2),
-                Collections.<String, String>emptyMap()),
-            MetricDescriptor.createInternal(
-                METRIC_NAME_1,
-                DESCRIPTION,
-                UNIT,
-                Arrays.asList(KEY_1, KEY_2),
-                Collections.<String, String>emptyMap()))
-        .addEqualityGroup(
-            MetricDescriptor.createInternal(
-                METRIC_NAME_2,
-                DESCRIPTION,
-                UNIT,
-                Collections.singletonList(KEY_1),
-                Collections.singletonMap(KEY_2, VALUE_2)),
-            MetricDescriptor.createInternal(
-                METRIC_NAME_2,
-                DESCRIPTION,
-                UNIT,
-                Collections.singletonList(KEY_1),
-                Collections.singletonMap(KEY_2, VALUE_2)))
-        .addEqualityGroup(
-            MetricDescriptor.createInternal(
-                METRIC_NAME_2,
-                DESCRIPTION,
-                UNIT,
-                Arrays.asList(KEY_1, KEY_2),
-                Collections.<String, String>emptyMap()))
-        .addEqualityGroup(
-            MetricDescriptor.createInternal(
-                METRIC_NAME_1,
-                DESCRIPTION,
-                UNIT,
-                Collections.singletonList(KEY_1),
-                Collections.singletonMap(KEY_2, VALUE_2)))
-        .testEquals();
+        METRIC_NAME, DESCRIPTION, UNIT, TYPE, Collections.singletonList(KEY_1), null);
   }
 }
