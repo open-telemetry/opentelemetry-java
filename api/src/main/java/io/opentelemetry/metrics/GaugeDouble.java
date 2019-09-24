@@ -38,18 +38,12 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
  *   // It is recommended to keep a reference of a Handle.
- *   private static final GaugeDouble.Handle inboundHandle =
+ *   private static final GaugeDouble.Handle someWorkHandle =
  *       gauge.getHandle(Collections.singletonList("SomeWork"));
- *   private static final GaugeDouble.Handle defaultHandle = gauge.getDefaultHandle();
- *
- *   void doDefault() {
- *      // Your code here.
- *      defaultHandle.add(10);
- *   }
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      inboundHandle.set(15);
+ *      someWorkHandle.set(15);
  *   }
  *
  * }
@@ -72,14 +66,6 @@ public interface GaugeDouble extends Gauge<Handle> {
    * @since 0.1.0
    */
   interface Handle {
-
-    /**
-     * Adds the given value to the current value. The values can be negative.
-     *
-     * @param amt the value to add.
-     * @since 0.1.0
-     */
-    void add(double amt);
 
     /**
      * Sets the given value.
