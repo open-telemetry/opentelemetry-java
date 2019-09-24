@@ -159,9 +159,6 @@ public final class DefaultMeter implements Meter {
       private NoopHandle() {}
 
       @Override
-      public void add(long amt) {}
-
-      @Override
       public void set(long val) {}
     }
 
@@ -216,9 +213,6 @@ public final class DefaultMeter implements Meter {
     @Immutable
     private static final class NoopHandle implements Handle {
       private NoopHandle() {}
-
-      @Override
-      public void add(double amt) {}
 
       @Override
       public void set(double val) {}
