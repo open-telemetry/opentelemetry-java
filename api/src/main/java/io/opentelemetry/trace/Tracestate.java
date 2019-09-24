@@ -253,7 +253,7 @@ public abstract class Tracestate {
           && c != '/') {
         return false;
       }
-      if((c == '@') && (++atSeenCount > 1)){
+      if ((c == '@') && (++atSeenCount > 1)) {
         return false;
       }
     }
