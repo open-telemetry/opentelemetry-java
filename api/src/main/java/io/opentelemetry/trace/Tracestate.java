@@ -237,24 +237,26 @@ public abstract class Tracestate {
   // can only contain lowercase letters a-z, digits 0-9, underscores _, dashes -, asterisks *, and
   // forward slashes /.
   private static boolean validateKey(String key) {
-    if (key.length() > KEY_MAX_SIZE
-        || key.isEmpty()
-        || key.charAt(0) < 'a'
-        || key.charAt(0) > 'z') {
+    if (key.length() > KEY_MAX_SIZE || key.isEmpty() || !isNumberOrDigit(key.charAt(0))) {
       return false;
     }
     for (int i = 1; i < key.length(); i++) {
       char c = key.charAt(i);
-      if (!(c >= 'a' && c <= 'z')
+      if (!isNumberOrDigit(c)
           && !(c >= '0' && c <= '9')
           && c != '_'
           && c != '-'
+          && c != '@'
           && c != '*'
           && c != '/') {
         return false;
       }
     }
     return true;
+  }
+
+  private static boolean isNumberOrDigit(char ch) {
+    return (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9');
   }
 
   // Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the range
