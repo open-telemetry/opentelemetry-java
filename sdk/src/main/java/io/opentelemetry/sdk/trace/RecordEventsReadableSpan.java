@@ -32,7 +32,6 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.util.Links;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +55,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
+  // List of recorded links to parent and child spans.
+  private final List<Link> links;
+  // Number of links recorded.
+  private final int totalRecordedLinks;
+
   @GuardedBy("this")
   private String name;
   // The kind of the span.
@@ -80,13 +84,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Number of events recorded.
   @GuardedBy("this")
   private int totalRecordedEvents = 0;
-  // List of recorded links to parent and child spans.
-  @GuardedBy("this")
-  @Nullable
-  private EvictingQueue<Link> links;
-  // Number of link recorded.
-  @GuardedBy("this")
-  private int totalRecordedLinks = 0;
   // The number of children.
   @GuardedBy("this")
   private int numberOfChildren;
@@ -129,7 +126,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       Clock clock,
       Resource resource,
       Map<String, AttributeValue> attributes,
-      List<Link> links) {
+      List<Link> links,
+      int totalRecordedLinks) {
     RecordEventsReadableSpan span =
         new RecordEventsReadableSpan(
             context,
@@ -142,7 +140,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             clock,
             resource,
             attributes,
-            links);
+            links,
+            totalRecordedLinks);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     spanProcessor.onStart(span);
@@ -325,33 +324,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
-  public void addLink(Link link) {
-    Preconditions.checkNotNull(link, "link");
-    addLinkInternal(Links.create(link.getContext(), link.getAttributes()));
-  }
-
-  @Override
-  public void addLink(SpanContext spanContext) {
-    addLinkInternal(Links.create(spanContext));
-  }
-
-  @Override
-  public void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-    addLinkInternal(Links.create(spanContext, attributes));
-  }
-
-  private void addLinkInternal(Link link) {
-    synchronized (this) {
-      if (hasBeenEnded) {
-        logger.log(Level.FINE, "Calling addLink() on an ended Span.");
-        return;
-      }
-      getInitializedLinks().add(link);
-      totalRecordedLinks++;
-    }
-  }
-
-  @Override
   public void setStatus(Status status) {
     Preconditions.checkNotNull(status, "status");
     synchronized (this) {
@@ -419,17 +391,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @GuardedBy("this")
   private EvictingQueue<TimedEvent> getInitializedEvents() {
     if (events == null) {
-      events = EvictingQueue.create((int) traceConfig.getMaxNumberOfEvents());
+      events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
     }
     return events;
-  }
-
-  @GuardedBy("this")
-  private EvictingQueue<Link> getInitializedLinks() {
-    if (links == null) {
-      links = EvictingQueue.create((int) traceConfig.getMaxNumberOfLinks());
-    }
-    return links;
   }
 
   @GuardedBy("this")
@@ -484,9 +448,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       Clock clock,
       Resource resource,
       Map<String, AttributeValue> attributes,
-      List<Link> links) {
+      List<Link> links,
+      int totalRecordedLinks) {
     this.context = context;
     this.parentSpanId = parentSpanId;
+    this.links = links;
+    this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
     this.kind = kind;
     this.traceConfig = traceConfig;
@@ -500,9 +467,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     startNanoTime = clock.nowNanos();
     if (!attributes.isEmpty()) {
       getInitializedAttributes().putAll(attributes);
-    }
-    if (!links.isEmpty()) {
-      getInitializedLinks().addAll(links);
     }
   }
 

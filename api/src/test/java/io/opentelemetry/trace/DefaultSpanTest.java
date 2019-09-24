@@ -19,7 +19,6 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.trace.util.Events;
-import io.opentelemetry.trace.util.Links;
 import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,9 +55,6 @@ public class DefaultSpanTest {
         Collections.singletonMap(
             "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
     span.addEvent(Events.create("event"));
-    span.addLink(Links.create(SpanContext.getInvalid()));
-    span.addLink(SpanContext.getInvalid());
-    span.addLink(SpanContext.getInvalid(), Collections.<String, AttributeValue>emptyMap());
     span.setStatus(Status.OK);
     span.end();
   }
