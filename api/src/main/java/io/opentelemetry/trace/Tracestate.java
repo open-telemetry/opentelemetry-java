@@ -235,11 +235,13 @@ public abstract class Tracestate {
 
   // Key is opaque string up to 256 characters printable. It MUST begin with a lowercase letter, and
   // can only contain lowercase letters a-z, digits 0-9, underscores _, dashes -, asterisks *, and
-  // forward slashes /.
+  // forward slashes /.  For multi-tenant vendor scenarios, an at sign (@) can be used to prefix the
+  // vendor name.
   private static boolean validateKey(String key) {
     if (key.length() > KEY_MAX_SIZE || key.isEmpty() || !isNumberOrDigit(key.charAt(0))) {
       return false;
     }
+    int atSeenCount = 0;
     for (int i = 1; i < key.length(); i++) {
       char c = key.charAt(i);
       if (!isNumberOrDigit(c)
@@ -249,6 +251,9 @@ public abstract class Tracestate {
           && c != '@'
           && c != '*'
           && c != '/') {
+        return false;
+      }
+      if((c == '@') && (++atSeenCount > 1)){
         return false;
       }
     }
