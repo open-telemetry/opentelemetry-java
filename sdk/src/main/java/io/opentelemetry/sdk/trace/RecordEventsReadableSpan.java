@@ -112,6 +112,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *     events.
    * @param clock the clock used to get the time.
    * @param resource the resource associated with this span.
+   * @param attributes the attributes set during span creation.
+   * @param links the links set during span creation, may be truncated.
+   * @param totalRecordedLinks the total number of links set (including dropped links).
    * @return a new and started span.
    */
   @VisibleForTesting
@@ -192,7 +195,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             TraceProtoUtils.toProtoTimedEvents(
                 events, totalRecordedEvents - events.size(), timestampConverter));
       }
-      if (links != null) {
+      if (!links.isEmpty()) {
         builder.setLinks(TraceProtoUtils.toProtoLinks(links, totalRecordedLinks - links.size()));
       }
       if (hasBeenEnded) {
