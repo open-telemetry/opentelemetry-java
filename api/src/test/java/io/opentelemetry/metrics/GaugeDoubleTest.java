@@ -46,7 +46,7 @@ public class GaugeDoubleTest {
   }
 
   @Test
-  public void preventTooLongMeasureName() {
+  public void preventTooLongName() {
     char[] chars = new char[DefaultMeter.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
@@ -74,6 +74,16 @@ public class GaugeDoubleTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
     meter.gaugeDoubleBuilder("metric").setLabelKeys(null).build();
+  }
+
+  @Test
+  public void preventNull_LabelKey() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKey");
+    meter
+        .gaugeDoubleBuilder("metric")
+        .setLabelKeys(Collections.<String>singletonList(null))
+        .build();
   }
 
   @Test
