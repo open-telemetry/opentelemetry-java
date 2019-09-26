@@ -269,12 +269,36 @@ public abstract class SpanData {
   @AutoValue.Builder
   public abstract static class Builder {
 
+    /**
+     * Set the trace id on this builder.
+     *
+     * @param traceId the trace id.
+     * @return this builder (for chaining).
+     */
     public abstract Builder traceId(TraceId traceId);
 
+    /**
+     * Set the span id on this builder.
+     *
+     * @param spanId the span id.
+     * @return this builder (for chaining).
+     */
     public abstract Builder spanId(SpanId spanId);
 
+    /**
+     * Set the trace flags on this builder.
+     *
+     * @param traceFlags the trace flags.
+     * @return this builder (for chaining).
+     */
     public abstract Builder traceFlags(TraceFlags traceFlags);
 
+    /**
+     * Set the tracestate for this builder.
+     *
+     * @param tracestate the tracestate
+     * @return this builder (for chaining).
+     */
     public abstract Builder tracestate(Tracestate tracestate);
 
     /**
