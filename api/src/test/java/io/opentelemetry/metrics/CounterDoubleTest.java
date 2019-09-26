@@ -47,7 +47,7 @@ public class CounterDoubleTest {
   }
 
   @Test
-  public void preventTooLongMeasureName() {
+  public void preventTooLongName() {
     char[] chars = new char[DefaultMeter.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
@@ -71,10 +71,27 @@ public class CounterDoubleTest {
   }
 
   @Test
+  public void preventNull_LabelKeys() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKeys");
+    meter.counterDoubleBuilder("metric").setLabelKeys(null).build();
+  }
+
+  @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
     meter.counterDoubleBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
+  public void preventNull_LabelKey() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKey");
+    meter
+        .counterDoubleBuilder("metric")
+        .setLabelKeys(Collections.<String>singletonList(null))
+        .build();
   }
 
   @Test

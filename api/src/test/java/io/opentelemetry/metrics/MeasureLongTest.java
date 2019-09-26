@@ -19,6 +19,7 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.distributedcontext.DistributedContextManager;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -63,6 +64,23 @@ public final class MeasureLongTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
     meter.measureLongBuilder("metric").setUnit(null).build();
+  }
+
+  @Test
+  public void preventNull_LabelKeys() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKeys");
+    meter.measureLongBuilder("metric").setLabelKeys(null).build();
+  }
+
+  @Test
+  public void preventNull_LabelKey() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKey");
+    meter
+        .measureLongBuilder("metric")
+        .setLabelKeys(Collections.<String>singletonList(null))
+        .build();
   }
 
   @Test
