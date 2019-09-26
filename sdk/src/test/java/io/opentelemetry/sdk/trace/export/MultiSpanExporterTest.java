@@ -22,7 +22,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.opentelemetry.proto.trace.v1.Span;
+import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,7 +40,8 @@ import org.mockito.MockitoAnnotations;
 public class MultiSpanExporterTest {
   @Mock private SpanExporter spanExporter1;
   @Mock private SpanExporter spanExporter2;
-  private static final List<Span> SPAN_LIST = Collections.singletonList(Span.newBuilder().build());
+  private static final List<SpanData> SPAN_LIST =
+      Collections.singletonList(TestUtils.makeBasicSpan());
 
   @Before
   public void setUp() {
@@ -108,7 +109,7 @@ public class MultiSpanExporterTest {
   public void twoSpanExporter_FirstThrows() {
     doThrow(new IllegalArgumentException("No export for you."))
         .when(spanExporter1)
-        .export(ArgumentMatchers.<Span>anyList());
+        .export(ArgumentMatchers.<SpanData>anyList());
     SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
     assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);

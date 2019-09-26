@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -60,11 +61,11 @@ public class MultipleCallbacksTest {
 
     await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(4));
 
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertEquals(4, spans.size());
     assertEquals("parent", spans.get(0).getName());
 
-    io.opentelemetry.proto.trace.v1.Span parentSpan = spans.get(0);
+    SpanData parentSpan = spans.get(0);
     for (int i = 1; i < 4; i++) {
       assertEquals(parentSpan.getTraceId(), spans.get(i).getTraceId());
       assertEquals(parentSpan.getSpanId(), spans.get(i).getParentSpanId());

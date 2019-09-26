@@ -23,6 +23,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -59,13 +60,13 @@ public class MultipleCallbacksTest {
 
     await().atMost(15, TimeUnit.SECONDS).until(TestUtils.finishedSpansSize(exporter), equalTo(4));
 
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertThat(spans).hasSize(4);
     assertThat(spans.get(0).getName()).isEqualTo("parent");
 
-    io.opentelemetry.proto.trace.v1.Span parentSpan = spans.get(0);
+    SpanData parentSpan = spans.get(0);
     for (int i = 1; i < 4; i++) {
-      assertThat(spans.get(i).getTraceId()).isEqualTo(parentSpan.getTraceId());
+      assertThat(spans.get(i).getContext().getTraceId()).isEqualTo(parentSpan.getTraceId());
       assertThat(spans.get(i).getParentSpanId()).isEqualTo(parentSpan.getSpanId());
     }
 

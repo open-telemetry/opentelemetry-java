@@ -18,9 +18,11 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.ReadableSpanAdapter;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.trace.TraceFlags;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,13 +34,17 @@ import java.util.logging.Logger;
  * true}.
  */
 public final class SimpleSampledSpansProcessor implements SpanProcessor {
+
   private static final Logger logger =
       Logger.getLogger(SimpleSampledSpansProcessor.class.getName());
 
   private final SpanExporter spanExporter;
+  private final ReadableSpanAdapter readableSpanAdapter;
 
-  private SimpleSampledSpansProcessor(SpanExporter spanExporter) {
+  private SimpleSampledSpansProcessor(
+      SpanExporter spanExporter, ReadableSpanAdapter readableSpanAdapter) {
     this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+    this.readableSpanAdapter = readableSpanAdapter;
   }
 
   @Override
@@ -52,7 +58,8 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
       return;
     }
     try {
-      spanExporter.export(Collections.singletonList(span.toSpanProto()));
+      List<SpanData> spans = Collections.singletonList(readableSpanAdapter.adapt(span));
+      spanExporter.export(spans);
     } catch (Throwable e) {
       logger.log(Level.WARNING, "Exception thrown by the export.", e);
     }
@@ -76,10 +83,17 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
 
   /** Builder class for {@link SimpleSampledSpansProcessor}. */
   public static final class Builder {
+
     private final SpanExporter spanExporter;
+    private ReadableSpanAdapter readableSpanAdapter = new ReadableSpanAdapter();
 
     private Builder(SpanExporter spanExporter) {
       this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+    }
+
+    public Builder readableSpanAdapter(ReadableSpanAdapter readableSpanAdapter) {
+      this.readableSpanAdapter = readableSpanAdapter;
+      return this;
     }
 
     // TODO: Add metrics for total exported spans.
@@ -93,7 +107,7 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
     public SimpleSampledSpansProcessor build() {
-      return new SimpleSampledSpansProcessor(spanExporter);
+      return new SimpleSampledSpansProcessor(spanExporter, readableSpanAdapter);
     }
   }
 }

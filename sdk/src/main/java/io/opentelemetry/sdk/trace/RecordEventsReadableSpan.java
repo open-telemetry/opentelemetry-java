@@ -19,11 +19,11 @@ package io.opentelemetry.sdk.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
-import com.google.protobuf.UInt32Value;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -32,6 +32,8 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,8 +50,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
-  // The parent SpanId of this span. Null if this is a root span.
-  @Nullable private final SpanId parentSpanId;
+  // The parent SpanId of this span. non-valid if this is a root span.
+  private final SpanId parentSpanId;
   // Active trace configs when the Span was created.
   private final TraceConfig traceConfig;
   // Handler called when the span starts and ends.
@@ -136,7 +138,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             context,
             name,
             kind,
-            parentSpanId,
+            parentSpanId == null ? SpanId.getInvalid() : parentSpanId,
             traceConfig,
             spanProcessor,
             timestampConverter,
@@ -169,52 +171,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
-  public io.opentelemetry.proto.trace.v1.Span toSpanProto() {
-    synchronized (this) {
-      io.opentelemetry.proto.trace.v1.Span.Builder builder =
-          io.opentelemetry.proto.trace.v1.Span.newBuilder()
-              .setTraceId(TraceProtoUtils.toProtoTraceId(context.getTraceId()))
-              .setSpanId(TraceProtoUtils.toProtoSpanId(context.getSpanId()))
-              .setTracestate(TraceProtoUtils.toProtoTracestate(context.getTracestate()))
-              .setResource(TraceProtoUtils.toProtoResource(resource))
-              .setName(name)
-              .setKind(TraceProtoUtils.toProtoKind(kind))
-              .setStartTime(timestampConverter.convertNanoTime(startNanoTime))
-              .setEndTime(timestampConverter.convertNanoTime(getEndNanoTime()))
-              .setChildSpanCount(UInt32Value.of(numberOfChildren));
-      if (parentSpanId != null) {
-        builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(parentSpanId));
-      }
-      if (attributes != null) {
-        builder.setAttributes(
-            TraceProtoUtils.toProtoAttributes(
-                attributes, attributes.getNumberOfDroppedAttributes()));
-      }
-      if (events != null) {
-        builder.setTimeEvents(
-            TraceProtoUtils.toProtoTimedEvents(
-                events, totalRecordedEvents - events.size(), timestampConverter));
-      }
-      if (!links.isEmpty()) {
-        builder.setLinks(TraceProtoUtils.toProtoLinks(links, totalRecordedLinks - links.size()));
-      }
-      if (hasBeenEnded) {
-        builder.setStatus(TraceProtoUtils.toProtoStatus(getStatusWithDefault()));
-      }
-      return builder.build();
-    }
-  }
-
-  /**
-   * Returns the status of the {@code Span}. If not set defaults to {@link Status#OK}.
-   *
-   * @return the status of the {@code Span}.
-   */
-  @VisibleForTesting
-  Status getStatus() {
-    synchronized (this) {
-      return getStatusWithDefault();
-    }
+  public long getStartNanoTime() {
+    return startNanoTime;
   }
 
   /**
@@ -223,9 +181,66 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the end nano time.
    */
-  private long getEndNanoTime() {
+  @Override
+  public long getEndNanoTime() {
     synchronized (this) {
       return getEndNanoTimeInternal();
+    }
+  }
+
+  /**
+   * Returns the status of the {@code Span}. If not set defaults to {@link Status#OK}.
+   *
+   * @return the status of the {@code Span}.
+   */
+  @Override
+  public Status getStatus() {
+    synchronized (this) {
+      return getStatusWithDefault();
+    }
+  }
+
+  /**
+   * Returns a copy of the timed events for this span.
+   *
+   * @return The TimedEvents for this span.
+   */
+  @Override
+  public List<TimedEvent> getTimedEvents() {
+    synchronized (this) {
+      return events == null ? Collections.<TimedEvent>emptyList() : new ArrayList<>(events);
+    }
+  }
+
+  /**
+   * Returns a copy of the links for this span.
+   *
+   * @return A copy of the Links for this span.
+   */
+  @Override
+  public List<Link> getLinks() {
+    synchronized (this) {
+      if (links == null) {
+        return Collections.emptyList();
+      }
+      List<Link> result = new ArrayList<>(links.size());
+      for (Link link : links) {
+        SpanData.Link newLink = SpanData.Link.create(context, link.getAttributes());
+        result.add(newLink);
+      }
+      return result;
+    }
+  }
+
+  /**
+   * Returns an unmodifiable view of the attributes associated with this span.
+   *
+   * @return An unmodifiable view of the attributes associated wit this span
+   */
+  @Override
+  public Map<String, AttributeValue> getAttributes() {
+    synchronized (this) {
+      return Collections.unmodifiableMap(getInitializedAttributes());
     }
   }
 
@@ -252,9 +267,29 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the kind of this {@code Span}.
    */
-  @VisibleForTesting
-  Kind getKind() {
+  @Override
+  public Kind getKind() {
     return kind;
+  }
+
+  /**
+   * Returns the span id of this span's parent span.
+   *
+   * @return The span id of the parent span.
+   */
+  @Override
+  public SpanId getParentSpanId() {
+    return parentSpanId;
+  }
+
+  /**
+   * Returns the resource associated with this span.
+   *
+   * @return The {@code Resource} that created this span.
+   */
+  @Override
+  public Resource getResource() {
+    return resource;
   }
 
   /**
@@ -263,7 +298,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return the {@code TimestampConverter} used by this {@code Span}.
    */
   @Nullable
-  TimestampConverter getTimestampConverter() {
+  @Override
+  public TimestampConverter getTimestampConverter() {
     return timestampConverter;
   }
 
@@ -444,7 +480,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanContext context,
       String name,
       Kind kind,
-      @Nullable SpanId parentSpanId,
+      SpanId parentSpanId,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
@@ -482,5 +518,60 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
     }
     super.finalize();
+  }
+
+  @VisibleForTesting
+  int getTotalRecordedEvents() {
+    synchronized (this) {
+      return totalRecordedEvents;
+    }
+  }
+
+  @VisibleForTesting
+  int getTotalRecordedLinks() {
+    synchronized (this) {
+      return totalRecordedLinks;
+    }
+  }
+
+  @VisibleForTesting
+  int getNumberOfChildren() {
+    synchronized (this) {
+      return numberOfChildren;
+    }
+  }
+
+  @VisibleForTesting
+  AttributesWithCapacity getRawAttributes() {
+    synchronized (this) {
+      return getInitializedAttributes();
+    }
+  }
+
+  @Override
+  public int getChildSpanCount() {
+    synchronized (this) {
+      return numberOfChildren;
+    }
+  }
+
+  /**
+   * The count of links that have been dropped.
+   *
+   * @return The number of links that have been dropped.
+   */
+  @VisibleForTesting
+  public int getDroppedLinksCount() {
+    return totalRecordedLinks - links.size();
+  }
+
+  @VisibleForTesting
+  int getDroppedAttributesCount() {
+    return getRawAttributes().getNumberOfDroppedAttributes();
+  }
+
+  @VisibleForTesting
+  int getDroppedTimedEventsCount() {
+    return getTotalRecordedEvents() - getTimedEvents().size();
   }
 }

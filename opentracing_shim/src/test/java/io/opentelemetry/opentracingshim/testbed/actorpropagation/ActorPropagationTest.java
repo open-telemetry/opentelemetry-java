@@ -21,8 +21,9 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShi
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByKind;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByKind;
 
-import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -76,14 +77,14 @@ public class ActorPropagationTest {
       phaser.arriveAndAwaitAdvance(); // continue...
       phaser.arriveAndAwaitAdvance(); // child tracer finished
       assertThat(exporter.getFinishedSpanItems().size()).isEqualTo(3);
-      assertThat(getByKind(exporter.getFinishedSpanItems(), SpanKind.CONSUMER)).hasSize(2);
+      assertThat(getByKind(exporter.getFinishedSpanItems(), Kind.CONSUMER)).hasSize(2);
       phaser.arriveAndDeregister(); // continue...
 
-      List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
+      List<SpanData> finished = exporter.getFinishedSpanItems();
       assertThat(finished.size()).isEqualTo(3);
       assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
-      assertThat(getByKind(finished, SpanKind.CONSUMER)).hasSize(2);
-      assertThat(getOneByKind(finished, SpanKind.PRODUCER)).isNotNull();
+      assertThat(getByKind(finished, Kind.CONSUMER)).hasSize(2);
+      assertThat(getOneByKind(finished, Kind.PRODUCER)).isNotNull();
 
       assertThat(tracer.scopeManager().activeSpan()).isNull();
     }
@@ -112,10 +113,10 @@ public class ActorPropagationTest {
       phaser.arriveAndAwaitAdvance(); // continue...
       phaser.arriveAndAwaitAdvance(); // child tracer finished
       assertThat(exporter.getFinishedSpanItems().size()).isEqualTo(3);
-      assertThat(getByKind(exporter.getFinishedSpanItems(), SpanKind.CONSUMER)).hasSize(2);
+      assertThat(getByKind(exporter.getFinishedSpanItems(), Kind.CONSUMER)).hasSize(2);
       phaser.arriveAndDeregister(); // continue...
 
-      List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
+      List<SpanData> finished = exporter.getFinishedSpanItems();
       String message1 = future1.get(); // This really should be a non-blocking callback...
       String message2 = future2.get(); // This really should be a non-blocking callback...
       assertThat(message1).isEqualTo("received my message 1");
@@ -123,8 +124,8 @@ public class ActorPropagationTest {
 
       assertThat(finished.size()).isEqualTo(3);
       assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
-      assertThat(getByKind(finished, SpanKind.CONSUMER)).hasSize(2);
-      assertThat(getOneByKind(finished, SpanKind.PRODUCER)).isNotNull();
+      assertThat(getByKind(finished, Kind.CONSUMER)).hasSize(2);
+      assertThat(getOneByKind(finished, Kind.PRODUCER)).isNotNull();
 
       assertThat(tracer.scopeManager().activeSpan()).isNull();
     }

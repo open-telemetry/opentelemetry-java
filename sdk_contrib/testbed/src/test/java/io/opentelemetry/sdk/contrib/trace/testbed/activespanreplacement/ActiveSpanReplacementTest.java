@@ -25,8 +25,10 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -52,7 +54,7 @@ public class ActiveSpanReplacementTest {
 
     await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(3));
 
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertThat(spans).hasSize(3);
     assertThat(spans.get(0).getName()).isEqualTo("initial"); // Isolated task
     assertThat(spans.get(1).getName()).isEqualTo("subtask");
@@ -64,7 +66,7 @@ public class ActiveSpanReplacementTest {
 
     // initial task is not related in any way to those two tasks
     assertThat(spans.get(0).getTraceId()).isNotEqualTo(spans.get(1).getTraceId());
-    assertThat(spans.get(0).getParentSpanId()).isEmpty();
+    assertThat(spans.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
     assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }

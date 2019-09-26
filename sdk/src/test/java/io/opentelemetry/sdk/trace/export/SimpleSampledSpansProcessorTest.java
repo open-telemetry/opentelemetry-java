@@ -16,14 +16,14 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
-import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.ReadableSpanAdapter;
+import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -34,7 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -43,6 +42,7 @@ import org.mockito.MockitoAnnotations;
 public class SimpleSampledSpansProcessorTest {
   @Mock private ReadableSpan readableSpan;
   @Mock private SpanExporter spanExporter;
+  @Mock private ReadableSpanAdapter readableSpanAdapter;
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
           TraceId.getInvalid(),
@@ -61,7 +61,10 @@ public class SimpleSampledSpansProcessorTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    simpleSampledSpansProcessor = SimpleSampledSpansProcessor.newBuilder(spanExporter).build();
+    simpleSampledSpansProcessor =
+        SimpleSampledSpansProcessor.newBuilder(spanExporter)
+            .readableSpanAdapter(readableSpanAdapter)
+            .build();
   }
 
   @Test
@@ -72,36 +75,29 @@ public class SimpleSampledSpansProcessorTest {
 
   @Test
   public void onEndSync_SampledSpan() {
+    SpanData spanData = TestUtils.makeBasicSpan();
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
-    when(readableSpan.toSpanProto())
-        .thenReturn(Span.getDefaultInstance())
-        .thenThrow(new RuntimeException());
+    when(readableSpanAdapter.adapt(readableSpan)).thenReturn(spanData);
     simpleSampledSpansProcessor.onEnd(readableSpan);
-    verify(spanExporter).export(Collections.singletonList(Span.getDefaultInstance()));
+    verify(spanExporter).export(Collections.singletonList(spanData));
   }
 
   @Test
   public void onEndSync_NotSampledSpan() {
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
-    when(readableSpan.toSpanProto())
-        .thenReturn(Span.getDefaultInstance())
-        .thenThrow(new RuntimeException());
     simpleSampledSpansProcessor.onEnd(readableSpan);
     verifyZeroInteractions(spanExporter);
   }
 
   @Test
   public void onEndSync_ExporterReturnError() {
+    SpanData spanData = TestUtils.makeBasicSpan();
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
-    when(readableSpan.toSpanProto())
-        .thenReturn(Span.getDefaultInstance())
-        .thenReturn(Span.getDefaultInstance())
-        .thenThrow(new RuntimeException());
-    doThrow(new RuntimeException()).when(spanExporter).export(ArgumentMatchers.<Span>anyList());
+    when(readableSpanAdapter.adapt(readableSpan)).thenReturn(spanData);
     simpleSampledSpansProcessor.onEnd(readableSpan);
     // Try again, now will no longer return error.
     simpleSampledSpansProcessor.onEnd(readableSpan);
-    verify(spanExporter, times(2)).export(Collections.singletonList(Span.getDefaultInstance()));
+    verify(spanExporter, times(2)).export(Collections.singletonList(spanData));
   }
 
   @Test

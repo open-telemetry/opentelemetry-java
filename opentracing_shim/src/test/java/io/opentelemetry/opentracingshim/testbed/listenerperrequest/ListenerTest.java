@@ -20,8 +20,9 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShi
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
+import io.opentelemetry.trace.Span;
 import io.opentracing.Tracer;
 import java.util.List;
 import org.junit.Test;
@@ -37,9 +38,9 @@ public class ListenerTest {
     Object response = client.send("message").get();
     assertEquals("message:response", response);
 
-    List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = exporter.getFinishedSpanItems();
     assertEquals(1, finished.size());
-    assertEquals(finished.get(0).getKind(), SpanKind.CLIENT);
+    assertEquals(finished.get(0).getKind(), Span.Kind.CLIENT);
 
     assertNull(tracer.scopeManager().activeSpan());
   }

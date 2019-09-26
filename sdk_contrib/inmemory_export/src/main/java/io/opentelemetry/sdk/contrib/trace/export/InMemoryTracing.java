@@ -17,10 +17,10 @@
 package io.opentelemetry.sdk.contrib.trace.export;
 
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSampledSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 
@@ -100,7 +100,7 @@ public final class InMemoryTracing {
    * @return a {@code List} of the finished {@code Span}s.
    * @since 0.1.0
    */
-  public List<Span> getFinishedSpanItems() {
+  public List<SpanData> getFinishedSpanItems() {
     return exporter.getFinishedSpanItems();
   }
 

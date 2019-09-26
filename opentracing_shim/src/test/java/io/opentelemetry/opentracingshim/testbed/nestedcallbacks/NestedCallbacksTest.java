@@ -23,8 +23,9 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.proto.trace.v1.AttributeValue;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
+import io.opentelemetry.trace.AttributeValue;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -50,11 +51,11 @@ public final class NestedCallbacksTest {
 
     await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(1));
 
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertEquals(1, spans.size());
     assertEquals("one", spans.get(0).getName());
 
-    Map<String, AttributeValue> attrs = spans.get(0).getAttributes().getAttributeMap();
+    Map<String, AttributeValue> attrs = spans.get(0).getAttributes();
     assertEquals(3, attrs.size());
     for (int i = 1; i <= 3; i++) {
       assertEquals(Integer.toString(i), attrs.get("key" + i).getStringValue());
