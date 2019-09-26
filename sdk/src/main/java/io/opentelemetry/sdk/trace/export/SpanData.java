@@ -229,12 +229,14 @@ public abstract class SpanData {
 
     /**
      * Returns the name of this event.
+     *
      * @return the name of this event.
      */
     public abstract String getName();
 
     /**
      * Gets the attributes for this event.
+     *
      * @return the attributes for this event.
      */
     public abstract Map<String, AttributeValue> getAttributes();
