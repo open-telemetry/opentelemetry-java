@@ -39,7 +39,11 @@ import java.util.HashMap;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+/** Unit tests for {@link SpanData}. */
+@RunWith(JUnit4.class)
 public class SpanDataTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
