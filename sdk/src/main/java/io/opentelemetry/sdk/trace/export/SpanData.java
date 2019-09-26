@@ -25,7 +25,9 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Timestamp;
+import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.Tracestate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -74,7 +76,10 @@ public abstract class SpanData {
       Status status,
       Timestamp endTimestamp) {
     return AutoValue_SpanData.newBuilder()
-        .context(context)
+        .traceId(context.getTraceId())
+        .spanId(context.getSpanId())
+        .tracestate(context.getTracestate())
+        .traceFlags(context.getTraceFlags())
         .parentSpanId(parentSpanId == null ? SpanId.getInvalid() : parentSpanId)
         .resource(resource)
         .name(name)
@@ -93,12 +98,32 @@ public abstract class SpanData {
   }
 
   /**
-   * Returns the {@code SpanContext} associated with this {@code Span}.
+   * Gets the trace id for this span.
    *
-   * @return the {@code SpanContext} associated with this {@code Span}.
-   * @since 0.1.0
+   * @return the trace id.
    */
-  public abstract SpanContext getContext();
+  public abstract TraceId getTraceId();
+
+  /**
+   * Gets the span id for this span.
+   *
+   * @return the span id.
+   */
+  public abstract SpanId getSpanId();
+
+  /**
+   * Gets the trace flags for this span.
+   *
+   * @return the trace flags for this span.
+   */
+  public abstract TraceFlags getTraceFlags();
+
+  /**
+   * Gets the Tracestate for this span.
+   *
+   * @return the Tracestate for this span.
+   */
+  public abstract Tracestate getTracestate();
 
   /**
    * Returns the parent {@code SpanId}. If the {@code Span} is a root {@code Span}, the SpanId
@@ -182,24 +207,6 @@ public abstract class SpanData {
   public abstract Timestamp getEndTimestamp();
 
   /**
-   * The trace id for this span, retrieved from the associated SpanContext.
-   *
-   * @return the TraceId
-   */
-  public TraceId getTraceId() {
-    return getContext().getTraceId();
-  }
-
-  /**
-   * The id of this span, retrieved from the associated SpanContext.
-   *
-   * @return the SpanId
-   */
-  public SpanId getSpanId() {
-    return getContext().getSpanId();
-  }
-
-  /**
    * A timed event representation.
    *
    * @since 0.1.0
@@ -262,22 +269,20 @@ public abstract class SpanData {
   @AutoValue.Builder
   public abstract static class Builder {
 
-    /**
-     * The SpanContext associated with this span.
-     *
-     * @param context the SpanContext
-     * @see SpanContext
-     * @return this
-     * @since 0.1.0
-     */
-    public abstract Builder context(SpanContext context);
+    public abstract Builder traceId(TraceId traceId);
+
+    public abstract Builder spanId(SpanId spanId);
+
+    public abstract Builder traceFlags(TraceFlags traceFlags);
+
+    public abstract Builder tracestate(Tracestate tracestate);
 
     /**
      * The parent span id associated for this span, which may be null.
      *
      * @param parentSpanId the SpanId of the parent
-     * @see SpanId
      * @return this
+     * @see SpanId
      * @since 0.1.0
      */
     public abstract Builder parentSpanId(SpanId parentSpanId);
@@ -286,8 +291,8 @@ public abstract class SpanData {
      * Set the resource associated with this span. Must not be null.
      *
      * @param resource the Resource that generated this span.
-     * @see Resource
      * @return this
+     * @see Resource
      * @since 0.1.0
      */
     public abstract Builder resource(Resource resource);
@@ -305,8 +310,8 @@ public abstract class SpanData {
      * Set the start timestamp of the span. Must not be null.
      *
      * @param timestamp the start Timestamp
-     * @see Timestamp
      * @return this
+     * @see Timestamp
      * @since 0.1.0
      */
     public abstract Builder startTimestamp(Timestamp timestamp);
@@ -315,8 +320,8 @@ public abstract class SpanData {
      * Set the end timestamp of the span. Must not be null.
      *
      * @param timestamp the end Timestamp
-     * @see Timestamp
      * @return this
+     * @see Timestamp
      * @since 0.1.0
      */
     public abstract Builder endTimestamp(Timestamp timestamp);
@@ -326,8 +331,8 @@ public abstract class SpanData {
      * AttributeValue instances. Must not be null, may be empty.
      *
      * @param attributes a Map&lt;String, AttributeValue&gt; of attributes.
-     * @see AttributeValue
      * @return this
+     * @see AttributeValue
      * @since 0.1.0
      */
     public abstract Builder attributes(Map<String, AttributeValue> attributes);
@@ -336,8 +341,8 @@ public abstract class SpanData {
      * Set timed events that are associated with this span. Must not be null, may be empty.
      *
      * @param events A List&lt;TimedEvent&gt; of events associated with this span.
-     * @see TimedEvent
      * @return this
+     * @see TimedEvent
      * @since 0.1.0
      */
     public abstract Builder timedEvents(List<TimedEvent> events);
@@ -364,8 +369,8 @@ public abstract class SpanData {
      * Set the links associated with this span. Must not be null, may be empty.
      *
      * @param links A List&lt;Link&gt;
-     * @see io.opentelemetry.trace.Link
      * @return this
+     * @see io.opentelemetry.trace.Link
      * @since 0.1.0
      */
     public abstract Builder links(List<io.opentelemetry.trace.Link> links);
