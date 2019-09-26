@@ -18,11 +18,12 @@ package io.opentelemetry.sdk.contrib.trace.testbed.promisepropagation;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.protobuf.ByteString;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import java.util.concurrent.Phaser;
@@ -105,25 +106,22 @@ public class PromisePropagationTest {
 
       phaser.arriveAndAwaitAdvance(); // wait for traces to be reported
 
-      List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
+      List<SpanData> finished = exporter.getFinishedSpanItems();
       assertThat(finished.size()).isEqualTo(4);
 
       String component = "component";
-      io.opentelemetry.proto.trace.v1.Span parentSpanProto =
-          TestUtils.getOneByAttr(finished, component, "example-promises");
+      SpanData parentSpanProto = TestUtils.getOneByAttr(finished, component, "example-promises");
       assertThat(parentSpanProto).isNotNull();
-      assertThat(parentSpanProto.getParentSpanId().isEmpty()).isTrue();
-      List<io.opentelemetry.proto.trace.v1.Span> successSpans =
-          TestUtils.getByAttr(finished, component, "success");
+      assertThat(parentSpanProto.getParentSpanId().isValid()).isFalse();
+      List<SpanData> successSpans = TestUtils.getByAttr(finished, component, "success");
       assertThat(successSpans).hasSize(2);
 
-      ByteString parentId = parentSpanProto.getSpanId();
-      for (io.opentelemetry.proto.trace.v1.Span span : successSpans) {
+      SpanId parentId = parentSpanProto.getSpanId();
+      for (SpanData span : successSpans) {
         assertThat(span.getParentSpanId()).isEqualTo(parentId);
       }
 
-      io.opentelemetry.proto.trace.v1.Span errorSpan =
-          TestUtils.getOneByAttr(finished, component, "error");
+      SpanData errorSpan = TestUtils.getOneByAttr(finished, component, "error");
       assertThat(errorSpan).isNotNull();
       assertThat(errorSpan.getParentSpanId()).isEqualTo(parentId);
     }

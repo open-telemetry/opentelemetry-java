@@ -24,6 +24,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
+import io.opentelemetry.sdk.trace.export.SpanData.TimedEvent;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -59,9 +61,9 @@ public final class ErrorReportingTest {
 
     assertNull(tracer.scopeManager().activeSpan());
 
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCode(), Status.UNKNOWN.getCanonicalCode().value());
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
   }
 
   /* Error handling in a callback capturing/activating the Span */
@@ -84,9 +86,9 @@ public final class ErrorReportingTest {
 
     await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(1));
 
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCode(), Status.UNKNOWN.getCanonicalCode().value());
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
   }
 
   /* Error handling for a max-retries task (such as url fetching).
@@ -119,12 +121,11 @@ public final class ErrorReportingTest {
 
     assertNull(tracer.scopeManager().activeSpan());
 
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCode(), Status.UNKNOWN.getCanonicalCode().value());
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
 
-    List<io.opentelemetry.proto.trace.v1.Span.TimedEvent> events =
-        spans.get(0).getTimeEvents().getTimedEventList();
+    List<TimedEvent> events = spans.get(0).getTimedEvents();
     assertEquals(events.size(), maxRetries);
     assertEquals(events.get(0).getEvent().getName(), Tags.ERROR.getKey());
     /* TODO: Handle actual objects being passed to log/events. */
@@ -158,9 +159,9 @@ public final class ErrorReportingTest {
 
     await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(1));
 
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertEquals(spans.size(), 1);
-    assertEquals(spans.get(0).getStatus().getCode(), Status.UNKNOWN.getCanonicalCode().value());
+    assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
   }
 
   static class ScopedRunnable implements Runnable {

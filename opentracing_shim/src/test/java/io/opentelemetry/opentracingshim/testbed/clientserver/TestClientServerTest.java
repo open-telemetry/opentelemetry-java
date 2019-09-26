@@ -24,8 +24,9 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -60,13 +61,13 @@ public class TestClientServerTest {
 
     await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(2));
 
-    List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = exporter.getFinishedSpanItems();
     assertEquals(2, finished.size());
 
     finished = sortByStartTime(finished);
     assertEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
-    assertEquals(SpanKind.CLIENT, finished.get(0).getKind());
-    assertEquals(SpanKind.SERVER, finished.get(1).getKind());
+    assertEquals(Kind.CLIENT, finished.get(0).getKind());
+    assertEquals(Kind.SERVER, finished.get(1).getKind());
 
     assertNull(tracer.scopeManager().activeSpan());
   }

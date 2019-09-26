@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -53,7 +54,7 @@ public final class LateSpanFinishTest {
     parentSpan.finish();
 
     // Children finish order is not guaranteed, but parent should finish *last*.
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertEquals(3, spans.size());
     assertTrue(spans.get(0).getName().startsWith("task"));
     assertTrue(spans.get(1).getName().startsWith("task"));

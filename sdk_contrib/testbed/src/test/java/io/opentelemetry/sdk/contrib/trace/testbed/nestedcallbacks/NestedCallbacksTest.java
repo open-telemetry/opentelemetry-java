@@ -21,9 +21,10 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.proto.trace.v1.AttributeValue;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
+import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -49,11 +50,11 @@ public final class NestedCallbacksTest {
 
     await().atMost(15, TimeUnit.SECONDS).until(TestUtils.finishedSpansSize(exporter), equalTo(1));
 
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0).getName()).isEqualTo("one");
 
-    Map<String, AttributeValue> attrs = spans.get(0).getAttributes().getAttributeMapMap();
+    Map<String, AttributeValue> attrs = spans.get(0).getAttributes();
     assertThat(attrs).hasSize(3);
     for (int i = 1; i <= 3; i++) {
       assertThat(attrs.get("key" + i).getStringValue()).isEqualTo(Integer.toString(i));

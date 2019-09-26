@@ -22,11 +22,12 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -54,7 +55,7 @@ public class ActiveSpanReplacementTest {
 
     await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(3));
 
-    List<io.opentelemetry.proto.trace.v1.Span> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
     assertEquals(3, spans.size());
     assertEquals("initial", spans.get(0).getName()); // Isolated task
     assertEquals("subtask", spans.get(1).getName());
@@ -66,7 +67,7 @@ public class ActiveSpanReplacementTest {
 
     // initial task is not related in any way to those two tasks
     assertNotEquals(spans.get(0).getTraceId(), spans.get(1).getTraceId());
-    assertTrue(spans.get(0).getParentSpanId().isEmpty());
+    assertFalse(spans.get(0).getParentSpanId().isValid());
 
     assertNull(tracer.scopeManager().activeSpan());
   }

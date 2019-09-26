@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -165,39 +166,20 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @Deprecated
   @Override
-  public io.opentelemetry.proto.trace.v1.Span toSpanProto() {
+  public long getStartNanoTime() {
+    return startNanoTime;
+  }
+
+  /**
+   * Returns the end nano time (see {@link System#nanoTime()}). If the current {@code Span} is not
+   * ended then returns {@link Clock#nowNanos()}.
+   *
+   * @return the end nano time.
+   */
+  @Override
+  public long getEndNanoTime() {
     synchronized (this) {
-      io.opentelemetry.proto.trace.v1.Span.Builder builder =
-          io.opentelemetry.proto.trace.v1.Span.newBuilder()
-              .setTraceId(TraceProtoUtils.toProtoTraceId(context.getTraceId()))
-              .setSpanId(TraceProtoUtils.toProtoSpanId(context.getSpanId()))
-              .setTracestate(TraceProtoUtils.toProtoTracestate(context.getTracestate()))
-              .setResource(TraceProtoUtils.toProtoResource(resource))
-              .setName(name)
-              .setKind(TraceProtoUtils.toProtoKind(kind))
-              .setStartTime(timestampConverter.convertNanoTime(startNanoTime))
-              .setEndTime(timestampConverter.convertNanoTime(getEndNanoTime()))
-              .setChildSpanCount(UInt32Value.of(numberOfChildren));
-      if (parentSpanId.isValid()) {
-        builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(parentSpanId));
-      }
-      if (attributes != null) {
-        builder.setAttributes(
-            TraceProtoUtils.toProtoAttributes(
-                attributes, attributes.getNumberOfDroppedAttributes()));
-      }
-      if (events != null) {
-        builder.setTimeEvents(
-            TraceProtoUtils.toProtoTimedEvents(
-                events, totalRecordedEvents - events.size(), timestampConverter));
-      }
-      if (!links.isEmpty()) {
-        builder.setLinks(TraceProtoUtils.toProtoLinks(links, totalRecordedLinks - links.size()));
-      }
-      if (hasBeenEnded) {
-        builder.setStatus(TraceProtoUtils.toProtoStatus(getStatusWithDefault()));
-      }
-      return builder.build();
+      return getEndNanoTimeInternal();
     }
   }
 
@@ -275,8 +257,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the status of the {@code Span}.
    */
-  @VisibleForTesting
-  Status getStatus() {
+  @Override
+  public Status getStatus() {
     synchronized (this) {
       return getStatusWithDefault();
     }
@@ -348,6 +330,26 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   public Kind getKind() {
     return kind;
+  }
+
+  /**
+   * Returns the span id of this span's parent span.
+   *
+   * @return The span id of the parent span.
+   */
+  @Override
+  public SpanId getParentSpanId() {
+    return parentSpanId;
+  }
+
+  /**
+   * Returns the resource associated with this span.
+   *
+   * @return The {@code Resource} that created this span.
+   */
+  @Override
+  public Resource getResource() {
+    return resource;
   }
 
   /**
@@ -576,5 +578,60 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
     }
     super.finalize();
+  }
+
+  @VisibleForTesting
+  int getTotalRecordedEvents() {
+    synchronized (this) {
+      return totalRecordedEvents;
+    }
+  }
+
+  @VisibleForTesting
+  int getTotalRecordedLinks() {
+    synchronized (this) {
+      return totalRecordedLinks;
+    }
+  }
+
+  @VisibleForTesting
+  int getNumberOfChildren() {
+    synchronized (this) {
+      return numberOfChildren;
+    }
+  }
+
+  @VisibleForTesting
+  AttributesWithCapacity getRawAttributes() {
+    synchronized (this) {
+      return getInitializedAttributes();
+    }
+  }
+
+  @Override
+  public int getChildSpanCount() {
+    synchronized (this) {
+      return numberOfChildren;
+    }
+  }
+
+  /**
+   * The count of links that have been dropped.
+   *
+   * @return The number of links that have been dropped.
+   */
+  @VisibleForTesting
+  public int getDroppedLinksCount() {
+    return totalRecordedLinks - links.size();
+  }
+
+  @VisibleForTesting
+  int getDroppedAttributesCount() {
+    return getRawAttributes().getNumberOfDroppedAttributes();
+  }
+
+  @VisibleForTesting
+  int getDroppedTimedEventsCount() {
+    return getTotalRecordedEvents() - getTimedEvents().size();
   }
 }

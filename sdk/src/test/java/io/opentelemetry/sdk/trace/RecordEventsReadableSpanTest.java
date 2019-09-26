@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -74,7 +75,7 @@ public class RecordEventsReadableSpanTest {
   private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
   private final Event event =
       new SimpleEvent("event2", Collections.<String, AttributeValue>emptyMap());
-  private final Link link = io.opentelemetry.trace.util.Links.create(spanContext);
+  private final Link link = SpanData.Link.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
 

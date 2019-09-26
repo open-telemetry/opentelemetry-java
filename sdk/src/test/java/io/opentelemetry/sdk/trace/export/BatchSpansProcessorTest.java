@@ -21,6 +21,7 @@ import static org.mockito.Mockito.doThrow;
 
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.ReadableSpanAdapter;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.trace.util.Samplers;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class BatchSpansProcessorTest {
   private final TracerSdk tracerSdk = new TracerSdk();
   private final WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter();
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
+  private final ReadableSpanAdapter adapter = new ReadableSpanAdapter();
   @Mock private SpanExporter mockServiceHandler;
 
   @Before
@@ -91,8 +93,8 @@ public class BatchSpansProcessorTest {
 
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
-    List<Span> exported = waitingSpanExporter.waitForExport(2);
-    assertThat(exported).containsExactly(span1.toSpanProto(), span2.toSpanProto());
+    List<SpanData> exported = waitingSpanExporter.waitForExport(2);
+    assertThat(exported).containsExactly(adapter.adapt(span1), adapter.adapt(span2));
   }
 
   @Test
@@ -110,15 +112,15 @@ public class BatchSpansProcessorTest {
     ReadableSpan span4 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span5 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span6 = createSampledEndedSpan(SPAN_NAME_1);
-    List<Span> exported = waitingSpanExporter.waitForExport(6);
+    List<SpanData> exported = waitingSpanExporter.waitForExport(6);
     assertThat(exported)
         .containsExactly(
-            span1.toSpanProto(),
-            span2.toSpanProto(),
-            span3.toSpanProto(),
-            span4.toSpanProto(),
-            span5.toSpanProto(),
-            span6.toSpanProto());
+            adapter.adapt(span1),
+            adapter.adapt(span2),
+            adapter.adapt(span3),
+            adapter.adapt(span4),
+            adapter.adapt(span5),
+            adapter.adapt(span6));
   }
 
   @Test
@@ -133,10 +135,10 @@ public class BatchSpansProcessorTest {
 
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
-    List<Span> exported1 = waitingSpanExporter.waitForExport(2);
-    List<Span> exported2 = waitingSpanExporter2.waitForExport(2);
-    assertThat(exported1).containsExactly(span1.toSpanProto(), span2.toSpanProto());
-    assertThat(exported2).containsExactly(span1.toSpanProto(), span2.toSpanProto());
+    List<SpanData> exported1 = waitingSpanExporter.waitForExport(2);
+    List<SpanData> exported2 = waitingSpanExporter2.waitForExport(2);
+    assertThat(exported1).containsExactly(adapter.adapt(span1), adapter.adapt(span2));
+    assertThat(exported2).containsExactly(adapter.adapt(span1), adapter.adapt(span2));
   }
 
   @Test
@@ -150,16 +152,16 @@ public class BatchSpansProcessorTest {
             .setMaxExportBatchSize(maxQueuedSpans / 2)
             .build());
 
-    List<Span> spansToExport = new ArrayList<>(maxQueuedSpans + 1);
+    List<SpanData> spansToExport = new ArrayList<>(maxQueuedSpans + 1);
     // Wait to block the worker thread in the BatchSampledSpansProcessor. This ensures that no items
     // can be removed from the queue. Need to add a span to trigger the export otherwise the
     // pipeline is never called.
-    spansToExport.add(createSampledEndedSpan("blocking_span").toSpanProto());
+    spansToExport.add(adapter.adapt(createSampledEndedSpan("blocking_span")));
     blockingSpanExporter.waitUntilIsBlocked();
 
     for (int i = 0; i < maxQueuedSpans; i++) {
       // First export maxQueuedSpans, the worker thread is blocked so all items should be queued.
-      spansToExport.add(createSampledEndedSpan("span_1_" + i).toSpanProto());
+      spansToExport.add(adapter.adapt(createSampledEndedSpan("span_1_" + i)));
     }
 
     // TODO: assertThat(spanExporter.getReferencedSpans()).isEqualTo(maxQueuedSpans);
@@ -176,7 +178,7 @@ public class BatchSpansProcessorTest {
     blockingSpanExporter.unblock();
 
     // While we wait for maxQueuedSpans we ensure that the queue is also empty after this.
-    List<Span> exported = waitingSpanExporter.waitForExport(maxQueuedSpans);
+    List<SpanData> exported = waitingSpanExporter.waitForExport(maxQueuedSpans);
     assertThat(exported).isNotNull();
     assertThat(exported).containsExactlyElementsIn(spansToExport);
     exported.clear();
@@ -188,7 +190,7 @@ public class BatchSpansProcessorTest {
     // TODO: assertThat(getPushedSpans()).isAtLeast((long) maxQueuedSpans - maxBatchSize);
 
     for (int i = 0; i < maxQueuedSpans; i++) {
-      spansToExport.add(createSampledEndedSpan("span_3_" + i).toSpanProto());
+      spansToExport.add(adapter.adapt(createSampledEndedSpan("span_3_" + i)));
       // No more dropped spans.
       // TODO: assertThat(getDroppedSpans()).isEqualTo(7);
     }
@@ -202,7 +204,7 @@ public class BatchSpansProcessorTest {
   public void serviceHandlerThrowsException() {
     doThrow(new IllegalArgumentException("No export for you."))
         .when(mockServiceHandler)
-        .export(ArgumentMatchers.<Span>anyList());
+        .export(ArgumentMatchers.<SpanData>anyList());
 
     tracerSdk.addSpanProcessor(
         BatchSpansProcessor.newBuilder(
@@ -210,13 +212,13 @@ public class BatchSpansProcessorTest {
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
-    List<Span> exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(span1.toSpanProto());
+    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
+    assertThat(exported).containsExactly(adapter.adapt(span1));
 
     // Continue to export after the exception was received.
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
     exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(span2.toSpanProto());
+    assertThat(exported).containsExactly(adapter.adapt(span2));
   }
 
   @Test
@@ -233,10 +235,10 @@ public class BatchSpansProcessorTest {
     // sampled span is not exported by creating and ending a sampled span after a non sampled span
     // and checking that the first exported span is the sampled span (the non sampled did not get
     // exported).
-    List<Span> exported = waitingSpanExporter.waitForExport(1);
+    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
     // Need to check this because otherwise the variable span1 is unused, other option is to not
     // have a span1 variable.
-    assertThat(exported).containsExactly(span2.toSpanProto());
+    assertThat(exported).containsExactly(adapter.adapt(span2));
   }
 
   @Test
@@ -277,8 +279,8 @@ public class BatchSpansProcessorTest {
     // Force a shutdown, without this, the #waitForExport() call below would block indefinitely.
     tracerSdk.shutdown();
 
-    List<Span> exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(span2.toSpanProto());
+    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
+    assertThat(exported).containsExactly(adapter.adapt(span2));
   }
 
   private static final class BlockingSpanExporter implements SpanExporter {
@@ -294,7 +296,7 @@ public class BatchSpansProcessorTest {
     State state = State.WAIT_TO_BLOCK;
 
     @Override
-    public ResultCode export(List<Span> spanDataList) {
+    public ResultCode export(List<SpanData> spanDataList) {
       synchronized (monitor) {
         while (state != State.UNBLOCKED) {
           try {
@@ -339,7 +341,7 @@ public class BatchSpansProcessorTest {
     private final Object monitor = new Object();
 
     @GuardedBy("monitor")
-    private final List<Span> spanDataList = new ArrayList<>();
+    private final List<SpanData> spanDataList = new ArrayList<>();
 
     /**
      * Waits until we received numberOfSpans spans to export. Returns the list of exported {@link
@@ -350,8 +352,8 @@ public class BatchSpansProcessorTest {
      *     thread is interrupted.
      */
     @Nullable
-    List<Span> waitForExport(int numberOfSpans) {
-      List<Span> ret;
+    List<SpanData> waitForExport(int numberOfSpans) {
+      List<SpanData> ret;
       synchronized (monitor) {
         while (spanDataList.size() < numberOfSpans) {
           try {
@@ -369,7 +371,7 @@ public class BatchSpansProcessorTest {
     }
 
     @Override
-    public ResultCode export(List<Span> spans) {
+    public ResultCode export(List<SpanData> spans) {
       synchronized (monitor) {
         this.spanDataList.addAll(spans);
         monitor.notifyAll();

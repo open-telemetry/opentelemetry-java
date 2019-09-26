@@ -20,6 +20,7 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShi
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -52,7 +53,7 @@ public final class HandlerTest {
     assertEquals("message2:response", responseFuture2.get(5, TimeUnit.SECONDS));
     assertEquals("message:response", responseFuture.get(5, TimeUnit.SECONDS));
 
-    List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = exporter.getFinishedSpanItems();
     assertEquals(3, finished.size());
   }
 }

@@ -34,28 +34,28 @@ public class TimestampConverterTest {
   public void now() {
     assertThat(testClock.now()).isEqualTo(timestamp);
     TimestampConverter timeConverter = TimestampConverter.now(testClock);
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos())).isEqualTo(timestamp);
+    assertThat(timeConverter.convertNanoTimeProto(testClock.nowNanos())).isEqualTo(timestamp);
   }
 
   @Test
   public void convertNanoTime_Positive() {
     TimestampConverter timeConverter = TimestampConverter.now(testClock);
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() + 3210))
+    assertThat(timeConverter.convertNanoTimeProto(testClock.nowNanos() + 3210))
         .isEqualTo(createTimestamp(1234, 8888));
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() + 1000))
+    assertThat(timeConverter.convertNanoTimeProto(testClock.nowNanos() + 1000))
         .isEqualTo(createTimestamp(1234, 6678));
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() + 15999994322L))
+    assertThat(timeConverter.convertNanoTimeProto(testClock.nowNanos() + 15999994322L))
         .isEqualTo(createTimestamp(1250, 0));
   }
 
   @Test
   public void convertNanoTime_Negative() {
     TimestampConverter timeConverter = TimestampConverter.now(testClock);
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() - 3456))
+    assertThat(timeConverter.convertNanoTimeProto(testClock.nowNanos() - 3456))
         .isEqualTo(createTimestamp(1234, 2222));
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() - 1000))
+    assertThat(timeConverter.convertNanoTimeProto(testClock.nowNanos() - 1000))
         .isEqualTo(createTimestamp(1234, 4678));
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() - 14000005678L))
+    assertThat(timeConverter.convertNanoTimeProto(testClock.nowNanos() - 14000005678L))
         .isEqualTo(createTimestamp(1220, 0));
   }
 }
