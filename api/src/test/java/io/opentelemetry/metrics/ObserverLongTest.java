@@ -26,9 +26,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link CounterDouble}. */
+/** Unit tests for {@link ObserverLong}. */
 @RunWith(JUnit4.class)
-public class CounterDoubleTest {
+public class ObserverLongTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -42,8 +42,7 @@ public class CounterDoubleTest {
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.counterDoubleBuilder("\2").build();
+    meter.observerLongBuilder("\2").build();
   }
 
   @Test
@@ -53,76 +52,76 @@ public class CounterDoubleTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.counterDoubleBuilder(longName).build();
+    meter.observerLongBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.counterDoubleBuilder("metric").setDescription(null).build();
+    meter.observerLongBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.counterDoubleBuilder("metric").setUnit(null).build();
+    meter.observerLongBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    meter.counterDoubleBuilder("metric").setLabelKeys(null).build();
+    meter.observerLongBuilder("metric").setLabelKeys(null).build();
   }
 
   @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.counterDoubleBuilder("metric").setConstantLabels(null).build();
+    meter.observerLongBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
   public void noopGetHandle_WithNullLabelValues() {
-    CounterDouble counterDouble =
+    ObserverLong observerLong =
         meter
-            .counterDoubleBuilder(NAME)
+            .observerLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    counterDouble.getHandle(null);
+    observerLong.getHandle(null);
   }
 
   @Test
   public void noopGetHandle_WithInvalidLabelSize() {
-    CounterDouble counterDouble =
+    ObserverLong observerLong =
         meter
-            .counterDoubleBuilder(NAME)
+            .observerLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    counterDouble.getHandle(EMPTY_LABEL_VALUES);
+    observerLong.getHandle(EMPTY_LABEL_VALUES);
   }
 
   @Test
   public void noopRemoveHandle_WithNullLabelValues() {
-    CounterDouble counterDouble =
+    ObserverLong observerLong =
         meter
-            .counterDoubleBuilder(NAME)
+            .observerLongBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    counterDouble.removeHandle(null);
+    observerLong.removeHandle(null);
   }
 }

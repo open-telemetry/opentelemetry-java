@@ -66,6 +66,13 @@ public final class MeasureLongTest {
   }
 
   @Test
+  public void preventNull_LabelKeys() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKeys");
+    meter.measureLongBuilder("metric").setLabelKeys(null).build();
+  }
+
+  @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
