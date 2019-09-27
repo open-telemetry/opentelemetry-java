@@ -16,10 +16,10 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Timestamp;
 import io.opentelemetry.trace.util.Events;
 import java.util.ArrayList;
 import java.util.List;

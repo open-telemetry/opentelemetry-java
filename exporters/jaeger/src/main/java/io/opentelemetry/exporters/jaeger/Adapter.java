@@ -107,7 +107,7 @@ final class Adapter {
     return target.build();
   }
 
-  private static Timestamp toProtoTimestamp(io.opentelemetry.trace.Timestamp startTimestamp) {
+  private static Timestamp toProtoTimestamp(io.opentelemetry.common.Timestamp startTimestamp) {
     return Timestamp.newBuilder()
         .setNanos(startTimestamp.getNanos())
         .setSeconds(startTimestamp.getSeconds())
