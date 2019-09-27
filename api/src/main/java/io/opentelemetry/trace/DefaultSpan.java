@@ -142,6 +142,11 @@ public final class DefaultSpan implements Span {
   public void end() {}
 
   @Override
+  public void end(Timestamp endTimestamp) {
+    Utils.checkNotNull(endTimestamp, "endTimestamp");
+  }
+
+  @Override
   public SpanContext getContext() {
     return spanContext;
   }

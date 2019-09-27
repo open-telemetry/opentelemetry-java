@@ -120,6 +120,29 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
+  public void endSpan_endTimestamp() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    io.opentelemetry.trace.Timestamp endTimestamp =
+        io.opentelemetry.trace.Timestamp.fromMillis(System.currentTimeMillis() + 1000);
+    span.end(endTimestamp);
+
+    Span spanProto = span.toSpanProto();
+    verifySpanProto(
+        spanProto,
+        Attributes.getDefaultInstance(),
+        TimedEvents.getDefaultInstance(),
+        Links.getDefaultInstance(),
+        SPAN_NAME,
+        startTime,
+        Timestamp.newBuilder()
+            .setSeconds(endTimestamp.getSeconds())
+            .setNanos(endTimestamp.getNanos())
+            .build(),
+        Status.OK,
+        0);
+  }
+
+  @Test
   public void toSpanProto_ActiveSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
@@ -503,6 +526,7 @@ public class RecordEventsReadableSpanTest {
             config,
             spanProcessor,
             timestampConverter,
+            null,
             testClock,
             resource,
             attributes);

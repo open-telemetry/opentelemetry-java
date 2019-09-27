@@ -223,6 +223,17 @@ public interface Span {
   void end();
 
   /**
+   * Marks the end of {@code Span} execution with an explicit end {@link Timestamp}.
+   *
+   * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
+   * implementations are free to ignore all further calls.
+   *
+   * @param endTimestamp the explicit end {@link Timestamp} for this {@code Span}.
+   * @since 0.1.0
+   */
+  void end(Timestamp endTimestamp);
+
+  /**
    * Returns the {@code SpanContext} associated with this {@code Span}.
    *
    * @return the {@code SpanContext} associated with this {@code Span}.
@@ -453,6 +464,15 @@ public interface Span {
      * @since 0.1.0
      */
     Builder setSpanKind(Span.Kind spanKind);
+
+    /**
+     * Sets an explicit start {@link Timestamp} for the newly created {@code Span}.
+     *
+     * @param startTimestamp the explicit start {@link Timestamp} of the newly created {@code Span}.
+     * @return this.
+     * @since 0.1.0
+     */
+    Builder setStartTimestamp(Timestamp startTimestamp);
 
     /**
      * Starts a new {@link Span}.

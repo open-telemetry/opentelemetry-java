@@ -40,6 +40,7 @@ public class SpanBuilderTest {
     spanBuilder.setParent(DefaultSpan.createRandom());
     spanBuilder.setParent(DefaultSpan.createRandom().getContext());
     spanBuilder.setNoParent();
+    spanBuilder.setStartTimestamp(Timestamp.create(0, 1));
     assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
   }
 
@@ -57,5 +58,12 @@ public class SpanBuilderTest {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     thrown.expect(NullPointerException.class);
     spanBuilder.setParent((SpanContext) null);
+  }
+
+  @Test
+  public void setStartTimestamp_Null() {
+    Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
+    thrown.expect(NullPointerException.class);
+    spanBuilder.setStartTimestamp(null);
   }
 }

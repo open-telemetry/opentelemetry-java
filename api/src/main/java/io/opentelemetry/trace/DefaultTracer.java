@@ -146,6 +146,12 @@ public final class DefaultTracer implements Tracer {
       return this;
     }
 
+    @Override
+    public NoopSpanBuilder setStartTimestamp(Timestamp startTimestamp) {
+      Utils.checkNotNull(startTimestamp, "startTimestamp");
+      return this;
+    }
+
     private NoopSpanBuilder(Tracer tracer, String name) {
       Utils.checkNotNull(tracer, "tracer");
       Utils.checkNotNull(name, "name");

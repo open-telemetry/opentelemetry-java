@@ -30,6 +30,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Timestamp;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
@@ -67,6 +68,7 @@ class SpanBuilderSdk implements Span.Builder {
   private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
   private boolean recordEvents = false;
+  @Nullable private com.google.protobuf.Timestamp startTimestamp;
 
   SpanBuilderSdk(
       String spanName,
@@ -152,6 +154,17 @@ class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
+  public Span.Builder setStartTimestamp(Timestamp startTimestamp) {
+    Utils.checkNotNull(startTimestamp, "startTimestamp");
+    this.startTimestamp =
+        com.google.protobuf.Timestamp.newBuilder()
+            .setSeconds(startTimestamp.getSeconds())
+            .setNanos(startTimestamp.getNanos())
+            .build();
+    return this;
+  }
+
+  @Override
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
     TraceId traceId;
@@ -179,7 +192,14 @@ class SpanBuilderSdk implements Span.Builder {
     if (!recordEvents && !samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
     }
-    TimestampConverter timestampConverter = getTimestampConverter(parentSpan(parentType, parent));
+
+    TimestampConverter timestampConverter;
+    if (startTimestamp == null) {
+      timestampConverter = getTimestampConverter(parentSpan(parentType, parent));
+    } else {
+      timestampConverter = TimestampConverter.fromTimestamp(startTimestamp);
+    }
+
     return RecordEventsReadableSpan.startSpan(
         spanContext,
         spanName,
@@ -188,6 +208,7 @@ class SpanBuilderSdk implements Span.Builder {
         traceConfig,
         spanProcessor,
         timestampConverter,
+        startTimestamp,
         clock,
         resource,
         samplingDecision.attributes());

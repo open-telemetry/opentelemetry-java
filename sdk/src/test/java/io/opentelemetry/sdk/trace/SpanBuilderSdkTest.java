@@ -28,6 +28,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Timestamp;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
@@ -396,6 +397,51 @@ public class SpanBuilderSdkTest {
           .isEqualTo(((RecordEventsReadableSpan) parent).getTimestampConverter());
     } finally {
       scope.close();
+      parent.end();
+    }
+  }
+
+  @Test
+  public void startTimestamp_null() {
+    thrown.expect(NullPointerException.class);
+    tracer.spanBuilder(SPAN_NAME).setStartTimestamp(null);
+  }
+
+  @Test
+  public void startTimestamp() {
+    Timestamp startTimestamp = Timestamp.fromMillis(System.currentTimeMillis() - 1000);
+    RecordEventsReadableSpan span =
+        (RecordEventsReadableSpan)
+            tracer.spanBuilder(SPAN_NAME).setStartTimestamp(startTimestamp).startSpan();
+    span.end();
+
+    io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
+    assertThat(spanProto.getStartTime())
+        .isEqualTo(
+            com.google.protobuf.Timestamp.newBuilder()
+                .setSeconds(startTimestamp.getSeconds())
+                .setNanos(startTimestamp.getNanos())
+                .build());
+  }
+
+  @Test
+  public void startTimestamp_timestampConverter() {
+    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
+    try {
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan)
+              tracer
+                  .spanBuilder(SPAN_NAME)
+                  .setParent(parent)
+                  .setStartTimestamp(Timestamp.fromMillis(System.currentTimeMillis()))
+                  .startSpan();
+      try {
+        assertThat(span.getTimestampConverter())
+            .isNotEqualTo(((RecordEventsReadableSpan) parent).getTimestampConverter());
+      } finally {
+        span.end();
+      }
+    } finally {
       parent.end();
     }
   }
