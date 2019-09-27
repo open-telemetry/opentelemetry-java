@@ -26,7 +26,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link AbstractObserverBuilder}. */
+/** Unit tests for {@link AbstractCounterBuilder}. */
 @RunWith(JUnit4.class)
 public class AbstractCounterBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
