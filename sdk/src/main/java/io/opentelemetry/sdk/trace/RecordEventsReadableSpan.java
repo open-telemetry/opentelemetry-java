@@ -176,7 +176,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
               .setStartTime(timestampConverter.convertNanoTime(startNanoTime))
               .setEndTime(timestampConverter.convertNanoTime(getEndNanoTime()))
               .setChildSpanCount(UInt32Value.of(numberOfChildren));
-      if (parentSpanId != null) {
+      if (parentSpanId.isValid()) {
         builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(parentSpanId));
       }
       if (attributes != null) {

@@ -26,7 +26,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import io.opentelemetry.opentracingshim.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -67,7 +66,7 @@ public class ActiveSpanReplacementTest {
 
     // initial task is not related in any way to those two tasks
     assertNotEquals(spans.get(0).getTraceId(), spans.get(1).getTraceId());
-    assertTrue(TestUtils.verifyInvalidSpanId(spans.get(0).getParentSpanId()));
+    assertTrue(spans.get(0).getParentSpanId().isEmpty());
 
     assertNull(tracer.scopeManager().activeSpan());
   }

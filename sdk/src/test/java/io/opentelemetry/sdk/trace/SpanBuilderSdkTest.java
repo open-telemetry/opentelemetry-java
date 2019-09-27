@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.protobuf.ByteString;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.ProbabilitySampler;
@@ -401,8 +400,7 @@ public class SpanBuilderSdkTest {
     try {
       io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
       assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
-      assertThat(spanProto.getParentSpanId())
-          .isEqualTo(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 0}));
+      assertThat(spanProto.getParentSpanId().isEmpty()).isTrue();
     } finally {
       span.end();
     }

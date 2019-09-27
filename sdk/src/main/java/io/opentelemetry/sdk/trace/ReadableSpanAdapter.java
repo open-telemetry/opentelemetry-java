@@ -35,8 +35,8 @@ public class ReadableSpanAdapter {
    */
   public SpanData adapt(ReadableSpan span) {
     TimestampConverter timestampConverter = span.getTimestampConverter();
-    Timestamp startTimestamp = adaptTimestamp(timestampConverter, span.getStartNanoTime());
-    Timestamp endTimestamp = adaptTimestamp(timestampConverter, span.getEndNanoTime());
+    Timestamp startTimestamp = timestampConverter.nanoTimeToTimestampDelta(span.getStartNanoTime());
+    Timestamp endTimestamp = timestampConverter.nanoTimeToTimestampDelta(span.getEndNanoTime());
     SpanId parentSpanId = span.getParentSpanId();
     parentSpanId = parentSpanId == null ? SpanId.getInvalid() : parentSpanId;
     return SpanData.newBuilder()
@@ -68,14 +68,9 @@ public class ReadableSpanAdapter {
 
   private static TimedEvent adaptTimedEvent(
       io.opentelemetry.sdk.trace.TimedEvent sourceEvent, TimestampConverter timestampConverter) {
-    Timestamp timestamp = adaptTimestamp(timestampConverter, sourceEvent.getNanotime());
+    Timestamp timestamp = timestampConverter.nanoTimeToTimestampDelta(sourceEvent.getNanotime());
     io.opentelemetry.trace.Event event =
         Events.create(sourceEvent.getName(), sourceEvent.getAttributes());
     return TimedEvent.create(timestamp, event);
-  }
-
-  private static Timestamp adaptTimestamp(TimestampConverter converter, long nanoTime) {
-    com.google.protobuf.Timestamp timestamp = converter.convertNanoTime(nanoTime);
-    return Timestamp.create(timestamp.getSeconds(), timestamp.getNanos());
   }
 }

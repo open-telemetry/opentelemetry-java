@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.Attributes;
@@ -176,8 +175,7 @@ public class RecordEventsReadableSpanTest {
       span.end();
     }
     Span spanProto = span.toSpanProto();
-    assertThat(spanProto.getParentSpanId())
-        .isEqualTo(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 0}));
+    assertThat(spanProto.getParentSpanId()).isEmpty();
   }
 
   @Test

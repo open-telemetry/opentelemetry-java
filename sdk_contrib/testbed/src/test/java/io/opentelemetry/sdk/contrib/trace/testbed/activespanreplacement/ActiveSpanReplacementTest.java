@@ -23,7 +23,6 @@ import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.sleep;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import com.google.protobuf.ByteString;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentelemetry.trace.DefaultSpan;
@@ -65,8 +64,7 @@ public class ActiveSpanReplacementTest {
 
     // initial task is not related in any way to those two tasks
     assertThat(spans.get(0).getTraceId()).isNotEqualTo(spans.get(1).getTraceId());
-    assertThat(spans.get(0).getParentSpanId())
-        .isEqualTo(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 0}));
+    assertThat(spans.get(0).getParentSpanId()).isEmpty();
 
     assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }

@@ -20,10 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByAttr;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByAttr;
-import static org.junit.Assert.assertTrue;
 
 import com.google.protobuf.ByteString;
-import io.opentelemetry.opentracingshim.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -117,9 +115,8 @@ public class PromisePropagationTest {
 
       String component = Tags.COMPONENT.getKey();
       assertThat(getOneByAttr(finished, component, "example-promises")).isNotNull();
-      assertTrue(
-          TestUtils.verifyInvalidSpanId(
-              getOneByAttr(finished, component, "example-promises").getParentSpanId()));
+      assertThat(getOneByAttr(finished, component, "example-promises").getParentSpanId().isEmpty())
+          .isTrue();
       assertThat(getByAttr(finished, component, "success")).hasSize(2);
 
       ByteString parentId = getOneByAttr(finished, component, "example-promises").getSpanId();

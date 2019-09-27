@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import io.opentelemetry.opentracingshim.testbed.TestUtils;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentracing.Scope;
@@ -69,8 +68,8 @@ public class HandlerTest {
     }
 
     assertNotEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
-    assertTrue(TestUtils.verifyInvalidSpanId(finished.get(0).getParentSpanId()));
-    assertTrue(TestUtils.verifyInvalidSpanId(finished.get(1).getParentSpanId()));
+    assertTrue(finished.get(0).getParentSpanId().isEmpty());
+    assertTrue(finished.get(1).getParentSpanId().isEmpty());
 
     assertNull(tracer.scopeManager().activeSpan());
   }
