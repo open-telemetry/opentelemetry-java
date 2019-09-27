@@ -191,7 +191,7 @@ public class TraceProtoUtilsTest {
   public void toProtoTimestamp() {
     Timestamp expected = Timestamp.newBuilder().setSeconds(123).setNanos(345678).build();
     assertThat(
-            TraceProtoUtils.toProtoTimestamp(io.opentelemetry.trace.Timestamp.create(123, 345678)))
+            TraceProtoUtils.toProtoTimestamp(io.opentelemetry.common.Timestamp.create(123, 345678)))
         .isEqualTo(expected);
   }
 }
