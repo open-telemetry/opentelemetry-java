@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.trace.Timestamp;
+import io.opentelemetry.common.Timestamp;
 import javax.annotation.concurrent.Immutable;
 
 /**

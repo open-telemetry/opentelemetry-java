@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.trace.Timestamp;
+import io.opentelemetry.common.Timestamp;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
