@@ -19,6 +19,7 @@ package io.opentelemetry.opentracingshim.testbed;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.proto.trace.v1.AttributeValue;
@@ -228,5 +229,10 @@ public final class TestUtils {
       assertEquals(spans.get(spans.size() - 1).getTraceId(), spans.get(i).getTraceId());
       assertEquals(spans.get(spans.size() - 1).getSpanId(), spans.get(i).getParentSpanId());
     }
+  }
+
+  public static boolean verifyInvalidSpanId(com.google.protobuf.ByteString id) {
+    ByteString invalid = ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 0});
+    return invalid.equals(id);
   }
 }

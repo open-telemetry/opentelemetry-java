@@ -112,7 +112,8 @@ public class PromisePropagationTest {
       io.opentelemetry.proto.trace.v1.Span parentSpanProto =
           TestUtils.getOneByAttr(finished, component, "example-promises");
       assertThat(parentSpanProto).isNotNull();
-      assertThat(parentSpanProto.getParentSpanId().isEmpty()).isTrue();
+      assertThat(parentSpanProto.getParentSpanId())
+          .isEqualTo(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 0}));
       List<io.opentelemetry.proto.trace.v1.Span> successSpans =
           TestUtils.getByAttr(finished, component, "success");
       assertThat(successSpans).hasSize(2);

@@ -32,6 +32,9 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.util.Links;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,8 +51,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
-  // The parent SpanId of this span. Null if this is a root span.
-  @Nullable private final SpanId parentSpanId;
+  // The parent SpanId of this span. non-valid if this is a root span.
+  private final SpanId parentSpanId;
   // Active trace configs when the Span was created.
   private final TraceConfig traceConfig;
   // Handler called when the span starts and ends.
@@ -136,7 +139,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             context,
             name,
             kind,
-            parentSpanId,
+            parentSpanId == null ? SpanId.getInvalid() : parentSpanId,
             traceConfig,
             spanProcessor,
             timestampConverter,
@@ -151,23 +154,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     return span;
   }
 
-  @Override
-  public SpanContext getSpanContext() {
-    return getContext();
-  }
-
   /**
-   * Returns the name of the {@code Span}.
+   * This method is here to convert this instance into a protobuf instance. It will be removed from
+   * this class soon, so if you are writing new code you should not use this method. It is left here
+   * to help reduce the number of simultaneous changes in-flight at once.
    *
-   * @return the name of the {@code Span}.
+   * @return a new protobuf Span instance.
    */
-  @Override
-  public String getName() {
-    synchronized (this) {
-      return name;
-    }
-  }
-
+  @Deprecated
   @Override
   public io.opentelemetry.proto.trace.v1.Span toSpanProto() {
     synchronized (this) {
@@ -205,16 +199,26 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
   }
 
+  @Override
+  public SpanContext getSpanContext() {
+    return getContext();
+  }
+
   /**
-   * Returns the status of the {@code Span}. If not set defaults to {@link Status#OK}.
+   * Returns the name of the {@code Span}.
    *
-   * @return the status of the {@code Span}.
+   * @return the name of the {@code Span}.
    */
-  @VisibleForTesting
-  Status getStatus() {
+  @Override
+  public String getName() {
     synchronized (this) {
-      return getStatusWithDefault();
+      return name;
     }
+  }
+
+  @Override
+  public long getStartNanoTime() {
+    return startNanoTime;
   }
 
   /**
@@ -223,9 +227,66 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the end nano time.
    */
-  private long getEndNanoTime() {
+  @Override
+  public long getEndNanoTime() {
     synchronized (this) {
       return getEndNanoTimeInternal();
+    }
+  }
+
+  /**
+   * Returns the status of the {@code Span}. If not set defaults to {@link Status#OK}.
+   *
+   * @return the status of the {@code Span}.
+   */
+  @Override
+  public Status getStatus() {
+    synchronized (this) {
+      return getStatusWithDefault();
+    }
+  }
+
+  /**
+   * Returns a copy of the timed events for this span.
+   *
+   * @return The TimedEvents for this span.
+   */
+  @Override
+  public List<TimedEvent> getTimedEvents() {
+    synchronized (this) {
+      return events == null ? Collections.<TimedEvent>emptyList() : new ArrayList<>(events);
+    }
+  }
+
+  /**
+   * Returns a copy of the links for this span.
+   *
+   * @return A copy of the Links for this span.
+   */
+  @Override
+  public List<Link> getLinks() {
+    synchronized (this) {
+      if (links == null) {
+        return Collections.emptyList();
+      }
+      List<Link> result = new ArrayList<>(links.size());
+      for (Link link : links) {
+        Link newLink = Links.create(context, link.getAttributes());
+        result.add(newLink);
+      }
+      return result;
+    }
+  }
+
+  /**
+   * Returns an unmodifiable view of the attributes associated with this span.
+   *
+   * @return An unmodifiable view of the attributes associated wit this span
+   */
+  @Override
+  public Map<String, AttributeValue> getAttributes() {
+    synchronized (this) {
+      return Collections.unmodifiableMap(getInitializedAttributes());
     }
   }
 
@@ -252,9 +313,29 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the kind of this {@code Span}.
    */
-  @VisibleForTesting
-  Kind getKind() {
+  @Override
+  public Kind getKind() {
     return kind;
+  }
+
+  /**
+   * Returns the span id of this span's parent span.
+   *
+   * @return The span id of the parent span.
+   */
+  @Override
+  public SpanId getParentSpanId() {
+    return parentSpanId;
+  }
+
+  /**
+   * Returns the resource associated with this span.
+   *
+   * @return The {@code Resource} that created this span.
+   */
+  @Override
+  public Resource getResource() {
+    return resource;
   }
 
   /**
@@ -263,7 +344,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return the {@code TimestampConverter} used by this {@code Span}.
    */
   @Nullable
-  TimestampConverter getTimestampConverter() {
+  @Override
+  public TimestampConverter getTimestampConverter() {
     return timestampConverter;
   }
 
@@ -444,7 +526,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanContext context,
       String name,
       Kind kind,
-      @Nullable SpanId parentSpanId,
+      SpanId parentSpanId,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
@@ -482,5 +564,60 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
     }
     super.finalize();
+  }
+
+  @VisibleForTesting
+  int getTotalRecordedEvents() {
+    synchronized (this) {
+      return totalRecordedEvents;
+    }
+  }
+
+  @VisibleForTesting
+  int getTotalRecordedLinks() {
+    synchronized (this) {
+      return totalRecordedLinks;
+    }
+  }
+
+  @VisibleForTesting
+  int getNumberOfChildren() {
+    synchronized (this) {
+      return numberOfChildren;
+    }
+  }
+
+  @VisibleForTesting
+  AttributesWithCapacity getRawAttributes() {
+    synchronized (this) {
+      return getInitializedAttributes();
+    }
+  }
+
+  @Override
+  public int getChildSpanCount() {
+    synchronized (this) {
+      return numberOfChildren;
+    }
+  }
+
+  /**
+   * The count of links that have been dropped.
+   *
+   * @return The number of links that have been dropped.
+   */
+  @VisibleForTesting
+  public int getDroppedLinksCount() {
+    return totalRecordedLinks - links.size();
+  }
+
+  @VisibleForTesting
+  int getDroppedAttributesCount() {
+    return getRawAttributes().getNumberOfDroppedAttributes();
+  }
+
+  @VisibleForTesting
+  int getDroppedTimedEventsCount() {
+    return getTotalRecordedEvents() - getTimedEvents().size();
   }
 }

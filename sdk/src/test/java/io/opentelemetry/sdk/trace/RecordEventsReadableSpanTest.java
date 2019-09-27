@@ -176,7 +176,8 @@ public class RecordEventsReadableSpanTest {
       span.end();
     }
     Span spanProto = span.toSpanProto();
-    assertThat(spanProto.getParentSpanId()).isEqualTo(ByteString.EMPTY);
+    assertThat(spanProto.getParentSpanId())
+        .isEqualTo(ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 0}));
   }
 
   @Test

@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.contrib.trace.testbed.concurrentcommonrequesthandle
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.protobuf.ByteString;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
@@ -63,8 +64,9 @@ public class HandlerTest {
     }
 
     assertThat(finished.get(0).getTraceId()).isNotEqualTo(finished.get(1).getTraceId());
-    assertThat(finished.get(0).getParentSpanId()).isEmpty();
-    assertThat(finished.get(1).getParentSpanId()).isEmpty();
+    ByteString invalidId = ByteString.copyFrom(new byte[] {0, 0, 0, 0, 0, 0, 0, 0});
+    assertThat(finished.get(0).getParentSpanId()).isEqualTo(invalidId);
+    assertThat(finished.get(1).getParentSpanId()).isEqualTo(invalidId);
 
     assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
