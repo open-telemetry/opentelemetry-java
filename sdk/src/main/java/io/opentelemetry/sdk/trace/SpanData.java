@@ -240,7 +240,7 @@ public abstract class SpanData {
       // make unmodifiable copies of any collections
       setAttributes(Collections.unmodifiableMap(new HashMap<>(getAttributes())));
       setTimedEvents(Collections.unmodifiableList(new ArrayList<>(getTimedEvents())));
-      setLinks(Collections.unmodifiableList(getLinks()));
+      setLinks(Collections.unmodifiableList(new ArrayList<>(getLinks())));
       return autoBuild();
     }
 
