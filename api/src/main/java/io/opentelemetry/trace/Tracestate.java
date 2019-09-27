@@ -238,19 +238,13 @@ public abstract class Tracestate {
   // forward slashes /.  For multi-tenant vendor scenarios, an at sign (@) can be used to prefix the
   // vendor name.
   private static boolean validateKey(String key) {
-    if (key.length() > KEY_MAX_SIZE || key.isEmpty() || !isNumberOrDigit(key.charAt(0))) {
+    if (key.length() > KEY_MAX_SIZE || key.isEmpty() || isNotNumberOrDigit(key.charAt(0))) {
       return false;
     }
     int atSeenCount = 0;
     for (int i = 1; i < key.length(); i++) {
       char c = key.charAt(i);
-      if (!isNumberOrDigit(c)
-          && !(c >= '0' && c <= '9')
-          && c != '_'
-          && c != '-'
-          && c != '@'
-          && c != '*'
-          && c != '/') {
+      if (isNotNumberOrDigit(c) && c != '_' && c != '-' && c != '@' && c != '*' && c != '/') {
         return false;
       }
       if ((c == '@') && (++atSeenCount > 1)) {
@@ -260,8 +254,8 @@ public abstract class Tracestate {
     return true;
   }
 
-  private static boolean isNumberOrDigit(char ch) {
-    return (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9');
+  private static boolean isNotNumberOrDigit(char ch) {
+    return (ch < 'a' || ch > 'z') && (ch < '0' || ch > '9');
   }
 
   // Value is opaque string up to 256 characters printable ASCII RFC0020 characters (i.e., the range
