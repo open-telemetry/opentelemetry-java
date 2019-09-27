@@ -35,6 +35,8 @@ import io.opentelemetry.metrics.MeasureBatchRecorder;
 import io.opentelemetry.metrics.MeasureDouble;
 import io.opentelemetry.metrics.MeasureLong;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.metrics.ObserverDouble;
+import io.opentelemetry.metrics.ObserverLong;
 import io.opentelemetry.metrics.spi.MeterProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
@@ -300,6 +302,18 @@ public class OpenTelemetryTest {
     @Nullable
     @Override
     public MeasureLong.Builder measureLongBuilder(String name) {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public ObserverDouble.Builder observerDoubleBuilder(String name) {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public ObserverLong.Builder observerLongBuilder(String name) {
       return null;
     }
 

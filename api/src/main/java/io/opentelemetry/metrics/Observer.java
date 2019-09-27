@@ -16,16 +16,45 @@
 
 package io.opentelemetry.metrics;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
- * Base interface for all the Gauge metrics.
+ * Base interface for all the Observer metrics.
  *
- * @param <H> the Handle.
+ * @param <R> the Handle.
  * @since 0.1.0
  */
-public interface Gauge<H> extends Metric<H> {
+public interface Observer<R> extends Metric<Observer.Handle> {
+  /**
+   * A {@code Handle} for a {@code Observer}.
+   *
+   * @since 0.1.0
+   */
+  @ThreadSafe
+  interface Handle {}
 
-  /** Builder class for {@link Gauge}. */
-  interface Builder<B extends Gauge.Builder<B, V>, V> extends Metric.Builder<B, V> {
+  /**
+   * A {@code Callback} for a {@code Observer}.
+   *
+   * @since 0.1.0
+   */
+  interface Callback<R> {
+    void update(R result);
+  }
+
+  /**
+   * Sets a callback that gets executed every time before exporting this metric.
+   *
+   * <p>Evaluation is deferred until needed, if this {@code Observer} metric is not exported then it
+   * will never be called.
+   *
+   * @param metricUpdater the callback to be executed before export.
+   * @since 0.1.0
+   */
+  void setCallback(Callback<R> metricUpdater);
+
+  /** Builder class for {@link Observer}. */
+  interface Builder<B extends Metric.Builder<B, V>, V> extends Metric.Builder<B, V> {
     /**
      * Sets the monotonicity property for this {@code Metric}. If {@code true} successive values are
      * expected to rise monotonically.

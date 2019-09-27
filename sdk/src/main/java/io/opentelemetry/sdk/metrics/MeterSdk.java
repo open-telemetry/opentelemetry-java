@@ -24,6 +24,8 @@ import io.opentelemetry.metrics.MeasureBatchRecorder;
 import io.opentelemetry.metrics.MeasureDouble;
 import io.opentelemetry.metrics.MeasureLong;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.metrics.ObserverDouble;
+import io.opentelemetry.metrics.ObserverLong;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
 public class MeterSdk implements Meter {
@@ -55,6 +57,16 @@ public class MeterSdk implements Meter {
 
   @Override
   public MeasureLong.Builder measureLongBuilder(String name) {
+    throw new UnsupportedOperationException("to be implemented");
+  }
+
+  @Override
+  public ObserverDouble.Builder observerDoubleBuilder(String name) {
+    throw new UnsupportedOperationException("to be implemented");
+  }
+
+  @Override
+  public ObserverLong.Builder observerLongBuilder(String name) {
     throw new UnsupportedOperationException("to be implemented");
   }
 

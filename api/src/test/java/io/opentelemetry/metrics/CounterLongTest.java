@@ -46,7 +46,7 @@ public class CounterLongTest {
   }
 
   @Test
-  public void preventTooLongMeasureName() {
+  public void preventTooLongName() {
     char[] chars = new char[DefaultMeter.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
@@ -67,6 +67,23 @@ public class CounterLongTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
     meter.counterLongBuilder("metric").setUnit(null).build();
+  }
+
+  @Test
+  public void preventNull_LabelKeys() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKeys");
+    meter.counterLongBuilder("metric").setLabelKeys(null).build();
+  }
+
+  @Test
+  public void preventNull_LabelKey() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKey");
+    meter
+        .counterLongBuilder("metric")
+        .setLabelKeys(Collections.<String>singletonList(null))
+        .build();
   }
 
   @Test

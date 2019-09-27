@@ -154,39 +154,6 @@ public interface Span {
   void addEvent(Event event);
 
   /**
-   * Adds a {@link Link} to the {@code Span}.
-   *
-   * @param spanContext the context of the linked {@code Span}.
-   * @throws NullPointerException if {@code spanContext} is {@code null}.
-   * @see #addLink(Link)
-   * @since 0.1.0
-   */
-  void addLink(SpanContext spanContext);
-
-  /**
-   * Adds a {@link Link} to the {@code Span}.
-   *
-   * @param spanContext the context of the linked {@code Span}.
-   * @param attributes the attributes of the {@code Link}.
-   * @throws NullPointerException if {@code spanContext} is {@code null}.
-   * @throws NullPointerException if {@code attributes} is {@code null}.
-   * @see #addLink(Link)
-   * @since 0.1.0
-   */
-  void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes);
-
-  /**
-   * Adds a {@link Link} to the {@code Span}.
-   *
-   * <p>Used (for example) in batching operations, where a single batch handler processes multiple
-   * requests from different traces or the same trace.
-   *
-   * @param link the link to add.
-   * @since 0.1.0
-   */
-  void addLink(Link link);
-
-  /**
    * Sets the {@link Status} to the {@code Span}.
    *
    * <p>If used, this will override the default {@code Span} status. Default is {@link Status#OK}.
