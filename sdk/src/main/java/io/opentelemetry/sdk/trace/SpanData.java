@@ -17,13 +17,13 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.Timestamp;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
