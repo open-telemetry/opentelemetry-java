@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace.export;
+package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.resources.Resource;

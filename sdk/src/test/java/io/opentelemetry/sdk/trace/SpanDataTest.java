@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace.export;
+package io.opentelemetry.sdk.trace;
 
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import io.opentelemetry.sdk.trace.export.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
