@@ -54,4 +54,18 @@ public class TimestampConverter {
     this.timestamp = timestamp;
     this.nanoTime = nanoTime;
   }
+
+  /**
+   * Converts a {@link System#nanoTime() nanoTime} value to {@link
+   * io.opentelemetry.common.Timestamp}.
+   *
+   * @param nanoTime value to convert.
+   * @return the {@code SpanData.Timestamp} representation of the {@code time}.
+   */
+  public io.opentelemetry.common.Timestamp nanoTimeToTimestampDelta(long nanoTime) {
+    // todo: implement this without going through the protobuf intermediary.
+    Timestamp protoVersion = convertNanoTime(nanoTime);
+    return io.opentelemetry.common.Timestamp.create(
+        protoVersion.getSeconds(), protoVersion.getNanos());
+  }
 }
