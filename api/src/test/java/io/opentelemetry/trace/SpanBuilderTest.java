@@ -18,6 +18,7 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.util.Samplers;
 import org.junit.Rule;

@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.opentelemetry.common.Timestamp;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 

@@ -121,8 +121,8 @@ public class RecordEventsReadableSpanTest {
   @Test
   public void endSpan_endTimestamp() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
-    io.opentelemetry.trace.Timestamp endTimestamp =
-        io.opentelemetry.trace.Timestamp.fromMillis(System.currentTimeMillis() + 1000);
+    io.opentelemetry.common.Timestamp endTimestamp =
+        io.opentelemetry.common.Timestamp.fromMillis(System.currentTimeMillis() + 1000);
     span.end(endTimestamp);
 
     Span spanProto = span.toSpanProto();
@@ -130,7 +130,7 @@ public class RecordEventsReadableSpanTest {
         spanProto,
         Attributes.getDefaultInstance(),
         TimedEvents.getDefaultInstance(),
-        Links.getDefaultInstance(),
+        TraceProtoUtils.toProtoLinks(Collections.singletonList(link), 0),
         SPAN_NAME,
         startTime,
         Timestamp.newBuilder()
