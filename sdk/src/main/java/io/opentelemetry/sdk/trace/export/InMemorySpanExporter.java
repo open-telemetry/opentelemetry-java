@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import io.opentelemetry.sdk.trace.SpanData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -60,8 +61,7 @@ public final class InMemorySpanExporter implements SpanExporter {
   }
 
   /**
-   * Returns a {@code List} of the finished {@code Span}s, represented by {@code
-   * io.opentelemetry.proto.trace.v1.Span}.
+   * Returns a {@code List} of the finished {@code Span}s, represented by {@code SpanData}.
    *
    * @return a {@code List} of the finished {@code Span}s.
    */

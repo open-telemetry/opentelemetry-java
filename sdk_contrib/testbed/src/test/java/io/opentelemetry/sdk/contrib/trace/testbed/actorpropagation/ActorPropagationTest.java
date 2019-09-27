@@ -20,8 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -75,8 +75,7 @@ public class ActorPropagationTest {
 
       List<SpanData> finished = exporter.getFinishedSpanItems();
       assertThat(finished.size()).isEqualTo(3);
-      assertThat(finished.get(0).getContext().getTraceId())
-          .isEqualTo(finished.get(1).getContext().getTraceId());
+      assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 

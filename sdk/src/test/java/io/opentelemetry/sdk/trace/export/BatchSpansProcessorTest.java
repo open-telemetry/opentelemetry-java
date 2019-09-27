@@ -22,6 +22,7 @@ import static org.mockito.Mockito.doThrow;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.ReadableSpanAdapter;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.trace.util.Samplers;
 import java.util.ArrayList;

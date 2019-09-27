@@ -23,8 +23,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentracing.Scope;
 import io.opentracing.Span;

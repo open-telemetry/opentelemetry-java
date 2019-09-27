@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace.export;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.ReadableSpanAdapter;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
 
 /**
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
- * io.opentelemetry.proto.trace.v1.Span} and passes it to the configured exporter.
+ * SpanData} and passes it to the configured exporter.
  */
 public final class SimpleSpansProcessor implements SpanProcessor {
 

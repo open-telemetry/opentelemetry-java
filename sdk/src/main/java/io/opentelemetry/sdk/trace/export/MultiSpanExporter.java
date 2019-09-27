@@ -20,6 +20,7 @@ import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILED_N
 import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILED_RETRYABLE;
 import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.SUCCESS;
 
+import io.opentelemetry.sdk.trace.SpanData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

@@ -17,10 +17,10 @@
 package io.opentelemetry.sdk.contrib.trace.export;
 
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
-import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 

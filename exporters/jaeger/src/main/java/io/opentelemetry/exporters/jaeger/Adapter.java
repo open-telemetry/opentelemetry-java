@@ -21,8 +21,8 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.proto.trace.v1.Span;
-import io.opentelemetry.sdk.trace.export.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import java.util.ArrayList;
@@ -107,7 +107,7 @@ final class Adapter {
     return target.build();
   }
 
-  private static Timestamp toProtoTimestamp(SpanData.Timestamp startTimestamp) {
+  private static Timestamp toProtoTimestamp(io.opentelemetry.trace.Timestamp startTimestamp) {
     return Timestamp.newBuilder()
         .setNanos(startTimestamp.getNanos())
         .setSeconds(startTimestamp.getSeconds())
@@ -143,11 +143,8 @@ final class Adapter {
 
     // name is a top-level property in OpenTelemetry
     builder.addFields(
-        Model.KeyValue.newBuilder()
-            .setKey(KEY_LOG_MESSAGE)
-            .setVStr(timedEvent.getEvent().getName())
-            .build());
-    builder.addAllFields(toKeyValues(timedEvent.getEvent().getAttributes()));
+        Model.KeyValue.newBuilder().setKey(KEY_LOG_MESSAGE).setVStr(timedEvent.getName()).build());
+    builder.addAllFields(toKeyValues(timedEvent.getAttributes()));
 
     return builder.build();
   }

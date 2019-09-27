@@ -19,8 +19,8 @@ package io.opentelemetry.opentracingshim.testbed.statelesscommonrequesthandler;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static org.junit.Assert.assertEquals;
 
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;

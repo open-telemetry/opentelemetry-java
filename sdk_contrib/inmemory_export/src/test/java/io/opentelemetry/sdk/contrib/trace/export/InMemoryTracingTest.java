@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.contrib.trace.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
-import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.util.Samplers;
 import java.util.List;
 import org.junit.Rule;
@@ -31,7 +31,7 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link InMemoryTracing}. */
 @RunWith(JUnit4.class)
 public class InMemoryTracingTest {
-  InMemoryTracing tracing = new InMemoryTracing();
+  private final InMemoryTracing tracing = new InMemoryTracing();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 

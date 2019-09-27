@@ -22,6 +22,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import java.util.Arrays;

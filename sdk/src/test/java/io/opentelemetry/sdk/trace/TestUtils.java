@@ -16,17 +16,13 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.export.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanData.Timestamp;
 import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.Timestamp;
 import io.opentelemetry.trace.TraceId;
 import java.util.HashMap;
 import java.util.Map;
@@ -75,22 +71,13 @@ public final class TestUtils {
    */
   public static SpanData makeBasicSpan() {
     return SpanData.newBuilder()
-        .context(
-            SpanContext.create(
-                TraceId.getInvalid(),
-                SpanId.getInvalid(),
-                TraceFlags.builder().build(),
-                Tracestate.builder().build()))
-        .parentSpanId(SpanId.getInvalid())
-        .name("span")
-        .kind(Kind.SERVER)
-        .resource(Resource.create(Collections.<String, String>emptyMap()))
-        .startTimestamp(Timestamp.create(100, 100))
-        .attributes(Collections.<String, AttributeValue>emptyMap())
-        .timedEvents(Collections.<SpanData.TimedEvent>emptyList())
-        .links(Collections.<Link>emptyList())
-        .status(Status.OK)
-        .endTimestamp(Timestamp.create(200, 200))
+        .setTraceId(TraceId.getInvalid())
+        .setSpanId(SpanId.getInvalid())
+        .setName("span")
+        .setKind(Kind.SERVER)
+        .setStartTimestamp(Timestamp.create(100, 100))
+        .setStatus(Status.OK)
+        .setEndTimestamp(Timestamp.create(200, 200))
         .build();
   }
 }

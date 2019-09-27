@@ -24,19 +24,20 @@ import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.util.Durations;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.export.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanData.Event;
-import io.opentelemetry.sdk.trace.export.SpanData.Link;
-import io.opentelemetry.sdk.trace.export.SpanData.TimedEvent;
-import io.opentelemetry.sdk.trace.export.SpanData.Timestamp;
+import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.Timestamp;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.util.Events;
+import io.opentelemetry.trace.util.Links;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -189,8 +190,7 @@ public class AdapterTest {
   public void testSpanRefs() {
     // prepare
     io.opentelemetry.trace.Link link =
-        SpanData.Link.create(
-            createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+        Links.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -202,7 +202,7 @@ public class AdapterTest {
   @Test
   public void testSpanRef() {
     // prepare
-    SpanData.Link link = SpanData.Link.create(createSpanContext(TRACE_ID, SPAN_ID));
+    Link link = Links.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
@@ -221,7 +221,7 @@ public class AdapterTest {
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
     ImmutableMap<String, AttributeValue> attributes =
         ImmutableMap.<String, AttributeValue>of("foo", valueS);
-    return TimedEvent.create(ts, Event.create("the log message", attributes));
+    return TimedEvent.create(ts, Events.create("the log message", attributes));
   }
 
   private static SpanData getSpanData(Timestamp startTime, Timestamp endTime) {
@@ -230,20 +230,21 @@ public class AdapterTest {
         ImmutableMap.<String, AttributeValue>of("valueB", valueB);
 
     io.opentelemetry.trace.Link link =
-        Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+        Links.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return SpanData.newBuilder()
-        .context(createSpanContext(TRACE_ID, SPAN_ID))
-        .parentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
-        .name("GET /api/endpoint")
-        .startTimestamp(startTime)
-        .endTimestamp(endTime)
-        .attributes(attributes)
-        .timedEvents(Collections.singletonList(getTimedEvent()))
-        .links(Collections.singletonList(link))
-        .kind(Span.Kind.SERVER)
-        .resource(Resource.create(Collections.<String, String>emptyMap()))
-        .status(Status.OK)
+        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
+        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+        .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
+        .setName("GET /api/endpoint")
+        .setStartTimestamp(startTime)
+        .setEndTimestamp(endTime)
+        .setAttributes(attributes)
+        .setTimedEvents(Collections.singletonList(getTimedEvent()))
+        .setLinks(Collections.singletonList(link))
+        .setKind(Span.Kind.SERVER)
+        .setResource(Resource.create(Collections.<String, String>emptyMap()))
+        .setStatus(Status.OK)
         .build();
   }
 

@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;

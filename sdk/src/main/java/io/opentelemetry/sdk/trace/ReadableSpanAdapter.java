@@ -17,11 +17,10 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.internal.TimestampConverter;
-import io.opentelemetry.sdk.trace.export.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanData.Event;
-import io.opentelemetry.sdk.trace.export.SpanData.TimedEvent;
-import io.opentelemetry.sdk.trace.export.SpanData.Timestamp;
+import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Timestamp;
+import io.opentelemetry.trace.util.Events;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,22 +35,25 @@ public class ReadableSpanAdapter {
    */
   public SpanData adapt(ReadableSpan span) {
     TimestampConverter timestampConverter = span.getTimestampConverter();
-    SpanData.Timestamp startTimestamp = timestampConverter.convertNanoTime(span.getStartNanoTime());
-    SpanData.Timestamp endTimestamp = timestampConverter.convertNanoTime(span.getEndNanoTime());
+    Timestamp startTimestamp = timestampConverter.convertNanoTime(span.getStartNanoTime());
+    Timestamp endTimestamp = timestampConverter.convertNanoTime(span.getEndNanoTime());
     SpanId parentSpanId = span.getParentSpanId();
     parentSpanId = parentSpanId == null ? SpanId.getInvalid() : parentSpanId;
     return SpanData.newBuilder()
-        .name(span.getName())
-        .context(span.getSpanContext())
-        .attributes(span.getAttributes())
-        .startTimestamp(startTimestamp)
-        .endTimestamp(endTimestamp)
-        .kind(span.getKind())
-        .links(span.getLinks())
-        .parentSpanId(parentSpanId)
-        .resource(span.getResource())
-        .status(span.getStatus())
-        .timedEvents(adaptTimedEvents(span))
+        .setName(span.getName())
+        .setTraceId(span.getSpanContext().getTraceId())
+        .setSpanId(span.getSpanContext().getSpanId())
+        .setTraceFlags(span.getSpanContext().getTraceFlags())
+        .setTracestate(span.getSpanContext().getTracestate())
+        .setAttributes(span.getAttributes())
+        .setStartTimestamp(startTimestamp)
+        .setEndTimestamp(endTimestamp)
+        .setKind(span.getKind())
+        .setLinks(span.getLinks())
+        .setParentSpanId(parentSpanId)
+        .setResource(span.getResource())
+        .setStatus(span.getStatus())
+        .setTimedEvents(adaptTimedEvents(span))
         .build();
   }
 
@@ -69,7 +71,7 @@ public class ReadableSpanAdapter {
 
     Timestamp timestamp = timestampConverter.convertNanoTime(sourceEvent.getNanotime());
     io.opentelemetry.trace.Event event =
-        Event.create(sourceEvent.getName(), sourceEvent.getAttributes());
+        Events.create(sourceEvent.getName(), sourceEvent.getAttributes());
     return TimedEvent.create(timestamp, event);
   }
 }

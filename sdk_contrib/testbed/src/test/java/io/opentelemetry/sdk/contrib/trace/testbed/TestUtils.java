@@ -18,13 +18,13 @@ package io.opentelemetry.sdk.contrib.trace.testbed;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
-import io.opentelemetry.sdk.trace.export.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanData.Timestamp;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.Timestamp;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -215,10 +215,8 @@ public final class TestUtils {
               spans.get(spans.size() - 1).getEndTimestamp().getSeconds()
                   >= spans.get(i).getEndTimestamp().getSeconds())
           .isTrue();
-      assertThat(spans.get(spans.size() - 1).getContext().getTraceId())
-          .isEqualTo(spans.get(i).getContext().getTraceId());
-      assertThat(spans.get(spans.size() - 1).getContext().getSpanId())
-          .isEqualTo(spans.get(i).getParentSpanId());
+      assertThat(spans.get(spans.size() - 1).getTraceId()).isEqualTo(spans.get(i).getTraceId());
+      assertThat(spans.get(spans.size() - 1).getSpanId()).isEqualTo(spans.get(i).getParentSpanId());
     }
   }
 }

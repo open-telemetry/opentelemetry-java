@@ -23,9 +23,9 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.export.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanData.TimedEvent;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -127,7 +127,7 @@ public final class ErrorReportingTest {
 
     List<TimedEvent> events = spans.get(0).getTimedEvents();
     assertEquals(events.size(), maxRetries);
-    assertEquals(events.get(0).getEvent().getName(), Tags.ERROR.getKey());
+    assertEquals(events.get(0).getName(), Tags.ERROR.getKey());
     /* TODO: Handle actual objects being passed to log/events. */
     /*assertNotNull(events.get(0).getEvent().getAttributes().get(Fields.ERROR_OBJECT));*/
   }

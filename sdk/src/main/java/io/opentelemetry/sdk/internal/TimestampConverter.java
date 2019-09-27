@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.internal;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
-import io.opentelemetry.sdk.trace.export.SpanData;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -57,7 +56,8 @@ public class TimestampConverter {
   }
 
   /**
-   * Converts a {@link System#nanoTime() nanoTime} value to {@link SpanData.Timestamp}.
+   * Converts a {@link System#nanoTime() nanoTime} value to {@link
+   * io.opentelemetry.trace.Timestamp}.
    *
    * @param nanoTime value to convert.
    * @return the {@code SpanData.Timestamp} representation of the {@code time}.

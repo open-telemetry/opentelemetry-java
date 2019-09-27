@@ -20,6 +20,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.ReadableSpanAdapter;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.ArrayList;
 import java.util.Collections;

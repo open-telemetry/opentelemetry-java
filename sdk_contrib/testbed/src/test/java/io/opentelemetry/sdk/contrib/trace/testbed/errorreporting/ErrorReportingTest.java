@@ -23,9 +23,9 @@ import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
+import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.export.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanData.TimedEvent;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
@@ -122,7 +122,7 @@ public final class ErrorReportingTest {
 
     List<TimedEvent> events = spans.get(0).getTimedEvents();
     assertEquals(events.size(), maxRetries);
-    assertEquals(events.get(0).getEvent().getName(), "error");
+    assertEquals(events.get(0).getName(), "error");
   }
 
   /* Error handling for a mocked layer automatically capturing/activating

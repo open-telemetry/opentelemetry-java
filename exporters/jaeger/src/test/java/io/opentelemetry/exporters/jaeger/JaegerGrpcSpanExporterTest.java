@@ -32,18 +32,13 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.export.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanData.TimedEvent;
-import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.Timestamp;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
 import java.net.InetAddress;
 import java.util.Collections;
 import org.junit.Rule;
@@ -81,28 +76,18 @@ public class JaegerGrpcSpanExporterTest {
     long duration = 900; // ms
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
-    SpanData.Timestamp startTime =
-        SpanData.Timestamp.create(startMs / 1000, (int) ((startMs % 1000) * 1000000));
-    SpanData.Timestamp endTime =
-        SpanData.Timestamp.create(endMs / 1000, (int) ((endMs % 1000) * 1000000));
+    Timestamp startTime = Timestamp.create(startMs / 1000, (int) ((startMs % 1000) * 1000000));
+    Timestamp endTime = Timestamp.create(endMs / 1000, (int) ((endMs % 1000) * 1000000));
     SpanData span =
         SpanData.newBuilder()
-            .context(
-                SpanContext.create(
-                    TraceId.fromLowerBase16(TRACE_ID, 0),
-                    SpanId.fromLowerBase16(SPAN_ID, 0),
-                    TraceFlags.builder().setIsSampled(true).build(),
-                    Tracestate.builder().build()))
-            .name("GET /api/endpoint")
-            .startTimestamp(startTime)
-            .endTimestamp(endTime)
-            .status(Status.OK)
-            .attributes(Collections.<String, AttributeValue>emptyMap())
-            .timedEvents(Collections.<TimedEvent>emptyList())
-            .resource(Resource.create(Collections.<String, String>emptyMap()))
-            .kind(Kind.CONSUMER)
-            .links(Collections.<Link>emptyList())
-            .parentSpanId(SpanId.getInvalid())
+            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
+            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setName("GET /api/endpoint")
+            .setStartTimestamp(startTime)
+            .setEndTimestamp(endTime)
+            .setStatus(Status.OK)
+            .setKind(Kind.CONSUMER)
+            .setLinks(Collections.<Link>emptyList())
             .build();
 
     // test
