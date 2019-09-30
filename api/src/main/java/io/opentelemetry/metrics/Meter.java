@@ -65,7 +65,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   public final void exportGarbageCollectorMetrics {
  *     collectionMetric.setCallback(
  *         new Runnable() {
- *           &commat;Override
+ *          {@literal @}Override
  *           public void run() {
  *             for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
  *               LabelValue gcName = LabelValue.create(gc.getName());

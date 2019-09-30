@@ -19,7 +19,6 @@ package io.opentelemetry.opentracingshim.testbed.promisepropagation;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByAttr;
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByAttr;
 
 import com.google.protobuf.ByteString;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
@@ -114,18 +113,21 @@ public class PromisePropagationTest {
       assertThat(finished.size()).isEqualTo(4);
 
       String component = Tags.COMPONENT.getKey();
-      assertThat(getOneByAttr(finished, component, "example-promises")).isNotNull();
-      assertThat(getOneByAttr(finished, component, "example-promises").getParentSpanId().isEmpty())
-          .isTrue();
+      List<io.opentelemetry.proto.trace.v1.Span> spanExamplePromise =
+          getByAttr(finished, component, "example-promises");
+      assertThat(spanExamplePromise).hasSize(1);
+      assertThat(spanExamplePromise.get(0).getParentSpanId()).isEmpty();
       assertThat(getByAttr(finished, component, "success")).hasSize(2);
 
-      ByteString parentId = getOneByAttr(finished, component, "example-promises").getSpanId();
+      ByteString parentId = spanExamplePromise.get(0).getSpanId();
       for (io.opentelemetry.proto.trace.v1.Span span : getByAttr(finished, component, "success")) {
         assertThat(span.getParentSpanId()).isEqualTo(parentId);
       }
 
-      assertThat(getOneByAttr(finished, component, "error")).isNotNull();
-      assertThat(getOneByAttr(finished, component, "error").getParentSpanId()).isEqualTo(parentId);
+      List<io.opentelemetry.proto.trace.v1.Span> spanError =
+          getByAttr(finished, component, "error");
+      assertThat(spanError).hasSize(1);
+      assertThat(spanError.get(0).getParentSpanId()).isEqualTo(parentId);
     }
   }
 }
