@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
-import io.opentelemetry.proto.metrics.v1.Metric;
+import io.opentelemetry.sdk.metrics.MetricData;
 import java.util.Collection;
 
 /**
@@ -31,6 +31,7 @@ public interface MetricExporter {
    *
    * @since 0.1.0
    */
+  // TODO: extract this enum and unify it with SpanExporter.ResultCode
   enum ResultCode {
     /** The export operation finished successfully. */
     SUCCESS,
@@ -46,12 +47,10 @@ public interface MetricExporter {
   }
 
   /**
-   * Exports the list of given {@link Metric}.
+   * Exports the collection of given {@link MetricData}.
    *
-   * @param metrics the list of {@link Metric} to be exported.
+   * @param metrics the collection of {@link MetricData} to be exported.
    * @since 0.1.0
    */
-  ResultCode export(Collection<Metric> metrics);
-
-  // TODO: do we need a shutdown() method?
+  ResultCode export(Collection<MetricData> metrics);
 }
