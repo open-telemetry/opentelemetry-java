@@ -25,5 +25,16 @@ package io.opentelemetry.metrics;
 public interface Counter<H> extends Metric<H> {
 
   /** Builder class for {@link Counter}. */
-  interface Builder<B extends Counter.Builder<B, V>, V> extends Metric.Builder<B, V> {}
+  interface Builder<B extends Counter.Builder<B, V>, V> extends Metric.Builder<B, V> {
+    /**
+     * Sets the monotonicity property for this {@code Metric}. If {@code true} only non-negative
+     * values are expected.
+     *
+     * <p>Default value is {@code true}
+     *
+     * @param monotonic {@code true} only positive values are expected.
+     * @return this.
+     */
+    B setMonotonic(boolean monotonic);
+  }
 }

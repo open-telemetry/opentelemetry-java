@@ -171,7 +171,7 @@ final class TraceProtoUtils {
     return builder.build();
   }
 
-  static Timestamp toProtoTimestamp(io.opentelemetry.trace.Timestamp timestamp) {
+  static Timestamp toProtoTimestamp(io.opentelemetry.common.Timestamp timestamp) {
     return Timestamp.newBuilder()
         .setSeconds(timestamp.getSeconds())
         .setNanos(timestamp.getNanos())

@@ -26,9 +26,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link GaugeLong}. */
+/** Unit tests for {@link ObserverDouble}. */
 @RunWith(JUnit4.class)
-public class GaugeLongTest {
+public class ObserverDoubleTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -42,7 +42,7 @@ public class GaugeLongTest {
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    meter.gaugeLongBuilder("\2").build();
+    meter.observerDoubleBuilder("\2").build();
   }
 
   @Test
@@ -52,83 +52,86 @@ public class GaugeLongTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.gaugeLongBuilder(longName).build();
+    meter.observerDoubleBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.gaugeLongBuilder("metric").setDescription(null).build();
+    meter.observerDoubleBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.gaugeLongBuilder("metric").setUnit(null).build();
+    meter.observerDoubleBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    meter.gaugeLongBuilder("metric").setLabelKeys(null).build();
+    meter.observerDoubleBuilder("metric").setLabelKeys(null).build();
   }
 
   @Test
   public void preventNull_LabelKey() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
-    meter.gaugeLongBuilder("metric").setLabelKeys(Collections.<String>singletonList(null)).build();
+    meter
+        .observerDoubleBuilder("metric")
+        .setLabelKeys(Collections.<String>singletonList(null))
+        .build();
   }
 
   @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.gaugeLongBuilder("metric").setConstantLabels(null).build();
+    meter.observerDoubleBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
   public void noopGetHandle_WithNullLabelValues() {
-    GaugeLong gaugeLong =
+    ObserverDouble observerDouble =
         meter
-            .gaugeLongBuilder(NAME)
+            .observerDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    gaugeLong.getHandle(null);
+    observerDouble.getHandle(null);
   }
 
   @Test
   public void noopGetHandle_WithInvalidLabelSize() {
-    GaugeLong gaugeLong =
+    ObserverDouble observerDouble =
         meter
-            .gaugeLongBuilder(NAME)
+            .observerDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    gaugeLong.getHandle(EMPTY_LABEL_VALUES);
+    observerDouble.getHandle(EMPTY_LABEL_VALUES);
   }
 
   @Test
   public void noopRemoveHandle_WithNullLabelValues() {
-    GaugeLong gaugeLong =
+    ObserverDouble gaugeDouble =
         meter
-            .gaugeLongBuilder(NAME)
+            .observerDoubleBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
-    gaugeLong.removeHandle(null);
+    gaugeDouble.removeHandle(null);
   }
 }

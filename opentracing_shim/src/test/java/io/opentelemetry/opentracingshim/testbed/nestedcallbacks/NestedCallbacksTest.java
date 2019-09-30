@@ -54,7 +54,7 @@ public final class NestedCallbacksTest {
     assertEquals(1, spans.size());
     assertEquals("one", spans.get(0).getName());
 
-    Map<String, AttributeValue> attrs = spans.get(0).getAttributes().getAttributeMap();
+    Map<String, AttributeValue> attrs = spans.get(0).getAttributes().getAttributeMapMap();
     assertEquals(3, attrs.size());
     for (int i = 1; i <= 3; i++) {
       assertEquals(Integer.toString(i), attrs.get("key" + i).getStringValue());

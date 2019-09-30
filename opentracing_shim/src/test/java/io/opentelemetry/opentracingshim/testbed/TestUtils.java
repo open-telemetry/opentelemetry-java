@@ -19,7 +19,7 @@ package io.opentelemetry.opentracingshim.testbed;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.proto.trace.v1.AttributeValue;
@@ -57,7 +57,7 @@ public final class TestUtils {
   public static Callable<Integer> finishedSpansSize(final InMemorySpanExporter tracer) {
     return new Callable<Integer>() {
       @Override
-      public Integer call() throws Exception {
+      public Integer call() {
         return tracer.getFinishedSpanItems().size();
       }
     };
@@ -70,7 +70,7 @@ public final class TestUtils {
         new Condition() {
           @Override
           public boolean check(Span span) {
-            AttributeValue attrValue = span.getAttributes().getAttributeMap().get(key);
+            AttributeValue attrValue = span.getAttributes().getAttributeMapMap().get(key);
             if (attrValue == null) {
               return false;
             }
@@ -91,21 +91,6 @@ public final class TestUtils {
             return false;
           }
         });
-  }
-
-  /**
-   * Returns one {@code Span} instance matching the specified attribute. In case of more than one
-   * instance being matched, an {@code IllegalArgumentException} will be thrown.
-   */
-  @Nullable
-  public static Span getOneByAttr(List<Span> spans, String key, Object value) {
-    List<Span> found = getByAttr(spans, key, value);
-    if (found.size() > 1) {
-      throw new IllegalArgumentException(
-          "there is more than one span with tag '" + key + "' and value '" + value + "'");
-    }
-
-    return found.isEmpty() ? null : found.get(0);
   }
 
   /** Returns a {@code List} with the {@code Span} matching the specified kind. */
@@ -136,7 +121,7 @@ public final class TestUtils {
   }
 
   /** Returns a {@code List} with the {@code Span} matching the specified name. */
-  public static List<Span> getByName(List<Span> spans, final String name) {
+  private static List<Span> getByName(List<Span> spans, final String name) {
     return getByCondition(
         spans,
         new Condition() {
@@ -166,7 +151,7 @@ public final class TestUtils {
     boolean check(Span span);
   }
 
-  static List<Span> getByCondition(List<Span> spans, Condition cond) {
+  private static List<Span> getByCondition(List<Span> spans, Condition cond) {
     List<Span> found = new ArrayList<>();
     for (Span span : spans) {
       if (cond.check(span)) {
@@ -208,14 +193,7 @@ public final class TestUtils {
         new Comparator<Span>() {
           @Override
           public int compare(Span o1, Span o2) {
-            Timestamp t1 = o1.getStartTime();
-            Timestamp t2 = o2.getStartTime();
-
-            if (t1.getSeconds() == t2.getSeconds()) {
-              return Long.compare(t1.getNanos(), t2.getNanos());
-            } else {
-              return Long.compare(t1.getSeconds(), t2.getSeconds());
-            }
+            return Timestamps.compare(o1.getStartTime(), o2.getStartTime());
           }
         });
     return sortedSpans;

@@ -35,11 +35,12 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("gRPC Latency")
  *           .setUnit("ns")
  *           .build();
+ *   private static final MeasureLong.Handle defaultHandle = measure.getDefaultHandle();
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
  *      // Your code here.
- *      measure.record(System.nanoTime() - startTime);
+ *      defaultHandle.record(System.nanoTime() - startTime);
  *   }
  * }
  * }</pre>

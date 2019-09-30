@@ -17,10 +17,12 @@
 package io.opentelemetry.exporters.jaeger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Durations;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.proto.trace.v1.AttributeValue;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -65,17 +67,27 @@ public class AdapterTest {
     assertEquals("def456", jaegerSpan.getSpanId().toStringUtf8());
     assertEquals("GET /api/endpoint", jaegerSpan.getOperationName());
     assertEquals(startTime, jaegerSpan.getStartTime());
-    assertEquals(duration, jaegerSpan.getDuration().getNanos() / 1000000);
+    assertEquals(duration, Durations.toMillis(jaegerSpan.getDuration()));
 
     assertEquals(4, jaegerSpan.getTagsCount());
-    assertEquals("SERVER", getValue(jaegerSpan.getTagsList(), "span.kind").getVStr());
-    assertEquals(0, getValue(jaegerSpan.getTagsList(), "span.status.code").getVInt64());
-    assertEquals("", getValue(jaegerSpan.getTagsList(), "span.status.message").getVStr());
+    Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), "span.kind");
+    assertNotNull(keyValue);
+    assertEquals("SERVER", keyValue.getVStr());
+    keyValue = getValue(jaegerSpan.getTagsList(), "span.status.code");
+    assertNotNull(keyValue);
+    assertEquals(0, keyValue.getVInt64());
+    keyValue = getValue(jaegerSpan.getTagsList(), "span.status.message");
+    assertNotNull(keyValue);
+    assertEquals("", keyValue.getVStr());
 
     assertEquals(1, jaegerSpan.getLogsCount());
     Model.Log log = jaegerSpan.getLogs(0);
-    assertEquals("the log message", getValue(log.getFieldsList(), "message").getVStr());
-    assertEquals("bar", getValue(log.getFieldsList(), "foo").getVStr());
+    keyValue = getValue(log.getFieldsList(), "message");
+    assertNotNull(keyValue);
+    assertEquals("the log message", keyValue.getVStr());
+    keyValue = getValue(log.getFieldsList(), "foo");
+    assertNotNull(keyValue);
+    assertEquals("bar", keyValue.getVStr());
 
     assertEquals(2, jaegerSpan.getReferencesCount());
 
@@ -106,8 +118,12 @@ public class AdapterTest {
     // verify
     assertEquals(2, log.getFieldsCount());
 
-    assertEquals("the log message", getValue(log.getFieldsList(), "message").getVStr());
-    assertEquals("bar", getValue(log.getFieldsList(), "foo").getVStr());
+    Model.KeyValue keyValue = getValue(log.getFieldsList(), "message");
+    assertNotNull(keyValue);
+    assertEquals("the log message", keyValue.getVStr());
+    keyValue = getValue(log.getFieldsList(), "foo");
+    assertNotNull(keyValue);
+    assertEquals("bar", keyValue.getVStr());
   }
 
   @Test
@@ -183,12 +199,12 @@ public class AdapterTest {
     assertEquals(Model.SpanRefType.FOLLOWS_FROM, spanRef.getRefType());
   }
 
-  public Span.TimedEvents getTimedEvents() {
+  private static Span.TimedEvents getTimedEvents() {
     Span.TimedEvent timedEvent = getTimedEvent();
     return Span.TimedEvents.newBuilder().addTimedEvent(timedEvent).build();
   }
 
-  private Span.TimedEvent getTimedEvent() {
+  private static Span.TimedEvent getTimedEvent() {
     long ms = System.currentTimeMillis();
     Timestamp ts = toTimestamp(ms);
     AttributeValue valueS = AttributeValue.newBuilder().setStringValue("bar").build();
@@ -205,7 +221,7 @@ public class AdapterTest {
         .build();
   }
 
-  private Span getProtoSpan(Timestamp startTime, Timestamp endTime) {
+  private static Span getProtoSpan(Timestamp startTime, Timestamp endTime) {
     AttributeValue valueB = AttributeValue.newBuilder().setBoolValue(true).build();
     Span.Attributes attributes =
         Span.Attributes.newBuilder().putAttributeMap("valueB", valueB).build();
@@ -232,7 +248,7 @@ public class AdapterTest {
         .build();
   }
 
-  Timestamp toTimestamp(long ms) {
+  private static Timestamp toTimestamp(long ms) {
     return Timestamp.newBuilder()
         .setSeconds(ms / 1000)
         .setNanos((int) ((ms % 1000) * 1000000))

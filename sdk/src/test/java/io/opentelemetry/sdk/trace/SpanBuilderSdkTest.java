@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.ProbabilitySampler;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
@@ -91,6 +92,41 @@ public class SpanBuilderSdkTest {
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
         DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    io.opentelemetry.proto.trace.v1.Span protoSpan = span.toSpanProto();
+    try {
+      assertThat(protoSpan.getLinks().getLinkList()).hasSize(3);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  public void truncateLink() {
+    final int maxNumberOfLinks = 8;
+    final Link link = Links.create(DefaultSpan.getInvalid().getContext());
+    TraceConfig traceConfig =
+        TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(maxNumberOfLinks).build();
+    tracer.updateActiveTraceConfig(traceConfig);
+    // Verify methods do not crash.
+    Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
+    for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
+      spanBuilder.addLink(link);
+    }
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      io.opentelemetry.proto.trace.v1.Span protoSpan = span.toSpanProto();
+      assertThat(protoSpan.getLinks().getDroppedLinksCount()).isEqualTo(maxNumberOfLinks);
+      assertThat(protoSpan.getLinks().getLinkList().size()).isEqualTo(maxNumberOfLinks);
+      for (int i = 0; i < maxNumberOfLinks; i++) {
+        assertThat(protoSpan.getLinks().getLinkList().get(i))
+            .isEqualTo(TraceProtoUtils.toProtoLink(link));
+      }
+    } finally {
+      span.end();
+      tracer.updateActiveTraceConfig(TraceConfig.getDefault());
+    }
   }
 
   @Test
