@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.contrib.trace.testbed;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.protobuf.Timestamp;
+import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.proto.trace.v1.AttributeValue;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
@@ -203,14 +203,7 @@ public final class TestUtils {
         new Comparator<Span>() {
           @Override
           public int compare(Span o1, Span o2) {
-            Timestamp t1 = o1.getStartTime();
-            Timestamp t2 = o2.getStartTime();
-
-            if (t1.getSeconds() == t2.getSeconds()) {
-              return Long.compare(t1.getNanos(), t2.getNanos());
-            } else {
-              return Long.compare(t1.getSeconds(), t2.getSeconds());
-            }
+            return Timestamps.compare(o1.getStartTime(), o2.getStartTime());
           }
         });
     return sortedSpans;
