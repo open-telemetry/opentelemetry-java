@@ -88,8 +88,6 @@ subprojects {
     compileTestJava {
         // serialVersionUID is basically guaranteed to be useless in tests
         options.compilerArgs += ["-Xlint:-serial"]
-        // It undeprecates DoubleSubject.isEqualTo(Double).
-        options.compilerArgs += ["-Xlint:-deprecation"]
     }
 
     jar.manifest {
