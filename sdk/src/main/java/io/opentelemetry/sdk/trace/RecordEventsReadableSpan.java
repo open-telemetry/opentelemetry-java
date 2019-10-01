@@ -53,7 +53,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
-  // The parent SpanId of this span. non-valid if this is a root span.
+  // The parent SpanId of this span. Invalid if this is a root span.
   private final SpanId parentSpanId;
   // Active trace configs when the Span was created.
   private final TraceConfig traceConfig;
