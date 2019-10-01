@@ -16,11 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,23 +56,5 @@ public final class TestUtils {
     AttributeValue attribute = AttributeValue.stringAttributeValue(UUID.randomUUID().toString());
     result.put(UUID.randomUUID().toString(), attribute);
     return result;
-  }
-
-  /**
-   * Create a very basic SpanData instance, suitable for testing. It has the bare minimum viable
-   * data.
-   *
-   * @return A SpanData instance.
-   */
-  public static SpanData makeBasicSpan() {
-    return SpanData.newBuilder()
-        .setTraceId(TraceId.getInvalid())
-        .setSpanId(SpanId.getInvalid())
-        .setName("span")
-        .setKind(Kind.SERVER)
-        .setStartTimestamp(Timestamp.create(100, 100))
-        .setStatus(Status.OK)
-        .setEndTimestamp(Timestamp.create(200, 200))
-        .build();
   }
 }
