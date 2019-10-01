@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import java.util.Arrays;
 import java.util.Collections;
@@ -133,5 +134,43 @@ public class CounterLongTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
     counterLong.removeHandle(null);
+  }
+
+  @Test
+  public void doesNotThrow() {
+    CounterLong counterLong =
+        meter
+            .counterLongBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    counterLong.getDefaultHandle().add(1);
+  }
+
+  @Test
+  public void preventNull_Context() {
+    CounterLong counterLong =
+        meter
+            .counterLongBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("context");
+    counterLong.getDefaultHandle().add(1, null);
+  }
+
+  @Test
+  public void doesNotThrow_WithContext() {
+    CounterLong counterLong =
+        meter
+            .counterLongBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    counterLong.getDefaultHandle().add(1, Context.ROOT);
   }
 }

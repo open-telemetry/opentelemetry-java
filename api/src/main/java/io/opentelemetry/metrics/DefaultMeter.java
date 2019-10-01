@@ -16,10 +16,9 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
+import io.grpc.Context;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
@@ -160,6 +159,11 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void set(long val) {}
+
+      @Override
+      public void set(long val, Context context) {
+        Utils.checkNotNull(context, "context");
+      }
     }
 
     private static final class NoopBuilder extends NoopAbstractGaugeBuilder<Builder, GaugeLong>
@@ -211,6 +215,11 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void set(double val) {}
+
+      @Override
+      public void set(double val, Context context) {
+        Utils.checkNotNull(context, "context");
+      }
     }
 
     private static final class NoopBuilder extends NoopAbstractGaugeBuilder<Builder, GaugeDouble>
@@ -264,6 +273,11 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void add(double delta) {}
+
+      @Override
+      public void add(double delta, Context context) {
+        Utils.checkNotNull(context, "context");
+      }
     }
 
     private static final class NoopBuilder
@@ -317,6 +331,11 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void add(long delta) {}
+
+      @Override
+      public void add(long delta, Context context) {
+        Utils.checkNotNull(context, "context");
+      }
     }
 
     private static final class NoopBuilder extends NoopAbstractCounterBuilder<Builder, CounterLong>
@@ -371,16 +390,9 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public void record(double value, DistributedContext distContext) {
+      public void record(double value, Context context) {
         Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-        Utils.checkNotNull(distContext, "distContext");
-      }
-
-      @Override
-      public void record(double value, DistributedContext distContext, SpanContext spanContext) {
-        Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-        Utils.checkNotNull(distContext, "distContext");
-        Utils.checkNotNull(spanContext, "spanContext");
+        Utils.checkNotNull(context, "context");
       }
     }
 
@@ -435,16 +447,9 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public void record(long value, DistributedContext distContext) {
+      public void record(long value, Context context) {
         Utils.checkArgument(value >= 0, "Unsupported negative values.");
-        Utils.checkNotNull(distContext, "distContext");
-      }
-
-      @Override
-      public void record(long value, DistributedContext distContext, SpanContext spanContext) {
-        Utils.checkArgument(value >= 0, "Unsupported negative values.");
-        Utils.checkNotNull(distContext, "distContext");
-        Utils.checkNotNull(spanContext, "spanContext");
+        Utils.checkNotNull(context, "context");
       }
     }
 
@@ -582,8 +587,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public MeasureBatchRecorder setDistributedContext(DistributedContext distContext) {
-      Utils.checkNotNull(distContext, "distContext");
+    public MeasureBatchRecorder setContext(Context context) {
+      Utils.checkNotNull(context, "context");
       return this;
     }
 
@@ -617,7 +622,7 @@ public final class DefaultMeter implements Meter {
 
   private abstract static class NoopAbstractMetricBuilder<B extends Metric.Builder<B, V>, V>
       implements Metric.Builder<B, V> {
-    protected int labelKeysSize = 0;
+    int labelKeysSize = 0;
 
     @Override
     public B setDescription(String description) {

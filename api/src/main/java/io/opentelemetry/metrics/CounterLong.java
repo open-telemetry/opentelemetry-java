@@ -70,10 +70,24 @@ public interface CounterLong extends Metric<Handle> {
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
      * was set to {@code false}.
      *
-     * @param delta the value to add
+     * <p>The value added is associated with the current {@code Context}.
+     *
+     * @param delta the value to add.
      * @since 0.1.0
      */
     void add(long delta);
+
+    /**
+     * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
+     * was set to {@code false}.
+     *
+     * <p>The value added is associated with an explicit {@code Context}.
+     *
+     * @param delta the value to add.
+     * @param context the {@code Context} associated with the measurements.
+     * @since 0.1.0
+     */
+    void add(long delta, io.grpc.Context context);
   }
 
   /** Builder class for {@link CounterLong}. */

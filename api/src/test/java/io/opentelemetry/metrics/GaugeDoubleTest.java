@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import java.util.Arrays;
 import java.util.Collections;
@@ -133,5 +134,43 @@ public class GaugeDoubleTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
     gaugeDouble.removeHandle(null);
+  }
+
+  @Test
+  public void doesNotThrow() {
+    GaugeDouble gaugeDouble =
+        meter
+            .gaugeDoubleBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    gaugeDouble.getDefaultHandle().set(5.0);
+  }
+
+  @Test
+  public void preventNull_Context() {
+    GaugeDouble gaugeDouble =
+        meter
+            .gaugeDoubleBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("context");
+    gaugeDouble.getDefaultHandle().set(5.0, null);
+  }
+
+  @Test
+  public void doesNotThrow_WithContext() {
+    GaugeDouble gaugeDouble =
+        meter
+            .gaugeDoubleBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    gaugeDouble.getDefaultHandle().set(5.0, Context.ROOT);
   }
 }

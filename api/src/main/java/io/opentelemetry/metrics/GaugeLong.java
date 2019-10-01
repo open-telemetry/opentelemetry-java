@@ -70,10 +70,23 @@ public interface GaugeLong extends Gauge<Handle> {
     /**
      * Sets the given value.
      *
+     * <p>The value added is associated with the current {@code Context}.
+     *
      * @param val the new value.
      * @since 0.1.0
      */
     void set(long val);
+
+    /**
+     * Sets the given value.
+     *
+     * <p>The value added is associated with an explicit {@code Context}.
+     *
+     * @param val the new value.
+     * @param context the {@code Context} associated with the measurements.
+     * @since 0.1.0
+     */
+    void set(long val, io.grpc.Context context);
   }
 
   /** Builder class for {@link GaugeLong}. */

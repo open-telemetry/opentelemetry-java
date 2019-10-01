@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -52,13 +51,13 @@ public interface MeasureBatchRecorder {
   MeasureBatchRecorder put(MeasureDouble measure, double value);
 
   /**
-   * Sets an explicit {@link DistributedContext} that all the measurements will be recorded with.
+   * Sets an explicit {@code Context} that all the measurements will be recorded with.
    *
    * <p>If no {@code DistributedContext} set, then the current DistributedContext will be used.
    *
    * @return this.
    */
-  MeasureBatchRecorder setDistributedContext(DistributedContext distContext);
+  MeasureBatchRecorder setContext(io.grpc.Context context);
 
   // TODO: Add option to record Attachment/SpanContext.
 

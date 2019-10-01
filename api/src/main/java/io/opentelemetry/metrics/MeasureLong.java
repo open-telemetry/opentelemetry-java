@@ -16,8 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.trace.SpanContext;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -57,8 +55,7 @@ public interface MeasureLong extends Measure<MeasureLong.Handle> {
   @ThreadSafe
   interface Handle {
     /**
-     * Records the given measurement, with the current {@link
-     * io.opentelemetry.distributedcontext.DistributedContextManager#getCurrentContext}.
+     * Records the given measurement, associated with the current {@code Context}.
      *
      * @param value the measurement to record.
      * @throws IllegalArgumentException if value is negative.
@@ -67,28 +64,14 @@ public interface MeasureLong extends Measure<MeasureLong.Handle> {
     void record(long value);
 
     /**
-     * Records the given measurement, with an explicit {@link DistributedContext}.
-     *
-     * @param value the measurement to record.
-     * @param distContext the distContext associated with the measurements.
-     * @throws IllegalArgumentException if value is negative.
-     * @since 0.1.0
-     */
-    void record(long value, DistributedContext distContext);
-
-    /**
-     * Records the given measurements, with an explicit {@link DistributedContext}. This measurement
-     * is associated with the given {@code SpanContext}.
+     * Records the given measurements, associated with an explicit {@code Context}.
      *
      * @param measurement the measurement to record.
-     * @param distContext the distContext associated with the measurements.
-     * @param spanContext the {@code SpanContext} that identifies the {@code Span} for which the
-     *     measurements are associated with.
+     * @param context the {@code Context} associated with the measurements.
      * @throws IllegalArgumentException if value is negative.
      * @since 0.1.0
      */
-    // TODO: Avoid tracing dependency and accept Attachments as in OpenCensus.
-    void record(long measurement, DistributedContext distContext, SpanContext spanContext);
+    void record(long measurement, io.grpc.Context context);
   }
 
   /** Builder class for {@link MeasureLong}. */
