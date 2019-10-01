@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -38,8 +39,10 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.util.Events;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
@@ -529,5 +532,85 @@ public class RecordEventsReadableSpanTest {
     public Map<String, AttributeValue> getAttributes() {
       return attributes;
     }
+  }
+
+  @Test
+  public void testAsSpanData() {
+    String name = "GreatSpan";
+    Kind kind = Kind.SERVER;
+    TraceId traceId = TestUtils.generateRandomTraceId();
+    SpanId spanId = TestUtils.generateRandomSpanId();
+    SpanId parentSpanId = TestUtils.generateRandomSpanId();
+    TraceConfig traceConfig = TraceConfig.getDefault();
+    SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
+    TestClock clock = TestClock.create();
+    Map<String, String> labels = new HashMap<>();
+    labels.put("foo", "bar");
+    Resource resource = Resource.create(labels);
+    Map<String, AttributeValue> attributes = TestUtils.generateRandomAttributes();
+    Map<String, AttributeValue> event1Attributes = TestUtils.generateRandomAttributes();
+    Map<String, AttributeValue> event2Attributes = TestUtils.generateRandomAttributes();
+    SpanContext context =
+        SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
+    Link link1 =
+        io.opentelemetry.trace.util.Links.create(context, TestUtils.generateRandomAttributes());
+    List<Link> links = Collections.singletonList(link1);
+
+    RecordEventsReadableSpan readableSpan =
+        RecordEventsReadableSpan.startSpan(
+            context,
+            name,
+            kind,
+            parentSpanId,
+            traceConfig,
+            spanProcessor,
+            null,
+            clock,
+            resource,
+            attributes,
+            links,
+            1);
+    long startTimeNanos = clock.nowNanos();
+    clock.advanceMillis(4);
+    long firstEventTimeNanos = clock.nowNanos();
+    readableSpan.addEvent("event1", event1Attributes);
+    clock.advanceMillis(6);
+    long secondEventTimeNanos = clock.nowNanos();
+    readableSpan.addEvent("event2", event2Attributes);
+
+    clock.advanceMillis(100);
+    readableSpan.end();
+    long endTimeNanos = clock.nowNanos();
+
+    SpanData expected =
+        SpanData.newBuilder()
+            .setName(name)
+            .setKind(kind)
+            .setStatus(Status.OK)
+            .setStartTimestamp(nanoToTimestamp(startTimeNanos))
+            .setEndTimestamp(nanoToTimestamp(endTimeNanos))
+            .setTimedEvents(
+                Arrays.asList(
+                    SpanData.TimedEvent.create(
+                        nanoToTimestamp(firstEventTimeNanos),
+                        Events.create("event1", event1Attributes)),
+                    SpanData.TimedEvent.create(
+                        nanoToTimestamp(secondEventTimeNanos),
+                        Events.create("event2", event2Attributes))))
+            .setResource(resource)
+            .setParentSpanId(parentSpanId)
+            .setLinks(links)
+            .setTraceId(traceId)
+            .setSpanId(spanId)
+            .setAttributes(attributes)
+            .build();
+
+    SpanData result = readableSpan.asSpanData();
+    assertEquals(expected, result);
+  }
+
+  private static io.opentelemetry.common.Timestamp nanoToTimestamp(long nanotime) {
+    return io.opentelemetry.common.Timestamp.create(
+        nanotime / NANOS_PER_SECOND, (int) (nanotime % NANOS_PER_SECOND));
   }
 }
