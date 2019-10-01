@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 
@@ -43,14 +42,6 @@ public interface ReadableSpan {
    * @since 0.1.0
    */
   String getName();
-
-  /**
-   * Returns the TimestampConverter used by this Span instance.
-   *
-   * @return The TimeStampConverter for this span.
-   * @since 0.1.0
-   */
-  TimestampConverter getTimestampConverter();
 
   /**
    * This method is here to convert this instance into a protobuf instance. It will be removed from
