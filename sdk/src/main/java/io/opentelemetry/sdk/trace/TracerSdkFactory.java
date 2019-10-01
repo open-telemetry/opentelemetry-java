@@ -17,17 +17,35 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.spi.TracerFactory;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * {@code Tracer} provider implementation for {@link io.opentelemetry.trace.spi.TracerProvider}.
+ * {@code Tracer} provider implementation for {@link TracerFactory}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
  */
-public class TracerSdkProvider implements io.opentelemetry.trace.spi.TracerProvider {
+public class TracerSdkFactory implements TracerFactory {
+  private final Map<String, Tracer> tracersByKey =
+      Collections.synchronizedMap(new HashMap<String, Tracer>());
 
   @Override
   public Tracer create() {
     return new TracerSdk();
+  }
+
+  @Override
+  public Tracer get(String instrumentationName, String instrumentationVersion) {
+    String key = instrumentationName + "/" + instrumentationVersion;
+    Tracer tracer = tracersByKey.get(key);
+    if (tracer == null) {
+      // todo: pass in the name & version here to the implementation to be used for purposes.
+      tracer = new TracerSdk();
+      tracersByKey.put(key, tracer);
+    }
+    return tracer;
   }
 }

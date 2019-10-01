@@ -27,6 +27,6 @@ public class TracerSdkProviderTest {
 
   @Test
   public void testDefault() {
-    assertThat(new TracerSdkProvider().create()).isInstanceOf(TracerSdk.class);
+    assertThat(new TracerSdkFactory().create()).isInstanceOf(TracerSdk.class);
   }
 }

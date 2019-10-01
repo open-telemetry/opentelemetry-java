@@ -24,7 +24,7 @@ import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.spi.MeterProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.spi.TracerProvider;
+import io.opentelemetry.trace.spi.TracerFactory;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -35,7 +35,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
- * @see TracerProvider
+ * @see TracerFactory
  * @see MeterProvider
  * @see DistributedContextManagerProvider
  */
@@ -44,7 +44,7 @@ public final class OpenTelemetry {
 
   @Nullable private static volatile OpenTelemetry instance;
 
-  private final Tracer tracer;
+  private final TracerFactory tracerFactory;
   private final Meter meter;
   private final DistributedContextManager contextManager;
 
@@ -56,7 +56,11 @@ public final class OpenTelemetry {
    * @since 0.1.0
    */
   public static Tracer getTracer() {
-    return getInstance().tracer;
+    return getTracer("defaultName", "defaultVersion");
+  }
+
+  public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
+    return getInstance().tracerFactory.get(instrumentationName, instrumentationVersion);
   }
 
   /**
@@ -83,6 +87,31 @@ public final class OpenTelemetry {
     return getInstance().contextManager;
   }
 
+  /** Lazy loads an instance. */
+  private static OpenTelemetry getInstance() {
+    if (instance == null) {
+      synchronized (OpenTelemetry.class) {
+        if (instance == null) {
+          instance = new OpenTelemetry();
+        }
+      }
+    }
+    return instance;
+  }
+
+  private OpenTelemetry() {
+    TracerFactory tracerFactory = loadSpi(TracerFactory.class);
+    this.tracerFactory = tracerFactory != null ? tracerFactory : DefaultTracerFactory.getInstance();
+    MeterProvider meterProvider = loadSpi(MeterProvider.class);
+    meter = meterProvider != null ? meterProvider.create() : DefaultMeter.getInstance();
+    DistributedContextManagerProvider contextManagerProvider =
+        loadSpi(DistributedContextManagerProvider.class);
+    contextManager =
+        contextManagerProvider != null
+            ? contextManagerProvider.create()
+            : DefaultDistributedContextManager.getInstance();
+  }
+
   /**
    * Load provider class via {@link ServiceLoader}. A specific provider class can be requested via
    * setting a system property with FQCN.
@@ -106,31 +135,6 @@ public final class OpenTelemetry {
           String.format("Service provider %s not found", specifiedProvider));
     }
     return null;
-  }
-
-  /** Lazy loads an instance. */
-  private static OpenTelemetry getInstance() {
-    if (instance == null) {
-      synchronized (OpenTelemetry.class) {
-        if (instance == null) {
-          instance = new OpenTelemetry();
-        }
-      }
-    }
-    return instance;
-  }
-
-  private OpenTelemetry() {
-    TracerProvider tracerProvider = loadSpi(TracerProvider.class);
-    tracer = tracerProvider != null ? tracerProvider.create() : DefaultTracer.getInstance();
-    MeterProvider meterProvider = loadSpi(MeterProvider.class);
-    meter = meterProvider != null ? meterProvider.create() : DefaultMeter.getInstance();
-    DistributedContextManagerProvider contextManagerProvider =
-        loadSpi(DistributedContextManagerProvider.class);
-    contextManager =
-        contextManagerProvider != null
-            ? contextManagerProvider.create()
-            : DefaultDistributedContextManager.getInstance();
   }
 
   // for testing
