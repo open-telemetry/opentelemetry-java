@@ -18,12 +18,9 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
-import com.google.protobuf.Timestamp;
-import io.opentelemetry.proto.trace.v1.Span;
-import io.opentelemetry.proto.trace.v1.Span.Attributes;
-import io.opentelemetry.proto.trace.v1.Span.Links;
-import io.opentelemetry.proto.trace.v1.Span.TimedEvents;
+import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
@@ -68,7 +65,8 @@ public class RecordEventsReadableSpanTest {
   private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
-  private final Timestamp startTime = Timestamp.newBuilder().setSeconds(1000).build();
+  private final com.google.protobuf.Timestamp startTime =
+      com.google.protobuf.Timestamp.newBuilder().setSeconds(1000).build();
   private final TestClock testClock = TestClock.create(startTime);
   private final TimestampConverter timestampConverter = TimestampConverter.now(testClock);
   private final Resource resource = Resource.getEmpty();
@@ -100,17 +98,16 @@ public class RecordEventsReadableSpanTest {
     // Check that adding trace events or update fields after Span#end() does not throw any thrown
     // and are ignored.
     spanDoWork(span, Status.CANCELLED);
-    Span spanProto = span.toSpanProto();
-    verifySpanProto(
-        spanProto,
-        Attributes.getDefaultInstance(),
-        TimedEvents.getDefaultInstance(),
-        TraceProtoUtils.toProtoLinks(Collections.singletonList(link), 0),
+    SpanData spanData = span.toSpanData();
+    verifySpanData(
+        spanData,
+        Collections.<String, AttributeValue>emptyMap(),
+        Collections.<SpanData.TimedEvent>emptyList(),
+        Collections.singletonList(link),
         SPAN_NAME,
-        startTime,
-        startTime,
-        Status.OK,
-        0);
+        Timestamp.create(startTime.getSeconds(), 0),
+        Timestamp.create(startTime.getSeconds(), 0),
+        Status.OK);
   }
 
   @Test
@@ -121,31 +118,29 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void toSpanProto_ActiveSpan() {
+  public void toSpanData_ActiveSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       spanDoWork(span, null);
-      Span spanProto = span.toSpanProto();
-      long timeInNanos = (startTime.getSeconds() + 1) * NANOS_PER_SECOND;
-      TimedEvent timedEvent = TimedEvent.create(timeInNanos, event);
-      verifySpanProto(
-          spanProto,
-          TraceProtoUtils.toProtoAttributes(expectedAttributes, 0),
-          TraceProtoUtils.toProtoTimedEvents(
-              Collections.singletonList(timedEvent), 0, timestampConverter),
-          TraceProtoUtils.toProtoLinks(Collections.singletonList(link), 0),
+      SpanData spanData = span.toSpanData();
+      SpanData.TimedEvent timedEvent =
+          SpanData.TimedEvent.create(Timestamp.create(startTime.getSeconds() + 1, 0), event);
+      verifySpanData(
+          spanData,
+          expectedAttributes,
+          Collections.<SpanData.TimedEvent>singletonList(timedEvent),
+          Collections.<Link>singletonList(link),
           SPAN_NEW_NAME,
-          startTime,
-          testClock.now(),
-          Status.OK,
-          1);
+          Timestamp.create(startTime.getSeconds(), 0),
+          Timestamp.create(testClock.now().getSeconds(), 0),
+          Status.OK);
     } finally {
       span.end();
     }
   }
 
   @Test
-  public void toSpanProto_EndedSpan() {
+  public void toSpanData_EndedSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       spanDoWork(span, Status.CANCELLED);
@@ -153,40 +148,38 @@ public class RecordEventsReadableSpanTest {
       span.end();
     }
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
-    Span spanProto = span.toSpanProto();
-    long timeInNanos = (startTime.getSeconds() + 1) * NANOS_PER_SECOND;
-    TimedEvent timedEvent = TimedEvent.create(timeInNanos, event);
-    verifySpanProto(
-        spanProto,
-        TraceProtoUtils.toProtoAttributes(expectedAttributes, 0),
-        TraceProtoUtils.toProtoTimedEvents(
-            Collections.singletonList(timedEvent), 0, timestampConverter),
-        TraceProtoUtils.toProtoLinks(Collections.singletonList(link), 0),
+    SpanData spanData = span.toSpanData();
+    SpanData.TimedEvent timedEvent =
+        SpanData.TimedEvent.create(Timestamp.create(startTime.getSeconds() + 1, 0), event);
+    verifySpanData(
+        spanData,
+        expectedAttributes,
+        Collections.<SpanData.TimedEvent>singletonList(timedEvent),
+        Collections.singletonList(link),
         SPAN_NEW_NAME,
-        startTime,
-        testClock.now(),
-        Status.CANCELLED,
-        1);
+        Timestamp.create(startTime.getSeconds(), 0),
+        Timestamp.create(testClock.now().getSeconds(), 0),
+        Status.CANCELLED);
   }
 
   @Test
-  public void toSpanProto_RootSpan() {
+  public void toSpanData_RootSpan() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
       spanDoWork(span, null);
     } finally {
       span.end();
     }
-    Span spanProto = span.toSpanProto();
-    assertThat(spanProto.getParentSpanId()).isEmpty();
+    SpanData spanData = span.toSpanData();
+    assertFalse(spanData.getParentSpanId().isValid());
   }
 
   @Test
-  public void toSpanProto_WithInitialAttributes() {
+  public void toSpanData_WithInitialAttributes() {
     RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
     span.end();
-    Span spanProto = span.toSpanProto();
-    assertThat(spanProto.getAttributes().getAttributeMapCount()).isEqualTo(attributes.size());
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size());
   }
 
   @Test
@@ -265,8 +258,8 @@ public class RecordEventsReadableSpanTest {
     } finally {
       span.end();
     }
-    Span spanProto = span.toSpanProto();
-    assertThat(spanProto.getAttributes().getAttributeMapCount()).isEqualTo(4);
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getAttributes().size()).isEqualTo(4);
   }
 
   @Test
@@ -279,8 +272,8 @@ public class RecordEventsReadableSpanTest {
     } finally {
       span.end();
     }
-    Span spanProto = span.toSpanProto();
-    assertThat(spanProto.getTimeEvents().getTimedEventCount()).isEqualTo(3);
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getTimedEvents().size()).isEqualTo(3);
   }
 
   @Test
@@ -296,36 +289,23 @@ public class RecordEventsReadableSpanTest {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
         span.setAttribute("MyStringAttributeKey" + i, AttributeValue.longAttributeValue(i));
       }
-      Span spanProto = span.toSpanProto();
-      assertThat(spanProto.getAttributes().getDroppedAttributesCount())
-          .isEqualTo(maxNumberOfAttributes);
-      assertThat(spanProto.getAttributes().getAttributeMapMap().size())
-          .isEqualTo(maxNumberOfAttributes);
+      SpanData spanData = span.toSpanData();
+      assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
       for (int i = 0; i < maxNumberOfAttributes; i++) {
         AttributeValue expectedValue = AttributeValue.longAttributeValue(i + maxNumberOfAttributes);
         assertThat(
-                spanProto
-                    .getAttributes()
-                    .getAttributeMapMap()
-                    .get("MyStringAttributeKey" + (i + maxNumberOfAttributes)))
-            .isEqualTo(TraceProtoUtils.toProtoAttributeValue(expectedValue));
+                spanData.getAttributes().get("MyStringAttributeKey" + (i + maxNumberOfAttributes)))
+            .isEqualTo(expectedValue);
       }
     } finally {
       span.end();
     }
-    Span spanProto = span.toSpanProto();
-    assertThat(spanProto.getAttributes().getDroppedAttributesCount())
-        .isEqualTo(maxNumberOfAttributes);
-    assertThat(spanProto.getAttributes().getAttributeMapMap().size())
-        .isEqualTo(maxNumberOfAttributes);
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
     for (int i = 0; i < maxNumberOfAttributes; i++) {
       AttributeValue expectedValue = AttributeValue.longAttributeValue(i + maxNumberOfAttributes);
-      assertThat(
-              spanProto
-                  .getAttributes()
-                  .getAttributeMapMap()
-                  .get("MyStringAttributeKey" + (i + maxNumberOfAttributes)))
-          .isEqualTo(TraceProtoUtils.toProtoAttributeValue(expectedValue));
+      assertThat(spanData.getAttributes().get("MyStringAttributeKey" + (i + maxNumberOfAttributes)))
+          .isEqualTo(expectedValue);
     }
   }
 
@@ -342,41 +322,32 @@ public class RecordEventsReadableSpanTest {
       for (int i = 0; i < 2 * maxNumberOfAttributes; i++) {
         span.setAttribute("MyStringAttributeKey" + i, AttributeValue.longAttributeValue(i));
       }
-      Span spanProto = span.toSpanProto();
-      assertThat(spanProto.getAttributes().getDroppedAttributesCount())
-          .isEqualTo(maxNumberOfAttributes);
-      assertThat(spanProto.getAttributes().getAttributeMapMap().size())
-          .isEqualTo(maxNumberOfAttributes);
+      SpanData spanData = span.toSpanData();
+      assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
       for (int i = 0; i < maxNumberOfAttributes; i++) {
         AttributeValue expectedValue = AttributeValue.longAttributeValue(i + maxNumberOfAttributes);
         assertThat(
-                spanProto
-                    .getAttributes()
-                    .getAttributeMapMap()
-                    .get("MyStringAttributeKey" + (i + maxNumberOfAttributes)))
-            .isEqualTo(TraceProtoUtils.toProtoAttributeValue(expectedValue));
+                spanData.getAttributes().get("MyStringAttributeKey" + (i + maxNumberOfAttributes)))
+            .isEqualTo(expectedValue);
       }
 
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
         span.setAttribute("MyStringAttributeKey" + i, AttributeValue.longAttributeValue(i));
       }
-      spanProto = span.toSpanProto();
-      assertThat(spanProto.getAttributes().getDroppedAttributesCount())
-          .isEqualTo(maxNumberOfAttributes * 3 / 2);
-      assertThat(spanProto.getAttributes().getAttributeMapMap().size())
-          .isEqualTo(maxNumberOfAttributes);
+      spanData = span.toSpanData();
+      assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
       // Test that we still have in the attributes map the latest maxNumberOfAttributes / 2 entries.
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
         int val = i + maxNumberOfAttributes * 3 / 2;
         AttributeValue expectedValue = AttributeValue.longAttributeValue(val);
-        assertThat(spanProto.getAttributes().getAttributeMapMap().get("MyStringAttributeKey" + val))
-            .isEqualTo(TraceProtoUtils.toProtoAttributeValue(expectedValue));
+        assertThat(spanData.getAttributes().get("MyStringAttributeKey" + val))
+            .isEqualTo(expectedValue);
       }
       // Test that we have the newest re-added initial entries.
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
         AttributeValue expectedValue = AttributeValue.longAttributeValue(i);
-        assertThat(spanProto.getAttributes().getAttributeMapMap().get("MyStringAttributeKey" + i))
-            .isEqualTo(TraceProtoUtils.toProtoAttributeValue(expectedValue));
+        assertThat(spanData.getAttributes().get("MyStringAttributeKey" + i))
+            .isEqualTo(expectedValue);
       }
     } finally {
       span.end();
@@ -394,30 +365,25 @@ public class RecordEventsReadableSpanTest {
         span.addEvent(event);
         testClock.advanceMillis(MILLIS_PER_SECOND);
       }
-      Span spanProto = span.toSpanProto();
-      assertThat(spanProto.getTimeEvents().getDroppedTimedEventsCount())
-          .isEqualTo(maxNumberOfEvents);
+      SpanData spanData = span.toSpanData();
 
-      assertThat(spanProto.getTimeEvents().getTimedEventList().size()).isEqualTo(maxNumberOfEvents);
+      assertThat(spanData.getTimedEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
-        long timeInNanos = (startTime.getSeconds() + maxNumberOfEvents + i) * NANOS_PER_SECOND;
-        Span.TimedEvent expectedEvent =
-            TraceProtoUtils.toProtoTimedEvent(
-                TimedEvent.create(timeInNanos, event), timestampConverter);
-        assertThat(spanProto.getTimeEvents().getTimedEventList().get(i)).isEqualTo(expectedEvent);
+        SpanData.TimedEvent expectedEvent =
+            SpanData.TimedEvent.create(
+                Timestamp.create(startTime.getSeconds() + maxNumberOfEvents + i, 0), event);
+        assertThat(spanData.getTimedEvents().get(i)).isEqualTo(expectedEvent);
       }
     } finally {
       span.end();
     }
-    Span spanProto = span.toSpanProto();
-    assertThat(spanProto.getTimeEvents().getDroppedTimedEventsCount()).isEqualTo(maxNumberOfEvents);
-    assertThat(spanProto.getTimeEvents().getTimedEventList().size()).isEqualTo(maxNumberOfEvents);
+    SpanData spanData = span.toSpanData();
+    assertThat(spanData.getTimedEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
-      long timeInNanos = (startTime.getSeconds() + maxNumberOfEvents + i) * NANOS_PER_SECOND;
-      Span.TimedEvent expectedEvent =
-          TraceProtoUtils.toProtoTimedEvent(
-              TimedEvent.create(timeInNanos, event), timestampConverter);
-      assertThat(spanProto.getTimeEvents().getTimedEventList().get(i)).isEqualTo(expectedEvent);
+      SpanData.TimedEvent expectedEvent =
+          SpanData.TimedEvent.create(
+              Timestamp.create(startTime.getSeconds() + maxNumberOfEvents + i, 0), event);
+      assertThat(spanData.getTimedEvents().get(i)).isEqualTo(expectedEvent);
     }
   }
 
@@ -487,30 +453,27 @@ public class RecordEventsReadableSpanTest {
     }
   }
 
-  private void verifySpanProto(
-      Span spanProto,
-      Attributes attributes,
-      TimedEvents timedEvents,
-      Links links,
+  private void verifySpanData(
+      SpanData spanData,
+      Map<String, AttributeValue> attributes,
+      List<SpanData.TimedEvent> timedEvents,
+      List<Link> links,
       String spanName,
       Timestamp startTime,
       Timestamp endTime,
-      Status status,
-      int childCount) {
-    assertThat(spanProto.getTraceId()).isEqualTo(TraceProtoUtils.toProtoTraceId(traceId));
-    assertThat(spanProto.getSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(spanId));
-    assertThat(spanProto.getParentSpanId()).isEqualTo(TraceProtoUtils.toProtoSpanId(parentSpanId));
-    assertThat(spanProto.getTracestate())
-        .isEqualTo(TraceProtoUtils.toProtoTracestate(Tracestate.getDefault()));
-    assertThat(spanProto.getResource()).isEqualTo(TraceProtoUtils.toProtoResource(resource));
-    assertThat(spanProto.getName()).isEqualTo(spanName);
-    assertThat(spanProto.getAttributes()).isEqualTo(attributes);
-    assertThat(spanProto.getTimeEvents()).isEqualTo(timedEvents);
-    assertThat(spanProto.getLinks()).isEqualTo(links);
-    assertThat(spanProto.getStartTime()).isEqualTo(startTime);
-    assertThat(spanProto.getEndTime()).isEqualTo(endTime);
-    assertThat(spanProto.getStatus().getCode()).isEqualTo(status.getCanonicalCode().value());
-    assertThat(spanProto.getChildSpanCount().getValue()).isEqualTo(childCount);
+      Status status) {
+    assertThat(spanData.getTraceId()).isEqualTo(traceId);
+    assertThat(spanData.getSpanId()).isEqualTo(spanId);
+    assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
+    assertThat(spanData.getTracestate()).isEqualTo(Tracestate.getDefault());
+    assertThat(spanData.getResource()).isEqualTo(resource);
+    assertThat(spanData.getName()).isEqualTo(spanName);
+    assertThat(spanData.getAttributes()).isEqualTo(attributes);
+    assertThat(spanData.getTimedEvents()).isEqualTo(timedEvents);
+    assertThat(spanData.getLinks()).isEqualTo(links);
+    assertThat(spanData.getStartTimestamp()).isEqualTo(startTime);
+    assertThat(spanData.getEndTimestamp()).isEqualTo(endTime);
+    assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
   }
 
   private static final class SimpleEvent implements Event {
@@ -605,12 +568,11 @@ public class RecordEventsReadableSpanTest {
             .setAttributes(attributes)
             .build();
 
-    SpanData result = readableSpan.asSpanData();
+    SpanData result = readableSpan.toSpanData();
     assertEquals(expected, result);
   }
 
-  private static io.opentelemetry.common.Timestamp nanoToTimestamp(long nanotime) {
-    return io.opentelemetry.common.Timestamp.create(
-        nanotime / NANOS_PER_SECOND, (int) (nanotime % NANOS_PER_SECOND));
+  private static Timestamp nanoToTimestamp(long nanotime) {
+    return Timestamp.create(nanotime / NANOS_PER_SECOND, (int) (nanotime % NANOS_PER_SECOND));
   }
 }

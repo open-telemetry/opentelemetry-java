@@ -67,5 +67,5 @@ public interface ReadableSpan {
    * @return an immutable {@link SpanData} instance.
    * @since 0.1.0
    */
-  SpanData asSpanData();
+  SpanData toSpanData();
 }

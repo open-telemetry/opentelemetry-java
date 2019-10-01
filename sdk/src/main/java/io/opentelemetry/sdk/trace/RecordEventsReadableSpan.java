@@ -202,7 +202,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
-  public SpanData asSpanData() {
+  public SpanData toSpanData() {
     Timestamp startTimestamp = timestampConverter.nanoTimeToTimestampDelta(startNanoTime);
     Timestamp endTimestamp = timestampConverter.nanoTimeToTimestampDelta(getEndNanoTime());
     SpanContext spanContext = getSpanContext();
@@ -308,7 +308,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         Link newLink = Links.create(context, link.getAttributes());
         result.add(newLink);
       }
-      return result;
+      return Collections.unmodifiableList(result);
     }
   }
 
