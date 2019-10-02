@@ -134,4 +134,16 @@ public class CounterLongTest {
     thrown.expectMessage("labelValues");
     counterLong.removeHandle(null);
   }
+
+  @Test
+  public void doesNotThrow() {
+    CounterLong counterLong =
+        meter
+            .counterLongBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    counterLong.getDefaultHandle().add(1);
+  }
 }

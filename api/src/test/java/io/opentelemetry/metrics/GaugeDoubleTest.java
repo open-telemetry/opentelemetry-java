@@ -134,4 +134,16 @@ public class GaugeDoubleTest {
     thrown.expectMessage("labelValues");
     gaugeDouble.removeHandle(null);
   }
+
+  @Test
+  public void doesNotThrow() {
+    GaugeDouble gaugeDouble =
+        meter
+            .gaugeDoubleBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    gaugeDouble.getDefaultHandle().set(5.0);
+  }
 }

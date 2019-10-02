@@ -135,4 +135,16 @@ public class CounterDoubleTest {
     thrown.expectMessage("labelValues");
     counterDouble.removeHandle(null);
   }
+
+  @Test
+  public void doesNotThrow() {
+    CounterDouble counterDouble =
+        meter
+            .counterDoubleBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    counterDouble.getDefaultHandle().add(1.0);
+  }
 }

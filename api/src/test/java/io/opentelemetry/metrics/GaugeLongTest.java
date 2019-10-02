@@ -131,4 +131,16 @@ public class GaugeLongTest {
     thrown.expectMessage("labelValues");
     gaugeLong.removeHandle(null);
   }
+
+  @Test
+  public void doesNotThrow() {
+    GaugeLong gaugeLong =
+        meter
+            .gaugeLongBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    gaugeLong.getDefaultHandle().set(5);
+  }
 }

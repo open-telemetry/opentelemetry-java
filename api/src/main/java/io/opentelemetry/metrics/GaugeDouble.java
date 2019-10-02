@@ -70,6 +70,8 @@ public interface GaugeDouble extends Gauge<Handle> {
     /**
      * Sets the given value.
      *
+     * <p>The value added is associated with the current {@code Context}.
+     *
      * @param val the new value.
      * @since 0.1.0
      */
