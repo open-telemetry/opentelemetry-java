@@ -28,6 +28,7 @@ public interface ReadableSpan {
    * <p>Equivalent with {@link Span#getContext()}.
    *
    * @return the {@link SpanContext} of the {@code Span}.
+   * @since 0.1.0
    */
   SpanContext getSpanContext();
 
@@ -38,13 +39,24 @@ public interface ReadableSpan {
    * Span#updateName(String)} so this value cannot be cached.
    *
    * @return the name of the {@code Span}.
+   * @since 0.1.0
    */
   String getName();
 
   /**
-   * Returns the proto representation of the collected data for this particular {@code Span}.
+   * This method is here to convert this instance into a protobuf instance. It will be removed from
+   * this class soon, so if you are writing new code you should not use this method. It is left here
+   * to help reduce the number of simultaneous changes in-flight at once.
    *
-   * @return the proto representation of the collected data for this particular {@code Span}.
+   * @return a new protobuf Span instance.
    */
   io.opentelemetry.proto.trace.v1.Span toSpanProto();
+
+  /**
+   * This converts this instance into an immutable SpanData instance, for use in export.
+   *
+   * @return an immutable {@link SpanData} instance.
+   * @since 0.1.0
+   */
+  SpanData toSpanData();
 }

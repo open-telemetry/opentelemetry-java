@@ -46,6 +46,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link SpanBuilderSdk}. */
+@SuppressWarnings("deprecation")
 @RunWith(JUnit4.class)
 public class SpanBuilderSdkTest {
   private static final String SPAN_NAME = "span_name";

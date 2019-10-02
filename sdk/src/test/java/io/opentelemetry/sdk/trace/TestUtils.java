@@ -16,12 +16,17 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /** Common utilities for unit tests. */
 public final class TestUtils {
+
+  private TestUtils() {}
 
   /**
    * Returns a random {@link TraceId}.
@@ -41,5 +46,15 @@ public final class TestUtils {
     return SpanId.fromLowerBase16(UUID.randomUUID().toString().replace("-", ""), 0);
   }
 
-  private TestUtils() {}
+  /**
+   * Generates some random attributes used for testing.
+   *
+   * @return a map of String to AttributeValues
+   */
+  static Map<String, AttributeValue> generateRandomAttributes() {
+    Map<String, AttributeValue> result = new HashMap<>();
+    AttributeValue attribute = AttributeValue.stringAttributeValue(UUID.randomUUID().toString());
+    result.put(UUID.randomUUID().toString(), attribute);
+    return result;
+  }
 }
