@@ -5,9 +5,12 @@ dependencies {
 
     annotationProcessor libraries.auto_value
 
+<<<<<<< HEAD
     implementation libraries.guava
 
     testImplementation project(':opentelemetry-sdk')
+=======
+>>>>>>> Initial dev of common HTTP client and server instrumentation functionality.
     testImplementation project(':opentelemetry-sdk-contrib-inmemory-export')
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
@@ -15,8 +18,11 @@ dependencies {
     // disable the android requirement for the moment.
     // signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
 }
+<<<<<<< HEAD
 
 test {
     systemProperty("java.util.logging.config.file", "${projectDir}/src/test/resources/test-logging.properties")
 
 }
+=======
+>>>>>>> Initial dev of common HTTP client and server instrumentation functionality.
