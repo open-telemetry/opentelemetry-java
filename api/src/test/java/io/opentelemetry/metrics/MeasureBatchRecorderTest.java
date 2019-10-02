@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.grpc.Context;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -62,19 +61,7 @@ public class MeasureBatchRecorderTest {
   }
 
   @Test
-  public void preventNull_Context() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("context");
-    meter.newMeasureBatchRecorder().setContext(null).record();
-  }
-
-  @Test
   public void doesNotThrow() {
-    meter
-        .newMeasureBatchRecorder()
-        .put(measureLong, 5)
-        .put(measureDouble, 3.5)
-        .setContext(Context.ROOT)
-        .record();
+    meter.newMeasureBatchRecorder().put(measureLong, 5).put(measureDouble, 3.5).record();
   }
 }

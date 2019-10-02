@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.grpc.Context;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Rule;
@@ -98,27 +97,5 @@ public final class MeasureDoubleTest {
   public void doesNotThrow() {
     MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
     myMeasure.getDefaultHandle().record(5.0);
-  }
-
-  @Test
-  public void preventNegativeValue_RecordWithContext() {
-    MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Unsupported negative values");
-    myMeasure.getDefaultHandle().record(-5.0, Context.ROOT);
-  }
-
-  @Test
-  public void preventNullContext_RecordWithContext() {
-    MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("context");
-    myMeasure.getDefaultHandle().record(5.0, null);
-  }
-
-  @Test
-  public void doesNotThrow_RecordWithContext() {
-    MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
-    myMeasure.getDefaultHandle().record(5.0, Context.ROOT);
   }
 }

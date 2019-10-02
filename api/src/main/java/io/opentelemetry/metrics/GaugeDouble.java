@@ -76,17 +76,6 @@ public interface GaugeDouble extends Gauge<Handle> {
      * @since 0.1.0
      */
     void set(double val);
-
-    /**
-     * Sets the given value.
-     *
-     * <p>The value added is associated with an explicit {@code Context}.
-     *
-     * @param val the new value.
-     * @param context the {@code Context} associated with the measurements.
-     * @since 0.1.0
-     */
-    void set(double val, io.grpc.Context context);
   }
 
   /** Builder class for {@link GaugeLong}. */

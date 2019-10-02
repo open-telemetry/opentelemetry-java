@@ -51,17 +51,6 @@ public interface MeasureBatchRecorder {
   MeasureBatchRecorder put(MeasureDouble measure, double value);
 
   /**
-   * Sets an explicit {@code Context} that all the measurements will be recorded with.
-   *
-   * <p>If no {@code DistributedContext} set, then the current DistributedContext will be used.
-   *
-   * @return this.
-   */
-  MeasureBatchRecorder setContext(io.grpc.Context context);
-
-  // TODO: Add option to record Attachment/SpanContext.
-
-  /**
    * Records all of the measures at the same time.
    *
    * <p>This method records all of the measurements every time it is called, so make sure it is not

@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -56,25 +55,13 @@ public interface MeasureDouble extends Measure<MeasureDouble.Handle> {
   @ThreadSafe
   interface Handle {
     /**
-     * Records the given measurement, with the current {@link
-     * io.opentelemetry.distributedcontext.DistributedContextManager#getCurrentContext}.
+     * Records the given measurement, associated with the current {@code Context}.
      *
      * @param value the measurement to record.
      * @throws IllegalArgumentException if value is negative.
      * @since 0.1.0
      */
     void record(double value);
-
-    /**
-     * Records the given measurements, with an explicit {@link DistributedContext}. This measurement
-     * is associated with the given {@code SpanContext}.
-     *
-     * @param value the measurement to record.
-     * @param context the {@code Context} associated with the measurements.
-     * @throws IllegalArgumentException if value is negative.
-     * @since 0.1.0
-     */
-    void record(double value, io.grpc.Context context);
   }
 
   /** Builder class for {@link MeasureDouble}. */

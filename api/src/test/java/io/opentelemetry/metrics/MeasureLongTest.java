@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.grpc.Context;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Rule;
@@ -99,27 +98,5 @@ public final class MeasureLongTest {
   public void doesNotThrow() {
     MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
     myMeasure.getDefaultHandle().record(5);
-  }
-
-  @Test
-  public void preventNegativeValue_RecordWithContext() {
-    MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Unsupported negative values");
-    myMeasure.getDefaultHandle().record(-5, Context.ROOT);
-  }
-
-  @Test
-  public void preventNullContext_RecordWithContext() {
-    MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("context");
-    myMeasure.getDefaultHandle().record(5, null);
-  }
-
-  @Test
-  public void doesNotThrow_RecordWithContext() {
-    MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
-    myMeasure.getDefaultHandle().record(5, Context.ROOT);
   }
 }

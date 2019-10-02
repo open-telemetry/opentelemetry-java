@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.grpc.Context;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.List;
@@ -159,11 +158,6 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void set(long val) {}
-
-      @Override
-      public void set(long val, Context context) {
-        Utils.checkNotNull(context, "context");
-      }
     }
 
     private static final class NoopBuilder extends NoopAbstractGaugeBuilder<Builder, GaugeLong>
@@ -215,11 +209,6 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void set(double val) {}
-
-      @Override
-      public void set(double val, Context context) {
-        Utils.checkNotNull(context, "context");
-      }
     }
 
     private static final class NoopBuilder extends NoopAbstractGaugeBuilder<Builder, GaugeDouble>
@@ -273,11 +262,6 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void add(double delta) {}
-
-      @Override
-      public void add(double delta, Context context) {
-        Utils.checkNotNull(context, "context");
-      }
     }
 
     private static final class NoopBuilder
@@ -331,11 +315,6 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void add(long delta) {}
-
-      @Override
-      public void add(long delta, Context context) {
-        Utils.checkNotNull(context, "context");
-      }
     }
 
     private static final class NoopBuilder extends NoopAbstractCounterBuilder<Builder, CounterLong>
@@ -388,12 +367,6 @@ public final class DefaultMeter implements Meter {
       public void record(double value) {
         Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
       }
-
-      @Override
-      public void record(double value, Context context) {
-        Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-        Utils.checkNotNull(context, "context");
-      }
     }
 
     private static final class NoopBuilder extends NoopAbstractMetricBuilder<Builder, MeasureDouble>
@@ -444,12 +417,6 @@ public final class DefaultMeter implements Meter {
       @Override
       public void record(long value) {
         Utils.checkArgument(value >= 0, "Unsupported negative values.");
-      }
-
-      @Override
-      public void record(long value, Context context) {
-        Utils.checkArgument(value >= 0, "Unsupported negative values.");
-        Utils.checkNotNull(context, "context");
       }
     }
 
@@ -583,12 +550,6 @@ public final class DefaultMeter implements Meter {
     public MeasureBatchRecorder put(MeasureDouble measure, double value) {
       Utils.checkNotNull(measure, "measure");
       Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-      return this;
-    }
-
-    @Override
-    public MeasureBatchRecorder setContext(Context context) {
-      Utils.checkNotNull(context, "context");
       return this;
     }
 

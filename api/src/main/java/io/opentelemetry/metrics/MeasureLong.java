@@ -62,16 +62,6 @@ public interface MeasureLong extends Measure<MeasureLong.Handle> {
      * @since 0.1.0
      */
     void record(long value);
-
-    /**
-     * Records the given measurements, associated with an explicit {@code Context}.
-     *
-     * @param measurement the measurement to record.
-     * @param context the {@code Context} associated with the measurements.
-     * @throws IllegalArgumentException if value is negative.
-     * @since 0.1.0
-     */
-    void record(long measurement, io.grpc.Context context);
   }
 
   /** Builder class for {@link MeasureLong}. */

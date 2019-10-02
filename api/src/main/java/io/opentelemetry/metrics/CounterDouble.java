@@ -65,7 +65,6 @@ public interface CounterDouble extends Counter<Handle> {
    * @since 0.1.0
    */
   interface Handle {
-
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
      * was set to {@code false}.
@@ -76,18 +75,6 @@ public interface CounterDouble extends Counter<Handle> {
      * @since 0.1.0
      */
     void add(double delta);
-
-    /**
-     * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
-     * was set to {@code false}.
-     *
-     * <p>The value added is associated with an explicit {@code Context}.
-     *
-     * @param delta the value to add.
-     * @param context the {@code Context} associated with the measurements.
-     * @since 0.1.0
-     */
-    void add(double delta, io.grpc.Context context);
   }
 
   /** Builder class for {@link CounterDouble}. */
