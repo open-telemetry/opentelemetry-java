@@ -75,4 +75,8 @@ public abstract class HttpExtractor<Q, P> {
    * @return the response status code.
    */
   public abstract int getStatusCode(@Nullable P response);
+<<<<<<< HEAD
+=======
+
+>>>>>>> Initial dev of common HTTP client and server instrumentation functionality.
 }
