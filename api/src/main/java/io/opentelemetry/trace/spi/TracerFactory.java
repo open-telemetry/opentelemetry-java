@@ -35,10 +35,11 @@ public interface TracerFactory {
   /**
    * Creates a new tracer instance.
    *
+   * @param instrumentationName The name of the instrumentation library.
    * @return a tracer instance.
    * @since 0.1.0
    */
-  Tracer create();
+  Tracer get(String instrumentationName);
 
   /**
    * Gets or creates a named and versioned tracer instance.

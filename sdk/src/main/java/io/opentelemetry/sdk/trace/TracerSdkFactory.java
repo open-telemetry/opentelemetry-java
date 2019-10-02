@@ -33,8 +33,8 @@ public class TracerSdkFactory implements TracerFactory {
       Collections.synchronizedMap(new HashMap<String, Tracer>());
 
   @Override
-  public Tracer create() {
-    return new TracerSdk();
+  public Tracer get(String instrumentationName) {
+    return get(instrumentationName, null);
   }
 
   @Override

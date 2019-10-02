@@ -89,12 +89,12 @@ public class OpenTelemetryTest {
 
   @Test
   public void testTracerLoadArbitrary() throws IOException {
-    File serviceFile = createService(TracerFactory.class, FirstTracer.class, SecondTracer.class);
+    File serviceFile =
+        createService(TracerFactory.class, FirstTracerFactory.class, SecondTracerFactory.class);
     try {
       assertTrue(
-          (OpenTelemetry.getTracer() instanceof FirstTracer)
-              || (OpenTelemetry.getTracer() instanceof SecondTracer));
-      assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
+          (OpenTelemetry.getTracer() instanceof FirstTracerFactory)
+              || (OpenTelemetry.getTracer() instanceof SecondTracerFactory));
     } finally {
       serviceFile.delete();
     }
@@ -102,11 +102,11 @@ public class OpenTelemetryTest {
 
   @Test
   public void testTracerSystemProperty() throws IOException {
-    File serviceFile = createService(TracerFactory.class, FirstTracer.class, SecondTracer.class);
-    System.setProperty(TracerFactory.class.getName(), SecondTracer.class.getName());
+    File serviceFile =
+        createService(TracerFactory.class, FirstTracerFactory.class, SecondTracerFactory.class);
+    System.setProperty(TracerFactory.class.getName(), SecondTracerFactory.class.getName());
     try {
-      assertThat(OpenTelemetry.getTracer()).isInstanceOf(SecondTracer.class);
-      assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
+      assertThat(OpenTelemetry.getTracer()).isInstanceOf(SecondTracerFactory.class);
     } finally {
       serviceFile.delete();
     }
@@ -212,27 +212,27 @@ public class OpenTelemetryTest {
     return file;
   }
 
-  public static class SecondTracer extends FirstTracer {
+  public static class SecondTracerFactory extends FirstTracerFactory {
     @Override
-    public Tracer create() {
-      return new SecondTracer();
+    public Tracer get(String instrumentationName) {
+      return new SecondTracerFactory();
     }
 
     @Override
     public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return create();
+      return get(instrumentationName);
     }
   }
 
-  public static class FirstTracer implements Tracer, TracerFactory {
+  public static class FirstTracerFactory implements Tracer, TracerFactory {
     @Override
-    public Tracer create() {
-      return new FirstTracer();
+    public Tracer get(String instrumentationName) {
+      return new FirstTracerFactory();
     }
 
     @Override
     public Tracer get(String instrumentationName, String instrumentationVersion) {
-      return create();
+      return get(instrumentationName);
     }
 
     @Nullable
