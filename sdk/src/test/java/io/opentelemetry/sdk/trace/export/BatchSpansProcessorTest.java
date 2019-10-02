@@ -21,7 +21,6 @@ import static org.mockito.Mockito.doThrow;
 
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.ReadableSpanAdapter;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.trace.util.Samplers;
@@ -48,7 +47,6 @@ public class BatchSpansProcessorTest {
   private final TracerSdk tracerSdk = new TracerSdk();
   private final WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter();
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
-  private final ReadableSpanAdapter adapter = new ReadableSpanAdapter();
   @Mock private SpanExporter mockServiceHandler;
 
   @Before
@@ -95,7 +93,7 @@ public class BatchSpansProcessorTest {
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
     List<SpanData> exported = waitingSpanExporter.waitForExport(2);
-    assertThat(exported).containsExactly(adapter.adapt(span1), adapter.adapt(span2));
+    assertThat(exported).containsExactly(span1.toSpanData(), span2.toSpanData());
   }
 
   @Test
@@ -116,12 +114,12 @@ public class BatchSpansProcessorTest {
     List<SpanData> exported = waitingSpanExporter.waitForExport(6);
     assertThat(exported)
         .containsExactly(
-            adapter.adapt(span1),
-            adapter.adapt(span2),
-            adapter.adapt(span3),
-            adapter.adapt(span4),
-            adapter.adapt(span5),
-            adapter.adapt(span6));
+            span1.toSpanData(),
+            span2.toSpanData(),
+            span3.toSpanData(),
+            span4.toSpanData(),
+            span5.toSpanData(),
+            span6.toSpanData());
   }
 
   @Test
@@ -138,8 +136,8 @@ public class BatchSpansProcessorTest {
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
     List<SpanData> exported1 = waitingSpanExporter.waitForExport(2);
     List<SpanData> exported2 = waitingSpanExporter2.waitForExport(2);
-    assertThat(exported1).containsExactly(adapter.adapt(span1), adapter.adapt(span2));
-    assertThat(exported2).containsExactly(adapter.adapt(span1), adapter.adapt(span2));
+    assertThat(exported1).containsExactly(span1.toSpanData(), span2.toSpanData());
+    assertThat(exported2).containsExactly(span1.toSpanData(), span2.toSpanData());
   }
 
   @Test
@@ -157,12 +155,12 @@ public class BatchSpansProcessorTest {
     // Wait to block the worker thread in the BatchSampledSpansProcessor. This ensures that no items
     // can be removed from the queue. Need to add a span to trigger the export otherwise the
     // pipeline is never called.
-    spansToExport.add(adapter.adapt(createSampledEndedSpan("blocking_span")));
+    spansToExport.add(createSampledEndedSpan("blocking_span").toSpanData());
     blockingSpanExporter.waitUntilIsBlocked();
 
     for (int i = 0; i < maxQueuedSpans; i++) {
       // First export maxQueuedSpans, the worker thread is blocked so all items should be queued.
-      spansToExport.add(adapter.adapt(createSampledEndedSpan("span_1_" + i)));
+      spansToExport.add(createSampledEndedSpan("span_1_" + i).toSpanData());
     }
 
     // TODO: assertThat(spanExporter.getReferencedSpans()).isEqualTo(maxQueuedSpans);
@@ -191,7 +189,7 @@ public class BatchSpansProcessorTest {
     // TODO: assertThat(getPushedSpans()).isAtLeast((long) maxQueuedSpans - maxBatchSize);
 
     for (int i = 0; i < maxQueuedSpans; i++) {
-      spansToExport.add(adapter.adapt(createSampledEndedSpan("span_3_" + i)));
+      spansToExport.add(createSampledEndedSpan("span_3_" + i).toSpanData());
       // No more dropped spans.
       // TODO: assertThat(getDroppedSpans()).isEqualTo(7);
     }
@@ -214,12 +212,12 @@ public class BatchSpansProcessorTest {
             .build());
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     List<SpanData> exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(adapter.adapt(span1));
+    assertThat(exported).containsExactly(span1.toSpanData());
 
     // Continue to export after the exception was received.
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
     exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(adapter.adapt(span2));
+    assertThat(exported).containsExactly(span2.toSpanData());
   }
 
   @Test
@@ -239,7 +237,7 @@ public class BatchSpansProcessorTest {
     List<SpanData> exported = waitingSpanExporter.waitForExport(1);
     // Need to check this because otherwise the variable span1 is unused, other option is to not
     // have a span1 variable.
-    assertThat(exported).containsExactly(adapter.adapt(span2));
+    assertThat(exported).containsExactly(span2.toSpanData());
   }
 
   @Test
@@ -251,8 +249,8 @@ public class BatchSpansProcessorTest {
             .build());
 
     ReadableSpan span = createNotSampledRecordingEventsEndedSpan(SPAN_NAME_1);
-    List<Span> exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(span.toSpanProto());
+    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
+    assertThat(exported).containsExactly(span.toSpanData());
   }
 
   @Test
@@ -265,8 +263,8 @@ public class BatchSpansProcessorTest {
 
     createNotSampledRecordingEventsEndedSpan(SPAN_NAME_1);
     ReadableSpan sampledSpan = createSampledEndedSpan(SPAN_NAME_2);
-    List<Span> exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(sampledSpan.toSpanProto());
+    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
+    assertThat(exported).containsExactly(sampledSpan.toSpanData());
   }
 
   @Test(timeout = 10000L)
@@ -281,7 +279,7 @@ public class BatchSpansProcessorTest {
     tracerSdk.shutdown();
 
     List<SpanData> exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(adapter.adapt(span2));
+    assertThat(exported).containsExactly(span2.toSpanData());
   }
 
   private static final class BlockingSpanExporter implements SpanExporter {

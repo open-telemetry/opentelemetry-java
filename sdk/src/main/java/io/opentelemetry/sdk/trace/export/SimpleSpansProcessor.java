@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.ReadableSpanAdapter;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Collections;
@@ -53,7 +52,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
       return;
     }
     try {
-      List<SpanData> spans = Collections.singletonList(readableSpanAdapter.adapt(span));
+      List<SpanData> spans = Collections.singletonList(span.toSpanData());
       spanExporter.export(spans);
     } catch (Throwable e) {
       logger.log(Level.WARNING, "Exception thrown by the export.", e);

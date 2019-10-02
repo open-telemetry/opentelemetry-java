@@ -16,17 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.sdk.internal.TimestampConverter;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import java.util.List;
-import java.util.Map;
 
 /** The extend Span interface used by the SDK. */
 public interface ReadableSpan {

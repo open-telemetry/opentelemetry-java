@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -37,6 +36,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.util.Events;
+import io.opentelemetry.trace.util.Links;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -75,7 +75,7 @@ public class RecordEventsReadableSpanTest {
   private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
   private final Event event =
       new SimpleEvent("event2", Collections.<String, AttributeValue>emptyMap());
-  private final Link link = SpanData.Link.create(spanContext);
+  private final Link link = Links.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
 

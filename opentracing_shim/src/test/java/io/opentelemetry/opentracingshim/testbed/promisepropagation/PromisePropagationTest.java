@@ -114,9 +114,10 @@ public class PromisePropagationTest {
       assertThat(finished.size()).isEqualTo(4);
 
       String component = Tags.COMPONENT.getKey();
-      assertThat(getOneByAttr(finished, component, "example-promises")).isNotNull();
-      assertThat(getOneByAttr(finished, component, "example-promises").getParentSpanId().isValid())
-          .isFalse();
+      List<SpanData> spanExamplePromise = getByAttr(finished, component, "example-promises");
+      assertThat(spanExamplePromise).hasSize(1);
+      assertThat(spanExamplePromise.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
+
       assertThat(getByAttr(finished, component, "success")).hasSize(2);
 
       SpanId parentId = spanExamplePromise.get(0).getSpanId();
@@ -124,8 +125,7 @@ public class PromisePropagationTest {
         assertThat(span.getParentSpanId()).isEqualTo(parentId);
       }
 
-      List<io.opentelemetry.proto.trace.v1.Span> spanError =
-          getByAttr(finished, component, "error");
+      List<SpanData> spanError = getByAttr(finished, component, "error");
       assertThat(spanError).hasSize(1);
       assertThat(spanError.get(0).getParentSpanId()).isEqualTo(parentId);
     }

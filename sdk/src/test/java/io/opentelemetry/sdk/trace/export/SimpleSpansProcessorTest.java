@@ -17,13 +17,14 @@
 package io.opentelemetry.sdk.trace.export;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.BatchSpansProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.trace.SpanContext;
@@ -68,10 +69,7 @@ public class SimpleSpansProcessorTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    simpleSampledSpansProcessor =
-        SimpleSpansProcessor.newBuilder(spanExporter)
-            .readableSpanAdapter(readableSpanAdapter)
-            .build();
+    simpleSampledSpansProcessor = SimpleSpansProcessor.newBuilder(spanExporter).build();
   }
 
   @Test
@@ -84,7 +82,7 @@ public class SimpleSpansProcessorTest {
   public void onEndSync_SampledSpan() {
     SpanData spanData = TestUtils.makeBasicSpan();
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
-    when(readableSpanAdapter.adapt(readableSpan)).thenReturn(spanData);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
     simpleSampledSpansProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(spanData));
   }
@@ -99,8 +97,8 @@ public class SimpleSpansProcessorTest {
   @Test
   public void onEndSync_OnlySampled_NotSampledSpan() {
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
-    when(readableSpan.toSpanProto())
-        .thenReturn(Span.getDefaultInstance())
+    when(readableSpan.toSpanData())
+        .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
     SimpleSpansProcessor simpleSpansProcessor =
         SimpleSpansProcessor.newBuilder(spanExporter).reportOnlySampled(true).build();
@@ -111,13 +109,13 @@ public class SimpleSpansProcessorTest {
   @Test
   public void onEndSync_OnlySampled_SampledSpan() {
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
-    when(readableSpan.toSpanProto())
-        .thenReturn(Span.getDefaultInstance())
+    when(readableSpan.toSpanData())
+        .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
     SimpleSpansProcessor simpleSpansProcessor =
         SimpleSpansProcessor.newBuilder(spanExporter).reportOnlySampled(true).build();
     simpleSpansProcessor.onEnd(readableSpan);
-    verify(spanExporter).export(Collections.singletonList(Span.getDefaultInstance()));
+    verify(spanExporter).export(Collections.singletonList(TestUtils.makeBasicSpan()));
   }
 
   @Test
@@ -138,10 +136,10 @@ public class SimpleSpansProcessorTest {
     // sampled span is not exported by creating and ending a sampled span after a non sampled span
     // and checking that the first exported span is the sampled span (the non sampled did not get
     // exported).
-    List<Span> exported = waitingSpanExporter.waitForExport(1);
+    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
     // Need to check this because otherwise the variable span1 is unused, other option is to not
     // have a span1 variable.
-    assertThat(exported).containsExactly(((ReadableSpan) span).toSpanProto());
+    assertThat(exported).containsExactly(((ReadableSpan) span).toSpanData());
   }
 
   @Test
@@ -160,15 +158,15 @@ public class SimpleSpansProcessorTest {
             .startSpan();
     span.end();
 
-    List<Span> exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(((ReadableSpan) span).toSpanProto());
+    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
+    assertThat(exported).containsExactly(((ReadableSpan) span).toSpanData());
   }
 
   @Test
   public void onEndSync_ExporterReturnError() {
     SpanData spanData = TestUtils.makeBasicSpan();
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
-    when(readableSpanAdapter.adapt(readableSpan)).thenReturn(spanData);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
     simpleSampledSpansProcessor.onEnd(readableSpan);
     // Try again, now will no longer return error.
     simpleSampledSpansProcessor.onEnd(readableSpan);

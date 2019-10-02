@@ -16,13 +16,11 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.Timestamp;
 import io.opentelemetry.trace.TraceId;
 import java.util.HashMap;
 import java.util.Map;

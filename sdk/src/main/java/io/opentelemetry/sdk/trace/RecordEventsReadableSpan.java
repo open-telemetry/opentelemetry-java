@@ -19,13 +19,11 @@ package io.opentelemetry.sdk.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
-import com.google.protobuf.UInt32Value;
 import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.export.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -157,36 +155,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     return span;
   }
 
-  /**
-   * This method is here to convert this instance into a protobuf instance. It will be removed from
-   * this class soon, so if you are writing new code you should not use this method. It is left here
-   * to help reduce the number of simultaneous changes in-flight at once.
-   *
-   * @return a new protobuf Span instance.
-   */
-  @Deprecated
-  @Override
-  public long getStartNanoTime() {
-    return startNanoTime;
-  }
-
-  /**
-   * Returns the end nano time (see {@link System#nanoTime()}). If the current {@code Span} is not
-   * ended then returns {@link Clock#nowNanos()}.
-   *
-   * @return the end nano time.
-   */
-  @Override
-  public long getEndNanoTime() {
-    synchronized (this) {
-      return getEndNanoTimeInternal();
-    }
-  }
-
   @Override
   public SpanData toSpanData() {
-    Timestamp startTimestamp = timestampConverter.nanoTimeToTimestampDelta(startNanoTime);
-    Timestamp endTimestamp = timestampConverter.nanoTimeToTimestampDelta(getEndNanoTime());
+    Timestamp startTimestamp = timestampConverter.convertNanoTime(startNanoTime);
+    Timestamp endTimestamp = timestampConverter.convertNanoTime(getEndNanoTime());
     SpanContext spanContext = getSpanContext();
     return SpanData.newBuilder()
         .setName(getName())
@@ -217,7 +189,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static SpanData.TimedEvent adaptTimedEvent(
       io.opentelemetry.sdk.trace.TimedEvent sourceEvent, TimestampConverter timestampConverter) {
-    Timestamp timestamp = timestampConverter.nanoTimeToTimestampDelta(sourceEvent.getNanotime());
+    Timestamp timestamp = timestampConverter.convertNanoTime(sourceEvent.getNanotime());
     io.opentelemetry.trace.Event event =
         Events.create(sourceEvent.getName(), sourceEvent.getAttributes());
     return SpanData.TimedEvent.create(timestamp, event);
@@ -257,8 +229,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the status of the {@code Span}.
    */
-  @Override
-  public Status getStatus() {
+  @VisibleForTesting
+  Status getStatus() {
     synchronized (this) {
       return getStatusWithDefault();
     }
@@ -280,7 +252,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return A copy of the Links for this span.
    */
-  private List<Link> getLinks() {
+  @VisibleForTesting
+  List<Link> getLinks() {
     synchronized (this) {
       if (links == null) {
         return Collections.emptyList();
@@ -299,7 +272,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return An unmodifiable view of the attributes associated wit this span
    */
-  private Map<String, AttributeValue> getAttributes() {
+  @VisibleForTesting
+  Map<String, AttributeValue> getAttributes() {
     synchronized (this) {
       return Collections.unmodifiableMap(getInitializedAttributes());
     }
@@ -337,19 +311,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return The span id of the parent span.
    */
-  @Override
+  @VisibleForTesting
   public SpanId getParentSpanId() {
     return parentSpanId;
-  }
-
-  /**
-   * Returns the resource associated with this span.
-   *
-   * @return The {@code Resource} that created this span.
-   */
-  @Override
-  public Resource getResource() {
-    return resource;
   }
 
   /**
@@ -580,41 +544,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     super.finalize();
   }
 
-  @VisibleForTesting
-  int getTotalRecordedEvents() {
-    synchronized (this) {
-      return totalRecordedEvents;
-    }
-  }
-
-  @VisibleForTesting
-  int getTotalRecordedLinks() {
-    synchronized (this) {
-      return totalRecordedLinks;
-    }
-  }
-
-  @VisibleForTesting
-  int getNumberOfChildren() {
-    synchronized (this) {
-      return numberOfChildren;
-    }
-  }
-
-  @VisibleForTesting
-  AttributesWithCapacity getRawAttributes() {
-    synchronized (this) {
-      return getInitializedAttributes();
-    }
-  }
-
-  @Override
-  public int getChildSpanCount() {
-    synchronized (this) {
-      return numberOfChildren;
-    }
-  }
-
   /**
    * The count of links that have been dropped.
    *
@@ -626,12 +555,16 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @VisibleForTesting
-  int getDroppedAttributesCount() {
-    return getRawAttributes().getNumberOfDroppedAttributes();
+  int getNumberOfChildren() {
+    synchronized (this) {
+      return numberOfChildren;
+    }
   }
 
   @VisibleForTesting
-  int getDroppedTimedEventsCount() {
-    return getTotalRecordedEvents() - getTimedEvents().size();
+  int getTotalRecordedEvents() {
+    synchronized (this) {
+      return totalRecordedEvents;
+    }
   }
 }
