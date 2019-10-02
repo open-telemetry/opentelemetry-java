@@ -439,6 +439,9 @@ public interface Span {
     /**
      * Sets an explicit start {@link Timestamp} for the newly created {@code Span}.
      *
+     * <p>Use this method to specify an explicit start {@link Timestamp}. If not called, the
+     * implementation will use the timestamp value at {@link #startSpan()} time.
+     *
      * @param startTimestamp the explicit start {@link Timestamp} of the newly created {@code Span}.
      * @return this.
      * @since 0.1.0
