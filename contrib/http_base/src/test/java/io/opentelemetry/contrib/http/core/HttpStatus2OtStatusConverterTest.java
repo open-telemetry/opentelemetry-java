@@ -26,13 +26,20 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+<<<<<<< HEAD
 /** Unit tests for {@link HttpStatus2OtStatusConverter}. */
+=======
+/**
+ * Unit tests for {@link HttpStatus2OtStatusConverter}.
+ */
+>>>>>>> Initial dev of common HTTP client and server instrumentation functionality.
 @RunWith(value = Parameterized.class)
 public class HttpStatus2OtStatusConverterTest {
 
   @Parameters
   public static Collection<Object[]> data() {
     // List from https://developer.mozilla.org/en-US/docs/Web/HTTP
+<<<<<<< HEAD
     return Arrays.asList(
         new Object[][] {
           {100, "Continue", Status.UNKNOWN},
@@ -86,6 +93,60 @@ public class HttpStatus2OtStatusConverterTest {
           {505, "HTTP Version Not Supported", Status.INTERNAL},
           {511, "Network Authentication Required", Status.INTERNAL},
         });
+=======
+    return Arrays.asList(new Object[][]{
+        {100, "Continue", Status.UNKNOWN},
+        {101, "Switching Protocols", Status.UNKNOWN},
+        {103, "Early Hints", Status.UNKNOWN},
+        {200, "OK", Status.OK},
+        {201, "Created", Status.OK},
+        {202, "Accepted", Status.OK},
+        {203, "Non-Authoritative Information", Status.OK},
+        {204, "No Content", Status.OK},
+        {205, "Reset Content", Status.OK},
+        {206, "Partial Content", Status.OK},
+        {300, "Multiple Choices", Status.OK},
+        {301, "Moved Permenantly", Status.OK},
+        {302, "Found", Status.OK},
+        {303, "See Other", Status.OK},
+        {304, "Not Modified", Status.OK},
+        {307, "Temporary Redirect", Status.OK},
+        {308, "Permanent Redirect", Status.OK},
+        {400, "Bad Request", Status.INVALID_ARGUMENT},
+        {401, "Unauthorized", Status.UNAUTHENTICATED},
+        {402, "Payment Required", Status.FAILED_PRECONDITION},
+        {403, "Forbidden", Status.PERMISSION_DENIED},
+        {404, "Not Found", Status.NOT_FOUND},
+        {405, "Method Not Allowed", Status.INVALID_ARGUMENT},
+        {406, "Not Acceptable", Status.INVALID_ARGUMENT},
+        {407, "Proxy Authentication Required", Status.INVALID_ARGUMENT},
+        {408, "Request Timeout", Status.ABORTED},
+        {409, "Conflict", Status.FAILED_PRECONDITION},
+        {410, "Gone", Status.INVALID_ARGUMENT},
+        {411, "Length Required", Status.INVALID_ARGUMENT},
+        {412, "Precondition Failed", Status.FAILED_PRECONDITION},
+        {413, "Payload Too Large", Status.INVALID_ARGUMENT},
+        {414, "URI Too Long", Status.INVALID_ARGUMENT},
+        {415, "Unsupported Media Type", Status.INVALID_ARGUMENT},
+        {416, "Range Not Satisfiable", Status.OUT_OF_RANGE},
+        {417, "Expectation Failed", Status.INVALID_ARGUMENT},
+        {418, "I'm a teapot", Status.INVALID_ARGUMENT},
+        {422, "Unprocessable Entity", Status.INVALID_ARGUMENT},
+        {425, "Too Early", Status.INVALID_ARGUMENT},
+        {426, "Upgrade Required", Status.INVALID_ARGUMENT},
+        {428, "Precondition Required", Status.INVALID_ARGUMENT},
+        {429, "Too Many Requests", Status.RESOURCE_EXHAUSTED},
+        {431, "Request Header Fields Too Large", Status.INVALID_ARGUMENT},
+        {451, "Unavailable For Legal Reasons", Status.INVALID_ARGUMENT},
+        {500, "Internal Server Error", Status.INTERNAL},
+        {501, "Not Implemented", Status.UNIMPLEMENTED},
+        {502, "Bad Gateway", Status.INTERNAL},
+        {503, "Service Unavailable", Status.UNAVAILABLE},
+        {504, "Gateway Timeout", Status.DEADLINE_EXCEEDED},
+        {505, "HTTP Version Not Supported", Status.INTERNAL},
+        {511, "Network Authentication Required", Status.INTERNAL},
+    });
+>>>>>>> Initial dev of common HTTP client and server instrumentation functionality.
   }
 
   private final HttpStatus2OtStatusConverter converter = new HttpStatus2OtStatusConverter();
@@ -93,6 +154,7 @@ public class HttpStatus2OtStatusConverterTest {
   private final String description;
   private final Status target;
 
+<<<<<<< HEAD
   /**
    * Constructs test.
    *
@@ -100,6 +162,8 @@ public class HttpStatus2OtStatusConverterTest {
    * @param description the http status description
    * @param target the equivalent OT status
    */
+=======
+>>>>>>> Initial dev of common HTTP client and server instrumentation functionality.
   public HttpStatus2OtStatusConverterTest(int source, String description, Status target) {
     this.source = source;
     this.description = description;
@@ -108,7 +172,15 @@ public class HttpStatus2OtStatusConverterTest {
 
   @Test
   public void shouldConvertAllStandardHttpStatusCodesCorrectly() {
+<<<<<<< HEAD
     assertEquals(
         description + " should have mapped to " + target, target, converter.convert(source));
   }
 }
+=======
+    assertEquals(description + " should have mapped to " + target,
+        target, converter.convert(source));
+  }
+
+}
+>>>>>>> Initial dev of common HTTP client and server instrumentation functionality.
