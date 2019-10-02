@@ -69,7 +69,6 @@ class SpanBuilderSdk implements Span.Builder {
   private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
   private boolean recordEvents = false;
-  @Nullable private com.google.protobuf.Timestamp startTimestamp;
 
   SpanBuilderSdk(
       String spanName,
@@ -156,14 +155,10 @@ class SpanBuilderSdk implements Span.Builder {
     return this;
   }
 
+  // TODO: Use startTimestamp.
   @Override
   public Span.Builder setStartTimestamp(Timestamp startTimestamp) {
     Utils.checkNotNull(startTimestamp, "startTimestamp");
-    this.startTimestamp =
-        com.google.protobuf.Timestamp.newBuilder()
-            .setSeconds(startTimestamp.getSeconds())
-            .setNanos(startTimestamp.getNanos())
-            .build();
     return this;
   }
 
@@ -196,12 +191,7 @@ class SpanBuilderSdk implements Span.Builder {
       return DefaultSpan.create(spanContext);
     }
 
-    TimestampConverter timestampConverter;
-    if (startTimestamp == null) {
-      timestampConverter = getTimestampConverter(parentSpan(parentType, parent));
-    } else {
-      timestampConverter = TimestampConverter.fromTimestamp(startTimestamp);
-    }
+    TimestampConverter timestampConverter = getTimestampConverter(parentSpan(parentType, parent));
 
     return RecordEventsReadableSpan.startSpan(
         spanContext,
@@ -211,7 +201,6 @@ class SpanBuilderSdk implements Span.Builder {
         traceConfig,
         spanProcessor,
         timestampConverter,
-        startTimestamp,
         clock,
         resource,
         samplingDecision.attributes(),

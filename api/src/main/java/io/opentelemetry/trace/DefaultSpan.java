@@ -16,7 +16,6 @@
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
 import java.util.Random;
@@ -127,8 +126,8 @@ public final class DefaultSpan implements Span {
   public void end() {}
 
   @Override
-  public void end(Timestamp endTimestamp) {
-    Utils.checkNotNull(endTimestamp, "endTimestamp");
+  public void end(EndSpanOptions endOptions) {
+    Utils.checkNotNull(endOptions, "endOptions");
   }
 
   @Override

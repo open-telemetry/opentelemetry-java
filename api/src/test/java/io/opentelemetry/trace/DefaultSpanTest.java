@@ -61,6 +61,7 @@ public class DefaultSpanTest {
     span.addEvent(Events.create("event"));
     span.setStatus(Status.OK);
     span.end();
+    span.end(EndSpanOptions.getDefault());
   }
 
   @Test
@@ -70,7 +71,7 @@ public class DefaultSpanTest {
   }
 
   @Test
-  public void defaultSpan_NullEndTimestamp() {
+  public void defaultSpan_NullEndSpanOptions() {
     DefaultSpan span = DefaultSpan.getInvalid();
     thrown.expect(NullPointerException.class);
     span.end(null);

@@ -41,16 +41,6 @@ public class TimestampConverter {
   }
 
   /**
-   * Returns a {@code TimestampConverter} initialized to the value of {@code Timestamp}.
-   *
-   * @param timestamp the {@code Timestamp} to be used to initialize this instance.
-   * @return a {@code TimestampConverter} initialized to now.
-   */
-  public static TimestampConverter fromTimestamp(Timestamp timestamp) {
-    return new TimestampConverter(timestamp, Timestamps.toNanos(timestamp));
-  }
-
-  /**
    * Converts a {@link System#nanoTime() nanoTime} value to {@link Timestamp}.
    *
    * @param nanoTime value to convert.

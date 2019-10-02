@@ -16,18 +16,16 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.protobuf.util.Timestamps.toNanos;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import com.google.protobuf.UInt32Value;
-import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -129,7 +127,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
-      @Nullable com.google.protobuf.Timestamp startTimestamp,
       Clock clock,
       Resource resource,
       Map<String, AttributeValue> attributes,
@@ -144,7 +141,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             traceConfig,
             spanProcessor,
             timestampConverter,
-            startTimestamp,
             clock,
             resource,
             attributes,
@@ -357,29 +353,22 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void end() {
-    endInternal(null);
-  }
-
-  @Override
-  public void end(Timestamp endTimestamp) {
-    Preconditions.checkNotNull(endTimestamp, "endTimestamp");
-    endInternal(
-        com.google.protobuf.Timestamp.newBuilder()
-            .setSeconds(endTimestamp.getSeconds())
-            .setNanos(endTimestamp.getNanos())
-            .build());
-  }
-
-  private void endInternal(@Nullable com.google.protobuf.Timestamp endTimestamp) {
     synchronized (this) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
         return;
       }
-      endNanoTime = endTimestamp == null ? clock.nowNanos() : toNanos(endTimestamp);
+      endNanoTime = clock.nowNanos();
       hasBeenEnded = true;
     }
     spanProcessor.onEnd(this);
+  }
+
+  // TODO: Use endOptions.
+  @Override
+  public void end(EndSpanOptions endOptions) {
+    Preconditions.checkNotNull(endOptions, "endOptions");
+    end();
   }
 
   @Override
@@ -467,7 +456,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
-      @Nullable com.google.protobuf.Timestamp startTimestamp,
       Clock clock,
       Resource resource,
       Map<String, AttributeValue> attributes,
@@ -487,7 +475,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.numberOfChildren = 0;
     this.timestampConverter =
         timestampConverter != null ? timestampConverter : TimestampConverter.now(clock);
-    startNanoTime = startTimestamp == null ? clock.nowNanos() : toNanos(startTimestamp);
+    startNanoTime = clock.nowNanos();
     if (!attributes.isEmpty()) {
       getInitializedAttributes().putAll(attributes);
     }

@@ -191,15 +191,18 @@ public interface Span {
   void end();
 
   /**
-   * Marks the end of {@code Span} execution with an explicit end {@link Timestamp}.
+   * Marks the end of {@code Span} execution with the specified {@link EndSpanOptions}.
    *
    * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
    * implementations are free to ignore all further calls.
    *
-   * @param endTimestamp the explicit end {@link Timestamp} for this {@code Span}.
+   * <p>Use this method for specifying explicit end options, such as end {@code Timestamp}. When no
+   * explicit values are required, use {@link #end()}.
+   *
+   * @param endOptions the explicit {@link EndSpanOptions} for this {@code Span}.
    * @since 0.1.0
    */
-  void end(Timestamp endTimestamp);
+  void end(EndSpanOptions endOptions);
 
   /**
    * Returns the {@code SpanContext} associated with this {@code Span}.
