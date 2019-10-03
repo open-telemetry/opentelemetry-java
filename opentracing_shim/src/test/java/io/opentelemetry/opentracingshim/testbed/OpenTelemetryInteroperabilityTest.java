@@ -23,7 +23,7 @@ import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.export.SimpleSampledSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -39,7 +39,7 @@ public class OpenTelemetryInteroperabilityTest {
       TraceShim.createTracerShim(sdk, DefaultDistributedContextManager.getInstance());
 
   {
-    sdk.addSpanProcessor(SimpleSampledSpansProcessor.newBuilder(spanExporter).build());
+    sdk.addSpanProcessor(SimpleSpansProcessor.newBuilder(spanExporter).build());
   }
 
   @Before
