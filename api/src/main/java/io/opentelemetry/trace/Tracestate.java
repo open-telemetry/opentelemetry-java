@@ -237,7 +237,7 @@ public abstract class Tracestate {
   // can only contain lowercase letters a-z, digits 0-9, underscores _, dashes -, asterisks *, and
   // forward slashes /.  For multi-tenant vendor scenarios, an at sign (@) can be used to prefix the
   // vendor name.
-  //todo: benchmark this implementation
+  // todo: benchmark this implementation
   private static boolean validateKey(String key) {
     if (key.length() > KEY_MAX_SIZE || key.isEmpty() || !isNumberOrDigit(key.charAt(0))) {
       return false;
