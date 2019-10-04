@@ -1,0 +1,24 @@
+description = 'OpenTelemetry - Logging Exporter'
+
+buildscript {
+    repositories {
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+}
+
+dependencies {
+    api project(':opentelemetry-sdk')
+    api ("org.slf4j:slf4j-api:1.7.26")
+
+    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.26")
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+}
+
+animalsniffer {
+    // Don't check sourceSets.jmh and sourceSets.test
+    sourceSets = [
+            sourceSets.main
+    ]
+}
