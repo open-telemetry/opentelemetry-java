@@ -41,7 +41,7 @@ Snapshots based out the `master` branch are available for `opentelemetry-api`, `
   <dependencies>
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk</artifactId>
+      <artifactId>opentelemetry-api</artifactId>
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
@@ -55,29 +55,32 @@ repositories {
 }
 
 dependencies {
-	compile('io.opentelemetry:opentelemetry-sdk:0.1.0-SNAPSHOT')
+	compile('io.opentelemetry:opentelemetry-api:0.1.0-SNAPSHOT')
 }
 ```
+
+Libraries will usually only need `opentelemetry-api`, while applications
+may want to use `opentelemetry-sdk`.
 
 ## Release Schedule
 
 OpenTelemetry Java is under active development. Our goal is to release an
-_alpha_ version of the library at the end of September 2019. This release isn't
+_alpha_ version of the library by middle October 2019. This release isn't
 guaranteed to conform to a specific version of the specification, and future
 releases will not attempt to maintain backwards compatibility with the alpha
 release.
 
 | Component                   | Version | Target Date       |
 | --------------------------- | ------- | ----------------- |
-| Tracing API                 | Alpha   | September 30 2019 |
-| Tracing SDK                 | Alpha   | September 30 2019 |
-| Metrics API                 | Alpha   | September 30 2019 |
-| Metrics SDK                 | Alpha   | September 30 2019 |
-| Jaeger Trace Exporter       | Alpha   | September 30 2019 |
+| Tracing API                 | Alpha   | October 14 2019   |
+| Tracing SDK                 | Alpha   | October 14 2019   |
+| Metrics API                 | Alpha   | October 14 2019   |
+| Metrics SDK                 | Alpha   | October 14 2019   |
+| Jaeger Trace Exporter       | Alpha   | October 14 2019   |
 | Zipkin Trace Exporter       | Alpha   | Unknown           |
 | Prometheus Metrics Exporter | Alpha   | Unknown           |
-| Context Propagation         | Alpha   | September 30 2019 |
-| OpenTracing Bridge          | Alpha   | September 30 2019 |
+| Context Propagation         | Alpha   | October 14 2019   |
+| OpenTracing Bridge          | Alpha   | October 14 2019   |
 | OpenCensus Bridge           | Alpha   | Unknown           |
 
 ### Kick off the work towards 1.0
