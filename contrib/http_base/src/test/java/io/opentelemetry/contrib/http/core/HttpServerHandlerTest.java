@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.contrib.trace.export.InMemoryTracing;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
@@ -61,7 +62,7 @@ public class HttpServerHandlerTest {
 
   @After
   public void printSpans() {
-    for (io.opentelemetry.proto.trace.v1.Span span : inMemoryTracing.getFinishedSpanItems()) {
+    for (SpanData span : inMemoryTracing.getFinishedSpanItems()) {
       LOGGER.log(Level.FINE, span.toString());
     }
   }
