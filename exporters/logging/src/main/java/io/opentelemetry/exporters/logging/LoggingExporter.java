@@ -22,7 +22,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** A Span Exporter that logs every span using SLF4J. */
+/** A Span Exporter that logs every span at INFO level using SLF4J. */
 public class LoggingExporter implements SpanExporter {
   private static final Logger logger = LoggerFactory.getLogger(LoggingExporter.class);
 
