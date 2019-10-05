@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.util.Durations;
 import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
+import io.opentelemetry.exporters.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;

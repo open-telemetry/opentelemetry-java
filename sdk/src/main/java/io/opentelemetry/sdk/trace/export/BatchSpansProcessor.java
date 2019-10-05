@@ -275,26 +275,24 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private void exportBatches(ArrayList<ReadableSpan> spanList) {
       // TODO: Record a counter for pushed spans.
       for (int i = 0; i < spanList.size(); ) {
-        List<SpanData> spanDataBuffer = new ArrayList<>(maxExportBatchSize);
         int batchSizeLimit = Math.min(i + maxExportBatchSize, spanList.size());
-        createSpanDataForExport(spanList, spanDataBuffer, i, batchSizeLimit);
+        List<SpanData> spanDataForExport = createSpanDataForExport(spanList, i, batchSizeLimit);
         // One full batch, export it now. Wrap the list with unmodifiableList to ensure exporter
         // does not change the list.
-        onBatchExport(Collections.unmodifiableList(spanDataBuffer));
+        onBatchExport(Collections.unmodifiableList(spanDataForExport));
         i = batchSizeLimit;
       }
     }
 
-    private static void createSpanDataForExport(
-        List<ReadableSpan> spanList,
-        List<SpanData> spanDataBuffer,
-        int startIndex,
-        int batchSizeLimit) {
-      for (int j = startIndex; j < batchSizeLimit; j++) {
-        spanDataBuffer.add(spanList.get(j).toSpanData());
+    private List<SpanData> createSpanDataForExport(
+        List<ReadableSpan> spanList, int startIndex, int numberToTake) {
+      List<SpanData> spanDataBuffer = new ArrayList<>(maxExportBatchSize);
+      for (int i = startIndex; i < numberToTake; i++) {
+        spanDataBuffer.add(spanList.get(i).toSpanData());
         // Remove the reference to the RecordEventsSpanImpl to allow GC to free the memory.
-        spanList.set(j, null);
+        spanList.set(i, null);
       }
+      return spanDataBuffer;
     }
 
     // Exports the list of Span protos to all the ServiceHandlers.

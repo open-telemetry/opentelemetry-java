@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.exporters.jaeger;
+package io.opentelemetry.exporters.otproto;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link TraceProtoUtils}. */
+/** Unit tests for {@link io.opentelemetry.exporters.otproto.TraceProtoUtils}. */
 @RunWith(JUnit4.class)
 public class TraceProtoUtilsTest {
 

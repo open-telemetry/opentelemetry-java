@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.jaeger;
 
-import static io.opentelemetry.exporters.jaeger.TraceProtoUtils.toProtoTraceId;
+import static io.opentelemetry.exporters.otproto.TraceProtoUtils.toProtoTraceId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalAnswers.delegatesTo;
@@ -33,6 +33,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
+import io.opentelemetry.exporters.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;

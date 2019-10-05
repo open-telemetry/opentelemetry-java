@@ -14,28 +14,16 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.exporters.jaeger;
+package io.opentelemetry.exporters.otproto;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 
-/** Utilities to convert Span SDK to proto representation of the Span. */
-public final class TraceProtoUtils {
-
+/** Utilities for converting various objects to protobuf representations. */
+public class TraceProtoUtils {
   private TraceProtoUtils() {}
-
-  /**
-   * Converts a TraceId into a protobuf ByteString.
-   *
-   * @param traceId the traceId to convert.
-   * @return a ByteString representation.
-   */
-  static ByteString toProtoTraceId(TraceId traceId) {
-    byte[] traceIdBytes = new byte[TraceId.getSize()];
-    traceId.copyBytesTo(traceIdBytes, 0);
-    return ByteString.copyFrom(traceIdBytes);
-  }
 
   /**
    * Converts a SpanId into a protobuf ByteString.
@@ -43,9 +31,23 @@ public final class TraceProtoUtils {
    * @param spanId the spanId to convert.
    * @return a ByteString representation.
    */
-  static ByteString toProtoSpanId(SpanId spanId) {
+  @VisibleForTesting
+  public static ByteString toProtoSpanId(SpanId spanId) {
     byte[] spanIdBytes = new byte[SpanId.getSize()];
     spanId.copyBytesTo(spanIdBytes, 0);
     return ByteString.copyFrom(spanIdBytes);
+  }
+
+  /**
+   * Converts a TraceId into a protobuf ByteString.
+   *
+   * @param traceId the traceId to convert.
+   * @return a ByteString representation.
+   */
+  @VisibleForTesting
+  public static ByteString toProtoTraceId(TraceId traceId) {
+    byte[] traceIdBytes = new byte[TraceId.getSize()];
+    traceId.copyBytesTo(traceIdBytes, 0);
+    return ByteString.copyFrom(traceIdBytes);
   }
 }
