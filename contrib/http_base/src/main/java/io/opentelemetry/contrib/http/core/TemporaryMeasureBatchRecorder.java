@@ -16,7 +16,6 @@
 
 package io.opentelemetry.contrib.http.core;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.metrics.MeasureBatchRecorder;
 import io.opentelemetry.metrics.MeasureDouble;
 import io.opentelemetry.metrics.MeasureLong;
@@ -31,11 +30,6 @@ public class TemporaryMeasureBatchRecorder implements MeasureBatchRecorder {
 
   @Override
   public MeasureBatchRecorder put(MeasureDouble measure, double value) {
-    return this;
-  }
-
-  @Override
-  public MeasureBatchRecorder setDistributedContext(DistributedContext distContext) {
     return this;
   }
 
