@@ -16,9 +16,7 @@
 
 package io.opentelemetry.contrib.http.core;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.metrics.MeasureLong;
-import io.opentelemetry.trace.SpanContext;
 import java.util.List;
 
 /** Used to make implementations work until SDK implementation is available. */
@@ -28,13 +26,6 @@ public class TemporaryMeasureLong implements MeasureLong {
       new Handle() {
         @Override
         public void record(long value) {}
-
-        @Override
-        public void record(long value, DistributedContext distContext) {}
-
-        @Override
-        public void record(
-            long measurement, DistributedContext distContext, SpanContext spanContext) {}
       };
 
   @Override
