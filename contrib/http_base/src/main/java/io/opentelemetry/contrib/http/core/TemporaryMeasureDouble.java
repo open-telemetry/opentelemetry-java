@@ -16,19 +16,28 @@
 
 package io.opentelemetry.contrib.http.core;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.metrics.MeasureDouble;
-import io.opentelemetry.trace.SpanContext;
+import java.util.List;
 
 /** Used to make implementations work until SDK implementation is available. */
 public class TemporaryMeasureDouble implements MeasureDouble {
 
-  @Override
-  public void record(double value) {}
+  private static final Handle HANDLE =
+      new Handle() {
+        @Override
+        public void record(double value) {}
+      };
 
   @Override
-  public void record(double value, DistributedContext distContext) {}
+  public Handle getHandle(List<String> labelValues) {
+    return HANDLE;
+  }
 
   @Override
-  public void record(double value, DistributedContext distContext, SpanContext spanContext) {}
+  public Handle getDefaultHandle() {
+    return HANDLE;
+  }
+
+  @Override
+  public void removeHandle(List<String> labelValues) {}
 }
