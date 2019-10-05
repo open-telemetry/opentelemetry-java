@@ -20,19 +20,39 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.Timestamp;
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.util.Durations;
+import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
-import io.opentelemetry.proto.trace.v1.AttributeValue;
-import io.opentelemetry.proto.trace.v1.Span;
+import io.opentelemetry.exporters.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
+import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.util.Events;
+import io.opentelemetry.trace.util.Links;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.Test;
 
 public class AdapterTest {
+
+  private static final String LINK_TRACE_ID = "00000000000000000000000000cba123";
+  private static final String LINK_SPAN_ID = "0000000000fed456";
+  private static final String TRACE_ID = "00000000000000000000000000abc123";
+  private static final String SPAN_ID = "0000000000def456";
+  private static final String PARENT_SPAN_ID = "0000000000aef789";
 
   @Test
   public void testProtoSpans() {
@@ -42,8 +62,8 @@ public class AdapterTest {
     Timestamp startTime = toTimestamp(startMs);
     Timestamp endTime = toTimestamp(endMs);
 
-    Span span = getProtoSpan(startTime, endTime);
-    List<Span> spans = Collections.singletonList(span);
+    SpanData span = getSpanData(startTime, endTime);
+    List<SpanData> spans = Collections.singletonList(span);
 
     Collection<Model.Span> jaegerSpans = Adapter.toJaeger(spans);
 
@@ -59,14 +79,19 @@ public class AdapterTest {
     Timestamp startTime = toTimestamp(startMs);
     Timestamp endTime = toTimestamp(endMs);
 
-    Span span = getProtoSpan(startTime, endTime);
+    SpanData span = getSpanData(startTime, endTime);
 
     // test
     Model.Span jaegerSpan = Adapter.toJaeger(span);
-    assertEquals("abc123", jaegerSpan.getTraceId().toStringUtf8());
-    assertEquals("def456", jaegerSpan.getSpanId().toStringUtf8());
+    assertEquals(TraceProtoUtils.toProtoTraceId(span.getTraceId()), jaegerSpan.getTraceId());
+    assertEquals(TraceProtoUtils.toProtoSpanId(span.getSpanId()), jaegerSpan.getSpanId());
     assertEquals("GET /api/endpoint", jaegerSpan.getOperationName());
-    assertEquals(startTime, jaegerSpan.getStartTime());
+    assertEquals(
+        com.google.protobuf.Timestamp.newBuilder()
+            .setSeconds(startTime.getSeconds())
+            .setNanos(startTime.getNanos())
+            .build(),
+        jaegerSpan.getStartTime());
     assertEquals(duration, Durations.toMillis(jaegerSpan.getDuration()));
 
     assertEquals(4, jaegerSpan.getTagsCount());
@@ -98,10 +123,10 @@ public class AdapterTest {
   @Test
   public void testJaegerLogs() {
     // prepare
-    Span.TimedEvents timedEvents = getTimedEvents();
+    SpanData.TimedEvent timedEvents = getTimedEvent();
 
     // test
-    Collection<Model.Log> logs = Adapter.toJaegerLogs(timedEvents);
+    Collection<Model.Log> logs = Adapter.toJaegerLogs(Collections.singletonList(timedEvents));
 
     // verify
     assertEquals(1, logs.size());
@@ -110,7 +135,7 @@ public class AdapterTest {
   @Test
   public void testJaegerLog() {
     // prepare
-    Span.TimedEvent timedEvent = getTimedEvent();
+    SpanData.TimedEvent timedEvent = getTimedEvent();
 
     // test
     Model.Log log = Adapter.toJaegerLog(timedEvent);
@@ -129,12 +154,11 @@ public class AdapterTest {
   @Test
   public void testKeyValues() {
     // prepare
-    AttributeValue valueB = AttributeValue.newBuilder().setBoolValue(true).build();
-    Span.Attributes attributes =
-        Span.Attributes.newBuilder().putAttributeMap("valueB", valueB).build();
+    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
 
     // test
-    Collection<Model.KeyValue> keyValues = Adapter.toKeyValues(attributes);
+    Collection<Model.KeyValue> keyValues =
+        Adapter.toKeyValues(Collections.singletonMap("valueB", valueB));
 
     // verify
     // the actual content is checked in some other test
@@ -144,10 +168,10 @@ public class AdapterTest {
   @Test
   public void testKeyValue() {
     // prepare
-    AttributeValue valueB = AttributeValue.newBuilder().setBoolValue(true).build();
-    AttributeValue valueD = AttributeValue.newBuilder().setDoubleValue(1.).build();
-    AttributeValue valueI = AttributeValue.newBuilder().setIntValue(2).build();
-    AttributeValue valueS = AttributeValue.newBuilder().setStringValue("foobar").build();
+    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
+    AttributeValue valueD = AttributeValue.doubleAttributeValue(1.);
+    AttributeValue valueI = AttributeValue.longAttributeValue(2);
+    AttributeValue valueS = AttributeValue.stringAttributeValue("foobar");
 
     // test
     Model.KeyValue kvB = Adapter.toKeyValue("valueB", valueB);
@@ -166,16 +190,11 @@ public class AdapterTest {
   @Test
   public void testSpanRefs() {
     // prepare
-    Span.Link link =
-        Span.Link.newBuilder()
-            .setSpanId(ByteString.copyFromUtf8("abc123"))
-            .setTraceId(ByteString.copyFromUtf8("def456"))
-            .build();
-
-    Span.Links links = Span.Links.newBuilder().addLink(link).build();
+    io.opentelemetry.trace.Link link =
+        Links.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
-    Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(links);
+    Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
 
     // verify
     assertEquals(1, spanRefs.size()); // the actual span ref is tested in another test
@@ -184,75 +203,62 @@ public class AdapterTest {
   @Test
   public void testSpanRef() {
     // prepare
-    Span.Link link =
-        Span.Link.newBuilder()
-            .setSpanId(ByteString.copyFromUtf8("abc123"))
-            .setTraceId(ByteString.copyFromUtf8("def456"))
-            .build();
+    Link link = Links.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
 
     // verify
-    assertEquals("abc123", spanRef.getSpanId().toStringUtf8());
-    assertEquals("def456", spanRef.getTraceId().toStringUtf8());
+    assertEquals(
+        TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(SPAN_ID, 0)), spanRef.getSpanId());
+    assertEquals(
+        TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)), spanRef.getTraceId());
     assertEquals(Model.SpanRefType.FOLLOWS_FROM, spanRef.getRefType());
   }
 
-  private static Span.TimedEvents getTimedEvents() {
-    Span.TimedEvent timedEvent = getTimedEvent();
-    return Span.TimedEvents.newBuilder().addTimedEvent(timedEvent).build();
-  }
-
-  private static Span.TimedEvent getTimedEvent() {
+  private static TimedEvent getTimedEvent() {
     long ms = System.currentTimeMillis();
     Timestamp ts = toTimestamp(ms);
-    AttributeValue valueS = AttributeValue.newBuilder().setStringValue("bar").build();
-    Span.Attributes attributes =
-        Span.Attributes.newBuilder().putAttributeMap("foo", valueS).build();
+    AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
+    ImmutableMap<String, AttributeValue> attributes =
+        ImmutableMap.<String, AttributeValue>of("foo", valueS);
+    return TimedEvent.create(ts, Events.create("the log message", attributes));
+  }
 
-    return Span.TimedEvent.newBuilder()
-        .setTime(ts)
-        .setEvent(
-            Span.TimedEvent.Event.newBuilder()
-                .setName("the log message")
-                .setAttributes(attributes)
-                .build())
+  private static SpanData getSpanData(Timestamp startTime, Timestamp endTime) {
+    AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
+    Map<String, AttributeValue> attributes =
+        ImmutableMap.<String, AttributeValue>of("valueB", valueB);
+
+    io.opentelemetry.trace.Link link =
+        Links.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+
+    return SpanData.newBuilder()
+        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
+        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+        .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
+        .setName("GET /api/endpoint")
+        .setStartTimestamp(startTime)
+        .setEndTimestamp(endTime)
+        .setAttributes(attributes)
+        .setTimedEvents(Collections.singletonList(getTimedEvent()))
+        .setLinks(Collections.singletonList(link))
+        .setKind(Span.Kind.SERVER)
+        .setResource(Resource.create(Collections.<String, String>emptyMap()))
+        .setStatus(Status.OK)
         .build();
   }
 
-  private static Span getProtoSpan(Timestamp startTime, Timestamp endTime) {
-    AttributeValue valueB = AttributeValue.newBuilder().setBoolValue(true).build();
-    Span.Attributes attributes =
-        Span.Attributes.newBuilder().putAttributeMap("valueB", valueB).build();
-
-    Span.Link link =
-        Span.Link.newBuilder()
-            .setTraceId(ByteString.copyFromUtf8("parent123"))
-            .setSpanId(ByteString.copyFromUtf8("parent456"))
-            .build();
-
-    Span.Links links = Span.Links.newBuilder().addLink(link).build();
-
-    return Span.newBuilder()
-        .setTraceId(ByteString.copyFromUtf8("abc123"))
-        .setSpanId(ByteString.copyFromUtf8("def456"))
-        .setParentSpanId(ByteString.copyFromUtf8("parent789"))
-        .setName("GET /api/endpoint")
-        .setStartTime(startTime)
-        .setEndTime(endTime)
-        .setAttributes(attributes)
-        .setTimeEvents(getTimedEvents())
-        .setLinks(links)
-        .setKind(Span.SpanKind.SERVER)
-        .build();
+  private static SpanContext createSpanContext(String traceId, String spanId) {
+    return SpanContext.create(
+        TraceId.fromLowerBase16(traceId, 0),
+        SpanId.fromLowerBase16(spanId, 0),
+        TraceFlags.builder().build(),
+        Tracestate.builder().build());
   }
 
   private static Timestamp toTimestamp(long ms) {
-    return Timestamp.newBuilder()
-        .setSeconds(ms / 1000)
-        .setNanos((int) ((ms % 1000) * 1000000))
-        .build();
+    return Timestamp.create(ms / 1000, (int) ((ms % 1000) * 1000000));
   }
 
   @Nullable
@@ -269,8 +275,12 @@ public class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.FOLLOWS_FROM.equals(spanRef.getRefType())) {
-        assertEquals("parent123", spanRef.getTraceId().toStringUtf8());
-        assertEquals("parent456", spanRef.getSpanId().toStringUtf8());
+        assertEquals(
+            TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(LINK_TRACE_ID, 0)),
+            spanRef.getTraceId());
+        assertEquals(
+            TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(LINK_SPAN_ID, 0)),
+            spanRef.getSpanId());
         found = true;
       }
     }
@@ -281,8 +291,12 @@ public class AdapterTest {
     boolean found = false;
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.CHILD_OF.equals(spanRef.getRefType())) {
-        assertEquals("abc123", spanRef.getTraceId().toStringUtf8());
-        assertEquals("parent789", spanRef.getSpanId().toStringUtf8());
+        assertEquals(
+            TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)),
+            spanRef.getTraceId());
+        assertEquals(
+            TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0)),
+            spanRef.getSpanId());
         found = true;
       }
     }

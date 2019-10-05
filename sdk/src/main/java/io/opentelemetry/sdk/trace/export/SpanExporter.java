@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.proto.trace.v1.Span;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import java.util.List;
 
@@ -52,7 +52,7 @@ public interface SpanExporter {
    * @param spans the list of sampled Spans to be exported.
    * @return the result of the export.
    */
-  ResultCode export(List<Span> spans);
+  ResultCode export(List<SpanData> spans);
 
   /**
    * Called when {@link TracerSdk#shutdown()} is called, if this {@code SpanExporter} is register to

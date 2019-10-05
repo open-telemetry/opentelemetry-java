@@ -46,7 +46,7 @@ public class TimestampConverter {
    * @param nanoTime value to convert.
    * @return the {@code Timestamp} representation of the {@code time}.
    */
-  public Timestamp convertNanoTime(long nanoTime) {
+  public Timestamp convertNanoTimeProto(long nanoTime) {
     return Timestamps.add(timestamp, Durations.fromNanos(nanoTime - this.nanoTime));
   }
 
@@ -62,9 +62,9 @@ public class TimestampConverter {
    * @param nanoTime value to convert.
    * @return the {@code SpanData.Timestamp} representation of the {@code time}.
    */
-  public io.opentelemetry.common.Timestamp nanoTimeToTimestampDelta(long nanoTime) {
+  public io.opentelemetry.common.Timestamp convertNanoTime(long nanoTime) {
     // todo: implement this without going through the protobuf intermediary.
-    Timestamp protoVersion = convertNanoTime(nanoTime);
+    Timestamp protoVersion = convertNanoTimeProto(nanoTime);
     return io.opentelemetry.common.Timestamp.create(
         protoVersion.getSeconds(), protoVersion.getNanos());
   }

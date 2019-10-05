@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
-import com.google.protobuf.UInt32Value;
 import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
@@ -156,55 +155,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     return span;
   }
 
-  /**
-   * This method is here to convert this instance into a protobuf instance. It will be removed from
-   * this class soon, so if you are writing new code you should not use this method. It is left here
-   * to help reduce the number of simultaneous changes in-flight at once.
-   *
-   * @return a new protobuf Span instance.
-   */
-  @Deprecated
-  @Override
-  public io.opentelemetry.proto.trace.v1.Span toSpanProto() {
-    synchronized (this) {
-      io.opentelemetry.proto.trace.v1.Span.Builder builder =
-          io.opentelemetry.proto.trace.v1.Span.newBuilder()
-              .setTraceId(TraceProtoUtils.toProtoTraceId(context.getTraceId()))
-              .setSpanId(TraceProtoUtils.toProtoSpanId(context.getSpanId()))
-              .setTracestate(TraceProtoUtils.toProtoTracestate(context.getTracestate()))
-              .setResource(TraceProtoUtils.toProtoResource(resource))
-              .setName(name)
-              .setKind(TraceProtoUtils.toProtoKind(kind))
-              .setStartTime(timestampConverter.convertNanoTime(startNanoTime))
-              .setEndTime(timestampConverter.convertNanoTime(getEndNanoTime()))
-              .setChildSpanCount(UInt32Value.of(numberOfChildren));
-      if (parentSpanId.isValid()) {
-        builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(parentSpanId));
-      }
-      if (attributes != null) {
-        builder.setAttributes(
-            TraceProtoUtils.toProtoAttributes(
-                attributes, attributes.getNumberOfDroppedAttributes()));
-      }
-      if (events != null) {
-        builder.setTimeEvents(
-            TraceProtoUtils.toProtoTimedEvents(
-                events, totalRecordedEvents - events.size(), timestampConverter));
-      }
-      if (!links.isEmpty()) {
-        builder.setLinks(TraceProtoUtils.toProtoLinks(links, totalRecordedLinks - links.size()));
-      }
-      if (hasBeenEnded) {
-        builder.setStatus(TraceProtoUtils.toProtoStatus(getStatusWithDefault()));
-      }
-      return builder.build();
-    }
-  }
-
   @Override
   public SpanData toSpanData() {
-    Timestamp startTimestamp = timestampConverter.nanoTimeToTimestampDelta(startNanoTime);
-    Timestamp endTimestamp = timestampConverter.nanoTimeToTimestampDelta(getEndNanoTime());
+    Timestamp startTimestamp = timestampConverter.convertNanoTime(startNanoTime);
+    Timestamp endTimestamp = timestampConverter.convertNanoTime(getEndNanoTime());
     SpanContext spanContext = getSpanContext();
     return SpanData.newBuilder()
         .setName(getName())
@@ -235,7 +189,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static SpanData.TimedEvent adaptTimedEvent(
       io.opentelemetry.sdk.trace.TimedEvent sourceEvent, TimestampConverter timestampConverter) {
-    Timestamp timestamp = timestampConverter.nanoTimeToTimestampDelta(sourceEvent.getNanotime());
+    Timestamp timestamp = timestampConverter.convertNanoTime(sourceEvent.getNanotime());
     io.opentelemetry.trace.Event event =
         Events.create(sourceEvent.getName(), sourceEvent.getAttributes());
     return SpanData.TimedEvent.create(timestamp, event);
@@ -298,7 +252,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return A copy of the Links for this span.
    */
-  private List<Link> getLinks() {
+  @VisibleForTesting
+  List<Link> getLinks() {
     synchronized (this) {
       if (links == null) {
         return Collections.emptyList();
@@ -317,7 +272,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return An unmodifiable view of the attributes associated wit this span
    */
-  private Map<String, AttributeValue> getAttributes() {
+  @VisibleForTesting
+  Map<String, AttributeValue> getAttributes() {
     synchronized (this) {
       return Collections.unmodifiableMap(getInitializedAttributes());
     }
@@ -348,6 +304,16 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   public Kind getKind() {
     return kind;
+  }
+
+  /**
+   * Returns the span id of this span's parent span.
+   *
+   * @return The span id of the parent span.
+   */
+  @VisibleForTesting
+  public SpanId getParentSpanId() {
+    return parentSpanId;
   }
 
   /**
@@ -576,5 +542,29 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
     }
     super.finalize();
+  }
+
+  /**
+   * The count of links that have been dropped.
+   *
+   * @return The number of links that have been dropped.
+   */
+  @VisibleForTesting
+  public int getDroppedLinksCount() {
+    return totalRecordedLinks - links.size();
+  }
+
+  @VisibleForTesting
+  int getNumberOfChildren() {
+    synchronized (this) {
+      return numberOfChildren;
+    }
+  }
+
+  @VisibleForTesting
+  int getTotalRecordedEvents() {
+    synchronized (this) {
+      return totalRecordedEvents;
+    }
   }
 }

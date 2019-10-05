@@ -18,16 +18,19 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
- * io.opentelemetry.proto.trace.v1.Span} and passes it to the configured exporter.
+ * SpanData} and passes it to the configured exporter.
  */
 public final class SimpleSpansProcessor implements SpanProcessor {
+
   private static final Logger logger = Logger.getLogger(SimpleSpansProcessor.class.getName());
 
   private final SpanExporter spanExporter;
@@ -49,7 +52,8 @@ public final class SimpleSpansProcessor implements SpanProcessor {
       return;
     }
     try {
-      spanExporter.export(Collections.singletonList(span.toSpanProto()));
+      List<SpanData> spans = Collections.singletonList(span.toSpanData());
+      spanExporter.export(spans);
     } catch (Throwable e) {
       logger.log(Level.WARNING, "Exception thrown by the export.", e);
     }
@@ -73,6 +77,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
 
   /** Builder class for {@link SimpleSpansProcessor}. */
   public static final class Builder {
+
     private final SpanExporter spanExporter;
     private boolean sampled = true;
 

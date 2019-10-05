@@ -44,15 +44,6 @@ public interface ReadableSpan {
   String getName();
 
   /**
-   * This method is here to convert this instance into a protobuf instance. It will be removed from
-   * this class soon, so if you are writing new code you should not use this method. It is left here
-   * to help reduce the number of simultaneous changes in-flight at once.
-   *
-   * @return a new protobuf Span instance.
-   */
-  io.opentelemetry.proto.trace.v1.Span toSpanProto();
-
-  /**
    * This converts this instance into an immutable SpanData instance, for use in export.
    *
    * @return an immutable {@link SpanData} instance.
