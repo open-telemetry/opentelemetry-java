@@ -16,7 +16,6 @@
 
 package io.opentelemetry.exporters.otproto;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
@@ -31,7 +30,6 @@ public class TraceProtoUtils {
    * @param spanId the spanId to convert.
    * @return a ByteString representation.
    */
-  @VisibleForTesting
   public static ByteString toProtoSpanId(SpanId spanId) {
     byte[] spanIdBytes = new byte[SpanId.getSize()];
     spanId.copyBytesTo(spanIdBytes, 0);
@@ -44,7 +42,6 @@ public class TraceProtoUtils {
    * @param traceId the traceId to convert.
    * @return a ByteString representation.
    */
-  @VisibleForTesting
   public static ByteString toProtoTraceId(TraceId traceId) {
     byte[] traceIdBytes = new byte[TraceId.getSize()];
     traceId.copyBytesTo(traceIdBytes, 0);
