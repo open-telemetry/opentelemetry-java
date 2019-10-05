@@ -36,6 +36,14 @@ dependencies {
     compile subprojects
 }
 
+configurations.all {
+    resolutionStrategy {
+        failOnVersionConflict()
+        preferProjectModules()
+        force "com.google.guava:guava:${guavaVersion}"
+    }
+}
+
 javadoc {
     classpath = files(subprojects_javadoc.collect { subproject ->
         subproject.javadoc.classpath
