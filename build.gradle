@@ -105,14 +105,14 @@ subprojects {
     }
 
     ext {
-        findBugsJsr305Version = '3.0.2'
+        autoValueVersion = '1.6.6'
         errorProneVersion = '2.3.3'
+        findBugsJsr305Version = '3.0.2'
         grpcVersion = '1.20.0'
-        autoValueVersion = '1.6.2'
+        guavaVersion = '28.1-android'
         opentracingVersion = '0.33.0'
         protobufVersion = '3.7.1'
         protocVersion = '3.7.1'
-        guavaVersion = '28.1-android'
 
         libraries = [
                 auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -148,7 +148,7 @@ subprojects {
     }
 
     dependencies {
-        api libraries.auto_value_annotation,
+        compileOnly libraries.auto_value_annotation,
                 libraries.errorprone_annotation,
                 libraries.jsr305
 
