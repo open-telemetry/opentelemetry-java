@@ -37,7 +37,7 @@ public abstract class EndSpanOptions {
    *
    * @since 0.1
    */
-  public static EndSpanOptions getDefault() {
+  static EndSpanOptions getDefault() {
     return DEFAULT;
   }
 
