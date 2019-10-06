@@ -16,8 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.trace.SpanContext;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -29,17 +27,18 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeter();
- *   private static final MeasureLong measure =
+ *   private static final MeasureDouble measure =
  *       meter.
- *           .measureLongBuilder("doWork_latency")
+ *           .measureDoubleBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
+ *   private static final MeasureDouble.Handle defaultHandle = measure.getDefaultHandle();
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
  *      // Your code here.
- *      measure.record((System.nanoTime() - startTime) / 1e6);
+ *      defaultHandle.record((System.nanoTime() - startTime) / 1e6);
  *   }
  * }
  * }</pre>
@@ -56,38 +55,13 @@ public interface MeasureDouble extends Measure<MeasureDouble.Handle> {
   @ThreadSafe
   interface Handle {
     /**
-     * Records the given measurement, with the current {@link
-     * io.opentelemetry.distributedcontext.DistributedContextManager#getCurrentContext}.
+     * Records the given measurement, associated with the current {@code Context}.
      *
      * @param value the measurement to record.
      * @throws IllegalArgumentException if value is negative.
      * @since 0.1.0
      */
     void record(double value);
-
-    /**
-     * Records the given measurement, with an explicit {@link DistributedContext}.
-     *
-     * @param value the measurement to record.
-     * @param distContext the distContext associated with the measurements.
-     * @throws IllegalArgumentException if value is negative.
-     * @since 0.1.0
-     */
-    void record(double value, DistributedContext distContext);
-
-    /**
-     * Records the given measurements, with an explicit {@link DistributedContext}. This measurement
-     * is associated with the given {@code SpanContext}.
-     *
-     * @param value the measurement to record.
-     * @param distContext the distContext associated with the measurements.
-     * @param spanContext the {@code SpanContext} that identifies the {@code Span} for which the
-     *     measurements are associated with.
-     * @throws IllegalArgumentException if value is negative.
-     * @since 0.1.0
-     */
-    // TODO: Avoid tracing dependency and accept Attachments as in OpenCensus.
-    void record(double value, DistributedContext distContext, SpanContext spanContext);
   }
 
   /** Builder class for {@link MeasureDouble}. */

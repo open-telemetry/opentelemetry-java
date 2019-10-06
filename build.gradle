@@ -54,10 +54,6 @@ subprojects {
         it.options.compilerArgs += ["-Xlint:all", "-Xlint:-try", "-Xlint:-processing"]
         it.options.compilerArgs += ["-XepAllDisabledChecksAsWarnings", "-XepDisableWarningsInGeneratedCode"]
 
-        // MutableMethodReturnType can suggest returning Guava types from
-        // API methods (https://github.com/google/error-prone/issues/982).
-        it.options.compilerArgs += ["-Xep:MutableMethodReturnType:OFF"]
-
 	    // Doesn't currently use Var annotations.
         it.options.compilerArgs += ["-Xep:Var:OFF"]
 
@@ -65,14 +61,18 @@ subprojects {
         // but currently uses javax.annotation.concurrent.Immutable
         it.options.compilerArgs += ["-Xep:ImmutableRefactoring:OFF"]
 
-        // This check causes a NullPointerException
-        // (https://github.com/google/error-prone/issues/1138).
+        // NullPointerException is experimental and incomplete
+        // (https://github.com/google/error-prone/issues/1253).
         it.options.compilerArgs += ["-Xep:NullableDereference:OFF"]
 
         // ExpectedExceptionRefactoring and TestExceptionRefactoring suggest using
         // assertThrows, but assertThrows only works well with lambdas.
         it.options.compilerArgs += ["-Xep:ExpectedExceptionRefactoring:OFF"]
         it.options.compilerArgs += ["-Xep:TestExceptionRefactoring:OFF"]
+
+        // AutoValueImmutableFields suggests returning Guava types from API methods
+        it.options.compilerArgs += ["-Xep:AutoValueImmutableFields:OFF"]
+
         it.options.encoding = "UTF-8"
 
         // Ignore warnings for protobuf generated files.
@@ -88,8 +88,6 @@ subprojects {
     compileTestJava {
         // serialVersionUID is basically guaranteed to be useless in tests
         options.compilerArgs += ["-Xlint:-serial"]
-        // It undeprecates DoubleSubject.isEqualTo(Double).
-        options.compilerArgs += ["-Xlint:-deprecation"]
     }
 
     jar.manifest {
@@ -107,14 +105,14 @@ subprojects {
     }
 
     ext {
+        autoValueVersion = '1.6.6'
+        errorProneVersion = '2.3.3'
         findBugsJsr305Version = '3.0.2'
-        errorProneVersion = '2.3.2'
         grpcVersion = '1.20.0'
-        autoValueVersion = '1.6.2'
+        guavaVersion = '28.1-android'
         opentracingVersion = '0.33.0'
         protobufVersion = '3.7.1'
         protocVersion = '3.7.1'
-        guavaVersion = '28.1-android'
 
         libraries = [
                 auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -150,7 +148,7 @@ subprojects {
     }
 
     dependencies {
-        api libraries.auto_value_annotation,
+        compileOnly libraries.auto_value_annotation,
                 libraries.errorprone_annotation,
                 libraries.jsr305
 
@@ -168,9 +166,6 @@ subprojects {
         configFile = file("$rootDir/buildscripts/checkstyle.xml")
         toolVersion = "8.12"
         ignoreFailures = false
-        if (rootProject.hasProperty("checkstyle.ignoreFailures")) {
-            ignoreFailures = rootProject.properties["checkstyle.ignoreFailures"].toBoolean()
-        }
         configProperties["rootDir"] = rootDir
     }
 

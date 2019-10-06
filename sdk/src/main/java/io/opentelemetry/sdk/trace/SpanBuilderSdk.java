@@ -36,6 +36,7 @@ import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import io.opentelemetry.trace.util.Links;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -63,7 +64,7 @@ class SpanBuilderSdk implements Span.Builder {
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
-  @Nullable private List<Link> links;
+  private List<Link> links;
   private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
   private boolean recordEvents = false;
@@ -79,6 +80,7 @@ class SpanBuilderSdk implements Span.Builder {
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
+    this.links = Collections.emptyList();
     this.sampler = traceConfig.getSampler();
     this.random = random;
     this.clock = clock;
@@ -138,7 +140,8 @@ class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder addLink(Link link) {
     Utils.checkNotNull(link, "link");
-    if (links == null) {
+    // This is the Collection.emptyList which is immutable.
+    if (links.isEmpty()) {
       links = new ArrayList<>();
     }
     links.add(link);
@@ -180,6 +183,7 @@ class SpanBuilderSdk implements Span.Builder {
       return DefaultSpan.create(spanContext);
     }
     TimestampConverter timestampConverter = getTimestampConverter(parentSpan(parentType, parent));
+
     return RecordEventsReadableSpan.startSpan(
         spanContext,
         spanName,
@@ -190,7 +194,16 @@ class SpanBuilderSdk implements Span.Builder {
         timestampConverter,
         clock,
         resource,
-        samplingDecision.attributes());
+        samplingDecision.attributes(),
+        truncatedLinks(),
+        links.size());
+  }
+
+  private List<Link> truncatedLinks() {
+    if (links.size() <= traceConfig.getMaxNumberOfLinks()) {
+      return links;
+    }
+    return links.subList(links.size() - traceConfig.getMaxNumberOfLinks(), links.size());
   }
 
   @Nullable

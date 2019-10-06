@@ -17,8 +17,10 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.samplers.ProbabilitySampler;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
@@ -45,6 +47,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link SpanBuilderSdk}. */
+@SuppressWarnings("deprecation")
 @RunWith(JUnit4.class)
 public class SpanBuilderSdkTest {
   private static final String SPAN_NAME = "span_name";
@@ -91,6 +94,38 @@ public class SpanBuilderSdkTest {
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
         DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      assertThat(span.getLinks()).hasSize(3);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  public void truncateLink() {
+    final int maxNumberOfLinks = 8;
+    final Link link = Links.create(DefaultSpan.getInvalid().getContext());
+    TraceConfig traceConfig =
+        TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(maxNumberOfLinks).build();
+    tracer.updateActiveTraceConfig(traceConfig);
+    // Verify methods do not crash.
+    Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
+    for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
+      spanBuilder.addLink(link);
+    }
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      assertThat(span.getDroppedLinksCount()).isEqualTo(maxNumberOfLinks);
+      assertThat(span.getLinks().size()).isEqualTo(maxNumberOfLinks);
+      for (int i = 0; i < maxNumberOfLinks; i++) {
+        assertThat(span.getLinks().get(i)).isEqualTo(Links.create(span.getContext()));
+      }
+    } finally {
+      span.end();
+      tracer.updateActiveTraceConfig(TraceConfig.getDefault());
+    }
   }
 
   @Test
@@ -227,8 +262,7 @@ public class SpanBuilderSdkTest {
                 .startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
-      assertThat(span.toSpanProto().getAttributes().getAttributeMapMap())
-          .containsKey("sampler-attribute");
+      assertThat(span.getAttributes()).containsKey("sampler-attribute");
     } finally {
       span.end();
     }
@@ -283,10 +317,8 @@ public class SpanBuilderSdkTest {
           (RecordEventsReadableSpan)
               tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent).startSpan();
       try {
-        io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
-        assertThat(SpanId.fromBytes(spanProto.getParentSpanId().toByteArray(), 0))
-            .isEqualTo(parent.getContext().getSpanId());
+        assertThat(span.getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
 
         RecordEventsReadableSpan span2 =
             (RecordEventsReadableSpan)
@@ -321,10 +353,8 @@ public class SpanBuilderSdkTest {
                   .setParent(parent.getContext())
                   .startSpan();
       try {
-        io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
-        assertThat(SpanId.fromBytes(spanProto.getParentSpanId().toByteArray(), 0))
-            .isEqualTo(parent.getContext().getSpanId());
+        assertThat(span.getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
       } finally {
         span.end();
       }
@@ -341,10 +371,8 @@ public class SpanBuilderSdkTest {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
       try {
-        io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
-        assertThat(SpanId.fromBytes(spanProto.getParentSpanId().toByteArray(), 0))
-            .isEqualTo(parent.getContext().getSpanId());
+        assertThat(span.getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
       } finally {
         span.end();
       }
@@ -362,9 +390,8 @@ public class SpanBuilderSdkTest {
         (RecordEventsReadableSpan)
             tracer.spanBuilder(SPAN_NAME).setParent(parent.getContext()).startSpan();
     try {
-      io.opentelemetry.proto.trace.v1.Span spanProto = span.toSpanProto();
       assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
-      assertThat(spanProto.getParentSpanId().isEmpty()).isTrue();
+      assertFalse(span.getParentSpanId().isValid());
     } finally {
       span.end();
     }

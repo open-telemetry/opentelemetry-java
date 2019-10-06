@@ -38,20 +38,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
  *   // It is recommended to keep a reference of a Handle.
- *   private static final CounterLong.Handle inboundHandle =
+ *   private static final CounterLong.Handle someWorkHandle =
  *       counter.getHandle(Collections.singletonList("SomeWork"));
- *   private static final CounterLong.Handle defaultHandle = counter.getDefaultHandle();
- *
- *   void doDefaultWork() {
- *      // Your code here.
- *      defaultHandle.add(10);
- *   }
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      inboundHandle.set(15);
+ *      someWorkHandle.add(10);
  *   }
- *
  * }
  * }</pre>
  *
@@ -74,25 +67,17 @@ public interface CounterLong extends Metric<Handle> {
   interface Handle {
 
     /**
-     * Adds the given value to the current value. The values cannot be negative.
+     * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
+     * was set to {@code false}.
      *
-     * @param delta the value to add
+     * <p>The value added is associated with the current {@code Context}.
+     *
+     * @param delta the value to add.
      * @since 0.1.0
      */
     void add(long delta);
-
-    /**
-     * Sets the given value. The value must be larger than the current recorded value.
-     *
-     * <p>In general should be used in combination with {@link #setCallback(Runnable)} where the
-     * recorded value is guaranteed to be monotonically increasing.
-     *
-     * @param val the new value.
-     * @since 0.1.0
-     */
-    void set(long val);
   }
 
   /** Builder class for {@link CounterLong}. */
-  interface Builder extends Metric.Builder<Builder, CounterLong> {}
+  interface Builder extends Counter.Builder<Builder, CounterLong> {}
 }

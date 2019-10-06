@@ -17,29 +17,35 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentracing.Tracer;
+import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.trace.Tracer;
 
 public final class TraceShim {
   private TraceShim() {}
 
   /**
-   * Creates a {@code io.opentracing.Tracer} shim around {@code OpenTelemetry.getTracer()}.
+   * Creates a {@code io.opentracing.Tracer} shim out of {@code OpenTelemetry.getTracer()} and
+   * {@code OpenTelemetry.getDistributedContextManager()}.
    *
    * @return a {@code io.opentracing.Tracer}.
    * @since 0.1.0
    */
-  public static Tracer createTracerShim() {
-    return new TracerShim(OpenTelemetry.getTracer());
+  public static io.opentracing.Tracer createTracerShim() {
+    return new TracerShim(
+        new TelemetryInfo(OpenTelemetry.getTracer(), OpenTelemetry.getDistributedContextManager()));
   }
 
   /**
-   * Creates a {@code io.opentracing.Tracer} shim around the specified {@code Tracer}.
+   * Creates a {@code io.opentracing.Tracer} shim out the specified {@code Tracer} and {@code
+   * DistributedContextManager}.
    *
    * @param tracer the {@code Tracer} used by this shim.
+   * @param contextManager the {@code DistributedContextManager} used by this shim.
    * @return a {@code io.opentracing.Tracer}.
    * @since 0.1.0
    */
-  public static Tracer createTracerShim(io.opentelemetry.trace.Tracer tracer) {
-    return new TracerShim(tracer);
+  public static io.opentracing.Tracer createTracerShim(
+      Tracer tracer, DistributedContextManager contextManager) {
+    return new TracerShim(new TelemetryInfo(tracer, contextManager));
   }
 }

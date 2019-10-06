@@ -20,13 +20,14 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShi
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByName;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
-import io.opentelemetry.proto.trace.v1.Span.SpanKind;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -60,16 +61,16 @@ public class HandlerTest {
     assertEquals("message:response", responseFuture.get(15, TimeUnit.SECONDS));
     assertEquals("message2:response", responseFuture2.get(15, TimeUnit.SECONDS));
 
-    List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = exporter.getFinishedSpanItems();
     assertEquals(2, finished.size());
 
-    for (io.opentelemetry.proto.trace.v1.Span spanData : finished) {
-      assertEquals(SpanKind.CLIENT, spanData.getKind());
+    for (SpanData spanData : finished) {
+      assertEquals(Kind.CLIENT, spanData.getKind());
     }
 
     assertNotEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
-    assertTrue(finished.get(0).getParentSpanId().isEmpty());
-    assertTrue(finished.get(1).getParentSpanId().isEmpty());
+    assertFalse(finished.get(0).getParentSpanId().isValid());
+    assertFalse(finished.get(1).getParentSpanId().isValid());
 
     assertNull(tracer.scopeManager().activeSpan());
   }
@@ -85,14 +86,13 @@ public class HandlerTest {
       parentSpan.finish();
     }
 
-    List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = exporter.getFinishedSpanItems();
     assertEquals(2, finished.size());
 
-    io.opentelemetry.proto.trace.v1.Span child =
-        getOneByName(finished, RequestHandler.OPERATION_NAME);
+    SpanData child = getOneByName(finished, RequestHandler.OPERATION_NAME);
     assertNotNull(child);
 
-    io.opentelemetry.proto.trace.v1.Span parent = getOneByName(finished, "parent");
+    SpanData parent = getOneByName(finished, "parent");
     assertNotNull(parent);
 
     // Here check that there is no parent-child relation although it should be because child is
@@ -121,12 +121,12 @@ public class HandlerTest {
     String response = client.send("wrong_parent").get(15, TimeUnit.SECONDS);
     assertEquals("wrong_parent:response", response);
 
-    List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = exporter.getFinishedSpanItems();
     assertEquals(3, finished.size());
 
     finished = sortByStartTime(finished);
 
-    io.opentelemetry.proto.trace.v1.Span parent = getOneByName(finished, "parent");
+    SpanData parent = getOneByName(finished, "parent");
     assertNotNull(parent);
 
     // now there is parent/child relation between first and second span:

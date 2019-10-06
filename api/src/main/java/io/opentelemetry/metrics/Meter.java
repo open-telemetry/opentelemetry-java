@@ -65,7 +65,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   public final void exportGarbageCollectorMetrics {
  *     collectionMetric.setCallback(
  *         new Runnable() {
- *           &commat;Override
+ *          {@literal @}Override
  *           public void run() {
  *             for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
  *               LabelValue gcName = LabelValue.create(gc.getName());
@@ -190,6 +190,32 @@ public interface Meter {
    * @since 0.1.0
    */
   MeasureLong.Builder measureLongBuilder(String name);
+
+  /**
+   * Returns a new builder for a {@link ObserverDouble}.
+   *
+   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
+   *     greater than 255 characters.
+   * @return a new builder for a {@code ObserverDouble}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
+   * @since 0.1.0
+   */
+  ObserverDouble.Builder observerDoubleBuilder(String name);
+
+  /**
+   * Returns a new builder for a {@link ObserverLong}.
+   *
+   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
+   *     greater than 255 characters.
+   * @return a new builder for a {@code ObserverLong}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
+   * @since 0.1.0
+   */
+  ObserverLong.Builder observerLongBuilder(String name);
 
   /**
    * Utility method that allows users to atomically record measurements to a set of Measures.

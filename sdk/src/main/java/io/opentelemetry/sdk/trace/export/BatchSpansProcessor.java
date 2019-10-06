@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,19 +43,23 @@ import javax.annotation.concurrent.GuardedBy;
  * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
  * TODO: Add a link to the SpanProcessor that uses Disruptor as alternative with low contention.
  */
-public final class BatchSampledSpansProcessor implements SpanProcessor {
-  private static final String WORKER_THREAD_NAME = "BatchSampledSpansProcessor_WorkerThread";
+public final class BatchSpansProcessor implements SpanProcessor {
+  private static final String WORKER_THREAD_NAME =
+      BatchSpansProcessor.class.getSimpleName() + "_WorkerThread";
   private final Worker worker;
   private final Thread workerThread;
+  private final boolean sampled;
 
-  private BatchSampledSpansProcessor(
+  private BatchSpansProcessor(
       SpanExporter spanExporter,
+      boolean sampled,
       long scheduleDelayMillis,
       int maxQueueSize,
       int maxExportBatchSize) {
     this.worker = new Worker(spanExporter, scheduleDelayMillis, maxQueueSize, maxExportBatchSize);
     this.workerThread = newThread(worker);
     this.workerThread.start();
+    this.sampled = sampled;
   }
 
   @Override
@@ -63,7 +67,7 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (!span.getSpanContext().getTraceFlags().isSampled()) {
+    if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
     }
     worker.addSpan(span);
@@ -76,17 +80,17 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
   }
 
   /**
-   * Returns a new Builder for {@link BatchSampledSpansProcessor}.
+   * Returns a new Builder for {@link BatchSpansProcessor}.
    *
-   * @param spanExporter the {@code SpanExporter} to where the sampled Spans are pushed.
-   * @return a new {@link BatchSampledSpansProcessor}.
+   * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
+   * @return a new {@link BatchSpansProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
   public static Builder newBuilder(SpanExporter spanExporter) {
     return new Builder(spanExporter);
   }
 
-  /** Builder class for {@link BatchSampledSpansProcessor}. */
+  /** Builder class for {@link BatchSpansProcessor}. */
   public static final class Builder {
     private static final long SCHEDULE_DELAY_MILLIS = 5000;
     private static final int MAX_QUEUE_SIZE = 2048;
@@ -95,12 +99,24 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
     private long scheduleDelayMillis = SCHEDULE_DELAY_MILLIS;
     private int maxQueueSize = MAX_QUEUE_SIZE;
     private int maxExportBatchSize = MAX_EXPORT_BATCH_SIZE;
+    private boolean sampled = true;
 
     private Builder(SpanExporter spanExporter) {
       this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
     }
 
     // TODO: Consider to add support for constant Attributes and/or Resource.
+
+    /**
+     * Set whether only sampled spans should be reported.
+     *
+     * @param sampled report only sampled spans.
+     * @return this.
+     */
+    public Builder reportOnlySampled(boolean sampled) {
+      this.sampled = sampled;
+      return this;
+    }
 
     /**
      * Sets the delay interval between two consecutive exports. The actual interval may be shorter
@@ -149,15 +165,15 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
     }
 
     /**
-     * Returns a new {@link BatchSampledSpansProcessor} that batches, then converts spans to proto
-     * and forwards them to the given {@code spanExporter}.
+     * Returns a new {@link BatchSpansProcessor} that batches, then converts spans to proto and
+     * forwards them to the given {@code spanExporter}.
      *
-     * @return a new {@link BatchSampledSpansProcessor}.
+     * @return a new {@link BatchSpansProcessor}.
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
-    public BatchSampledSpansProcessor build() {
-      return new BatchSampledSpansProcessor(
-          spanExporter, scheduleDelayMillis, maxQueueSize, maxExportBatchSize);
+    public BatchSpansProcessor build() {
+      return new BatchSpansProcessor(
+          spanExporter, sampled, scheduleDelayMillis, maxQueueSize, maxExportBatchSize);
     }
   }
 
@@ -257,27 +273,27 @@ public final class BatchSampledSpansProcessor implements SpanProcessor {
     }
 
     private void exportBatches(ArrayList<ReadableSpan> spanList) {
-      ArrayList<Span> spansProtoList = new ArrayList<>(maxExportBatchSize);
       // TODO: Record a counter for pushed spans.
       for (int i = 0; i < spanList.size(); ) {
         int batchSizeLimit = Math.min(i + maxExportBatchSize, spanList.size());
-        for (int j = i; j < batchSizeLimit; j++) {
-          spansProtoList.add(spanList.get(j).toSpanProto());
-          // Remove the reference to the RecordEventsSpanImpl to allow GC to free the memory.
-          spanList.set(j, null);
-        }
-        // One full batch, export it now. Wrap the list with unmodifiableList to ensure exporter
-        // does not change the list.
-        onBatchExport(Collections.unmodifiableList(spansProtoList));
-        // Cannot clear because the exporter may still have a reference to this list (e.g. async
-        // scheduled work), so just create a new list.
-        spansProtoList = new ArrayList<>(maxExportBatchSize);
+        onBatchExport(createSpanDataForExport(spanList, i, batchSizeLimit));
         i = batchSizeLimit;
       }
     }
 
+    private static List<SpanData> createSpanDataForExport(
+        List<ReadableSpan> spanList, int startIndex, int numberToTake) {
+      List<SpanData> spanDataBuffer = new ArrayList<>(numberToTake);
+      for (int i = startIndex; i < numberToTake; i++) {
+        spanDataBuffer.add(spanList.get(i).toSpanData());
+        // Remove the reference to the ReadableSpan to allow GC to free the memory.
+        spanList.set(i, null);
+      }
+      return Collections.unmodifiableList(spanDataBuffer);
+    }
+
     // Exports the list of Span protos to all the ServiceHandlers.
-    private void onBatchExport(List<Span> spans) {
+    private void onBatchExport(List<SpanData> spans) {
       // In case of any exception thrown by the service handlers continue to run.
       try {
         spanExporter.export(spans);

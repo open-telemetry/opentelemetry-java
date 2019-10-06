@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.proto.trace.v1.Span;
+import io.opentelemetry.sdk.trace.SpanData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +48,7 @@ import java.util.List;
  * </code></pre>
  */
 public final class InMemorySpanExporter implements SpanExporter {
-  private final List<Span> finishedSpanItems = new ArrayList<>();
+  private final List<SpanData> finishedSpanItems = new ArrayList<>();
   private boolean isStopped = false;
 
   /**
@@ -61,12 +61,11 @@ public final class InMemorySpanExporter implements SpanExporter {
   }
 
   /**
-   * Returns a {@code List} of the finished {@code Span}s, represented by {@code
-   * io.opentelemetry.proto.trace.v1.Span}.
+   * Returns a {@code List} of the finished {@code Span}s, represented by {@code SpanData}.
    *
    * @return a {@code List} of the finished {@code Span}s.
    */
-  public List<Span> getFinishedSpanItems() {
+  public List<SpanData> getFinishedSpanItems() {
     synchronized (this) {
       return Collections.unmodifiableList(new ArrayList<>(finishedSpanItems));
     }
@@ -84,7 +83,7 @@ public final class InMemorySpanExporter implements SpanExporter {
   }
 
   @Override
-  public ResultCode export(List<Span> spans) {
+  public ResultCode export(List<SpanData> spans) {
     synchronized (this) {
       if (isStopped) {
         return ResultCode.FAILED_NOT_RETRYABLE;

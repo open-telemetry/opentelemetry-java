@@ -46,7 +46,7 @@ public class GaugeLongTest {
   }
 
   @Test
-  public void preventTooLongMeasureName() {
+  public void preventTooLongName() {
     char[] chars = new char[DefaultMeter.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
@@ -67,6 +67,20 @@ public class GaugeLongTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
     meter.gaugeLongBuilder("metric").setUnit(null).build();
+  }
+
+  @Test
+  public void preventNull_LabelKeys() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKeys");
+    meter.gaugeLongBuilder("metric").setLabelKeys(null).build();
+  }
+
+  @Test
+  public void preventNull_LabelKey() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKey");
+    meter.gaugeLongBuilder("metric").setLabelKeys(Collections.<String>singletonList(null)).build();
   }
 
   @Test
@@ -116,5 +130,17 @@ public class GaugeLongTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelValues");
     gaugeLong.removeHandle(null);
+  }
+
+  @Test
+  public void doesNotThrow() {
+    GaugeLong gaugeLong =
+        meter
+            .gaugeLongBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    gaugeLong.getDefaultHandle().set(5);
   }
 }

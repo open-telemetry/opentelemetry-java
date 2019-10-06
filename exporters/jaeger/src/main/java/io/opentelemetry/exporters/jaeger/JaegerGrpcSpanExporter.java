@@ -22,7 +22,7 @@ import io.grpc.StatusRuntimeException;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
-import io.opentelemetry.proto.trace.v1.Span;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -103,7 +103,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    * @return the result of the operation
    */
   @Override
-  public ResultCode export(List<Span> spans) {
+  public ResultCode export(List<SpanData> spans) {
     Model.Batch.Builder builder = Model.Batch.newBuilder();
     builder.addAllSpans(Adapter.toJaeger(spans));
     builder.setProcess(this.process);

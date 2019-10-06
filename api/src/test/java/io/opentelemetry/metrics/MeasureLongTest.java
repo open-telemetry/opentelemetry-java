@@ -16,9 +16,8 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
 import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -29,8 +28,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class MeasureLongTest {
   private static final Meter meter = DefaultMeter.getInstance();
-  private static final DistributedContextManager distContextManager =
-      DefaultDistributedContextManager.getInstance();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -66,6 +63,23 @@ public final class MeasureLongTest {
   }
 
   @Test
+  public void preventNull_LabelKeys() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKeys");
+    meter.measureLongBuilder("metric").setLabelKeys(null).build();
+  }
+
+  @Test
+  public void preventNull_LabelKey() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelKey");
+    meter
+        .measureLongBuilder("metric")
+        .setLabelKeys(Collections.<String>singletonList(null))
+        .build();
+  }
+
+  @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
@@ -84,27 +98,5 @@ public final class MeasureLongTest {
   public void doesNotThrow() {
     MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
     myMeasure.getDefaultHandle().record(5);
-  }
-
-  @Test
-  public void preventNegativeValue_RecordWithContext() {
-    MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Unsupported negative values");
-    myMeasure.getDefaultHandle().record(-5, distContextManager.getCurrentContext());
-  }
-
-  @Test
-  public void preventNullDistContext_RecordWithContext() {
-    MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("distContext");
-    myMeasure.getDefaultHandle().record(5, null);
-  }
-
-  @Test
-  public void doesNotThrow_RecordWithContext() {
-    MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
-    myMeasure.getDefaultHandle().record(5, distContextManager.getCurrentContext());
   }
 }

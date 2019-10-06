@@ -16,23 +16,30 @@
 
 package io.opentelemetry.exporters.jaeger;
 
+import static io.opentelemetry.exporters.otproto.TraceProtoUtils.toProtoTraceId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.google.protobuf.ByteString;
-import com.google.protobuf.Timestamp;
 import io.grpc.ManagedChannel;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcCleanupRule;
+import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
+import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
-import io.opentelemetry.proto.trace.v1.Span;
+import io.opentelemetry.exporters.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceId;
 import java.net.InetAddress;
 import java.util.Collections;
 import org.junit.Rule;
@@ -41,6 +48,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 
 public class JaegerGrpcSpanExporterTest {
+  private static final String TRACE_ID = "00000000000000000000000000abc123";
+  private static final String SPAN_ID = "0000000000def456";
 
   @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
@@ -52,7 +61,7 @@ public class JaegerGrpcSpanExporterTest {
   @Test
   public void testExport() throws Exception {
     String serverName = InProcessServerBuilder.generateName();
-    ArgumentCaptor<Collector.PostSpansRequest> requestCaptor =
+    ArgumentCaptor<PostSpansRequest> requestCaptor =
         ArgumentCaptor.forClass(Collector.PostSpansRequest.class);
 
     grpcCleanup.register(
@@ -68,23 +77,18 @@ public class JaegerGrpcSpanExporterTest {
     long duration = 900; // ms
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
-    Timestamp startTime =
-        Timestamp.newBuilder()
-            .setSeconds(startMs / 1000)
-            .setNanos((int) ((startMs % 1000) * 1000000))
-            .build();
-    Timestamp endTime =
-        Timestamp.newBuilder()
-            .setSeconds(endMs / 1000)
-            .setNanos((int) ((endMs % 1000) * 1000000))
-            .build();
-    Span span =
-        Span.newBuilder()
-            .setTraceId(ByteString.copyFromUtf8("abc123"))
-            .setSpanId(ByteString.copyFromUtf8("def456"))
+    Timestamp startTime = Timestamp.create(startMs / 1000, (int) ((startMs % 1000) * 1000000));
+    Timestamp endTime = Timestamp.create(endMs / 1000, (int) ((endMs % 1000) * 1000000));
+    SpanData span =
+        SpanData.newBuilder()
+            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
+            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
             .setName("GET /api/endpoint")
-            .setStartTime(startTime)
-            .setEndTime(endTime)
+            .setStartTimestamp(startTime)
+            .setEndTimestamp(endTime)
+            .setStatus(Status.OK)
+            .setKind(Kind.CONSUMER)
+            .setLinks(Collections.<Link>emptyList())
             .build();
 
     // test
@@ -101,8 +105,11 @@ public class JaegerGrpcSpanExporterTest {
     Model.Batch batch = requestCaptor.getValue().getBatch();
     assertEquals(1, batch.getSpansCount());
     assertEquals("GET /api/endpoint", batch.getSpans(0).getOperationName());
-    assertEquals("abc123", batch.getSpans(0).getTraceId().toStringUtf8());
-    assertEquals("def456", batch.getSpans(0).getSpanId().toStringUtf8());
+    assertEquals(
+        toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)), batch.getSpans(0).getTraceId());
+    assertEquals(
+        TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(SPAN_ID, 0)),
+        batch.getSpans(0).getSpanId());
     assertEquals("test", batch.getProcess().getServiceName());
     assertEquals(3, batch.getProcess().getTagsCount());
 

@@ -33,11 +33,11 @@ public abstract class TraceConfig {
   // These values are the default values for all the global parameters.
   // TODO: decide which default sampler to use
   private static final Sampler DEFAULT_SAMPLER = Samplers.alwaysSample();
-  private static final long DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
-  private static final long DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
-  private static final long DEFAULT_SPAN_MAX_NUM_LINKS = 32;
-  private static final long DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
-  private static final long DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
+  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
+  private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
+  private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;
+  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
+  private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
 
   /**
    * Returns the default {@code TraceConfig}.
@@ -72,35 +72,35 @@ public abstract class TraceConfig {
    *
    * @return the global default max number of attributes per {@link Span}.
    */
-  public abstract long getMaxNumberOfAttributes();
+  public abstract int getMaxNumberOfAttributes();
 
   /**
    * Returns the global default max number of {@link Event}s per {@link Span}.
    *
    * @return the global default max number of {@code Event}s per {@code Span}.
    */
-  public abstract long getMaxNumberOfEvents();
+  public abstract int getMaxNumberOfEvents();
 
   /**
    * Returns the global default max number of {@link Link} entries per {@link Span}.
    *
    * @return the global default max number of {@code Link} entries per {@code Span}.
    */
-  public abstract long getMaxNumberOfLinks();
+  public abstract int getMaxNumberOfLinks();
 
   /**
    * Returns the global default max number of attributes per {@link Event}.
    *
    * @return the global default max number of attributes per {@link Event}.
    */
-  public abstract long getMaxNumberOfAttributesPerEvent();
+  public abstract int getMaxNumberOfAttributesPerEvent();
 
   /**
    * Returns the global default max number of attributes per {@link Link}.
    *
    * @return the global default max number of attributes per {@link Link}.
    */
-  public abstract long getMaxNumberOfAttributesPerLink();
+  public abstract int getMaxNumberOfAttributesPerLink();
 
   private static Builder builder() {
     return new AutoValue_TraceConfig.Builder();
@@ -123,11 +123,12 @@ public abstract class TraceConfig {
       io.opentelemetry.proto.trace.v1.TraceConfig traceConfigProto) {
     return new AutoValue_TraceConfig.Builder()
         .setSampler(fromProtoSampler(traceConfigProto))
-        .setMaxNumberOfAttributes(traceConfigProto.getMaxNumberOfAttributes())
-        .setMaxNumberOfEvents(traceConfigProto.getMaxNumberOfTimedEvents())
-        .setMaxNumberOfLinks(traceConfigProto.getMaxNumberOfLinks())
-        .setMaxNumberOfAttributesPerEvent(traceConfigProto.getMaxNumberOfAttributesPerTimedEvent())
-        .setMaxNumberOfAttributesPerLink(traceConfigProto.getMaxNumberOfAttributesPerLink())
+        .setMaxNumberOfAttributes((int) traceConfigProto.getMaxNumberOfAttributes())
+        .setMaxNumberOfEvents((int) traceConfigProto.getMaxNumberOfTimedEvents())
+        .setMaxNumberOfLinks((int) traceConfigProto.getMaxNumberOfLinks())
+        .setMaxNumberOfAttributesPerEvent(
+            (int) traceConfigProto.getMaxNumberOfAttributesPerTimedEvent())
+        .setMaxNumberOfAttributesPerLink((int) traceConfigProto.getMaxNumberOfAttributesPerLink())
         .build();
   }
 
@@ -175,7 +176,7 @@ public abstract class TraceConfig {
      *     must be positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
-    public abstract Builder setMaxNumberOfAttributes(long maxNumberOfAttributes);
+    public abstract Builder setMaxNumberOfAttributes(int maxNumberOfAttributes);
 
     /**
      * Sets the global default max number of {@link Event}s per {@link Span}.
@@ -184,7 +185,7 @@ public abstract class TraceConfig {
      *     must be positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
-    public abstract Builder setMaxNumberOfEvents(long maxNumberOfEvents);
+    public abstract Builder setMaxNumberOfEvents(int maxNumberOfEvents);
 
     /**
      * Sets the global default max number of {@link Link} entries per {@link Span}.
@@ -193,7 +194,7 @@ public abstract class TraceConfig {
      *     Span}. It must be positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
-    public abstract Builder setMaxNumberOfLinks(long maxNumberOfLinks);
+    public abstract Builder setMaxNumberOfLinks(int maxNumberOfLinks);
 
     /**
      * Sets the global default max number of attributes per {@link Event}.
@@ -202,7 +203,7 @@ public abstract class TraceConfig {
      *     Event}. It must be positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
-    public abstract Builder setMaxNumberOfAttributesPerEvent(long maxNumberOfAttributesPerEvent);
+    public abstract Builder setMaxNumberOfAttributesPerEvent(int maxNumberOfAttributesPerEvent);
 
     /**
      * Sets the global default max number of attributes per {@link Link}.
@@ -211,7 +212,7 @@ public abstract class TraceConfig {
      *     Link}. It must be positive otherwise {@link #build()} will throw an exception.
      * @return this.
      */
-    public abstract Builder setMaxNumberOfAttributesPerLink(long maxNumberOfAttributesPerLink);
+    public abstract Builder setMaxNumberOfAttributesPerLink(int maxNumberOfAttributesPerLink);
 
     abstract TraceConfig autoBuild();
 

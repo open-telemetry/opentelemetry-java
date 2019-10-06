@@ -71,13 +71,31 @@ public class TracestateTest {
   @Test
   public void invalidFirstKeyCharacter() {
     thrown.expect(IllegalArgumentException.class);
-    EMPTY.toBuilder().set("1_key", FIRST_VALUE).build();
+    EMPTY.toBuilder().set("$_key", FIRST_VALUE).build();
+  }
+
+  @Test
+  public void firstKeyCharacterDigitIsAllowed() {
+    Tracestate result = EMPTY.toBuilder().set("1_key", FIRST_VALUE).build();
+    assertThat(result.get("1_key")).isEqualTo(FIRST_VALUE);
   }
 
   @Test
   public void invalidKeyCharacters() {
     thrown.expect(IllegalArgumentException.class);
     EMPTY.toBuilder().set("kEy_1", FIRST_VALUE).build();
+  }
+
+  @Test
+  public void testValidAtSignVendorNamePrefix() {
+    Tracestate result = EMPTY.toBuilder().set("1@nr", FIRST_VALUE).build();
+    assertThat(result.get("1@nr")).isEqualTo(FIRST_VALUE);
+  }
+
+  @Test
+  public void testMultipleAtSignNotAllowed() {
+    thrown.expect(IllegalArgumentException.class);
+    EMPTY.toBuilder().set("1@n@r@", FIRST_VALUE).build();
   }
 
   @Test

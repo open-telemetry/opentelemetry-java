@@ -17,13 +17,16 @@
 package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.metrics.GaugeLong;
-import io.opentelemetry.metrics.GaugeLong.Handle;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.metrics.Observer.Callback;
+import io.opentelemetry.metrics.Observer.Handle;
+import io.opentelemetry.metrics.ObserverLong;
+import io.opentelemetry.metrics.ObserverLong.Result;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -68,16 +71,14 @@ public final class MemoryPools {
 
   /** Export only the "area" metric. */
   public void exportMemoryAreaMetric() {
-    // TODO: If support a callback per MetricRegistry (collection) this can be transformed into 3
-    //  metrics and avoid using type, but type is nice that you can see what percent of the used
-    //  memory is committed (this can also be achieved by displaying the two metrics in the same
-    //  chart).
-    final GaugeLong areaMetric =
+    // TODO: Set this as non-monotonic.
+    final ObserverLong areaMetric =
         this.meter
-            .gaugeLongBuilder("area")
+            .observerLongBuilder("area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
+            .setMonotonic(false)
             .build();
     final Handle usedHeap = areaMetric.getHandle(Arrays.asList(USED, HEAP));
     final Handle usedNonHeap = areaMetric.getHandle(Arrays.asList(USED, NON_HEAP));
@@ -87,43 +88,51 @@ public final class MemoryPools {
     final Handle maxHeap = areaMetric.getHandle(Arrays.asList(MAX, HEAP));
     final Handle maxNonHeap = areaMetric.getHandle(Arrays.asList(MAX, NON_HEAP));
     areaMetric.setCallback(
-        new Runnable() {
+        new ObserverLong.Callback<Result>() {
           @Override
-          public void run() {
+          public void update(Result result) {
             MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
             MemoryUsage nonHeapUsage = memoryBean.getNonHeapMemoryUsage();
-            usedHeap.set(heapUsage.getUsed());
-            usedNonHeap.set(nonHeapUsage.getUsed());
-            committedHeap.set(heapUsage.getUsed());
-            committedNonHeap.set(nonHeapUsage.getUsed());
-            maxHeap.set(heapUsage.getUsed());
-            maxNonHeap.set(nonHeapUsage.getUsed());
+            result.put(usedHeap, heapUsage.getUsed());
+            result.put(usedNonHeap, nonHeapUsage.getUsed());
+            result.put(committedHeap, heapUsage.getUsed());
+            result.put(committedNonHeap, nonHeapUsage.getUsed());
+            result.put(maxHeap, heapUsage.getUsed());
+            result.put(maxNonHeap, nonHeapUsage.getUsed());
           }
         });
   }
 
   /** Export only the "pool" metric. */
   public void exportMemoryPoolMetric() {
-    final GaugeLong poolMetric =
+    // TODO: Set this as non-monotonic.
+    final ObserverLong poolMetric =
         this.meter
-            .gaugeLongBuilder("pool")
+            .observerLongBuilder("pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))
+            .setMonotonic(false)
             .build();
+    final List<Handle> usedHandles = new ArrayList<>(poolBeans.size());
+    final List<Handle> committedHandles = new ArrayList<>(poolBeans.size());
+    final List<Handle> maxHandles = new ArrayList<>(poolBeans.size());
+    for (final MemoryPoolMXBean pool : poolBeans) {
+      usedHandles.add(poolMetric.getHandle(Arrays.asList(USED, pool.getName())));
+      committedHandles.add(poolMetric.getHandle(Arrays.asList(COMMITTED, pool.getName())));
+      maxHandles.add(poolMetric.getHandle(Arrays.asList(MAX, pool.getName())));
+    }
     poolMetric.setCallback(
-        new Runnable() {
+        new Callback<Result>() {
           @Override
-          public void run() {
-            for (final MemoryPoolMXBean pool : poolBeans) {
-              MemoryUsage poolUsage = pool.getUsage();
-              poolMetric.getHandle(Arrays.asList(USED, pool.getName())).set(poolUsage.getUsed());
-              poolMetric
-                  .getHandle(Arrays.asList(COMMITTED, pool.getName()))
-                  .set(poolUsage.getUsed());
+          public void update(Result result) {
+            for (int i = 0; i < poolBeans.size(); i++) {
+              MemoryUsage poolUsage = poolBeans.get(i).getUsage();
+              result.put(usedHandles.get(i), poolUsage.getUsed());
+              result.put(committedHandles.get(i), poolUsage.getCommitted());
               // TODO: Decide if max is needed or not. May be derived with some approximation from
               //  max(used).
-              poolMetric.getHandle(Arrays.asList(MAX, pool.getName())).set(poolUsage.getUsed());
+              result.put(maxHandles.get(i), poolUsage.getMax());
             }
           }
         });

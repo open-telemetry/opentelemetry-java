@@ -16,8 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,8 +29,6 @@ public class MeasureBatchRecorderTest {
   private static final MeasureLong measureLong = meter.measureLongBuilder("measure_long").build();
   private static final MeasureDouble measureDouble =
       meter.measureDoubleBuilder("measure_double").build();
-  private static final DistributedContextManager distContextManager =
-      DefaultDistributedContextManager.getInstance();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -65,19 +61,7 @@ public class MeasureBatchRecorderTest {
   }
 
   @Test
-  public void preventNull_DistributedContext() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("distContext");
-    meter.newMeasureBatchRecorder().setDistributedContext(null).record();
-  }
-
-  @Test
   public void doesNotThrow() {
-    meter
-        .newMeasureBatchRecorder()
-        .put(measureLong, 5)
-        .put(measureDouble, 3.5)
-        .setDistributedContext(distContextManager.getCurrentContext())
-        .record();
+    meter.newMeasureBatchRecorder().put(measureLong, 5).put(measureDouble, 3.5).record();
   }
 }

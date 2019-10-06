@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
-import com.google.protobuf.UInt32Value;
+import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
@@ -32,8 +32,12 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.util.Events;
 import io.opentelemetry.trace.util.Links;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,13 +52,18 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
-  // The parent SpanId of this span. Null if this is a root span.
-  @Nullable private final SpanId parentSpanId;
+  // The parent SpanId of this span. Invalid if this is a root span.
+  private final SpanId parentSpanId;
   // Active trace configs when the Span was created.
   private final TraceConfig traceConfig;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
+  // List of recorded links to parent and child spans.
+  private final List<Link> links;
+  // Number of links recorded.
+  private final int totalRecordedLinks;
+
   @GuardedBy("this")
   private String name;
   // The kind of the span.
@@ -79,13 +88,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Number of events recorded.
   @GuardedBy("this")
   private int totalRecordedEvents = 0;
-  // List of recorded links to parent and child spans.
-  @GuardedBy("this")
-  @Nullable
-  private EvictingQueue<Link> links;
-  // Number of link recorded.
-  @GuardedBy("this")
-  private int totalRecordedLinks = 0;
   // The number of children.
   @GuardedBy("this")
   private int numberOfChildren;
@@ -114,6 +116,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *     events.
    * @param clock the clock used to get the time.
    * @param resource the resource associated with this span.
+   * @param attributes the attributes set during span creation.
+   * @param links the links set during span creation, may be truncated.
+   * @param totalRecordedLinks the total number of links set (including dropped links).
    * @return a new and started span.
    */
   @VisibleForTesting
@@ -127,23 +132,67 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
       Resource resource,
-      Map<String, AttributeValue> attributes) {
+      Map<String, AttributeValue> attributes,
+      List<Link> links,
+      int totalRecordedLinks) {
     RecordEventsReadableSpan span =
         new RecordEventsReadableSpan(
             context,
             name,
             kind,
-            parentSpanId,
+            parentSpanId == null ? SpanId.getInvalid() : parentSpanId,
             traceConfig,
             spanProcessor,
             timestampConverter,
             clock,
             resource,
-            attributes);
+            attributes,
+            links,
+            totalRecordedLinks);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     spanProcessor.onStart(span);
     return span;
+  }
+
+  @Override
+  public SpanData toSpanData() {
+    Timestamp startTimestamp = timestampConverter.convertNanoTime(startNanoTime);
+    Timestamp endTimestamp = timestampConverter.convertNanoTime(getEndNanoTime());
+    SpanContext spanContext = getSpanContext();
+    return SpanData.newBuilder()
+        .setName(getName())
+        .setTraceId(spanContext.getTraceId())
+        .setSpanId(spanContext.getSpanId())
+        .setTraceFlags(spanContext.getTraceFlags())
+        .setTracestate(spanContext.getTracestate())
+        .setAttributes(getAttributes())
+        .setStartTimestamp(startTimestamp)
+        .setEndTimestamp(endTimestamp)
+        .setKind(kind)
+        .setLinks(getLinks())
+        .setParentSpanId(parentSpanId)
+        .setResource(resource)
+        .setStatus(getStatus())
+        .setTimedEvents(adaptTimedEvents())
+        .build();
+  }
+
+  private List<SpanData.TimedEvent> adaptTimedEvents() {
+    List<io.opentelemetry.sdk.trace.TimedEvent> sourceEvents = getTimedEvents();
+    List<SpanData.TimedEvent> result = new ArrayList<>(sourceEvents.size());
+    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : sourceEvents) {
+      result.add(adaptTimedEvent(sourceEvent, timestampConverter));
+    }
+    return result;
+  }
+
+  private static SpanData.TimedEvent adaptTimedEvent(
+      io.opentelemetry.sdk.trace.TimedEvent sourceEvent, TimestampConverter timestampConverter) {
+    Timestamp timestamp = timestampConverter.convertNanoTime(sourceEvent.getNanotime());
+    io.opentelemetry.trace.Event event =
+        Events.create(sourceEvent.getName(), sourceEvent.getAttributes());
+    return SpanData.TimedEvent.create(timestamp, event);
   }
 
   @Override
@@ -163,40 +212,15 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
   }
 
-  @Override
-  public io.opentelemetry.proto.trace.v1.Span toSpanProto() {
+  /**
+   * Returns the end nano time (see {@link System#nanoTime()}). If the current {@code Span} is not
+   * ended then returns {@link Clock#nowNanos()}.
+   *
+   * @return the end nano time.
+   */
+  private long getEndNanoTime() {
     synchronized (this) {
-      io.opentelemetry.proto.trace.v1.Span.Builder builder =
-          io.opentelemetry.proto.trace.v1.Span.newBuilder()
-              .setTraceId(TraceProtoUtils.toProtoTraceId(context.getTraceId()))
-              .setSpanId(TraceProtoUtils.toProtoSpanId(context.getSpanId()))
-              .setTracestate(TraceProtoUtils.toProtoTracestate(context.getTracestate()))
-              .setResource(TraceProtoUtils.toProtoResource(resource))
-              .setName(name)
-              .setKind(TraceProtoUtils.toProtoKind(kind))
-              .setStartTime(timestampConverter.convertNanoTime(startNanoTime))
-              .setEndTime(timestampConverter.convertNanoTime(getEndNanoTime()))
-              .setChildSpanCount(UInt32Value.of(numberOfChildren));
-      if (parentSpanId != null) {
-        builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(parentSpanId));
-      }
-      if (attributes != null) {
-        builder.setAttributes(
-            TraceProtoUtils.toProtoAttributes(
-                attributes, attributes.getNumberOfDroppedAttributes()));
-      }
-      if (events != null) {
-        builder.setTimeEvents(
-            TraceProtoUtils.toProtoTimedEvents(
-                events, totalRecordedEvents - events.size(), timestampConverter));
-      }
-      if (links != null) {
-        builder.setLinks(TraceProtoUtils.toProtoLinks(links, totalRecordedLinks - links.size()));
-      }
-      if (hasBeenEnded) {
-        builder.setStatus(TraceProtoUtils.toProtoStatus(getStatusWithDefault()));
-      }
-      return builder.build();
+      return getEndNanoTimeInternal();
     }
   }
 
@@ -213,14 +237,45 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns the end nano time (see {@link System#nanoTime()}). If the current {@code Span} is not
-   * ended then returns {@link Clock#nowNanos()}.
+   * Returns a copy of the timed events for this span.
    *
-   * @return the end nano time.
+   * @return The TimedEvents for this span.
    */
-  private long getEndNanoTime() {
+  private List<TimedEvent> getTimedEvents() {
     synchronized (this) {
-      return getEndNanoTimeInternal();
+      return events == null ? Collections.<TimedEvent>emptyList() : new ArrayList<>(events);
+    }
+  }
+
+  /**
+   * Returns a copy of the links for this span.
+   *
+   * @return A copy of the Links for this span.
+   */
+  @VisibleForTesting
+  List<Link> getLinks() {
+    synchronized (this) {
+      if (links == null) {
+        return Collections.emptyList();
+      }
+      List<Link> result = new ArrayList<>(links.size());
+      for (Link link : links) {
+        Link newLink = Links.create(context, link.getAttributes());
+        result.add(newLink);
+      }
+      return Collections.unmodifiableList(result);
+    }
+  }
+
+  /**
+   * Returns an unmodifiable view of the attributes associated with this span.
+   *
+   * @return An unmodifiable view of the attributes associated wit this span
+   */
+  @VisibleForTesting
+  Map<String, AttributeValue> getAttributes() {
+    synchronized (this) {
+      return Collections.unmodifiableMap(getInitializedAttributes());
     }
   }
 
@@ -247,9 +302,18 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the kind of this {@code Span}.
    */
-  @VisibleForTesting
-  Kind getKind() {
+  public Kind getKind() {
     return kind;
+  }
+
+  /**
+   * Returns the span id of this span's parent span.
+   *
+   * @return The span id of the parent span.
+   */
+  @VisibleForTesting
+  public SpanId getParentSpanId() {
+    return parentSpanId;
   }
 
   /**
@@ -258,7 +322,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return the {@code TimestampConverter} used by this {@code Span}.
    */
   @Nullable
-  TimestampConverter getTimestampConverter() {
+  @VisibleForTesting
+  public TimestampConverter getTimestampConverter() {
     return timestampConverter;
   }
 
@@ -318,33 +383,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
       getInitializedEvents().add(timedEvent);
       totalRecordedEvents++;
-    }
-  }
-
-  @Override
-  public void addLink(Link link) {
-    Preconditions.checkNotNull(link, "link");
-    addLinkInternal(Links.create(link.getContext(), link.getAttributes()));
-  }
-
-  @Override
-  public void addLink(SpanContext spanContext) {
-    addLinkInternal(Links.create(spanContext));
-  }
-
-  @Override
-  public void addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-    addLinkInternal(Links.create(spanContext, attributes));
-  }
-
-  private void addLinkInternal(Link link) {
-    synchronized (this) {
-      if (hasBeenEnded) {
-        logger.log(Level.FINE, "Calling addLink() on an ended Span.");
-        return;
-      }
-      getInitializedLinks().add(link);
-      totalRecordedLinks++;
     }
   }
 
@@ -416,17 +454,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @GuardedBy("this")
   private EvictingQueue<TimedEvent> getInitializedEvents() {
     if (events == null) {
-      events = EvictingQueue.create((int) traceConfig.getMaxNumberOfEvents());
+      events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
     }
     return events;
-  }
-
-  @GuardedBy("this")
-  private EvictingQueue<Link> getInitializedLinks() {
-    if (links == null) {
-      links = EvictingQueue.create((int) traceConfig.getMaxNumberOfLinks());
-    }
-    return links;
   }
 
   @GuardedBy("this")
@@ -474,15 +504,19 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanContext context,
       String name,
       Kind kind,
-      @Nullable SpanId parentSpanId,
+      SpanId parentSpanId,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       @Nullable TimestampConverter timestampConverter,
       Clock clock,
       Resource resource,
-      Map<String, AttributeValue> attributes) {
+      Map<String, AttributeValue> attributes,
+      List<Link> links,
+      int totalRecordedLinks) {
     this.context = context;
     this.parentSpanId = parentSpanId;
+    this.links = links;
+    this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
     this.kind = kind;
     this.traceConfig = traceConfig;
@@ -508,5 +542,29 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
     }
     super.finalize();
+  }
+
+  /**
+   * The count of links that have been dropped.
+   *
+   * @return The number of links that have been dropped.
+   */
+  @VisibleForTesting
+  public int getDroppedLinksCount() {
+    return totalRecordedLinks - links.size();
+  }
+
+  @VisibleForTesting
+  int getNumberOfChildren() {
+    synchronized (this) {
+      return numberOfChildren;
+    }
+  }
+
+  @VisibleForTesting
+  int getTotalRecordedEvents() {
+    synchronized (this) {
+      return totalRecordedEvents;
+    }
   }
 }

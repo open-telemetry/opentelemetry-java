@@ -18,10 +18,11 @@ package io.opentelemetry.sdk.contrib.trace.testbed.listenerperrequest;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import org.junit.Test;
@@ -37,9 +38,9 @@ public class ListenerTest {
     Object response = client.send("message").get();
     assertThat(response).isEqualTo("message:response");
 
-    List<io.opentelemetry.proto.trace.v1.Span> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = exporter.getFinishedSpanItems();
     assertThat(finished).hasSize(1);
-    assertThat(finished.get(0).getKind()).isEqualTo(SpanKind.CLIENT);
+    assertThat(finished.get(0).getKind()).isEqualTo(Kind.CLIENT);
 
     assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }

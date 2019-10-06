@@ -25,5 +25,16 @@ package io.opentelemetry.metrics;
 public interface Gauge<H> extends Metric<H> {
 
   /** Builder class for {@link Gauge}. */
-  interface Builder<B extends Gauge.Builder<B, V>, V> extends Metric.Builder<B, V> {}
+  interface Builder<B extends Gauge.Builder<B, V>, V> extends Metric.Builder<B, V> {
+    /**
+     * Sets the monotonicity property for this {@code Metric}. If {@code true} successive values are
+     * expected to rise monotonically.
+     *
+     * <p>Default value is {@code false}
+     *
+     * @param monotonic {@code true} successive values are expected to rise monotonically.
+     * @return this.
+     */
+    B setMonotonic(boolean monotonic);
+  }
 }

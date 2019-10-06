@@ -18,27 +18,27 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.trace.TraceFlags;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
- * io.opentelemetry.proto.trace.v1.Span} and passes it to the configured exporter.
- *
- * <p>Only spans that are sampled are converted, {@link TraceFlags#isSampled()} must return {@code
- * true}.
+ * SpanData} and passes it to the configured exporter.
  */
-public final class SimpleSampledSpansProcessor implements SpanProcessor {
-  private static final Logger logger =
-      Logger.getLogger(SimpleSampledSpansProcessor.class.getName());
+public final class SimpleSpansProcessor implements SpanProcessor {
+
+  private static final Logger logger = Logger.getLogger(SimpleSpansProcessor.class.getName());
 
   private final SpanExporter spanExporter;
+  private final boolean sampled;
 
-  private SimpleSampledSpansProcessor(SpanExporter spanExporter) {
+  private SimpleSpansProcessor(SpanExporter spanExporter, boolean sampled) {
     this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+    this.sampled = sampled;
   }
 
   @Override
@@ -48,11 +48,12 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (!span.getSpanContext().getTraceFlags().isSampled()) {
+    if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
     }
     try {
-      spanExporter.export(Collections.singletonList(span.toSpanProto()));
+      List<SpanData> spans = Collections.singletonList(span.toSpanData());
+      spanExporter.export(spans);
     } catch (Throwable e) {
       logger.log(Level.WARNING, "Exception thrown by the export.", e);
     }
@@ -64,36 +65,49 @@ public final class SimpleSampledSpansProcessor implements SpanProcessor {
   }
 
   /**
-   * Returns a new Builder for {@link SimpleSampledSpansProcessor}.
+   * Returns a new Builder for {@link SimpleSpansProcessor}.
    *
-   * @param spanExporter the {@code SpanExporter} to where the sampled Spans are pushed.
-   * @return a new {@link SimpleSampledSpansProcessor}.
+   * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
+   * @return a new {@link SimpleSpansProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
   public static Builder newBuilder(SpanExporter spanExporter) {
     return new Builder(spanExporter);
   }
 
-  /** Builder class for {@link SimpleSampledSpansProcessor}. */
+  /** Builder class for {@link SimpleSpansProcessor}. */
   public static final class Builder {
+
     private final SpanExporter spanExporter;
+    private boolean sampled = true;
 
     private Builder(SpanExporter spanExporter) {
       this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+    }
+
+    /**
+     * Set whether only sampled spans should be reported.
+     *
+     * @param sampled report only sampled spans.
+     * @return this.
+     */
+    public Builder reportOnlySampled(boolean sampled) {
+      this.sampled = sampled;
+      return this;
     }
 
     // TODO: Add metrics for total exported spans.
     // TODO: Consider to add support for constant Attributes and/or Resource.
 
     /**
-     * Returns a new {@link SimpleSampledSpansProcessor} that converts spans to proto and forwards
-     * them to the given {@code spanExporter}.
+     * Returns a new {@link SimpleSpansProcessor} that converts spans to proto and forwards them to
+     * the given {@code spanExporter}.
      *
-     * @return a new {@link SimpleSampledSpansProcessor}.
+     * @return a new {@link SimpleSpansProcessor}.
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
-    public SimpleSampledSpansProcessor build() {
-      return new SimpleSampledSpansProcessor(spanExporter);
+    public SimpleSpansProcessor build() {
+      return new SimpleSpansProcessor(spanExporter, sampled);
     }
   }
 }

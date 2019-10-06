@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.contrib.trace.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.proto.trace.v1.Span;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.trace.util.Samplers;
 import java.util.List;
@@ -31,7 +31,7 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link InMemoryTracing}. */
 @RunWith(JUnit4.class)
 public class InMemoryTracingTest {
-  InMemoryTracing tracing = new InMemoryTracing();
+  private final InMemoryTracing tracing = new InMemoryTracing();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -63,7 +63,7 @@ public class InMemoryTracingTest {
     tracing.getTracer().spanBuilder("A").startSpan().end();
     tracing.getTracer().spanBuilder("B").startSpan().end();
 
-    List<Span> finishedSpanItems = tracing.getFinishedSpanItems();
+    List<SpanData> finishedSpanItems = tracing.getFinishedSpanItems();
     assertThat(finishedSpanItems.get(0).getName()).isEqualTo("A");
     assertThat(finishedSpanItems.get(1).getName()).isEqualTo("B");
   }
@@ -73,7 +73,7 @@ public class InMemoryTracingTest {
     tracing.getTracer().spanBuilder("A").startSpan().end();
     tracing.getTracer().spanBuilder("B").setSampler(Samplers.neverSample()).startSpan().end();
 
-    List<Span> finishedSpanItems = tracing.getFinishedSpanItems();
+    List<SpanData> finishedSpanItems = tracing.getFinishedSpanItems();
     assertThat(finishedSpanItems.size()).isEqualTo(1);
     assertThat(finishedSpanItems.get(0).getName()).isEqualTo("A");
   }
