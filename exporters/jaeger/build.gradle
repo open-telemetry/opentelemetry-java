@@ -15,7 +15,9 @@ buildscript {
 dependencies {
     api project(':opentelemetry-sdk')
 
-    implementation libraries.grpc_api,
+    implementation project(':opentelemetry-exporters-otprotocol'),
+            libraries.grpc_api,
+            project(':opentelemetry-sdk'),
             libraries.grpc_protobuf,
             libraries.grpc_stub,
             libraries.protobuf,
