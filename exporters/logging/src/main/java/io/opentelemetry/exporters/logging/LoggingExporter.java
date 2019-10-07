@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.List;
 import java.util.logging.Logger;
 
-/** A Span Exporter that logs every span at INFO level using SLF4J. */
+/** A Span Exporter that logs every span at INFO level using java.util.logging. */
 public class LoggingExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(LoggingExporter.class.getName());
 
