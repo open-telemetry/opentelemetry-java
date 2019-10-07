@@ -19,17 +19,16 @@ package io.opentelemetry.exporters.logging;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.logging.Logger;
 
 /** A Span Exporter that logs every span at INFO level using SLF4J. */
 public class LoggingExporter implements SpanExporter {
-  private static final Logger logger = LoggerFactory.getLogger(LoggingExporter.class);
+  private static final Logger logger = Logger.getLogger(LoggingExporter.class.getName());
 
   @Override
   public ResultCode export(List<SpanData> spans) {
     for (SpanData span : spans) {
-      logger.info("span: %s" + span);
+      logger.info("span: " + span);
     }
     return ResultCode.SUCCESS;
   }
