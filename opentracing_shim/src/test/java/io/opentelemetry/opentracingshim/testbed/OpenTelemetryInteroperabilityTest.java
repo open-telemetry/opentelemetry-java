@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 
 import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
@@ -58,7 +59,7 @@ public class OpenTelemetryInteroperabilityTest {
     assertEquals(sdk.getCurrentSpan().getClass(), DefaultSpan.class);
     assertNull(otTracer.activeSpan());
 
-    List<io.opentelemetry.proto.trace.v1.Span> finishedSpans = spanExporter.getFinishedSpanItems();
+    List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
     assertEquals(2, finishedSpans.size());
     TestUtils.assertSameTrace(finishedSpans);
   }
@@ -75,7 +76,7 @@ public class OpenTelemetryInteroperabilityTest {
     assertEquals(sdk.getCurrentSpan().getClass(), DefaultSpan.class);
     assertNull(otTracer.activeSpan());
 
-    List<io.opentelemetry.proto.trace.v1.Span> finishedSpans = spanExporter.getFinishedSpanItems();
+    List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
     assertEquals(2, finishedSpans.size());
     TestUtils.assertSameTrace(finishedSpans);
   }
