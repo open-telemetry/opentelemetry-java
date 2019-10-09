@@ -37,8 +37,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
       return null;
     }
 
-    // TODO: Properly include the bagagge/distributedContext.
-    return new SpanShim(telemetryInfo(), span);
+    return new SpanShim(telemetryInfo(), span, /*reuseContext= */ true);
   }
 
   @Override

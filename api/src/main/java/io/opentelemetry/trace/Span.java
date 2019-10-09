@@ -206,6 +206,18 @@ public interface Span {
   boolean isRecordingEvents();
 
   /**
+   * Returns an {@code Object} used for backwards interoperability with either OpenTracing or
+   * OpenCensus. Do not use this object. Scheduled to be removed in the next version.
+   */
+  Object getImplObj();
+
+  /**
+   * Sets an {@code Object} used for backwards interoperability with either OpenTracing or
+   * OpenCensus. Do not use this object. Scheduled to be removed in the next version.
+   */
+  void setImplObj(Object obj);
+
+  /**
    * {@link Builder} is used to construct {@link Span} instances which define arbitrary scopes of
    * code that are sampled for distributed tracing as a single atomic unit.
    *

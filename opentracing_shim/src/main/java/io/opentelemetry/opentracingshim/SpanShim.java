@@ -17,7 +17,6 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.EmptyDistributedContext;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Span;
@@ -32,10 +31,9 @@ final class SpanShim extends BaseShimObject implements Span {
   private static final String DEFAULT_EVENT_NAME = "log";
 
   private final io.opentelemetry.trace.Span span;
-  private SpanContextShim contextShim;
 
   public SpanShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.Span span) {
-    this(telemetryInfo, span, EmptyDistributedContext.getInstance());
+    this(telemetryInfo, span, telemetryInfo.contextManager().contextBuilder().build());
   }
 
   public SpanShim(
@@ -44,7 +42,14 @@ final class SpanShim extends BaseShimObject implements Span {
       DistributedContext distContext) {
     super(telemetryInfo);
     this.span = span;
-    this.contextShim = new SpanContextShim(telemetryInfo, span.getContext(), distContext);
+    span.setImplObj(new SpanContextShim(telemetryInfo, span.getContext(), distContext));
+  }
+
+  // TODO: Fix and refactor the ctors after showing the prototype for full baggage integration.
+  public SpanShim(
+      TelemetryInfo telemetryInfo, io.opentelemetry.trace.Span span, boolean reuseContext) {
+    super(telemetryInfo);
+    this.span = span;
   }
 
   io.opentelemetry.trace.Span getSpan() {
@@ -53,8 +58,8 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public SpanContext context() {
-    synchronized (this) {
-      return contextShim;
+    synchronized (span) {
+      return getSpanContextShim();
     }
   }
 
@@ -132,6 +137,25 @@ final class SpanShim extends BaseShimObject implements Span {
     return this;
   }
 
+  SpanContextShim getSpanContextShim() {
+    SpanContextShim contextShim = (SpanContextShim) span.getImplObj();
+    if (contextShim == null) {
+      // Span was created from outside the shim layer.
+      contextShim =
+          new SpanContextShim(
+              telemetryInfo,
+              span.getContext(),
+              telemetryInfo.contextManager().contextBuilder().build());
+      span.setImplObj(contextShim);
+    }
+
+    return contextShim;
+  }
+
+  void setSpanContextShim(SpanContextShim contextShim) {
+    span.setImplObj(contextShim);
+  }
+
   @Override
   public Span setBaggageItem(String key, String value) {
     // TagKey nor TagValue can be created with null values.
@@ -139,8 +163,8 @@ final class SpanShim extends BaseShimObject implements Span {
       return this;
     }
 
-    synchronized (this) {
-      contextShim = contextShim.newWithKeyValue(key, value);
+    synchronized (span) {
+      setSpanContextShim(getSpanContextShim().newWithKeyValue(key, value));
     }
 
     return this;
@@ -148,8 +172,8 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public String getBaggageItem(String key) {
-    synchronized (this) {
-      return contextShim.getBaggageItem(key);
+    synchronized (span) {
+      return getSpanContextShim().getBaggageItem(key);
     }
   }
 

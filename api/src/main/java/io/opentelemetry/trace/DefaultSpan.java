@@ -135,6 +135,15 @@ public final class DefaultSpan implements Span {
     return false;
   }
 
+  @SuppressWarnings("ReturnMissingNullable")
+  @Override
+  public Object getImplObj() {
+    return null;
+  }
+
+  @Override
+  public void setImplObj(Object obj) {}
+
   @Override
   public String toString() {
     return "DefaultSpan";

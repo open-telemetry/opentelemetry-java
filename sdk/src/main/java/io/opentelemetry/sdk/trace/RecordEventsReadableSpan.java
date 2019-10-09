@@ -433,6 +433,18 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     return true;
   }
 
+  private volatile Object implObj;
+
+  @Override
+  public Object getImplObj() {
+    return implObj;
+  }
+
+  @Override
+  public void setImplObj(Object obj) {
+    implObj = obj;
+  }
+
   void addChild() {
     synchronized (this) {
       if (hasBeenEnded) {
