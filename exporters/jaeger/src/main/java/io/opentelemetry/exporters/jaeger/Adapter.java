@@ -21,7 +21,6 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.exporters.otproto.TraceProtoUtils;
-import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.AttributeValue;
@@ -44,7 +43,7 @@ final class Adapter {
   private Adapter() {}
 
   /**
-   * Converts a list of {@link Span} into a collection of Jaeger's {@link Model.Span}.
+   * Converts a list of {@link SpanData} into a collection of Jaeger's {@link Model.Span}.
    *
    * @param spans the list of spans to be converted
    * @return the collection of Jaeger spans
@@ -59,7 +58,7 @@ final class Adapter {
   }
 
   /**
-   * Converts a single {@link Span} into a Jaeger's {@link Model.Span}.
+   * Converts a single {@link SpanData} into a Jaeger's {@link Model.Span}.
    *
    * @param span the span to be converted
    * @return the Jaeger span
@@ -116,7 +115,7 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link Span.TimedEvents} into a collection of Jaeger's {@link Model.Log}.
+   * Converts {@link SpanData.TimedEvent}s into a collection of Jaeger's {@link Model.Log}.
    *
    * @param timeEvents the timed events to be converted
    * @return a collection of Jaeger logs
@@ -132,7 +131,7 @@ final class Adapter {
   }
 
   /**
-   * Converts a {@link Span.TimedEvent} into Jaeger's {@link Model.Log}.
+   * Converts a {@link SpanData.TimedEvent} into Jaeger's {@link Model.Log}.
    *
    * @param timedEvent the timed event to be converted
    * @return a Jaeger log
@@ -151,7 +150,8 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link Span.Attributes} into a collection of Jaeger's {@link Model.KeyValue}.
+   * Converts {@link Map<String, AttributeValue>} into a collection of Jaeger's {@link
+   * Model.KeyValue}.
    *
    * @param attributes the span attributes
    * @return a collection of Jaeger key values
@@ -197,7 +197,7 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link Span.Links} into a collection of Jaeger's {@link Model.SpanRef}.
+   * Converts {@link Link}s into a collection of Jaeger's {@link Model.SpanRef}.
    *
    * @param links the span's links property to be converted
    * @return a collection of Jaeger span references
@@ -212,7 +212,7 @@ final class Adapter {
   }
 
   /**
-   * Converts a single {@link Span.Link} into a Jaeger's {@link Model.SpanRef}.
+   * Converts a single {@link Link} into a Jaeger's {@link Model.SpanRef}.
    *
    * @param link the OpenTelemetry link to be converted
    * @return the Jaeger span reference
