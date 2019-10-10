@@ -19,21 +19,18 @@ package io.opentelemetry.sdk;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
-import io.opentelemetry.sdk.metrics.MeterSdk;
-import io.opentelemetry.sdk.trace.TracerSdk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class OpenTelemetryTest {
+public class OpenTelemetrySdkTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracer()).isInstanceOf(TracerSdk.class);
-    assertThat(OpenTelemetry.getDistributedContextManager())
-        .isInstanceOf(DistributedContextManagerSdk.class);
-    assertThat(OpenTelemetry.getMeter()).isInstanceOf(MeterSdk.class);
+    assertThat(OpenTelemetrySdk.getTracer()).isSameInstanceAs(OpenTelemetry.getTracer());
+    assertThat(OpenTelemetrySdk.getDistributedContextManager())
+        .isSameInstanceAs(OpenTelemetry.getDistributedContextManager());
+    assertThat(OpenTelemetrySdk.getMeter()).isSameInstanceAs(OpenTelemetry.getMeter());
   }
 }
