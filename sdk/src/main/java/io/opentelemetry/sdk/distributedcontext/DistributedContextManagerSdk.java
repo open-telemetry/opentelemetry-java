@@ -50,6 +50,6 @@ public class DistributedContextManagerSdk implements DistributedContextManager {
 
   @Override
   public HttpTextFormat<DistributedContext> getHttpTextFormat() {
-    throw new UnsupportedOperationException("to be implemented");
+    return DistributedContextHttpTextFormat.getInstance();
   }
 }
