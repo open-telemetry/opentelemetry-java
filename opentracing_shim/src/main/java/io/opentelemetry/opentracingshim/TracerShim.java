@@ -25,8 +25,12 @@ import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 final class TracerShim extends BaseShimObject implements Tracer {
+  private static final Logger logger = Logger.getLogger(TracerShim.class.getName());
+
   private final ScopeManager scopeManagerShim;
   private final Propagation propagation;
 
@@ -74,17 +78,23 @@ final class TracerShim extends BaseShimObject implements Tracer {
   @SuppressWarnings("ReturnMissingNullable")
   @Override
   public <C> SpanContext extract(Format<C> format, C carrier) {
-    SpanContext context = null;
-
-    if (format == Format.Builtin.TEXT_MAP
-        || format == Format.Builtin.TEXT_MAP_EXTRACT
-        || format == Format.Builtin.HTTP_HEADERS) {
-      context = propagation.extractTextFormat((TextMapExtract) carrier);
-    } else if (format == Format.Builtin.BINARY) {
-      context = propagation.extractBinaryFormat((Binary) carrier);
+    try {
+      if (format == Format.Builtin.TEXT_MAP
+          || format == Format.Builtin.TEXT_MAP_EXTRACT
+          || format == Format.Builtin.HTTP_HEADERS) {
+        return propagation.extractTextFormat((TextMapExtract) carrier);
+      } else if (format == Format.Builtin.BINARY) {
+        return propagation.extractBinaryFormat((Binary) carrier);
+      }
+    } catch (Exception e) {
+      logger.log(
+          Level.INFO,
+          "Exception caught while extracting span context; returning null. "
+              + "Exception: [%s] Message: [%s]",
+          new String[] {e.getClass().getName(), e.getMessage()});
     }
 
-    return context;
+    return null;
   }
 
   @Override
