@@ -90,7 +90,7 @@ final class TracerShim extends BaseShimObject implements Tracer {
       logger.log(
           Level.INFO,
           "Exception caught while extracting span context; returning null. "
-              + "Exception: [%s] Message: [%s]",
+              + "Exception: [{0}] Message: [{1}]",
           new String[] {e.getClass().getName(), e.getMessage()});
     }
 
