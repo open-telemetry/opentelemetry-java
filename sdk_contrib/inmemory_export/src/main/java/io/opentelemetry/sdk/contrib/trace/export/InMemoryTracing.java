@@ -37,7 +37,7 @@ import java.util.List;
  *     Tracer tracer = tracing.getTracer();
  *     tracer.spanBuilder("span").startSpan().end();
  *
- *     {@code List<io.opentelemetry.proto.trace.v1.Span>} spans = tracing.getFinishedSpanItems();
+ *     {@code List<io.opentelemetry.sdk.trace.SpanData>} spans = tracing.getFinishedSpanItems();
  *     assertThat(spans.size()).isEqualTo(1);
  *     assertThat(spans.get(0).getName()).isEqualTo("span");
  *   }
@@ -95,7 +95,7 @@ public final class InMemoryTracing {
 
   /**
    * Returns a copy {@code List} of the finished {@code Span}s, represented by {@code
-   * io.opentelemetry.proto.trace.v1.Span}.
+   * io.opentelemetry.sdk.trace.SpanData}.
    *
    * @return a {@code List} of the finished {@code Span}s.
    * @since 0.1.0
