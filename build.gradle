@@ -108,11 +108,11 @@ subprojects {
         autoValueVersion = '1.6.6'
         errorProneVersion = '2.3.3'
         findBugsJsr305Version = '3.0.2'
-        grpcVersion = '1.20.0'
+        grpcVersion = '1.24.0'
         guavaVersion = '28.1-android'
         opentracingVersion = '0.33.0'
-        protobufVersion = '3.7.1'
-        protocVersion = '3.7.1'
+        protobufVersion = '3.9.0'
+        protocVersion = '3.9.0'
 
         libraries = [
                 auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -121,6 +121,8 @@ subprojects {
                 errorprone_annotation: "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
                 grpc_api: "io.grpc:grpc-api:${grpcVersion}",
                 grpc_context: "io.grpc:grpc-context:${grpcVersion}",
+                grpc_protobuf: "io.grpc:grpc-context:${grpcVersion}",
+                grpc_stub: "io.grpc:grpc-context:${grpcVersion}",
                 guava: "com.google.guava:guava:${guavaVersion}",
                 jsr305: "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
                 protobuf: "com.google.protobuf:protobuf-java:${protobufVersion}",
@@ -143,7 +145,8 @@ subprojects {
         compile {
             // Detect Maven Enforcer's dependencyConvergence failures. We only
             // care for artifacts used as libraries by others.
-            resolutionStrategy.failOnVersionConflict()
+            // TODO: Enable failOnVersionConflict()
+            resolutionStrategy.preferProjectModules()
         }
     }
 

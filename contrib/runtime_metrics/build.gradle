@@ -1,7 +1,7 @@
 description = 'OpenTelemetry Contrib Runtime Metrics'
 
 dependencies {
-    compile project(':opentelemetry-api')
+    implementation project(':opentelemetry-api')
 
     annotationProcessor libraries.auto_value
 
