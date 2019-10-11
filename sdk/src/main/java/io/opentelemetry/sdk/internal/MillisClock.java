@@ -16,8 +16,7 @@
 
 package io.opentelemetry.sdk.internal;
 
-import com.google.protobuf.Timestamp;
-import com.google.protobuf.util.Timestamps;
+import io.opentelemetry.common.Timestamp;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** A {@link Clock} that uses {@link System#currentTimeMillis()} and {@link System#nanoTime()}. */
@@ -39,7 +38,7 @@ public final class MillisClock implements Clock {
 
   @Override
   public Timestamp now() {
-    return Timestamps.fromMillis(System.currentTimeMillis());
+    return Timestamp.fromMillis(System.currentTimeMillis());
   }
 
   @Override

@@ -16,14 +16,14 @@
 
 package io.opentelemetry.sdk.internal;
 
-import com.google.protobuf.Timestamp;
+import io.opentelemetry.common.Timestamp;
 
 final class ClockTestUtil {
   static final int NANOS_PER_SECOND = 1000 * 1000 * 1000;
   static final int NANOS_PER_MILLI = 1000 * 1000;
 
   static Timestamp createTimestamp(long seconds, int nanos) {
-    return Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
+    return Timestamp.create(seconds, nanos);
   }
 
   private ClockTestUtil() {}
