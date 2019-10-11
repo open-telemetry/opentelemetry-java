@@ -18,8 +18,12 @@ package io.opentelemetry.exporters.otprotocol;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
+import io.opentelemetry.proto.trace.v1.ConstantSampler;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.util.Samplers;
 
 /** Utilities for converting various objects to protobuf representations. */
 public class TraceProtoUtils {
@@ -60,5 +64,49 @@ public class TraceProtoUtils {
         .setNanos(timestamp.getNanos())
         .setSeconds(timestamp.getSeconds())
         .build();
+  }
+
+  /**
+   * Returns a {@code TraceConfig} from the given proto.
+   *
+   * @param traceConfigProto proto format {@code TraceConfig}.
+   * @return a {@code TraceConfig}.
+   */
+  public static TraceConfig traceConfigFromProto(
+      io.opentelemetry.proto.trace.v1.TraceConfig traceConfigProto) {
+    return TraceConfig.getDefault()
+        .toBuilder()
+        .setSampler(fromProtoSampler(traceConfigProto))
+        .setMaxNumberOfAttributes((int) traceConfigProto.getMaxNumberOfAttributes())
+        .setMaxNumberOfEvents((int) traceConfigProto.getMaxNumberOfTimedEvents())
+        .setMaxNumberOfLinks((int) traceConfigProto.getMaxNumberOfLinks())
+        .setMaxNumberOfAttributesPerEvent(
+            (int) traceConfigProto.getMaxNumberOfAttributesPerTimedEvent())
+        .setMaxNumberOfAttributesPerLink((int) traceConfigProto.getMaxNumberOfAttributesPerLink())
+        .build();
+  }
+
+  private static Sampler fromProtoSampler(
+      io.opentelemetry.proto.trace.v1.TraceConfig traceConfigProto) {
+    if (traceConfigProto.hasConstantSampler()) {
+      ConstantSampler constantSampler = traceConfigProto.getConstantSampler();
+      switch (constantSampler.getDecision()) {
+        case ALWAYS_ON:
+          return Samplers.alwaysSample();
+        case ALWAYS_OFF:
+          return Samplers.neverSample();
+        case ALWAYS_PARENT:
+          // TODO: add support.
+        case UNRECOGNIZED:
+          throw new IllegalArgumentException("unrecognized constant sampling decision");
+      }
+    }
+    if (traceConfigProto.hasProbabilitySampler()) {
+      // TODO: add support for ProbabilitySampler
+    }
+    if (traceConfigProto.hasRateLimitingSampler()) {
+      // TODO: add support for RateLimitingSampler
+    }
+    throw new IllegalArgumentException("unknown sampler in the trace config proto");
   }
 }

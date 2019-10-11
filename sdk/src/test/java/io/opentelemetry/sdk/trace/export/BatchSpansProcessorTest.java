@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.trace.export;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.doThrow;
 
-import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
@@ -344,10 +343,10 @@ public class BatchSpansProcessorTest {
 
     /**
      * Waits until we received numberOfSpans spans to export. Returns the list of exported {@link
-     * Span} objects, otherwise {@code null} if the current thread is interrupted.
+     * SpanData} objects, otherwise {@code null} if the current thread is interrupted.
      *
      * @param numberOfSpans the number of minimum spans to be collected.
-     * @return the list of exported {@link Span} objects, otherwise {@code null} if the current
+     * @return the list of exported {@link SpanData} objects, otherwise {@code null} if the current
      *     thread is interrupted.
      */
     @Nullable

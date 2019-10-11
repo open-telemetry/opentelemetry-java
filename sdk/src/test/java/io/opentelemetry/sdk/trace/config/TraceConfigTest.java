@@ -18,8 +18,6 @@ package io.opentelemetry.sdk.trace.config;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.proto.trace.v1.ConstantSampler;
-import io.opentelemetry.proto.trace.v1.ConstantSampler.ConstantDecision;
 import io.opentelemetry.trace.util.Samplers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,18 +28,6 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link TraceConfig}. */
 @RunWith(JUnit4.class)
 public class TraceConfigTest {
-
-  private static final io.opentelemetry.proto.trace.v1.TraceConfig TRACE_CONFIG_PROTO =
-      io.opentelemetry.proto.trace.v1.TraceConfig.newBuilder()
-          .setConstantSampler(
-              ConstantSampler.newBuilder().setDecision(ConstantDecision.ALWAYS_OFF).build())
-          .setMaxNumberOfAttributes(10)
-          .setMaxNumberOfTimedEvents(9)
-          .setMaxNumberOfLinks(8)
-          .setMaxNumberOfAttributesPerTimedEvent(2)
-          .setMaxNumberOfAttributesPerLink(1)
-          .build();
-
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
@@ -108,16 +94,5 @@ public class TraceConfigTest {
     assertThat(traceConfig.getMaxNumberOfLinks()).isEqualTo(11);
     assertThat(traceConfig.getMaxNumberOfAttributesPerEvent()).isEqualTo(1);
     assertThat(traceConfig.getMaxNumberOfAttributesPerLink()).isEqualTo(2);
-  }
-
-  @Test
-  public void fromProtoTraceConfig() {
-    TraceConfig traceConfig = TraceConfig.fromProtoTraceConfig(TRACE_CONFIG_PROTO);
-    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.neverSample());
-    assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(10);
-    assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(9);
-    assertThat(traceConfig.getMaxNumberOfLinks()).isEqualTo(8);
-    assertThat(traceConfig.getMaxNumberOfAttributesPerEvent()).isEqualTo(2);
-    assertThat(traceConfig.getMaxNumberOfAttributesPerLink()).isEqualTo(1);
   }
 }
