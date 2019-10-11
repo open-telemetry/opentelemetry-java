@@ -25,6 +25,8 @@ project(':opentelemetry-exporters-inmemory').projectDir =
         "$rootDir/exporters/inmemory" as File
 project(':opentelemetry-exporters-jaeger').projectDir =
         "$rootDir/exporters/jaeger" as File
+project(':opentelemetry-exporters-logging').projectDir =
+        "$rootDir/exporters/logging" as File
 project(':opentelemetry-exporters-otprotocol').projectDir =
         "$rootDir/exporters/otprotocol" as File
 project(':opentelemetry-opentracing-shim').projectDir =
