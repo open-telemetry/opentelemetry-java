@@ -144,7 +144,7 @@ public class SimpleSpansProcessorTest {
 
   @Test
   public void tracerSdk_NotSampled_RecordingEventsSpan() {
-    // TODO(bdrutu): Fix this when Sampler return RECORD only option.
+    // TODO(bdrutu): Fix this when Sampler return RECORD option.
     /*
     tracerSdk.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter)

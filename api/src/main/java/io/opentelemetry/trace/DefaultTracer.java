@@ -138,11 +138,6 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setRecordEvents(boolean recordEvents) {
-      return this;
-    }
-
-    @Override
     public NoopSpanBuilder setSpanKind(Span.Kind spanKind) {
       return this;
     }
