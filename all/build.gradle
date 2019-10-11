@@ -4,11 +4,11 @@ def subprojects = [
         project(':opentelemetry-api'),
         project(':opentelemetry-contrib-runtime-metrics'),
         project(':opentelemetry-contrib-trace-utils'),
+        project(':opentelemetry-exporters-inmemory'),
         project(':opentelemetry-exporters-jaeger'),
         project(':opentelemetry-opentracing-shim'),
         project(':opentelemetry-sdk'),
         project(':opentelemetry-sdk-contrib-async-processor'),
-        project(':opentelemetry-sdk-contrib-inmemory-export'),
         project(':opentelemetry-sdk-contrib-testbed'),
 ]
 
@@ -17,11 +17,11 @@ def subprojects_javadoc = [
         project(':opentelemetry-api'),
         project(':opentelemetry-contrib-runtime-metrics'),
         project(':opentelemetry-contrib-trace-utils'),
+        project(':opentelemetry-exporters-inmemory'),
         project(':opentelemetry-exporters-jaeger'),
         project(':opentelemetry-opentracing-shim'),
         project(':opentelemetry-sdk'),
         project(':opentelemetry-sdk-contrib-async-processor'),
-        project(':opentelemetry-sdk-contrib-inmemory-export'),
         project(':opentelemetry-sdk-contrib-testbed'),
 ]
 
