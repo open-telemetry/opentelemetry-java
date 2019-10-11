@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.spi;
+package io.opentelemetry.trace;
 
-import io.opentelemetry.trace.Tracer;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * TracerFactory is a service provider for {@link Tracer}s. Fully qualified class name of the
- * implementation should be registered in {@code
- * META-INF/services/io.opentelemetry.trace.spi.TracerFactory}. <br>
- * <br>
- * A specific implementation can be selected by a system property {@code
- * io.opentelemetry.trace.spi.TracerFactory} with value of fully qualified class name.
+ * A factory for creating named {@link Tracer}s.
  *
  * @see io.opentelemetry.OpenTelemetry
+ * @see io.opentelemetry.trace.Tracer
+ * @since 0.1.0
  */
 @ThreadSafe
 public interface TracerFactory {

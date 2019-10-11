@@ -23,8 +23,10 @@ import io.opentelemetry.metrics.DefaultMeter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.spi.MeterProvider;
 import io.opentelemetry.trace.DefaultTracer;
+import io.opentelemetry.trace.DefaultTracerFactoryProvider;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.spi.TracerFactory;
+import io.opentelemetry.trace.TracerFactory;
+import io.opentelemetry.trace.spi.TracerFactoryProvider;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -56,9 +58,16 @@ public final class OpenTelemetry {
    * @since 0.1.0
    */
   public static Tracer getTracer() {
-    return getTracer("defaultName", "defaultVersion");
+    return getTracer("defaultInstrumentationName", "defaultInstrumentationVersion");
   }
 
+  /**
+   * Returns a named {@link Tracer} with the provided instrumentation name and version.
+   *
+   * @return registered tracer or default via {@link DefaultTracer#getInstance()}.
+   * @throws IllegalStateException if a specified tracer (via system properties) could not be found.
+   * @since 0.1.0
+   */
   public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
     return getInstance().tracerFactory.get(instrumentationName, instrumentationVersion);
   }
@@ -100,8 +109,12 @@ public final class OpenTelemetry {
   }
 
   private OpenTelemetry() {
-    TracerFactory tracerFactory = loadSpi(TracerFactory.class);
-    this.tracerFactory = tracerFactory != null ? tracerFactory : DefaultTracerFactory.getInstance();
+    TracerFactoryProvider tracerFactoryProvider = loadSpi(TracerFactoryProvider.class);
+    this.tracerFactory =
+        tracerFactoryProvider != null
+            ? tracerFactoryProvider.create()
+            : DefaultTracerFactoryProvider.getInstance().create();
+
     MeterProvider meterProvider = loadSpi(MeterProvider.class);
     meter = meterProvider != null ? meterProvider.create() : DefaultMeter.getInstance();
     DistributedContextManagerProvider contextManagerProvider =

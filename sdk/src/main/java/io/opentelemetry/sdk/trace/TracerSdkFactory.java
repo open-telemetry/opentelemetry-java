@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.spi.TracerFactory;
+import io.opentelemetry.trace.TracerFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
