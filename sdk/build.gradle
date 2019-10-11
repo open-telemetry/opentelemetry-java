@@ -1,10 +1,11 @@
 description = 'OpenTelemetry SDK'
 
 dependencies {
-    api project(':opentelemetry-api'),
+    api project(':opentelemetry-api')
+
+    implementation project(':opentelemetry-proto'),
             libraries.protobuf,
             libraries.protobuf_util
-    api project(':opentelemetry-proto')
 
     annotationProcessor libraries.auto_value
 

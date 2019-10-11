@@ -1,7 +1,7 @@
 description = 'OpenTelemetry Contrib Trace Utils'
 
 dependencies {
-    compile project(':opentelemetry-api')
+    api project(':opentelemetry-api')
 
     annotationProcessor libraries.auto_value
 
