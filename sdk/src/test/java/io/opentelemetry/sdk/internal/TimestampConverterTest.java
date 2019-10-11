@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.internal;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.internal.ClockTestUtil.createTimestamp;
 
-import com.google.protobuf.Timestamp;
+import io.opentelemetry.common.Timestamp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -44,7 +44,7 @@ public class TimestampConverterTest {
         .isEqualTo(createTimestamp(1234, 8888));
     assertThat(timeConverter.convertNanoTimeProto(testClock.nowNanos() + 1000))
         .isEqualTo(createTimestamp(1234, 6678));
-    assertThat(timeConverter.convertNanoTimeProto(testClock.nowNanos() + 15999994322L))
+    assertThat(timeConverter.convertNanoTimeProto(testClock.nowNanos() + 15_999_994_322L))
         .isEqualTo(createTimestamp(1250, 0));
   }
 

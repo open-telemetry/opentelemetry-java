@@ -66,8 +66,7 @@ public class RecordEventsReadableSpanTest {
   private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
-  private final com.google.protobuf.Timestamp startTime =
-      com.google.protobuf.Timestamp.newBuilder().setSeconds(1000).build();
+  private final Timestamp startTime = Timestamp.create(1000, 0);
   private final TestClock testClock = TestClock.create(startTime);
   private final TimestampConverter timestampConverter = TimestampConverter.now(testClock);
   private final Resource resource = Resource.getEmpty();

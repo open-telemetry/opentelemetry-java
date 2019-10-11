@@ -16,19 +16,21 @@
 
 package io.opentelemetry.sdk.internal;
 
-import com.google.protobuf.Timestamp;
-import com.google.protobuf.util.Durations;
-import com.google.protobuf.util.Timestamps;
+import static io.opentelemetry.sdk.internal.TimestampConverter.NANOS_PER_MILLI;
+import static io.opentelemetry.sdk.internal.TimestampConverter.NANOS_PER_SECOND;
+
+import io.opentelemetry.common.Timestamp;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * A {@link Clock} that allows the time to be set for testing.
+ * A mutable {@link Clock} that allows the time to be set for testing.
  *
  * @since 0.1.0
  */
 @ThreadSafe
 public class TestClock implements Clock {
+
   @GuardedBy("this")
   private Timestamp currentTimestamp;
 
@@ -44,7 +46,7 @@ public class TestClock implements Clock {
    */
   public static TestClock create() {
     // Set Time to Tuesday, May 7, 2019 12:00:00 AM GMT-07:00 DST
-    return create(Timestamps.fromSeconds(1557212400));
+    return create(Timestamp.fromMillis(1_557_212_400_000L));
   }
 
   /**
@@ -69,13 +71,24 @@ public class TestClock implements Clock {
   }
 
   /**
-   * Advances the time by millis.
+   * Advances the time by millis and mutates this instance.
    *
    * @param millis the increase in time.
    * @since 0.1.0
    */
   public synchronized void advanceMillis(long millis) {
-    currentTimestamp = Timestamps.add(currentTimestamp, Durations.fromMillis(millis));
+    long incomingSeconds = millis / 1000;
+    long remainingMillis = millis % 1000;
+    long remainingNanos = remainingMillis * NANOS_PER_MILLI;
+
+    long newSeconds = incomingSeconds + currentTimestamp.getSeconds();
+    long newNanos = remainingNanos + currentTimestamp.getNanos();
+
+    if (newNanos >= NANOS_PER_SECOND) {
+      newSeconds += newNanos / NANOS_PER_SECOND;
+      newNanos = newNanos % NANOS_PER_SECOND;
+    }
+    currentTimestamp = Timestamp.create(newSeconds, (int) newNanos);
   }
 
   @Override
@@ -85,6 +98,6 @@ public class TestClock implements Clock {
 
   @Override
   public synchronized long nowNanos() {
-    return Timestamps.toNanos(currentTimestamp);
+    return (currentTimestamp.getSeconds() * NANOS_PER_SECOND) + currentTimestamp.getNanos();
   }
 }

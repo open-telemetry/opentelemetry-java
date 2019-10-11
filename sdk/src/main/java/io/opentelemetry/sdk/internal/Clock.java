@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.internal;
 
-import com.google.protobuf.Timestamp;
+import io.opentelemetry.common.Timestamp;
 
 /**
  * Interface for getting the current time.
