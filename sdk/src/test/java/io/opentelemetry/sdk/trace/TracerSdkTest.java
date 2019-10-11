@@ -144,12 +144,7 @@ public class TracerSdkTest {
   public void returnNoopSpanAfterShutdown() {
     try {
       tracer.shutdown();
-      Span span =
-          tracer
-              .spanBuilder("span")
-              .setRecordEvents(true)
-              .setSampler(Samplers.alwaysSample())
-              .startSpan();
+      Span span = tracer.spanBuilder("span").setSampler(Samplers.alwaysSample()).startSpan();
       assertThat(span).isInstanceOf(DefaultSpan.class);
       span.end();
     } finally {

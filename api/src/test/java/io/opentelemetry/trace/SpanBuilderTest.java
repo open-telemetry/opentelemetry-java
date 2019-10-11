@@ -35,7 +35,6 @@ public class SpanBuilderTest {
   @Test
   public void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
-    spanBuilder.setRecordEvents(true);
     spanBuilder.setSampler(Samplers.alwaysSample());
     spanBuilder.setSpanKind(Kind.SERVER);
     spanBuilder.setParent(DefaultSpan.createRandom());

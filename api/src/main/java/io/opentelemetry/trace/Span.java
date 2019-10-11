@@ -418,16 +418,6 @@ public interface Span {
     Builder addLink(Link link);
 
     /**
-     * Sets the option to record events even if not sampled for the newly created {@code Span}. If
-     * not called, the implementation will provide a default.
-     *
-     * @param recordEvents new value determining if this {@code Span} should have events recorded.
-     * @return this.
-     * @since 0.1.0
-     */
-    Builder setRecordEvents(boolean recordEvents);
-
-    /**
      * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the
      * implementation will provide a default value {@link Span.Kind#INTERNAL}.
      *
