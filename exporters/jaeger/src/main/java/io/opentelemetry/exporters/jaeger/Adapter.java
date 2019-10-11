@@ -150,8 +150,7 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link Map<String, AttributeValue>} into a collection of Jaeger's {@link
-   * Model.KeyValue}.
+   * Converts a map of attributes into a collection of Jaeger's {@link Model.KeyValue}.
    *
    * @param attributes the span attributes
    * @return a collection of Jaeger key values
