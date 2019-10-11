@@ -18,6 +18,7 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.util.Samplers;
 import org.junit.Rule;
@@ -40,6 +41,7 @@ public class SpanBuilderTest {
     spanBuilder.setParent(DefaultSpan.createRandom());
     spanBuilder.setParent(DefaultSpan.createRandom().getContext());
     spanBuilder.setNoParent();
+    spanBuilder.setStartTimestamp(Timestamp.create(0, 1));
     assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
   }
 
@@ -57,5 +59,12 @@ public class SpanBuilderTest {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     thrown.expect(NullPointerException.class);
     spanBuilder.setParent((SpanContext) null);
+  }
+
+  @Test
+  public void setStartTimestamp_Null() {
+    Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
+    thrown.expect(NullPointerException.class);
+    spanBuilder.setStartTimestamp(null);
   }
 }

@@ -126,6 +126,11 @@ public final class DefaultSpan implements Span {
   public void end() {}
 
   @Override
+  public void end(EndSpanOptions endOptions) {
+    Utils.checkNotNull(endOptions, "endOptions");
+  }
+
+  @Override
   public SpanContext getContext() {
     return spanContext;
   }

@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.opentelemetry.common.Timestamp;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -188,6 +189,20 @@ public interface Span {
    * @since 0.1.0
    */
   void end();
+
+  /**
+   * Marks the end of {@code Span} execution with the specified {@link EndSpanOptions}.
+   *
+   * <p>Only the timing of the first end call for a given {@code Span} will be recorded, and
+   * implementations are free to ignore all further calls.
+   *
+   * <p>Use this method for specifying explicit end options, such as end {@code Timestamp}. When no
+   * explicit values are required, use {@link #end()}.
+   *
+   * @param endOptions the explicit {@link EndSpanOptions} for this {@code Span}.
+   * @since 0.1.0
+   */
+  void end(EndSpanOptions endOptions);
 
   /**
    * Returns the {@code SpanContext} associated with this {@code Span}.
@@ -420,6 +435,18 @@ public interface Span {
      * @since 0.1.0
      */
     Builder setSpanKind(Span.Kind spanKind);
+
+    /**
+     * Sets an explicit start {@link Timestamp} for the newly created {@code Span}.
+     *
+     * <p>Use this method to specify an explicit start {@link Timestamp}. If not called, the
+     * implementation will use the timestamp value at {@link #startSpan()} time.
+     *
+     * @param startTimestamp the explicit start {@link Timestamp} of the newly created {@code Span}.
+     * @return this.
+     * @since 0.1.0
+     */
+    Builder setStartTimestamp(Timestamp startTimestamp);
 
     /**
      * Starts a new {@link Span}.

@@ -20,13 +20,17 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.trace.util.Events;
 import java.util.Collections;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link DefaultSpan}. */
 @RunWith(JUnit4.class)
 public class DefaultSpanTest {
+  @Rule public final ExpectedException thrown = ExpectedException.none();
+
   @Test
   public void hasInvalidContextAndDefaultSpanOptions() {
     SpanContext context = DefaultSpan.createRandom().getContext();
@@ -57,11 +61,19 @@ public class DefaultSpanTest {
     span.addEvent(Events.create("event"));
     span.setStatus(Status.OK);
     span.end();
+    span.end(EndSpanOptions.getDefault());
   }
 
   @Test
   public void defaultSpan_ToString() {
     DefaultSpan span = DefaultSpan.createRandom();
     assertThat(span.toString()).isEqualTo("DefaultSpan");
+  }
+
+  @Test
+  public void defaultSpan_NullEndSpanOptions() {
+    DefaultSpan span = DefaultSpan.getInvalid();
+    thrown.expect(NullPointerException.class);
+    span.end(null);
   }
 }

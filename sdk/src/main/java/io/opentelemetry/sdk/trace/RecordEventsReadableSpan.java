@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -421,6 +422,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       hasBeenEnded = true;
     }
     spanProcessor.onEnd(this);
+  }
+
+  // TODO: Use endOptions.
+  @Override
+  public void end(EndSpanOptions endOptions) {
+    Preconditions.checkNotNull(endOptions, "endOptions");
+    end();
   }
 
   @Override

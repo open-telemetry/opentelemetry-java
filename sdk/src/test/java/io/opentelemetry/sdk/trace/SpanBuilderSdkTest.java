@@ -426,4 +426,10 @@ public class SpanBuilderSdkTest {
       parent.end();
     }
   }
+
+  @Test
+  public void startTimestamp_null() {
+    thrown.expect(NullPointerException.class);
+    tracer.spanBuilder(SPAN_NAME).setStartTimestamp(null);
+  }
 }

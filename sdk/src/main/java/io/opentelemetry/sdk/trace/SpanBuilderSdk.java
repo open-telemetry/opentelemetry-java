@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
@@ -154,6 +155,13 @@ class SpanBuilderSdk implements Span.Builder {
     return this;
   }
 
+  // TODO: Use startTimestamp.
+  @Override
+  public Span.Builder setStartTimestamp(Timestamp startTimestamp) {
+    Utils.checkNotNull(startTimestamp, "startTimestamp");
+    return this;
+  }
+
   @Override
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
@@ -182,6 +190,7 @@ class SpanBuilderSdk implements Span.Builder {
     if (!recordEvents && !samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
     }
+
     TimestampConverter timestampConverter = getTimestampConverter(parentSpan(parentType, parent));
 
     return RecordEventsReadableSpan.startSpan(
