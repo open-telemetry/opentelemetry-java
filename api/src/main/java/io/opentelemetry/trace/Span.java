@@ -213,12 +213,13 @@ public interface Span {
   SpanContext getContext();
 
   /**
-   * Returns {@code true} if this {@code Span} records events (e.g. {@link #addEvent(String)}).
+   * Returns {@code true} if this {@code Span} records tracing events (e.g. {@link
+   * #addEvent(String)}, {@link #setAttribute(String, long)}).
    *
-   * @return {@code true} if this {@code Span} records events.
+   * @return {@code true} if this {@code Span} records tracing events.
    * @since 0.1.0
    */
-  boolean isRecordingEvents();
+  boolean isRecording();
 
   /**
    * {@link Builder} is used to construct {@link Span} instances which define arbitrary scopes of

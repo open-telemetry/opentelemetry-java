@@ -24,8 +24,8 @@ import io.opentelemetry.trace.Span;
  */
 public interface SpanProcessor {
   /**
-   * Called when a {@link io.opentelemetry.trace.Span} is started, if the {@link
-   * Span#isRecordingEvents()} returns true.
+   * Called when a {@link io.opentelemetry.trace.Span} is started, if the {@link Span#isRecording()}
+   * returns true.
    *
    * <p>This method is called synchronously on the execution thread, should not throw or block the
    * execution thread.
@@ -35,8 +35,8 @@ public interface SpanProcessor {
   void onStart(ReadableSpan span);
 
   /**
-   * Called when a {@link io.opentelemetry.trace.Span} is ended, if the {@link
-   * Span#isRecordingEvents()} returns true.
+   * Called when a {@link io.opentelemetry.trace.Span} is ended, if the {@link Span#isRecording()}
+   * returns true.
    *
    * <p>This method is called synchronously on the execution thread, should not throw or block the
    * execution thread.
