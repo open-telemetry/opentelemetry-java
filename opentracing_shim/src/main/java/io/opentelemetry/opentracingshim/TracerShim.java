@@ -60,12 +60,15 @@ final class TracerShim extends BaseShimObject implements Tracer {
     return new SpanBuilderShim(telemetryInfo, operationName);
   }
 
-  // TODO - do not fail in case the context was null!
   @Override
   public <C> void inject(SpanContext context, Format<C> format, C carrier) {
+    if (context == null) {
+      logger.log(Level.INFO, "Cannot inject a null span context.");
+      return;
+    }
+
     SpanContextShim contextShim = getContextShim(context);
 
-    // TODO - Shall we expect to get no-op objects if a given format is not supported at all?
     if (format == Format.Builtin.TEXT_MAP
         || format == Format.Builtin.TEXT_MAP_INJECT
         || format == Format.Builtin.HTTP_HEADERS) {
