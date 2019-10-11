@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace.config;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
-import io.opentelemetry.proto.trace.v1.ConstantSampler;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
@@ -45,12 +44,12 @@ public abstract class TraceConfig {
    * @return the default {@code TraceConfig}.
    * @since 0.1.0
    */
-  public static final TraceConfig getDefault() {
+  public static TraceConfig getDefault() {
     return DEFAULT;
   }
 
   private static final TraceConfig DEFAULT =
-      TraceConfig.builder()
+      TraceConfig.newBuilder()
           .setSampler(DEFAULT_SAMPLER)
           .setMaxNumberOfAttributes(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES)
           .setMaxNumberOfEvents(DEFAULT_SPAN_MAX_NUM_EVENTS)
@@ -102,7 +101,12 @@ public abstract class TraceConfig {
    */
   public abstract int getMaxNumberOfAttributesPerLink();
 
-  private static Builder builder() {
+  /**
+   * Returns a new {@link Builder}.
+   *
+   * @return a new {@link Builder}.
+   */
+  private static Builder newBuilder() {
     return new AutoValue_TraceConfig.Builder();
   }
 
@@ -112,49 +116,6 @@ public abstract class TraceConfig {
    * @return a {@link Builder} initialized to the same property values as the current instance.
    */
   public abstract Builder toBuilder();
-
-  /**
-   * Returns a {@code TraceConfig} from the given proto.
-   *
-   * @param traceConfigProto proto format {@code TraceConfig}.
-   * @return a {@code TraceConfig}.
-   */
-  public static TraceConfig fromProtoTraceConfig(
-      io.opentelemetry.proto.trace.v1.TraceConfig traceConfigProto) {
-    return new AutoValue_TraceConfig.Builder()
-        .setSampler(fromProtoSampler(traceConfigProto))
-        .setMaxNumberOfAttributes((int) traceConfigProto.getMaxNumberOfAttributes())
-        .setMaxNumberOfEvents((int) traceConfigProto.getMaxNumberOfTimedEvents())
-        .setMaxNumberOfLinks((int) traceConfigProto.getMaxNumberOfLinks())
-        .setMaxNumberOfAttributesPerEvent(
-            (int) traceConfigProto.getMaxNumberOfAttributesPerTimedEvent())
-        .setMaxNumberOfAttributesPerLink((int) traceConfigProto.getMaxNumberOfAttributesPerLink())
-        .build();
-  }
-
-  private static Sampler fromProtoSampler(
-      io.opentelemetry.proto.trace.v1.TraceConfig traceConfigProto) {
-    if (traceConfigProto.hasConstantSampler()) {
-      ConstantSampler constantSampler = traceConfigProto.getConstantSampler();
-      switch (constantSampler.getDecision()) {
-        case ALWAYS_ON:
-          return Samplers.alwaysSample();
-        case ALWAYS_OFF:
-          return Samplers.neverSample();
-        case ALWAYS_PARENT:
-          // TODO: add support.
-        case UNRECOGNIZED:
-          throw new IllegalArgumentException("unrecognized constant sampling decision");
-      }
-    }
-    if (traceConfigProto.hasProbabilitySampler()) {
-      // TODO: add support for ProbabilitySampler
-    }
-    if (traceConfigProto.hasRateLimitingSampler()) {
-      // TODO: add support for RateLimitingSampler
-    }
-    throw new IllegalArgumentException("unknown sampler in the trace config proto");
-  }
 
   /** A {@code Builder} class for {@link TraceConfig}. */
   @AutoValue.Builder

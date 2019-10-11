@@ -3,9 +3,7 @@ description = 'OpenTelemetry SDK'
 dependencies {
     api project(':opentelemetry-api')
 
-    implementation project(':opentelemetry-proto'),
-            libraries.protobuf,
-            libraries.protobuf_util
+    implementation libraries.guava
 
     annotationProcessor libraries.auto_value
 
