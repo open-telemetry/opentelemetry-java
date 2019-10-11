@@ -19,7 +19,6 @@ package io.opentelemetry.contrib.http.servlet;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.google.common.base.Splitter;
-import io.github.azagniotov.matcher.AntPathMatcherArrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -33,7 +32,7 @@ class AntPathRequestMatcher {
 
   private final Set<String> includes = new LinkedHashSet<>();
   private final Set<String> excludes = new LinkedHashSet<>();
-  private final AntPathMatcherArrays internalMatcher;
+  private final AntPathMatcher internalMatcher;
 
   AntPathRequestMatcher(String includesCsv, String excludesCsv) {
     super();
@@ -50,7 +49,7 @@ class AntPathRequestMatcher {
         excludes.add(exclude);
       }
     }
-    internalMatcher = new AntPathMatcherArrays.Builder().withIgnoreCase().withMatchStart().build();
+    internalMatcher = new AntPathMatcher();
   }
 
   public boolean isMatch(String uriPath) {
