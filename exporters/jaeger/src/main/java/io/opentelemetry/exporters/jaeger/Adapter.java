@@ -20,7 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
-import io.opentelemetry.exporters.otproto.TraceProtoUtils;
+import io.opentelemetry.exporters.otprotocol.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.AttributeValue;
@@ -69,10 +69,11 @@ final class Adapter {
     target.setTraceId(TraceProtoUtils.toProtoTraceId(span.getTraceId()));
     target.setSpanId(TraceProtoUtils.toProtoSpanId(span.getSpanId()));
     target.setOperationName(span.getName());
-    Timestamp startTimestamp = toProtoTimestamp(span.getStartTimestamp());
+    Timestamp startTimestamp = TraceProtoUtils.toProtoTimestamp(span.getStartTimestamp());
     target.setStartTime(startTimestamp);
     target.setDuration(
-        Timestamps.between(startTimestamp, toProtoTimestamp(span.getEndTimestamp())));
+        Timestamps.between(
+            startTimestamp, TraceProtoUtils.toProtoTimestamp(span.getEndTimestamp())));
 
     target.addAllTags(toKeyValues(span.getAttributes()));
     target.addAllLogs(toJaegerLogs(span.getTimedEvents()));
@@ -107,13 +108,6 @@ final class Adapter {
     return target.build();
   }
 
-  private static Timestamp toProtoTimestamp(io.opentelemetry.common.Timestamp startTimestamp) {
-    return Timestamp.newBuilder()
-        .setNanos(startTimestamp.getNanos())
-        .setSeconds(startTimestamp.getSeconds())
-        .build();
-  }
-
   /**
    * Converts {@link SpanData.TimedEvent}s into a collection of Jaeger's {@link Model.Log}.
    *
@@ -139,7 +133,7 @@ final class Adapter {
   @VisibleForTesting
   static Model.Log toJaegerLog(TimedEvent timedEvent) {
     Model.Log.Builder builder = Model.Log.newBuilder();
-    builder.setTimestamp(toProtoTimestamp(timedEvent.getTimestamp()));
+    builder.setTimestamp(TraceProtoUtils.toProtoTimestamp(timedEvent.getTimestamp()));
 
     // name is a top-level property in OpenTelemetry
     builder.addFields(

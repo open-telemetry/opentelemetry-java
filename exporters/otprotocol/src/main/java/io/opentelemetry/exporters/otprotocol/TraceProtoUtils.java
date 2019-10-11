@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.exporters.otproto;
+package io.opentelemetry.exporters.otprotocol;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Timestamp;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 
@@ -46,5 +47,18 @@ public class TraceProtoUtils {
     byte[] traceIdBytes = new byte[TraceId.getSize()];
     traceId.copyBytesTo(traceIdBytes, 0);
     return ByteString.copyFrom(traceIdBytes);
+  }
+
+  /**
+   * Converts a opentelemetry Timestamp into a protobuf Timestamp.
+   *
+   * @param timestamp the opentelemetry Timestamp to convert.
+   * @return the protobuf Timestamp representation.
+   */
+  public static Timestamp toProtoTimestamp(io.opentelemetry.common.Timestamp timestamp) {
+    return Timestamp.newBuilder()
+        .setNanos(timestamp.getNanos())
+        .setSeconds(timestamp.getSeconds())
+        .build();
   }
 }

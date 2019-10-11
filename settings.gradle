@@ -7,6 +7,7 @@ include ":opentelemetry-contrib-trace-utils"
 include ":opentelemetry-exporters-inmemory"
 include ":opentelemetry-exporters-jaeger"
 include ":opentelemetry-exporters-logging"
+include ":opentelemetry-exporters-otprotocol"
 include ":opentelemetry-opentracing-shim"
 include ":opentelemetry-proto"
 include ":opentelemetry-sdk"
@@ -18,12 +19,18 @@ project(':opentelemetry-api').projectDir = "$rootDir/api" as File
 project(':opentelemetry-proto').projectDir = "$rootDir/proto" as File
 project(':opentelemetry-contrib-runtime-metrics').projectDir =
         "$rootDir/contrib/runtime_metrics" as File
-project(':opentelemetry-contrib-trace-utils').projectDir = "$rootDir/contrib/trace_utils" as File
-project(':opentelemetry-exporters-inmemory').projectDir = "$rootDir/exporters/inmemory" as File
-project(':opentelemetry-exporters-jaeger').projectDir = "$rootDir/exporters/jaeger" as File
-project(':opentelemetry-exporters-logging').projectDir = "$rootDir/exporters/logging" as File
-project(':opentelemetry-opentracing-shim').projectDir = "$rootDir/opentracing_shim" as File
+project(':opentelemetry-contrib-trace-utils').projectDir =
+        "$rootDir/contrib/trace_utils" as File
+project(':opentelemetry-exporters-inmemory').projectDir =
+        "$rootDir/exporters/inmemory" as File
+project(':opentelemetry-exporters-jaeger').projectDir =
+        "$rootDir/exporters/jaeger" as File
+project(':opentelemetry-exporters-otprotocol').projectDir =
+        "$rootDir/exporters/otprotocol" as File
+project(':opentelemetry-opentracing-shim').projectDir =
+        "$rootDir/opentracing_shim" as File
 project(':opentelemetry-sdk').projectDir = "$rootDir/sdk" as File
 project(':opentelemetry-sdk-contrib-async-processor').projectDir =
         "$rootDir/sdk_contrib/async_processor" as File
-project(':opentelemetry-sdk-contrib-testbed').projectDir = "$rootDir/sdk_contrib/testbed" as File
+project(':opentelemetry-sdk-contrib-testbed').projectDir =
+        "$rootDir/sdk_contrib/testbed" as File
