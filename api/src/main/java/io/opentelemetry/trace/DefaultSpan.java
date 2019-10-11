@@ -136,7 +136,7 @@ public final class DefaultSpan implements Span {
   }
 
   @Override
-  public boolean isRecordingEvents() {
+  public boolean isRecording() {
     return false;
   }
 

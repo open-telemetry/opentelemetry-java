@@ -437,7 +437,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
-  public boolean isRecordingEvents() {
+  public boolean isRecording() {
     return true;
   }
 

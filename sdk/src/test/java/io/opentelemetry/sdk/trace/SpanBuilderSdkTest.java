@@ -156,7 +156,7 @@ public class SpanBuilderSdkTest {
   public void recordEvents_default() {
     Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
     try {
-      assertThat(span.isRecordingEvents()).isTrue();
+      assertThat(span.isRecording()).isTrue();
     } finally {
       span.end();
     }
@@ -182,7 +182,7 @@ public class SpanBuilderSdkTest {
             .startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
-      assertThat(span.isRecordingEvents()).isTrue();
+      assertThat(span.isRecording()).isTrue();
     } finally {
       span.end();
     }
