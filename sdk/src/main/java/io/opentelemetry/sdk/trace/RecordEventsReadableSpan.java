@@ -56,8 +56,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
   private final SpanId parentSpanId;
-  // Active trace configs when the Span was created.
-  private final TraceConfig traceConfig;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
@@ -84,12 +82,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final long startNanoTime;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
   @GuardedBy("lock")
-  @Nullable
   private final AttributesWithCapacity attributes;
   // List of recorded events.
   @GuardedBy("lock")
-  @Nullable
-  private EvictingQueue<TimedEvent> events;
+  private final EvictingQueue<TimedEvent> events;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
@@ -249,7 +245,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private List<TimedEvent> getTimedEvents() {
     lock.readLock().lock();
     try {
-      return events == null ? Collections.<TimedEvent>emptyList() : new ArrayList<>(events);
+      return new ArrayList<>(events);
     } finally {
       lock.readLock().unlock();
     }
@@ -427,7 +423,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
-      getInitializedEvents().add(timedEvent);
+      events.add(timedEvent);
       totalRecordedEvents++;
     } finally {
       lock.writeLock().unlock();
@@ -512,14 +508,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @GuardedBy("lock")
-  private EvictingQueue<TimedEvent> getInitializedEvents() {
-    if (events == null) {
-      events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
-    }
-    return events;
-  }
-
-  @GuardedBy("lock")
   private Status getStatusWithDefault() {
     lock.readLock().lock();
     try {
@@ -585,7 +573,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
     this.kind = kind;
-    this.traceConfig = traceConfig;
     this.spanProcessor = spanProcessor;
     this.clock = clock;
     this.resource = resource;
@@ -596,6 +583,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     startNanoTime = clock.nanoTime();
     this.attributes = new AttributesWithCapacity(traceConfig.getMaxNumberOfAttributes());
     this.attributes.putAll(attributes);
+    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
   }
 
   @SuppressWarnings("NoFinalizer")
