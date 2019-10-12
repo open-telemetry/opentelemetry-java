@@ -54,17 +54,4 @@ public class W3cTraceContextHttpPropagationGetterTest {
     assertNull(getter.get(request, TRACEPARENT));
     assertNull(getter.get(request, TRACESTATE));
   }
-
-  @Test
-  public void shouldReturnEmptyIfHeaderValueIsInvalid() {
-    W3cTraceContextHttpPropagationGetter getter = new W3cTraceContextHttpPropagationGetter();
-    String traceparentValue = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f0";
-    String tracestateValue = "rojo=00f067aa0ba902b7,=t61rcWkgMzE";
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    request.addHeader(TRACEPARENT, traceparentValue);
-    request.addHeader(TRACESTATE, tracestateValue);
-    assertTrue(getter.canProvideValues(request));
-    assertNull(getter.get(request, TRACEPARENT));
-    assertNull(getter.get(request, TRACESTATE));
-  }
 }
