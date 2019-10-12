@@ -68,7 +68,6 @@ class SpanBuilderSdk implements Span.Builder {
   private List<Link> links;
   private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
-  private boolean recordEvents = false;
 
   SpanBuilderSdk(
       String spanName,
@@ -149,12 +148,6 @@ class SpanBuilderSdk implements Span.Builder {
     return this;
   }
 
-  @Override
-  public Span.Builder setRecordEvents(boolean recordEvents) {
-    this.recordEvents = recordEvents;
-    return this;
-  }
-
   // TODO: Use startTimestamp.
   @Override
   public Span.Builder setStartTimestamp(Timestamp startTimestamp) {
@@ -187,7 +180,7 @@ class SpanBuilderSdk implements Span.Builder {
             samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
             tracestate);
 
-    if (!recordEvents && !samplingDecision.isSampled()) {
+    if (!samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
     }
 
