@@ -22,6 +22,8 @@ import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.util.Events;
+import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
@@ -31,8 +33,6 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
-import io.opentelemetry.trace.util.Events;
-import io.opentelemetry.trace.util.Links;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

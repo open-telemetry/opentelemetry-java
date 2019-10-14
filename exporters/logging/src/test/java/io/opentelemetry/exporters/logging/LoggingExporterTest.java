@@ -23,12 +23,12 @@ import static org.junit.Assert.assertEquals;
 import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
+import io.opentelemetry.sdk.trace.util.Events;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.util.Events;
 import org.junit.Test;
 
 public class LoggingExporterTest {

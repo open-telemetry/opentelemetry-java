@@ -18,8 +18,8 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.trace.util.Events;
 import java.util.Collections;
+import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -58,7 +58,18 @@ public class DefaultSpanTest {
         "event",
         Collections.singletonMap(
             "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
-    span.addEvent(Events.create("event"));
+    span.addEvent(
+        new Event() {
+          @Override
+          public String getName() {
+            return "name";
+          }
+
+          @Override
+          public Map<String, AttributeValue> getAttributes() {
+            return Collections.emptyMap();
+          }
+        });
     span.setStatus(Status.OK);
     span.end();
     span.end(EndSpanOptions.getDefault());
