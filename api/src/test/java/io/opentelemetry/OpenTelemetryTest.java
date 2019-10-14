@@ -78,8 +78,10 @@ public class OpenTelemetryTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracer()).isInstanceOf(DefaultTracer.getInstance().getClass());
-    assertThat(OpenTelemetry.getTracer()).isEqualTo(OpenTelemetry.getTracer());
+    assertThat(OpenTelemetry.getTracerFactory().get("testTracer"))
+        .isInstanceOf(DefaultTracer.getInstance().getClass());
+    assertThat(OpenTelemetry.getTracerFactory().get("testTracer"))
+        .isEqualTo(OpenTelemetry.getTracerFactory().get("testTracer"));
     assertThat(OpenTelemetry.getMeter()).isInstanceOf(DefaultMeter.getInstance().getClass());
     assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
     assertThat(OpenTelemetry.getDistributedContextManager())
@@ -95,8 +97,8 @@ public class OpenTelemetryTest {
             TracerFactoryProvider.class, FirstTracerFactory.class, SecondTracerFactory.class);
     try {
       assertTrue(
-          (OpenTelemetry.getTracer() instanceof FirstTracerFactory)
-              || (OpenTelemetry.getTracer() instanceof SecondTracerFactory));
+          (OpenTelemetry.getTracerFactory() instanceof FirstTracerFactory)
+              || (OpenTelemetry.getTracerFactory() instanceof SecondTracerFactory));
     } finally {
       serviceFile.delete();
     }
@@ -109,7 +111,7 @@ public class OpenTelemetryTest {
             TracerFactoryProvider.class, FirstTracerFactory.class, SecondTracerFactory.class);
     System.setProperty(TracerFactoryProvider.class.getName(), SecondTracerFactory.class.getName());
     try {
-      assertThat(OpenTelemetry.getTracer()).isInstanceOf(SecondTracerFactory.class);
+      assertThat(OpenTelemetry.getTracerFactory()).isInstanceOf(SecondTracerFactory.class);
     } finally {
       serviceFile.delete();
     }
@@ -119,7 +121,7 @@ public class OpenTelemetryTest {
   public void testTracerNotFound() {
     System.setProperty(TracerFactoryProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getTracer();
+    OpenTelemetry.getTracerFactory().get("testTracer");
   }
 
   @Test

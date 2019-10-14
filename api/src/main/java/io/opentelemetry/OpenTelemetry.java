@@ -22,7 +22,7 @@ import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider
 import io.opentelemetry.metrics.DefaultMeter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.spi.MeterProvider;
-import io.opentelemetry.trace.DefaultTracer;
+import io.opentelemetry.trace.DefaultTracerFactory;
 import io.opentelemetry.trace.DefaultTracerFactoryProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerFactory;
@@ -51,25 +51,15 @@ public final class OpenTelemetry {
   private final DistributedContextManager contextManager;
 
   /**
-   * Returns a singleton {@link Tracer}.
+   * Returns a singleton {@link TracerFactory}.
    *
-   * @return registered tracer or default via {@link DefaultTracer#getInstance()}.
-   * @throws IllegalStateException if a specified tracer (via system properties) could not be found.
+   * @return registered TracerFactory of default via {@link DefaultTracerFactory#getInstance()}.
+   * @throws IllegalStateException if a specified TracerFactory (via system properties) could not be
+   *     found.
    * @since 0.1.0
    */
-  public static Tracer getTracer() {
-    return getTracer("defaultInstrumentationName", "defaultInstrumentationVersion");
-  }
-
-  /**
-   * Returns a named {@link Tracer} with the provided instrumentation name and version.
-   *
-   * @return registered tracer or default via {@link DefaultTracer#getInstance()}.
-   * @throws IllegalStateException if a specified tracer (via system properties) could not be found.
-   * @since 0.1.0
-   */
-  public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
-    return getInstance().tracerFactory.get(instrumentationName, instrumentationVersion);
+  public static TracerFactory getTracerFactory() {
+    return getInstance().tracerFactory;
   }
 
   /**
