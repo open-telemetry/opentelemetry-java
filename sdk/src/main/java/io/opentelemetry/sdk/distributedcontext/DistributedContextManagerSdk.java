@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.distributedcontext;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.DistributedContextManager;
 import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
@@ -45,11 +46,13 @@ public class DistributedContextManagerSdk implements DistributedContextManager {
 
   @Override
   public BinaryFormat<DistributedContext> getBinaryFormat() {
-    throw new UnsupportedOperationException("to be implemented");
+    // TODO: Implement this.
+    return DefaultDistributedContextManager.getInstance().getBinaryFormat();
   }
 
   @Override
   public HttpTextFormat<DistributedContext> getHttpTextFormat() {
-    throw new UnsupportedOperationException("to be implemented");
+    // TODO: Implement this.
+    return DefaultDistributedContextManager.getInstance().getHttpTextFormat();
   }
 }
