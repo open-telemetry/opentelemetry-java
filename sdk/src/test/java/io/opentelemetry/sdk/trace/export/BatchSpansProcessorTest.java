@@ -20,9 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.doThrow;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
-import io.opentelemetry.trace.util.Samplers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,7 +60,7 @@ public class BatchSpansProcessorTest {
 
   private ReadableSpan createSampledEndedSpan(String spanName) {
     io.opentelemetry.trace.Span span =
-        tracerSdk.spanBuilder(spanName).setSampler(Samplers.alwaysSample()).startSpan();
+        tracerSdk.spanBuilder(spanName).setSampler(Samplers.alwaysOn()).startSpan();
     span.end();
     return (ReadableSpan) span;
   }
@@ -77,7 +77,7 @@ public class BatchSpansProcessorTest {
 
   private void createNotSampledEndedSpan(String spanName) {
     io.opentelemetry.trace.Span span =
-        tracerSdk.spanBuilder(spanName).setSampler(Samplers.neverSample()).startSpan();
+        tracerSdk.spanBuilder(spanName).setSampler(Samplers.alwaysOff()).startSpan();
     span.end();
   }
 

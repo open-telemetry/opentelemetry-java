@@ -20,7 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.util.Samplers;
+import java.util.Collections;
+import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,11 +36,27 @@ public class SpanBuilderTest {
   @Test
   public void doNotCrash_NoopImplementation() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
-    spanBuilder.setSampler(Samplers.alwaysSample());
     spanBuilder.setSpanKind(Kind.SERVER);
     spanBuilder.setParent(DefaultSpan.createRandom());
     spanBuilder.setParent(DefaultSpan.createRandom().getContext());
     spanBuilder.setNoParent();
+    spanBuilder.addLink(DefaultSpan.createRandom().getContext());
+    spanBuilder.addLink(
+        DefaultSpan.createRandom().getContext(), Collections.<String, AttributeValue>emptyMap());
+    spanBuilder.addLink(
+        new Link() {
+          private final SpanContext spanContext = DefaultSpan.createRandom().getContext();
+
+          @Override
+          public SpanContext getContext() {
+            return spanContext;
+          }
+
+          @Override
+          public Map<String, AttributeValue> getAttributes() {
+            return Collections.emptyMap();
+          }
+        });
     spanBuilder.setStartTimestamp(Timestamp.create(0, 1));
     assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
   }

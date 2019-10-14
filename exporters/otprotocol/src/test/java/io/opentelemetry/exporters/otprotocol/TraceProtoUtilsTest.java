@@ -21,10 +21,10 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.protobuf.ByteString;
 import io.opentelemetry.proto.trace.v1.ConstantSampler;
 import io.opentelemetry.proto.trace.v1.ConstantSampler.ConstantDecision;
+import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.util.Samplers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -64,7 +64,7 @@ public class TraceProtoUtilsTest {
   @Test
   public void traceConfigFromProto() {
     TraceConfig traceConfig = TraceProtoUtils.traceConfigFromProto(TRACE_CONFIG_PROTO);
-    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.neverSample());
+    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.alwaysOff());
     assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(10);
     assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(9);
     assertThat(traceConfig.getMaxNumberOfLinks()).isEqualTo(8);

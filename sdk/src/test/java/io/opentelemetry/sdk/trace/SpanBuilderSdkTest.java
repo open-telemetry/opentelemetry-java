@@ -34,7 +34,6 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.util.Links;
-import io.opentelemetry.trace.util.Samplers;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -164,7 +163,7 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void recordEvents_neverSample() {
-    Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
+    Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOff()).startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
     } finally {
@@ -197,7 +196,7 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void sampler() {
-    Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan();
+    Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOff()).startSpan();
 
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();

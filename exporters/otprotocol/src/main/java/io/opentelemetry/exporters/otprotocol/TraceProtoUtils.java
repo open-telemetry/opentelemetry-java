@@ -19,11 +19,11 @@ package io.opentelemetry.exporters.otprotocol;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.proto.trace.v1.ConstantSampler;
+import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.util.Samplers;
 
 /** Utilities for converting various objects to protobuf representations. */
 public class TraceProtoUtils {
@@ -92,9 +92,9 @@ public class TraceProtoUtils {
       ConstantSampler constantSampler = traceConfigProto.getConstantSampler();
       switch (constantSampler.getDecision()) {
         case ALWAYS_ON:
-          return Samplers.alwaysSample();
+          return Samplers.alwaysOn();
         case ALWAYS_OFF:
-          return Samplers.neverSample();
+          return Samplers.alwaysOff();
         case ALWAYS_PARENT:
           // TODO: add support.
         case UNRECOGNIZED:

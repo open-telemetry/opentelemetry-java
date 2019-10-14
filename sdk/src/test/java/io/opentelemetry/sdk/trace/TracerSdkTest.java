@@ -26,7 +26,6 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
-import io.opentelemetry.trace.util.Samplers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -113,7 +112,7 @@ public class TracerSdkTest {
   public void updateActiveTraceConfig() {
     assertThat(tracer.getActiveTraceConfig()).isEqualTo(TraceConfig.getDefault());
     TraceConfig newConfig =
-        TraceConfig.getDefault().toBuilder().setSampler(Samplers.neverSample()).build();
+        TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOff()).build();
     tracer.updateActiveTraceConfig(newConfig);
     assertThat(tracer.getActiveTraceConfig()).isEqualTo(newConfig);
   }
@@ -144,7 +143,7 @@ public class TracerSdkTest {
   public void returnNoopSpanAfterShutdown() {
     try {
       tracer.shutdown();
-      Span span = tracer.spanBuilder("span").setSampler(Samplers.alwaysSample()).startSpan();
+      Span span = tracer.spanBuilder("span").setSampler(Samplers.alwaysOn()).startSpan();
       assertThat(span).isInstanceOf(DefaultSpan.class);
       span.end();
     } finally {
