@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.util;
-
-import static io.opentelemetry.trace.TestUtils.generateRandomSpanId;
-import static io.opentelemetry.trace.TestUtils.generateRandomTraceId;
+package io.opentelemetry.sdk.trace;
 
 import com.google.common.truth.Truth;
 import io.opentelemetry.trace.Link;
@@ -27,7 +24,6 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
 import java.util.Collections;
-import java.util.Random;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -35,10 +31,9 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link Samplers}. */
 @RunWith(JUnit4.class)
 public class SamplersTest {
-  private final Random random = new Random(1234);
-  private final TraceId traceId = generateRandomTraceId(random);
-  private final SpanId parentSpanId = generateRandomSpanId(random);
-  private final SpanId spanId = generateRandomSpanId(random);
+  private final TraceId traceId = TestUtils.generateRandomTraceId();
+  private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
+  private final SpanId spanId = TestUtils.generateRandomSpanId();
   private final Tracestate tracestate = Tracestate.builder().build();
   private final SpanContext sampledSpanContext =
       SpanContext.create(
@@ -47,10 +42,10 @@ public class SamplersTest {
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), tracestate);
 
   @Test
-  public void alwaysSampleSampler_AlwaysReturnTrue() {
+  public void alwaysOnSampler_AlwaysReturnTrue() {
     // Sampled parent.
     Truth.assertThat(
-            Samplers.alwaysSample()
+            Samplers.alwaysOn()
                 .shouldSample(
                     sampledSpanContext,
                     false,
@@ -62,7 +57,7 @@ public class SamplersTest {
         .isTrue();
     // Not sampled parent.
     Truth.assertThat(
-            Samplers.alwaysSample()
+            Samplers.alwaysOn()
                 .shouldSample(
                     notSampledSpanContext,
                     false,
@@ -75,15 +70,15 @@ public class SamplersTest {
   }
 
   @Test
-  public void alwaysSampleSampler_ToString() {
-    Truth.assertThat(Samplers.alwaysSample().toString()).isEqualTo("AlwaysSampleSampler");
+  public void alwaysOnSampler_ToString() {
+    Truth.assertThat(Samplers.alwaysOn().toString()).isEqualTo("AlwaysOnSampler");
   }
 
   @Test
-  public void neverSampleSampler_AlwaysReturnFalse() {
+  public void alwaysOffSampler_AlwaysReturnFalse() {
     // Sampled parent.
     Truth.assertThat(
-            Samplers.neverSample()
+            Samplers.alwaysOff()
                 .shouldSample(
                     sampledSpanContext,
                     false,
@@ -95,7 +90,7 @@ public class SamplersTest {
         .isFalse();
     // Not sampled parent.
     Truth.assertThat(
-            Samplers.neverSample()
+            Samplers.alwaysOff()
                 .shouldSample(
                     notSampledSpanContext,
                     false,
@@ -108,7 +103,7 @@ public class SamplersTest {
   }
 
   @Test
-  public void neverSampleSampler_ToString() {
-    Truth.assertThat(Samplers.neverSample().toString()).isEqualTo("NeverSampleSampler");
+  public void alwaysOffSampler_ToString() {
+    Truth.assertThat(Samplers.alwaysOff().toString()).isEqualTo("AlwaysOffSampler");
   }
 }

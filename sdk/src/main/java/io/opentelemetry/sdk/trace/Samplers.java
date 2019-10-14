@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.util;
+package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
@@ -37,8 +37,8 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class Samplers {
-  private static final Sampler ALWAYS_SAMPLE = new AlwaysSampleSampler();
-  private static final Sampler NEVER_SAMPLE = new NeverSampleSampler();
+  private static final Sampler ALWAYS_ON = new AlwaysOnSampler();
+  private static final Sampler ALWAYS_OFF = new AlwaysOffSampler();
   private static final Decision ALWAYS_ON_DECISION = new SimpleDecision(/* decision= */ true);
   private static final Decision ALWAYS_OFF_DECISION = new SimpleDecision(/* decision= */ false);
 
@@ -51,8 +51,8 @@ public final class Samplers {
    * @return a {@code Sampler} that always makes a "yes" decision on {@code Span} sampling.
    * @since 0.1.0
    */
-  public static Sampler alwaysSample() {
-    return ALWAYS_SAMPLE;
+  public static Sampler alwaysOn() {
+    return ALWAYS_ON;
   }
 
   /**
@@ -61,13 +61,13 @@ public final class Samplers {
    * @return a {@code Sampler} that always makes a "no" decision on {@code Span} sampling.
    * @since 0.1.0
    */
-  public static Sampler neverSample() {
-    return NEVER_SAMPLE;
+  public static Sampler alwaysOff() {
+    return ALWAYS_OFF;
   }
 
   @Immutable
-  private static final class AlwaysSampleSampler implements Sampler {
-    AlwaysSampleSampler() {}
+  private static final class AlwaysOnSampler implements Sampler {
+    AlwaysOnSampler() {}
 
     // Returns always makes a "yes" decision on {@link Span} sampling.
     @Override
@@ -88,13 +88,13 @@ public final class Samplers {
 
     @Override
     public String toString() {
-      return "AlwaysSampleSampler";
+      return "AlwaysOnSampler";
     }
   }
 
   @Immutable
-  private static final class NeverSampleSampler implements Sampler {
-    NeverSampleSampler() {}
+  private static final class AlwaysOffSampler implements Sampler {
+    AlwaysOffSampler() {}
 
     // Returns always makes a "no" decision on {@link Span} sampling.
     @Override
@@ -115,7 +115,7 @@ public final class Samplers {
 
     @Override
     public String toString() {
-      return "NeverSampleSampler";
+      return "AlwaysOffSampler";
     }
   }
 

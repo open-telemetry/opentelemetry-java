@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.trace.config;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.trace.util.Samplers;
+import io.opentelemetry.sdk.trace.Samplers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -32,7 +32,7 @@ public class TraceConfigTest {
 
   @Test
   public void defaultTraceConfig() {
-    assertThat(TraceConfig.getDefault().getSampler()).isEqualTo(Samplers.alwaysSample());
+    assertThat(TraceConfig.getDefault().getSampler()).isEqualTo(Samplers.alwaysOn());
     assertThat(TraceConfig.getDefault().getMaxNumberOfAttributes()).isEqualTo(32);
     assertThat(TraceConfig.getDefault().getMaxNumberOfEvents()).isEqualTo(128);
     assertThat(TraceConfig.getDefault().getMaxNumberOfLinks()).isEqualTo(32);
@@ -81,14 +81,14 @@ public class TraceConfigTest {
     TraceConfig traceConfig =
         TraceConfig.getDefault()
             .toBuilder()
-            .setSampler(Samplers.neverSample())
+            .setSampler(Samplers.alwaysOff())
             .setMaxNumberOfAttributes(8)
             .setMaxNumberOfEvents(10)
             .setMaxNumberOfLinks(11)
             .setMaxNumberOfAttributesPerEvent(1)
             .setMaxNumberOfAttributesPerLink(2)
             .build();
-    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.neverSample());
+    assertThat(traceConfig.getSampler()).isEqualTo(Samplers.alwaysOff());
     assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(8);
     assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(10);
     assertThat(traceConfig.getMaxNumberOfLinks()).isEqualTo(11);

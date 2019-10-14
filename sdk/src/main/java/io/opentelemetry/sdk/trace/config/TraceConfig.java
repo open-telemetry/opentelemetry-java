@@ -18,11 +18,11 @@ package io.opentelemetry.sdk.trace.config;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
+import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.util.Samplers;
 import javax.annotation.concurrent.Immutable;
 
 /** Class that holds global trace parameters. */
@@ -31,7 +31,7 @@ import javax.annotation.concurrent.Immutable;
 public abstract class TraceConfig {
   // These values are the default values for all the global parameters.
   // TODO: decide which default sampler to use
-  private static final Sampler DEFAULT_SAMPLER = Samplers.alwaysSample();
+  private static final Sampler DEFAULT_SAMPLER = Samplers.alwaysOn();
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
   private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;

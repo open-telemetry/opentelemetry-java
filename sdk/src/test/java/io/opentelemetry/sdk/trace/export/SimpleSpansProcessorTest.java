@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdk;
@@ -32,7 +33,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
-import io.opentelemetry.trace.util.Samplers;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -125,11 +125,11 @@ public class SimpleSpansProcessorTest {
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
-    tracerSdk.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan().end();
-    tracerSdk.spanBuilder(SPAN_NAME).setSampler(Samplers.neverSample()).startSpan().end();
+    tracerSdk.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOff()).startSpan().end();
+    tracerSdk.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOff()).startSpan().end();
 
     io.opentelemetry.trace.Span span =
-        tracerSdk.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysSample()).startSpan();
+        tracerSdk.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOn()).startSpan();
     span.end();
 
     // Spans are recorded and exported in the same order as they are ended, we test that a non
