@@ -31,7 +31,8 @@ public interface TracerFactory {
   /**
    * Gets or creates a named tracer instance.
    *
-   * @param instrumentationName The name of the instrumentation library.
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
    * @return a tracer instance.
    * @since 0.1.0
    */
@@ -40,7 +41,8 @@ public interface TracerFactory {
   /**
    * Gets or creates a named and versioned tracer instance.
    *
-   * @param instrumentationName The name of the instrumentation library.
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
    * @param instrumentationVersion The version of the instrumentation library.
    * @return a tracer instance.
    * @since 0.1.0
