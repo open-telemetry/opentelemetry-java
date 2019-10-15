@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.trace.TestUtils.generateRandomSpanId;
 import static io.opentelemetry.sdk.trace.TestUtils.generateRandomTraceId;
 
+import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Sampler.Decision;
@@ -28,7 +29,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
-import io.opentelemetry.trace.util.Links;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

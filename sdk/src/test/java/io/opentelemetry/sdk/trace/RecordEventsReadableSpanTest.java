@@ -25,6 +25,8 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.util.Events;
+import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -35,8 +37,6 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
-import io.opentelemetry.trace.util.Events;
-import io.opentelemetry.trace.util.Links;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -515,8 +515,7 @@ public class RecordEventsReadableSpanTest {
     Map<String, AttributeValue> event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
         SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
-    Link link1 =
-        io.opentelemetry.trace.util.Links.create(context, TestUtils.generateRandomAttributes());
+    Link link1 = Links.create(context, TestUtils.generateRandomAttributes());
     List<Link> links = Collections.singletonList(link1);
 
     RecordEventsReadableSpan readableSpan =
