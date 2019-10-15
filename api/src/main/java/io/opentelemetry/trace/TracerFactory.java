@@ -29,7 +29,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface TracerFactory {
 
   /**
-   * Creates a new tracer instance.
+   * Gets or creates a named tracer instance.
    *
    * @param instrumentationName The name of the instrumentation library.
    * @return a tracer instance.
