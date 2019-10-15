@@ -72,15 +72,15 @@ release.
 
 | Component                   | Version | Target Date       |
 | --------------------------- | ------- | ----------------- |
-| Tracing API                 | Alpha   | October 14 2019   |
-| Tracing SDK                 | Alpha   | October 14 2019   |
-| Metrics API                 | Alpha   | October 14 2019   |
-| Metrics SDK                 | Alpha   | October 14 2019   |
-| Jaeger Trace Exporter       | Alpha   | October 14 2019   |
+| Tracing API                 | Alpha   | October 21 2019   |
+| Tracing SDK                 | Alpha   | October 21 2019   |
+| Metrics API                 | Alpha   | October 21 2019   |
+| Metrics SDK                 | Alpha   | October 21 2019   |
+| Jaeger Trace Exporter       | Alpha   | October 21 2019   |
 | Zipkin Trace Exporter       | Alpha   | Unknown           |
 | Prometheus Metrics Exporter | Alpha   | Unknown           |
-| Context Propagation         | Alpha   | October 14 2019   |
-| OpenTracing Bridge          | Alpha   | October 14 2019   |
+| Context Propagation         | Alpha   | October 21 2019   |
+| OpenTracing Bridge          | Alpha   | October 21 2019   |
 | OpenCensus Bridge           | Alpha   | Unknown           |
 
 ### Kick off the work towards 1.0
