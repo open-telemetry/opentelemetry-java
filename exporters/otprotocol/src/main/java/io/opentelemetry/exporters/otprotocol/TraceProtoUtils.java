@@ -102,10 +102,10 @@ public class TraceProtoUtils {
       }
     }
     if (traceConfigProto.hasProbabilitySampler()) {
-      // TODO: add support for ProbabilitySampler
+      // TODO: add support for Probability Sampler
     }
     if (traceConfigProto.hasRateLimitingSampler()) {
-      // TODO: add support for RateLimitingSampler
+      // TODO: add support for RateLimiting Sampler
     }
     throw new IllegalArgumentException("unknown sampler in the trace config proto");
   }

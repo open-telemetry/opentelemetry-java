@@ -21,7 +21,6 @@ import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.samplers.ProbabilitySampler;
 import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
@@ -257,7 +256,7 @@ public class SpanBuilderSdkTest {
         (RecordEventsReadableSpan)
             tracer
                 .spanBuilder(SPAN_NAME)
-                .setSampler(ProbabilitySampler.create(0.0))
+                .setSampler(Samplers.probability(0.0))
                 .addLink(Links.create(sampledSpanContext))
                 .startSpan();
     try {
