@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace.export;
+package io.opentelemetry.exporters.inmemory;
 
 import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
