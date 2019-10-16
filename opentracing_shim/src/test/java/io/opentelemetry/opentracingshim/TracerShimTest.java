@@ -27,6 +27,8 @@ import io.opentracing.SpanContext;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapAdapter;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -78,7 +80,8 @@ public class TracerShimTest {
 
   @Test
   public void inject_nullContext() {
-    tracerShim.inject(
-        null, Format.Builtin.TEXT_MAP, new TextMapAdapter(Collections.<String, String>emptyMap()));
+    Map<String, String> map = new HashMap<String, String>();
+    tracerShim.inject(null, Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
+    assertEquals(0, map.size());
   }
 }
