@@ -16,7 +16,6 @@
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.common.Timestamp;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -428,16 +427,18 @@ public interface Span {
     Builder setSpanKind(Span.Kind spanKind);
 
     /**
-     * Sets an explicit start {@link Timestamp} for the newly created {@code Span}.
+     * Sets an explicit start timestamp for the newly created {@code Span}.
      *
-     * <p>Use this method to specify an explicit start {@link Timestamp}. If not called, the
-     * implementation will use the timestamp value at {@link #startSpan()} time.
+     * <p>Use this method to specify an explicit start timestamp. If not called, the implementation
+     * will use the timestamp value at {@link #startSpan()} time, which should be the default case.
      *
-     * @param startTimestamp the explicit start {@link Timestamp} of the newly created {@code Span}.
+     * <p>Important this is NOT equivalent with System.nanoTime().
+     *
+     * @param startTimestamp the explicit start timestamp of the newly created {@code Span}.
      * @return this.
      * @since 0.1.0
      */
-    Builder setStartTimestamp(Timestamp startTimestamp);
+    Builder setStartTimestamp(long startTimestamp);
 
     /**
      * Starts a new {@link Span}.

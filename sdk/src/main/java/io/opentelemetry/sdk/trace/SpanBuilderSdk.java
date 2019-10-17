@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
@@ -150,8 +149,8 @@ class SpanBuilderSdk implements Span.Builder {
 
   // TODO: Use startTimestamp.
   @Override
-  public Span.Builder setStartTimestamp(Timestamp startTimestamp) {
-    Utils.checkNotNull(startTimestamp, "startTimestamp");
+  public Span.Builder setStartTimestamp(long startTimestamp) {
+    Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
     return this;
   }
 

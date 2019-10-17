@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.common;
+package io.opentelemetry.sdk.common;
 
 import static com.google.common.truth.Truth.assertThat;
 
