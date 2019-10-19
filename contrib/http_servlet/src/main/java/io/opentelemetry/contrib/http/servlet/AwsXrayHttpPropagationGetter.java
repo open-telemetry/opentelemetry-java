@@ -18,14 +18,19 @@ package io.opentelemetry.contrib.http.servlet;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Strings.lenientFormat;
+import static com.google.common.base.Strings.padStart;
 
 import com.google.common.base.Splitter;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 /** Extracts AWS X-Ray header values. */
-public class AwxXrayHttpPropagationGetter extends BaseSchemeSpecificHttpPropagationGetter {
+public class AwsXrayHttpPropagationGetter extends BaseSchemeSpecificHttpPropagationGetter {
 
   /** Unique id of this scheme-specific getter. */
   public static final String SCHEME_NAME = "awsXRay";
@@ -41,17 +46,20 @@ public class AwxXrayHttpPropagationGetter extends BaseSchemeSpecificHttpPropagat
   private static final String XRAY_PREFIX_SAMPLED = "Sampled=";
   private static final String XRAY_PREFIX_SELF = "Self=";
   private static final String XRAY_SAMPLED_VAL = "1";
-  private static final char XRAY_SEPARATOR = '-';
-  private static final int XRAY_TRACE_LEN = 35;
-  private static final int XRAY_SPAN_LEN = 16;
+  private static final Pattern REGEX_TRACEID =
+      Pattern.compile("^1-([0-9a-f]{8})-([0-9a-f]{23,24})$");
+  private static final Pattern REGEX_SEGMENTID = Pattern.compile("^[0-9a-f]{16}$");
+  private static final Pattern REGEX_REQUESTID = Pattern.compile("^[A-Za-z0-9+/=-]{16,128}$");
   private static final String XRAY_DEFAULT_SPAN = "0000000000000004";
   private static final String TRACE_FLAGS_DEFAULT = "00";
   private static final String TRACE_FLAGS_SAMPLED = "01";
   private static final String W3C_VERSION = "00";
   private static final char W3C_SEPARATOR = '-';
+  private static final Logger LOGGER =
+      Logger.getLogger(AwsXrayHttpPropagationGetter.class.getName());
 
   /** Constructs a getter object. */
-  public AwxXrayHttpPropagationGetter() {
+  public AwsXrayHttpPropagationGetter() {
     super(SCHEME_NAME);
   }
 
@@ -89,8 +97,8 @@ public class AwxXrayHttpPropagationGetter extends BaseSchemeSpecificHttpPropagat
       }
     }
     if (traceId == null) {
-      throw new IllegalArgumentException(
-          lenientFormat("Invalid AWS X-Ray Trace Id: %s", xraytraceid));
+      LOGGER.log(Level.WARNING, lenientFormat("Invalid AWS X-Ray Trace Id: %s", xraytraceid));
+      return null;
     }
     if (spanId == null) {
       if (spanIdFromSelf == null) {
@@ -117,6 +125,10 @@ public class AwxXrayHttpPropagationGetter extends BaseSchemeSpecificHttpPropagat
     if (isNullOrEmpty(awsRequestId)) {
       return null;
     }
+    Matcher matcher = REGEX_REQUESTID.matcher(awsRequestId);
+    if (!matcher.find()) {
+      return null;
+    }
     return new StringBuilder()
         .append(AMZNREQUESTIDKEY)
         .append('=')
@@ -124,29 +136,34 @@ public class AwxXrayHttpPropagationGetter extends BaseSchemeSpecificHttpPropagat
         .toString();
   }
 
+  @Nullable
   private static String convertRoot2TraceId(String amznId) {
-    if (amznId.length() != XRAY_TRACE_LEN
-        || amznId.charAt(1) != XRAY_SEPARATOR
-        || amznId.charAt(10) != XRAY_SEPARATOR) {
-      throw new IllegalArgumentException(lenientFormat("Invalid AWS X-Ray Root ID: %s", amznId));
+    Matcher matcher = REGEX_TRACEID.matcher(amznId);
+    if (!matcher.find()) {
+      LOGGER.log(Level.WARNING, lenientFormat("Invalid AWS X-Ray Trace ID: %s", amznId));
+      return null;
     }
-    return amznId.substring(2, 10) + amznId.substring(11);
+    return matcher.group(1) + padStart(matcher.group(2), 24, '0');
   }
 
+  @Nullable
   private static String convertParent2SpanId(String amznId) {
-    if (amznId.length() != XRAY_SPAN_LEN) {
-      throw new IllegalArgumentException(lenientFormat("Invalid AWS X-Ray Segment ID: %s", amznId));
+    Matcher matcher = REGEX_SEGMENTID.matcher(amznId);
+    if (!matcher.find()) {
+      LOGGER.log(Level.WARNING, lenientFormat("Invalid AWS X-Ray Segment ID: %s", amznId));
+      return null;
     }
     return amznId;
   }
 
+  @Nullable
   private static String convertSelf2SpanId(String amznId) {
-    if (amznId.length() != XRAY_TRACE_LEN
-        || amznId.charAt(1) != XRAY_SEPARATOR
-        || amznId.charAt(10) != XRAY_SEPARATOR) {
-      throw new IllegalArgumentException(lenientFormat("Invalid AWS X-Ray Self ID: %s", amznId));
+    Matcher matcher = REGEX_TRACEID.matcher(amznId);
+    if (!matcher.find()) {
+      LOGGER.log(Level.WARNING, lenientFormat("Invalid AWS X-Ray Trace ID: %s", amznId));
+      return null;
     }
-    return amznId.substring(11, 27);
+    return matcher.group(2).substring(0, 16);
   }
 
   private static String convertSampled2TraceFlags(String amznId) {

@@ -16,9 +16,9 @@
 
 package io.opentelemetry.contrib.http.servlet;
 
-import static io.opentelemetry.contrib.http.servlet.AwxXrayHttpPropagationGetter.AMZNREQUESTIDKEY;
-import static io.opentelemetry.contrib.http.servlet.AwxXrayHttpPropagationGetter.XAMZNREQUESTID;
-import static io.opentelemetry.contrib.http.servlet.AwxXrayHttpPropagationGetter.XAMZNTRACEID;
+import static io.opentelemetry.contrib.http.servlet.AwsXrayHttpPropagationGetter.AMZNREQUESTIDKEY;
+import static io.opentelemetry.contrib.http.servlet.AwsXrayHttpPropagationGetter.XAMZNREQUESTID;
+import static io.opentelemetry.contrib.http.servlet.AwsXrayHttpPropagationGetter.XAMZNTRACEID;
 import static io.opentelemetry.contrib.http.servlet.MultiSchemeHttpPropagationGetter.TRACEPARENT;
 import static io.opentelemetry.contrib.http.servlet.MultiSchemeHttpPropagationGetter.TRACESTATE;
 import static org.junit.Assert.assertEquals;
@@ -29,12 +29,12 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-/** Unit tests for {@link AwxXrayHttpPropagationGetter}. */
-public class AwxXrayHttpPropagationGetterTest {
+/** Unit tests for {@link AwsXrayHttpPropagationGetter}. */
+public class AwsXrayHttpPropagationGetterTest {
 
   @Test
   public void shouldProvideValuesIfRequestHasAwsXrayTraceIdWithApiGatewayParent() {
-    AwxXrayHttpPropagationGetter getter = new AwxXrayHttpPropagationGetter();
+    AwsXrayHttpPropagationGetter getter = new AwsXrayHttpPropagationGetter();
     String xraytraceid =
         "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1";
     String awsRequestId = "4a0f8f18-cb5f-11e0-8364-b14fdafc0888";
@@ -51,7 +51,7 @@ public class AwxXrayHttpPropagationGetterTest {
 
   @Test
   public void shouldProvideValuesIfRequestHasAwsXrayTraceIdWithAlbSelf() {
-    AwxXrayHttpPropagationGetter getter = new AwxXrayHttpPropagationGetter();
+    AwsXrayHttpPropagationGetter getter = new AwsXrayHttpPropagationGetter();
     String xraytraceid =
         "Self=1-67891234-012456789abcdef012345678;"
             + "Root=1-67891233-abcdef012345678912345678;CalledFrom=app";
@@ -68,7 +68,7 @@ public class AwxXrayHttpPropagationGetterTest {
 
   @Test
   public void shouldProvideValuesIfRequestHasAwsXrayTraceIdWithRootOnly() {
-    AwxXrayHttpPropagationGetter getter = new AwxXrayHttpPropagationGetter();
+    AwsXrayHttpPropagationGetter getter = new AwsXrayHttpPropagationGetter();
     String xraytraceid = "Root=1-67891233-abcdef012345678912345678";
     String traceparentValue = "00-67891233abcdef012345678912345678-0000000000000004-00";
     MockHttpServletRequest request = new MockHttpServletRequest();
@@ -80,9 +80,23 @@ public class AwxXrayHttpPropagationGetterTest {
 
   @Test
   public void shouldNotProvideValuesIfRequestHasNoAwsXrayHeader() {
-    AwxXrayHttpPropagationGetter getter = new AwxXrayHttpPropagationGetter();
+    AwsXrayHttpPropagationGetter getter = new AwsXrayHttpPropagationGetter();
     MockHttpServletRequest request = new MockHttpServletRequest();
     assertFalse(getter.canProvideValues(request));
+    assertNull(getter.get(request, TRACEPARENT));
+    assertNull(getter.get(request, TRACESTATE));
+  }
+
+  @Test
+  public void shouldReturnEmptyIfHeaderValueIsInvalid() {
+    AwsXrayHttpPropagationGetter getter = new AwsXrayHttpPropagationGetter();
+    String xraytraceid =
+        "Root=1-5759e988-bd862e3fe1be46a9WFJOFDNW;Parent=53995c3f42cd8ad8;Sampled=1";
+    String awsRequestId = "4a0f8f18-cb5f-11e0-8364-b14fdafc0888\nForwarded: by=example.com";
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.addHeader(XAMZNTRACEID, xraytraceid);
+    request.addHeader(XAMZNREQUESTID, awsRequestId);
+    assertTrue(getter.canProvideValues(request));
     assertNull(getter.get(request, TRACEPARENT));
     assertNull(getter.get(request, TRACESTATE));
   }
