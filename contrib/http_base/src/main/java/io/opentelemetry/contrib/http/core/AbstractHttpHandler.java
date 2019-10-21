@@ -205,7 +205,7 @@ abstract class AbstractHttpHandler<Q, P> {
       // NoOp
     }
     MeasureBatchRecorder recorder = new TemporaryMeasureBatchRecorder();
-    recorder.setDistributedContext(context.distContext);
+    //    recorder.setDistributedContext(context.distContext);
     recorder.put(measureDuration, (System.nanoTime() - context.requestStartTime) / 1000000000.0);
     recorder.put(measureReceivedMessageSize, context.receiveMessageSize.longValue());
     recorder.put(measureSentMessageSize, context.sentMessageSize.longValue());
