@@ -27,13 +27,13 @@ import io.opentelemetry.distributedcontext.EntryKey;
 import io.opentelemetry.distributedcontext.EntryMetadata;
 import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
 import io.opentelemetry.distributedcontext.EntryValue;
-import io.opentelemetry.sdk.contrib.trace.export.InMemoryTracing;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.util.Samplers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -52,7 +52,7 @@ public class HttpClientHandlerTest {
   @BeforeClass
   public static void configureTracing() {
     TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysSample()).build();
+        TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOn()).build();
     TracerSdk tracerSdk = (TracerSdk) OpenTelemetry.getTracer();
     LOGGER.log(Level.INFO, "Orignal trace config: " + tracerSdk.getActiveTraceConfig());
     tracerSdk.updateActiveTraceConfig(traceConfig);
@@ -92,7 +92,7 @@ public class HttpClientHandlerTest {
         assertEquals(parentSpan.getContext().getTraceId(), currentSpan.getContext().getTraceId());
         assertFalse(
             parentSpan.getContext().getSpanId().equals(currentSpan.getContext().getSpanId()));
-        assertTrue(currentSpan.isRecordingEvents());
+        assertTrue(currentSpan.isRecording());
       } finally {
         handler.handleEnd(context, data, data, null);
       }
@@ -115,7 +115,7 @@ public class HttpClientHandlerTest {
     try {
       assertEquals(parentSpan.getContext().getTraceId(), currentSpan.getContext().getTraceId());
       assertFalse(parentSpan.getContext().getSpanId().equals(currentSpan.getContext().getSpanId()));
-      assertTrue(currentSpan.isRecordingEvents());
+      assertTrue(currentSpan.isRecording());
     } finally {
       handler.handleEnd(context, data, data, null);
     }
@@ -133,7 +133,7 @@ public class HttpClientHandlerTest {
     LOGGER.log(Level.INFO, currentSpan.getContext().toString());
     try {
       assertTrue(currentSpan.getContext().isValid());
-      assertTrue(currentSpan.isRecordingEvents());
+      assertTrue(currentSpan.isRecording());
     } finally {
       handler.handleEnd(context, data, data, null);
     }
@@ -160,7 +160,7 @@ public class HttpClientHandlerTest {
         assertEquals(parentSpan.getContext().getTraceId(), currentSpan.getContext().getTraceId());
         assertFalse(
             parentSpan.getContext().getSpanId().equals(currentSpan.getContext().getSpanId()));
-        assertTrue(currentSpan.isRecordingEvents());
+        assertTrue(currentSpan.isRecording());
       } finally {
         handler.handleEnd(context, data, data, error);
       }
@@ -173,8 +173,7 @@ public class HttpClientHandlerTest {
     return OpenTelemetry.getTracer()
         .spanBuilder("/junit")
         .setNoParent()
-        .setSampler(Samplers.alwaysSample())
-        .setRecordEvents(true)
+        .setSampler(Samplers.alwaysOn())
         .setSpanKind(Kind.SERVER)
         .startSpan();
   }

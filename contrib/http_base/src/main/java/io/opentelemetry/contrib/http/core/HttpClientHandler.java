@@ -155,9 +155,7 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
             .setParent(parent == null ? tracer.getCurrentSpan() : parent)
             .setSpanKind(Kind.CLIENT)
             .startSpan();
-    if (span.isRecordingEvents()) {
-      addSpanRequestAttributes(span, request);
-    }
+    addSpanRequestAttributes(span, request);
     return span;
   }
 

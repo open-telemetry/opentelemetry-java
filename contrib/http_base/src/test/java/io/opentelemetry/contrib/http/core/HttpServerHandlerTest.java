@@ -21,14 +21,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.contrib.trace.export.InMemoryTracing;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.util.Samplers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -47,7 +47,7 @@ public class HttpServerHandlerTest {
   @BeforeClass
   public static void configureTracing() {
     TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysSample()).build();
+        TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOn()).build();
     TracerSdk tracerSdk = (TracerSdk) OpenTelemetry.getTracer();
     tracerSdk.updateActiveTraceConfig(traceConfig);
     inMemoryTracing = new InMemoryTracing(tracerSdk);
@@ -88,7 +88,7 @@ public class HttpServerHandlerTest {
     try {
       assertEquals(traceId, currentSpan.getContext().getTraceId());
       assertFalse(spanId.equals(currentSpan.getContext().getSpanId()));
-      assertTrue(currentSpan.isRecordingEvents());
+      assertTrue(currentSpan.isRecording());
     } finally {
       handler.handleEnd(context, data, data, null);
     }
