@@ -22,9 +22,9 @@ import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.util.Samplers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -41,7 +41,7 @@ public class HttpRequestContextTest {
             .spanBuilder("/junit")
             .setNoParent()
             .setSpanKind(Kind.CLIENT)
-            .setRecordEvents(true)
+            .setSampler(Samplers.alwaysOn())
             .startSpan();
     DistributedContext distributedContext =
         OpenTelemetry.getDistributedContextManager().contextBuilder().setNoParent().build();
@@ -57,7 +57,7 @@ public class HttpRequestContextTest {
             .spanBuilder("/junit")
             .setNoParent()
             .setSpanKind(Kind.CLIENT)
-            .setSampler(Samplers.alwaysSample())
+            .setSampler(Samplers.alwaysOn())
             .startSpan();
     HttpRequestContext context = new HttpRequestContext(span, null);
     assertSame(span, context.span);
@@ -76,7 +76,7 @@ public class HttpRequestContextTest {
             .spanBuilder("/junit")
             .setNoParent()
             .setSpanKind(Kind.CLIENT)
-            .setSampler(Samplers.alwaysSample())
+            .setSampler(Samplers.alwaysOn())
             .startSpan();
     HttpRequestContext context = new HttpRequestContext(span, null);
     assertTrue(context.requestStartTime > 0L);

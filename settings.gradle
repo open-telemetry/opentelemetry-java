@@ -38,8 +38,5 @@ project(':opentelemetry-sdk-contrib-async-processor').projectDir =
         "$rootDir/sdk_contrib/async_processor" as File
 project(':opentelemetry-sdk-contrib-testbed').projectDir =
         "$rootDir/sdk_contrib/testbed" as File
-project(':opentelemetry-sdk-contrib-inmemory-export').projectDir =
-        "$rootDir/sdk_contrib/inmemory_export" as File
-project(':opentelemetry-sdk-contrib-testbed').projectDir = "$rootDir/sdk_contrib/testbed" as File
 project(':opentelemetry-contrib-http-base').projectDir = "$rootDir/contrib/http_base" as File
 project(':opentelemetry-contrib-http-servlet').projectDir = "$rootDir/contrib/http_servlet" as File

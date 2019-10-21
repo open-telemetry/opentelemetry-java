@@ -8,7 +8,7 @@ dependencies {
     implementation libraries.guava
 
     testImplementation project(':opentelemetry-sdk')
-    testImplementation project(':opentelemetry-sdk-contrib-inmemory-export')
+    testImplementation project(':opentelemetry-exporters-inmemory')
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
     // Runtime metrics are not android compatible, because we have only one artifact for contrib,

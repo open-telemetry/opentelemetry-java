@@ -154,9 +154,7 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
       span.setAttribute(HttpTraceConstants.LINK_TYPE, HttpTraceConstants.LINK_ATTR_ORIGINATING);
     }
 
-    if (span.isRecordingEvents()) {
-      addSpanRequestAttributes(span, request);
-    }
+    addSpanRequestAttributes(span, request);
     return getNewContext(span, dctxBuilder.build());
   }
 

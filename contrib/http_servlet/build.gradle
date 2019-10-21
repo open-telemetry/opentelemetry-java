@@ -10,7 +10,7 @@ dependencies {
     implementation 'jakarta.servlet:jakarta.servlet-api:4.0.3'
 
     testImplementation project(':opentelemetry-sdk')
-    testImplementation project(':opentelemetry-sdk-contrib-inmemory-export')
+    testImplementation project(':opentelemetry-exporters-inmemory')
     testImplementation 'org.springframework:spring-test:5.1.10.RELEASE'
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"

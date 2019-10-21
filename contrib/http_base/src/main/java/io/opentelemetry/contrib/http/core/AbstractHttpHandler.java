@@ -124,14 +124,12 @@ abstract class AbstractHttpHandler<Q, P> {
   public final void handleMessageSent(HttpRequestContext context, long bytes) {
     checkNotNull(context, "context is required");
     context.sentMessageSize.addAndGet(bytes);
-    if (context.span.isRecordingEvents()) {
-      recordMessageEvent(
-          context.span,
-          context.sentSeqId.addAndGet(1L),
-          HttpTraceConstants.EVENT_ATTR_SENT,
-          bytes,
-          0L);
-    }
+    recordMessageEvent(
+        context.span,
+        context.sentSeqId.addAndGet(1L),
+        HttpTraceConstants.EVENT_ATTR_SENT,
+        bytes,
+        0L);
   }
 
   /**
@@ -144,26 +142,22 @@ abstract class AbstractHttpHandler<Q, P> {
   public final void handleMessageReceived(HttpRequestContext context, long bytes) {
     checkNotNull(context, "context is required");
     context.receiveMessageSize.addAndGet(bytes);
-    if (context.span.isRecordingEvents()) {
-      recordMessageEvent(
-          context.span,
-          context.receviedSeqId.addAndGet(1L),
-          HttpTraceConstants.EVENT_ATTR_RECEIVED,
-          bytes,
-          0L);
-    }
+    recordMessageEvent(
+        context.span,
+        context.receviedSeqId.addAndGet(1L),
+        HttpTraceConstants.EVENT_ATTR_RECEIVED,
+        bytes,
+        0L);
   }
 
   void spanEnd(Span span, int httpStatus, @Nullable Throwable error) {
-    if (span.isRecordingEvents()) {
+    span.setAttribute(
+        HttpTraceConstants.HTTP_STATUS_CODE, AttributeValue.longAttributeValue(httpStatus));
+    if (error != null) {
+      String message = extractErrorMessage(error);
       span.setAttribute(
-          HttpTraceConstants.HTTP_STATUS_CODE, AttributeValue.longAttributeValue(httpStatus));
-      if (error != null) {
-        String message = extractErrorMessage(error);
-        span.setAttribute(
-            HttpTraceConstants.HTTP_STATUS_TEXT, AttributeValue.stringAttributeValue(message));
-        getLogger().log(Level.FINE, message, error);
-      }
+          HttpTraceConstants.HTTP_STATUS_TEXT, AttributeValue.stringAttributeValue(message));
+      getLogger().log(Level.FINE, message, error);
     }
     span.setStatus(statusConverter.convert(httpStatus));
     span.end();
