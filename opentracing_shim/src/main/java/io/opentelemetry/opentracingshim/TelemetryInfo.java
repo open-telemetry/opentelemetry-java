@@ -26,10 +26,12 @@ import io.opentelemetry.trace.Tracer;
 final class TelemetryInfo {
   private final Tracer tracer;
   private final DistributedContextManager contextManager;
+  private final SpanContextShimTable spanContextShimTable;
 
   TelemetryInfo(Tracer tracer, DistributedContextManager contextManager) {
     this.tracer = tracer;
     this.contextManager = contextManager;
+    this.spanContextShimTable = new SpanContextShimTable();
   }
 
   Tracer tracer() {
@@ -38,5 +40,9 @@ final class TelemetryInfo {
 
   DistributedContextManager contextManager() {
     return contextManager;
+  }
+
+  SpanContextShimTable spanContextShimTable() {
+    return spanContextShimTable;
   }
 }

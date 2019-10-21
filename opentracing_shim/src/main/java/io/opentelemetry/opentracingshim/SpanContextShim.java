@@ -17,7 +17,6 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.EmptyDistributedContext;
 import io.opentelemetry.distributedcontext.Entry;
 import io.opentelemetry.distributedcontext.EntryKey;
 import io.opentelemetry.distributedcontext.EntryMetadata;
@@ -33,8 +32,15 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   private final io.opentelemetry.trace.SpanContext context;
   private final DistributedContext distContext;
 
+  public SpanContextShim(SpanShim spanShim) {
+    this(
+        spanShim.telemetryInfo(),
+        spanShim.getSpan().getContext(),
+        spanShim.contextManager().contextBuilder().build());
+  }
+
   public SpanContextShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.SpanContext context) {
-    this(telemetryInfo, context, EmptyDistributedContext.getInstance());
+    this(telemetryInfo, context, telemetryInfo.contextManager().contextBuilder().build());
   }
 
   public SpanContextShim(
