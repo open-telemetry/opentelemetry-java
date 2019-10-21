@@ -26,11 +26,11 @@ public class DefaultTracerFactory implements TracerFactory {
 
   @Override
   public Tracer get(String instrumentationName) {
-    return DefaultTracer.getInstance();
+    return get(instrumentationName, null);
   }
 
   @Override
   public Tracer get(String instrumentationName, String instrumentationVersion) {
-    return get(instrumentationName);
+    return DefaultTracer.getInstance();
   }
 }
