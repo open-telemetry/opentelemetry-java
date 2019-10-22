@@ -18,9 +18,8 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerFactory;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * {@code Tracer} provider implementation for {@link TracerFactory}.
@@ -29,8 +28,7 @@ import java.util.Map;
  * io.opentelemetry.OpenTelemetry}.
  */
 public class TracerSdkFactory implements TracerFactory {
-  private final Map<String, Tracer> tracersByKey =
-      Collections.synchronizedMap(new HashMap<String, Tracer>());
+  private final Map<String, Tracer> tracersByKey = new ConcurrentHashMap<>();
 
   @Override
   public Tracer get(String instrumentationName) {
