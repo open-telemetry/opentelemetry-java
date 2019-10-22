@@ -434,8 +434,8 @@ public interface Span {
      *
      * <p>Important this is NOT equivalent with System.nanoTime().
      *
-     * @param startTimestamp the explicit start timestamp of the newly created {@code Span} in
-     * nanos since epoch.
+     * @param startTimestamp the explicit start timestamp of the newly created {@code Span} in nanos
+     *     since epoch.
      * @return this.
      * @since 0.1.0
      */
