@@ -16,17 +16,13 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import io.opentelemetry.trace.TracerFactory;
+import io.opentelemetry.trace.spi.TracerFactoryProvider;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-@RunWith(JUnit4.class)
-public class TracerSdkProviderTest {
-
-  @Test
-  public void testDefault() {
-    assertThat(new TracerSdkFactory().get("testInstrumentation")).isInstanceOf(TracerSdk.class);
+/** SDK implementation of the TracerProviderFactory for SPI. */
+public class TracerSdkFactoryProvider implements TracerFactoryProvider {
+  @Override
+  public TracerFactory create() {
+    return new TracerSdkFactory();
   }
 }

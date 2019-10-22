@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+public class DefaultTracerFactory implements TracerFactory {
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+  private static final TracerFactory instance = new DefaultTracerFactory();
 
-@RunWith(JUnit4.class)
-public class TracerSdkProviderTest {
+  public static TracerFactory getInstance() {
+    return instance;
+  }
 
-  @Test
-  public void testDefault() {
-    assertThat(new TracerSdkFactory().get("testInstrumentation")).isInstanceOf(TracerSdk.class);
+  @Override
+  public Tracer get(String instrumentationName) {
+    return get(instrumentationName, null);
+  }
+
+  @Override
+  public Tracer get(String instrumentationName, String instrumentationVersion) {
+    return DefaultTracer.getInstance();
   }
 }

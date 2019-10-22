@@ -22,9 +22,11 @@ import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider
 import io.opentelemetry.metrics.DefaultMeter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.spi.MeterProvider;
-import io.opentelemetry.trace.DefaultTracer;
+import io.opentelemetry.trace.DefaultTracerFactory;
+import io.opentelemetry.trace.DefaultTracerFactoryProvider;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.spi.TracerProvider;
+import io.opentelemetry.trace.TracerFactory;
+import io.opentelemetry.trace.spi.TracerFactoryProvider;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -35,7 +37,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
- * @see TracerProvider
+ * @see TracerFactory
  * @see MeterProvider
  * @see DistributedContextManagerProvider
  */
@@ -44,19 +46,20 @@ public final class OpenTelemetry {
 
   @Nullable private static volatile OpenTelemetry instance;
 
-  private final Tracer tracer;
+  private final TracerFactory tracerFactory;
   private final Meter meter;
   private final DistributedContextManager contextManager;
 
   /**
-   * Returns a singleton {@link Tracer}.
+   * Returns a singleton {@link TracerFactory}.
    *
-   * @return registered tracer or default via {@link DefaultTracer#getInstance()}.
-   * @throws IllegalStateException if a specified tracer (via system properties) could not be found.
+   * @return registered TracerFactory of default via {@link DefaultTracerFactory#getInstance()}.
+   * @throws IllegalStateException if a specified TracerFactory (via system properties) could not be
+   *     found.
    * @since 0.1.0
    */
-  public static Tracer getTracer() {
-    return getInstance().tracer;
+  public static TracerFactory getTracerFactory() {
+    return getInstance().tracerFactory;
   }
 
   /**
@@ -83,6 +86,35 @@ public final class OpenTelemetry {
     return getInstance().contextManager;
   }
 
+  /** Lazy loads an instance. */
+  private static OpenTelemetry getInstance() {
+    if (instance == null) {
+      synchronized (OpenTelemetry.class) {
+        if (instance == null) {
+          instance = new OpenTelemetry();
+        }
+      }
+    }
+    return instance;
+  }
+
+  private OpenTelemetry() {
+    TracerFactoryProvider tracerFactoryProvider = loadSpi(TracerFactoryProvider.class);
+    this.tracerFactory =
+        tracerFactoryProvider != null
+            ? tracerFactoryProvider.create()
+            : DefaultTracerFactoryProvider.getInstance().create();
+
+    MeterProvider meterProvider = loadSpi(MeterProvider.class);
+    meter = meterProvider != null ? meterProvider.create() : DefaultMeter.getInstance();
+    DistributedContextManagerProvider contextManagerProvider =
+        loadSpi(DistributedContextManagerProvider.class);
+    contextManager =
+        contextManagerProvider != null
+            ? contextManagerProvider.create()
+            : DefaultDistributedContextManager.getInstance();
+  }
+
   /**
    * Load provider class via {@link ServiceLoader}. A specific provider class can be requested via
    * setting a system property with FQCN.
@@ -106,31 +138,6 @@ public final class OpenTelemetry {
           String.format("Service provider %s not found", specifiedProvider));
     }
     return null;
-  }
-
-  /** Lazy loads an instance. */
-  private static OpenTelemetry getInstance() {
-    if (instance == null) {
-      synchronized (OpenTelemetry.class) {
-        if (instance == null) {
-          instance = new OpenTelemetry();
-        }
-      }
-    }
-    return instance;
-  }
-
-  private OpenTelemetry() {
-    TracerProvider tracerProvider = loadSpi(TracerProvider.class);
-    tracer = tracerProvider != null ? tracerProvider.create() : DefaultTracer.getInstance();
-    MeterProvider meterProvider = loadSpi(MeterProvider.class);
-    meter = meterProvider != null ? meterProvider.create() : DefaultMeter.getInstance();
-    DistributedContextManagerProvider contextManagerProvider =
-        loadSpi(DistributedContextManagerProvider.class);
-    contextManager =
-        contextManagerProvider != null
-            ? contextManagerProvider.create()
-            : DefaultDistributedContextManager.getInstance();
   }
 
   // for testing
