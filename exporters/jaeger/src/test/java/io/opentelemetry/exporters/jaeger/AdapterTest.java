@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
-import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -189,8 +188,9 @@ public class AdapterTest {
   @Test
   public void testSpanRefs() {
     // prepare
-    io.opentelemetry.trace.Link link =
-        Links.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+    Link link =
+        SpanData.Link.create(
+            createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -202,7 +202,7 @@ public class AdapterTest {
   @Test
   public void testSpanRef() {
     // prepare
-    Link link = Links.create(createSpanContext(TRACE_ID, SPAN_ID));
+    Link link = SpanData.Link.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
@@ -219,18 +219,15 @@ public class AdapterTest {
     long ms = System.currentTimeMillis();
     Timestamp ts = toTimestamp(ms);
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
-    ImmutableMap<String, AttributeValue> attributes =
-        ImmutableMap.<String, AttributeValue>of("foo", valueS);
+    ImmutableMap<String, AttributeValue> attributes = ImmutableMap.of("foo", valueS);
     return TimedEvent.create(ts, "the log message", attributes);
   }
 
   private static SpanData getSpanData(Timestamp startTime, Timestamp endTime) {
     AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-    Map<String, AttributeValue> attributes =
-        ImmutableMap.<String, AttributeValue>of("valueB", valueB);
+    Map<String, AttributeValue> attributes = ImmutableMap.of("valueB", valueB);
 
-    io.opentelemetry.trace.Link link =
-        Links.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+    Link link = SpanData.Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return SpanData.newBuilder()
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))

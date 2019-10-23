@@ -21,7 +21,6 @@ import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
@@ -88,7 +87,7 @@ public class SpanBuilderSdkTest {
   public void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
-    spanBuilder.addLink(Links.create(DefaultSpan.getInvalid().getContext()));
+    spanBuilder.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
         DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
@@ -104,21 +103,20 @@ public class SpanBuilderSdkTest {
   @Test
   public void truncateLink() {
     final int maxNumberOfLinks = 8;
-    final Link link = Links.create(DefaultSpan.getInvalid().getContext());
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(maxNumberOfLinks).build();
     tracer.updateActiveTraceConfig(traceConfig);
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
-      spanBuilder.addLink(link);
+      spanBuilder.addLink(sampledSpanContext);
     }
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.getDroppedLinksCount()).isEqualTo(maxNumberOfLinks);
       assertThat(span.getLinks().size()).isEqualTo(maxNumberOfLinks);
       for (int i = 0; i < maxNumberOfLinks; i++) {
-        assertThat(span.getLinks().get(i)).isEqualTo(Links.create(span.getContext()));
+        assertThat(span.getLinks().get(i)).isEqualTo(SpanData.Link.create(sampledSpanContext));
       }
     } finally {
       span.end();
@@ -257,7 +255,7 @@ public class SpanBuilderSdkTest {
             tracer
                 .spanBuilder(SPAN_NAME)
                 .setSampler(Samplers.probability(0.0))
-                .addLink(Links.create(sampledSpanContext))
+                .addLink(sampledSpanContext)
                 .startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
