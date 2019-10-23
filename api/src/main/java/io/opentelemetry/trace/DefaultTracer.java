@@ -23,7 +23,6 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.Map;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -116,11 +115,6 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setSampler(@Nullable Sampler sampler) {
-      return this;
-    }
-
-    @Override
     public NoopSpanBuilder addLink(SpanContext spanContext) {
       return this;
     }
@@ -148,7 +142,6 @@ public final class DefaultTracer implements Tracer {
     }
 
     private NoopSpanBuilder(Tracer tracer, String name) {
-      Utils.checkNotNull(tracer, "tracer");
       Utils.checkNotNull(name, "name");
       this.tracer = tracer;
     }

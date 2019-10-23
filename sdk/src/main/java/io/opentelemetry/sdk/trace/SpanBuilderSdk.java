@@ -20,12 +20,11 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
-import io.opentelemetry.trace.Sampler;
-import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -64,7 +63,6 @@ class SpanBuilderSdk implements Span.Builder {
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
   private List<Link> links;
-  private Sampler sampler;
   private ParentType parentType = ParentType.CURRENT_SPAN;
 
   SpanBuilderSdk(
@@ -79,7 +77,6 @@ class SpanBuilderSdk implements Span.Builder {
     this.traceConfig = traceConfig;
     this.resource = resource;
     this.links = Collections.emptyList();
-    this.sampler = traceConfig.getSampler();
     this.random = random;
     this.clock = clock;
   }
@@ -111,12 +108,6 @@ class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder setSpanKind(Kind spanKind) {
     this.spanKind = Utils.checkNotNull(spanKind, "spanKind");
-    return this;
-  }
-
-  @Override
-  public Span.Builder setSampler(Sampler sampler) {
-    this.sampler = Utils.checkNotNull(sampler, "sampler");
     return this;
   }
 
@@ -167,7 +158,10 @@ class SpanBuilderSdk implements Span.Builder {
       tracestate = parentContext.getTracestate();
     }
     Decision samplingDecision =
-        sampler.shouldSample(parentContext, false, traceId, spanId, spanName, links);
+        traceConfig
+            .getSampler()
+            .shouldSample(
+                parentContext, /* hasRemoteParent= */ false, traceId, spanId, spanName, links);
     SpanContext spanContext =
         SpanContext.create(
             traceId,

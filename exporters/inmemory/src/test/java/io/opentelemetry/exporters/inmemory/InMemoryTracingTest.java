@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,7 +72,15 @@ public class InMemoryTracingTest {
   @Test
   public void getFinishedSpanItems_sampled() {
     tracing.getTracer().spanBuilder("A").startSpan().end();
-    tracing.getTracer().spanBuilder("B").setSampler(Samplers.alwaysOff()).startSpan().end();
+    TracerSdk tracerSdk = (TracerSdk) tracing.getTracer();
+    TraceConfig originalConfig = tracerSdk.getActiveTraceConfig();
+    tracerSdk.updateActiveTraceConfig(
+        originalConfig.toBuilder().setSampler(Samplers.alwaysOff()).build());
+    try {
+      tracing.getTracer().spanBuilder("B").startSpan().end();
+    } finally {
+      tracerSdk.updateActiveTraceConfig(originalConfig);
+    }
 
     List<SpanData> finishedSpanItems = tracing.getFinishedSpanItems();
     assertThat(finishedSpanItems.size()).isEqualTo(1);

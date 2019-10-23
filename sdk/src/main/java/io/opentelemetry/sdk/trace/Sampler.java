@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace;
+package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;

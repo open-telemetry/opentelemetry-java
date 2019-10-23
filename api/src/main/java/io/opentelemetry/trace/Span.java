@@ -367,18 +367,6 @@ public interface Span {
     Builder setNoParent();
 
     /**
-     * Sets the {@link Sampler} to use. If not set, the implementation will provide a default.
-     *
-     * <p>Observe this is used only as a hint for the underlying implementation, which will decide
-     * whether to sample or not this {@code Span}.
-     *
-     * @param sampler the {@code Sampler} to use when determining sampling for a {@code Span}.
-     * @return this.
-     * @since 0.1.0
-     */
-    Builder setSampler(Sampler sampler);
-
-    /**
      * Adds a {@link Link} to the newly created {@code Span}.
      *
      * @param spanContext the context of the linked {@code Span}.

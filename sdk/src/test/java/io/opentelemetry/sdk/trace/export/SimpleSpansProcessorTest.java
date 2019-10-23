@@ -125,11 +125,10 @@ public class SimpleSpansProcessorTest {
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
-    tracerSdk.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOff()).startSpan().end();
-    tracerSdk.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOff()).startSpan().end();
+    TestUtils.startSpanWithSampler(tracerSdk, SPAN_NAME, Samplers.alwaysOff()).startSpan().end();
+    TestUtils.startSpanWithSampler(tracerSdk, SPAN_NAME, Samplers.alwaysOff()).startSpan().end();
 
-    io.opentelemetry.trace.Span span =
-        tracerSdk.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOn()).startSpan();
+    io.opentelemetry.trace.Span span = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     span.end();
 
     // Spans are recorded and exported in the same order as they are ended, we test that a non
@@ -156,7 +155,7 @@ public class SimpleSpansProcessorTest {
         tracerSdk
             .spanBuilder("FOO")
             .setSampler(Samplers.neverSample())
-            .startSpan();
+            .startSpanWithSampler();
     span.end();
 
     List<SpanData> exported = waitingSpanExporter.waitForExport(1);
