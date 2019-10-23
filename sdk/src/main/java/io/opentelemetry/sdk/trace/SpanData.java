@@ -20,8 +20,9 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
@@ -30,6 +31,7 @@ import io.opentelemetry.trace.Tracestate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
@@ -134,7 +136,7 @@ public abstract class SpanData {
    * @return links recorded for this {@code Span}.
    * @since 0.1.0
    */
-  public abstract List<Link> getLinks();
+  public abstract List<io.opentelemetry.trace.Link> getLinks();
 
   /**
    * Returns the {@code Status}.
@@ -153,15 +155,49 @@ public abstract class SpanData {
   public abstract Timestamp getEndTimestamp();
 
   /**
+   * An immutable implementation of {@link Link}.
+   *
+   * @since 0.1.0
+   */
+  @Immutable
+  @AutoValue
+  public abstract static class Link implements io.opentelemetry.trace.Link {
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @return a new immutable {@code TimedEvent<T>}
+     * @since 0.1.0
+     */
+    public static Link create(SpanContext spanContext) {
+      return new AutoValue_SpanData_Link(
+          spanContext, Collections.<String, AttributeValue>emptyMap());
+    }
+
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @param attributes the attributes of this {@code Link}.
+     * @return a new immutable {@code TimedEvent<T>}
+     * @since 0.1.0
+     */
+    public static Link create(SpanContext spanContext, Map<String, AttributeValue> attributes) {
+      return new AutoValue_SpanData_Link(
+          spanContext, Collections.unmodifiableMap(new LinkedHashMap<>(attributes)));
+    }
+  }
+
+  /**
    * A timed event representation.
    *
    * @since 0.1.0
    */
   @Immutable
   @AutoValue
-  public abstract static class TimedEvent {
+  public abstract static class TimedEvent implements Event {
     /**
-     * Returns a new immutable {@code TimedEvent<T>}.
+     * Returns a new immutable {@code TimedEvent}.
      *
      * @param timestamp the {@code Timestamp} of this event.
      * @param name the name of the {@code Event}.
@@ -182,18 +218,10 @@ public abstract class SpanData {
      */
     public abstract Timestamp getTimestamp();
 
-    /**
-     * Returns the name of this event.
-     *
-     * @return the name of this event.
-     */
+    @Override
     public abstract String getName();
 
-    /**
-     * Gets the attributes for this event.
-     *
-     * @return the attributes for this event.
-     */
+    @Override
     public abstract Map<String, AttributeValue> getAttributes();
 
     TimedEvent() {}
@@ -208,7 +236,7 @@ public abstract class SpanData {
   public static Builder newBuilder() {
     return new AutoValue_SpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
-        .setLinks(Collections.<Link>emptyList())
+        .setLinks(Collections.<io.opentelemetry.trace.Link>emptyList())
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
         .setTimedEvents(Collections.<TimedEvent>emptyList())
         .setResource(Resource.getEmpty())
@@ -230,7 +258,7 @@ public abstract class SpanData {
 
     abstract List<TimedEvent> getTimedEvents();
 
-    abstract List<Link> getLinks();
+    abstract List<io.opentelemetry.trace.Link> getLinks();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -371,9 +399,9 @@ public abstract class SpanData {
      *
      * @param links A List&lt;Link&gt;
      * @return this
-     * @see Link
+     * @see io.opentelemetry.trace.Link
      * @since 0.1.0
      */
-    public abstract Builder setLinks(List<Link> links);
+    public abstract Builder setLinks(List<io.opentelemetry.trace.Link> links);
   }
 }

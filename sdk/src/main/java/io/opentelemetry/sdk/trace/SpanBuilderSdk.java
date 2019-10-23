@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
@@ -124,16 +123,13 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder addLink(SpanContext spanContext) {
-    Utils.checkNotNull(spanContext, "spanContext");
-    addLink(Links.create(spanContext));
+    addLink(SpanData.Link.create(spanContext));
     return this;
   }
 
   @Override
   public Span.Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-    Utils.checkNotNull(spanContext, "spanContext");
-    Utils.checkNotNull(attributes, "attributes");
-    addLink(Links.create(spanContext, attributes));
+    addLink(SpanData.Link.create(spanContext, attributes));
     return this;
   }
 

@@ -22,7 +22,6 @@ import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
-import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
@@ -93,7 +92,7 @@ public class SpanDataTest {
   }
 
   private static Link emptyLink() {
-    return Links.create(
+    return SpanData.Link.create(
         SpanContext.create(
             TraceId.getInvalid(),
             SpanId.getInvalid(),
