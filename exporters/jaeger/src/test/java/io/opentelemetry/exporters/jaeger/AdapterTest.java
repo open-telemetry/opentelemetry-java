@@ -28,7 +28,6 @@ import io.opentelemetry.exporters.otprotocol.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
-import io.opentelemetry.sdk.trace.util.Events;
 import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
@@ -222,7 +221,7 @@ public class AdapterTest {
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
     ImmutableMap<String, AttributeValue> attributes =
         ImmutableMap.<String, AttributeValue>of("foo", valueS);
-    return TimedEvent.create(ts, Events.create("the log message", attributes));
+    return TimedEvent.create(ts, "the log message", attributes);
   }
 
   private static SpanData getSpanData(Timestamp startTime, Timestamp endTime) {

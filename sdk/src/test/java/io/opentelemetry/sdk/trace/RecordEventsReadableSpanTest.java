@@ -25,7 +25,6 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.util.Events;
 import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
@@ -72,8 +71,6 @@ public class RecordEventsReadableSpanTest {
   private final Resource resource = Resource.getEmpty();
   private final Map<String, AttributeValue> attributes = new HashMap<>();
   private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
-  private final Event event =
-      new SimpleEvent("event2", Collections.<String, AttributeValue>emptyMap());
   private final Link link = Links.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
@@ -124,12 +121,15 @@ public class RecordEventsReadableSpanTest {
       spanDoWork(span, null);
       SpanData spanData = span.toSpanData();
       SpanData.TimedEvent timedEvent =
-          SpanData.TimedEvent.create(Timestamp.create(startTime.getSeconds() + 1, 0), event);
+          SpanData.TimedEvent.create(
+              Timestamp.create(startTime.getSeconds() + 1, 0),
+              "event2",
+              Collections.<String, AttributeValue>emptyMap());
       verifySpanData(
           spanData,
           expectedAttributes,
-          Collections.<SpanData.TimedEvent>singletonList(timedEvent),
-          Collections.<Link>singletonList(link),
+          Collections.singletonList(timedEvent),
+          Collections.singletonList(link),
           SPAN_NEW_NAME,
           Timestamp.create(startTime.getSeconds(), 0),
           Timestamp.create(testClock.now().getSeconds(), 0),
@@ -150,11 +150,14 @@ public class RecordEventsReadableSpanTest {
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
     SpanData.TimedEvent timedEvent =
-        SpanData.TimedEvent.create(Timestamp.create(startTime.getSeconds() + 1, 0), event);
+        SpanData.TimedEvent.create(
+            Timestamp.create(startTime.getSeconds() + 1, 0),
+            "event2",
+            Collections.<String, AttributeValue>emptyMap());
     verifySpanData(
         spanData,
         expectedAttributes,
-        Collections.<SpanData.TimedEvent>singletonList(timedEvent),
+        Collections.singletonList(timedEvent),
         Collections.singletonList(link),
         SPAN_NEW_NAME,
         Timestamp.create(startTime.getSeconds(), 0),
@@ -268,7 +271,18 @@ public class RecordEventsReadableSpanTest {
     try {
       span.addEvent("event1");
       span.addEvent("event2", attributes);
-      span.addEvent(Events.create("event3"));
+      span.addEvent(
+          new Event() {
+            @Override
+            public String getName() {
+              return "event3";
+            }
+
+            @Override
+            public Map<String, AttributeValue> getAttributes() {
+              return Collections.emptyMap();
+            }
+          });
     } finally {
       span.end();
     }
@@ -362,7 +376,7 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfEvents; i++) {
-        span.addEvent(event);
+        span.addEvent("event2", Collections.<String, AttributeValue>emptyMap());
         testClock.advanceMillis(MILLIS_PER_SECOND);
       }
       SpanData spanData = span.toSpanData();
@@ -371,7 +385,9 @@ public class RecordEventsReadableSpanTest {
       for (int i = 0; i < maxNumberOfEvents; i++) {
         SpanData.TimedEvent expectedEvent =
             SpanData.TimedEvent.create(
-                Timestamp.create(startTime.getSeconds() + maxNumberOfEvents + i, 0), event);
+                Timestamp.create(startTime.getSeconds() + maxNumberOfEvents + i, 0),
+                "event2",
+                Collections.<String, AttributeValue>emptyMap());
         assertThat(spanData.getTimedEvents().get(i)).isEqualTo(expectedEvent);
       }
     } finally {
@@ -382,7 +398,9 @@ public class RecordEventsReadableSpanTest {
     for (int i = 0; i < maxNumberOfEvents; i++) {
       SpanData.TimedEvent expectedEvent =
           SpanData.TimedEvent.create(
-              Timestamp.create(startTime.getSeconds() + maxNumberOfEvents + i, 0), event);
+              Timestamp.create(startTime.getSeconds() + maxNumberOfEvents + i, 0),
+              "event2",
+              Collections.<String, AttributeValue>emptyMap());
       assertThat(spanData.getTimedEvents().get(i)).isEqualTo(expectedEvent);
     }
   }
@@ -444,7 +462,7 @@ public class RecordEventsReadableSpanTest {
       span.setAttribute(attribute.getKey(), attribute.getValue());
     }
     testClock.advanceMillis(MILLIS_PER_SECOND);
-    span.addEvent(event);
+    span.addEvent("event2", Collections.<String, AttributeValue>emptyMap());
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addChild();
     span.updateName(SPAN_NEW_NAME);
@@ -474,27 +492,6 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getStartTimestamp()).isEqualTo(startTime);
     assertThat(spanData.getEndTimestamp()).isEqualTo(endTime);
     assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
-  }
-
-  private static final class SimpleEvent implements Event {
-
-    private final String name;
-    private final Map<String, AttributeValue> attributes;
-
-    private SimpleEvent(String name, Map<String, AttributeValue> attributes) {
-      this.name = name;
-      this.attributes = attributes;
-    }
-
-    @Override
-    public String getName() {
-      return name;
-    }
-
-    @Override
-    public Map<String, AttributeValue> getAttributes() {
-      return attributes;
-    }
   }
 
   @Test
@@ -554,11 +551,9 @@ public class RecordEventsReadableSpanTest {
             .setTimedEvents(
                 Arrays.asList(
                     SpanData.TimedEvent.create(
-                        nanoToTimestamp(firstEventTimeNanos),
-                        Events.create("event1", event1Attributes)),
+                        nanoToTimestamp(firstEventTimeNanos), "event1", event1Attributes),
                     SpanData.TimedEvent.create(
-                        nanoToTimestamp(secondEventTimeNanos),
-                        Events.create("event2", event2Attributes))))
+                        nanoToTimestamp(secondEventTimeNanos), "event2", event2Attributes)))
             .setResource(resource)
             .setParentSpanId(parentSpanId)
             .setLinks(links)

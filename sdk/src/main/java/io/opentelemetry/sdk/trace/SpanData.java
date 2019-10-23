@@ -164,12 +164,14 @@ public abstract class SpanData {
      * Returns a new immutable {@code TimedEvent<T>}.
      *
      * @param timestamp the {@code Timestamp} of this event.
-     * @param event the event.
+     * @param name the name of the {@code Event}.
+     * @param attributes the attributes of the {@code Event}.
      * @return a new immutable {@code TimedEvent<T>}
      * @since 0.1.0
      */
-    public static TimedEvent create(Timestamp timestamp, io.opentelemetry.trace.Event event) {
-      return new AutoValue_SpanData_TimedEvent(timestamp, event.getName(), event.getAttributes());
+    public static TimedEvent create(
+        Timestamp timestamp, String name, Map<String, AttributeValue> attributes) {
+      return new AutoValue_SpanData_TimedEvent(timestamp, name, attributes);
     }
 
     /**

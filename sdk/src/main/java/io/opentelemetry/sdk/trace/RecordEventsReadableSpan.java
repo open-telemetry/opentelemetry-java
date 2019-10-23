@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.util.Events;
 import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.EndSpanOptions;
@@ -191,9 +190,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private static SpanData.TimedEvent adaptTimedEvent(
       io.opentelemetry.sdk.trace.TimedEvent sourceEvent, TimestampConverter timestampConverter) {
     Timestamp timestamp = timestampConverter.convertNanoTime(sourceEvent.getNanotime());
-    io.opentelemetry.trace.Event event =
-        Events.create(sourceEvent.getName(), sourceEvent.getAttributes());
-    return SpanData.TimedEvent.create(timestamp, event);
+    return SpanData.TimedEvent.create(
+        timestamp, sourceEvent.getName(), sourceEvent.getAttributes());
   }
 
   @Override

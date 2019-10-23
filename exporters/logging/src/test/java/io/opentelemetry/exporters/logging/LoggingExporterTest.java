@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
-import io.opentelemetry.sdk.trace.util.Events;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -33,7 +32,7 @@ import org.junit.Test;
 
 public class LoggingExporterTest {
   @Test
-  public void returnCode() throws Exception {
+  public void returnCode() {
     LoggingExporter exporter = new LoggingExporter();
     long startTimeSecondsSinceEpoch = System.currentTimeMillis() / 1000;
     SpanData spanData =
@@ -49,10 +48,8 @@ public class LoggingExporterTest {
                 singletonList(
                     SpanData.TimedEvent.create(
                         Timestamp.create(startTimeSecondsSinceEpoch, 50),
-                        Events.create(
-                            "somethingHappenedHere",
-                            singletonMap(
-                                "important", AttributeValue.booleanAttributeValue(true))))))
+                        "somethingHappenedHere",
+                        singletonMap("important", AttributeValue.booleanAttributeValue(true)))))
             .build();
     ResultCode resultCode = exporter.export(singletonList(spanData));
     assertEquals(ResultCode.SUCCESS, resultCode);
