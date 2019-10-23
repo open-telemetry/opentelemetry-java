@@ -59,7 +59,7 @@ public class TraceProtoUtils {
    * @param timestamp the opentelemetry Timestamp to convert.
    * @return the protobuf Timestamp representation.
    */
-  public static Timestamp toProtoTimestamp(io.opentelemetry.common.Timestamp timestamp) {
+  public static Timestamp toProtoTimestamp(io.opentelemetry.sdk.common.Timestamp timestamp) {
     return Timestamp.newBuilder()
         .setNanos(timestamp.getNanos())
         .setSeconds(timestamp.getSeconds())

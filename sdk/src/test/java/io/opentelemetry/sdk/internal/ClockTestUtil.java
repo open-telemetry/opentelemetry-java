@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.internal;
 
-import io.opentelemetry.common.Timestamp;
+import io.opentelemetry.sdk.common.Timestamp;
 
 final class ClockTestUtil {
   static final int NANOS_PER_SECOND = 1000 * 1000 * 1000;

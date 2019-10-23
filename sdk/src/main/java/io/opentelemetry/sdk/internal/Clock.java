@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.internal;
 
-import io.opentelemetry.common.Timestamp;
+import io.opentelemetry.sdk.common.Timestamp;
 
 /**
  * Interface for getting the current time.

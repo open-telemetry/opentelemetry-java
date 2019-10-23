@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.Timestamp;
+import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;

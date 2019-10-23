@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.internal;
 import static io.opentelemetry.sdk.internal.TimestampConverter.NANOS_PER_MILLI;
 import static io.opentelemetry.sdk.internal.TimestampConverter.NANOS_PER_SECOND;
 
-import io.opentelemetry.common.Timestamp;
+import io.opentelemetry.sdk.common.Timestamp;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 

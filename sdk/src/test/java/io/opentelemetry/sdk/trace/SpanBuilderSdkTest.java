@@ -411,7 +411,8 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void startTimestamp_null() {
-    thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).setStartTimestamp(null);
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Negative startTimestamp");
+    tracer.spanBuilder(SPAN_NAME).setStartTimestamp(-1);
   }
 }

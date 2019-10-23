@@ -18,7 +18,6 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.trace.Span.Kind;
 import java.util.Collections;
 import java.util.Map;
@@ -57,7 +56,7 @@ public class SpanBuilderTest {
             return Collections.emptyMap();
           }
         });
-    spanBuilder.setStartTimestamp(Timestamp.create(0, 1));
+    spanBuilder.setStartTimestamp(12345L);
     assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
   }
 
@@ -78,9 +77,10 @@ public class SpanBuilderTest {
   }
 
   @Test
-  public void setStartTimestamp_Null() {
+  public void setStartTimestamp_Negative() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
-    thrown.expect(NullPointerException.class);
-    spanBuilder.setStartTimestamp(null);
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Negative startTimestamp");
+    spanBuilder.setStartTimestamp(-1);
   }
 }

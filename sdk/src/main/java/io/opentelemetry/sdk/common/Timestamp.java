@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.common;
+package io.opentelemetry.sdk.common;
 
 import com.google.auto.value.AutoValue;
 import java.math.BigDecimal;

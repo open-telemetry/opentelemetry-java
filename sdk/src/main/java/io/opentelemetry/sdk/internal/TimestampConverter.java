@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.internal;
 
-import io.opentelemetry.common.Timestamp;
+import io.opentelemetry.sdk.common.Timestamp;
 import javax.annotation.concurrent.Immutable;
 
 /**
