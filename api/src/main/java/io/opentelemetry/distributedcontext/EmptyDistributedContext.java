@@ -26,7 +26,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public class EmptyDistributedContext implements DistributedContext {
-  private static final Collection<Entry> EMPTY_COLLECTION = Collections.<Entry>emptyList();
+  private static final Collection<Entry> EMPTY_COLLECTION = Collections.emptyList();
 
   /**
    * Returns the single instance of the {@link EmptyDistributedContext} class.

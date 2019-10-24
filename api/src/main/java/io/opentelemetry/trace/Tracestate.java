@@ -131,7 +131,6 @@ public abstract class Tracestate {
      * @return this.
      * @since 0.1.0
      */
-    @SuppressWarnings("nullness")
     public Builder set(String key, String value) {
       // Initially create the Entry to validate input.
       Entry entry = Entry.create(key, value);
@@ -158,7 +157,6 @@ public abstract class Tracestate {
      * @return this.
      * @since 0.1.0
      */
-    @SuppressWarnings("nullness")
     public Builder remove(String key) {
       Utils.checkNotNull(key, "key");
       if (entries == null) {
