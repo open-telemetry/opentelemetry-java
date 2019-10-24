@@ -21,9 +21,8 @@ import static io.opentelemetry.sdk.trace.TestUtils.generateRandomSpanId;
 import static io.opentelemetry.sdk.trace.TestUtils.generateRandomTraceId;
 
 import com.google.common.truth.Truth;
+import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.trace.Link;
-import io.opentelemetry.trace.Sampler;
-import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;

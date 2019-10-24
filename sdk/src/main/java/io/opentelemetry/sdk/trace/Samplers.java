@@ -18,10 +18,9 @@ package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
+import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
-import io.opentelemetry.trace.Sampler;
-import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;

@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
-import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -62,12 +61,6 @@ public class SpanBuilderSdkTest {
   public void setSpanKind_null() {
     thrown.expect(NullPointerException.class);
     tracer.spanBuilder(SPAN_NAME).setSpanKind(null);
-  }
-
-  @Test
-  public void setSampler_null() {
-    thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).setSampler(null);
   }
 
   @Test
@@ -158,16 +151,6 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void recordEvents_neverSample() {
-    Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOff()).startSpan();
-    try {
-      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
-    } finally {
-      span.end();
-    }
-  }
-
-  @Test
   public void kind_default() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
@@ -192,8 +175,7 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void sampler() {
-    Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOff()).startSpan();
-
+    Span span = TestUtils.startSpanWithSampler(tracer, SPAN_NAME, Samplers.alwaysOff()).startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
     } finally {
@@ -205,9 +187,9 @@ public class SpanBuilderSdkTest {
   public void sampler_decisionAttributes() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
-            tracer
-                .spanBuilder(SPAN_NAME)
-                .setSampler(
+            TestUtils.startSpanWithSampler(
+                    tracer,
+                    SPAN_NAME,
                     new Sampler() {
                       @Override
                       public Decision shouldSample(
@@ -251,15 +233,15 @@ public class SpanBuilderSdkTest {
   public void sampledViaParentLinks() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
-            tracer
-                .spanBuilder(SPAN_NAME)
-                .setSampler(Samplers.probability(0.0))
+            TestUtils.startSpanWithSampler(tracer, SPAN_NAME, Samplers.probability(0.0))
                 .addLink(sampledSpanContext)
                 .startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
     } finally {
-      span.end();
+      if (span != null) {
+        span.end();
+      }
     }
   }
 
