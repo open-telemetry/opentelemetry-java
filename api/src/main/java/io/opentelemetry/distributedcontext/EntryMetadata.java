@@ -89,7 +89,7 @@ public abstract class EntryMetadata {
 
     private final int hops;
 
-    private EntryTtl(int hops) {
+    EntryTtl(int hops) {
       this.hops = hops;
     }
 

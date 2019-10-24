@@ -54,7 +54,7 @@ protobuf {
 // generated Java directories as source folders.
 idea {
     module {
-        sourceDirs += file("build/generated/source/proto/main/java");
+        sourceDirs += file("build/generated/source/proto/main/java")
         // If you have additional sourceSets and/or codegen plugins, add all of them
     }
 }

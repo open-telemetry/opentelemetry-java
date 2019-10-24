@@ -203,7 +203,7 @@ public final class Status {
 
     private final int value;
 
-    private CanonicalCode(int value) {
+    CanonicalCode(int value) {
       this.value = value;
     }
 
