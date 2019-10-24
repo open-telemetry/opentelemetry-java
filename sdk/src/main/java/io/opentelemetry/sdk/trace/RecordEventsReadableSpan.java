@@ -19,13 +19,11 @@ package io.opentelemetry.sdk.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
-import io.opentelemetry.common.Timestamp;
+import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.internal.Clock;
 import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.util.Events;
-import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Event;
@@ -191,9 +189,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private static SpanData.TimedEvent adaptTimedEvent(
       io.opentelemetry.sdk.trace.TimedEvent sourceEvent, TimestampConverter timestampConverter) {
     Timestamp timestamp = timestampConverter.convertNanoTime(sourceEvent.getNanotime());
-    io.opentelemetry.trace.Event event =
-        Events.create(sourceEvent.getName(), sourceEvent.getAttributes());
-    return SpanData.TimedEvent.create(timestamp, event);
+    return SpanData.TimedEvent.create(
+        timestamp, sourceEvent.getName(), sourceEvent.getAttributes());
   }
 
   @Override
@@ -261,7 +258,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
       List<Link> result = new ArrayList<>(links.size());
       for (Link link : links) {
-        Link newLink = Links.create(context, link.getAttributes());
+        Link newLink = link;
+        if (!(link instanceof SpanData.Link)) {
+          // Make a copy because the given Link may not be immutable and we may reference a lot of
+          // memory.
+          newLink = SpanData.Link.create(link.getContext(), link.getAttributes());
+        }
         result.add(newLink);
       }
       return Collections.unmodifiableList(result);

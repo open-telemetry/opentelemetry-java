@@ -21,10 +21,8 @@ import static io.opentelemetry.sdk.trace.TestUtils.generateRandomSpanId;
 import static io.opentelemetry.sdk.trace.TestUtils.generateRandomTraceId;
 
 import com.google.common.truth.Truth;
-import io.opentelemetry.sdk.trace.util.Links;
+import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.trace.Link;
-import io.opentelemetry.trace.Sampler;
-import io.opentelemetry.trace.Sampler.Decision;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -52,7 +50,7 @@ public class SamplersTest {
           traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), tracestate);
   private final SpanContext notSampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), tracestate);
-  private final Link sampledParentLink = Links.create(sampledSpanContext);
+  private final Link sampledParentLink = SpanData.Link.create(sampledSpanContext);
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 

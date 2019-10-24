@@ -7,6 +7,7 @@ dependencies {
             libraries.opentracing
 
     testImplementation project(':opentelemetry-sdk'),
+            project(':opentelemetry-exporters-inmemory'),
             libraries.protobuf,
             libraries.junit,
             libraries.truth,

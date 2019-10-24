@@ -21,11 +21,9 @@ import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
-import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -45,7 +43,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link SpanBuilderSdk}. */
-@SuppressWarnings("deprecation")
 @RunWith(JUnit4.class)
 public class SpanBuilderSdkTest {
   private static final String SPAN_NAME = "span_name";
@@ -67,12 +64,6 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setSampler_null() {
-    thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).setSampler(null);
-  }
-
-  @Test
   public void setParent_null() {
     thrown.expect(NullPointerException.class);
     tracer.spanBuilder(SPAN_NAME).setParent((Span) null);
@@ -88,7 +79,7 @@ public class SpanBuilderSdkTest {
   public void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
-    spanBuilder.addLink(Links.create(DefaultSpan.getInvalid().getContext()));
+    spanBuilder.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
         DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
@@ -104,21 +95,20 @@ public class SpanBuilderSdkTest {
   @Test
   public void truncateLink() {
     final int maxNumberOfLinks = 8;
-    final Link link = Links.create(DefaultSpan.getInvalid().getContext());
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(maxNumberOfLinks).build();
     tracer.updateActiveTraceConfig(traceConfig);
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
-      spanBuilder.addLink(link);
+      spanBuilder.addLink(sampledSpanContext);
     }
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.getDroppedLinksCount()).isEqualTo(maxNumberOfLinks);
       assertThat(span.getLinks().size()).isEqualTo(maxNumberOfLinks);
       for (int i = 0; i < maxNumberOfLinks; i++) {
-        assertThat(span.getLinks().get(i)).isEqualTo(Links.create(span.getContext()));
+        assertThat(span.getLinks().get(i)).isEqualTo(SpanData.Link.create(sampledSpanContext));
       }
     } finally {
       span.end();
@@ -161,16 +151,6 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void recordEvents_neverSample() {
-    Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOff()).startSpan();
-    try {
-      assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
-    } finally {
-      span.end();
-    }
-  }
-
-  @Test
   public void kind_default() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
@@ -195,8 +175,7 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void sampler() {
-    Span span = tracer.spanBuilder(SPAN_NAME).setSampler(Samplers.alwaysOff()).startSpan();
-
+    Span span = TestUtils.startSpanWithSampler(tracer, SPAN_NAME, Samplers.alwaysOff()).startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
     } finally {
@@ -208,9 +187,9 @@ public class SpanBuilderSdkTest {
   public void sampler_decisionAttributes() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
-            tracer
-                .spanBuilder(SPAN_NAME)
-                .setSampler(
+            TestUtils.startSpanWithSampler(
+                    tracer,
+                    SPAN_NAME,
                     new Sampler() {
                       @Override
                       public Decision shouldSample(
@@ -254,15 +233,15 @@ public class SpanBuilderSdkTest {
   public void sampledViaParentLinks() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
-            tracer
-                .spanBuilder(SPAN_NAME)
-                .setSampler(Samplers.probability(0.0))
-                .addLink(Links.create(sampledSpanContext))
+            TestUtils.startSpanWithSampler(tracer, SPAN_NAME, Samplers.probability(0.0))
+                .addLink(sampledSpanContext)
                 .startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
     } finally {
-      span.end();
+      if (span != null) {
+        span.end();
+      }
     }
   }
 
@@ -411,7 +390,8 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void startTimestamp_null() {
-    thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).setStartTimestamp(null);
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Negative startTimestamp");
+    tracer.spanBuilder(SPAN_NAME).setStartTimestamp(-1);
   }
 }

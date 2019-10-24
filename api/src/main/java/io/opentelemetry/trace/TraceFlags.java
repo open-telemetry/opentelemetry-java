@@ -232,7 +232,6 @@ public final class TraceFlags {
         options = (byte) (options | IS_SAMPLED);
       } else {
         options = (byte) (options & ~IS_SAMPLED);
-        ;
       }
       return this;
     }

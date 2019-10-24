@@ -19,9 +19,9 @@ package io.opentelemetry.exporters.otprotocol;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Timestamp;
 import io.opentelemetry.proto.trace.v1.ConstantSampler;
+import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 
@@ -59,7 +59,7 @@ public class TraceProtoUtils {
    * @param timestamp the opentelemetry Timestamp to convert.
    * @return the protobuf Timestamp representation.
    */
-  public static Timestamp toProtoTimestamp(io.opentelemetry.common.Timestamp timestamp) {
+  public static Timestamp toProtoTimestamp(io.opentelemetry.sdk.common.Timestamp timestamp) {
     return Timestamp.newBuilder()
         .setNanos(timestamp.getNanos())
         .setSeconds(timestamp.getSeconds())

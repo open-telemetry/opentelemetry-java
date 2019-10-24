@@ -22,12 +22,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+/** Unit tests for {@link TracerSdkFactory}. */
 @RunWith(JUnit4.class)
-public class TracerSdkProviderTest {
-  private final TracerSdkFactoryProvider tracerFactoryProvider = new TracerSdkFactoryProvider();
+public class TracerSdkFactoryTest {
+  private final TracerSdkFactory tracerFactory = new TracerSdkFactory();
 
   @Test
-  public void testDefault() {
-    assertThat(tracerFactoryProvider.create()).isInstanceOf(TracerSdkFactory.class);
+  public void defaultGet() {
+    assertThat(tracerFactory.get("test")).isInstanceOf(TracerSdk.class);
+  }
+
+  @Test
+  public void getSameInstanceForSameName_WithoutVersion() {
+    assertThat(tracerFactory.get("test")).isSameInstanceAs(tracerFactory.get("test"));
+    assertThat(tracerFactory.get("test")).isSameInstanceAs(tracerFactory.get("test", null));
+  }
+
+  @Test
+  public void getSameInstanceForSameName_WithVersion() {
+    assertThat(tracerFactory.get("test", "version"))
+        .isSameInstanceAs(tracerFactory.get("test", "version"));
   }
 }

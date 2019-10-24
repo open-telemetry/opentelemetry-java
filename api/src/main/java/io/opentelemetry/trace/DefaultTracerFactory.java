@@ -14,31 +14,23 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.internal;
+package io.opentelemetry.trace;
 
-import io.opentelemetry.sdk.common.Timestamp;
+public class DefaultTracerFactory implements TracerFactory {
 
-/**
- * Interface for getting the current time.
- *
- * @since 0.1.0
- */
-public interface Clock {
-  /**
-   * Obtains the current instant from this clock.
-   *
-   * @return the current instant.
-   * @since 0.1.0
-   */
-  Timestamp now();
+  private static final TracerFactory instance = new DefaultTracerFactory();
 
-  /**
-   * Returns a time measurement with nanosecond precision that can only be used to calculate elapsed
-   * time.
-   *
-   * @return a time measurement with nanosecond precision that can only be used to calculate elapsed
-   *     time.
-   * @since 0.1.0
-   */
-  long nowNanos();
+  public static TracerFactory getInstance() {
+    return instance;
+  }
+
+  @Override
+  public Tracer get(String instrumentationName) {
+    return get(instrumentationName, null);
+  }
+
+  @Override
+  public Tracer get(String instrumentationName, String instrumentationVersion) {
+    return DefaultTracer.getInstance();
+  }
 }

@@ -18,10 +18,10 @@ package io.opentelemetry.sdk.trace.config;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
+import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
-import io.opentelemetry.trace.Sampler;
 import io.opentelemetry.trace.Span;
 import javax.annotation.concurrent.Immutable;
 
@@ -59,8 +59,7 @@ public abstract class TraceConfig {
           .build();
 
   /**
-   * Returns the global default {@code Sampler}. Used if no {@code Sampler} is provided in {@link
-   * Span.Builder#setSampler(Sampler)}.
+   * Returns the global default {@code Sampler} which is used when constructing a new {@code Span}.
    *
    * @return the global default {@code Sampler}.
    */

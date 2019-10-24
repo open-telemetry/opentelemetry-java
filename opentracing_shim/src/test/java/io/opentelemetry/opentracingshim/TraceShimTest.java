@@ -28,7 +28,7 @@ public class TraceShimTest {
   @Test
   public void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim();
-    assertEquals(OpenTelemetry.getTracer(), tracerShim.tracer());
+    assertEquals(OpenTelemetry.getTracerFactory().get("opentracingshim"), tracerShim.tracer());
     assertEquals(OpenTelemetry.getDistributedContextManager(), tracerShim.contextManager());
   }
 
@@ -39,7 +39,7 @@ public class TraceShimTest {
 
   @Test(expected = NullPointerException.class)
   public void createTracerShim_nullContextManager() {
-    TraceShim.createTracerShim(OpenTelemetry.getTracer(), null);
+    TraceShim.createTracerShim(OpenTelemetry.getTracerFactory().get("opentracingshim"), null);
   }
 
   @Test

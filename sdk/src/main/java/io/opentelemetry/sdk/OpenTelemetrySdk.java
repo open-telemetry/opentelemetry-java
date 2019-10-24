@@ -20,6 +20,7 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
 import io.opentelemetry.sdk.metrics.MeterSdk;
 import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -34,13 +35,13 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OpenTelemetrySdk {
   /**
-   * Returns a {@link TracerSdk}.
+   * Returns a {@link TracerSdkFactory}.
    *
-   * @return tracer returned by {@link OpenTelemetry#getTracer()}.
+   * @return TracerFactory returned by {@link OpenTelemetry#getTracerFactory()}.
    * @since 0.1.0
    */
-  public static TracerSdk getTracer() {
-    return (TracerSdk) OpenTelemetry.getTracer();
+  public static TracerSdkFactory getTracerFactory() {
+    return (TracerSdkFactory) OpenTelemetry.getTracerFactory();
   }
 
   /**

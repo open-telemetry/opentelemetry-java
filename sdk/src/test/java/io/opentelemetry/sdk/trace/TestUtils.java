@@ -16,8 +16,10 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.common.Timestamp;
+import io.opentelemetry.sdk.common.Timestamp;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -77,5 +79,22 @@ public final class TestUtils {
         .setStatus(Status.OK)
         .setEndTimestamp(Timestamp.create(200, 200))
         .build();
+  }
+
+  /**
+   * Create a very basic SpanData instance, suitable for testing. It has the bare minimum viable
+   * data.
+   *
+   * @return A SpanData instance.
+   */
+  public static Span.Builder startSpanWithSampler(
+      TracerSdk tracerSdk, String spanName, Sampler sampler) {
+    TraceConfig originalConfig = tracerSdk.getActiveTraceConfig();
+    tracerSdk.updateActiveTraceConfig(originalConfig.toBuilder().setSampler(sampler).build());
+    try {
+      return tracerSdk.spanBuilder(spanName);
+    } finally {
+      tracerSdk.updateActiveTraceConfig(originalConfig);
+    }
   }
 }

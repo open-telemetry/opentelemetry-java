@@ -17,7 +17,6 @@
 package io.opentelemetry.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assertWithMessage;
 
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.trace.DefaultSpan;
@@ -48,8 +47,6 @@ public class BinaryTraceContextTest {
         0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 1, 97, 98, 99, 100,
         101, 102, 103, 104, 2, 1
       };
-  private static final SpanContext EXAMPLE_SPAN_CONTEXT =
-      SpanContext.create(TRACE_ID, SPAN_ID, TRACE_OPTIONS, Tracestate.getDefault());
   private static final SpanContext INVALID_SPAN_CONTEXT = DefaultSpan.getInvalid().getContext();
   @Rule public ExpectedException expectedException = ExpectedException.none();
   private final BinaryFormat<SpanContext> binaryFormat = new BinaryTraceContext();
@@ -58,9 +55,9 @@ public class BinaryTraceContextTest {
     SpanContext propagatedBinarySpanContext =
         binaryFormat.fromByteArray(binaryFormat.toByteArray(spanContext));
 
-    assertWithMessage("BinaryFormat propagated context is not equal with the initial context.")
-        .that(propagatedBinarySpanContext)
-        .isEqualTo(spanContext);
+    assertThat(propagatedBinarySpanContext.getTraceId()).isEqualTo(spanContext.getTraceId());
+    assertThat(propagatedBinarySpanContext.getSpanId()).isEqualTo(spanContext.getSpanId());
+    assertThat(propagatedBinarySpanContext.getTraceFlags()).isEqualTo(spanContext.getTraceFlags());
   }
 
   @Test
@@ -95,7 +92,10 @@ public class BinaryTraceContextTest {
 
   @Test
   public void fromBinaryValue_BinaryExampleValue() {
-    assertThat(binaryFormat.fromByteArray(EXAMPLE_BYTES)).isEqualTo(EXAMPLE_SPAN_CONTEXT);
+    assertThat(binaryFormat.fromByteArray(EXAMPLE_BYTES))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, TRACE_OPTIONS, Tracestate.getDefault()));
   }
 
   @Test(expected = NullPointerException.class)

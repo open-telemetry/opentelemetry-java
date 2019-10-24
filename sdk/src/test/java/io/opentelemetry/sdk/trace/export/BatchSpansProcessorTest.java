@@ -22,6 +22,7 @@ import static org.mockito.Mockito.doThrow;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,7 +61,7 @@ public class BatchSpansProcessorTest {
 
   private ReadableSpan createSampledEndedSpan(String spanName) {
     io.opentelemetry.trace.Span span =
-        tracerSdk.spanBuilder(spanName).setSampler(Samplers.alwaysOn()).startSpan();
+        TestUtils.startSpanWithSampler(tracerSdk, spanName, Samplers.alwaysOn()).startSpan();
     span.end();
     return (ReadableSpan) span;
   }
@@ -69,16 +70,14 @@ public class BatchSpansProcessorTest {
   /*
   private ReadableSpan createNotSampledRecordingEventsEndedSpan(String spanName) {
     io.opentelemetry.trace.Span span =
-        tracerSdk.spanBuilder(spanName).setSampler(Samplers.neverSample()).startSpan();
+        tracerSdk.spanBuilder(spanName).setSampler(Samplers.neverSample()).startSpanWithSampler();
     span.end();
     return (ReadableSpan) span;
   }
   */
 
   private void createNotSampledEndedSpan(String spanName) {
-    io.opentelemetry.trace.Span span =
-        tracerSdk.spanBuilder(spanName).setSampler(Samplers.alwaysOff()).startSpan();
-    span.end();
+    TestUtils.startSpanWithSampler(tracerSdk, spanName, Samplers.alwaysOff()).startSpan().end();
   }
 
   @Test

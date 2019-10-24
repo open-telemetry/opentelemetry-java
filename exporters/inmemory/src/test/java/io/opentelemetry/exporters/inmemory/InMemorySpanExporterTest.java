@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace.export;
+package io.opentelemetry.exporters.inmemory;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import java.util.Collections;
 import java.util.List;
@@ -85,15 +86,27 @@ public class InMemorySpanExporterTest {
 
   @Test
   public void export_ReturnCode() {
-    assertThat(exporter.export(Collections.singletonList(TestUtils.makeBasicSpan())))
+    assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
         .isEqualTo(ResultCode.SUCCESS);
     exporter.shutdown();
     // After shutdown no more export.
-    assertThat(exporter.export(Collections.singletonList(TestUtils.makeBasicSpan())))
+    assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
         .isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
     exporter.reset();
     // Reset does not do anything if already shutdown.
-    assertThat(exporter.export(Collections.singletonList(TestUtils.makeBasicSpan())))
+    assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
         .isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
+  }
+
+  static SpanData makeBasicSpan() {
+    return SpanData.newBuilder()
+        .setTraceId(io.opentelemetry.trace.TraceId.getInvalid())
+        .setSpanId(io.opentelemetry.trace.SpanId.getInvalid())
+        .setName("span")
+        .setKind(io.opentelemetry.trace.Span.Kind.SERVER)
+        .setStartTimestamp(Timestamp.create(100, 100))
+        .setStatus(io.opentelemetry.trace.Status.OK)
+        .setEndTimestamp(Timestamp.create(200, 200))
+        .build();
   }
 }

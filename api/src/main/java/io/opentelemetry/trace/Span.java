@@ -16,7 +16,6 @@
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.common.Timestamp;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -368,18 +367,6 @@ public interface Span {
     Builder setNoParent();
 
     /**
-     * Sets the {@link Sampler} to use. If not set, the implementation will provide a default.
-     *
-     * <p>Observe this is used only as a hint for the underlying implementation, which will decide
-     * whether to sample or not this {@code Span}.
-     *
-     * @param sampler the {@code Sampler} to use when determining sampling for a {@code Span}.
-     * @return this.
-     * @since 0.1.0
-     */
-    Builder setSampler(Sampler sampler);
-
-    /**
      * Adds a {@link Link} to the newly created {@code Span}.
      *
      * @param spanContext the context of the linked {@code Span}.
@@ -428,16 +415,19 @@ public interface Span {
     Builder setSpanKind(Span.Kind spanKind);
 
     /**
-     * Sets an explicit start {@link Timestamp} for the newly created {@code Span}.
+     * Sets an explicit start timestamp for the newly created {@code Span}.
      *
-     * <p>Use this method to specify an explicit start {@link Timestamp}. If not called, the
-     * implementation will use the timestamp value at {@link #startSpan()} time.
+     * <p>Use this method to specify an explicit start timestamp. If not called, the implementation
+     * will use the timestamp value at {@link #startSpan()} time, which should be the default case.
      *
-     * @param startTimestamp the explicit start {@link Timestamp} of the newly created {@code Span}.
+     * <p>Important this is NOT equivalent with System.nanoTime().
+     *
+     * @param startTimestamp the explicit start timestamp of the newly created {@code Span} in nanos
+     *     since epoch.
      * @return this.
      * @since 0.1.0
      */
-    Builder setStartTimestamp(Timestamp startTimestamp);
+    Builder setStartTimestamp(long startTimestamp);
 
     /**
      * Starts a new {@link Span}.

@@ -17,13 +17,11 @@
 package io.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.Timestamp;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * A class that enables overriding the default values used when ending a {@link Span}. Allows
- * overriding the {@link Timestamp endTimestamp}.
+ * overriding the endTimestamp.
  *
  * @since 0.1
  */
@@ -48,17 +46,18 @@ public abstract class EndSpanOptions {
    * @since 0.1
    */
   public static Builder builder() {
-    return new AutoValue_EndSpanOptions.Builder();
+    return new AutoValue_EndSpanOptions.Builder().setEndTimestamp(0);
   }
 
   /**
-   * Returns the end {@link Timestamp}.
+   * Returns the end timestamp.
+   *
+   * <p>Important this is NOT equivalent with System.nanoTime().
    *
    * @return the end timestamp.
    * @since 0.1
    */
-  @Nullable
-  public abstract Timestamp getEndTimestamp();
+  public abstract long getEndTimestamp();
 
   /**
    * Builder class for {@link EndSpanOptions}.
@@ -68,13 +67,15 @@ public abstract class EndSpanOptions {
   @AutoValue.Builder
   public abstract static class Builder {
     /**
-     * Sets the end {@link Timestamp} for the {@link Span}.
+     * Sets the end timestamp for the {@link Span}.
      *
-     * @param endTimestamp the end {@link Timestamp}.
+     * <p>Important this is NOT equivalent with System.nanoTime().
+     *
+     * @param endTimestamp the end timestamp in nanos since epoch.
      * @return this.
      * @since 0.1
      */
-    public abstract Builder setEndTimestamp(@Nullable Timestamp endTimestamp);
+    public abstract Builder setEndTimestamp(long endTimestamp);
 
     /**
      * Builds and returns a {@code EndSpanOptions} with the desired settings.

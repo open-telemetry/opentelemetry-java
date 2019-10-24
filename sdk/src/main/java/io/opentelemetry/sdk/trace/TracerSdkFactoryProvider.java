@@ -14,31 +14,15 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.internal;
+package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.sdk.common.Timestamp;
+import io.opentelemetry.trace.TracerFactory;
+import io.opentelemetry.trace.spi.TracerFactoryProvider;
 
-/**
- * Interface for getting the current time.
- *
- * @since 0.1.0
- */
-public interface Clock {
-  /**
-   * Obtains the current instant from this clock.
-   *
-   * @return the current instant.
-   * @since 0.1.0
-   */
-  Timestamp now();
-
-  /**
-   * Returns a time measurement with nanosecond precision that can only be used to calculate elapsed
-   * time.
-   *
-   * @return a time measurement with nanosecond precision that can only be used to calculate elapsed
-   *     time.
-   * @since 0.1.0
-   */
-  long nowNanos();
+/** SDK implementation of the TracerProviderFactory for SPI. */
+public class TracerSdkFactoryProvider implements TracerFactoryProvider {
+  @Override
+  public TracerFactory create() {
+    return new TracerSdkFactory();
+  }
 }

@@ -134,7 +134,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
     String tracestate = getter.get(carrier, TRACESTATE);
     try {
       if (tracestate == null || tracestate.isEmpty()) {
-        return SpanContext.create(traceId, spanId, traceFlags, TRACESTATE_DEFAULT);
+        return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACESTATE_DEFAULT);
       }
       Tracestate.Builder tracestateBuilder = Tracestate.builder();
       String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(tracestate);
@@ -146,10 +146,10 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
         String listMember = listMembers[i];
         int index = listMember.indexOf(TRACESTATE_KEY_VALUE_DELIMITER);
         checkArgument(index != -1, "Invalid tracestate list-member format.");
-        tracestateBuilder.set(
-            listMember.substring(0, index), listMember.substring(index + 1, listMember.length()));
+        tracestateBuilder.set(listMember.substring(0, index), listMember.substring(index + 1));
       }
-      return SpanContext.create(traceId, spanId, traceFlags, tracestateBuilder.build());
+      return SpanContext.createFromRemoteParent(
+          traceId, spanId, traceFlags, tracestateBuilder.build());
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid tracestate: " + tracestate, e);
     }

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.internal;
 
-import io.opentelemetry.common.Timestamp;
+import io.opentelemetry.sdk.common.Timestamp;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** A {@link Clock} that uses {@link System#currentTimeMillis()} and {@link System#nanoTime()}. */

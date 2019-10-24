@@ -16,7 +16,6 @@
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.common.Timestamp;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
@@ -24,7 +23,6 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.Map;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -117,11 +115,6 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setSampler(@Nullable Sampler sampler) {
-      return this;
-    }
-
-    @Override
     public NoopSpanBuilder addLink(SpanContext spanContext) {
       return this;
     }
@@ -143,13 +136,12 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setStartTimestamp(Timestamp startTimestamp) {
-      Utils.checkNotNull(startTimestamp, "startTimestamp");
+    public NoopSpanBuilder setStartTimestamp(long startTimestamp) {
+      Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
       return this;
     }
 
     private NoopSpanBuilder(Tracer tracer, String name) {
-      Utils.checkNotNull(tracer, "tracer");
       Utils.checkNotNull(name, "name");
       this.tracer = tracer;
     }

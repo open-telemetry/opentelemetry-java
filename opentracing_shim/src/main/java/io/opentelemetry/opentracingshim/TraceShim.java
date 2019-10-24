@@ -33,7 +33,9 @@ public final class TraceShim {
    */
   public static io.opentracing.Tracer createTracerShim() {
     return new TracerShim(
-        new TelemetryInfo(OpenTelemetry.getTracer(), OpenTelemetry.getDistributedContextManager()));
+        new TelemetryInfo(
+            OpenTelemetry.getTracerFactory().get("opentracingshim"),
+            OpenTelemetry.getDistributedContextManager()));
   }
 
   /**

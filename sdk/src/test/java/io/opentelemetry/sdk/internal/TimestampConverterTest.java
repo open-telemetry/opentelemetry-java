@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.internal;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.internal.ClockTestUtil.createTimestamp;
 
-import io.opentelemetry.common.Timestamp;
+import io.opentelemetry.sdk.common.Timestamp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

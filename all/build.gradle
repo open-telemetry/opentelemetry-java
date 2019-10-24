@@ -42,7 +42,7 @@ javadoc {
     })
     for (subproject in subprojects_javadoc) {
         if (subproject == project) {
-            continue;
+            continue
         }
         source subproject.javadoc.source
         options.links subproject.javadoc.options.links.toArray(new String[0])

@@ -146,6 +146,6 @@ public final class BinaryTraceContext implements BinaryFormat<SpanContext> {
       }
       traceFlags = TraceFlags.fromByte(bytes[pos + ID_SIZE]);
     }
-    return SpanContext.create(traceId, spanId, traceFlags, TRACESTATE_DEFAULT);
+    return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACESTATE_DEFAULT);
   }
 }

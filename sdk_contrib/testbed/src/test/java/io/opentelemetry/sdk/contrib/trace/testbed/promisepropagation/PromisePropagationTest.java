@@ -19,9 +19,9 @@ package io.opentelemetry.sdk.contrib.trace.testbed.promisepropagation;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.export.InMemorySpanExporter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;

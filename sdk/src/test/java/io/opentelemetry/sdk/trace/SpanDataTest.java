@@ -20,10 +20,8 @@ import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import io.opentelemetry.common.Timestamp;
+import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
-import io.opentelemetry.sdk.trace.util.Events;
-import io.opentelemetry.sdk.trace.util.Links;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
@@ -80,7 +78,9 @@ public class SpanDataTest {
     thrown.expect(UnsupportedOperationException.class);
     spanData
         .getTimedEvents()
-        .add(TimedEvent.create(Timestamp.create(100, 3), Events.create("foo")));
+        .add(
+            TimedEvent.create(
+                Timestamp.create(100, 3), "foo", Collections.<String, AttributeValue>emptyMap()));
   }
 
   private static SpanData createSpanDataWithMutableCollections() {
@@ -92,7 +92,7 @@ public class SpanDataTest {
   }
 
   private static Link emptyLink() {
-    return Links.create(
+    return SpanData.Link.create(
         SpanContext.create(
             TraceId.getInvalid(),
             SpanId.getInvalid(),
