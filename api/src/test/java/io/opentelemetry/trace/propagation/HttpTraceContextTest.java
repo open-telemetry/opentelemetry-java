@@ -128,7 +128,8 @@ public class HttpTraceContextTest {
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_SAMPLED);
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_DEFAULT));
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_DEFAULT));
   }
 
   @Test
@@ -137,7 +138,8 @@ public class HttpTraceContextTest {
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
   }
 
   @Test
@@ -147,46 +149,51 @@ public class HttpTraceContextTest {
     carrier.put(TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING);
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_NOT_DEFAULT));
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_NOT_DEFAULT));
   }
 
   @Test
   public void extract_NotSampledContext_WithTraceState() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     carrier.put(TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING);
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
   }
 
   @Test
   public void extract_NotSampledContext_NextVersion() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACEPARENT, "01-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-02");
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
   }
 
   @Test
   public void extract_NotSampledContext_EmptyTraceState() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     carrier.put(TRACESTATE, "");
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
   }
 
   @Test
   public void extract_NotSampledContext_TraceStateWithSpaces() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     carrier.put(TRACESTATE, "foo=bar   ,    bar=baz");
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
   }
 
   @Test

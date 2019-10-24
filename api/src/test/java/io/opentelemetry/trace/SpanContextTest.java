@@ -47,6 +47,12 @@ public class SpanContextTest {
           SpanId.fromBytes(secondSpanIdBytes, 0),
           TraceFlags.builder().setIsSampled(true).build(),
           secondTracestate);
+  private static final SpanContext remote =
+      SpanContext.createFromRemoteParent(
+          TraceId.fromBytes(secondTraceIdBytes, 0),
+          SpanId.fromBytes(secondSpanIdBytes, 0),
+          TraceFlags.builder().setIsSampled(true).build(),
+          emptyTracestate);
 
   @Test
   public void invalidSpanContext() {
@@ -103,6 +109,13 @@ public class SpanContextTest {
   }
 
   @Test
+  public void isRemote() {
+    assertThat(first.isRemote()).isFalse();
+    assertThat(second.isRemote()).isFalse();
+    assertThat(remote.isRemote()).isTrue();
+  }
+
+  @Test
   public void spanContext_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(
@@ -124,6 +137,13 @@ public class SpanContextTest {
             SpanId.fromBytes(secondSpanIdBytes, 0),
             TraceFlags.builder().setIsSampled(true).build(),
             secondTracestate));
+    tester.addEqualityGroup(
+        remote,
+        SpanContext.createFromRemoteParent(
+            TraceId.fromBytes(secondTraceIdBytes, 0),
+            SpanId.fromBytes(secondSpanIdBytes, 0),
+            TraceFlags.builder().setIsSampled(true).build(),
+            emptyTracestate));
     tester.testEquals();
   }
 

@@ -36,12 +36,14 @@ public final class SpanContext {
           TraceId.getInvalid(),
           SpanId.getInvalid(),
           TraceFlags.getDefault(),
-          Tracestate.getDefault());
+          Tracestate.getDefault(),
+          /* isRemote= */ false);
 
   private final TraceId traceId;
   private final SpanId spanId;
   private final TraceFlags traceFlags;
   private final Tracestate tracestate;
+  private final boolean isRemote;
 
   /**
    * Returns the invalid {@code SpanContext} that can be used for no-op operations.
@@ -64,7 +66,23 @@ public final class SpanContext {
    */
   public static SpanContext create(
       TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
-    return new SpanContext(traceId, spanId, traceFlags, tracestate);
+    return new SpanContext(traceId, spanId, traceFlags, tracestate, /* isRemote= */ false);
+  }
+
+  /**
+   * Creates a new {@code SpanContext} that was propagated from a remote parent, with the given
+   * identifiers and options.
+   *
+   * @param traceId the trace identifier of the span context.
+   * @param spanId the span identifier of the span context.
+   * @param traceFlags the trace options for the span context.
+   * @param tracestate the trace state for the span context.
+   * @return a new {@code SpanContext} with the given identifiers and options.
+   * @since 0.1.0
+   */
+  public static SpanContext createFromRemoteParent(
+      TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
+    return new SpanContext(traceId, spanId, traceFlags, tracestate, /* isRemote= */ true);
   }
 
   /**
@@ -108,13 +126,23 @@ public final class SpanContext {
   }
 
   /**
-   * Returns true if this {@code SpanContext} is valid.
+   * Returns {@code true} if this {@code SpanContext} is valid.
    *
-   * @return true if this {@code SpanContext} is valid.
+   * @return {@code true} if this {@code SpanContext} is valid.
    * @since 0.1.0
    */
   public boolean isValid() {
     return traceId.isValid() && spanId.isValid();
+  }
+
+  /**
+   * Returns {@code true} if the {@code SpanContext} was propagated from a remote parent.
+   *
+   * @return {@code true} if the {@code SpanContext} was propagated from a remote parent.
+   * @since 0.1.0
+   */
+  public boolean isRemote() {
+    return isRemote;
   }
 
   @Override
@@ -130,7 +158,8 @@ public final class SpanContext {
     SpanContext that = (SpanContext) obj;
     return traceId.equals(that.traceId)
         && spanId.equals(that.spanId)
-        && traceFlags.equals(that.traceFlags);
+        && traceFlags.equals(that.traceFlags)
+        && isRemote == that.isRemote;
   }
 
   @Override
@@ -146,14 +175,21 @@ public final class SpanContext {
         + spanId
         + ", traceFlags="
         + traceFlags
+        + ", isRemote="
+        + isRemote
         + "}";
   }
 
   private SpanContext(
-      TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
+      TraceId traceId,
+      SpanId spanId,
+      TraceFlags traceFlags,
+      Tracestate tracestate,
+      boolean isRemote) {
     this.traceId = traceId;
     this.spanId = spanId;
     this.traceFlags = traceFlags;
     this.tracestate = tracestate;
+    this.isRemote = isRemote;
   }
 }
