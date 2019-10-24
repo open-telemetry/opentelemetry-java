@@ -59,7 +59,7 @@ public abstract class TraceConfig {
           .build();
 
   /**
-   * Returns the global default {@code Sampler}. Used if when constructing a new {@code Span}.
+   * Returns the global default {@code Sampler} which is used when constructing a new {@code Span}.
    *
    * @return the global default {@code Sampler}.
    */
