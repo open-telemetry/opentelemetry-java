@@ -36,11 +36,11 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
     this(
         spanShim.telemetryInfo(),
         spanShim.getSpan().getContext(),
-        spanShim.contextManager().contextBuilder().build());
+        spanShim.telemetryInfo().emptyDistributedContext());
   }
 
   public SpanContextShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.SpanContext context) {
-    this(telemetryInfo, context, telemetryInfo.contextManager().contextBuilder().build());
+    this(telemetryInfo, context, telemetryInfo.emptyDistributedContext());
   }
 
   public SpanContextShim(
