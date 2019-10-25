@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.internal;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.common.Timestamp;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -28,27 +30,27 @@ public final class TestClockTest {
 
   @Test
   public void setAndGetTime() {
-    TestClock clock = TestClock.create(ClockTestUtil.createTimestamp(1, 2));
-    assertThat(clock.now()).isEqualTo(ClockTestUtil.createTimestamp(1, 2));
-    clock.setTime(ClockTestUtil.createTimestamp(3, 4));
-    assertThat(clock.now()).isEqualTo(ClockTestUtil.createTimestamp(3, 4));
+    TestClock clock = TestClock.create(Timestamp.create(1, 2));
+    assertThat(clock.now()).isEqualTo(Timestamp.create(1, 2));
+    clock.setTime(Timestamp.create(3, 4));
+    assertThat(clock.now()).isEqualTo(Timestamp.create(3, 4));
   }
 
   @Test
   public void advanceMillis() {
     TestClock clock =
-        TestClock.create(ClockTestUtil.createTimestamp(1, 500 * ClockTestUtil.NANOS_PER_MILLI));
+        TestClock.create(Timestamp.create(1, (int) TimeUnit.MILLISECONDS.toNanos(500)));
     clock.advanceMillis(2600);
     assertThat(clock.now())
-        .isEqualTo(ClockTestUtil.createTimestamp(4, 100 * ClockTestUtil.NANOS_PER_MILLI));
+        .isEqualTo(Timestamp.create(4, (int) TimeUnit.MILLISECONDS.toNanos(100)));
   }
 
   @Test
   public void measureElapsedTime() {
-    TestClock clock = TestClock.create(ClockTestUtil.createTimestamp(10, 1));
+    TestClock clock = TestClock.create(Timestamp.create(10, 1));
     long nanos1 = clock.nowNanos();
-    clock.setTime(ClockTestUtil.createTimestamp(11, 5));
+    clock.setTime(Timestamp.create(11, 5));
     long nanos2 = clock.nowNanos();
-    assertThat(nanos2 - nanos1).isEqualTo(ClockTestUtil.NANOS_PER_SECOND + 4);
+    assertThat(nanos2 - nanos1).isEqualTo(TimeUnit.SECONDS.toNanos(1) + 4);
   }
 }
