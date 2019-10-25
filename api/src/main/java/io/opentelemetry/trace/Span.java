@@ -138,6 +138,20 @@ public interface Span {
   /**
    * Adds an event to the {@code Span}.
    *
+   * <p>Use this method to specify an explicit event timestamp. If not called, the implementation
+   * will use the current timestamp value, which should be the default case.
+   *
+   * <p>Important: this is NOT equivalent with System.nanoTime().
+   *
+   * @param name the name of the event.
+   * @param timestamp the explicit event timestamp in nanos since epoch.
+   * @since 0.1.0
+   */
+  void addEvent(String name, long timestamp);
+
+  /**
+   * Adds an event to the {@code Span}.
+   *
    * @param name the name of the event.
    * @param attributes the attributes that will be added; these are associated with this event, not
    *     the {@code Span} as for {@code setAttribute()}.
@@ -148,10 +162,40 @@ public interface Span {
   /**
    * Adds an event to the {@code Span}.
    *
+   * <p>Use this method to specify an explicit event timestamp. If not called, the implementation
+   * will use the current timestamp value, which should be the default case.
+   *
+   * <p>Important: this is NOT equivalent with System.nanoTime().
+   *
+   * @param name the name of the event.
+   * @param attributes the attributes that will be added; these are associated with this event, not
+   *     the {@code Span} as for {@code setAttribute()}.
+   * @param timestamp the explicit event timestamp in nanos since epoch.
+   * @since 0.1.0
+   */
+  void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp);
+
+  /**
+   * Adds an event to the {@code Span}.
+   *
    * @param event the event to add.
    * @since 0.1.0
    */
   void addEvent(Event event);
+
+  /**
+   * Adds an event to the {@code Span}.
+   *
+   * <p>Use this method to specify an explicit event timestamp. If not alled, the implementation
+   * will use the current timestamp value, which should be the default case.
+   *
+   * <p>Important: this is NOT equivalent with System.nanoTime().
+   *
+   * @param event the event to add.
+   * @param timestamp the explicit event timestamp in nanos since epoch.
+   * @since 0.1.0
+   */
+  void addEvent(Event event, long timestamp);
 
   /**
    * Sets the {@link Status} to the {@code Span}.
