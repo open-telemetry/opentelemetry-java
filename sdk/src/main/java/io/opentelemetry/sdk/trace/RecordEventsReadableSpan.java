@@ -202,7 +202,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @Override
   public String getName() {
-    synchronized(lock) {
+    synchronized (lock) {
       return name;
     }
   }
@@ -214,7 +214,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return the end nano time.
    */
   private long getEndNanoTime() {
-    synchronized(lock) {
+    synchronized (lock) {
       return getEndNanoTimeInternal();
     }
   }
@@ -235,7 +235,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return The TimedEvents for this span.
    */
   private List<TimedEvent> getTimedEvents() {
-    synchronized(lock) {
+    synchronized (lock) {
       return new ArrayList<>(events);
     }
   }
@@ -247,7 +247,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   List<Link> getLinks() {
-    synchronized(lock) {
+    synchronized (lock) {
       if (links == null) {
         return Collections.emptyList();
       }
@@ -272,7 +272,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   Map<String, AttributeValue> getAttributes() {
-    synchronized(lock) {
+    synchronized (lock) {
       return Collections.unmodifiableMap(attributes);
     }
   }
@@ -284,7 +284,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return the latency of the {@code Span} in nanos.
    */
   long getLatencyNs() {
-    synchronized(lock) {
+    synchronized (lock) {
       return getEndNanoTimeInternal() - startNanoTime;
     }
   }
@@ -292,7 +292,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Use getEndNanoTimeInternal to avoid over-locking.
   @GuardedBy("lock")
   private long getEndNanoTimeInternal() {
-    synchronized(lock) {
+    synchronized (lock) {
       return hasBeenEnded ? endNanoTime : clock.nanoTime();
     }
   }
@@ -351,7 +351,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
-    synchronized(lock) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
@@ -391,7 +391,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
-    synchronized(lock) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
@@ -404,7 +404,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void setStatus(Status status) {
     Preconditions.checkNotNull(status, "status");
-    synchronized(lock) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return;
@@ -416,7 +416,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void updateName(String name) {
     Preconditions.checkNotNull(name, "name");
-    synchronized(lock) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
         return;
@@ -460,7 +460,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   void addChild() {
-    synchronized(lock) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
         return;
@@ -469,9 +469,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
   }
 
-  @GuardedBy("lock")
   private Status getStatusWithDefault() {
-    synchronized(lock) {
+    synchronized (lock) {
       return status == null ? Status.OK : status;
     }
   }
@@ -548,7 +547,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @SuppressWarnings("NoFinalizer")
   @Override
   protected void finalize() throws Throwable {
-    synchronized(lock) {
+    synchronized (lock) {
       if (!hasBeenEnded) {
         logger.log(Level.SEVERE, "Span " + name + " is GC'ed without being ended.");
       }
@@ -568,14 +567,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @VisibleForTesting
   int getNumberOfChildren() {
-    synchronized(lock) {
+    synchronized (lock) {
       return numberOfChildren;
     }
   }
 
   @VisibleForTesting
   int getTotalRecordedEvents() {
-    synchronized(lock) {
+    synchronized (lock) {
       return totalRecordedEvents;
     }
   }
