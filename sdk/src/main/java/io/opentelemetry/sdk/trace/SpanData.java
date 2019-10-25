@@ -90,6 +90,14 @@ public abstract class SpanData {
   public abstract Resource getResource();
 
   /**
+   * Returns the instrumentation library specified when creating the tracer which produced this
+   * {@code Span}.
+   *
+   * @return a resource describing the instrumentation library
+   */
+  public abstract Resource getLibraryResource();
+
+  /**
    * Returns the name of this {@code Span}.
    *
    * @return the name of this {@code Span}.
@@ -239,6 +247,7 @@ public abstract class SpanData {
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
         .setTimedEvents(Collections.<TimedEvent>emptyList())
         .setResource(Resource.getEmpty())
+        .setLibraryResource(Resource.getEmpty())
         .setTracestate(Tracestate.getDefault())
         .setTraceFlags(TraceFlags.getDefault());
   }
@@ -324,6 +333,17 @@ public abstract class SpanData {
      * @since 0.1.0
      */
     public abstract Builder setResource(Resource resource);
+
+    /**
+     * Set the instrumentation library of the tracer which created this span. Must not be null.
+     *
+     * @param instrumentationLibrary the instrumentation library of the tracer which created this
+     *     span.
+     * @return this
+     * @see Resource
+     * @since 0.2.0
+     */
+    public abstract Builder setLibraryResource(Resource instrumentationLibrary);
 
     /**
      * Set the name of the span. Must not be null.

@@ -25,6 +25,8 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,11 +41,18 @@ import org.mockito.MockitoAnnotations;
 @SuppressWarnings("MustBeClosedChecker")
 public class TracerSdkTest {
   private static final String SPAN_NAME = "span_name";
+  private static final String INSTRUMENTATION_LIBRARY_NAME =
+      "io.opentelemetry.sdk.trace.TracerSdkTest";
+  private static final String INSTRUMENTATION_LIBRARY_VERSION = "semver:0.2.0";
+  private final Map<String, String> instrumentationLibraryLabels = new HashMap<>();
   @Mock private Span span;
-  private final TracerSdk tracer = TracerSdkFactory.create().get("TracerSdkTest");
+  private final TracerSdk tracer =
+      TracerSdkFactory.create().get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
   @Before
   public void setUp() {
+    instrumentationLibraryLabels.put("name", INSTRUMENTATION_LIBRARY_NAME);
+    instrumentationLibraryLabels.put("version", INSTRUMENTATION_LIBRARY_VERSION);
     MockitoAnnotations.initMocks(this);
   }
 
@@ -102,5 +111,17 @@ public class TracerSdkTest {
       ws.close();
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+  }
+
+  @Test
+  public void getLibraryResource() {
+    assertThat(tracer.getLibraryResource().getLabels()).isEqualTo(instrumentationLibraryLabels);
+  }
+
+  @Test
+  public void propagatesLibraryResourceToSpan() {
+    ReadableSpan readableSpan = (ReadableSpan) tracer.spanBuilder("spanName").startSpan();
+    assertThat(readableSpan.getLibraryResource().getLabels())
+        .isEqualTo(instrumentationLibraryLabels);
   }
 }

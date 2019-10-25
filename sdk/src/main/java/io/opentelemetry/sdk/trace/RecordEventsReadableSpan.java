@@ -71,6 +71,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final Clock clock;
   // The resource associated with this span.
   private final Resource resource;
+  // library resource of the named tracer which created this span
+  private final Resource instrumentationLibrary;
   // The start time of the span.
   private final long startEpochNanos;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
@@ -122,6 +124,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
+      Resource instrumentationLibrary,
       Map<String, AttributeValue> attributes,
       List<Link> links,
       int totalRecordedLinks,
@@ -136,6 +139,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             spanProcessor,
             clock,
             resource,
+            instrumentationLibrary,
             attributes,
             links,
             totalRecordedLinks,
@@ -162,6 +166,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         .setLinks(getLinks())
         .setParentSpanId(parentSpanId)
         .setResource(resource)
+        .setLibraryResource(instrumentationLibrary)
         .setStatus(getStatus())
         .setTimedEvents(adaptTimedEvents())
         .build();
@@ -193,6 +198,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     synchronized (lock) {
       return name;
     }
+  }
+
+  /**
+   * Returns the instrumentation library specified when creating the tracer which produced this
+   * span.
+   *
+   * @return a resource describing the instrumentation library
+   */
+  @Override
+  public Resource getLibraryResource() {
+    return instrumentationLibrary;
   }
 
   /**
@@ -508,6 +524,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
+      Resource instrumentationLibrary,
       Map<String, AttributeValue> attributes,
       List<Link> links,
       int totalRecordedLinks,
@@ -520,6 +537,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.kind = kind;
     this.spanProcessor = spanProcessor;
     this.resource = resource;
+    this.instrumentationLibrary = instrumentationLibrary;
     this.hasBeenEnded = false;
     this.numberOfChildren = 0;
     this.clock = clock;

@@ -51,6 +51,7 @@ class SpanBuilderSdk implements Span.Builder {
   private final TraceConfig traceConfig;
   private final Resource resource;
   private final IdsGenerator idsGenerator;
+  private final Resource instrumentationLibrary;
   private final Clock clock;
 
   @Nullable private Span parent;
@@ -65,12 +66,14 @@ class SpanBuilderSdk implements Span.Builder {
       SpanProcessor spanProcessor,
       TraceConfig traceConfig,
       Resource resource,
+      Resource instrumentationLibrary,
       IdsGenerator idsGenerator,
       Clock clock) {
     this.spanName = spanName;
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
+    this.instrumentationLibrary = instrumentationLibrary;
     this.links = Collections.emptyList();
     this.idsGenerator = idsGenerator;
     this.clock = clock;
@@ -174,6 +177,7 @@ class SpanBuilderSdk implements Span.Builder {
         spanProcessor,
         getClock(parentSpan(parentType, parent), clock),
         resource,
+        instrumentationLibrary,
         samplingDecision.attributes(),
         truncatedLinks(),
         links.size(),

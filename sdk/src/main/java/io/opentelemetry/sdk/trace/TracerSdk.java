@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -32,9 +33,11 @@ public class TracerSdk implements Tracer {
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final TracerSharedState sharedState;
+  private final Resource instrumentationLibrary;
 
-  TracerSdk(TracerSharedState sharedState) {
+  TracerSdk(TracerSharedState sharedState, Resource instrumentationLibrary) {
     this.sharedState = sharedState;
+    this.instrumentationLibrary = instrumentationLibrary;
   }
 
   @Override
@@ -57,6 +60,7 @@ public class TracerSdk implements Tracer {
         sharedState.getActiveSpanProcessor(),
         sharedState.getActiveTraceConfig(),
         sharedState.getResource(),
+        instrumentationLibrary,
         sharedState.getIdsGenerator(),
         sharedState.getClock());
   }
@@ -69,5 +73,15 @@ public class TracerSdk implements Tracer {
   @Override
   public HttpTextFormat<SpanContext> getHttpTextFormat() {
     return HTTP_TEXT_FORMAT;
+  }
+
+  /**
+   * Returns the instrumentation library specified when creating the tracer using {@link
+   * TracerSdkFactory}.
+   *
+   * @return a resource describing the instrumentation library
+   */
+  public Resource getLibraryResource() {
+    return instrumentationLibrary;
   }
 }

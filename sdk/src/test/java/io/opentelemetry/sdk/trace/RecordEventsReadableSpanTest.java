@@ -67,6 +67,8 @@ public class RecordEventsReadableSpanTest {
   private final long startEpochNanos = 1000_123_789_654L;
   private final TestClock testClock = TestClock.create(startEpochNanos);
   private final Resource resource = Resource.getEmpty();
+  private final Resource instrumentationLibrary =
+      Resource.create(Collections.singletonMap("name", "theName"));
   private final Map<String, AttributeValue> attributes = new HashMap<>();
   private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
   private final Link link = SpanData.Link.create(spanContext);
@@ -202,6 +204,16 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
     try {
       assertThat(span.getKind()).isEqualTo(Kind.SERVER);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  public void getLibraryResource() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.CLIENT);
+    try {
+      assertThat(span.getLibraryResource()).isEqualTo(instrumentationLibrary);
     } finally {
       span.end();
     }
@@ -441,6 +453,7 @@ public class RecordEventsReadableSpanTest {
             spanProcessor,
             testClock,
             resource,
+            instrumentationLibrary,
             attributes,
             Collections.singletonList(link),
             1,
@@ -480,6 +493,7 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
     assertThat(spanData.getTracestate()).isEqualTo(Tracestate.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
+    assertThat(spanData.getLibraryResource()).isEqualTo(instrumentationLibrary);
     assertThat(spanData.getName()).isEqualTo(spanName);
     assertThat(spanData.getAttributes()).isEqualTo(attributes);
     assertThat(spanData.getTimedEvents()).isEqualTo(timedEvents);
@@ -520,6 +534,7 @@ public class RecordEventsReadableSpanTest {
             spanProcessor,
             clock,
             resource,
+            instrumentationLibrary,
             attributes,
             links,
             1,
@@ -548,6 +563,7 @@ public class RecordEventsReadableSpanTest {
                     SpanData.TimedEvent.create(firstEventEpochNanos, "event1", event1Attributes),
                     SpanData.TimedEvent.create(secondEventTimeNanos, "event2", event2Attributes)))
             .setResource(resource)
+            .setLibraryResource(instrumentationLibrary)
             .setParentSpanId(parentSpanId)
             .setLinks(links)
             .setTraceId(traceId)
