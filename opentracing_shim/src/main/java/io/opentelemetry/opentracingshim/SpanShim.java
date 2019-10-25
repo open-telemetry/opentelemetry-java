@@ -16,8 +16,6 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.EmptyDistributedContext;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Span;
@@ -27,24 +25,26 @@ import io.opentracing.tag.Tag;
 import io.opentracing.tag.Tags;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
+/*
+ * SpanContextShim is not directly stored in the SpanShim,
+ * as its changes need to be visible in all threads at *any* moment.
+ * By default, the related SpanContextShim will not be created
+ * in order to avoid overhead (which would require taking a write lock
+ * at creation time).
+ *
+ * Calling context() or setBaggageItem() will effectively force the creation
+ * of SpanContextShim object if none existed yet.
+ */
 final class SpanShim extends BaseShimObject implements Span {
   private static final String DEFAULT_EVENT_NAME = "log";
 
   private final io.opentelemetry.trace.Span span;
-  private SpanContextShim contextShim;
 
   public SpanShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.Span span) {
-    this(telemetryInfo, span, EmptyDistributedContext.getInstance());
-  }
-
-  public SpanShim(
-      TelemetryInfo telemetryInfo,
-      io.opentelemetry.trace.Span span,
-      DistributedContext distContext) {
     super(telemetryInfo);
     this.span = span;
-    this.contextShim = new SpanContextShim(telemetryInfo, span.getContext(), distContext);
   }
 
   io.opentelemetry.trace.Span getSpan() {
@@ -53,9 +53,17 @@ final class SpanShim extends BaseShimObject implements Span {
 
   @Override
   public SpanContext context() {
-    synchronized (this) {
-      return contextShim;
+    /* Read the value using the read lock first. */
+    SpanContextShim contextShim = telemetryInfo().spanContextShimTable().get(this);
+
+    /* Switch to the write lock *only* for the relatively exceptional case
+     * of no context being created.
+     * (as we cannot upgrade read->write lock sadly).*/
+    if (contextShim == null) {
+      contextShim = telemetryInfo.spanContextShimTable().create(this);
     }
+
+    return contextShim;
   }
 
   @Override
@@ -139,18 +147,19 @@ final class SpanShim extends BaseShimObject implements Span {
       return this;
     }
 
-    synchronized (this) {
-      contextShim = contextShim.newWithKeyValue(key, value);
-    }
+    telemetryInfo.spanContextShimTable().setBaggageItem(this, key, value);
 
     return this;
   }
 
+  @Nullable
   @Override
   public String getBaggageItem(String key) {
-    synchronized (this) {
-      return contextShim.getBaggageItem(key);
+    if (key == null) {
+      return null;
     }
+
+    return telemetryInfo.spanContextShimTable().getBaggageItem(this, key);
   }
 
   @Override

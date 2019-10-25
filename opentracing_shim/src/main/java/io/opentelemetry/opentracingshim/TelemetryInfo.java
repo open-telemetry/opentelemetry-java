@@ -16,6 +16,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.DistributedContextManager;
 import io.opentelemetry.trace.Tracer;
 
@@ -26,10 +27,14 @@ import io.opentelemetry.trace.Tracer;
 final class TelemetryInfo {
   private final Tracer tracer;
   private final DistributedContextManager contextManager;
+  private final DistributedContext emptyDistributedContext;
+  private final SpanContextShimTable spanContextShimTable;
 
   TelemetryInfo(Tracer tracer, DistributedContextManager contextManager) {
     this.tracer = tracer;
     this.contextManager = contextManager;
+    this.emptyDistributedContext = contextManager.contextBuilder().build();
+    this.spanContextShimTable = new SpanContextShimTable();
   }
 
   Tracer tracer() {
@@ -38,5 +43,13 @@ final class TelemetryInfo {
 
   DistributedContextManager contextManager() {
     return contextManager;
+  }
+
+  SpanContextShimTable spanContextShimTable() {
+    return spanContextShimTable;
+  }
+
+  DistributedContext emptyDistributedContext() {
+    return emptyDistributedContext;
   }
 }

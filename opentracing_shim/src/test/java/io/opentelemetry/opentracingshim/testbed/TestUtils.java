@@ -19,10 +19,10 @@ package io.opentelemetry.opentracingshim.testbed;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.common.Timestamp;
+import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
@@ -48,9 +48,7 @@ public final class TestUtils {
   public static Tracer createTracerShim(InMemorySpanExporter exporter) {
     TracerSdk tracer = new TracerSdk();
     tracer.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
-    // TODO - Make SURE that for these tests we don't really need anything special here.
-    // (PROBABLY we can already use the SDK portion of the Dist Context).
-    return TraceShim.createTracerShim(tracer, DefaultDistributedContextManager.getInstance());
+    return TraceShim.createTracerShim(tracer, new DistributedContextManagerSdk());
   }
 
   /** Returns the number of finished {@code Span}s in the specified {@code InMemorySpanExporter}. */
