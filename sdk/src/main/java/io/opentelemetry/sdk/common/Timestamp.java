@@ -35,7 +35,8 @@ public abstract class Timestamp {
   private static final long MAX_SECONDS = 315576000000L;
   private static final int MAX_NANOS = 999999999;
   private static final long MILLIS_PER_SECOND = 1000L;
-  private static final long NANOS_PER_MILLI = 1000 * 1000;
+  private static final long NANOS_PER_SECOND = 1000L * 1000L * 1000L;
+  private static final long NANOS_PER_MILLI = 1000L * 1000L;
 
   Timestamp() {}
 
@@ -83,6 +84,21 @@ public abstract class Timestamp {
     long secs = floorDiv(epochMilli, MILLIS_PER_SECOND);
     int mos = (int) floorMod(epochMilli, MILLIS_PER_SECOND);
     return create(secs, (int) (mos * NANOS_PER_MILLI)); // Safe int * NANOS_PER_MILLI
+  }
+
+  /**
+   * Creates a new timestamp from the given milliseconds.
+   *
+   * @param epochNanos the timestamp represented in nanoseconds since epoch.
+   * @return new {@code Timestamp} with specified fields.
+   * @throws IllegalArgumentException if the number of milliseconds is out of the range that can be
+   *     represented by {@code Timestamp}.
+   * @since 0.1.0
+   */
+  public static Timestamp fromNanos(long epochNanos) {
+    long secs = floorDiv(epochNanos, NANOS_PER_SECOND);
+    int nanos = (int) floorMod(epochNanos, NANOS_PER_SECOND);
+    return create(secs, nanos); // Safe int * NANOS_PER_MILLI
   }
 
   /**

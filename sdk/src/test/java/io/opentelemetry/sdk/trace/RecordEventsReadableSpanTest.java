@@ -64,8 +64,8 @@ public class RecordEventsReadableSpanTest {
   private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
-  private final Timestamp startTime = Timestamp.create(1000, 0);
-  private final TestClock testClock = TestClock.create(startTime);
+  private final long startEpochNanos = 1000_123_789_654L;
+  private final TestClock testClock = TestClock.create(startEpochNanos);
   private final TimestampConverter timestampConverter = TimestampConverter.now(testClock);
   private final Resource resource = Resource.getEmpty();
   private final Map<String, AttributeValue> attributes = new HashMap<>();
@@ -101,8 +101,8 @@ public class RecordEventsReadableSpanTest {
         Collections.<SpanData.TimedEvent>emptyList(),
         Collections.singletonList(link),
         SPAN_NAME,
-        Timestamp.create(startTime.getSeconds(), 0),
-        Timestamp.create(startTime.getSeconds(), 0),
+        Timestamp.fromNanos(startEpochNanos),
+        Timestamp.fromNanos(startEpochNanos),
         Status.OK);
   }
 
@@ -121,7 +121,7 @@ public class RecordEventsReadableSpanTest {
       SpanData spanData = span.toSpanData();
       SpanData.TimedEvent timedEvent =
           SpanData.TimedEvent.create(
-              Timestamp.create(startTime.getSeconds() + 1, 0),
+              Timestamp.fromNanos(startEpochNanos + NANOS_PER_SECOND),
               "event2",
               Collections.<String, AttributeValue>emptyMap());
       verifySpanData(
@@ -130,8 +130,8 @@ public class RecordEventsReadableSpanTest {
           Collections.singletonList(timedEvent),
           Collections.singletonList(link),
           SPAN_NEW_NAME,
-          Timestamp.create(startTime.getSeconds(), 0),
-          Timestamp.create(testClock.now().getSeconds(), 0),
+          Timestamp.fromNanos(startEpochNanos),
+          Timestamp.fromNanos(testClock.now()),
           Status.OK);
     } finally {
       span.end();
@@ -150,7 +150,7 @@ public class RecordEventsReadableSpanTest {
     SpanData spanData = span.toSpanData();
     SpanData.TimedEvent timedEvent =
         SpanData.TimedEvent.create(
-            Timestamp.create(startTime.getSeconds() + 1, 0),
+            Timestamp.fromNanos(startEpochNanos + NANOS_PER_SECOND),
             "event2",
             Collections.<String, AttributeValue>emptyMap());
     verifySpanData(
@@ -159,8 +159,8 @@ public class RecordEventsReadableSpanTest {
         Collections.singletonList(timedEvent),
         Collections.singletonList(link),
         SPAN_NEW_NAME,
-        Timestamp.create(startTime.getSeconds(), 0),
-        Timestamp.create(testClock.now().getSeconds(), 0),
+        Timestamp.fromNanos(startEpochNanos),
+        Timestamp.fromNanos(testClock.now()),
         Status.CANCELLED);
   }
 
@@ -225,12 +225,10 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      long elapsedTimeNanos1 =
-          (testClock.now().getSeconds() - startTime.getSeconds()) * NANOS_PER_SECOND;
+      long elapsedTimeNanos1 = testClock.now() - startEpochNanos;
       assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos1);
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      long elapsedTimeNanos2 =
-          (testClock.now().getSeconds() - startTime.getSeconds()) * NANOS_PER_SECOND;
+      long elapsedTimeNanos2 = testClock.now() - startEpochNanos;
       assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos2);
     } finally {
       span.end();
@@ -242,8 +240,7 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.end();
-    long elapsedTimeNanos =
-        (testClock.now().getSeconds() - startTime.getSeconds()) * NANOS_PER_SECOND;
+    long elapsedTimeNanos = testClock.now() - startEpochNanos;
     assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos);
     testClock.advanceMillis(MILLIS_PER_SECOND);
     assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos);
@@ -384,7 +381,7 @@ public class RecordEventsReadableSpanTest {
       for (int i = 0; i < maxNumberOfEvents; i++) {
         SpanData.TimedEvent expectedEvent =
             SpanData.TimedEvent.create(
-                Timestamp.create(startTime.getSeconds() + maxNumberOfEvents + i, 0),
+                Timestamp.fromNanos(startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND),
                 "event2",
                 Collections.<String, AttributeValue>emptyMap());
         assertThat(spanData.getTimedEvents().get(i)).isEqualTo(expectedEvent);
@@ -397,7 +394,7 @@ public class RecordEventsReadableSpanTest {
     for (int i = 0; i < maxNumberOfEvents; i++) {
       SpanData.TimedEvent expectedEvent =
           SpanData.TimedEvent.create(
-              Timestamp.create(startTime.getSeconds() + maxNumberOfEvents + i, 0),
+              Timestamp.fromNanos(startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND),
               "event2",
               Collections.<String, AttributeValue>emptyMap());
       assertThat(spanData.getTimedEvents().get(i)).isEqualTo(expectedEvent);
@@ -528,17 +525,17 @@ public class RecordEventsReadableSpanTest {
             attributes,
             links,
             1);
-    long startTimeNanos = clock.nowNanos();
+    long startTimeNanos = clock.nanoTime();
     clock.advanceMillis(4);
-    long firstEventTimeNanos = clock.nowNanos();
+    long firstEventTimeNanos = clock.nanoTime();
     readableSpan.addEvent("event1", event1Attributes);
     clock.advanceMillis(6);
-    long secondEventTimeNanos = clock.nowNanos();
+    long secondEventTimeNanos = clock.nanoTime();
     readableSpan.addEvent("event2", event2Attributes);
 
     clock.advanceMillis(100);
     readableSpan.end();
-    long endTimeNanos = clock.nowNanos();
+    long endTimeNanos = clock.nanoTime();
 
     SpanData expected =
         SpanData.newBuilder()

@@ -28,27 +28,25 @@ public final class TestClockTest {
 
   @Test
   public void setAndGetTime() {
-    TestClock clock = TestClock.create(ClockTestUtil.createTimestamp(1, 2));
-    assertThat(clock.now()).isEqualTo(ClockTestUtil.createTimestamp(1, 2));
-    clock.setTime(ClockTestUtil.createTimestamp(3, 4));
-    assertThat(clock.now()).isEqualTo(ClockTestUtil.createTimestamp(3, 4));
+    TestClock clock = TestClock.create(1234);
+    assertThat(clock.now()).isEqualTo(1234);
+    clock.setTime(9876543210L);
+    assertThat(clock.now()).isEqualTo(9876543210L);
   }
 
   @Test
   public void advanceMillis() {
-    TestClock clock =
-        TestClock.create(ClockTestUtil.createTimestamp(1, 500 * ClockTestUtil.NANOS_PER_MILLI));
+    TestClock clock = TestClock.create(1_500_000_000L);
     clock.advanceMillis(2600);
-    assertThat(clock.now())
-        .isEqualTo(ClockTestUtil.createTimestamp(4, 100 * ClockTestUtil.NANOS_PER_MILLI));
+    assertThat(clock.now()).isEqualTo(4_100_000_000L);
   }
 
   @Test
   public void measureElapsedTime() {
-    TestClock clock = TestClock.create(ClockTestUtil.createTimestamp(10, 1));
-    long nanos1 = clock.nowNanos();
-    clock.setTime(ClockTestUtil.createTimestamp(11, 5));
-    long nanos2 = clock.nowNanos();
-    assertThat(nanos2 - nanos1).isEqualTo(ClockTestUtil.NANOS_PER_SECOND + 4);
+    TestClock clock = TestClock.create(10_000_000_001L);
+    long nanos1 = clock.nanoTime();
+    clock.setTime(11_000_000_005L);
+    long nanos2 = clock.nanoTime();
+    assertThat(nanos2 - nanos1).isEqualTo(1_000_000_004L);
   }
 }

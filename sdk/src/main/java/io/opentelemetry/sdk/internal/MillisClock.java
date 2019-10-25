@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.internal;
 
-import io.opentelemetry.sdk.common.Timestamp;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** A {@link Clock} that uses {@link System#currentTimeMillis()} and {@link System#nanoTime()}. */
@@ -37,12 +37,12 @@ public final class MillisClock implements Clock {
   }
 
   @Override
-  public Timestamp now() {
-    return Timestamp.fromMillis(System.currentTimeMillis());
+  public long now() {
+    return TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
   }
 
   @Override
-  public long nowNanos() {
+  public long nanoTime() {
     return System.nanoTime();
   }
 }

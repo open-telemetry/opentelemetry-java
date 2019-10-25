@@ -156,8 +156,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public SpanData toSpanData() {
-    Timestamp startTimestamp = timestampConverter.convertNanoTime(startNanoTime);
-    Timestamp endTimestamp = timestampConverter.convertNanoTime(getEndNanoTime());
+    Timestamp startTimestamp =
+        Timestamp.fromNanos(timestampConverter.convertNanoTime(startNanoTime));
+    Timestamp endTimestamp =
+        Timestamp.fromNanos(timestampConverter.convertNanoTime(getEndNanoTime()));
     SpanContext spanContext = getSpanContext();
     return SpanData.newBuilder()
         .setName(getName())
@@ -188,7 +190,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static SpanData.TimedEvent adaptTimedEvent(
       io.opentelemetry.sdk.trace.TimedEvent sourceEvent, TimestampConverter timestampConverter) {
-    Timestamp timestamp = timestampConverter.convertNanoTime(sourceEvent.getNanotime());
+    Timestamp timestamp =
+        Timestamp.fromNanos(timestampConverter.convertNanoTime(sourceEvent.getNanotime()));
     return SpanData.TimedEvent.create(
         timestamp, sourceEvent.getName(), sourceEvent.getAttributes());
   }
@@ -212,7 +215,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   /**
    * Returns the end nano time (see {@link System#nanoTime()}). If the current {@code Span} is not
-   * ended then returns {@link Clock#nowNanos()}.
+   * ended then returns {@link Clock#nanoTime()}.
    *
    * @return the end nano time.
    */
@@ -297,7 +300,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Use getEndNanoTimeInternal to avoid over-locking.
   @GuardedBy("this")
   private long getEndNanoTimeInternal() {
-    return hasBeenEnded ? endNanoTime : clock.nowNanos();
+    return hasBeenEnded ? endNanoTime : clock.nanoTime();
   }
 
   /**
@@ -365,35 +368,35 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name) {
-    addTimedEvent(TimedEvent.create(clock.nowNanos(), name));
+    addTimedEvent(TimedEvent.create(clock.nanoTime(), name));
   }
 
   // TODO: Use timestamp.
   @Override
   public void addEvent(String name, long timestamp) {
-    addTimedEvent(TimedEvent.create(clock.nowNanos(), name));
+    addTimedEvent(TimedEvent.create(clock.nanoTime(), name));
   }
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes) {
-    addTimedEvent(TimedEvent.create(clock.nowNanos(), name, attributes));
+    addTimedEvent(TimedEvent.create(clock.nanoTime(), name, attributes));
   }
 
   // TODO: Use timestamp.
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
-    addTimedEvent(TimedEvent.create(clock.nowNanos(), name, attributes));
+    addTimedEvent(TimedEvent.create(clock.nanoTime(), name, attributes));
   }
 
   @Override
   public void addEvent(Event event) {
-    addTimedEvent(TimedEvent.create(clock.nowNanos(), event));
+    addTimedEvent(TimedEvent.create(clock.nanoTime(), event));
   }
 
   // TODO: Use timestamp.
   @Override
   public void addEvent(Event event, long timestamp) {
-    addTimedEvent(TimedEvent.create(clock.nowNanos(), event));
+    addTimedEvent(TimedEvent.create(clock.nanoTime(), event));
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
@@ -438,7 +441,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
         return;
       }
-      endNanoTime = clock.nowNanos();
+      endNanoTime = clock.nanoTime();
       hasBeenEnded = true;
     }
     spanProcessor.onEnd(this);
@@ -555,7 +558,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.numberOfChildren = 0;
     this.timestampConverter =
         timestampConverter != null ? timestampConverter : TimestampConverter.now(clock);
-    startNanoTime = clock.nowNanos();
+    startNanoTime = clock.nanoTime();
     if (!attributes.isEmpty()) {
       getInitializedAttributes().putAll(attributes);
     }
