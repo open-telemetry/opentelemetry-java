@@ -30,7 +30,7 @@ abstract class TimedEvent {
   private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES =
       Collections.unmodifiableMap(Collections.<String, AttributeValue>emptyMap());
 
-  abstract long getNanotime();
+  abstract long getEpochNanos();
 
   abstract String getName();
 
@@ -41,39 +41,40 @@ abstract class TimedEvent {
   /**
    * Creates an {@link TimedEvent} with the given time, name and empty attributes.
    *
-   * @param nanoTime time in nanos.
+   * @param epochNanos epoch timestamp in nanos.
    * @param name the name of this {@code TimedEvent}.
    * @return an {@code TimedEvent}.
    */
-  static TimedEvent create(long nanoTime, String name) {
-    return create(nanoTime, name, EMPTY_ATTRIBUTES);
+  static TimedEvent create(long epochNanos, String name) {
+    return create(epochNanos, name, EMPTY_ATTRIBUTES);
   }
 
   /**
    * Creates an {@link TimedEvent} with the given time, name and attributes.
    *
-   * @param nanoTime time in nanos.
+   * @param epochNanos epoch timestamp in nanos.
    * @param name the name of this {@code TimedEvent}.
    * @param attributes the attributes of this {@code TimedEvent}.
    * @return an {@code TimedEvent}.
    */
-  static TimedEvent create(long nanoTime, String name, Map<String, AttributeValue> attributes) {
-    return new AutoValue_TimedEvent_RawTimedEvent(nanoTime, name, attributes);
+  static TimedEvent create(long epochNanos, String name, Map<String, AttributeValue> attributes) {
+    return new AutoValue_TimedEvent_RawTimedEvent(epochNanos, name, attributes);
   }
 
   /**
    * Creates an {@link TimedEvent} with the given time and event.
    *
-   * @param nanoTime time in nanos.
+   * @param epochNanos epoch timestamp in nanos.
    * @param event the event.
    * @return an {@code TimedEvent}.
    */
-  static TimedEvent create(long nanoTime, Event event) {
-    return new AutoValue_TimedEvent_TimedEventWithEvent(nanoTime, event);
+  static TimedEvent create(long epochNanos, Event event) {
+    return new AutoValue_TimedEvent_RawTimedEventWithEvent(epochNanos, event);
   }
 
   @AutoValue
-  abstract static class TimedEventWithEvent extends TimedEvent {
+  @Immutable
+  abstract static class RawTimedEventWithEvent extends TimedEvent {
     abstract Event getEvent();
 
     @Override
@@ -88,5 +89,6 @@ abstract class TimedEvent {
   }
 
   @AutoValue
+  @Immutable
   abstract static class RawTimedEvent extends TimedEvent {}
 }
