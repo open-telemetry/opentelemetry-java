@@ -368,13 +368,31 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     addTimedEvent(TimedEvent.create(clock.nowNanos(), name));
   }
 
+  // TODO: Use timestamp.
+  @Override
+  public void addEvent(String name, long timestamp) {
+    addTimedEvent(TimedEvent.create(clock.nowNanos(), name));
+  }
+
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes) {
     addTimedEvent(TimedEvent.create(clock.nowNanos(), name, attributes));
   }
 
+  // TODO: Use timestamp.
+  @Override
+  public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
+    addTimedEvent(TimedEvent.create(clock.nowNanos(), name, attributes));
+  }
+
   @Override
   public void addEvent(Event event) {
+    addTimedEvent(TimedEvent.create(clock.nowNanos(), event));
+  }
+
+  // TODO: Use timestamp.
+  @Override
+  public void addEvent(Event event, long timestamp) {
     addTimedEvent(TimedEvent.create(clock.nowNanos(), event));
   }
 

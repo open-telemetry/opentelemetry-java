@@ -54,22 +54,18 @@ public class DefaultSpanTest {
     span.setAttribute("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
     span.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
     span.addEvent("event");
+    span.addEvent("event", 0);
     span.addEvent(
         "event",
         Collections.singletonMap(
             "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
     span.addEvent(
-        new Event() {
-          @Override
-          public String getName() {
-            return "name";
-          }
-
-          @Override
-          public Map<String, AttributeValue> getAttributes() {
-            return Collections.emptyMap();
-          }
-        });
+        "event",
+        Collections.singletonMap(
+            "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)),
+        0);
+    span.addEvent(new TestEvent());
+    span.addEvent(new TestEvent(), 0);
     span.setStatus(Status.OK);
     span.end();
     span.end(EndSpanOptions.getDefault());
@@ -86,5 +82,17 @@ public class DefaultSpanTest {
     DefaultSpan span = DefaultSpan.getInvalid();
     thrown.expect(NullPointerException.class);
     span.end(null);
+  }
+
+  static final class TestEvent implements Event {
+    @Override
+    public String getName() {
+      return "name";
+    }
+
+    @Override
+    public Map<String, AttributeValue> getAttributes() {
+      return Collections.emptyMap();
+    }
   }
 }

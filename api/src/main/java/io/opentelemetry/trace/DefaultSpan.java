@@ -102,14 +102,33 @@ public final class DefaultSpan implements Span {
   public void addEvent(String name) {}
 
   @Override
+  public void addEvent(String name, long timestamp) {
+    Utils.checkNotNull(name, "name");
+    Utils.checkArgument(timestamp >= 0, "Negative timestamp");
+  }
+
+  @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes) {
     Utils.checkNotNull(name, "name");
     Utils.checkNotNull(attributes, "attributes");
   }
 
   @Override
+  public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
+    Utils.checkNotNull(name, "name");
+    Utils.checkNotNull(attributes, "attributes");
+    Utils.checkArgument(timestamp >= 0, "Negative timestamp");
+  }
+
+  @Override
   public void addEvent(Event event) {
     Utils.checkNotNull(event, "event");
+  }
+
+  @Override
+  public void addEvent(Event event, long timestamp) {
+    Utils.checkNotNull(event, "event");
+    Utils.checkArgument(timestamp >= 0, "Negative timestamp");
   }
 
   @Override
