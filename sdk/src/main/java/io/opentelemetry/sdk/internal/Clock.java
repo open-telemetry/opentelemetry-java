@@ -16,8 +16,6 @@
 
 package io.opentelemetry.sdk.internal;
 
-import io.opentelemetry.sdk.common.Timestamp;
-
 /**
  * Interface for getting the current time.
  *
@@ -25,12 +23,12 @@ import io.opentelemetry.sdk.common.Timestamp;
  */
 public interface Clock {
   /**
-   * Obtains the current instant from this clock.
+   * Obtains the current epoch timestamp in nanos from this clock.
    *
-   * @return the current instant.
+   * @return the current epoch timestamp in nanos.
    * @since 0.1.0
    */
-  Timestamp now();
+  long now();
 
   /**
    * Returns a time measurement with nanosecond precision that can only be used to calculate elapsed
@@ -40,5 +38,5 @@ public interface Clock {
    *     time.
    * @since 0.1.0
    */
-  long nowNanos();
+  long nanoTime();
 }

@@ -17,9 +17,7 @@
 package io.opentelemetry.sdk.internal;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.sdk.internal.ClockTestUtil.createTimestamp;
 
-import io.opentelemetry.sdk.common.Timestamp;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -27,35 +25,35 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link TimestampConverter}. */
 @RunWith(JUnit4.class)
 public class TimestampConverterTest {
-  private final Timestamp timestamp = createTimestamp(1234, 5678);
-  private final TestClock testClock = TestClock.create(timestamp);
+  private final long epochNanos = 1234_000_005_678L;
+  private final TestClock testClock = TestClock.create(epochNanos);
 
   @Test
   public void now() {
-    assertThat(testClock.now()).isEqualTo(timestamp);
+    assertThat(testClock.now()).isEqualTo(epochNanos);
     TimestampConverter timeConverter = TimestampConverter.now(testClock);
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos())).isEqualTo(timestamp);
+    assertThat(timeConverter.convertNanoTime(testClock.nanoTime())).isEqualTo(epochNanos);
   }
 
   @Test
   public void convertNanoTime_Positive() {
     TimestampConverter timeConverter = TimestampConverter.now(testClock);
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() + 3210))
-        .isEqualTo(createTimestamp(1234, 8888));
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() + 1000))
-        .isEqualTo(createTimestamp(1234, 6678));
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() + 15_999_994_322L))
-        .isEqualTo(createTimestamp(1250, 0));
+    assertThat(timeConverter.convertNanoTime(testClock.nanoTime() + 3210))
+        .isEqualTo(1234_000_008_888L);
+    assertThat(timeConverter.convertNanoTime(testClock.nanoTime() + 1000))
+        .isEqualTo(1234_000_006_678L);
+    assertThat(timeConverter.convertNanoTime(testClock.nanoTime() + 15_999_994_322L))
+        .isEqualTo(1250_000_000_000L);
   }
 
   @Test
   public void convertNanoTime_Negative() {
     TimestampConverter timeConverter = TimestampConverter.now(testClock);
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() - 3456))
-        .isEqualTo(createTimestamp(1234, 2222));
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() - 1000))
-        .isEqualTo(createTimestamp(1234, 4678));
-    assertThat(timeConverter.convertNanoTime(testClock.nowNanos() - 14000005678L))
-        .isEqualTo(createTimestamp(1220, 0));
+    assertThat(timeConverter.convertNanoTime(testClock.nanoTime() - 3456))
+        .isEqualTo(1234_000_002_222L);
+    assertThat(timeConverter.convertNanoTime(testClock.nanoTime() - 1000))
+        .isEqualTo(1234_000_004_678L);
+    assertThat(timeConverter.convertNanoTime(testClock.nanoTime() - 14000005678L))
+        .isEqualTo(1220_000_000_000L);
   }
 }

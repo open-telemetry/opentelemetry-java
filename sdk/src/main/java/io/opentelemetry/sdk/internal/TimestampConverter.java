@@ -29,7 +29,7 @@ public class TimestampConverter {
   static final long NANOS_PER_SECOND = 1_000_000_000;
   static final long NANOS_PER_MILLI = 1_000_000;
 
-  private final Timestamp timestamp;
+  private final long epochNanos;
   private final long nanoTime;
 
   /**
@@ -39,7 +39,7 @@ public class TimestampConverter {
    * @return a {@code TimestampConverter} initialized to now.
    */
   public static TimestampConverter now(Clock clock) {
-    return new TimestampConverter(clock.now(), clock.nowNanos());
+    return new TimestampConverter(clock.now(), clock.nanoTime());
   }
 
   /**
@@ -48,21 +48,13 @@ public class TimestampConverter {
    * @param nanoTime value to convert.
    * @return the {@code Timestamp} representation of the {@code time}.
    */
-  public Timestamp convertNanoTime(long nanoTime) {
+  public long convertNanoTime(long nanoTime) {
     long deltaNanos = nanoTime - this.nanoTime;
-
-    long seconds = timestamp.getSeconds() + (deltaNanos / NANOS_PER_SECOND);
-    long nanos = timestamp.getNanos() + (deltaNanos % NANOS_PER_SECOND);
-
-    if (nanos >= NANOS_PER_SECOND) {
-      seconds += nanos / NANOS_PER_SECOND;
-      nanos = nanos % NANOS_PER_SECOND;
-    }
-    return Timestamp.create(seconds, (int) nanos);
+    return epochNanos + deltaNanos;
   }
 
-  private TimestampConverter(Timestamp timestamp, long nanoTime) {
-    this.timestamp = timestamp;
+  private TimestampConverter(long epochNanos, long nanoTime) {
+    this.epochNanos = epochNanos;
     this.nanoTime = nanoTime;
   }
 }
