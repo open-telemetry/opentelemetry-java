@@ -133,7 +133,7 @@ final class Adapter {
   @VisibleForTesting
   static Model.Log toJaegerLog(TimedEvent timedEvent) {
     Model.Log.Builder builder = Model.Log.newBuilder();
-    builder.setTimestamp(TraceProtoUtils.toProtoTimestamp(timedEvent.getTimestamp()));
+    builder.setTimestamp(Timestamps.fromNanos(timedEvent.getEpochNanos()));
 
     // name is a top-level property in OpenTelemetry
     builder.addFields(

@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.Test;
 
@@ -216,11 +217,10 @@ public class AdapterTest {
   }
 
   private static TimedEvent getTimedEvent() {
-    long ms = System.currentTimeMillis();
-    Timestamp ts = toTimestamp(ms);
+    long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
     ImmutableMap<String, AttributeValue> attributes = ImmutableMap.of("foo", valueS);
-    return TimedEvent.create(ts, "the log message", attributes);
+    return TimedEvent.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(Timestamp startTime, Timestamp endTime) {
