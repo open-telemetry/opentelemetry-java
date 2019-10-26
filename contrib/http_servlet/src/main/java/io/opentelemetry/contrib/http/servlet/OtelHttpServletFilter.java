@@ -128,6 +128,18 @@ public class OtelHttpServletFilter implements Filter {
     }
   }
 
+  /**
+   * Sets the HTTP extractor strategy implementation.
+   *
+   * @param httpExtractor the extractor
+   */
+  public void setHttpExtractor(
+      HttpExtractor<HttpServletRequest, HttpServletResponse> httpExtractor) {
+    if (httpExtractor != null) {
+      this.httpExtractor = httpExtractor;
+    }
+  }
+
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
     tracer = OpenTelemetry.getTracer();
@@ -167,7 +179,9 @@ public class OtelHttpServletFilter implements Filter {
   }
 
   private void constructAndInitializeHttpExtractor() {
-    httpExtractor = new UriPathDrivenHttpServletExtractor();
+    if (httpExtractor == null) {
+      httpExtractor = new UriPathDrivenHttpServletExtractor();
+    }
   }
 
   private MultiSchemeHttpPropagationGetter constructAndInitializeGetter(FilterConfig filterConfig) {

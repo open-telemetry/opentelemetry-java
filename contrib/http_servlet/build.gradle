@@ -8,11 +8,11 @@ dependencies {
 
     implementation libraries.guava
     implementation 'jakarta.servlet:jakarta.servlet-api:4.0.3'
+    implementation 'org.springframework:spring-web:5.1.10.RELEASE'
+    implementation 'org.springframework:spring-webmvc:5.1.10.RELEASE'
 
     testImplementation project(':opentelemetry-sdk')
     testImplementation project(':opentelemetry-exporters-inmemory')
-    testImplementation 'org.springframework:spring-web:5.1.10.RELEASE'
-    testImplementation 'org.springframework:spring-webmvc:5.1.10.RELEASE'
     testImplementation 'org.springframework:spring-test:5.1.10.RELEASE'
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
