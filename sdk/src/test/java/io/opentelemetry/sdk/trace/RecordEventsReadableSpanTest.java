@@ -22,7 +22,6 @@ import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.internal.TimestampConverter;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
@@ -68,7 +67,6 @@ public class RecordEventsReadableSpanTest {
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
   private final long startEpochNanos = 1000_123_789_654L;
   private final TestClock testClock = TestClock.create(startEpochNanos);
-  private final TimestampConverter timestampConverter = TimestampConverter.now(testClock);
   private final Resource resource = Resource.getEmpty();
   private final Map<String, AttributeValue> attributes = new HashMap<>();
   private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
@@ -442,12 +440,12 @@ public class RecordEventsReadableSpanTest {
             parentSpanId,
             config,
             spanProcessor,
-            timestampConverter,
             testClock,
             resource,
             attributes,
             Collections.singletonList(link),
-            1);
+            1,
+            0);
     Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span);
     return span;
   }
@@ -521,34 +519,34 @@ public class RecordEventsReadableSpanTest {
             parentSpanId,
             traceConfig,
             spanProcessor,
-            null,
             clock,
             resource,
             attributes,
             links,
-            1);
-    long startTimeNanos = clock.nanoTime();
+            1,
+            0);
+    long startEpochNanos = clock.now();
     clock.advanceMillis(4);
-    long firstEventTimeNanos = clock.nanoTime();
+    long firstEventEpochNanos = clock.now();
     readableSpan.addEvent("event1", event1Attributes);
     clock.advanceMillis(6);
-    long secondEventTimeNanos = clock.nanoTime();
+    long secondEventTimeNanos = clock.now();
     readableSpan.addEvent("event2", event2Attributes);
 
     clock.advanceMillis(100);
     readableSpan.end();
-    long endTimeNanos = clock.nanoTime();
+    long endEpochNanos = clock.now();
 
     SpanData expected =
         SpanData.newBuilder()
             .setName(name)
             .setKind(kind)
             .setStatus(Status.OK)
-            .setStartTimestamp(Timestamp.fromNanos(startTimeNanos))
-            .setEndTimestamp(Timestamp.fromNanos(endTimeNanos))
+            .setStartTimestamp(Timestamp.fromNanos(startEpochNanos))
+            .setEndTimestamp(Timestamp.fromNanos(endEpochNanos))
             .setTimedEvents(
                 Arrays.asList(
-                    SpanData.TimedEvent.create(firstEventTimeNanos, "event1", event1Attributes),
+                    SpanData.TimedEvent.create(firstEventEpochNanos, "event1", event1Attributes),
                     SpanData.TimedEvent.create(secondEventTimeNanos, "event2", event2Attributes)))
             .setResource(resource)
             .setParentSpanId(parentSpanId)

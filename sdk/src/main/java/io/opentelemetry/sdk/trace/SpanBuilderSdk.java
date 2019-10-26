@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.internal.Clock;
-import io.opentelemetry.sdk.internal.TimestampConverter;
+import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -58,6 +58,7 @@ class SpanBuilderSdk implements Span.Builder {
   private Kind spanKind = Kind.INTERNAL;
   private List<Link> links;
   private ParentType parentType = ParentType.CURRENT_SPAN;
+  private long startEpochNanos = 0;
 
   SpanBuilderSdk(
       String spanName,
@@ -128,10 +129,10 @@ class SpanBuilderSdk implements Span.Builder {
     return this;
   }
 
-  // TODO: Use startTimestamp.
   @Override
   public Span.Builder setStartTimestamp(long startTimestamp) {
     Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
+    startEpochNanos = startTimestamp;
     return this;
   }
 
@@ -167,8 +168,6 @@ class SpanBuilderSdk implements Span.Builder {
       return DefaultSpan.create(spanContext);
     }
 
-    TimestampConverter timestampConverter = getTimestampConverter(parentSpan(parentType, parent));
-
     return RecordEventsReadableSpan.startSpan(
         spanContext,
         spanName,
@@ -176,12 +175,12 @@ class SpanBuilderSdk implements Span.Builder {
         parentContext != null ? parentContext.getSpanId() : null,
         traceConfig,
         spanProcessor,
-        timestampConverter,
-        clock,
+        getClock(parentSpan(parentType, parent), clock),
         resource,
         samplingDecision.attributes(),
         truncatedLinks(),
-        links.size());
+        links.size(),
+        startEpochNanos);
   }
 
   private List<Link> truncatedLinks() {
@@ -191,15 +190,14 @@ class SpanBuilderSdk implements Span.Builder {
     return links.subList(links.size() - traceConfig.getMaxNumberOfLinks(), links.size());
   }
 
-  @Nullable
-  private static TimestampConverter getTimestampConverter(Span parent) {
-    TimestampConverter timestampConverter = null;
+  private static Clock getClock(Span parent, Clock clock) {
     if (parent instanceof RecordEventsReadableSpan) {
       RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
-      timestampConverter = parentRecordEventsSpan.getTimestampConverter();
       parentRecordEventsSpan.addChild();
+      return parentRecordEventsSpan.getClock();
+    } else {
+      return MonotonicClock.create(clock);
     }
-    return timestampConverter;
   }
 
   @Nullable
