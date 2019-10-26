@@ -51,24 +51,24 @@ public class TimedEventTest {
 
   @Test
   public void rawTimedEventWithName() {
-    TimedEvent event = TimedEvent.create(1000, NAME);
-    assertThat(event.getNanotime()).isEqualTo(1000);
+    TimedEvent event = TimedEvent.create(9876543210L, NAME);
+    assertThat(event.getEpochNanos()).isEqualTo(9876543210L);
     assertThat(event.getName()).isEqualTo(NAME);
     assertThat(event.getAttributes()).isEmpty();
   }
 
   @Test
   public void rawTimedEventWithNameAndAttributes() {
-    TimedEvent event = TimedEvent.create(2000, NAME, ATTRIBUTES);
-    assertThat(event.getNanotime()).isEqualTo(2000);
+    TimedEvent event = TimedEvent.create(1234567890L, NAME, ATTRIBUTES);
+    assertThat(event.getEpochNanos()).isEqualTo(1234567890L);
     assertThat(event.getName()).isEqualTo(NAME);
     assertThat(event.getAttributes()).isEqualTo(ATTRIBUTES);
   }
 
   @Test
-  public void timedEventWithEvent() {
-    TimedEvent event = TimedEvent.create(3000, EVENT);
-    assertThat(event.getNanotime()).isEqualTo(3000);
+  public void rawTimedEventWithEvent() {
+    TimedEvent event = TimedEvent.create(9876501234L, EVENT);
+    assertThat(event.getEpochNanos()).isEqualTo(9876501234L);
     assertThat(event.getName()).isEqualTo(NAME_2);
     assertThat(event.getAttributes()).isEqualTo(ATTRIBUTES_2);
   }

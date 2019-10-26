@@ -183,17 +183,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     List<io.opentelemetry.sdk.trace.TimedEvent> sourceEvents = getTimedEvents();
     List<SpanData.TimedEvent> result = new ArrayList<>(sourceEvents.size());
     for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : sourceEvents) {
-      result.add(adaptTimedEvent(sourceEvent, timestampConverter));
+      result.add(
+          SpanData.TimedEvent.create(
+              Timestamp.fromNanos(sourceEvent.getEpochNanos()),
+              sourceEvent.getName(),
+              sourceEvent.getAttributes()));
     }
     return result;
-  }
-
-  private static SpanData.TimedEvent adaptTimedEvent(
-      io.opentelemetry.sdk.trace.TimedEvent sourceEvent, TimestampConverter timestampConverter) {
-    Timestamp timestamp =
-        Timestamp.fromNanos(timestampConverter.convertNanoTime(sourceEvent.getNanotime()));
-    return SpanData.TimedEvent.create(
-        timestamp, sourceEvent.getName(), sourceEvent.getAttributes());
   }
 
   @Override
@@ -368,35 +364,32 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name) {
-    addTimedEvent(TimedEvent.create(clock.nanoTime(), name));
+    addTimedEvent(TimedEvent.create(epochNanosNow(), name));
   }
 
-  // TODO: Use timestamp.
   @Override
   public void addEvent(String name, long timestamp) {
-    addTimedEvent(TimedEvent.create(clock.nanoTime(), name));
+    addTimedEvent(TimedEvent.create(timestamp, name));
   }
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes) {
-    addTimedEvent(TimedEvent.create(clock.nanoTime(), name, attributes));
+    addTimedEvent(TimedEvent.create(epochNanosNow(), name, attributes));
   }
 
-  // TODO: Use timestamp.
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
-    addTimedEvent(TimedEvent.create(clock.nanoTime(), name, attributes));
+    addTimedEvent(TimedEvent.create(timestamp, name, attributes));
   }
 
   @Override
   public void addEvent(Event event) {
-    addTimedEvent(TimedEvent.create(clock.nanoTime(), event));
+    addTimedEvent(TimedEvent.create(epochNanosNow(), event));
   }
 
-  // TODO: Use timestamp.
   @Override
   public void addEvent(Event event, long timestamp) {
-    addTimedEvent(TimedEvent.create(clock.nanoTime(), event));
+    addTimedEvent(TimedEvent.create(timestamp, event));
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
@@ -436,6 +429,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void end() {
+    endInternal();
+  }
+
+  // TODO: Use endOptions.
+  @Override
+  public void end(EndSpanOptions endOptions) {
+    Preconditions.checkNotNull(endOptions, "endOptions");
+    endInternal();
+  }
+
+  private void endInternal() {
     synchronized (this) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
@@ -445,13 +449,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       hasBeenEnded = true;
     }
     spanProcessor.onEnd(this);
-  }
-
-  // TODO: Use endOptions.
-  @Override
-  public void end(EndSpanOptions endOptions) {
-    Preconditions.checkNotNull(endOptions, "endOptions");
-    end();
   }
 
   @Override
@@ -597,5 +594,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     synchronized (this) {
       return totalRecordedEvents;
     }
+  }
+
+  private long epochNanosNow() {
+    return timestampConverter.convertNanoTime(clock.nanoTime());
   }
 }
