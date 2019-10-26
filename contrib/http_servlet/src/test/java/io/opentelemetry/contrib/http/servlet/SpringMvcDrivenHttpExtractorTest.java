@@ -95,7 +95,7 @@ public class SpringMvcDrivenHttpExtractorTest {
     String url = "http://localhost/users/junit";
     String path = "/users/junit";
     String route = "/users/{userId}";
-    int status = HttpServletResponse.SC_CREATED;
+    int status = HttpServletResponse.SC_OK;
     MockHttpServletRequest request = new MockHttpServletRequest(method, path);
     MockHttpServletResponse response = new MockHttpServletResponse();
     response.setStatus(status);
@@ -112,5 +112,22 @@ public class SpringMvcDrivenHttpExtractorTest {
     SpringMvcDrivenHttpExtractor extractor = new SpringMvcDrivenHttpExtractor();
     extractor.setRequestHandlerMappings(requestHandlerMappings);
     assertEquals(0, extractor.getStatusCode(null));
+  }
+
+  @Test
+  public void shouldUsePathWhenNoControllerMatch() {
+    String method = "GET";
+    String url = "http://localhost/images/logo.png";
+    String path = "/images/logo.png";
+    int status = HttpServletResponse.SC_OK;
+    MockHttpServletRequest request = new MockHttpServletRequest(method, path);
+    MockHttpServletResponse response = new MockHttpServletResponse();
+    response.setStatus(status);
+    SpringMvcDrivenHttpExtractor extractor = new SpringMvcDrivenHttpExtractor();
+    extractor.setRequestHandlerMappings(requestHandlerMappings);
+    assertEquals(method, extractor.getMethod(request));
+    assertEquals(url, extractor.getUrl(request));
+    assertEquals(path, extractor.getRoute(request));
+    assertEquals(status, extractor.getStatusCode(response));
   }
 }
