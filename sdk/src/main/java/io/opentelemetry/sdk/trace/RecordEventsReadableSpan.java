@@ -226,7 +226,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   Status getStatus() {
-    return getStatusWithDefault();
+    synchronized (lock) {
+      return getStatusWithDefault();
+    }
   }
 
   /**
@@ -469,6 +471,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
   }
 
+  @GuardedBy("lock")
   private Status getStatusWithDefault() {
     synchronized (lock) {
       return status == null ? Status.OK : status;
