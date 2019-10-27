@@ -46,7 +46,7 @@ public class TracerSdk implements Tracer {
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final Clock clock = MillisClock.getInstance();
-  private final Random random = new Random();
+  private final IdsGenerator idsGenerator = new RandomIdsGenerator(new Random());
   private final Resource resource = EnvVarResource.getResource();
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
@@ -75,7 +75,7 @@ public class TracerSdk implements Tracer {
       return DefaultTracer.getInstance().spanBuilder(spanName);
     }
     return new SpanBuilderSdk(
-        spanName, activeSpanProcessor, activeTraceConfig, resource, random, clock);
+        spanName, activeSpanProcessor, activeTraceConfig, resource, idsGenerator, clock);
   }
 
   @Override
