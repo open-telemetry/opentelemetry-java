@@ -22,8 +22,6 @@ import java.util.Random;
 
 final class RandomIdsGenerator implements IdsGenerator {
   private static final long INVALID_ID = 0;
-  // TODO change with ThreadLocal version
-  // https://github.com/open-telemetry/opentelemetry-java/issues/406
   private final Random random;
 
   RandomIdsGenerator(Random random) {
