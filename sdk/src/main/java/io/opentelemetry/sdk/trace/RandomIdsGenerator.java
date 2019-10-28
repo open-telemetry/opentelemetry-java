@@ -32,21 +32,22 @@ final class RandomIdsGenerator implements IdsGenerator {
 
   @Override
   public SpanId generateSpanId() {
-    long id;
-    do {
-      id = random.nextLong();
-    } while (id == INVALID_ID);
+    long id = generateValidId();
     return new SpanId(id);
   }
 
   @Override
   public TraceId generateTraceId() {
-    long idHi;
-    long idLo;
-    do {
-      idHi = random.nextLong();
-      idLo = random.nextLong();
-    } while (idHi == INVALID_ID && idLo == INVALID_ID);
+    long idHi = generateValidId();
+    long idLo = generateValidId();
     return new TraceId(idHi, idLo);
+  }
+
+  private long generateValidId() {
+    long id;
+    do {
+      id = random.nextLong();
+    } while (id == INVALID_ID);
+    return id;
   }
 }
