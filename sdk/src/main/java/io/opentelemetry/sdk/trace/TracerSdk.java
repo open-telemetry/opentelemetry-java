@@ -80,9 +80,4 @@ public class TracerSdk implements Tracer {
   public void addSpanProcessor(SpanProcessor spanProcessor) {
     sharedState.addSpanProcessor(spanProcessor);
   }
-
-  /** TODO: Remove this when all tests are changed to use the factory. */
-  public void shutdown() {
-    sharedState.stop();
-  }
 }

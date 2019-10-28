@@ -58,7 +58,7 @@ public class BatchSpansProcessorTest {
 
   @After
   public void cleanup() {
-    tracerSdk.shutdown();
+    tracerSdkFactory.shutdown();
   }
 
   private ReadableSpan createSampledEndedSpan(String spanName) {
@@ -87,7 +87,7 @@ public class BatchSpansProcessorTest {
 
   @Test
   public void exportDifferentSampledSpans() {
-    tracerSdk.addSpanProcessor(
+    tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
@@ -100,7 +100,7 @@ public class BatchSpansProcessorTest {
 
   @Test
   public void exportMoreSpansThanTheBufferSize() {
-    tracerSdk.addSpanProcessor(
+    tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setMaxQueueSize(6)
             .setMaxExportBatchSize(2)
@@ -127,7 +127,7 @@ public class BatchSpansProcessorTest {
   @Test
   public void exportSpansToMultipleServices() {
     WaitingSpanExporter waitingSpanExporter2 = new WaitingSpanExporter();
-    tracerSdk.addSpanProcessor(
+    tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(
                 MultiSpanExporter.create(
                     Arrays.<SpanExporter>asList(waitingSpanExporter, waitingSpanExporter2)))
@@ -145,7 +145,7 @@ public class BatchSpansProcessorTest {
   @Test
   public void exportMoreSpansThanTheMaximumLimit() {
     final int maxQueuedSpans = 8;
-    tracerSdk.addSpanProcessor(
+    tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
@@ -207,7 +207,7 @@ public class BatchSpansProcessorTest {
         .when(mockServiceHandler)
         .export(ArgumentMatchers.<SpanData>anyList());
 
-    tracerSdk.addSpanProcessor(
+    tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(mockServiceHandler, waitingSpanExporter)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
@@ -224,7 +224,7 @@ public class BatchSpansProcessorTest {
 
   @Test
   public void exportNotSampledSpans() {
-    tracerSdk.addSpanProcessor(
+    tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
@@ -246,7 +246,7 @@ public class BatchSpansProcessorTest {
   public void exportNotSampledSpans_recordingEvents() {
     // TODO(bdrutu): Fix this when Sampler return RECORD option.
     /*
-    tracerSdk.addSpanProcessor(
+    tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .reportOnlySampled(false)
@@ -262,7 +262,7 @@ public class BatchSpansProcessorTest {
   public void exportNotSampledSpans_reportOnlySampled() {
     // TODO(bdrutu): Fix this when Sampler return RECORD option.
     /*
-    tracerSdk.addSpanProcessor(
+    tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .reportOnlySampled(true)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
@@ -278,13 +278,13 @@ public class BatchSpansProcessorTest {
   @Test(timeout = 10000L)
   public void shutdownFlushes() {
     // Set the export delay to zero, for no timeout, in order to confirm the #flush() below works
-    tracerSdk.addSpanProcessor(
+    tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter).setScheduleDelayMillis(0).build());
 
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
 
     // Force a shutdown, without this, the #waitForExport() call below would block indefinitely.
-    tracerSdk.shutdown();
+    tracerSdkFactory.shutdown();
 
     List<SpanData> exported = waitingSpanExporter.waitForExport(1);
     assertThat(exported).containsExactly(span2.toSpanData());
