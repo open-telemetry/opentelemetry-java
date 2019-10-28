@@ -28,13 +28,13 @@ final class TelemetryInfo {
   private final Tracer tracer;
   private final DistributedContextManager contextManager;
   private final DistributedContext emptyDistributedContext;
-  private final SpanContextShimTable spanContextShimTable;
+  private final SpanContextShimTable spanContextTable;
 
   TelemetryInfo(Tracer tracer, DistributedContextManager contextManager) {
     this.tracer = tracer;
     this.contextManager = contextManager;
     this.emptyDistributedContext = contextManager.contextBuilder().build();
-    this.spanContextShimTable = new SpanContextShimTable();
+    this.spanContextTable = new SpanContextShimTable();
   }
 
   Tracer tracer() {
@@ -45,8 +45,8 @@ final class TelemetryInfo {
     return contextManager;
   }
 
-  SpanContextShimTable spanContextShimTable() {
-    return spanContextShimTable;
+  SpanContextShimTable spanContextTable() {
+    return spanContextTable;
   }
 
   DistributedContext emptyDistributedContext() {

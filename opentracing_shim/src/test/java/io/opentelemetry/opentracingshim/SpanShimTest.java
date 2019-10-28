@@ -16,6 +16,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -24,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdk;
-import java.util.HashMap;
 import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
@@ -102,14 +102,5 @@ public class SpanShimTest {
     assertEquals(
         getBaggageMap(spanShim1.context().baggageItems()),
         getBaggageMap(spanShim2.context().baggageItems()));
-  }
-
-  static Map<String, String> getBaggageMap(Iterable<Map.Entry<String, String>> baggage) {
-    Map<String, String> baggageMap = new HashMap<>();
-    for (Map.Entry<String, String> entry : baggage) {
-      baggageMap.put(entry.getKey(), entry.getValue());
-    }
-
-    return baggageMap;
   }
 }

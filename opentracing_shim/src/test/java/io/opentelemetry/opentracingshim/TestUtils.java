@@ -16,29 +16,18 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.trace.Tracer;
+import java.util.HashMap;
+import java.util.Map;
 
-abstract class BaseShimObject {
-  final TelemetryInfo telemetryInfo;
+final class TestUtils {
+  private TestUtils() {}
 
-  protected BaseShimObject(TelemetryInfo telemetryInfo) {
-    this.telemetryInfo = telemetryInfo;
-  }
+  static Map<String, String> getBaggageMap(Iterable<Map.Entry<String, String>> baggage) {
+    Map<String, String> baggageMap = new HashMap<>();
+    for (Map.Entry<String, String> entry : baggage) {
+      baggageMap.put(entry.getKey(), entry.getValue());
+    }
 
-  TelemetryInfo telemetryInfo() {
-    return telemetryInfo;
-  }
-
-  Tracer tracer() {
-    return telemetryInfo.tracer();
-  }
-
-  DistributedContextManager contextManager() {
-    return telemetryInfo.contextManager();
-  }
-
-  SpanContextShimTable spanContextTable() {
-    return telemetryInfo.spanContextTable();
+    return baggageMap;
   }
 }
