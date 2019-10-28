@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.internal;
 
+import io.opentelemetry.sdk.common.Clock;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -44,7 +45,7 @@ public final class MonotonicClock implements Clock {
    * Returns a {@code MonotonicClock}.
    *
    * @param clock the {@code Clock} to be used to read the current epoch time and nanoTime.
-   * @return a {@code TimestampConverter}.
+   * @return a {@code MonotonicClock}.
    */
   public static MonotonicClock create(Clock clock) {
     return new MonotonicClock(clock, clock.now(), clock.nanoTime());

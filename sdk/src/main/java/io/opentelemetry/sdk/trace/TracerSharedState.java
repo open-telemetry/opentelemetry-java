@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.sdk.internal.Clock;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
