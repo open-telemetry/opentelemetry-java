@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.sdk.common.Timestamp;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -39,36 +39,22 @@ public class MetricDataTest {
           MetricDescriptor.Type.MONOTONIC_INT64,
           Collections.singletonList("key"),
           Collections.singletonMap("key_const", "value_const"));
-  private static final Timestamp START_TIMESTAMP = Timestamp.fromMillis(1000);
-  private static final Timestamp TIMESTAMP = Timestamp.fromMillis(2000);
+  private static final long START_EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(1000);
+  private static final long EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(2000);
 
   @Test
   public void testGet() {
     MetricData metricData =
-        MetricData.createInternal(METRIC_DESCRIPTOR, START_TIMESTAMP, TIMESTAMP);
+        MetricData.createInternal(METRIC_DESCRIPTOR, START_EPOCH_NANOS, EPOCH_NANOS);
     assertThat(metricData.getMetricDescriptor()).isEqualTo(METRIC_DESCRIPTOR);
-    assertThat(metricData.getStartTimestamp()).isEqualTo(START_TIMESTAMP);
-    assertThat(metricData.getTimestamp()).isEqualTo(TIMESTAMP);
+    assertThat(metricData.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+    assertThat(metricData.getEpochNanos()).isEqualTo(EPOCH_NANOS);
   }
 
   @Test
   public void create_NullDescriptor() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("metricDescriptor");
-    MetricData.createInternal(null, START_TIMESTAMP, TIMESTAMP);
-  }
-
-  @Test
-  public void create_NullStartTimestamp() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("startTimestamp");
-    MetricData.createInternal(METRIC_DESCRIPTOR, null, TIMESTAMP);
-  }
-
-  @Test
-  public void create_NullTimestamp() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("timestamp");
-    MetricData.createInternal(METRIC_DESCRIPTOR, START_TIMESTAMP, null);
+    MetricData.createInternal(null, START_EPOCH_NANOS, EPOCH_NANOS);
   }
 }
