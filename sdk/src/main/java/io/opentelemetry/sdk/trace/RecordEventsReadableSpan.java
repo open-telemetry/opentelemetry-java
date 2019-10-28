@@ -47,14 +47,13 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
 final class RecordEventsReadableSpan implements ReadableSpan, Span {
+
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
   private final SpanId parentSpanId;
-  // Active trace configs when the Span was created.
-  private final TraceConfig traceConfig;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
@@ -63,7 +62,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Number of links recorded.
   private final int totalRecordedLinks;
 
-  @GuardedBy("this")
+  // Lock used to internally guard the mutable state of this instance
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
   private String name;
   // The kind of the span.
   private final Kind kind;
@@ -77,28 +79,26 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // The start time of the span.
   private final long startNanoTime;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
-  @GuardedBy("this")
-  @Nullable
-  private AttributesWithCapacity attributes;
+  @GuardedBy("lock")
+  private final AttributesWithCapacity attributes;
   // List of recorded events.
-  @GuardedBy("this")
-  @Nullable
-  private EvictingQueue<TimedEvent> events;
+  @GuardedBy("lock")
+  private final EvictingQueue<TimedEvent> events;
   // Number of events recorded.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private int totalRecordedEvents = 0;
   // The number of children.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private int numberOfChildren;
   // The status of the span.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   @Nullable
   private Status status;
   // The end time of the span.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private long endNanoTime;
   // True if the span is ended.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private boolean hasBeenEnded;
 
   /**
@@ -202,7 +202,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @Override
   public String getName() {
-    synchronized (this) {
+    synchronized (lock) {
       return name;
     }
   }
@@ -214,7 +214,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return the end nano time.
    */
   private long getEndNanoTime() {
-    synchronized (this) {
+    synchronized (lock) {
       return getEndNanoTimeInternal();
     }
   }
@@ -226,7 +226,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   Status getStatus() {
-    synchronized (this) {
+    synchronized (lock) {
       return getStatusWithDefault();
     }
   }
@@ -237,8 +237,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return The TimedEvents for this span.
    */
   private List<TimedEvent> getTimedEvents() {
-    synchronized (this) {
-      return events == null ? Collections.<TimedEvent>emptyList() : new ArrayList<>(events);
+    synchronized (lock) {
+      return new ArrayList<>(events);
     }
   }
 
@@ -249,7 +249,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   List<Link> getLinks() {
-    synchronized (this) {
+    synchronized (lock) {
       if (links == null) {
         return Collections.emptyList();
       }
@@ -274,8 +274,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   Map<String, AttributeValue> getAttributes() {
-    synchronized (this) {
-      return Collections.unmodifiableMap(getInitializedAttributes());
+    synchronized (lock) {
+      return Collections.unmodifiableMap(attributes);
     }
   }
 
@@ -286,15 +286,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return the latency of the {@code Span} in nanos.
    */
   long getLatencyNs() {
-    synchronized (this) {
+    synchronized (lock) {
       return getEndNanoTimeInternal() - startNanoTime;
     }
   }
 
   // Use getEndNanoTimeInternal to avoid over-locking.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private long getEndNanoTimeInternal() {
-    return hasBeenEnded ? endNanoTime : clock.nanoTime();
+    synchronized (lock) {
+      return hasBeenEnded ? endNanoTime : clock.nanoTime();
+    }
   }
 
   /**
@@ -351,12 +353,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
-      getInitializedAttributes().putAttribute(key, value);
+      attributes.putAttribute(key, value);
     }
   }
 
@@ -391,12 +393,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
-      getInitializedEvents().add(timedEvent);
+      events.add(timedEvent);
       totalRecordedEvents++;
     }
   }
@@ -404,7 +406,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void setStatus(Status status) {
     Preconditions.checkNotNull(status, "status");
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return;
@@ -416,7 +418,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void updateName(String name) {
     Preconditions.checkNotNull(name, "name");
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
         return;
@@ -438,7 +440,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   private void endInternal() {
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
         return;
@@ -460,7 +462,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   void addChild() {
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
         return;
@@ -469,30 +471,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
   }
 
-  @GuardedBy("this")
-  private AttributesWithCapacity getInitializedAttributes() {
-    if (attributes == null) {
-      attributes = new AttributesWithCapacity(traceConfig.getMaxNumberOfAttributes());
-    }
-    return attributes;
-  }
-
-  @GuardedBy("this")
-  private EvictingQueue<TimedEvent> getInitializedEvents() {
-    if (events == null) {
-      events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
-    }
-    return events;
-  }
-
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private Status getStatusWithDefault() {
-    return status == null ? Status.OK : status;
+    synchronized (lock) {
+      return status == null ? Status.OK : status;
+    }
   }
 
   // A map implementation with a fixed capacity that drops events when the map gets full. Eviction
   // is based on the access order.
   static final class AttributesWithCapacity extends LinkedHashMap<String, AttributeValue> {
+
     private final long capacity;
     private int totalRecordedAttributes = 0;
     // Here because -Werror complains about this: [serial] serializable class AttributesWithCapacity
@@ -545,7 +534,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
     this.kind = kind;
-    this.traceConfig = traceConfig;
     this.spanProcessor = spanProcessor;
     this.clock = clock;
     this.resource = resource;
@@ -554,15 +542,15 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.timestampConverter =
         timestampConverter != null ? timestampConverter : TimestampConverter.now(clock);
     startNanoTime = clock.nanoTime();
-    if (!attributes.isEmpty()) {
-      getInitializedAttributes().putAll(attributes);
-    }
+    this.attributes = new AttributesWithCapacity(traceConfig.getMaxNumberOfAttributes());
+    this.attributes.putAll(attributes);
+    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
   }
 
   @SuppressWarnings("NoFinalizer")
   @Override
   protected void finalize() throws Throwable {
-    synchronized (this) {
+    synchronized (lock) {
       if (!hasBeenEnded) {
         logger.log(Level.SEVERE, "Span " + name + " is GC'ed without being ended.");
       }
@@ -582,14 +570,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @VisibleForTesting
   int getNumberOfChildren() {
-    synchronized (this) {
+    synchronized (lock) {
       return numberOfChildren;
     }
   }
 
   @VisibleForTesting
   int getTotalRecordedEvents() {
-    synchronized (this) {
+    synchronized (lock) {
       return totalRecordedEvents;
     }
   }
