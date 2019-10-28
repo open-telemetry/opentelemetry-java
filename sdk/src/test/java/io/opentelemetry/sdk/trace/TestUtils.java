@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span;
@@ -27,6 +26,7 @@ import io.opentelemetry.trace.TraceId;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /** Common utilities for unit tests. */
 public final class TestUtils {
@@ -57,9 +57,9 @@ public final class TestUtils {
         .setSpanId(SpanId.getInvalid())
         .setName("span")
         .setKind(Kind.SERVER)
-        .setStartTimestamp(Timestamp.create(100, 100))
+        .setStartEpochNanos(TimeUnit.SECONDS.toNanos(100) + 100)
         .setStatus(Status.OK)
-        .setEndTimestamp(Timestamp.create(200, 200))
+        .setEndEpochNanos(TimeUnit.SECONDS.toNanos(200) + 200)
         .build();
   }
 

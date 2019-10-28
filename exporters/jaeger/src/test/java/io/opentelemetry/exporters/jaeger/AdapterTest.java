@@ -22,9 +22,9 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.util.Durations;
+import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.exporters.otprotocol.TraceProtoUtils;
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
@@ -58,10 +58,8 @@ public class AdapterTest {
     long duration = 900; // ms
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
-    Timestamp startTime = toTimestamp(startMs);
-    Timestamp endTime = toTimestamp(endMs);
 
-    SpanData span = getSpanData(startTime, endTime);
+    SpanData span = getSpanData(startMs, endMs);
     List<SpanData> spans = Collections.singletonList(span);
 
     Collection<Model.Span> jaegerSpans = Adapter.toJaeger(spans);
@@ -75,22 +73,15 @@ public class AdapterTest {
     long duration = 900; // ms
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
-    Timestamp startTime = toTimestamp(startMs);
-    Timestamp endTime = toTimestamp(endMs);
 
-    SpanData span = getSpanData(startTime, endTime);
+    SpanData span = getSpanData(startMs, endMs);
 
     // test
     Model.Span jaegerSpan = Adapter.toJaeger(span);
     assertEquals(TraceProtoUtils.toProtoTraceId(span.getTraceId()), jaegerSpan.getTraceId());
     assertEquals(TraceProtoUtils.toProtoSpanId(span.getSpanId()), jaegerSpan.getSpanId());
     assertEquals("GET /api/endpoint", jaegerSpan.getOperationName());
-    assertEquals(
-        com.google.protobuf.Timestamp.newBuilder()
-            .setSeconds(startTime.getSeconds())
-            .setNanos(startTime.getNanos())
-            .build(),
-        jaegerSpan.getStartTime());
+    assertEquals(Timestamps.fromMillis(startMs), jaegerSpan.getStartTime());
     assertEquals(duration, Durations.toMillis(jaegerSpan.getDuration()));
 
     assertEquals(4, jaegerSpan.getTagsCount());
@@ -223,7 +214,7 @@ public class AdapterTest {
     return TimedEvent.create(epochNanos, "the log message", attributes);
   }
 
-  private static SpanData getSpanData(Timestamp startTime, Timestamp endTime) {
+  private static SpanData getSpanData(long startMs, long endMs) {
     AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
     Map<String, AttributeValue> attributes = ImmutableMap.of("valueB", valueB);
 
@@ -234,8 +225,8 @@ public class AdapterTest {
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
         .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
         .setName("GET /api/endpoint")
-        .setStartTimestamp(startTime)
-        .setEndTimestamp(endTime)
+        .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
+        .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
         .setAttributes(attributes)
         .setTimedEvents(Collections.singletonList(getTimedEvent()))
         .setLinks(Collections.singletonList(link))
@@ -251,10 +242,6 @@ public class AdapterTest {
         SpanId.fromLowerBase16(spanId, 0),
         TraceFlags.builder().build(),
         Tracestate.builder().build());
-  }
-
-  private static Timestamp toTimestamp(long ms) {
-    return Timestamp.create(ms / 1000, (int) ((ms % 1000) * 1000000));
   }
 
   @Nullable

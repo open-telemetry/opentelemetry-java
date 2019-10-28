@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
  * This class provides a mechanism for calculating the epoch time using {@link System#nanoTime()}
  * and a reference epoch timestamp.
  *
- * <p>This is needed because Java has millisecond granularity for Timestamp and tracing events are
+ * <p>This is needed because Java has millisecond granularity for epoch times and tracing events are
  * recorded more often.
  *
  * <p>This clock needs to be re-created periodically in order to re-sync with the kernel clock, and

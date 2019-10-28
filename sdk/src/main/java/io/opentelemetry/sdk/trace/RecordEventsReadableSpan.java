@@ -20,7 +20,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
@@ -149,8 +148,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public SpanData toSpanData() {
-    Timestamp startTimestamp = Timestamp.fromNanos(startEpochNanos);
-    Timestamp endTimestamp = Timestamp.fromNanos(getEndEpochNanos());
     SpanContext spanContext = getSpanContext();
     return SpanData.newBuilder()
         .setName(getName())
@@ -159,8 +156,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         .setTraceFlags(spanContext.getTraceFlags())
         .setTracestate(spanContext.getTracestate())
         .setAttributes(getAttributes())
-        .setStartTimestamp(startTimestamp)
-        .setEndTimestamp(endTimestamp)
+        .setStartEpochNanos(startEpochNanos)
+        .setEndEpochNanos(getEndEpochNanos())
         .setKind(kind)
         .setLinks(getLinks())
         .setParentSpanId(parentSpanId)
