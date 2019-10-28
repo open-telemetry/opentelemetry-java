@@ -37,13 +37,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
 class SpanBuilderSdk implements Span.Builder {
-  private static final long INVALID_ID = 0;
-
   private static final TraceFlags TRACE_OPTIONS_SAMPLED =
       TraceFlags.builder().setIsSampled(true).build();
   private static final TraceFlags TRACE_OPTIONS_NOT_SAMPLED =
@@ -53,11 +50,8 @@ class SpanBuilderSdk implements Span.Builder {
   private final SpanProcessor spanProcessor;
   private final TraceConfig traceConfig;
   private final Resource resource;
-
+  private final IdsGenerator idsGenerator;
   private final Clock clock;
-  // TODO change with ThreadLocal version
-  // https://github.com/open-telemetry/opentelemetry-java/issues/406
-  private final Random random;
 
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
@@ -70,14 +64,14 @@ class SpanBuilderSdk implements Span.Builder {
       SpanProcessor spanProcessor,
       TraceConfig traceConfig,
       Resource resource,
-      Random random,
+      IdsGenerator idsGenerator,
       Clock clock) {
     this.spanName = spanName;
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
     this.links = Collections.emptyList();
-    this.random = random;
+    this.idsGenerator = idsGenerator;
     this.clock = clock;
   }
 
@@ -145,11 +139,11 @@ class SpanBuilderSdk implements Span.Builder {
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
     TraceId traceId;
-    SpanId spanId = generateRandomSpanId(random);
+    SpanId spanId = idsGenerator.generateSpanId();
     Tracestate tracestate = Tracestate.getDefault();
     if (parentContext == null || !parentContext.isValid()) {
       // New root span.
-      traceId = generateRandomTraceId(random);
+      traceId = idsGenerator.generateTraceId();
       // This is a root span so no remote or local parent.
       parentContext = null;
     } else {
@@ -235,36 +229,6 @@ class SpanBuilderSdk implements Span.Builder {
       default:
         return null;
     }
-  }
-
-  /**
-   * Generates a new random {@code SpanId}.
-   *
-   * @param random The random number generator.
-   * @return a valid new {@code SpanId}.
-   */
-  static SpanId generateRandomSpanId(Random random) {
-    long id;
-    do {
-      id = random.nextLong();
-    } while (id == 0);
-    return new SpanId(id);
-  }
-
-  /**
-   * Generates a new random {@code TraceIde}.
-   *
-   * @param random The random number generator.
-   * @return a valid new {@code TraceId}.
-   */
-  static TraceId generateRandomTraceId(Random random) {
-    long idHi;
-    long idLo;
-    do {
-      idHi = random.nextLong();
-      idLo = random.nextLong();
-    } while (idHi == INVALID_ID && idLo == INVALID_ID);
-    return new TraceId(idHi, idLo);
   }
 
   private enum ParentType {

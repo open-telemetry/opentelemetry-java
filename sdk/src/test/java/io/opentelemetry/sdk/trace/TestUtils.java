@@ -34,24 +34,6 @@ public final class TestUtils {
   private TestUtils() {}
 
   /**
-   * Returns a random {@link TraceId}.
-   *
-   * @return a random {@link TraceId}.
-   */
-  public static TraceId generateRandomTraceId() {
-    return TraceId.fromLowerBase16(UUID.randomUUID().toString().replace("-", ""), 0);
-  }
-
-  /**
-   * Returns a random {@link SpanId}.
-   *
-   * @return a random {@link SpanId}.
-   */
-  public static SpanId generateRandomSpanId() {
-    return SpanId.fromLowerBase16(UUID.randomUUID().toString().replace("-", ""), 0);
-  }
-
-  /**
    * Generates some random attributes used for testing.
    *
    * @return a map of String to AttributeValues

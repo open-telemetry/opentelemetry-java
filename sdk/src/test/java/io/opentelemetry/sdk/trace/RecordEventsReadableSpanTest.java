@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.Before;
@@ -59,9 +60,10 @@ public class RecordEventsReadableSpanTest {
   private static final String SPAN_NEW_NAME = "NewName";
   private static final long NANOS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
   private static final long MILLIS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
-  private final TraceId traceId = TestUtils.generateRandomTraceId();
-  private final SpanId spanId = TestUtils.generateRandomSpanId();
-  private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
+  private final IdsGenerator idsGenerator = new RandomIdsGenerator(new Random(1234));
+  private final TraceId traceId = idsGenerator.generateTraceId();
+  private final SpanId spanId = idsGenerator.generateSpanId();
+  private final SpanId parentSpanId = idsGenerator.generateSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
   private final long startEpochNanos = 1000_123_789_654L;
@@ -494,9 +496,9 @@ public class RecordEventsReadableSpanTest {
   public void testAsSpanData() {
     String name = "GreatSpan";
     Kind kind = Kind.SERVER;
-    TraceId traceId = TestUtils.generateRandomTraceId();
-    SpanId spanId = TestUtils.generateRandomSpanId();
-    SpanId parentSpanId = TestUtils.generateRandomSpanId();
+    TraceId traceId = idsGenerator.generateTraceId();
+    SpanId spanId = idsGenerator.generateSpanId();
+    SpanId parentSpanId = idsGenerator.generateSpanId();
     TraceConfig traceConfig = TraceConfig.getDefault();
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();
