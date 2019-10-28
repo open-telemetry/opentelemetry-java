@@ -440,7 +440,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   private void endInternal() {
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
         return;
