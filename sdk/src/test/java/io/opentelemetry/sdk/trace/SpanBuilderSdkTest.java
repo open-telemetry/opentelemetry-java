@@ -365,8 +365,7 @@ public class SpanBuilderSdkTest {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
 
-      assertThat(span.getTimestampConverter())
-          .isEqualTo(((RecordEventsReadableSpan) parent).getTimestampConverter());
+      assertThat(span.getClock()).isEqualTo(((RecordEventsReadableSpan) parent).getClock());
     } finally {
       parent.end();
     }
@@ -380,8 +379,7 @@ public class SpanBuilderSdkTest {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
 
-      assertThat(span.getTimestampConverter())
-          .isEqualTo(((RecordEventsReadableSpan) parent).getTimestampConverter());
+      assertThat(span.getClock()).isEqualTo(((RecordEventsReadableSpan) parent).getClock());
     } finally {
       scope.close();
       parent.end();

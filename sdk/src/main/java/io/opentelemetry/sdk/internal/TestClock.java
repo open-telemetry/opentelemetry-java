@@ -16,8 +16,6 @@
 
 package io.opentelemetry.sdk.internal;
 
-import static io.opentelemetry.sdk.internal.TimestampConverter.NANOS_PER_MILLI;
-
 import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
@@ -76,7 +74,17 @@ public class TestClock implements Clock {
    * @since 0.1.0
    */
   public synchronized void advanceMillis(long millis) {
-    long nanos = millis * NANOS_PER_MILLI;
+    long nanos = TimeUnit.MILLISECONDS.toNanos(millis);
+    currentEpochNanos += nanos;
+  }
+
+  /**
+   * Advances the time by nanos and mutates this instance.
+   *
+   * @param nanos the increase in time.
+   * @since 0.1.0
+   */
+  public synchronized void advanceNanos(long nanos) {
     currentEpochNanos += nanos;
   }
 
