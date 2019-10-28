@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -75,16 +74,6 @@ public class TracerSdk implements Tracer {
   @Override
   public HttpTextFormat<SpanContext> getHttpTextFormat() {
     return HTTP_TEXT_FORMAT;
-  }
-
-  /** TODO: Remove this when all tests are changed to use the factory. */
-  public TraceConfig getActiveTraceConfig() {
-    return sharedState.getActiveTraceConfig();
-  }
-
-  /** TODO: Remove this when all tests are changed to use the factory. */
-  public void updateActiveTraceConfig(TraceConfig traceConfig) {
-    sharedState.updateActiveTraceConfig(traceConfig);
   }
 
   /** TODO: Remove this when all tests are changed to use the factory. */

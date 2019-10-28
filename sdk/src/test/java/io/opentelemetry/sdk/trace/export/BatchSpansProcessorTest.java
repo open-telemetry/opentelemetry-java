@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,7 +45,8 @@ public class BatchSpansProcessorTest {
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
-  private final TracerSdk tracerSdk = new TracerSdk();
+  private final TracerSdkFactory tracerSdkFactory = new TracerSdkFactory();
+  private final TracerSdk tracerSdk = tracerSdkFactory.get("BatchSpansProcessorTest");
   private final WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter();
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
@@ -61,7 +63,8 @@ public class BatchSpansProcessorTest {
 
   private ReadableSpan createSampledEndedSpan(String spanName) {
     io.opentelemetry.trace.Span span =
-        TestUtils.startSpanWithSampler(tracerSdk, spanName, Samplers.alwaysOn()).startSpan();
+        TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, spanName, Samplers.alwaysOn())
+            .startSpan();
     span.end();
     return (ReadableSpan) span;
   }
@@ -77,7 +80,9 @@ public class BatchSpansProcessorTest {
   */
 
   private void createNotSampledEndedSpan(String spanName) {
-    TestUtils.startSpanWithSampler(tracerSdk, spanName, Samplers.alwaysOff()).startSpan().end();
+    TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, spanName, Samplers.alwaysOff())
+        .startSpan()
+        .end();
   }
 
   @Test
