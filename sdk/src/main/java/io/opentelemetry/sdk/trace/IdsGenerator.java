@@ -25,16 +25,16 @@ import io.opentelemetry.trace.TraceId;
  */
 public interface IdsGenerator {
   /**
-   * Generates a new random {@code SpanId}.
+   * Generates a new valid {@code SpanId}.
    *
-   * @return a valid new {@code SpanId}.
+   * @return a new valid {@code SpanId}.
    */
   SpanId generateSpanId();
 
   /**
-   * Generates a new random {@code TraceIde}.
+   * Generates a new valid {@code TraceId}.
    *
-   * @return a valid new {@code TraceId}.
+   * @return a new valid {@code TraceId}.
    */
   TraceId generateTraceId();
 }
