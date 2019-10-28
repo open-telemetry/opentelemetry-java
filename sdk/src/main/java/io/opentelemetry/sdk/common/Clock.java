@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.internal;
+package io.opentelemetry.sdk.common;
 
 /**
  * Interface for getting the current time.
