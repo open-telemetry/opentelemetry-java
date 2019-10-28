@@ -185,9 +185,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : sourceEvents) {
       result.add(
           SpanData.TimedEvent.create(
-              Timestamp.fromNanos(sourceEvent.getEpochNanos()),
-              sourceEvent.getName(),
-              sourceEvent.getAttributes()));
+              sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
     }
     return result;
   }

@@ -78,9 +78,7 @@ public class SpanDataTest {
     thrown.expect(UnsupportedOperationException.class);
     spanData
         .getTimedEvents()
-        .add(
-            TimedEvent.create(
-                Timestamp.create(100, 3), "foo", Collections.<String, AttributeValue>emptyMap()));
+        .add(TimedEvent.create(1234, "foo", Collections.<String, AttributeValue>emptyMap()));
   }
 
   private static SpanData createSpanDataWithMutableCollections() {
