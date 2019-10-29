@@ -21,7 +21,7 @@ We would love to hear from the larger community: please provide feedback proacti
 
 ## Project setup and contribute
 
-Please refer to the [contribution guide](https://github.com/newrelic-forks/opentelemetry-java/blob/master/CONTRIBUTING.md)
+Please refer to the [contribution guide](https://github.com/open-telemetry/opentelemetry-java/blob/master/CONTRIBUTING.md)
 on how to setup and contribute!
 
 ## Snapshots
