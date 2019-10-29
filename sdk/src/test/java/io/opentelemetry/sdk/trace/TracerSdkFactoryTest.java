@@ -80,8 +80,10 @@ public class TracerSdkFactoryTest {
   public void propagatesLibraryResourceToTracer() {
     TracerSdk tracer = tracerFactory.get("theName", "theVersion");
     Map<String, String> labels = tracer.getLibraryResource().getLabels();
-    assertThat(labels.get("name")).isEqualTo("theName");
-    assertThat(labels.get("version")).isEqualTo("theVersion");
+    assertThat(labels.get(TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_NAME))
+        .isEqualTo("theName");
+    assertThat(labels.get(TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_VERSION))
+        .isEqualTo("theVersion");
   }
 
   @Test

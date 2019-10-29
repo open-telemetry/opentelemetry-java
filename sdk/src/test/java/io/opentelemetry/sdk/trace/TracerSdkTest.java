@@ -51,8 +51,10 @@ public class TracerSdkTest {
 
   @Before
   public void setUp() {
-    instrumentationLibraryLabels.put("name", INSTRUMENTATION_LIBRARY_NAME);
-    instrumentationLibraryLabels.put("version", INSTRUMENTATION_LIBRARY_VERSION);
+    instrumentationLibraryLabels.put(
+        TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_NAME, INSTRUMENTATION_LIBRARY_NAME);
+    instrumentationLibraryLabels.put(
+        TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_VERSION, INSTRUMENTATION_LIBRARY_VERSION);
     MockitoAnnotations.initMocks(this);
   }
 

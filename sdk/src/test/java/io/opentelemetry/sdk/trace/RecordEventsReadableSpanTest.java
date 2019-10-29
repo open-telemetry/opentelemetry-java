@@ -68,7 +68,9 @@ public class RecordEventsReadableSpanTest {
   private final TestClock testClock = TestClock.create(startEpochNanos);
   private final Resource resource = Resource.getEmpty();
   private final Resource instrumentationLibrary =
-      Resource.create(Collections.singletonMap("name", "theName"));
+      Resource.create(
+          Collections.singletonMap(
+              TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_NAME, "theName"));
   private final Map<String, AttributeValue> attributes = new HashMap<>();
   private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
   private final Link link = SpanData.Link.create(spanContext);

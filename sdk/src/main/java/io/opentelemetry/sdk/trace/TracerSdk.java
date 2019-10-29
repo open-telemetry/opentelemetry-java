@@ -30,6 +30,8 @@ import io.opentelemetry.trace.unsafe.ContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
+  public static final String INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_NAME = "name";
+  public static final String INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_VERSION = "version";
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final TracerSharedState sharedState;

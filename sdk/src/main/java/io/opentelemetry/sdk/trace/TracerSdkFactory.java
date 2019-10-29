@@ -92,9 +92,10 @@ public class TracerSdkFactory implements TracerFactory {
       String instrumentationName, String instrumentationVersion) {
     Utils.checkNotNull(instrumentationName, "instrumentationName");
     Map<String, String> libraryLabels = new HashMap<>();
-    libraryLabels.put("name", instrumentationName);
+    libraryLabels.put(TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_NAME, instrumentationName);
     if (instrumentationVersion != null) {
-      libraryLabels.put("version", instrumentationVersion);
+      libraryLabels.put(
+          TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_VERSION, instrumentationVersion);
     }
     return Resource.create(libraryLabels);
   }
