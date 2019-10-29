@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.BatchSpansProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -49,7 +50,8 @@ public class SimpleSpansProcessorTest {
   private static final String SPAN_NAME = "MySpanName";
   @Mock private ReadableSpan readableSpan;
   @Mock private SpanExporter spanExporter;
-  private final TracerSdk tracerSdk = new TracerSdk();
+  private final TracerSdkFactory tracerSdkFactory = new TracerSdkFactory();
+  private final TracerSdk tracerSdk = tracerSdkFactory.get("SimpleSpansProcessor");
   private final WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter();
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
@@ -125,8 +127,12 @@ public class SimpleSpansProcessorTest {
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
-    TestUtils.startSpanWithSampler(tracerSdk, SPAN_NAME, Samplers.alwaysOff()).startSpan().end();
-    TestUtils.startSpanWithSampler(tracerSdk, SPAN_NAME, Samplers.alwaysOff()).startSpan().end();
+    TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.alwaysOff())
+        .startSpan()
+        .end();
+    TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.alwaysOff())
+        .startSpan()
+        .end();
 
     io.opentelemetry.trace.Span span = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     span.end();

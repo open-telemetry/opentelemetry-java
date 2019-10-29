@@ -70,13 +70,14 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdk tracerSdk, String spanName, Sampler sampler) {
-    TraceConfig originalConfig = tracerSdk.getActiveTraceConfig();
-    tracerSdk.updateActiveTraceConfig(originalConfig.toBuilder().setSampler(sampler).build());
+      TracerSdkFactory tracerSdkFactory, TracerSdk tracerSdk, String spanName, Sampler sampler) {
+    TraceConfig originalConfig = tracerSdkFactory.getActiveTraceConfig();
+    tracerSdkFactory.updateActiveTraceConfig(
+        originalConfig.toBuilder().setSampler(sampler).build());
     try {
       return tracerSdk.spanBuilder(spanName);
     } finally {
-      tracerSdk.updateActiveTraceConfig(originalConfig);
+      tracerSdkFactory.updateActiveTraceConfig(originalConfig);
     }
   }
 }
