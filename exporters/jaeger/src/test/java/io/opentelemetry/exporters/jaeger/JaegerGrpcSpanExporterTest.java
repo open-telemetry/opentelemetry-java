@@ -33,7 +33,6 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.exporters.otprotocol.TraceProtoUtils;
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
@@ -42,6 +41,7 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import java.net.InetAddress;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -77,15 +77,13 @@ public class JaegerGrpcSpanExporterTest {
     long duration = 900; // ms
     long startMs = System.currentTimeMillis();
     long endMs = startMs + duration;
-    Timestamp startTime = Timestamp.create(startMs / 1000, (int) ((startMs % 1000) * 1000000));
-    Timestamp endTime = Timestamp.create(endMs / 1000, (int) ((endMs % 1000) * 1000000));
     SpanData span =
         SpanData.newBuilder()
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
             .setName("GET /api/endpoint")
-            .setStartTimestamp(startTime)
-            .setEndTimestamp(endTime)
+            .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
+            .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(Status.OK)
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.<Link>emptyList())

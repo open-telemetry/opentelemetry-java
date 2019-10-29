@@ -69,11 +69,10 @@ final class Adapter {
     target.setTraceId(TraceProtoUtils.toProtoTraceId(span.getTraceId()));
     target.setSpanId(TraceProtoUtils.toProtoSpanId(span.getSpanId()));
     target.setOperationName(span.getName());
-    Timestamp startTimestamp = TraceProtoUtils.toProtoTimestamp(span.getStartTimestamp());
+    Timestamp startTimestamp = Timestamps.fromNanos(span.getStartEpochNanos());
     target.setStartTime(startTimestamp);
     target.setDuration(
-        Timestamps.between(
-            startTimestamp, TraceProtoUtils.toProtoTimestamp(span.getEndTimestamp())));
+        Timestamps.between(startTimestamp, Timestamps.fromNanos(span.getEndEpochNanos())));
 
     target.addAllTags(toKeyValues(span.getAttributes()));
     target.addAllLogs(toJaegerLogs(span.getTimedEvents()));

@@ -20,7 +20,6 @@ import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
@@ -34,6 +33,7 @@ import io.opentelemetry.trace.Tracestate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -43,6 +43,8 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link SpanData}. */
 @RunWith(JUnit4.class)
 public class SpanDataTest {
+  private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
+  private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
@@ -103,8 +105,8 @@ public class SpanDataTest {
         .setSpanId(SpanId.getInvalid())
         .setTraceId(TraceId.getInvalid())
         .setName("spanName")
-        .setStartTimestamp(Timestamp.create(3000, 200))
-        .setEndTimestamp(Timestamp.create(3001, 255))
+        .setStartEpochNanos(START_EPOCH_NANOS)
+        .setEndEpochNanos(END_EPOCH_NANOS)
         .setKind(Kind.SERVER)
         .setStatus(Status.OK);
   }

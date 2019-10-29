@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.contrib.trace.testbed;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
@@ -191,7 +190,7 @@ public final class TestUtils {
   }
 
   /**
-   * Sorts the specified {@code List} of {@code Span} by their {@code Span.Timestamp} values,
+   * Sorts the specified {@code List} of {@code Span} by their start epoch timestamp values,
    * returning it as a new {@code List}.
    */
   public static List<SpanData> sortByStartTime(List<SpanData> spans) {
@@ -201,7 +200,7 @@ public final class TestUtils {
         new Comparator<SpanData>() {
           @Override
           public int compare(SpanData o1, SpanData o2) {
-            return compareTimestamps(o1.getStartTimestamp(), o2.getStartTimestamp());
+            return Long.compare(o1.getStartEpochNanos(), o2.getStartEpochNanos());
           }
         });
     return sortedSpans;
@@ -211,26 +210,10 @@ public final class TestUtils {
   public static void assertSameTrace(List<SpanData> spans) {
     for (int i = 0; i < spans.size() - 1; i++) {
       // TODO - Include nanos in this comparison.
-      assertThat(
-              spans.get(spans.size() - 1).getEndTimestamp().getSeconds()
-                  >= spans.get(i).getEndTimestamp().getSeconds())
+      assertThat(spans.get(spans.size() - 1).getEndEpochNanos() >= spans.get(i).getEndEpochNanos())
           .isTrue();
       assertThat(spans.get(spans.size() - 1).getTraceId()).isEqualTo(spans.get(i).getTraceId());
       assertThat(spans.get(spans.size() - 1).getSpanId()).isEqualTo(spans.get(i).getParentSpanId());
     }
-  }
-
-  // TODO: this comparator code is duplicated in another TestUtils class. find a common home for it.
-  private static final Comparator<Timestamp> COMPARATOR =
-      new Comparator<Timestamp>() {
-        @Override
-        public int compare(Timestamp t1, Timestamp t2) {
-          int secDiff = Long.compare(t1.getSeconds(), t2.getSeconds());
-          return (secDiff != 0) ? secDiff : Integer.compare(t1.getNanos(), t2.getNanos());
-        }
-      };
-
-  public static int compareTimestamps(Timestamp x, Timestamp y) {
-    return COMPARATOR.compare(x, y);
   }
 }

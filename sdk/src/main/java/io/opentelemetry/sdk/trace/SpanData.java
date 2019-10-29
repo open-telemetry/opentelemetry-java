@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
@@ -107,12 +106,12 @@ public abstract class SpanData {
   public abstract Kind getKind();
 
   /**
-   * Returns the start {@code Timestamp} of this {@code Span}.
+   * Returns the start epoch timestamp in nanos of this {@code Span}.
    *
-   * @return the start {@code Timestamp} of this {@code Span}.
+   * @return the start epoch timestamp in nanos of this {@code Span}.
    * @since 0.1.0
    */
-  public abstract Timestamp getStartTimestamp();
+  public abstract long getStartEpochNanos();
 
   /**
    * Returns the attributes recorded for this {@code Span}.
@@ -147,12 +146,12 @@ public abstract class SpanData {
   public abstract Status getStatus();
 
   /**
-   * Returns the end {@code Timestamp}.
+   * Returns the end epoch timestamp in nanos of this {@code Span}.
    *
-   * @return the end {@code Timestamp}.
+   * @return the end epoch timestamp in nanos of this {@code Span}.
    * @since 0.1.0
    */
-  public abstract Timestamp getEndTimestamp();
+  public abstract long getEndEpochNanos();
 
   /**
    * An immutable implementation of {@link Link}.
@@ -211,9 +210,9 @@ public abstract class SpanData {
     }
 
     /**
-     * Returns the {@code Timestamp} of this event.
+     * Returns the epoch time in nanos of this event.
      *
-     * @return the {@code Timestamp} of this event.
+     * @return the epoch time in nanos of this event.
      * @since 0.1.0
      */
     public abstract long getEpochNanos();
@@ -336,24 +335,22 @@ public abstract class SpanData {
     public abstract Builder setName(String name);
 
     /**
-     * Set the start timestamp of the span. Must not be null.
+     * Set the start timestamp of the span.
      *
-     * @param timestamp the start Timestamp
+     * @param epochNanos the start epoch timestamp in nanos.
      * @return this
-     * @see Timestamp
      * @since 0.1.0
      */
-    public abstract Builder setStartTimestamp(Timestamp timestamp);
+    public abstract Builder setStartEpochNanos(long epochNanos);
 
     /**
-     * Set the end timestamp of the span. Must not be null.
+     * Set the end timestamp of the span.
      *
-     * @param timestamp the end Timestamp
+     * @param epochNanos the end epoch timestamp in nanos.
      * @return this
-     * @see Timestamp
      * @since 0.1.0
      */
-    public abstract Builder setEndTimestamp(Timestamp timestamp);
+    public abstract Builder setEndEpochNanos(long epochNanos);
 
     /**
      * Set the attributes that are associated with this span, as a Map of String keys to

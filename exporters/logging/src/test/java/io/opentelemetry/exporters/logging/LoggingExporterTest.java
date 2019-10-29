@@ -20,7 +20,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertEquals;
 
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.AttributeValue;
@@ -40,8 +39,8 @@ public class LoggingExporterTest {
         SpanData.newBuilder()
             .setTraceId(new TraceId(1234L, 6789L))
             .setSpanId(new SpanId(9876L))
-            .setStartTimestamp(Timestamp.fromNanos(epochNanos))
-            .setEndTimestamp(Timestamp.fromNanos(epochNanos + 1000))
+            .setStartEpochNanos(epochNanos)
+            .setEndEpochNanos(epochNanos + 1000)
             .setStatus(Status.OK)
             .setName("testSpan")
             .setKind(Kind.INTERNAL)

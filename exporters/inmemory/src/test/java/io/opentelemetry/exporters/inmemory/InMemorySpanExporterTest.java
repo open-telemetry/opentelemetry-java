@@ -18,7 +18,6 @@ package io.opentelemetry.exporters.inmemory;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
@@ -104,9 +103,9 @@ public class InMemorySpanExporterTest {
         .setSpanId(io.opentelemetry.trace.SpanId.getInvalid())
         .setName("span")
         .setKind(io.opentelemetry.trace.Span.Kind.SERVER)
-        .setStartTimestamp(Timestamp.create(100, 100))
+        .setStartEpochNanos(100_000_000_100L)
         .setStatus(io.opentelemetry.trace.Status.OK)
-        .setEndTimestamp(Timestamp.create(200, 200))
+        .setEndEpochNanos(200_000_000_200L)
         .build();
   }
 }

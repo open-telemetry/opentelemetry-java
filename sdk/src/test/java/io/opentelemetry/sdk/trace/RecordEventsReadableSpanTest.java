@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -101,8 +100,8 @@ public class RecordEventsReadableSpanTest {
         Collections.<SpanData.TimedEvent>emptyList(),
         Collections.singletonList(link),
         SPAN_NAME,
-        Timestamp.fromNanos(startEpochNanos),
-        Timestamp.fromNanos(startEpochNanos),
+        startEpochNanos,
+        startEpochNanos,
         Status.OK);
   }
 
@@ -130,8 +129,8 @@ public class RecordEventsReadableSpanTest {
           Collections.singletonList(timedEvent),
           Collections.singletonList(link),
           SPAN_NEW_NAME,
-          Timestamp.fromNanos(startEpochNanos),
-          Timestamp.fromNanos(testClock.now()),
+          startEpochNanos,
+          testClock.now(),
           Status.OK);
     } finally {
       span.end();
@@ -159,8 +158,8 @@ public class RecordEventsReadableSpanTest {
         Collections.singletonList(timedEvent),
         Collections.singletonList(link),
         SPAN_NEW_NAME,
-        Timestamp.fromNanos(startEpochNanos),
-        Timestamp.fromNanos(testClock.now()),
+        startEpochNanos,
+        testClock.now(),
         Status.CANCELLED);
   }
 
@@ -473,8 +472,8 @@ public class RecordEventsReadableSpanTest {
       List<SpanData.TimedEvent> timedEvents,
       List<Link> links,
       String spanName,
-      Timestamp startTime,
-      Timestamp endTime,
+      long startEpochNanos,
+      long endEpochNanos,
       Status status) {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
@@ -485,8 +484,8 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getAttributes()).isEqualTo(attributes);
     assertThat(spanData.getTimedEvents()).isEqualTo(timedEvents);
     assertThat(spanData.getLinks()).isEqualTo(links);
-    assertThat(spanData.getStartTimestamp()).isEqualTo(startTime);
-    assertThat(spanData.getEndTimestamp()).isEqualTo(endTime);
+    assertThat(spanData.getStartEpochNanos()).isEqualTo(startEpochNanos);
+    assertThat(spanData.getEndEpochNanos()).isEqualTo(endEpochNanos);
     assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
   }
 
@@ -542,8 +541,8 @@ public class RecordEventsReadableSpanTest {
             .setName(name)
             .setKind(kind)
             .setStatus(Status.OK)
-            .setStartTimestamp(Timestamp.fromNanos(startEpochNanos))
-            .setEndTimestamp(Timestamp.fromNanos(endEpochNanos))
+            .setStartEpochNanos(startEpochNanos)
+            .setEndEpochNanos(endEpochNanos)
             .setTimedEvents(
                 Arrays.asList(
                     SpanData.TimedEvent.create(firstEventEpochNanos, "event1", event1Attributes),
