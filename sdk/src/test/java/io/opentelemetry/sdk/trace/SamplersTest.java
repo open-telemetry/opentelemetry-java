@@ -60,12 +60,7 @@ public class SamplersTest {
     Truth.assertThat(
             Samplers.alwaysOn()
                 .shouldSample(
-                    sampledSpanContext,
-                    false,
-                    traceId,
-                    spanId,
-                    SPAN_NAME,
-                    Collections.<Link>emptyList())
+                    sampledSpanContext, traceId, spanId, SPAN_NAME, Collections.<Link>emptyList())
                 .isSampled())
         .isTrue();
     // Not sampled parent.
@@ -73,7 +68,6 @@ public class SamplersTest {
             Samplers.alwaysOn()
                 .shouldSample(
                     notSampledSpanContext,
-                    false,
                     traceId,
                     spanId,
                     SPAN_NAME,
@@ -93,12 +87,7 @@ public class SamplersTest {
     Truth.assertThat(
             Samplers.alwaysOff()
                 .shouldSample(
-                    sampledSpanContext,
-                    false,
-                    traceId,
-                    spanId,
-                    SPAN_NAME,
-                    Collections.<Link>emptyList())
+                    sampledSpanContext, traceId, spanId, SPAN_NAME, Collections.<Link>emptyList())
                 .isSampled())
         .isFalse();
     // Not sampled parent.
@@ -106,7 +95,6 @@ public class SamplersTest {
             Samplers.alwaysOff()
                 .shouldSample(
                     notSampledSpanContext,
-                    false,
                     traceId,
                     spanId,
                     SPAN_NAME,
@@ -163,7 +151,6 @@ public class SamplersTest {
       if (sampler
           .shouldSample(
               parent,
-              false,
               idsGenerator.generateTraceId(),
               idsGenerator.generateSpanId(),
               SPAN_NAME,
@@ -252,7 +239,6 @@ public class SamplersTest {
     Decision decision1 =
         defaultProbability.shouldSample(
             null,
-            false,
             notSampledtraceId,
             idsGenerator.generateSpanId(),
             SPAN_NAME,
@@ -285,7 +271,6 @@ public class SamplersTest {
     Decision decision2 =
         defaultProbability.shouldSample(
             null,
-            false,
             sampledtraceId,
             idsGenerator.generateSpanId(),
             SPAN_NAME,

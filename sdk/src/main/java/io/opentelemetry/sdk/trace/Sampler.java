@@ -39,8 +39,6 @@ public interface Sampler {
    *
    * @param parentContext the parent span's {@link SpanContext}. {@code null} if this is a root
    *     span.
-   * @param hasRemoteParent {@code true} if the parent {@code Span} is remote. {@code null} if this
-   *     is a root span.
    * @param traceId the {@link TraceId} for the new {@code Span}. This will be identical to that in
    *     the parentContext, unless this is a root span.
    * @param spanId the {@link SpanId} for the new {@code Span}.
@@ -51,7 +49,6 @@ public interface Sampler {
    */
   Decision shouldSample(
       @Nullable SpanContext parentContext,
-      @Nullable Boolean hasRemoteParent,
       TraceId traceId,
       SpanId spanId,
       String name,
@@ -69,8 +66,8 @@ public interface Sampler {
   String getDescription();
 
   /**
-   * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, Boolean, TraceId,
-   * SpanId, String, List)}.
+   * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, TraceId, SpanId, String,
+   * List)}.
    *
    * @since 0.1.0
    */

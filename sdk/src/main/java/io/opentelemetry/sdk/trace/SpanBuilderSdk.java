@@ -153,10 +153,7 @@ class SpanBuilderSdk implements Span.Builder {
       tracestate = parentContext.getTracestate();
     }
     Decision samplingDecision =
-        traceConfig
-            .getSampler()
-            .shouldSample(
-                parentContext, /* hasRemoteParent= */ false, traceId, spanId, spanName, links);
+        traceConfig.getSampler().shouldSample(parentContext, traceId, spanId, spanName, links);
     SpanContext spanContext =
         SpanContext.create(
             traceId,
