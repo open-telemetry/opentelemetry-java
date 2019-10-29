@@ -40,7 +40,8 @@ import org.junit.Test;
 public final class ErrorReportingTest {
 
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = TestUtils.createTracerShim(exporter);
+  private final Tracer tracer =
+      TestUtils.createTracer(ErrorReportingTest.class.getName(), exporter);
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   /* Very simple error handling **/

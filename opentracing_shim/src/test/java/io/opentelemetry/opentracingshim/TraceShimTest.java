@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
-import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import org.junit.Test;
 
 public class TraceShimTest {
@@ -39,15 +39,15 @@ public class TraceShimTest {
 
   @Test(expected = NullPointerException.class)
   public void createTracerShim_nullContextManager() {
-    TraceShim.createTracerShim(OpenTelemetry.getTracerFactory().get("opentracingshim"), null);
+    TraceShim.createTracerShim(OpenTelemetry.getTracerFactory(), null);
   }
 
   @Test
   public void createTracerShim() {
-    TracerSdk tracer = new TracerSdk();
+    TracerSdkFactory sdk = TracerSdkFactory.create();
     DistributedContextManagerSdk contextManager = new DistributedContextManagerSdk();
-    TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim(tracer, contextManager);
-    assertEquals(tracer, tracerShim.tracer());
+    TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim(sdk, contextManager);
+    assertEquals(sdk.get("opentracingshim"), tracerShim.tracer());
     assertEquals(contextManager, tracerShim.contextManager());
   }
 }

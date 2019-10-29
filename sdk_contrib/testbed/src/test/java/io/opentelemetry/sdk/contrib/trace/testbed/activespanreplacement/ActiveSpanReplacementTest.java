@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.contrib.trace.testbed.activespanreplacement;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.createTracerShim;
+import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.createTracer;
 import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.finishedSpansSize;
 import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.sleep;
 import static org.awaitility.Awaitility.await;
@@ -40,7 +40,7 @@ import org.junit.Test;
 public class ActiveSpanReplacementTest {
 
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final Tracer tracer = createTracer(ActiveSpanReplacementTest.class.getName(), exporter);
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test

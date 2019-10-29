@@ -17,21 +17,18 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.MillisClock;
-import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import javax.annotation.concurrent.GuardedBy;
 
 // Represents the shared state/config between all Tracers created by the same TracerFactory.
 final class TracerSharedState {
   private final Object lock = new Object();
-  private final Clock clock = MillisClock.getInstance();
-  private final IdsGenerator idsGenerator = new RandomIdsGenerator(new Random());
-  private final Resource resource = EnvVarResource.getResource();
+  private final Clock clock;
+  private final IdsGenerator idsGenerator;
+  private final Resource resource;
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
@@ -41,6 +38,12 @@ final class TracerSharedState {
 
   @GuardedBy("lock")
   private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
+
+  TracerSharedState(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+    this.clock = clock;
+    this.idsGenerator = idsGenerator;
+    this.resource = resource;
+  }
 
   Clock getClock() {
     return clock;

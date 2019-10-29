@@ -33,7 +33,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class TracerSdkFactoryTest {
   @Mock private SpanProcessor spanProcessor;
-  private final TracerSdkFactory tracerFactory = new TracerSdkFactory();
+  private final TracerSdkFactory tracerFactory = TracerSdkFactory.create();
 
   @Before
   public void setUp() {

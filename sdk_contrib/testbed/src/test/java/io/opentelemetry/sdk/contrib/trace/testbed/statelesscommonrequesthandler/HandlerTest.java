@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.statelesscommonrequesthandler;
 
-import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.createTracerShim;
+import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.createTracer;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
@@ -35,7 +35,7 @@ import org.junit.Test;
 public final class HandlerTest {
 
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final Tracer tracer = createTracer(HandlerTest.class.getName(), exporter);
   private final Client client = new Client(new RequestHandler(tracer));
 
   @Before

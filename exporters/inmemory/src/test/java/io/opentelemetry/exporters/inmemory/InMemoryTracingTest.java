@@ -45,7 +45,7 @@ public class InMemoryTracingTest {
 
   @Test
   public void ctor_tracer() {
-    TracerSdkFactory tracerSdkFactory = new TracerSdkFactory();
+    TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
     InMemoryTracing tracing = new InMemoryTracing(tracerSdkFactory);
     assertThat(tracing.getTracerFactory()).isSameInstanceAs(tracerSdkFactory);
   }

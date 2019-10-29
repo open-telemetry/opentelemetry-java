@@ -40,7 +40,8 @@ import org.junit.Test;
  */
 public class PromisePropagationTest {
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = TestUtils.createTracerShim(exporter);
+  private final Tracer tracer =
+      TestUtils.createTracer(PromisePropagationTest.class.getName(), exporter);
   private Phaser phaser;
 
   @Before

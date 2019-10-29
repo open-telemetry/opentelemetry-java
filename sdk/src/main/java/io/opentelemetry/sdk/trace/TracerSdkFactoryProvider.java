@@ -23,6 +23,6 @@ import io.opentelemetry.trace.spi.TracerFactoryProvider;
 public class TracerSdkFactoryProvider implements TracerFactoryProvider {
   @Override
   public TracerFactory create() {
-    return new TracerSdkFactory();
+    return TracerSdkFactory.create();
   }
 }

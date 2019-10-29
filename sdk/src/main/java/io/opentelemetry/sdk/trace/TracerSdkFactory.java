@@ -16,9 +16,14 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.resources.EnvVarResource;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerFactory;
+import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -33,7 +38,24 @@ import java.util.logging.Logger;
 public class TracerSdkFactory implements TracerFactory {
   private static final Logger logger = Logger.getLogger(TracerFactory.class.getName());
   private final Map<String, TracerSdk> tracersByKey = new ConcurrentHashMap<>();
-  private final TracerSharedState sharedState = new TracerSharedState();
+  private final TracerSharedState sharedState;
+
+  /**
+   * Returns a new {@link TracerSdkFactory} with default {@link Clock}, {@link IdsGenerator} and
+   * {@link Resource}.
+   *
+   * @return a new {@link TracerSdkFactory} with default configs.
+   */
+  public static TracerSdkFactory create() {
+    return new TracerSdkFactory(
+        MillisClock.getInstance(),
+        new RandomIdsGenerator(new SecureRandom()),
+        EnvVarResource.getResource());
+  }
+
+  private TracerSdkFactory(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+    this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
+  }
 
   @Override
   public TracerSdk get(String instrumentationName) {

@@ -53,7 +53,7 @@ public class SpanBuilderSdkTest {
           TraceFlags.builder().setIsSampled(true).build(),
           Tracestate.getDefault());
 
-  private final TracerSdkFactory tracerSdkFactory = new TracerSdkFactory();
+  private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
   private final TracerSdk tracerSdk = tracerSdkFactory.get("SpanBuilderSdkTest");
 
   @Rule public final ExpectedException thrown = ExpectedException.none();

@@ -33,11 +33,6 @@ public class TracerSdk implements Tracer {
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final TracerSharedState sharedState;
 
-  /** TODO: Remove this when all tests are changed to use the factory. */
-  public TracerSdk() {
-    this.sharedState = new TracerSharedState();
-  }
-
   TracerSdk(TracerSharedState sharedState) {
     this.sharedState = sharedState;
   }
@@ -74,10 +69,5 @@ public class TracerSdk implements Tracer {
   @Override
   public HttpTextFormat<SpanContext> getHttpTextFormat() {
     return HTTP_TEXT_FORMAT;
-  }
-
-  /** TODO: Remove this when all tests are changed to use the factory. */
-  public void addSpanProcessor(SpanProcessor spanProcessor) {
-    sharedState.addSpanProcessor(spanProcessor);
   }
 }
