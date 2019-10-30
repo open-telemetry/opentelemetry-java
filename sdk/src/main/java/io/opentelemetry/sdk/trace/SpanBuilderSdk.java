@@ -143,7 +143,6 @@ class SpanBuilderSdk implements Span.Builder {
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
     TraceId traceId;
-    SpanContext spanContext;
     SpanId spanId = idsGenerator.generateSpanId();
     Tracestate tracestate = Tracestate.getDefault();
     if (parentContext == null || !parentContext.isValid()) {
@@ -156,25 +155,15 @@ class SpanBuilderSdk implements Span.Builder {
       traceId = parentContext.getTraceId();
       tracestate = parentContext.getTracestate();
     }
-
     Decision samplingDecision =
         traceConfig.getSampler().shouldSample(parentContext, traceId, spanId, spanName, links);
 
-    if (parentType == ParentType.EXPLICIT_REMOTE_PARENT) {
-      spanContext =
-          SpanContext.createFromRemoteParent(
-              traceId,
-              spanId,
-              samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
-              tracestate);
-    } else {
-      spanContext =
-          SpanContext.create(
-              traceId,
-              spanId,
-              samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
-              tracestate);
-    }
+    SpanContext spanContext =
+        SpanContext.create(
+            traceId,
+            spanId,
+            samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
+            tracestate);
 
     if (!samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
@@ -186,6 +175,7 @@ class SpanBuilderSdk implements Span.Builder {
         instrumentationLibraryInfo,
         spanKind,
         parentContext != null ? parentContext.getSpanId() : null,
+        parentContext != null ? parentContext.isRemote() : null,
         traceConfig,
         spanProcessor,
         getClock(parentSpan(parentType, parent), clock),

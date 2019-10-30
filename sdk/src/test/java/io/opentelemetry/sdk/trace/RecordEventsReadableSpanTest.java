@@ -62,6 +62,7 @@ public class RecordEventsReadableSpanTest {
   private final TraceId traceId = idsGenerator.generateTraceId();
   private final SpanId spanId = idsGenerator.generateSpanId();
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
+  private final Boolean expectedHasRemoteParent = Boolean.TRUE;
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
   private final long startEpochNanos = 1000_123_789_654L;
@@ -214,6 +215,16 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CLIENT);
     try {
       assertThat(span.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
+      } finally {
+      span.end();
+    }
+  }
+  
+  @Test
+  public void getSpanHasRemoteParent() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
+    try {
+      assertThat(span.toSpanData().getHasRemoteParent()).isEqualTo(Boolean.TRUE);
     } finally {
       span.end();
     }
@@ -450,6 +461,7 @@ public class RecordEventsReadableSpanTest {
             instrumentationLibraryInfo,
             kind,
             parentSpanId,
+            Boolean.TRUE,
             config,
             spanProcessor,
             testClock,
@@ -491,6 +503,7 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
+    assertThat(spanData.getHasRemoteParent()).isEqualTo(expectedHasRemoteParent);
     assertThat(spanData.getTracestate()).isEqualTo(Tracestate.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
@@ -531,6 +544,7 @@ public class RecordEventsReadableSpanTest {
             instrumentationLibraryInfo,
             kind,
             parentSpanId,
+            Boolean.TRUE,
             traceConfig,
             spanProcessor,
             clock,
@@ -569,6 +583,7 @@ public class RecordEventsReadableSpanTest {
             .setTraceId(traceId)
             .setSpanId(spanId)
             .setAttributes(attributes)
+            .setHasRemoteParent(Boolean.TRUE)
             .build();
 
     SpanData result = readableSpan.toSpanData();
