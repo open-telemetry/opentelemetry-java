@@ -19,9 +19,7 @@ package io.opentelemetry.sdk.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
-import io.opentelemetry.sdk.common.Timestamp;
-import io.opentelemetry.sdk.internal.Clock;
-import io.opentelemetry.sdk.internal.TimestampConverter;
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
@@ -47,14 +45,13 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
 final class RecordEventsReadableSpan implements ReadableSpan, Span {
+
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
   private final SpanId parentSpanId;
-  // Active trace configs when the Span was created.
-  private final TraceConfig traceConfig;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
@@ -63,42 +60,40 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Number of links recorded.
   private final int totalRecordedLinks;
 
-  @GuardedBy("this")
+  // Lock used to internally guard the mutable state of this instance
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
   private String name;
   // The kind of the span.
   private final Kind kind;
   // The clock used to get the time.
   private final Clock clock;
-  // The time converter used to convert nano time to Timestamp. This is needed because Java has
-  // millisecond granularity for Timestamp and tracing events are recorded more often.
-  private final TimestampConverter timestampConverter;
   // The resource associated with this span.
   private final Resource resource;
   // The start time of the span.
-  private final long startNanoTime;
+  private final long startEpochNanos;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
-  @GuardedBy("this")
-  @Nullable
-  private AttributesWithCapacity attributes;
+  @GuardedBy("lock")
+  private final AttributesWithCapacity attributes;
   // List of recorded events.
-  @GuardedBy("this")
-  @Nullable
-  private EvictingQueue<TimedEvent> events;
+  @GuardedBy("lock")
+  private final EvictingQueue<TimedEvent> events;
   // Number of events recorded.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private int totalRecordedEvents = 0;
   // The number of children.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private int numberOfChildren;
   // The status of the span.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   @Nullable
   private Status status;
   // The end time of the span.
-  @GuardedBy("this")
-  private long endNanoTime;
+  @GuardedBy("lock")
+  private long endEpochNanos;
   // True if the span is ended.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private boolean hasBeenEnded;
 
   /**
@@ -110,9 +105,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @param parentSpanId the span_id of the parent span, or null if the new span is a root span.
    * @param traceConfig trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
-   * @param timestampConverter null if the span is a root span or the parent is not sampled. If the
-   *     parent is sampled, we should use the same converter to ensure ordering between tracing
-   *     events.
    * @param clock the clock used to get the time.
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
@@ -128,12 +120,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       @Nullable SpanId parentSpanId,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
-      @Nullable TimestampConverter timestampConverter,
       Clock clock,
       Resource resource,
       Map<String, AttributeValue> attributes,
       List<Link> links,
-      int totalRecordedLinks) {
+      int totalRecordedLinks,
+      long startEpochNanos) {
     RecordEventsReadableSpan span =
         new RecordEventsReadableSpan(
             context,
@@ -142,12 +134,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             parentSpanId == null ? SpanId.getInvalid() : parentSpanId,
             traceConfig,
             spanProcessor,
-            timestampConverter,
             clock,
             resource,
             attributes,
             links,
-            totalRecordedLinks);
+            totalRecordedLinks,
+            startEpochNanos == 0 ? clock.now() : startEpochNanos);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
     spanProcessor.onStart(span);
@@ -156,10 +148,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public SpanData toSpanData() {
-    Timestamp startTimestamp =
-        Timestamp.fromNanos(timestampConverter.convertNanoTime(startNanoTime));
-    Timestamp endTimestamp =
-        Timestamp.fromNanos(timestampConverter.convertNanoTime(getEndNanoTime()));
     SpanContext spanContext = getSpanContext();
     return SpanData.newBuilder()
         .setName(getName())
@@ -168,8 +156,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         .setTraceFlags(spanContext.getTraceFlags())
         .setTracestate(spanContext.getTracestate())
         .setAttributes(getAttributes())
-        .setStartTimestamp(startTimestamp)
-        .setEndTimestamp(endTimestamp)
+        .setStartEpochNanos(startEpochNanos)
+        .setEndEpochNanos(getEndEpochNanos())
         .setKind(kind)
         .setLinks(getLinks())
         .setParentSpanId(parentSpanId)
@@ -185,9 +173,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : sourceEvents) {
       result.add(
           SpanData.TimedEvent.create(
-              Timestamp.fromNanos(sourceEvent.getEpochNanos()),
-              sourceEvent.getName(),
-              sourceEvent.getAttributes()));
+              sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
     }
     return result;
   }
@@ -204,7 +190,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @Override
   public String getName() {
-    synchronized (this) {
+    synchronized (lock) {
       return name;
     }
   }
@@ -215,8 +201,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the end nano time.
    */
-  private long getEndNanoTime() {
-    synchronized (this) {
+  private long getEndEpochNanos() {
+    synchronized (lock) {
       return getEndNanoTimeInternal();
     }
   }
@@ -228,7 +214,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   Status getStatus() {
-    synchronized (this) {
+    synchronized (lock) {
       return getStatusWithDefault();
     }
   }
@@ -239,8 +225,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return The TimedEvents for this span.
    */
   private List<TimedEvent> getTimedEvents() {
-    synchronized (this) {
-      return events == null ? Collections.<TimedEvent>emptyList() : new ArrayList<>(events);
+    synchronized (lock) {
+      return new ArrayList<>(events);
     }
   }
 
@@ -251,7 +237,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   List<Link> getLinks() {
-    synchronized (this) {
+    synchronized (lock) {
       if (links == null) {
         return Collections.emptyList();
       }
@@ -276,8 +262,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   Map<String, AttributeValue> getAttributes() {
-    synchronized (this) {
-      return Collections.unmodifiableMap(getInitializedAttributes());
+    synchronized (lock) {
+      return Collections.unmodifiableMap(attributes);
     }
   }
 
@@ -288,15 +274,15 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return the latency of the {@code Span} in nanos.
    */
   long getLatencyNs() {
-    synchronized (this) {
-      return getEndNanoTimeInternal() - startNanoTime;
+    synchronized (lock) {
+      return getEndNanoTimeInternal() - startEpochNanos;
     }
   }
 
   // Use getEndNanoTimeInternal to avoid over-locking.
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private long getEndNanoTimeInternal() {
-    return hasBeenEnded ? endNanoTime : clock.nanoTime();
+    return hasBeenEnded ? endEpochNanos : clock.now();
   }
 
   /**
@@ -319,14 +305,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns the {@code TimestampConverter} used by this {@code Span}.
+   * Returns the {@code Clock} used by this {@code Span}.
    *
-   * @return the {@code TimestampConverter} used by this {@code Span}.
+   * @return the {@code Clock} used by this {@code Span}.
    */
-  @Nullable
   @VisibleForTesting
-  public TimestampConverter getTimestampConverter() {
-    return timestampConverter;
+  public Clock getClock() {
+    return clock;
   }
 
   @Override
@@ -353,18 +338,18 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
-      getInitializedAttributes().putAttribute(key, value);
+      attributes.putAttribute(key, value);
     }
   }
 
   @Override
   public void addEvent(String name) {
-    addTimedEvent(TimedEvent.create(epochNanosNow(), name));
+    addTimedEvent(TimedEvent.create(clock.now(), name));
   }
 
   @Override
@@ -374,7 +359,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes) {
-    addTimedEvent(TimedEvent.create(epochNanosNow(), name, attributes));
+    addTimedEvent(TimedEvent.create(clock.now(), name, attributes));
   }
 
   @Override
@@ -384,7 +369,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(Event event) {
-    addTimedEvent(TimedEvent.create(epochNanosNow(), event));
+    addTimedEvent(TimedEvent.create(clock.now(), event));
   }
 
   @Override
@@ -393,12 +378,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
-      getInitializedEvents().add(timedEvent);
+      events.add(timedEvent);
       totalRecordedEvents++;
     }
   }
@@ -406,7 +391,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void setStatus(Status status) {
     Preconditions.checkNotNull(status, "status");
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return;
@@ -418,7 +403,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void updateName(String name) {
     Preconditions.checkNotNull(name, "name");
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
         return;
@@ -429,23 +414,22 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void end() {
-    endInternal();
+    endInternal(clock.now());
   }
 
-  // TODO: Use endOptions.
   @Override
   public void end(EndSpanOptions endOptions) {
     Preconditions.checkNotNull(endOptions, "endOptions");
-    endInternal();
+    endInternal(endOptions.getEndTimestamp() == 0 ? clock.now() : endOptions.getEndTimestamp());
   }
 
-  private void endInternal() {
-    synchronized (this) {
+  private void endInternal(long endEpochNanos) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
         return;
       }
-      endNanoTime = clock.nanoTime();
+      this.endEpochNanos = endEpochNanos;
       hasBeenEnded = true;
     }
     spanProcessor.onEnd(this);
@@ -462,7 +446,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   void addChild() {
-    synchronized (this) {
+    synchronized (lock) {
       if (hasBeenEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
         return;
@@ -471,30 +455,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
   }
 
-  @GuardedBy("this")
-  private AttributesWithCapacity getInitializedAttributes() {
-    if (attributes == null) {
-      attributes = new AttributesWithCapacity(traceConfig.getMaxNumberOfAttributes());
-    }
-    return attributes;
-  }
-
-  @GuardedBy("this")
-  private EvictingQueue<TimedEvent> getInitializedEvents() {
-    if (events == null) {
-      events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
-    }
-    return events;
-  }
-
-  @GuardedBy("this")
+  @GuardedBy("lock")
   private Status getStatusWithDefault() {
-    return status == null ? Status.OK : status;
+    synchronized (lock) {
+      return status == null ? Status.OK : status;
+    }
   }
 
   // A map implementation with a fixed capacity that drops events when the map gets full. Eviction
   // is based on the access order.
   static final class AttributesWithCapacity extends LinkedHashMap<String, AttributeValue> {
+
     private final long capacity;
     private int totalRecordedAttributes = 0;
     // Here because -Werror complains about this: [serial] serializable class AttributesWithCapacity
@@ -535,36 +506,33 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanId parentSpanId,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
-      @Nullable TimestampConverter timestampConverter,
       Clock clock,
       Resource resource,
       Map<String, AttributeValue> attributes,
       List<Link> links,
-      int totalRecordedLinks) {
+      int totalRecordedLinks,
+      long startEpochNanos) {
     this.context = context;
     this.parentSpanId = parentSpanId;
     this.links = links;
     this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
     this.kind = kind;
-    this.traceConfig = traceConfig;
     this.spanProcessor = spanProcessor;
-    this.clock = clock;
     this.resource = resource;
     this.hasBeenEnded = false;
     this.numberOfChildren = 0;
-    this.timestampConverter =
-        timestampConverter != null ? timestampConverter : TimestampConverter.now(clock);
-    startNanoTime = clock.nanoTime();
-    if (!attributes.isEmpty()) {
-      getInitializedAttributes().putAll(attributes);
-    }
+    this.clock = clock;
+    this.startEpochNanos = startEpochNanos;
+    this.attributes = new AttributesWithCapacity(traceConfig.getMaxNumberOfAttributes());
+    this.attributes.putAll(attributes);
+    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
   }
 
   @SuppressWarnings("NoFinalizer")
   @Override
   protected void finalize() throws Throwable {
-    synchronized (this) {
+    synchronized (lock) {
       if (!hasBeenEnded) {
         logger.log(Level.SEVERE, "Span " + name + " is GC'ed without being ended.");
       }
@@ -578,25 +546,21 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return The number of links that have been dropped.
    */
   @VisibleForTesting
-  public int getDroppedLinksCount() {
+  int getDroppedLinksCount() {
     return totalRecordedLinks - links.size();
   }
 
   @VisibleForTesting
   int getNumberOfChildren() {
-    synchronized (this) {
+    synchronized (lock) {
       return numberOfChildren;
     }
   }
 
   @VisibleForTesting
   int getTotalRecordedEvents() {
-    synchronized (this) {
+    synchronized (lock) {
       return totalRecordedEvents;
     }
-  }
-
-  private long epochNanosNow() {
-    return timestampConverter.convertNanoTime(clock.nanoTime());
   }
 }

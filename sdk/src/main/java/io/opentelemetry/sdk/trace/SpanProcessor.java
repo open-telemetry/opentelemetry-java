@@ -46,6 +46,6 @@ public interface SpanProcessor {
   // TODO: Consider checking whether the given span is processed with onStart().
   void onEnd(ReadableSpan span);
 
-  /** Called when {@link TracerSdk#shutdown()} is called. */
+  /** Called when {@link TracerSdkFactory#shutdown()} is called. */
   void shutdown();
 }

@@ -14,29 +14,27 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.internal;
+package io.opentelemetry.sdk.trace;
+
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceId;
 
 /**
- * Interface for getting the current time.
- *
- * @since 0.1.0
+ * Interface that is used by the {@link TracerSdk} to generate new {@link SpanId} and {@link
+ * TraceId}.
  */
-public interface Clock {
+public interface IdsGenerator {
   /**
-   * Obtains the current epoch timestamp in nanos from this clock.
+   * Generates a new valid {@code SpanId}.
    *
-   * @return the current epoch timestamp in nanos.
-   * @since 0.1.0
+   * @return a new valid {@code SpanId}.
    */
-  long now();
+  SpanId generateSpanId();
 
   /**
-   * Returns a time measurement with nanosecond precision that can only be used to calculate elapsed
-   * time.
+   * Generates a new valid {@code TraceId}.
    *
-   * @return a time measurement with nanosecond precision that can only be used to calculate elapsed
-   *     time.
-   * @since 0.1.0
+   * @return a new valid {@code TraceId}.
    */
-  long nanoTime();
+  TraceId generateTraceId();
 }

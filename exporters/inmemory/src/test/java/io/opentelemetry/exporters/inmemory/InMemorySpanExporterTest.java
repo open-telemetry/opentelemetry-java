@@ -18,11 +18,11 @@ package io.opentelemetry.exporters.inmemory;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
+import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -33,12 +33,13 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link InMemorySpanExporter}. */
 @RunWith(JUnit4.class)
 public class InMemorySpanExporterTest {
-  private final TracerSdk tracer = new TracerSdk();
+  private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
+  private final Tracer tracer = tracerSdkFactory.get("InMemorySpanExporterTest");
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
 
   @Before
   public void setup() {
-    tracer.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    tracerSdkFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
   }
 
   @Test
@@ -104,9 +105,9 @@ public class InMemorySpanExporterTest {
         .setSpanId(io.opentelemetry.trace.SpanId.getInvalid())
         .setName("span")
         .setKind(io.opentelemetry.trace.Span.Kind.SERVER)
-        .setStartTimestamp(Timestamp.create(100, 100))
+        .setStartEpochNanos(100_000_000_100L)
         .setStatus(io.opentelemetry.trace.Status.OK)
-        .setEndTimestamp(Timestamp.create(200, 200))
+        .setEndEpochNanos(200_000_000_200L)
         .build();
   }
 }

@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.contrib.trace.testbed.suspendresumepropagation;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.createTracerShim;
+import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.createTracer;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SpanData;
@@ -32,7 +32,8 @@ import org.junit.Test;
  */
 public class SuspendResumePropagationTest {
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final Tracer tracer =
+      createTracer(SuspendResumePropagationTest.class.getName(), exporter);
 
   @Before
   public void before() {}

@@ -17,8 +17,6 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.sdk.trace.TestUtils.generateRandomSpanId;
-import static io.opentelemetry.sdk.trace.TestUtils.generateRandomTraceId;
 
 import com.google.common.truth.Truth;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
@@ -30,6 +28,7 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -41,9 +40,10 @@ import org.junit.runners.JUnit4;
 public class SamplersTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final int NUM_SAMPLE_TRIES = 1000;
-  private final TraceId traceId = TestUtils.generateRandomTraceId();
-  private final SpanId parentSpanId = TestUtils.generateRandomSpanId();
-  private final SpanId spanId = TestUtils.generateRandomSpanId();
+  private final IdsGenerator idsGenerator = new RandomIdsGenerator(new Random(1234));
+  private final TraceId traceId = idsGenerator.generateTraceId();
+  private final SpanId spanId = idsGenerator.generateSpanId();
+  private final SpanId parentSpanId = idsGenerator.generateSpanId();
   private final Tracestate tracestate = Tracestate.builder().build();
   private final SpanContext sampledSpanContext =
       SpanContext.create(
@@ -60,12 +60,7 @@ public class SamplersTest {
     Truth.assertThat(
             Samplers.alwaysOn()
                 .shouldSample(
-                    sampledSpanContext,
-                    false,
-                    traceId,
-                    spanId,
-                    SPAN_NAME,
-                    Collections.<Link>emptyList())
+                    sampledSpanContext, traceId, spanId, SPAN_NAME, Collections.<Link>emptyList())
                 .isSampled())
         .isTrue();
     // Not sampled parent.
@@ -73,7 +68,6 @@ public class SamplersTest {
             Samplers.alwaysOn()
                 .shouldSample(
                     notSampledSpanContext,
-                    false,
                     traceId,
                     spanId,
                     SPAN_NAME,
@@ -93,12 +87,7 @@ public class SamplersTest {
     Truth.assertThat(
             Samplers.alwaysOff()
                 .shouldSample(
-                    sampledSpanContext,
-                    false,
-                    traceId,
-                    spanId,
-                    SPAN_NAME,
-                    Collections.<Link>emptyList())
+                    sampledSpanContext, traceId, spanId, SPAN_NAME, Collections.<Link>emptyList())
                 .isSampled())
         .isFalse();
     // Not sampled parent.
@@ -106,7 +95,6 @@ public class SamplersTest {
             Samplers.alwaysOff()
                 .shouldSample(
                     notSampledSpanContext,
-                    false,
                     traceId,
                     spanId,
                     SPAN_NAME,
@@ -156,16 +144,15 @@ public class SamplersTest {
   }
 
   // Applies the given sampler to NUM_SAMPLE_TRIES random traceId/spanId pairs.
-  private static void assertSamplerSamplesWithProbability(
+  private void assertSamplerSamplesWithProbability(
       Sampler sampler, SpanContext parent, List<Link> parentLinks, double probability) {
     int count = 0; // Count of spans with sampling enabled
     for (int i = 0; i < NUM_SAMPLE_TRIES; i++) {
       if (sampler
           .shouldSample(
               parent,
-              false,
-              generateRandomTraceId(),
-              generateRandomSpanId(),
+              idsGenerator.generateTraceId(),
+              idsGenerator.generateSpanId(),
               SPAN_NAME,
               parentLinks)
           .isSampled()) {
@@ -252,9 +239,8 @@ public class SamplersTest {
     Decision decision1 =
         defaultProbability.shouldSample(
             null,
-            false,
             notSampledtraceId,
-            generateRandomSpanId(),
+            idsGenerator.generateSpanId(),
             SPAN_NAME,
             Collections.<Link>emptyList());
     assertThat(decision1.isSampled()).isFalse();
@@ -285,9 +271,8 @@ public class SamplersTest {
     Decision decision2 =
         defaultProbability.shouldSample(
             null,
-            false,
             sampledtraceId,
-            generateRandomSpanId(),
+            idsGenerator.generateSpanId(),
             SPAN_NAME,
             Collections.<Link>emptyList());
     assertThat(decision2.isSampled()).isTrue();

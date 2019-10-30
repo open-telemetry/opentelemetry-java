@@ -53,32 +53,33 @@ public class SpanBuilderSdkTest {
           TraceFlags.builder().setIsSampled(true).build(),
           Tracestate.getDefault());
 
-  private final TracerSdk tracer = new TracerSdk();
+  private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
+  private final TracerSdk tracerSdk = tracerSdkFactory.get("SpanBuilderSdkTest");
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void setSpanKind_null() {
     thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).setSpanKind(null);
+    tracerSdk.spanBuilder(SPAN_NAME).setSpanKind(null);
   }
 
   @Test
   public void setParent_null() {
     thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).setParent((Span) null);
+    tracerSdk.spanBuilder(SPAN_NAME).setParent((Span) null);
   }
 
   @Test
   public void setRemoteParent_null() {
     thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).setParent((SpanContext) null);
+    tracerSdk.spanBuilder(SPAN_NAME).setParent((SpanContext) null);
   }
 
   @Test
   public void addLink() {
     // Verify methods do not crash.
-    Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
@@ -96,10 +97,14 @@ public class SpanBuilderSdkTest {
   public void truncateLink() {
     final int maxNumberOfLinks = 8;
     TraceConfig traceConfig =
-        TraceConfig.getDefault().toBuilder().setMaxNumberOfLinks(maxNumberOfLinks).build();
-    tracer.updateActiveTraceConfig(traceConfig);
+        tracerSdkFactory
+            .getActiveTraceConfig()
+            .toBuilder()
+            .setMaxNumberOfLinks(maxNumberOfLinks)
+            .build();
+    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     // Verify methods do not crash.
-    Span.Builder spanBuilder = tracer.spanBuilder(SPAN_NAME);
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     for (int i = 0; i < 2 * maxNumberOfLinks; i++) {
       spanBuilder.addLink(sampledSpanContext);
     }
@@ -112,37 +117,37 @@ public class SpanBuilderSdkTest {
       }
     } finally {
       span.end();
-      tracer.updateActiveTraceConfig(TraceConfig.getDefault());
+      tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
     }
   }
 
   @Test
   public void addLink_null() {
     thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).addLink((Link) null);
+    tracerSdk.spanBuilder(SPAN_NAME).addLink((Link) null);
   }
 
   @Test
   public void addLinkSpanContext_null() {
     thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).addLink((SpanContext) null);
+    tracerSdk.spanBuilder(SPAN_NAME).addLink((SpanContext) null);
   }
 
   @Test
   public void addLinkSpanContextAttributes_nullContext() {
     thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).addLink(null, Collections.<String, AttributeValue>emptyMap());
+    tracerSdk.spanBuilder(SPAN_NAME).addLink(null, Collections.<String, AttributeValue>emptyMap());
   }
 
   @Test
   public void addLinkSpanContextAttributes_nullAttributes() {
     thrown.expect(NullPointerException.class);
-    tracer.spanBuilder(SPAN_NAME).addLink(DefaultSpan.getInvalid().getContext(), null);
+    tracerSdk.spanBuilder(SPAN_NAME).addLink(DefaultSpan.getInvalid().getContext(), null);
   }
 
   @Test
   public void recordEvents_default() {
-    Span span = tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span span = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
       assertThat(span.isRecording()).isTrue();
     } finally {
@@ -153,7 +158,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void kind_default() {
     RecordEventsReadableSpan span =
-        (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
+        (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
       assertThat(span.getKind()).isEqualTo(Kind.INTERNAL);
     } finally {
@@ -165,7 +170,7 @@ public class SpanBuilderSdkTest {
   public void kind() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
-            tracer.spanBuilder(SPAN_NAME).setSpanKind(Kind.CONSUMER).startSpan();
+            tracerSdk.spanBuilder(SPAN_NAME).setSpanKind(Kind.CONSUMER).startSpan();
     try {
       assertThat(span.getKind()).isEqualTo(Kind.CONSUMER);
     } finally {
@@ -175,7 +180,9 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void sampler() {
-    Span span = TestUtils.startSpanWithSampler(tracer, SPAN_NAME, Samplers.alwaysOff()).startSpan();
+    Span span =
+        TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.alwaysOff())
+            .startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isFalse();
     } finally {
@@ -188,13 +195,13 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
             TestUtils.startSpanWithSampler(
-                    tracer,
+                    tracerSdkFactory,
+                    tracerSdk,
                     SPAN_NAME,
                     new Sampler() {
                       @Override
                       public Decision shouldSample(
                           @Nullable SpanContext parentContext,
-                          @Nullable Boolean hasRemoteParent,
                           TraceId traceId,
                           SpanId spanId,
                           String name,
@@ -233,7 +240,8 @@ public class SpanBuilderSdkTest {
   public void sampledViaParentLinks() {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
-            TestUtils.startSpanWithSampler(tracer, SPAN_NAME, Samplers.probability(0.0))
+            TestUtils.startSpanWithSampler(
+                    tracerSdkFactory, tracerSdk, SPAN_NAME, Samplers.probability(0.0))
                 .addLink(sampledSpanContext)
                 .startSpan();
     try {
@@ -247,15 +255,20 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void noParent() {
-    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
-    Scope scope = tracer.withSpan(parent);
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+    Scope scope = tracerSdk.withSpan(parent);
     try {
-      Span span = tracer.spanBuilder(SPAN_NAME).setNoParent().startSpan();
+      Span span = tracerSdk.spanBuilder(SPAN_NAME).setNoParent().startSpan();
       try {
         assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
 
         Span spanNoParent =
-            tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent).setNoParent().startSpan();
+            tracerSdk
+                .spanBuilder(SPAN_NAME)
+                .setNoParent()
+                .setParent(parent)
+                .setNoParent()
+                .startSpan();
         try {
           assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
         } finally {
@@ -272,18 +285,18 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void noParent_override() {
-    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
-              tracer.spanBuilder(SPAN_NAME).setNoParent().setParent(parent).startSpan();
+              tracerSdk.spanBuilder(SPAN_NAME).setNoParent().setParent(parent).startSpan();
       try {
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
         assertThat(span.getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
 
         RecordEventsReadableSpan span2 =
             (RecordEventsReadableSpan)
-                tracer
+                tracerSdk
                     .spanBuilder(SPAN_NAME)
                     .setNoParent()
                     .setParent(parent.getContext())
@@ -303,12 +316,12 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void overrideNoParent_remoteParent() {
-    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
 
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
-              tracer
+              tracerSdk
                   .spanBuilder(SPAN_NAME)
                   .setNoParent()
                   .setParent(parent.getContext())
@@ -326,11 +339,11 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void parentCurrentSpan() {
-    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
-    Scope scope = tracer.withSpan(parent);
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+    Scope scope = tracerSdk.withSpan(parent);
     try {
       RecordEventsReadableSpan span =
-          (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
+          (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
       try {
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
         assertThat(span.getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
@@ -349,7 +362,7 @@ public class SpanBuilderSdkTest {
 
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
-            tracer.spanBuilder(SPAN_NAME).setParent(parent.getContext()).startSpan();
+            tracerSdk.spanBuilder(SPAN_NAME).setParent(parent.getContext()).startSpan();
     try {
       assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
       assertFalse(span.getParentSpanId().isValid());
@@ -360,13 +373,12 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void parent_timestampConverter() {
-    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
       RecordEventsReadableSpan span =
-          (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
+          (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
 
-      assertThat(span.getTimestampConverter())
-          .isEqualTo(((RecordEventsReadableSpan) parent).getTimestampConverter());
+      assertThat(span.getClock()).isEqualTo(((RecordEventsReadableSpan) parent).getClock());
     } finally {
       parent.end();
     }
@@ -374,14 +386,13 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void parentCurrentSpan_timestampConverter() {
-    Span parent = tracer.spanBuilder(SPAN_NAME).startSpan();
-    Scope scope = tracer.withSpan(parent);
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+    Scope scope = tracerSdk.withSpan(parent);
     try {
       RecordEventsReadableSpan span =
-          (RecordEventsReadableSpan) tracer.spanBuilder(SPAN_NAME).startSpan();
+          (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
 
-      assertThat(span.getTimestampConverter())
-          .isEqualTo(((RecordEventsReadableSpan) parent).getTimestampConverter());
+      assertThat(span.getClock()).isEqualTo(((RecordEventsReadableSpan) parent).getClock());
     } finally {
       scope.close();
       parent.end();
@@ -392,6 +403,6 @@ public class SpanBuilderSdkTest {
   public void startTimestamp_null() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Negative startTimestamp");
-    tracer.spanBuilder(SPAN_NAME).setStartTimestamp(-1);
+    tracerSdk.spanBuilder(SPAN_NAME).setStartTimestamp(-1);
   }
 }

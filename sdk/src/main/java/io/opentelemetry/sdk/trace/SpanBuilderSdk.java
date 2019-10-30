@@ -17,8 +17,8 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.sdk.internal.Clock;
-import io.opentelemetry.sdk.internal.TimestampConverter;
+import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -37,13 +37,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
 class SpanBuilderSdk implements Span.Builder {
-  private static final long INVALID_ID = 0;
-
   private static final TraceFlags TRACE_OPTIONS_SAMPLED =
       TraceFlags.builder().setIsSampled(true).build();
   private static final TraceFlags TRACE_OPTIONS_NOT_SAMPLED =
@@ -53,31 +50,29 @@ class SpanBuilderSdk implements Span.Builder {
   private final SpanProcessor spanProcessor;
   private final TraceConfig traceConfig;
   private final Resource resource;
-
+  private final IdsGenerator idsGenerator;
   private final Clock clock;
-  // TODO change with ThreadLocal version
-  // https://github.com/open-telemetry/opentelemetry-java/issues/406
-  private final Random random;
 
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
   private List<Link> links;
   private ParentType parentType = ParentType.CURRENT_SPAN;
+  private long startEpochNanos = 0;
 
   SpanBuilderSdk(
       String spanName,
       SpanProcessor spanProcessor,
       TraceConfig traceConfig,
       Resource resource,
-      Random random,
+      IdsGenerator idsGenerator,
       Clock clock) {
     this.spanName = spanName;
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
     this.links = Collections.emptyList();
-    this.random = random;
+    this.idsGenerator = idsGenerator;
     this.clock = clock;
   }
 
@@ -134,10 +129,10 @@ class SpanBuilderSdk implements Span.Builder {
     return this;
   }
 
-  // TODO: Use startTimestamp.
   @Override
   public Span.Builder setStartTimestamp(long startTimestamp) {
     Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
+    startEpochNanos = startTimestamp;
     return this;
   }
 
@@ -145,11 +140,11 @@ class SpanBuilderSdk implements Span.Builder {
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
     TraceId traceId;
-    SpanId spanId = generateRandomSpanId(random);
+    SpanId spanId = idsGenerator.generateSpanId();
     Tracestate tracestate = Tracestate.getDefault();
     if (parentContext == null || !parentContext.isValid()) {
       // New root span.
-      traceId = generateRandomTraceId(random);
+      traceId = idsGenerator.generateTraceId();
       // This is a root span so no remote or local parent.
       parentContext = null;
     } else {
@@ -158,10 +153,7 @@ class SpanBuilderSdk implements Span.Builder {
       tracestate = parentContext.getTracestate();
     }
     Decision samplingDecision =
-        traceConfig
-            .getSampler()
-            .shouldSample(
-                parentContext, /* hasRemoteParent= */ false, traceId, spanId, spanName, links);
+        traceConfig.getSampler().shouldSample(parentContext, traceId, spanId, spanName, links);
     SpanContext spanContext =
         SpanContext.create(
             traceId,
@@ -173,8 +165,6 @@ class SpanBuilderSdk implements Span.Builder {
       return DefaultSpan.create(spanContext);
     }
 
-    TimestampConverter timestampConverter = getTimestampConverter(parentSpan(parentType, parent));
-
     return RecordEventsReadableSpan.startSpan(
         spanContext,
         spanName,
@@ -182,12 +172,12 @@ class SpanBuilderSdk implements Span.Builder {
         parentContext != null ? parentContext.getSpanId() : null,
         traceConfig,
         spanProcessor,
-        timestampConverter,
-        clock,
+        getClock(parentSpan(parentType, parent), clock),
         resource,
         samplingDecision.attributes(),
         truncatedLinks(),
-        links.size());
+        links.size(),
+        startEpochNanos);
   }
 
   private List<Link> truncatedLinks() {
@@ -197,15 +187,14 @@ class SpanBuilderSdk implements Span.Builder {
     return links.subList(links.size() - traceConfig.getMaxNumberOfLinks(), links.size());
   }
 
-  @Nullable
-  private static TimestampConverter getTimestampConverter(Span parent) {
-    TimestampConverter timestampConverter = null;
+  private static Clock getClock(Span parent, Clock clock) {
     if (parent instanceof RecordEventsReadableSpan) {
       RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
-      timestampConverter = parentRecordEventsSpan.getTimestampConverter();
       parentRecordEventsSpan.addChild();
+      return parentRecordEventsSpan.getClock();
+    } else {
+      return MonotonicClock.create(clock);
     }
-    return timestampConverter;
   }
 
   @Nullable
@@ -235,36 +224,6 @@ class SpanBuilderSdk implements Span.Builder {
       default:
         return null;
     }
-  }
-
-  /**
-   * Generates a new random {@code SpanId}.
-   *
-   * @param random The random number generator.
-   * @return a valid new {@code SpanId}.
-   */
-  static SpanId generateRandomSpanId(Random random) {
-    long id;
-    do {
-      id = random.nextLong();
-    } while (id == 0);
-    return new SpanId(id);
-  }
-
-  /**
-   * Generates a new random {@code TraceIde}.
-   *
-   * @param random The random number generator.
-   * @return a valid new {@code TraceId}.
-   */
-  static TraceId generateRandomTraceId(Random random) {
-    long idHi;
-    long idLo;
-    do {
-      idHi = random.nextLong();
-      idLo = random.nextLong();
-    } while (idHi == INVALID_ID && idLo == INVALID_ID);
-    return new TraceId(idHi, idLo);
   }
 
   private enum ParentType {

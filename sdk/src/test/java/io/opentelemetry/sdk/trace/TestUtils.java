@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span;
@@ -24,32 +23,16 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.Tracer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /** Common utilities for unit tests. */
 public final class TestUtils {
 
   private TestUtils() {}
-
-  /**
-   * Returns a random {@link TraceId}.
-   *
-   * @return a random {@link TraceId}.
-   */
-  public static TraceId generateRandomTraceId() {
-    return TraceId.fromLowerBase16(UUID.randomUUID().toString().replace("-", ""), 0);
-  }
-
-  /**
-   * Returns a random {@link SpanId}.
-   *
-   * @return a random {@link SpanId}.
-   */
-  public static SpanId generateRandomSpanId() {
-    return SpanId.fromLowerBase16(UUID.randomUUID().toString().replace("-", ""), 0);
-  }
 
   /**
    * Generates some random attributes used for testing.
@@ -75,9 +58,9 @@ public final class TestUtils {
         .setSpanId(SpanId.getInvalid())
         .setName("span")
         .setKind(Kind.SERVER)
-        .setStartTimestamp(Timestamp.create(100, 100))
+        .setStartEpochNanos(TimeUnit.SECONDS.toNanos(100) + 100)
         .setStatus(Status.OK)
-        .setEndTimestamp(Timestamp.create(200, 200))
+        .setEndEpochNanos(TimeUnit.SECONDS.toNanos(200) + 200)
         .build();
   }
 
@@ -88,13 +71,14 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdk tracerSdk, String spanName, Sampler sampler) {
-    TraceConfig originalConfig = tracerSdk.getActiveTraceConfig();
-    tracerSdk.updateActiveTraceConfig(originalConfig.toBuilder().setSampler(sampler).build());
+      TracerSdkFactory tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
+    TraceConfig originalConfig = tracerSdkFactory.getActiveTraceConfig();
+    tracerSdkFactory.updateActiveTraceConfig(
+        originalConfig.toBuilder().setSampler(sampler).build());
     try {
-      return tracerSdk.spanBuilder(spanName);
+      return tracer.spanBuilder(spanName);
     } finally {
-      tracerSdk.updateActiveTraceConfig(originalConfig);
+      tracerSdkFactory.updateActiveTraceConfig(originalConfig);
     }
   }
 }

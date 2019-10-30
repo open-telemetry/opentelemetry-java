@@ -69,11 +69,10 @@ final class Adapter {
     target.setTraceId(TraceProtoUtils.toProtoTraceId(span.getTraceId()));
     target.setSpanId(TraceProtoUtils.toProtoSpanId(span.getSpanId()));
     target.setOperationName(span.getName());
-    Timestamp startTimestamp = TraceProtoUtils.toProtoTimestamp(span.getStartTimestamp());
+    Timestamp startTimestamp = Timestamps.fromNanos(span.getStartEpochNanos());
     target.setStartTime(startTimestamp);
     target.setDuration(
-        Timestamps.between(
-            startTimestamp, TraceProtoUtils.toProtoTimestamp(span.getEndTimestamp())));
+        Timestamps.between(startTimestamp, Timestamps.fromNanos(span.getEndEpochNanos())));
 
     target.addAllTags(toKeyValues(span.getAttributes()));
     target.addAllLogs(toJaegerLogs(span.getTimedEvents()));
@@ -133,7 +132,7 @@ final class Adapter {
   @VisibleForTesting
   static Model.Log toJaegerLog(TimedEvent timedEvent) {
     Model.Log.Builder builder = Model.Log.newBuilder();
-    builder.setTimestamp(TraceProtoUtils.toProtoTimestamp(timedEvent.getTimestamp()));
+    builder.setTimestamp(Timestamps.fromNanos(timedEvent.getEpochNanos()));
 
     // name is a top-level property in OpenTelemetry
     builder.addFields(

@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.common.Timestamp;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -39,27 +38,27 @@ public abstract class MetricData {
   public abstract MetricDescriptor getMetricDescriptor();
 
   /**
-   * Returns the start {@link Timestamp} of this {@code Metric}, usually the time when the metric
-   * was created or an aggregation was enabled.
+   * Returns the start epoch timestamp in nanos of this {@code Metric}, usually the time when the
+   * metric was created or an aggregation was enabled.
    *
-   * @return the start {@code Timestamp}.
+   * @return the start epoch timestamp in nanos.
    * @since 0.1.0
    */
-  public abstract Timestamp getStartTimestamp();
+  public abstract long getStartEpochNanos();
 
   /**
-   * Returns the {@link Timestamp} when data were collected, usually it represents the moment when
-   * {@code Metric.getData()} was called.
+   * Returns the the epoch timestamp in nanos when data were collected, usually it represents the
+   * moment when {@code Metric.getData()} was called.
    *
-   * @return the start {@code Timestamp}.
+   * @return the epoch timestamp in nanos.
    * @since 0.1.0
    */
-  public abstract Timestamp getTimestamp();
+  public abstract long getEpochNanos();
 
   // TODO: Add TimeSeries/Point
 
   static MetricData createInternal(
-      MetricDescriptor metricDescriptor, Timestamp startTimestamp, Timestamp timestamp) {
-    return new AutoValue_MetricData(metricDescriptor, startTimestamp, timestamp);
+      MetricDescriptor metricDescriptor, long startEpochNanos, long epochNanos) {
+    return new AutoValue_MetricData(metricDescriptor, startEpochNanos, epochNanos);
   }
 }

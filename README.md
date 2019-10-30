@@ -21,7 +21,7 @@ We would love to hear from the larger community: please provide feedback proacti
 
 ## Project setup and contribute
 
-Please refer to the [contribution guide](https://github.com/newrelic-forks/opentelemetry-java/blob/master/CONTRIBUTING.md)
+Please refer to the [contribution guide](https://github.com/open-telemetry/opentelemetry-java/blob/master/CONTRIBUTING.md)
 on how to setup and contribute!
 
 ## Snapshots
@@ -42,7 +42,7 @@ Snapshots based out the `master` branch are available for `opentelemetry-api`, `
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.1.0-SNAPSHOT</version>
+      <version>0.2.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -55,7 +55,7 @@ repositories {
 }
 
 dependencies {
-	compile('io.opentelemetry:opentelemetry-api:0.1.0-SNAPSHOT')
+	compile('io.opentelemetry:opentelemetry-api:0.2.0-SNAPSHOT')
 }
 ```
 

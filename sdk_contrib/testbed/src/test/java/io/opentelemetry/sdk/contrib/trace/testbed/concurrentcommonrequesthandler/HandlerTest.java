@@ -40,7 +40,7 @@ import org.junit.Test;
 public class HandlerTest {
 
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = TestUtils.createTracerShim(exporter);
+  private final Tracer tracer = TestUtils.createTracer(HandlerTest.class.getName(), exporter);
   private final Client client = new Client(new RequestHandler(tracer));
 
   @Before

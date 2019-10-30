@@ -20,19 +20,17 @@ import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
-import io.opentelemetry.sdk.trace.TracerSdk;
-import org.junit.Before;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.trace.Tracer;
 import org.junit.Test;
 
 public class SpanBuilderShimTest {
-  private TelemetryInfo telemetryInfo;
+  private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
+  private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
+  private final TelemetryInfo telemetryInfo =
+      new TelemetryInfo(tracer, new DistributedContextManagerSdk());
 
   private static final String SPAN_NAME = "Span";
-
-  @Before
-  public void setUp() {
-    telemetryInfo = new TelemetryInfo(new TracerSdk(), new DistributedContextManagerSdk());
-  }
 
   @Test
   public void baggage_parent() {

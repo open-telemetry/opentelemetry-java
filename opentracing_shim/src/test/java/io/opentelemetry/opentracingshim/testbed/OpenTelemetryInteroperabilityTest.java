@@ -23,7 +23,7 @@ import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.Scope;
@@ -34,7 +34,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class OpenTelemetryInteroperabilityTest {
-  private final TracerSdk sdk = new TracerSdk();
+  private final TracerSdkFactory sdk = TracerSdkFactory.create();
+  private final io.opentelemetry.trace.Tracer tracer = sdk.get("opentracingshim");
   private final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
   private final Tracer otTracer =
       TraceShim.createTracerShim(sdk, DefaultDistributedContextManager.getInstance());
@@ -52,11 +53,11 @@ public class OpenTelemetryInteroperabilityTest {
   public void sdkContinuesOpenTracingTrace() {
     Span otSpan = otTracer.buildSpan("ot_span").start();
     try (Scope scope = otTracer.scopeManager().activate(otSpan)) {
-      sdk.spanBuilder("otel_span").startSpan().end();
+      tracer.spanBuilder("otel_span").startSpan().end();
     } finally {
       otSpan.finish();
     }
-    assertEquals(sdk.getCurrentSpan().getClass(), DefaultSpan.class);
+    assertEquals(tracer.getCurrentSpan().getClass(), DefaultSpan.class);
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
@@ -66,14 +67,14 @@ public class OpenTelemetryInteroperabilityTest {
 
   @Test
   public void openTracingContinuesSdkTrace() {
-    io.opentelemetry.trace.Span otelSpan = sdk.spanBuilder("otel_span").startSpan();
-    try (io.opentelemetry.context.Scope scope = sdk.withSpan(otelSpan)) {
+    io.opentelemetry.trace.Span otelSpan = tracer.spanBuilder("otel_span").startSpan();
+    try (io.opentelemetry.context.Scope scope = tracer.withSpan(otelSpan)) {
       otTracer.buildSpan("ot_span").start().finish();
     } finally {
       otelSpan.end();
     }
 
-    assertEquals(sdk.getCurrentSpan().getClass(), DefaultSpan.class);
+    assertEquals(tracer.getCurrentSpan().getClass(), DefaultSpan.class);
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();

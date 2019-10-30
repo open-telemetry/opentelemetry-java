@@ -22,7 +22,7 @@ import io.opentelemetry.trace.Tracer;
 abstract class BaseShimObject {
   final TelemetryInfo telemetryInfo;
 
-  protected BaseShimObject(TelemetryInfo telemetryInfo) {
+  BaseShimObject(TelemetryInfo telemetryInfo) {
     this.telemetryInfo = telemetryInfo;
   }
 

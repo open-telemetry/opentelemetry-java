@@ -21,10 +21,9 @@ import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.sdk.common.Timestamp;
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
@@ -46,9 +45,9 @@ public final class TestUtils {
    * exporting to the specified {@code InMemorySpanExporter}.
    */
   public static Tracer createTracerShim(InMemorySpanExporter exporter) {
-    TracerSdk tracer = new TracerSdk();
-    tracer.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
-    return TraceShim.createTracerShim(tracer, new DistributedContextManagerSdk());
+    TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
+    tracerSdkFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    return TraceShim.createTracerShim(tracerSdkFactory, new DistributedContextManagerSdk());
   }
 
   /** Returns the number of finished {@code Span}s in the specified {@code InMemorySpanExporter}. */
@@ -195,7 +194,7 @@ public final class TestUtils {
   }
 
   /**
-   * Sorts the specified {@code List} of {@code Span} by their {@code Span.Timestamp} values,
+   * Sorts the specified {@code List} of {@code Span} by their start epoch timestamp values,
    * returning it as a new {@code List}.
    */
   public static List<SpanData> sortByStartTime(List<SpanData> spans) {
@@ -205,7 +204,7 @@ public final class TestUtils {
         new Comparator<SpanData>() {
           @Override
           public int compare(SpanData o1, SpanData o2) {
-            return compareTimestamps(o1.getStartTimestamp(), o2.getStartTimestamp());
+            return Long.compare(o1.getStartEpochNanos(), o2.getStartEpochNanos());
           }
         });
     return sortedSpans;
@@ -215,25 +214,9 @@ public final class TestUtils {
   public static void assertSameTrace(List<SpanData> spans) {
     for (int i = 0; i < spans.size() - 1; i++) {
       // TODO - Include nanos in this comparison.
-      assertTrue(
-          spans.get(spans.size() - 1).getEndTimestamp().getSeconds()
-              >= spans.get(i).getEndTimestamp().getSeconds());
+      assertTrue(spans.get(spans.size() - 1).getEndEpochNanos() >= spans.get(i).getEndEpochNanos());
       assertEquals(spans.get(spans.size() - 1).getTraceId(), spans.get(i).getTraceId());
       assertEquals(spans.get(spans.size() - 1).getSpanId(), spans.get(i).getParentSpanId());
     }
-  }
-
-  // TODO: this comparator code is duplicated in another TestUtils class. find a common home for it.
-  private static final Comparator<Timestamp> COMPARATOR =
-      new Comparator<Timestamp>() {
-        @Override
-        public int compare(Timestamp t1, Timestamp t2) {
-          int secDiff = Long.compare(t1.getSeconds(), t2.getSeconds());
-          return (secDiff != 0) ? secDiff : Integer.compare(t1.getNanos(), t2.getNanos());
-        }
-      };
-
-  public static int compareTimestamps(Timestamp x, Timestamp y) {
-    return COMPARATOR.compare(x, y);
   }
 }

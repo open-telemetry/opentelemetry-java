@@ -43,7 +43,8 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public class ActorPropagationTest {
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = TestUtils.createTracerShim(exporter);
+  private final Tracer tracer =
+      TestUtils.createTracer(ActorPropagationTest.class.getName(), exporter);
   private Phaser phaser;
 
   @Before

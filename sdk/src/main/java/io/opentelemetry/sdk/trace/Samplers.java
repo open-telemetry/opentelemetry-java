@@ -86,7 +86,6 @@ public final class Samplers {
     @Override
     public Decision shouldSample(
         @Nullable SpanContext parentContext,
-        @Nullable Boolean hasRemoteParent,
         TraceId traceId,
         SpanId spanId,
         String name,
@@ -113,7 +112,6 @@ public final class Samplers {
     @Override
     public Decision shouldSample(
         @Nullable SpanContext parentContext,
-        @Nullable Boolean hasRemoteParent,
         TraceId traceId,
         SpanId spanId,
         String name,
@@ -170,7 +168,6 @@ public final class Samplers {
     @Override
     public final Decision shouldSample(
         @Nullable SpanContext parentContext,
-        @Nullable Boolean hasRemoteParent,
         TraceId traceId,
         SpanId spanId,
         String name,

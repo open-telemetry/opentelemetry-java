@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
-/** Timed event that uses nanoTime to represent the Timestamp. */
+/** Timed event. */
 @Immutable
 abstract class TimedEvent {
 

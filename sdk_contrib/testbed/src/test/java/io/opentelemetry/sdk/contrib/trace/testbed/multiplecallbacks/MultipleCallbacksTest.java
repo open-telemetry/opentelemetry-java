@@ -41,7 +41,8 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public class MultipleCallbacksTest {
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = TestUtils.createTracerShim(exporter);
+  private final Tracer tracer =
+      TestUtils.createTracer(MultipleCallbacksTest.class.getName(), exporter);
 
   @Test
   public void test() {

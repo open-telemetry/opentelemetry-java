@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.propagation.BinaryTraceContext;
@@ -31,7 +30,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link TracerSdk}. */
@@ -42,13 +40,11 @@ import org.mockito.MockitoAnnotations;
 public class TracerSdkTest {
   private static final String SPAN_NAME = "span_name";
   @Mock private Span span;
-  @Mock private SpanProcessor spanProcessor;
-  private final TracerSdk tracer = new TracerSdk();
+  private final TracerSdk tracer = TracerSdkFactory.create().get("TracerSdkTest");
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    tracer.addSpanProcessor(spanProcessor);
   }
 
   @Test
@@ -106,48 +102,5 @@ public class TracerSdkTest {
       ws.close();
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-  }
-
-  @Test
-  public void updateActiveTraceConfig() {
-    assertThat(tracer.getActiveTraceConfig()).isEqualTo(TraceConfig.getDefault());
-    TraceConfig newConfig =
-        TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOff()).build();
-    tracer.updateActiveTraceConfig(newConfig);
-    assertThat(tracer.getActiveTraceConfig()).isEqualTo(newConfig);
-  }
-
-  @Test
-  public void shutdown() {
-    try {
-      tracer.shutdown();
-      Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
-    } finally {
-      tracer.unsafeRestart();
-    }
-  }
-
-  @Test
-  public void shutdownTwice_OnlyFlushSpanProcessorOnce() {
-    try {
-      tracer.shutdown();
-      Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
-      tracer.shutdown(); // the second call will be ignored
-      Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
-    } finally {
-      tracer.unsafeRestart();
-    }
-  }
-
-  @Test
-  public void returnNoopSpanAfterShutdown() {
-    try {
-      tracer.shutdown();
-      Span span = tracer.spanBuilder("span").startSpan();
-      assertThat(span).isInstanceOf(DefaultSpan.class);
-      span.end();
-    } finally {
-      tracer.unsafeRestart();
-    }
   }
 }

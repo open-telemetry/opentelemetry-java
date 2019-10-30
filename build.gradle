@@ -36,7 +36,7 @@ subprojects {
     apply plugin: 'com.jfrog.artifactory'
 
     group = "io.opentelemetry"
-    version = "0.1.0-SNAPSHOT" // CURRENT_VERSION
+    version = "0.2.0-SNAPSHOT" // CURRENT_VERSION
 
     sourceCompatibility = 1.7
     targetCompatibility = 1.7
