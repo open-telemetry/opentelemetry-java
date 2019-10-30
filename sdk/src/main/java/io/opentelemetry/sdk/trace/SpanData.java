@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -163,15 +162,14 @@ public abstract class SpanData {
   public abstract long getEndEpochNanos();
 
   /**
-   * Returns {@code true} if the parent is on a different process. {@code null} if this is a root
+   * Returns {@code true} if the parent is on a different process. {@code false} if this is a root
    * span.
    *
-   * @return {@code true} if the parent is on a different process. {@code null} if this is a root
+   * @return {@code true} if the parent is on a different process. {@code false} if this is a root
    *     span.
    * @since 0.5 -- update?
    */
-  @Nullable
-  public abstract Boolean getHasRemoteParent();
+  public abstract boolean getHasRemoteParent();
 
   /**
    * An immutable implementation of {@link Link}.
@@ -261,7 +259,8 @@ public abstract class SpanData {
         .setTimedEvents(Collections.<TimedEvent>emptyList())
         .setResource(Resource.getEmpty())
         .setTracestate(Tracestate.getDefault())
-        .setTraceFlags(TraceFlags.getDefault());
+        .setTraceFlags(TraceFlags.getDefault())
+        .setHasRemoteParent(false);
   }
 
   /**
@@ -437,10 +436,10 @@ public abstract class SpanData {
     /**
      * Sets to true if the span has a parent on a different process.
      *
-     * @param hasRemoteParent A Boolean indicating if the span has a remote parent.
+     * @param hasRemoteParent A boolean indicating if the span has a remote parent.
      * @return this
      * @since 0.1.0
      */
-    public abstract Builder setHasRemoteParent(Boolean hasRemoteParent);
+    public abstract Builder setHasRemoteParent(boolean hasRemoteParent);
   }
 }

@@ -56,7 +56,7 @@ public class SpanDataTest {
     assertEquals(emptyList(), spanData.getTimedEvents());
     assertEquals(emptyList(), spanData.getLinks());
     assertEquals(InstrumentationLibraryInfo.EMPTY, spanData.getInstrumentationLibraryInfo());
-    assertEquals(Boolean.TRUE, spanData.getHasRemoteParent());
+    assertEquals(false, spanData.getHasRemoteParent());
   }
 
   @Test
@@ -111,6 +111,6 @@ public class SpanDataTest {
         .setEndEpochNanos(END_EPOCH_NANOS)
         .setKind(Kind.SERVER)
         .setStatus(Status.OK)
-        .setHasRemoteParent(Boolean.TRUE);
+        .setHasRemoteParent(false);
   }
 }

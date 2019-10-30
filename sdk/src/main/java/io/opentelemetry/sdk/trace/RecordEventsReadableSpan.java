@@ -53,7 +53,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // The parent SpanId of this span. Invalid if this is a root span.
   private final SpanId parentSpanId;
   // True if the parent is on a different process.
-  @Nullable private final Boolean hasRemoteParent;
+  private final boolean hasRemoteParent;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
@@ -107,7 +107,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @param name the displayed name for the new span.
    * @param kind the span kind.
    * @param parentSpanId the span_id of the parent span, or null if the new span is a root span.
-   * @param hasRemoteParent {@code true} if the parentContext is remote. {@code null} if this is a
+   * @param hasRemoteParent {@code true} if the parentContext is remote. {@code false} if this is a
    *     root span.
    * @param traceConfig trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
@@ -125,7 +125,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
       @Nullable SpanId parentSpanId,
-      @Nullable Boolean hasRemoteParent,
+      boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,
@@ -529,7 +529,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
       SpanId parentSpanId,
-      Boolean hasRemoteParent,
+      boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,

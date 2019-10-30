@@ -175,7 +175,7 @@ class SpanBuilderSdk implements Span.Builder {
         instrumentationLibraryInfo,
         spanKind,
         parentContext != null ? parentContext.getSpanId() : null,
-        parentContext != null ? parentContext.isRemote() : null,
+        parentContext != null ? parentContext.isRemote() : false,
         traceConfig,
         spanProcessor,
         getClock(parentSpan(parentType, parent), clock),
