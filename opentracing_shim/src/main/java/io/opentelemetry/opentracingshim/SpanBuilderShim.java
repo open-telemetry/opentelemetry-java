@@ -31,8 +31,9 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
   private final String spanName;
 
   // The parent will be either a Span or a SpanContext.
-  private io.opentelemetry.trace.Span parentSpan;
-  private io.opentelemetry.trace.SpanContext parentSpanContext;
+  // Inherited baggage is supported only for the main parent.
+  private SpanShim parentSpan;
+  private SpanContextShim parentSpanContext;
   private boolean ignoreActiveSpan;
 
   private final List<io.opentelemetry.trace.SpanContext> parentLinks = new ArrayList<>();
@@ -53,12 +54,12 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     }
 
     // TODO - Verify we handle a no-op Span
-    io.opentelemetry.trace.Span actualParent = getActualSpan(parent);
+    SpanShim spanShim = getSpanShim(parent);
 
     if (parentSpan == null && parentSpanContext == null) {
-      parentSpan = actualParent;
+      parentSpan = spanShim;
     } else {
-      parentLinks.add(actualParent.getContext());
+      parentLinks.add(spanShim.getSpan().getContext());
     }
 
     return this;
@@ -76,12 +77,12 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     }
 
     // TODO - Use referenceType
-    io.opentelemetry.trace.SpanContext actualContext = getActualContext(referencedContext);
+    SpanContextShim contextShim = getContextShim(referencedContext);
 
     if (parentSpan == null && parentSpanContext == null) {
-      parentSpanContext = actualContext;
+      parentSpanContext = contextShim;
     } else {
-      parentLinks.add(actualContext);
+      parentLinks.add(contextShim.getSpanContext());
     }
 
     return this;
@@ -175,14 +176,17 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public Span start() {
+    io.opentelemetry.distributedcontext.DistributedContext distContext = null;
     io.opentelemetry.trace.Span.Builder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
       builder.setNoParent();
     } else if (parentSpan != null) {
-      builder.setParent(parentSpan);
+      builder.setParent(parentSpan.getSpan());
+      distContext = spanContextTable().get(parentSpan).getDistributedContext();
     } else if (parentSpanContext != null) {
-      builder.setParent(parentSpanContext);
+      builder.setParent(parentSpanContext.getSpanContext());
+      distContext = parentSpanContext.getDistributedContext();
     }
 
     for (io.opentelemetry.trace.SpanContext link : parentLinks) {
@@ -204,22 +208,28 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       span.setStatus(Status.UNKNOWN);
     }
 
-    return new SpanShim(telemetryInfo(), span);
+    SpanShim spanShim = new SpanShim(telemetryInfo(), span);
+
+    if (distContext != null && distContext != telemetryInfo().emptyDistributedContext()) {
+      spanContextTable().create(spanShim, distContext);
+    }
+
+    return spanShim;
   }
 
-  private static io.opentelemetry.trace.Span getActualSpan(Span span) {
+  private static SpanShim getSpanShim(Span span) {
     if (!(span instanceof SpanShim)) {
       throw new IllegalArgumentException("span is not a valid SpanShim object");
     }
 
-    return ((SpanShim) span).getSpan();
+    return (SpanShim) span;
   }
 
-  private static io.opentelemetry.trace.SpanContext getActualContext(SpanContext context) {
+  private static SpanContextShim getContextShim(SpanContext context) {
     if (!(context instanceof SpanContextShim)) {
       throw new IllegalArgumentException("context is not a valid SpanContextShim object");
     }
 
-    return ((SpanContextShim) context).getSpanContext();
+    return (SpanContextShim) context;
   }
 }

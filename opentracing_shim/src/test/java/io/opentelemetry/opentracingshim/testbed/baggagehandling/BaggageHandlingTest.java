@@ -49,6 +49,15 @@ public final class BaggageHandlingTest {
                 /* add a new baggage item... */
                 span.setBaggageItem("newkey", "newvalue");
 
+                /* have a child that updates its own baggage
+                 * (should not be reflected in the original Span). */
+                Span childSpan = tracer.buildSpan("child").start();
+                try {
+                  childSpan.setBaggageItem("key1", "childvalue");
+                } finally {
+                  childSpan.finish();
+                }
+
                 /* and finish the Span. */
                 span.finish();
               }
@@ -57,7 +66,7 @@ public final class BaggageHandlingTest {
     /* Single call, no need to use await() */
     f.get(5, TimeUnit.SECONDS);
 
-    assertEquals(1, exporter.getFinishedSpanItems().size());
+    assertEquals(2, exporter.getFinishedSpanItems().size());
     assertEquals(span.getBaggageItem("key1"), "value2");
     assertEquals(span.getBaggageItem("newkey"), "newvalue");
   }

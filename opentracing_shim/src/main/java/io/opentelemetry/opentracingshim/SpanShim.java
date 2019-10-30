@@ -54,13 +54,13 @@ final class SpanShim extends BaseShimObject implements Span {
   @Override
   public SpanContext context() {
     /* Read the value using the read lock first. */
-    SpanContextShim contextShim = telemetryInfo().spanContextShimTable().get(this);
+    SpanContextShim contextShim = spanContextTable().get(this);
 
     /* Switch to the write lock *only* for the relatively exceptional case
      * of no context being created.
      * (as we cannot upgrade read->write lock sadly).*/
     if (contextShim == null) {
-      contextShim = telemetryInfo.spanContextShimTable().create(this);
+      contextShim = spanContextTable().create(this);
     }
 
     return contextShim;
@@ -147,7 +147,7 @@ final class SpanShim extends BaseShimObject implements Span {
       return this;
     }
 
-    telemetryInfo.spanContextShimTable().setBaggageItem(this, key, value);
+    spanContextTable().setBaggageItem(this, key, value);
 
     return this;
   }
@@ -159,7 +159,7 @@ final class SpanShim extends BaseShimObject implements Span {
       return null;
     }
 
-    return telemetryInfo.spanContextShimTable().getBaggageItem(this, key);
+    return spanContextTable().getBaggageItem(this, key);
   }
 
   @Override

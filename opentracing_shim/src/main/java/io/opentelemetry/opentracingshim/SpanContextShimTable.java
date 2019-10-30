@@ -16,6 +16,7 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.trace.Span;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -84,6 +85,10 @@ final class SpanContextShimTable {
   }
 
   public SpanContextShim create(SpanShim spanShim) {
+    return create(spanShim, spanShim.telemetryInfo().emptyDistributedContext());
+  }
+
+  public SpanContextShim create(SpanShim spanShim, DistributedContext distContext) {
     lock.writeLock().lock();
     try {
       SpanContextShim contextShim = shimsMap.get(spanShim.getSpan());
@@ -91,7 +96,9 @@ final class SpanContextShimTable {
         return contextShim;
       }
 
-      contextShim = new SpanContextShim(spanShim);
+      contextShim =
+          new SpanContextShim(
+              spanShim.telemetryInfo(), spanShim.getSpan().getContext(), distContext);
       shimsMap.put(spanShim.getSpan(), contextShim);
       return contextShim;
 
