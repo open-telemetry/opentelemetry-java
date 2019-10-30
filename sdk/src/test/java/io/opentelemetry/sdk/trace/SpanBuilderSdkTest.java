@@ -202,7 +202,6 @@ public class SpanBuilderSdkTest {
                       @Override
                       public Decision shouldSample(
                           @Nullable SpanContext parentContext,
-                          @Nullable Boolean hasRemoteParent,
                           TraceId traceId,
                           SpanId spanId,
                           String name,
