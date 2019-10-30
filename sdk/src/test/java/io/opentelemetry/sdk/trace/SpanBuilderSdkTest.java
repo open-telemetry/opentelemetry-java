@@ -327,6 +327,7 @@ public class SpanBuilderSdkTest {
                   .setParent(parent.getContext())
                   .startSpan();
       try {
+        assertThat(span.getContext().isRemote()).isTrue();
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
         assertThat(span.getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
       } finally {
