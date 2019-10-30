@@ -145,29 +145,31 @@ class SpanBuilderSdk implements Span.Builder {
     TraceId traceId;
     SpanContext spanContext;
     SpanId spanId = idsGenerator.generateSpanId();
-    Decision samplingDecision;
     Tracestate tracestate = Tracestate.getDefault();
     if (parentContext == null || !parentContext.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
       // This is a root span so no remote or local parent.
       parentContext = null;
-      samplingDecision =
-          traceConfig.getSampler().shouldSample(parentContext, traceId, spanId, spanName, links);
+    } else {
+      // New child span.
+      traceId = parentContext.getTraceId();
+      tracestate = parentContext.getTracestate();
+    }
+
+    Decision samplingDecision =
+        traceConfig.getSampler().shouldSample(parentContext, traceId, spanId, spanName, links);
+
+    if (parentType == ParentType.EXPLICIT_REMOTE_PARENT) {
       spanContext =
-          SpanContext.create(
+          SpanContext.createFromRemoteParent(
               traceId,
               spanId,
               samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
               tracestate);
     } else {
-      // New child span.
-      traceId = parentContext.getTraceId();
-      tracestate = parentContext.getTracestate();
-      samplingDecision =
-          traceConfig.getSampler().shouldSample(parentContext, traceId, spanId, spanName, links);
       spanContext =
-          SpanContext.createFromRemoteParent(
+          SpanContext.create(
               traceId,
               spanId,
               samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
