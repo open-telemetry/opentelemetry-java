@@ -23,7 +23,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
-import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.trace.Tracer;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.After;
@@ -31,14 +32,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class SpanShimTest {
-  private TelemetryInfo telemetryInfo;
+  private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
+  private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
+  private final TelemetryInfo telemetryInfo =
+      new TelemetryInfo(tracer, new DistributedContextManagerSdk());
   private io.opentelemetry.trace.Span span;
 
   private static final String SPAN_NAME = "Span";
 
   @Before
   public void setUp() {
-    telemetryInfo = new TelemetryInfo(new TracerSdk(), new DistributedContextManagerSdk());
     span = telemetryInfo.tracer().spanBuilder(SPAN_NAME).startSpan();
   }
 

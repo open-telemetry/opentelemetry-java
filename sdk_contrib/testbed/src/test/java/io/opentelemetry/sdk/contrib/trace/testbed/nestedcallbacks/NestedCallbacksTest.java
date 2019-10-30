@@ -39,7 +39,8 @@ import org.junit.Test;
 public final class NestedCallbacksTest {
 
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = TestUtils.createTracerShim(exporter);
+  private final Tracer tracer =
+      TestUtils.createTracer(NestedCallbacksTest.class.getName(), exporter);
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test

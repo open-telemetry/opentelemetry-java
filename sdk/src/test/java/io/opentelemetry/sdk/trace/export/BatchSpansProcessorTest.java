@@ -23,8 +23,8 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,8 +45,8 @@ public class BatchSpansProcessorTest {
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
-  private final TracerSdkFactory tracerSdkFactory = new TracerSdkFactory();
-  private final TracerSdk tracerSdk = tracerSdkFactory.get("BatchSpansProcessorTest");
+  private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
+  private final Tracer tracer = tracerSdkFactory.get("BatchSpansProcessorTest");
   private final WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter();
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
@@ -63,7 +63,7 @@ public class BatchSpansProcessorTest {
 
   private ReadableSpan createSampledEndedSpan(String spanName) {
     io.opentelemetry.trace.Span span =
-        TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, spanName, Samplers.alwaysOn())
+        TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOn())
             .startSpan();
     span.end();
     return (ReadableSpan) span;
@@ -73,14 +73,14 @@ public class BatchSpansProcessorTest {
   /*
   private ReadableSpan createNotSampledRecordingEventsEndedSpan(String spanName) {
     io.opentelemetry.trace.Span span =
-        tracerSdk.spanBuilder(spanName).setSampler(Samplers.neverSample()).startSpanWithSampler();
+        tracer.spanBuilder(spanName).setSampler(Samplers.neverSample()).startSpanWithSampler();
     span.end();
     return (ReadableSpan) span;
   }
   */
 
   private void createNotSampledEndedSpan(String spanName) {
-    TestUtils.startSpanWithSampler(tracerSdkFactory, tracerSdk, spanName, Samplers.alwaysOff())
+    TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOff())
         .startSpan()
         .end();
   }

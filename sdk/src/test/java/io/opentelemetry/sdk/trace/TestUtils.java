@@ -23,6 +23,7 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.Tracer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -70,12 +71,12 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkFactory tracerSdkFactory, TracerSdk tracerSdk, String spanName, Sampler sampler) {
+      TracerSdkFactory tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
     TraceConfig originalConfig = tracerSdkFactory.getActiveTraceConfig();
     tracerSdkFactory.updateActiveTraceConfig(
         originalConfig.toBuilder().setSampler(sampler).build());
     try {
-      return tracerSdk.spanBuilder(spanName);
+      return tracer.spanBuilder(spanName);
     } finally {
       tracerSdkFactory.updateActiveTraceConfig(originalConfig);
     }

@@ -40,7 +40,7 @@ import org.mockito.MockitoAnnotations;
 public class TracerSdkTest {
   private static final String SPAN_NAME = "span_name";
   @Mock private Span span;
-  private final TracerSdk tracer = new TracerSdk();
+  private final TracerSdk tracer = TracerSdkFactory.create().get("TracerSdkTest");
 
   @Before
   public void setUp() {

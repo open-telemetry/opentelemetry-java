@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
@@ -41,10 +41,10 @@ public final class TestUtils {
    * Creates a new {@code io.opentracing.Tracer} out of the {@code TracerSdk} implementation and
    * exporting to the specified {@code InMemorySpanExporter}.
    */
-  public static Tracer createTracerShim(InMemorySpanExporter exporter) {
-    TracerSdk tracer = new TracerSdk();
-    tracer.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
-    return tracer;
+  public static Tracer createTracer(String instrumentationName, InMemorySpanExporter exporter) {
+    TracerSdkFactory sdk = TracerSdkFactory.create();
+    sdk.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    return sdk.get(instrumentationName);
   }
 
   /** Returns the number of finished {@code Span}s in the specified {@code InMemorySpanExporter}. */

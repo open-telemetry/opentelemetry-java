@@ -30,7 +30,7 @@ import org.junit.Test;
 /** Each request has own instance of ResponseListener. */
 public class ListenerTest {
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = TestUtils.createTracerShim(exporter);
+  private final Tracer tracer = TestUtils.createTracer(ListenerTest.class.getName(), exporter);
 
   @Test
   public void test() throws Exception {

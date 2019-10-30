@@ -20,6 +20,7 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.distributedcontext.DistributedContextManager;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracerFactory;
 
 public final class TraceShim {
   private TraceShim() {}
@@ -34,7 +35,7 @@ public final class TraceShim {
   public static io.opentracing.Tracer createTracerShim() {
     return new TracerShim(
         new TelemetryInfo(
-            OpenTelemetry.getTracerFactory().get("opentracingshim"),
+            getTracer(OpenTelemetry.getTracerFactory()),
             OpenTelemetry.getDistributedContextManager()));
   }
 
@@ -42,15 +43,19 @@ public final class TraceShim {
    * Creates a {@code io.opentracing.Tracer} shim out the specified {@code Tracer} and {@code
    * DistributedContextManager}.
    *
-   * @param tracer the {@code Tracer} used by this shim.
+   * @param tracerFactory the {@code TracerFactory} used by this shim.
    * @param contextManager the {@code DistributedContextManager} used by this shim.
    * @return a {@code io.opentracing.Tracer}.
    * @since 0.1.0
    */
   public static io.opentracing.Tracer createTracerShim(
-      Tracer tracer, DistributedContextManager contextManager) {
-    Utils.checkNotNull(tracer, "tracer");
+      TracerFactory tracerFactory, DistributedContextManager contextManager) {
+    Utils.checkNotNull(tracerFactory, "tracer");
     Utils.checkNotNull(contextManager, "contextManager");
-    return new TracerShim(new TelemetryInfo(tracer, contextManager));
+    return new TracerShim(new TelemetryInfo(getTracer(tracerFactory), contextManager));
+  }
+
+  private static Tracer getTracer(TracerFactory tracerFactory) {
+    return tracerFactory.get("opentracingshim");
   }
 }
