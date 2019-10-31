@@ -215,11 +215,11 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CLIENT);
     try {
       assertThat(span.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
-      } finally {
+    } finally {
       span.end();
     }
   }
-  
+
   @Test
   public void getSpanHasRemoteParent() {
     RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
