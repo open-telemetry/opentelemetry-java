@@ -20,7 +20,6 @@ import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
@@ -56,7 +55,7 @@ public class SpanDataTest {
     assertEquals(Collections.<String, AttributeValue>emptyMap(), spanData.getAttributes());
     assertEquals(emptyList(), spanData.getTimedEvents());
     assertEquals(emptyList(), spanData.getLinks());
-    assertEquals(Resource.getEmpty(), spanData.getLibraryResource());
+    assertEquals(InstrumentationLibraryInfo.EMPTY, spanData.getInstrumentationLibraryInfo());
   }
 
   @Test

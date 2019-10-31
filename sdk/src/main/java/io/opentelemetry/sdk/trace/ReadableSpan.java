@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 
@@ -56,7 +55,8 @@ public interface ReadableSpan {
    * Returns the instrumentation library specified when creating the tracer which produced this
    * span.
    *
-   * @return a resource describing the instrumentation library
+   * @return an instance of {@link InstrumentationLibraryInfo} describing the instrumentation
+   *     library
    */
-  Resource getLibraryResource();
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 }

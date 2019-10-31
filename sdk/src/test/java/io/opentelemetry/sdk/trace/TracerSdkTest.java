@@ -25,8 +25,6 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,17 +42,15 @@ public class TracerSdkTest {
   private static final String INSTRUMENTATION_LIBRARY_NAME =
       "io.opentelemetry.sdk.trace.TracerSdkTest";
   private static final String INSTRUMENTATION_LIBRARY_VERSION = "semver:0.2.0";
-  private final Map<String, String> instrumentationLibraryLabels = new HashMap<>();
+  private static final InstrumentationLibraryInfo instrumentationLibraryInfo =
+      InstrumentationLibraryInfo.create(
+          INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
   @Mock private Span span;
   private final TracerSdk tracer =
       TracerSdkFactory.create().get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
   @Before
   public void setUp() {
-    instrumentationLibraryLabels.put(
-        TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_NAME, INSTRUMENTATION_LIBRARY_NAME);
-    instrumentationLibraryLabels.put(
-        TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_VERSION, INSTRUMENTATION_LIBRARY_VERSION);
     MockitoAnnotations.initMocks(this);
   }
 
@@ -116,14 +112,13 @@ public class TracerSdkTest {
   }
 
   @Test
-  public void getLibraryResource() {
-    assertThat(tracer.getLibraryResource().getLabels()).isEqualTo(instrumentationLibraryLabels);
+  public void getInstrumentationLibraryInfo() {
+    assertThat(tracer.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
   }
 
   @Test
-  public void propagatesLibraryResourceToSpan() {
+  public void propagatesInstrumentationLibraryInfoToSpan() {
     ReadableSpan readableSpan = (ReadableSpan) tracer.spanBuilder("spanName").startSpan();
-    assertThat(readableSpan.getLibraryResource().getLabels())
-        .isEqualTo(instrumentationLibraryLabels);
+    assertThat(readableSpan.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
   }
 }

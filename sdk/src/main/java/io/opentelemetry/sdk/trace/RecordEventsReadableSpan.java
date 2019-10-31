@@ -71,8 +71,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final Clock clock;
   // The resource associated with this span.
   private final Resource resource;
-  // library resource of the named tracer which created this span
-  private final Resource instrumentationLibrary;
+  // instrumentation library of the named tracer which created this span
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   // The start time of the span.
   private final long startEpochNanos;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
@@ -118,13 +118,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   static RecordEventsReadableSpan startSpan(
       SpanContext context,
       String name,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
       @Nullable SpanId parentSpanId,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
-      Resource instrumentationLibrary,
       Map<String, AttributeValue> attributes,
       List<Link> links,
       int totalRecordedLinks,
@@ -133,13 +133,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         new RecordEventsReadableSpan(
             context,
             name,
+            instrumentationLibraryInfo,
             kind,
             parentSpanId == null ? SpanId.getInvalid() : parentSpanId,
             traceConfig,
             spanProcessor,
             clock,
             resource,
-            instrumentationLibrary,
             attributes,
             links,
             totalRecordedLinks,
@@ -155,6 +155,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     SpanContext spanContext = getSpanContext();
     return SpanData.newBuilder()
         .setName(getName())
+        .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
         .setTraceId(spanContext.getTraceId())
         .setSpanId(spanContext.getSpanId())
         .setTraceFlags(spanContext.getTraceFlags())
@@ -166,7 +167,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         .setLinks(getLinks())
         .setParentSpanId(parentSpanId)
         .setResource(resource)
-        .setLibraryResource(instrumentationLibrary)
         .setStatus(getStatus())
         .setTimedEvents(adaptTimedEvents())
         .build();
@@ -204,11 +204,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * Returns the instrumentation library specified when creating the tracer which produced this
    * span.
    *
-   * @return a resource describing the instrumentation library
+   * @return an instance of {@link InstrumentationLibraryInfo} describing the instrumentation
+   *     library
    */
   @Override
-  public Resource getLibraryResource() {
-    return instrumentationLibrary;
+  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return instrumentationLibraryInfo;
   }
 
   /**
@@ -518,18 +519,19 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private RecordEventsReadableSpan(
       SpanContext context,
       String name,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
       SpanId parentSpanId,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
-      Resource instrumentationLibrary,
       Map<String, AttributeValue> attributes,
       List<Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.parentSpanId = parentSpanId;
     this.links = links;
     this.totalRecordedLinks = totalRecordedLinks;
@@ -537,7 +539,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.kind = kind;
     this.spanProcessor = spanProcessor;
     this.resource = resource;
-    this.instrumentationLibrary = instrumentationLibrary;
     this.hasBeenEnded = false;
     this.numberOfChildren = 0;
     this.clock = clock;

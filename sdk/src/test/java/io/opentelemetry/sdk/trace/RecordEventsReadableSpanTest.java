@@ -67,10 +67,8 @@ public class RecordEventsReadableSpanTest {
   private final long startEpochNanos = 1000_123_789_654L;
   private final TestClock testClock = TestClock.create(startEpochNanos);
   private final Resource resource = Resource.getEmpty();
-  private final Resource instrumentationLibrary =
-      Resource.create(
-          Collections.singletonMap(
-              TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_NAME, "theName"));
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo =
+      InstrumentationLibraryInfo.create("theName", null);
   private final Map<String, AttributeValue> attributes = new HashMap<>();
   private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
   private final Link link = SpanData.Link.create(spanContext);
@@ -212,10 +210,10 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void getLibraryResource() {
+  public void getInstrumentationLibraryInfo() {
     RecordEventsReadableSpan span = createTestSpan(Kind.CLIENT);
     try {
-      assertThat(span.getLibraryResource()).isEqualTo(instrumentationLibrary);
+      assertThat(span.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     } finally {
       span.end();
     }
@@ -449,13 +447,13 @@ public class RecordEventsReadableSpanTest {
         RecordEventsReadableSpan.startSpan(
             spanContext,
             SPAN_NAME,
+            instrumentationLibraryInfo,
             kind,
             parentSpanId,
             config,
             spanProcessor,
             testClock,
             resource,
-            instrumentationLibrary,
             attributes,
             Collections.singletonList(link),
             1,
@@ -495,7 +493,7 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
     assertThat(spanData.getTracestate()).isEqualTo(Tracestate.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
-    assertThat(spanData.getLibraryResource()).isEqualTo(instrumentationLibrary);
+    assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     assertThat(spanData.getName()).isEqualTo(spanName);
     assertThat(spanData.getAttributes()).isEqualTo(attributes);
     assertThat(spanData.getTimedEvents()).isEqualTo(timedEvents);
@@ -530,13 +528,13 @@ public class RecordEventsReadableSpanTest {
         RecordEventsReadableSpan.startSpan(
             context,
             name,
+            instrumentationLibraryInfo,
             kind,
             parentSpanId,
             traceConfig,
             spanProcessor,
             clock,
             resource,
-            instrumentationLibrary,
             attributes,
             links,
             1,
@@ -556,6 +554,7 @@ public class RecordEventsReadableSpanTest {
     SpanData expected =
         SpanData.newBuilder()
             .setName(name)
+            .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
             .setKind(kind)
             .setStatus(Status.OK)
             .setStartEpochNanos(startEpochNanos)
@@ -565,7 +564,6 @@ public class RecordEventsReadableSpanTest {
                     SpanData.TimedEvent.create(firstEventEpochNanos, "event1", event1Attributes),
                     SpanData.TimedEvent.create(secondEventTimeNanos, "event2", event2Attributes)))
             .setResource(resource)
-            .setLibraryResource(instrumentationLibrary)
             .setParentSpanId(parentSpanId)
             .setLinks(links)
             .setTraceId(traceId)

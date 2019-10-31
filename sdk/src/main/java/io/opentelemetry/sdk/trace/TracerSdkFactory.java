@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.EnvVarResource;
@@ -25,7 +24,6 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerFactory;
 import java.security.SecureRandom;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -40,7 +38,8 @@ import java.util.logging.Logger;
 public class TracerSdkFactory implements TracerFactory {
   private final Object lock = new Object();
   private static final Logger logger = Logger.getLogger(TracerFactory.class.getName());
-  private final Map<String, TracerSdk> tracerRegistry = new ConcurrentHashMap<>();
+  private final Map<InstrumentationLibraryInfo, TracerSdk> tracerRegistry =
+      new ConcurrentHashMap<>();
   private final TracerSharedState sharedState;
 
   /**
@@ -67,37 +66,24 @@ public class TracerSdkFactory implements TracerFactory {
 
   @Override
   public TracerSdk get(String instrumentationName, String instrumentationVersion) {
-    String key = instrumentationName + "/" + instrumentationVersion;
-    TracerSdk tracer = tracerRegistry.get(key);
+    InstrumentationLibraryInfo instrumentationLibraryInfo =
+        InstrumentationLibraryInfo.create(instrumentationName, instrumentationVersion);
+    TracerSdk tracer = tracerRegistry.get(instrumentationLibraryInfo);
     if (tracer == null) {
       synchronized (lock) {
         // Re-check if the value was added since the previous check, this can happen if multiple
         // threads try to access the same named tracer during the same time. This way we ensure that
         // we create only one TracerSdk per name.
-        tracer = tracerRegistry.get(key);
+        tracer = tracerRegistry.get(instrumentationLibraryInfo);
         if (tracer != null) {
           // A different thread already added the named Tracer, just reuse.
           return tracer;
         }
-        Resource instrumentationLibrary =
-            createLibraryResource(instrumentationName, instrumentationVersion);
-        tracer = new TracerSdk(sharedState, instrumentationLibrary);
-        tracerRegistry.put(key, tracer);
+        tracer = new TracerSdk(sharedState, instrumentationLibraryInfo);
+        tracerRegistry.put(instrumentationLibraryInfo, tracer);
       }
     }
     return tracer;
-  }
-
-  private static Resource createLibraryResource(
-      String instrumentationName, String instrumentationVersion) {
-    Utils.checkNotNull(instrumentationName, "instrumentationName");
-    Map<String, String> libraryLabels = new HashMap<>();
-    libraryLabels.put(TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_NAME, instrumentationName);
-    if (instrumentationVersion != null) {
-      libraryLabels.put(
-          TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_VERSION, instrumentationVersion);
-    }
-    return Resource.create(libraryLabels);
   }
 
   /**

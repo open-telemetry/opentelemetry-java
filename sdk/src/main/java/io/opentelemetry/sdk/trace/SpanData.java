@@ -93,9 +93,9 @@ public abstract class SpanData {
    * Returns the instrumentation library specified when creating the tracer which produced this
    * {@code Span}.
    *
-   * @return a resource describing the instrumentation library
+   * @return an instance of {@link InstrumentationLibraryInfo}
    */
-  public abstract Resource getLibraryResource();
+  public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 
   /**
    * Returns the name of this {@code Span}.
@@ -243,11 +243,11 @@ public abstract class SpanData {
   public static Builder newBuilder() {
     return new AutoValue_SpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
+        .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.EMPTY)
         .setLinks(Collections.<io.opentelemetry.trace.Link>emptyList())
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
         .setTimedEvents(Collections.<TimedEvent>emptyList())
         .setResource(Resource.getEmpty())
-        .setLibraryResource(Resource.getEmpty())
         .setTracestate(Tracestate.getDefault())
         .setTraceFlags(TraceFlags.getDefault());
   }
@@ -335,15 +335,16 @@ public abstract class SpanData {
     public abstract Builder setResource(Resource resource);
 
     /**
-     * Set the instrumentation library of the tracer which created this span. Must not be null.
+     * Sets the instrumentation library of the tracer which created this span. Must not be null.
      *
-     * @param instrumentationLibrary the instrumentation library of the tracer which created this
-     *     span.
+     * @param instrumentationLibraryInfo the instrumentation library of the tracer which created
+     *     this span.
      * @return this
-     * @see Resource
+     * @see InstrumentationLibraryInfo
      * @since 0.2.0
      */
-    public abstract Builder setLibraryResource(Resource instrumentationLibrary);
+    public abstract Builder setInstrumentationLibraryInfo(
+        InstrumentationLibraryInfo instrumentationLibraryInfo);
 
     /**
      * Set the name of the span. Must not be null.

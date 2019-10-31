@@ -21,7 +21,6 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +52,11 @@ public class TracerSdkFactoryTest {
   }
 
   @Test
+  public void libraryVersion_AllowsNull() {
+    assertThat(tracerFactory.get("name", null)).isNotNull();
+  }
+
+  @Test
   public void getSameInstanceForSameName_WithoutVersion() {
     assertThat(tracerFactory.get("test")).isSameInstanceAs(tracerFactory.get("test"));
     assertThat(tracerFactory.get("test")).isSameInstanceAs(tracerFactory.get("test", null));
@@ -77,13 +81,11 @@ public class TracerSdkFactoryTest {
   }
 
   @Test
-  public void propagatesLibraryResourceToTracer() {
-    TracerSdk tracer = tracerFactory.get("theName", "theVersion");
-    Map<String, String> labels = tracer.getLibraryResource().getLabels();
-    assertThat(labels.get(TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_NAME))
-        .isEqualTo("theName");
-    assertThat(labels.get(TracerSdk.INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_VERSION))
-        .isEqualTo("theVersion");
+  public void propagatesInstrumentationLibraryInfoToTracer() {
+    InstrumentationLibraryInfo expected =
+        InstrumentationLibraryInfo.create("theName", "theVersion");
+    TracerSdk tracer = tracerFactory.get(expected.name(), expected.version());
+    assertThat(tracer.getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 
   @Test

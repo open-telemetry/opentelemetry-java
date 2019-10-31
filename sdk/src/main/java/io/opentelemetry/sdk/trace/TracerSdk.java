@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -30,16 +29,14 @@ import io.opentelemetry.trace.unsafe.ContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
-  public static final String INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_NAME = "name";
-  public static final String INSTRUMENTATION_LIBRARY_RESOURCE_LABEL_VERSION = "version";
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final TracerSharedState sharedState;
-  private final Resource instrumentationLibrary;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
-  TracerSdk(TracerSharedState sharedState, Resource instrumentationLibrary) {
+  TracerSdk(TracerSharedState sharedState, InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.sharedState = sharedState;
-    this.instrumentationLibrary = instrumentationLibrary;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
   }
 
   @Override
@@ -59,10 +56,10 @@ public class TracerSdk implements Tracer {
     }
     return new SpanBuilderSdk(
         spanName,
+        instrumentationLibraryInfo,
         sharedState.getActiveSpanProcessor(),
         sharedState.getActiveTraceConfig(),
         sharedState.getResource(),
-        instrumentationLibrary,
         sharedState.getIdsGenerator(),
         sharedState.getClock());
   }
@@ -81,9 +78,9 @@ public class TracerSdk implements Tracer {
    * Returns the instrumentation library specified when creating the tracer using {@link
    * TracerSdkFactory}.
    *
-   * @return a resource describing the instrumentation library
+   * @return an instance of {@link InstrumentationLibraryInfo}
    */
-  public Resource getLibraryResource() {
-    return instrumentationLibrary;
+  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return instrumentationLibraryInfo;
   }
 }
