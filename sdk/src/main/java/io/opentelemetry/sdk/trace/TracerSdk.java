@@ -32,9 +32,11 @@ public class TracerSdk implements Tracer {
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final TracerSharedState sharedState;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
-  TracerSdk(TracerSharedState sharedState) {
+  TracerSdk(TracerSharedState sharedState, InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.sharedState = sharedState;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
   }
 
   @Override
@@ -54,6 +56,7 @@ public class TracerSdk implements Tracer {
     }
     return new SpanBuilderSdk(
         spanName,
+        instrumentationLibraryInfo,
         sharedState.getActiveSpanProcessor(),
         sharedState.getActiveTraceConfig(),
         sharedState.getResource(),
@@ -69,5 +72,15 @@ public class TracerSdk implements Tracer {
   @Override
   public HttpTextFormat<SpanContext> getHttpTextFormat() {
     return HTTP_TEXT_FORMAT;
+  }
+
+  /**
+   * Returns the instrumentation library specified when creating the tracer using {@link
+   * TracerSdkFactory}.
+   *
+   * @return an instance of {@link InstrumentationLibraryInfo}
+   */
+  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return instrumentationLibraryInfo;
   }
 }

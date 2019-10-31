@@ -46,6 +46,16 @@ public class TracerSdkFactoryTest {
     assertThat(tracerFactory.get("test")).isInstanceOf(TracerSdk.class);
   }
 
+  @Test(expected = NullPointerException.class)
+  public void libraryName_MustNotBeNull() {
+    tracerFactory.get(null);
+  }
+
+  @Test
+  public void libraryVersion_AllowsNull() {
+    assertThat(tracerFactory.get("name", null)).isNotNull();
+  }
+
   @Test
   public void getSameInstanceForSameName_WithoutVersion() {
     assertThat(tracerFactory.get("test")).isSameInstanceAs(tracerFactory.get("test"));
@@ -56,6 +66,26 @@ public class TracerSdkFactoryTest {
   public void getSameInstanceForSameName_WithVersion() {
     assertThat(tracerFactory.get("test", "version"))
         .isSameInstanceAs(tracerFactory.get("test", "version"));
+  }
+
+  @Test
+  public void getDifferentInstancesForDifferentNames() {
+    assertThat(tracerFactory.get("test1", null))
+        .isNotSameInstanceAs(tracerFactory.get("test2", null));
+  }
+
+  @Test
+  public void getDifferentInstancesForDifferentVersions() {
+    assertThat(tracerFactory.get("test", "version1"))
+        .isNotSameInstanceAs(tracerFactory.get("test", "version2"));
+  }
+
+  @Test
+  public void propagatesInstrumentationLibraryInfoToTracer() {
+    InstrumentationLibraryInfo expected =
+        InstrumentationLibraryInfo.create("theName", "theVersion");
+    TracerSdk tracer = tracerFactory.get(expected.name(), expected.version());
+    assertThat(tracer.getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 
   @Test

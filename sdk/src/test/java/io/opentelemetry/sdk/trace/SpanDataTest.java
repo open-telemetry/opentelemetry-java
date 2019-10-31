@@ -55,6 +55,7 @@ public class SpanDataTest {
     assertEquals(Collections.<String, AttributeValue>emptyMap(), spanData.getAttributes());
     assertEquals(emptyList(), spanData.getTimedEvents());
     assertEquals(emptyList(), spanData.getLinks());
+    assertEquals(InstrumentationLibraryInfo.EMPTY, spanData.getInstrumentationLibraryInfo());
   }
 
   @Test

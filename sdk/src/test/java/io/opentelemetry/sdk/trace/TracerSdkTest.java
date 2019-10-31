@@ -39,8 +39,15 @@ import org.mockito.MockitoAnnotations;
 @SuppressWarnings("MustBeClosedChecker")
 public class TracerSdkTest {
   private static final String SPAN_NAME = "span_name";
+  private static final String INSTRUMENTATION_LIBRARY_NAME =
+      "io.opentelemetry.sdk.trace.TracerSdkTest";
+  private static final String INSTRUMENTATION_LIBRARY_VERSION = "semver:0.2.0";
+  private static final InstrumentationLibraryInfo instrumentationLibraryInfo =
+      InstrumentationLibraryInfo.create(
+          INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
   @Mock private Span span;
-  private final TracerSdk tracer = TracerSdkFactory.create().get("TracerSdkTest");
+  private final TracerSdk tracer =
+      TracerSdkFactory.create().get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
   @Before
   public void setUp() {
@@ -102,5 +109,16 @@ public class TracerSdkTest {
       ws.close();
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+  }
+
+  @Test
+  public void getInstrumentationLibraryInfo() {
+    assertThat(tracer.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
+  }
+
+  @Test
+  public void propagatesInstrumentationLibraryInfoToSpan() {
+    ReadableSpan readableSpan = (ReadableSpan) tracer.spanBuilder("spanName").startSpan();
+    assertThat(readableSpan.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
   }
 }

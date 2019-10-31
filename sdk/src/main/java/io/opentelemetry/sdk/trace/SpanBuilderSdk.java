@@ -47,6 +47,7 @@ class SpanBuilderSdk implements Span.Builder {
       TraceFlags.builder().setIsSampled(false).build();
 
   private final String spanName;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final SpanProcessor spanProcessor;
   private final TraceConfig traceConfig;
   private final Resource resource;
@@ -62,12 +63,14 @@ class SpanBuilderSdk implements Span.Builder {
 
   SpanBuilderSdk(
       String spanName,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       SpanProcessor spanProcessor,
       TraceConfig traceConfig,
       Resource resource,
       IdsGenerator idsGenerator,
       Clock clock) {
     this.spanName = spanName;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
@@ -168,6 +171,7 @@ class SpanBuilderSdk implements Span.Builder {
     return RecordEventsReadableSpan.startSpan(
         spanContext,
         spanName,
+        instrumentationLibraryInfo,
         spanKind,
         parentContext != null ? parentContext.getSpanId() : null,
         traceConfig,

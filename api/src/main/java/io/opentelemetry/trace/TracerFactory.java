@@ -32,7 +32,7 @@ public interface TracerFactory {
    * Gets or creates a named tracer instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
    * @return a tracer instance.
    * @since 0.1.0
    */
@@ -42,8 +42,9 @@ public interface TracerFactory {
    * Gets or creates a named and versioned tracer instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library.
-   * @param instrumentationVersion The version of the instrumentation library.
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   * @param instrumentationVersion The version of the instrumentation library (e.g.,
+   *     "semver:1.0.0").
    * @return a tracer instance.
    * @since 0.1.0
    */

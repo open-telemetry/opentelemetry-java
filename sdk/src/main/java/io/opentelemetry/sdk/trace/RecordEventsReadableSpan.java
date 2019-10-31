@@ -71,6 +71,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final Clock clock;
   // The resource associated with this span.
   private final Resource resource;
+  // instrumentation library of the named tracer which created this span
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   // The start time of the span.
   private final long startEpochNanos;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
@@ -116,6 +118,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   static RecordEventsReadableSpan startSpan(
       SpanContext context,
       String name,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
       @Nullable SpanId parentSpanId,
       TraceConfig traceConfig,
@@ -130,6 +133,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         new RecordEventsReadableSpan(
             context,
             name,
+            instrumentationLibraryInfo,
             kind,
             parentSpanId == null ? SpanId.getInvalid() : parentSpanId,
             traceConfig,
@@ -151,6 +155,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     SpanContext spanContext = getSpanContext();
     return SpanData.newBuilder()
         .setName(getName())
+        .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
         .setTraceId(spanContext.getTraceId())
         .setSpanId(spanContext.getSpanId())
         .setTraceFlags(spanContext.getTraceFlags())
@@ -193,6 +198,18 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     synchronized (lock) {
       return name;
     }
+  }
+
+  /**
+   * Returns the instrumentation library specified when creating the tracer which produced this
+   * span.
+   *
+   * @return an instance of {@link InstrumentationLibraryInfo} describing the instrumentation
+   *     library
+   */
+  @Override
+  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return instrumentationLibraryInfo;
   }
 
   /**
@@ -502,6 +519,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private RecordEventsReadableSpan(
       SpanContext context,
       String name,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
       SpanId parentSpanId,
       TraceConfig traceConfig,
@@ -513,6 +531,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.parentSpanId = parentSpanId;
     this.links = links;
     this.totalRecordedLinks = totalRecordedLinks;

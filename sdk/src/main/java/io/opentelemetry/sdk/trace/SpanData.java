@@ -90,6 +90,14 @@ public abstract class SpanData {
   public abstract Resource getResource();
 
   /**
+   * Returns the instrumentation library specified when creating the tracer which produced this
+   * {@code Span}.
+   *
+   * @return an instance of {@link InstrumentationLibraryInfo}
+   */
+  public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+
+  /**
    * Returns the name of this {@code Span}.
    *
    * @return the name of this {@code Span}.
@@ -235,6 +243,7 @@ public abstract class SpanData {
   public static Builder newBuilder() {
     return new AutoValue_SpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
+        .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.EMPTY)
         .setLinks(Collections.<io.opentelemetry.trace.Link>emptyList())
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
         .setTimedEvents(Collections.<TimedEvent>emptyList())
@@ -324,6 +333,18 @@ public abstract class SpanData {
      * @since 0.1.0
      */
     public abstract Builder setResource(Resource resource);
+
+    /**
+     * Sets the instrumentation library of the tracer which created this span. Must not be null.
+     *
+     * @param instrumentationLibraryInfo the instrumentation library of the tracer which created
+     *     this span.
+     * @return this
+     * @see InstrumentationLibraryInfo
+     * @since 0.2.0
+     */
+    public abstract Builder setInstrumentationLibraryInfo(
+        InstrumentationLibraryInfo instrumentationLibraryInfo);
 
     /**
      * Set the name of the span. Must not be null.

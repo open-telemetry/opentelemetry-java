@@ -50,4 +50,13 @@ public interface ReadableSpan {
    * @since 0.1.0
    */
   SpanData toSpanData();
+
+  /**
+   * Returns the instrumentation library specified when creating the tracer which produced this
+   * span.
+   *
+   * @return an instance of {@link InstrumentationLibraryInfo} describing the instrumentation
+   *     library
+   */
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 }
