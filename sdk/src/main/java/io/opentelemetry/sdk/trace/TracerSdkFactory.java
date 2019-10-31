@@ -36,6 +36,7 @@ import java.util.logging.Logger;
  * io.opentelemetry.OpenTelemetry}.
  */
 public class TracerSdkFactory implements TracerFactory {
+  private final Object lock = new Object();
   private static final Logger logger = Logger.getLogger(TracerFactory.class.getName());
   private final Map<String, TracerSdk> tracersByKey = new ConcurrentHashMap<>();
   private final TracerSharedState sharedState;
@@ -67,9 +68,19 @@ public class TracerSdkFactory implements TracerFactory {
     String key = instrumentationName + "/" + instrumentationVersion;
     TracerSdk tracer = tracersByKey.get(key);
     if (tracer == null) {
-      // todo: pass in the name & version here to the implementation to be used for purposes.
-      tracer = new TracerSdk(sharedState);
-      tracersByKey.put(key, tracer);
+      synchronized (lock) {
+        // Re-check if the value was added since the previous check, this can happen if multiple
+        // threads try to access the same named tracer during the same time. This way we ensure that
+        // we create only one TracerSdk per name.
+        tracer = tracersByKey.get(key);
+        if (tracer != null) {
+          // A different thread already added the named Tracer, just reuse.
+          return tracer;
+        }
+        // todo: pass in the name & version here to the implementation to be used for purposes.
+        tracer = new TracerSdk(sharedState);
+        tracersByKey.put(key, tracer);
+      }
     }
     return tracer;
   }
