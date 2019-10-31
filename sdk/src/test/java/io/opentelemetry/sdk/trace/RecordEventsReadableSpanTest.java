@@ -224,7 +224,7 @@ public class RecordEventsReadableSpanTest {
   public void getSpanHasRemoteParent() {
     RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
     try {
-      assertThat(span.toSpanData().getHasRemoteParent()).isEqualTo(true);
+      assertThat(span.toSpanData().getHasRemoteParent()).isTrue();
     } finally {
       span.end();
     }

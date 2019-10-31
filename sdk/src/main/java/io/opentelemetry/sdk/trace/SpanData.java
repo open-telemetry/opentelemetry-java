@@ -167,7 +167,7 @@ public abstract class SpanData {
    *
    * @return {@code true} if the parent is on a different process. {@code false} if this is a root
    *     span.
-   * @since 0.5 -- update?
+   * @since 0.3.0
    */
   public abstract boolean getHasRemoteParent();
 
@@ -438,7 +438,7 @@ public abstract class SpanData {
      *
      * @param hasRemoteParent A boolean indicating if the span has a remote parent.
      * @return this
-     * @since 0.1.0
+     * @since 0.3.0
      */
     public abstract Builder setHasRemoteParent(boolean hasRemoteParent);
   }
