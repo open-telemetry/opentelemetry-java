@@ -27,7 +27,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @AutoValue
 @Immutable
-abstract class InstrumentationLibraryInfo {
+public abstract class InstrumentationLibraryInfo {
 
   static final InstrumentationLibraryInfo EMPTY = create("", null);
 
@@ -44,8 +44,11 @@ abstract class InstrumentationLibraryInfo {
     return new AutoValue_InstrumentationLibraryInfo(name, version);
   }
 
-  abstract String name();
+  public abstract String name();
 
   @Nullable
-  abstract String version();
+  public abstract String version();
+
+  // Package protected ctor to avoid others to extend this class.
+  InstrumentationLibraryInfo() {}
 }
