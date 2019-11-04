@@ -21,6 +21,8 @@ import io.opentelemetry.trace.AttributeValue;
 /** Constants for standard Open Telemetry HTTP attributes. */
 public class HttpTraceConstants {
 
+  public static final String INSTRUMENTATION_LIB_ID = "io.opentelemetry.contrib.http";
+
   public static final String COMPONENT = "component";
   public static final String COMPONENT_VALUE = "http";
   public static final String HTTP_METHOD = "http.method";

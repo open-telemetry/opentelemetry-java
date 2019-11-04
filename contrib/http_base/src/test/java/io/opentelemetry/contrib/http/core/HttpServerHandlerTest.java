@@ -16,6 +16,7 @@
 
 package io.opentelemetry.contrib.http.core;
 
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -24,7 +25,7 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
@@ -48,7 +49,7 @@ public class HttpServerHandlerTest {
   public static void configureTracing() {
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOn()).build();
-    TracerSdk tracerSdk = (TracerSdk) OpenTelemetry.getTracer();
+    TracerSdkFactory tracerSdk = (TracerSdkFactory) OpenTelemetry.getTracerFactory();
     tracerSdk.updateActiveTraceConfig(traceConfig);
     inMemoryTracing = new InMemoryTracing(tracerSdk);
   }
@@ -114,7 +115,7 @@ public class HttpServerHandlerTest {
             new TestOnlyMapHttpExtractor(),
             new TestOnlyMapGetterSetter(),
             new HttpStatus2OtStatusConverter(),
-            OpenTelemetry.getTracer(),
+            OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID),
             OpenTelemetry.getDistributedContextManager(),
             OpenTelemetry.getMeter(),
             Boolean.TRUE);
@@ -169,7 +170,7 @@ public class HttpServerHandlerTest {
             new TestOnlyMapHttpExtractor(),
             new TestOnlyMapGetterSetter(),
             new ExtendedHttpStatus2OtStatusConverter(),
-            OpenTelemetry.getTracer(),
+            OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID),
             OpenTelemetry.getDistributedContextManager(),
             OpenTelemetry.getMeter(),
             Boolean.FALSE);

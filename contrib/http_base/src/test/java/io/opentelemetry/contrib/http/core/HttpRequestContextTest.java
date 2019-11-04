@@ -16,13 +16,13 @@
 
 package io.opentelemetry.contrib.http.core;
 
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import org.junit.Rule;
@@ -37,11 +37,11 @@ public class HttpRequestContextTest {
   @Test
   public void shouldCreateWithProvidedSpanAndDistributedContext() {
     Span span =
-        OpenTelemetry.getTracer()
+        OpenTelemetry.getTracerFactory()
+            .get(INSTRUMENTATION_LIB_ID)
             .spanBuilder("/junit")
             .setNoParent()
             .setSpanKind(Kind.CLIENT)
-            .setSampler(Samplers.alwaysOn())
             .startSpan();
     DistributedContext distributedContext =
         OpenTelemetry.getDistributedContextManager().contextBuilder().setNoParent().build();
@@ -53,11 +53,11 @@ public class HttpRequestContextTest {
   @Test
   public void shouldCreateWithProvidedSpan() {
     Span span =
-        OpenTelemetry.getTracer()
+        OpenTelemetry.getTracerFactory()
+            .get(INSTRUMENTATION_LIB_ID)
             .spanBuilder("/junit")
             .setNoParent()
             .setSpanKind(Kind.CLIENT)
-            .setSampler(Samplers.alwaysOn())
             .startSpan();
     HttpRequestContext context = new HttpRequestContext(span, null);
     assertSame(span, context.span);
@@ -72,11 +72,11 @@ public class HttpRequestContextTest {
   @Test
   public void shouldInitializeValuesOnCreation() {
     Span span =
-        OpenTelemetry.getTracer()
+        OpenTelemetry.getTracerFactory()
+            .get(INSTRUMENTATION_LIB_ID)
             .spanBuilder("/junit")
             .setNoParent()
             .setSpanKind(Kind.CLIENT)
-            .setSampler(Samplers.alwaysOn())
             .startSpan();
     HttpRequestContext context = new HttpRequestContext(span, null);
     assertTrue(context.requestStartTime > 0L);

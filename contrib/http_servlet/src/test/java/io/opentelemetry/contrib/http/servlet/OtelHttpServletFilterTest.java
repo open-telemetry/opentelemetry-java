@@ -17,6 +17,7 @@
 package io.opentelemetry.contrib.http.servlet;
 
 import static com.google.common.base.Strings.lenientFormat;
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
 import static io.opentelemetry.contrib.http.servlet.MultiSchemeHttpPropagationGetter.ALL_SCHEMES;
 import static io.opentelemetry.contrib.http.servlet.MultiSchemeHttpPropagationGetter.TRACEPARENT;
 import static io.opentelemetry.contrib.http.servlet.OtelHttpServletFilter.OTEL_EXTRACTOR;
@@ -36,6 +37,7 @@ import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
@@ -70,9 +72,10 @@ public class OtelHttpServletFilterTest {
   public static void configureTracing() {
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOn()).build();
-    tracerSdk = (TracerSdk) OpenTelemetry.getTracer();
-    tracerSdk.updateActiveTraceConfig(traceConfig);
-    inMemoryTracing = new InMemoryTracing(tracerSdk);
+    TracerSdkFactory tracerSdkFactory = (TracerSdkFactory) OpenTelemetry.getTracerFactory();
+    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
+    inMemoryTracing = new InMemoryTracing(tracerSdkFactory);
+    tracerSdk = tracerSdkFactory.get(INSTRUMENTATION_LIB_ID);
   }
 
   @Rule public final ExpectedException exception = ExpectedException.none();

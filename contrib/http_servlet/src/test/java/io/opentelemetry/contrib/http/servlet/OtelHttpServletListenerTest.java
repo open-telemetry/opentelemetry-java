@@ -16,6 +16,7 @@
 
 package io.opentelemetry.contrib.http.servlet;
 
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
 import static io.opentelemetry.contrib.http.servlet.OtelHttpServletUtils.CONTENT_LENGTH;
 import static io.opentelemetry.contrib.http.servlet.OtelHttpServletUtils.OTEL_SERVLET_LISTENER;
 import static org.junit.Assert.assertFalse;
@@ -29,7 +30,7 @@ import io.opentelemetry.contrib.http.core.HttpStatus2OtStatusConverter;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
 import java.net.SocketTimeoutException;
@@ -59,7 +60,7 @@ public class OtelHttpServletListenerTest {
   public static void configureTracing() {
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOn()).build();
-    TracerSdk tracerSdk = (TracerSdk) OpenTelemetry.getTracer();
+    TracerSdkFactory tracerSdk = (TracerSdkFactory) OpenTelemetry.getTracerFactory();
     tracerSdk.updateActiveTraceConfig(traceConfig);
     inMemoryTracing = new InMemoryTracing(tracerSdk);
   }
@@ -69,7 +70,7 @@ public class OtelHttpServletListenerTest {
 
   @Before
   public void setUp() {
-    tracer = OpenTelemetry.getTracer();
+    tracer = OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID);
     HttpStatus2OtStatusConverter statusConverter = new HttpStatus2OtStatusConverter();
     HttpExtractor<HttpServletRequest, HttpServletResponse> httpExtractor =
         new UriPathDrivenHttpServletExtractor();

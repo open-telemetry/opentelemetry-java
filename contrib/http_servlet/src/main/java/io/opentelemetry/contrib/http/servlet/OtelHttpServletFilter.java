@@ -18,6 +18,7 @@ package io.opentelemetry.contrib.http.servlet;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Strings.lenientFormat;
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
@@ -142,7 +143,7 @@ public class OtelHttpServletFilter implements Filter {
 
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
-    tracer = OpenTelemetry.getTracer();
+    tracer = OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID);
     constructAndInitializeRequestMatcher(filterConfig);
     constructAndInitializeHttpExtractor();
     MultiSchemeHttpPropagationGetter getter = constructAndInitializeGetter(filterConfig);

@@ -17,6 +17,7 @@
 package io.opentelemetry.contrib.http.core;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat;
@@ -79,7 +80,7 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     super(extractor, statusConverter, meter);
     checkNotNull(setter, "setter is required");
     if (tracer == null) {
-      this.tracer = OpenTelemetry.getTracer();
+      this.tracer = OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID);
     } else {
       this.tracer = tracer;
     }

@@ -18,6 +18,7 @@ package io.opentelemetry.contrib.http.servlet;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
 
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.OpenTelemetry;
@@ -66,7 +67,9 @@ public class OtelHttpServletUtils {
     if (listener != null) {
       return listener.withSpan();
     }
-    return OpenTelemetry.getTracer().withSpan(DefaultSpan.getInvalid());
+    return OpenTelemetry.getTracerFactory()
+        .get(INSTRUMENTATION_LIB_ID)
+        .withSpan(DefaultSpan.getInvalid());
   }
 
   private OtelHttpServletUtils() {
