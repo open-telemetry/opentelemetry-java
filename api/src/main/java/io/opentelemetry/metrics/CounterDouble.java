@@ -29,7 +29,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <pre>{@code
  * class YourClass {
  *
- *   private static final Meter meter = OpenTelemetry.getMeter();
+ *   private static final Meter meter = OpenTelemetry.getMeterFactory();
  *   private static final CounterDouble counter =
  *       meter.
  *           .counterDoubleBuilder("processed_jobs")

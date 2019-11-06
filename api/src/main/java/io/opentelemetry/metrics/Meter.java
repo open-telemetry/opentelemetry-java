@@ -35,7 +35,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Meter meter = Metrics.getMeter();
+ *   private static final Meter meter = Metrics.getMeterFactory();
  *   private static final MeasureDouble cacheHit = meter.measureDoubleBuilder("cache_hit").build();
  *
  *   Response serverHandler(Request request) {
@@ -53,7 +53,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = Metrics.getMeter();
+ *   private static final Meter meter = Metrics.getMeterFactory();
  *   private static final CounterLong collectionMetric =
  *       meter
  *           .counterLongBuilder("collection")
@@ -83,7 +83,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = Metrics.getMeter();
+ *   private static final Meter meter = Metrics.getMeterFactory();
  *   private static final List<String> keys = Collections.singletonList("Name");
  *   private static final List<String> values = Collections.singletonList("Inbound");
  *   private static final GaugeDouble gauge =

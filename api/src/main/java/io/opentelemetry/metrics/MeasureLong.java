@@ -26,7 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <pre>{@code
  * class YourClass {
  *
- *   private static final Meter meter = OpenTelemetry.getMeter();
+ *   private static final Meter meter = OpenTelemetry.getMeterFactory();
  *   private static final MeasureLong measure =
  *       meter.
  *           .measureLongBuilder("doWork_latency")

@@ -16,17 +16,19 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import io.opentelemetry.metrics.MeterFactory;
+import io.opentelemetry.metrics.spi.MeterFactoryProvider;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+/**
+ * {@code Meter} provider implementation for {@link MeterFactoryProvider}.
+ *
+ * <p>This class is not intended to be used in application code and it is used only by {@link
+ * io.opentelemetry.OpenTelemetry}.
+ */
+public class MeterSdkFactoryProvider implements MeterFactoryProvider {
 
-@RunWith(JUnit4.class)
-public class MeterSdkProviderTest {
-
-  @Test
-  public void testDefault() {
-    assertThat(new MeterSdkFactoryProvider().create()).isInstanceOf(MeterSdkFactory.class);
+  @Override
+  public MeterFactory create() {
+    return new MeterSdkFactory();
   }
 }

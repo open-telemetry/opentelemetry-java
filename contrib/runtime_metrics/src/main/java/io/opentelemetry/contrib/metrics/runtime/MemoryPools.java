@@ -65,8 +65,7 @@ public final class MemoryPools {
   public MemoryPools() {
     this.memoryBean = ManagementFactory.getMemoryMXBean();
     this.poolBeans = ManagementFactory.getMemoryPoolMXBeans();
-    // TODO: Set component to "jvm_memory" when available.
-    this.meter = OpenTelemetry.getMeter();
+    this.meter = OpenTelemetry.getMeterFactory().get("jvm_memory");
   }
 
   /** Export only the "area" metric. */

@@ -28,16 +28,17 @@ import io.opentelemetry.distributedcontext.DistributedContextManager;
 import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
 import io.opentelemetry.metrics.CounterDouble;
 import io.opentelemetry.metrics.CounterLong;
-import io.opentelemetry.metrics.DefaultMeter;
+import io.opentelemetry.metrics.DefaultMeterFactory;
 import io.opentelemetry.metrics.GaugeDouble;
 import io.opentelemetry.metrics.GaugeLong;
 import io.opentelemetry.metrics.MeasureBatchRecorder;
 import io.opentelemetry.metrics.MeasureDouble;
 import io.opentelemetry.metrics.MeasureLong;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.metrics.MeterFactory;
 import io.opentelemetry.metrics.ObserverDouble;
 import io.opentelemetry.metrics.ObserverLong;
-import io.opentelemetry.metrics.spi.MeterProvider;
+import io.opentelemetry.metrics.spi.MeterFactoryProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -72,7 +73,7 @@ public class OpenTelemetryTest {
   public void after() {
     OpenTelemetry.reset();
     System.clearProperty(TracerFactoryProvider.class.getName());
-    System.clearProperty(MeterProvider.class.getName());
+    System.clearProperty(MeterFactoryProvider.class.getName());
     System.clearProperty(DistributedContextManagerProvider.class.getName());
   }
 
@@ -82,8 +83,9 @@ public class OpenTelemetryTest {
         .isInstanceOf(DefaultTracer.getInstance().getClass());
     assertThat(OpenTelemetry.getTracerFactory().get("testTracer"))
         .isEqualTo(OpenTelemetry.getTracerFactory().get("testTracer"));
-    assertThat(OpenTelemetry.getMeter()).isInstanceOf(DefaultMeter.getInstance().getClass());
-    assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
+    assertThat(OpenTelemetry.getMeterFactory())
+        .isInstanceOf(DefaultMeterFactory.getInstance().getClass());
+    assertThat(OpenTelemetry.getMeterFactory()).isEqualTo(OpenTelemetry.getMeterFactory());
     assertThat(OpenTelemetry.getDistributedContextManager())
         .isInstanceOf(DefaultDistributedContextManager.getInstance().getClass());
     assertThat(OpenTelemetry.getDistributedContextManager())
@@ -126,12 +128,14 @@ public class OpenTelemetryTest {
 
   @Test
   public void testMeterLoadArbitrary() throws IOException {
-    File serviceFile = createService(MeterProvider.class, FirstMeter.class, SecondMeter.class);
+    File serviceFile =
+        createService(
+            MeterFactoryProvider.class, FirstMeterFactory.class, SecondMeterFactory.class);
     try {
       assertTrue(
-          (OpenTelemetry.getMeter() instanceof FirstMeter)
-              || (OpenTelemetry.getMeter() instanceof SecondMeter));
-      assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
+          (OpenTelemetry.getMeterFactory() instanceof FirstMeterFactory)
+              || (OpenTelemetry.getMeterFactory() instanceof SecondMeterFactory));
+      assertThat(OpenTelemetry.getMeterFactory()).isEqualTo(OpenTelemetry.getMeterFactory());
     } finally {
       serviceFile.delete();
     }
@@ -139,11 +143,13 @@ public class OpenTelemetryTest {
 
   @Test
   public void testMeterSystemProperty() throws IOException {
-    File serviceFile = createService(MeterProvider.class, FirstMeter.class, SecondMeter.class);
-    System.setProperty(MeterProvider.class.getName(), SecondMeter.class.getName());
+    File serviceFile =
+        createService(
+            MeterFactoryProvider.class, FirstMeterFactory.class, SecondMeterFactory.class);
+    System.setProperty(MeterFactoryProvider.class.getName(), SecondMeterFactory.class.getName());
     try {
-      assertThat(OpenTelemetry.getMeter()).isInstanceOf(SecondMeter.class);
-      assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
+      assertThat(OpenTelemetry.getMeterFactory()).isInstanceOf(SecondMeterFactory.class);
+      assertThat(OpenTelemetry.getMeterFactory()).isEqualTo(OpenTelemetry.getMeterFactory());
     } finally {
       serviceFile.delete();
     }
@@ -151,9 +157,9 @@ public class OpenTelemetryTest {
 
   @Test
   public void testMeterNotFound() {
-    System.setProperty(MeterProvider.class.getName(), "io.does.not.exists");
+    System.setProperty(MeterFactoryProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getMeter();
+    OpenTelemetry.getMeterFactory();
   }
 
   @Test
@@ -281,17 +287,27 @@ public class OpenTelemetryTest {
     }
   }
 
-  public static class SecondMeter extends FirstMeter {
+  public static class SecondMeterFactory extends FirstMeterFactory {
     @Override
-    public Meter create() {
-      return new SecondMeter();
+    public Meter get(String instrumentationName) {
+      return new SecondMeterFactory();
+    }
+
+    @Override
+    public Meter get(String instrumentationName, String instrumentationVersion) {
+      return get(instrumentationName);
+    }
+
+    @Override
+    public MeterFactory create() {
+      return new SecondMeterFactory();
     }
   }
 
-  public static class FirstMeter implements Meter, MeterProvider {
+  public static class FirstMeterFactory implements Meter, MeterFactoryProvider, MeterFactory {
     @Override
-    public Meter create() {
-      return new FirstMeter();
+    public MeterFactory create() {
+      return new FirstMeterFactory();
     }
 
     @Nullable
@@ -346,6 +362,16 @@ public class OpenTelemetryTest {
     @Override
     public MeasureBatchRecorder newMeasureBatchRecorder() {
       return null;
+    }
+
+    @Override
+    public Meter get(String instrumentationName) {
+      return new FirstMeterFactory();
+    }
+
+    @Override
+    public Meter get(String instrumentationName, String instrumentationVersion) {
+      return get(instrumentationName);
     }
   }
 

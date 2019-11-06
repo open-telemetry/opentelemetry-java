@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+public class DefaultMeterFactory implements MeterFactory {
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+  private static final MeterFactory instance = new DefaultMeterFactory();
 
-@RunWith(JUnit4.class)
-public class MeterSdkProviderTest {
+  public static MeterFactory getInstance() {
+    return instance;
+  }
 
-  @Test
-  public void testDefault() {
-    assertThat(new MeterSdkFactoryProvider().create()).isInstanceOf(MeterSdkFactory.class);
+  @Override
+  public Meter get(String instrumentationName) {
+    return get(instrumentationName, null);
+  }
+
+  @Override
+  public Meter get(String instrumentationName, String instrumentationVersion) {
+    return DefaultMeter.getInstance();
   }
 }

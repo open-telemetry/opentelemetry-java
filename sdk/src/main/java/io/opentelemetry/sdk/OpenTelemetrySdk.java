@@ -18,13 +18,13 @@ package io.opentelemetry.sdk;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
-import io.opentelemetry.sdk.metrics.MeterSdk;
+import io.opentelemetry.sdk.metrics.MeterSdkFactory;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for SDK telemetry objects {@link TracerSdkFactory},
- * {@link MeterSdk} and {@link DistributedContextManagerSdk}.
+ * {@link MeterSdkFactory} and {@link DistributedContextManagerSdk}.
  *
  * <p>This is a convenience class getting and casting the telemetry objects from {@link
  * OpenTelemetry}.
@@ -44,13 +44,13 @@ public final class OpenTelemetrySdk {
   }
 
   /**
-   * Returns a {@link MeterSdk}.
+   * Returns a {@link MeterSdkFactory}.
    *
-   * @return meter returned by {@link OpenTelemetry#getMeter()}.
+   * @return meter returned by {@link OpenTelemetry#getMeterFactory()}.
    * @since 0.1.0
    */
-  public static MeterSdk getMeter() {
-    return (MeterSdk) OpenTelemetry.getMeter();
+  public static MeterSdkFactory getMeterFactory() {
+    return (MeterSdkFactory) OpenTelemetry.getMeterFactory();
   }
 
   /**
