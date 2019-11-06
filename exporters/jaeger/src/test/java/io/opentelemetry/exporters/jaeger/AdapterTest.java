@@ -207,6 +207,24 @@ public class AdapterTest {
     assertEquals(Model.SpanRefType.FOLLOWS_FROM, spanRef.getRefType());
   }
 
+  @Test
+  public void testStatusNotOk() {
+    long startMs = System.currentTimeMillis();
+    long endMs = startMs + 900;
+    SpanData span =
+        SpanData.newBuilder()
+            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
+            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setName("GET /api/endpoint")
+            .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
+            .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
+            .setKind(Span.Kind.SERVER)
+            .setStatus(Status.CANCELLED)
+            .build();
+
+    assertNotNull(Adapter.toJaeger(span));
+  }
+
   private static TimedEvent getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
