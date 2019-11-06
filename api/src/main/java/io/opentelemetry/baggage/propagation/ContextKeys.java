@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.distributedcontext;
+package io.opentelemetry.baggage.propagation;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.HttpExtractor;
-import io.opentelemetry.context.propagation.HttpInjector;
 
-public interface BaggageManager {
-  public Context setValue(Context ctx, String key, String value);
+public final class ContextKeys {
+  private static final Context.Key<Object> BAGGAGE_KEY = Context.createKey("baggage");
 
-  public String getValue(Context ctx, String key);
+  public static Context.Key<Object> getSpanContextKey() {
+    return BAGGAGE_KEY;
+  }
 
-  public Context removeValue(Context ctx, String key);
-
-  public Context clear(Context ctx);
-
-  public HttpInjector getHttpInjector();
-
-  public HttpExtractor getHttpExtractor();
+  private ContextKeys() {}
 }

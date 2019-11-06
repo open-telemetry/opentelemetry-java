@@ -14,47 +14,22 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.distributedcontext;
+package io.opentelemetry.baggage;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpExtractor;
 import io.opentelemetry.context.propagation.HttpInjector;
-import javax.annotation.Nullable;
 
-public final class DefaultBaggageManager implements BaggageManager {
+public interface BaggageManager {
+  public Context setValue(Context ctx, String key, String value);
 
-  @Override
-  public Context setValue(Context ctx, String key, String value) {
-    return ctx;
-  }
+  public String getValue(Context ctx, String key);
 
-  @Nullable
-  @Override
-  public String getValue(Context ctx, String key) {
-    return null;
-  }
+  public Context removeValue(Context ctx, String key);
 
-  @Override
-  public Context removeValue(Context ctx, String key) {
-    return ctx;
-  }
+  public Context clear(Context ctx);
 
-  @Override
-  public Context clear(Context ctx) {
-    return ctx;
-  }
+  public HttpInjector getHttpInjector();
 
-  @Nullable
-  @Override
-  public HttpInjector getHttpInjector() {
-    return null;
-  }
-
-  @Nullable
-  @Override
-  public HttpExtractor getHttpExtractor() {
-    return null;
-  }
-
-  // TODO - define noop propagators (expose them?)
+  public HttpExtractor getHttpExtractor();
 }

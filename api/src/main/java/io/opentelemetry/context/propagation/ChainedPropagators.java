@@ -18,8 +18,6 @@ package io.opentelemetry.context.propagation;
 
 import io.opentelemetry.context.Context;
 
-// import javax.annotation.Nullable;
-
 public final class ChainedPropagators {
   public HttpInjector chainInjectors(HttpInjector injector1, HttpInjector injector2) {
     return new ChainedHttpInjector(injector1, injector2);
