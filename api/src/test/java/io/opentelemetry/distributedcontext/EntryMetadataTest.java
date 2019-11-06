@@ -19,28 +19,28 @@ package io.opentelemetry.distributedcontext;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
+import io.opentelemetry.distributedcontext.LabelMetadata.HopLimit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link EntryMetadata}. */
+/** Tests for {@link LabelMetadata}. */
 @RunWith(JUnit4.class)
 public class EntryMetadataTest {
 
   @Test
   public void testGetEntryTtl() {
-    EntryMetadata entryMetadata = EntryMetadata.create(EntryTtl.NO_PROPAGATION);
-    assertThat(entryMetadata.getEntryTtl()).isEqualTo(EntryTtl.NO_PROPAGATION);
+    LabelMetadata entryMetadata = LabelMetadata.create(HopLimit.NO_PROPAGATION);
+    assertThat(entryMetadata.getEntryTtl()).isEqualTo(HopLimit.NO_PROPAGATION);
   }
 
   @Test
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            EntryMetadata.create(EntryTtl.NO_PROPAGATION),
-            EntryMetadata.create(EntryTtl.NO_PROPAGATION))
-        .addEqualityGroup(EntryMetadata.create(EntryTtl.UNLIMITED_PROPAGATION))
+            LabelMetadata.create(HopLimit.NO_PROPAGATION),
+            LabelMetadata.create(HopLimit.NO_PROPAGATION))
+        .addEqualityGroup(LabelMetadata.create(HopLimit.UNLIMITED_PROPAGATION))
         .testEquals();
   }
 }

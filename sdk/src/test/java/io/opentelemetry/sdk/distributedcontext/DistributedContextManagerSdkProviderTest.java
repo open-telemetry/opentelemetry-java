@@ -27,7 +27,7 @@ public class DistributedContextManagerSdkProviderTest {
 
   @Test
   public void testDefault() {
-    assertThat(new DistributedContextManagerSdkProvider().create())
-        .isInstanceOf(DistributedContextManagerSdk.class);
+    assertThat(new CorrelationContextManagerSdkProvider().create())
+        .isInstanceOf(CorrelationContextManagerSdk.class);
   }
 }

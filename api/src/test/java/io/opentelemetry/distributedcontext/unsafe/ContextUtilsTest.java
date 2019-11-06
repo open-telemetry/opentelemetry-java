@@ -19,7 +19,7 @@ package io.opentelemetry.distributedcontext.unsafe;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
-import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.distributedcontext.CorrelationContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -29,14 +29,14 @@ import org.junit.runners.JUnit4;
 public final class ContextUtilsTest {
   @Test
   public void testGetCurrentDistributedContex_DefaultContext() {
-    DistributedContext distContext = ContextUtils.getValue(Context.current());
+    CorrelationContext distContext = ContextUtils.getValue(Context.current());
     assertThat(distContext).isNotNull();
     assertThat(distContext.getEntries()).isEmpty();
   }
 
   @Test
   public void testGetCurrentDistributedContex_DefaultContext_WithoutExplicitContext() {
-    DistributedContext distContext = ContextUtils.getValue();
+    CorrelationContext distContext = ContextUtils.getValue();
     assertThat(distContext).isNotNull();
     assertThat(distContext.getEntries()).isEmpty();
   }
@@ -45,7 +45,7 @@ public final class ContextUtilsTest {
   public void testGetCurrentDistributedContex_ContextSetToNull() {
     Context orig = ContextUtils.withValue(null, Context.current()).attach();
     try {
-      DistributedContext distContext = ContextUtils.getValue(Context.current());
+      CorrelationContext distContext = ContextUtils.getValue(Context.current());
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
     } finally {
@@ -57,7 +57,7 @@ public final class ContextUtilsTest {
   public void testGetCurrentDistributedContex_ContextSetToNull_WithoutExplicitContext() {
     Context orig = ContextUtils.withValue(null).attach();
     try {
-      DistributedContext distContext = ContextUtils.getValue();
+      CorrelationContext distContext = ContextUtils.getValue();
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
     } finally {

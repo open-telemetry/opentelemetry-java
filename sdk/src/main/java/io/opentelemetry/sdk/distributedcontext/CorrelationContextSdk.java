@@ -19,11 +19,11 @@ package io.opentelemetry.sdk.distributedcontext;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.Entry;
-import io.opentelemetry.distributedcontext.EntryKey;
-import io.opentelemetry.distributedcontext.EntryMetadata;
-import io.opentelemetry.distributedcontext.EntryValue;
+import io.opentelemetry.distributedcontext.CorrelationContext;
+import io.opentelemetry.distributedcontext.Label;
+import io.opentelemetry.distributedcontext.LabelKey;
+import io.opentelemetry.distributedcontext.LabelMetadata;
+import io.opentelemetry.distributedcontext.LabelValue;
 import io.opentelemetry.internal.Utils;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,36 +36,36 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 // TODO: Migrate to AutoValue
 // @AutoValue
-class DistributedContextSdk implements DistributedContext {
+class CorrelationContextSdk implements CorrelationContext {
 
   // The types of the EntryKey and Entry must match for each entry.
-  private final Map<EntryKey, Entry> entries;
-  @Nullable private final DistributedContext parent;
+  private final Map<LabelKey, Label> entries;
+  @Nullable private final CorrelationContext parent;
 
   /**
-   * Creates a new {@link DistributedContextSdk} with the given entries.
+   * Creates a new {@link CorrelationContextSdk} with the given entries.
    *
    * @param entries the initial entries for this {@code DistributedContextSdk}.
    * @param parent providing a default set of entries
    */
-  private DistributedContextSdk(
-      Map<? extends EntryKey, ? extends Entry> entries, DistributedContext parent) {
+  private CorrelationContextSdk(
+      Map<? extends LabelKey, ? extends Label> entries, CorrelationContext parent) {
     this.entries = Collections.unmodifiableMap(new HashMap<>(checkNotNull(entries, "entries")));
     this.parent = parent;
   }
 
   @Override
-  public Collection<Entry> getEntries() {
-    Map<EntryKey, Entry> combined = new HashMap<>(entries);
+  public Collection<Label> getEntries() {
+    Map<LabelKey, Label> combined = new HashMap<>(entries);
     if (parent != null) {
-      for (Entry entry : parent.getEntries()) {
+      for (Label entry : parent.getEntries()) {
         if (!combined.containsKey(entry.getKey())) {
           combined.put(entry.getKey(), entry);
         }
       }
     }
     // Clean out any null values that may have been added by Builder.remove.
-    for (Iterator<Entry> it = combined.values().iterator(); it.hasNext(); ) {
+    for (Iterator<Label> it = combined.values().iterator(); it.hasNext(); ) {
       if (it.next() == null) {
         it.remove();
       }
@@ -76,8 +76,8 @@ class DistributedContextSdk implements DistributedContext {
 
   @Nullable
   @Override
-  public EntryValue getEntryValue(EntryKey entryKey) {
-    Entry entry = entries.get(entryKey);
+  public LabelValue getEntryValue(LabelKey entryKey) {
+    Label entry = entries.get(entryKey);
     if (entry != null) {
       return entry.getValue();
     } else {
@@ -90,11 +90,11 @@ class DistributedContextSdk implements DistributedContext {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof DistributedContextSdk)) {
+    if (o == null || !(o instanceof CorrelationContextSdk)) {
       return false;
     }
 
-    DistributedContextSdk distContextSdk = (DistributedContextSdk) o;
+    CorrelationContextSdk distContextSdk = (CorrelationContextSdk) o;
 
     if (!entries.equals(distContextSdk.entries)) {
       return false;
@@ -111,10 +111,10 @@ class DistributedContextSdk implements DistributedContext {
 
   // TODO: Migrate to AutoValue.Builder
   // @AutoValue.Builder
-  static class Builder implements DistributedContext.Builder {
-    @Nullable private DistributedContext parent;
+  static class Builder implements CorrelationContext.Builder {
+    @Nullable private CorrelationContext parent;
     private boolean noImplicitParent;
-    private final Map<EntryKey, Entry> entries;
+    private final Map<LabelKey, Label> entries;
 
     /** Create a new empty DistributedContext builder. */
     Builder() {
@@ -122,30 +122,30 @@ class DistributedContextSdk implements DistributedContext {
     }
 
     @Override
-    public DistributedContext.Builder setParent(DistributedContext parent) {
+    public CorrelationContext.Builder setParent(CorrelationContext parent) {
       this.parent = Utils.checkNotNull(parent, "parent");
       return this;
     }
 
     @Override
-    public DistributedContext.Builder setNoParent() {
+    public CorrelationContext.Builder setNoParent() {
       this.parent = null;
       noImplicitParent = true;
       return this;
     }
 
     @Override
-    public DistributedContext.Builder put(
-        EntryKey key, EntryValue value, EntryMetadata entryMetadata) {
+    public CorrelationContext.Builder put(
+        LabelKey key, LabelValue value, LabelMetadata entryMetadata) {
       entries.put(
           checkNotNull(key, "key"),
-          Entry.create(
+          Label.create(
               key, checkNotNull(value, "value"), checkNotNull(entryMetadata, "entryMetadata")));
       return this;
     }
 
     @Override
-    public DistributedContext.Builder remove(EntryKey key) {
+    public CorrelationContext.Builder remove(LabelKey key) {
       entries.remove(checkNotNull(key, "key"));
       if (parent != null && parent.getEntryValue(key) != null) {
         entries.put(key, null);
@@ -154,11 +154,11 @@ class DistributedContextSdk implements DistributedContext {
     }
 
     @Override
-    public DistributedContextSdk build() {
+    public CorrelationContextSdk build() {
       if (parent == null && !noImplicitParent) {
         parent = OpenTelemetry.getDistributedContextManager().getCurrentContext();
       }
-      return new DistributedContextSdk(entries, parent);
+      return new CorrelationContextSdk(entries, parent);
     }
   }
 }

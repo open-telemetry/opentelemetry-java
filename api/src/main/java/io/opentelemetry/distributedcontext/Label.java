@@ -17,23 +17,23 @@
 package io.opentelemetry.distributedcontext;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
+import io.opentelemetry.distributedcontext.LabelMetadata.HopLimit;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * {@link EntryKey} paired with a {@link EntryValue}.
+ * {@link LabelKey} paired with a {@link LabelValue}.
  *
  * @since 0.1.0
  */
 @Immutable
 @AutoValue
-public abstract class Entry {
+public abstract class Label {
 
   /** Default propagation metadata - unlimited propagation. */
-  public static final EntryMetadata METADATA_UNLIMITED_PROPAGATION =
-      EntryMetadata.create(EntryTtl.UNLIMITED_PROPAGATION);
+  public static final LabelMetadata METADATA_UNLIMITED_PROPAGATION =
+      LabelMetadata.create(HopLimit.UNLIMITED_PROPAGATION);
 
-  Entry() {}
+  Label() {}
 
   /**
    * Creates an {@code Entry} from the given key, value and metadata.
@@ -44,8 +44,8 @@ public abstract class Entry {
    * @return a {@code Entry}.
    * @since 0.1.0
    */
-  public static Entry create(EntryKey key, EntryValue value, EntryMetadata entryMetadata) {
-    return new AutoValue_Entry(key, value, entryMetadata);
+  public static Label create(LabelKey key, LabelValue value, LabelMetadata entryMetadata) {
+    return new AutoValue_Label(key, value, entryMetadata);
   }
 
   /**
@@ -54,7 +54,7 @@ public abstract class Entry {
    * @return the entry's key.
    * @since 0.1.0
    */
-  public abstract EntryKey getKey();
+  public abstract LabelKey getKey();
 
   /**
    * Returns the entry's value.
@@ -62,13 +62,13 @@ public abstract class Entry {
    * @return the entry's value.
    * @since 0.1.0
    */
-  public abstract EntryValue getValue();
+  public abstract LabelValue getValue();
 
   /**
-   * Returns the {@link EntryMetadata} associated with this {@link Entry}.
+   * Returns the {@link LabelMetadata} associated with this {@link Label}.
    *
    * @return the {@code EntryMetadata}.
    * @since 0.1.0
    */
-  public abstract EntryMetadata getEntryMetadata();
+  public abstract LabelMetadata getEntryMetadata();
 }

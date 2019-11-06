@@ -16,20 +16,20 @@
 
 package io.opentelemetry.sdk.distributedcontext;
 
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
+import io.opentelemetry.distributedcontext.CorrelationContextManager;
+import io.opentelemetry.distributedcontext.spi.CorrelationContextManagerProvider;
 
 /**
  * {@code DistributedContextManager} provider implementation for {@link
- * io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider}.
+ * io.opentelemetry.distributedcontext.spi.CorrelationContextManagerProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
  */
-public class DistributedContextManagerSdkProvider implements DistributedContextManagerProvider {
+public class CorrelationContextManagerSdkProvider implements CorrelationContextManagerProvider {
 
   @Override
-  public DistributedContextManager create() {
-    return new DistributedContextManagerSdk();
+  public CorrelationContextManager create() {
+    return new CorrelationContextManagerSdk();
   }
 }

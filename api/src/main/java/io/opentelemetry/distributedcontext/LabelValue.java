@@ -31,7 +31,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class EntryValue {
+public abstract class LabelValue {
   /**
    * The maximum length for a entry value. The value is {@value #MAX_LENGTH}.
    *
@@ -39,7 +39,7 @@ public abstract class EntryValue {
    */
   public static final int MAX_LENGTH = 255;
 
-  EntryValue() {}
+  LabelValue() {}
 
   /**
    * Constructs an {@code EntryValue} from the given string. The string must meet the following
@@ -55,9 +55,9 @@ public abstract class EntryValue {
    * @throws IllegalArgumentException if the {@code String} is not valid.
    * @since 0.1.0
    */
-  public static EntryValue create(String value) {
+  public static LabelValue create(String value) {
     Utils.checkArgument(isValid(value), "Invalid EntryValue: %s", value);
-    return new AutoValue_EntryValue(value);
+    return new AutoValue_LabelValue(value);
   }
 
   /**

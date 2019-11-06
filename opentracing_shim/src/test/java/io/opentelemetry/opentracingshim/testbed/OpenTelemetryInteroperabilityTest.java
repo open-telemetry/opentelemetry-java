@@ -19,7 +19,7 @@ package io.opentelemetry.opentracingshim.testbed;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
+import io.opentelemetry.distributedcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.trace.SpanData;
@@ -37,7 +37,7 @@ public class OpenTelemetryInteroperabilityTest {
   private final TracerSdk sdk = new TracerSdk();
   private final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
   private final Tracer otTracer =
-      TraceShim.createTracerShim(sdk, DefaultDistributedContextManager.getInstance());
+      TraceShim.createTracerShim(sdk, DefaultCorrelationContextManager.getInstance());
 
   {
     sdk.addSpanProcessor(SimpleSpansProcessor.newBuilder(spanExporter).build());

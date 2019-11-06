@@ -30,25 +30,25 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DefaultDistributedContextManager}. */
+/** Unit tests for {@link DefaultCorrelationContextManager}. */
 @RunWith(JUnit4.class)
 public final class DefaultDistributedContextManagerTest {
-  private static final DistributedContextManager defaultDistributedContextManager =
-      DefaultDistributedContextManager.getInstance();
-  private static final EntryKey KEY = EntryKey.create("key");
-  private static final EntryValue VALUE = EntryValue.create("value");
+  private static final CorrelationContextManager defaultDistributedContextManager =
+      DefaultCorrelationContextManager.getInstance();
+  private static final LabelKey KEY = LabelKey.create("key");
+  private static final LabelValue VALUE = LabelValue.create("value");
 
-  private static final DistributedContext DIST_CONTEXT =
-      new DistributedContext() {
+  private static final CorrelationContext DIST_CONTEXT =
+      new CorrelationContext() {
 
         @Override
-        public Collection<Entry> getEntries() {
-          return Arrays.asList(Entry.create(KEY, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION));
+        public Collection<Label> getEntries() {
+          return Arrays.asList(Label.create(KEY, VALUE, Label.METADATA_UNLIMITED_PROPAGATION));
         }
 
         @Nullable
         @Override
-        public EntryValue getEntryValue(EntryKey entryKey) {
+        public LabelValue getEntryValue(LabelKey entryKey) {
           return VALUE;
         }
       };
@@ -63,14 +63,14 @@ public final class DefaultDistributedContextManagerTest {
   @Test
   public void getCurrentContext_DefaultContext() {
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.getInstance());
+        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
   public void getCurrentContext_ContextSetToNull() {
     Context orig = ContextUtils.withValue(null).attach();
     try {
-      DistributedContext distContext = defaultDistributedContextManager.getCurrentContext();
+      CorrelationContext distContext = defaultDistributedContextManager.getCurrentContext();
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
     } finally {
@@ -81,7 +81,7 @@ public final class DefaultDistributedContextManagerTest {
   @Test
   public void withContext() {
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.getInstance());
+        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
     Scope wtm = defaultDistributedContextManager.withContext(DIST_CONTEXT);
     try {
       assertThat(defaultDistributedContextManager.getCurrentContext())
@@ -90,22 +90,22 @@ public final class DefaultDistributedContextManagerTest {
       wtm.close();
     }
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.getInstance());
+        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
   public void withContext_nullContext() {
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.getInstance());
+        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
     Scope wtm = defaultDistributedContextManager.withContext(null);
     try {
       assertThat(defaultDistributedContextManager.getCurrentContext())
-          .isSameInstanceAs(EmptyDistributedContext.getInstance());
+          .isSameInstanceAs(EmptyCorrelationContext.getInstance());
     } finally {
       wtm.close();
     }
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.getInstance());
+        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
@@ -129,42 +129,42 @@ public final class DefaultDistributedContextManagerTest {
       wtm.close();
     }
     assertThat(defaultDistributedContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.getInstance());
+        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
     // When we run the runnable we will have the DistributedContext in the current Context.
     runnable.run();
   }
 
   @Test
   public void noopContextBuilder_SetParent_DisallowsNullParent() {
-    DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
+    CorrelationContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.setParent(null);
   }
 
   @Test
   public void noopContextBuilder_Put_DisallowsNullKey() {
-    DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
+    CorrelationContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
-    noopBuilder.put(null, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION);
+    noopBuilder.put(null, VALUE, Label.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopContextBuilder_Put_DisallowsNullValue() {
-    DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
+    CorrelationContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
-    noopBuilder.put(KEY, null, Entry.METADATA_UNLIMITED_PROPAGATION);
+    noopBuilder.put(KEY, null, Label.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopContextBuilder_Put_DisallowsNullEntryMetadata() {
-    DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
+    CorrelationContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.put(KEY, VALUE, null);
   }
 
   @Test
   public void noopContextBuilder_Remove_DisallowsNullKey() {
-    DistributedContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
+    CorrelationContext.Builder noopBuilder = defaultDistributedContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     noopBuilder.remove(null);
   }

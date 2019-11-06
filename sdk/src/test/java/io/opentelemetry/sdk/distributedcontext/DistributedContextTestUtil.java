@@ -16,19 +16,19 @@
 
 package io.opentelemetry.sdk.distributedcontext;
 
-import io.opentelemetry.distributedcontext.Entry;
+import io.opentelemetry.distributedcontext.Label;
 import java.util.Arrays;
 import java.util.List;
 
 class DistributedContextTestUtil {
 
-  static DistributedContextSdk listToDistributedContext(Entry... entries) {
+  static CorrelationContextSdk listToDistributedContext(Label... entries) {
     return listToDistributedContext(Arrays.asList(entries));
   }
 
-  static DistributedContextSdk listToDistributedContext(List<Entry> entries) {
-    DistributedContextSdk.Builder builder = new DistributedContextSdk.Builder();
-    for (Entry entry : entries) {
+  static CorrelationContextSdk listToDistributedContext(List<Label> entries) {
+    CorrelationContextSdk.Builder builder = new CorrelationContextSdk.Builder();
+    for (Label entry : entries) {
       builder.put(entry.getKey(), entry.getValue(), entry.getEntryMetadata());
     }
     return builder.build();

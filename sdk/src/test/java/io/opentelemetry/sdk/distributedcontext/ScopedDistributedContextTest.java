@@ -19,50 +19,50 @@ package io.opentelemetry.sdk.distributedcontext;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.distributedcontext.EmptyDistributedContext;
-import io.opentelemetry.distributedcontext.Entry;
-import io.opentelemetry.distributedcontext.EntryKey;
-import io.opentelemetry.distributedcontext.EntryMetadata;
-import io.opentelemetry.distributedcontext.EntryValue;
+import io.opentelemetry.distributedcontext.CorrelationContext;
+import io.opentelemetry.distributedcontext.CorrelationContextManager;
+import io.opentelemetry.distributedcontext.EmptyCorrelationContext;
+import io.opentelemetry.distributedcontext.Label;
+import io.opentelemetry.distributedcontext.LabelKey;
+import io.opentelemetry.distributedcontext.LabelMetadata;
+import io.opentelemetry.distributedcontext.LabelValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Unit tests for the methods in {@link DistributedContextManagerSdk} and {@link
- * DistributedContextSdk.Builder} that interact with the current {@link DistributedContextSdk}.
+ * Unit tests for the methods in {@link CorrelationContextManagerSdk} and {@link
+ * CorrelationContextSdk.Builder} that interact with the current {@link CorrelationContextSdk}.
  */
 @RunWith(JUnit4.class)
 public class ScopedDistributedContextTest {
-  private static final EntryKey KEY_1 = EntryKey.create("key 1");
-  private static final EntryKey KEY_2 = EntryKey.create("key 2");
-  private static final EntryKey KEY_3 = EntryKey.create("key 3");
+  private static final LabelKey KEY_1 = LabelKey.create("key 1");
+  private static final LabelKey KEY_2 = LabelKey.create("key 2");
+  private static final LabelKey KEY_3 = LabelKey.create("key 3");
 
-  private static final EntryValue VALUE_1 = EntryValue.create("value 1");
-  private static final EntryValue VALUE_2 = EntryValue.create("value 2");
-  private static final EntryValue VALUE_3 = EntryValue.create("value 3");
-  private static final EntryValue VALUE_4 = EntryValue.create("value 4");
+  private static final LabelValue VALUE_1 = LabelValue.create("value 1");
+  private static final LabelValue VALUE_2 = LabelValue.create("value 2");
+  private static final LabelValue VALUE_3 = LabelValue.create("value 3");
+  private static final LabelValue VALUE_4 = LabelValue.create("value 4");
 
-  private static final EntryMetadata METADATA_UNLIMITED_PROPAGATION =
-      EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
-  private static final EntryMetadata METADATA_NO_PROPAGATION =
-      EntryMetadata.create(EntryMetadata.EntryTtl.NO_PROPAGATION);
+  private static final LabelMetadata METADATA_UNLIMITED_PROPAGATION =
+      LabelMetadata.create(LabelMetadata.HopLimit.UNLIMITED_PROPAGATION);
+  private static final LabelMetadata METADATA_NO_PROPAGATION =
+      LabelMetadata.create(LabelMetadata.HopLimit.NO_PROPAGATION);
 
-  private final DistributedContextManager contextManager = new DistributedContextManagerSdk();
+  private final CorrelationContextManager contextManager = new CorrelationContextManagerSdk();
 
   @Test
   public void emptyDistributedContext() {
-    DistributedContext defaultDistributedContext = contextManager.getCurrentContext();
+    CorrelationContext defaultDistributedContext = contextManager.getCurrentContext();
     assertThat(defaultDistributedContext.getEntries()).isEmpty();
-    assertThat(defaultDistributedContext).isInstanceOf(EmptyDistributedContext.class);
+    assertThat(defaultDistributedContext).isInstanceOf(EmptyCorrelationContext.class);
   }
 
   @Test
   public void withContext() {
     assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
-    DistributedContext scopedEntries =
+    CorrelationContext scopedEntries =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedEntries)) {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedEntries);
@@ -72,18 +72,18 @@ public class ScopedDistributedContextTest {
 
   @Test
   public void createBuilderFromCurrentEntries() {
-    DistributedContext scopedDistContext =
+    CorrelationContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedDistContext)) {
-      DistributedContext newEntries =
+      CorrelationContext newEntries =
           contextManager
               .contextBuilder()
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
       assertThat(newEntries.getEntries())
           .containsExactly(
-              Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
-              Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
+              Label.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
+              Label.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
     }
   }
@@ -91,11 +91,11 @@ public class ScopedDistributedContextTest {
   @Test
   public void setCurrentEntriesWithBuilder() {
     assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
-    DistributedContext scopedDistContext =
+    CorrelationContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedDistContext)) {
       assertThat(contextManager.getCurrentContext().getEntries())
-          .containsExactly(Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION));
+          .containsExactly(Label.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION));
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
     }
     assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
@@ -103,10 +103,10 @@ public class ScopedDistributedContextTest {
 
   @Test
   public void addToCurrentEntriesWithBuilder() {
-    DistributedContext scopedDistContext =
+    CorrelationContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope1 = contextManager.withContext(scopedDistContext)) {
-      DistributedContext innerDistContext =
+      CorrelationContext innerDistContext =
           contextManager
               .contextBuilder()
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
@@ -114,8 +114,8 @@ public class ScopedDistributedContextTest {
       try (Scope scope2 = contextManager.withContext(innerDistContext)) {
         assertThat(contextManager.getCurrentContext().getEntries())
             .containsExactly(
-                Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
-                Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
+                Label.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
+                Label.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
         assertThat(contextManager.getCurrentContext()).isSameInstanceAs(innerDistContext);
       }
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
@@ -124,14 +124,14 @@ public class ScopedDistributedContextTest {
 
   @Test
   public void multiScopeDistributedContextWithMetadata() {
-    DistributedContext scopedDistContext =
+    CorrelationContext scopedDistContext =
         contextManager
             .contextBuilder()
             .put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION)
             .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
             .build();
     try (Scope scope1 = contextManager.withContext(scopedDistContext)) {
-      DistributedContext innerDistContext =
+      CorrelationContext innerDistContext =
           contextManager
               .contextBuilder()
               .put(KEY_3, VALUE_3, METADATA_NO_PROPAGATION)
@@ -140,9 +140,9 @@ public class ScopedDistributedContextTest {
       try (Scope scope2 = contextManager.withContext(innerDistContext)) {
         assertThat(contextManager.getCurrentContext().getEntries())
             .containsExactly(
-                Entry.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
-                Entry.create(KEY_2, VALUE_4, METADATA_NO_PROPAGATION),
-                Entry.create(KEY_3, VALUE_3, METADATA_NO_PROPAGATION));
+                Label.create(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION),
+                Label.create(KEY_2, VALUE_4, METADATA_NO_PROPAGATION),
+                Label.create(KEY_3, VALUE_3, METADATA_NO_PROPAGATION));
         assertThat(contextManager.getCurrentContext()).isSameInstanceAs(innerDistContext);
       }
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(scopedDistContext);
@@ -152,17 +152,17 @@ public class ScopedDistributedContextTest {
   @Test
   public void setNoParent_doesNotInheritContext() {
     assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
-    DistributedContext scopedDistContext =
+    CorrelationContext scopedDistContext =
         contextManager.contextBuilder().put(KEY_1, VALUE_1, METADATA_UNLIMITED_PROPAGATION).build();
     try (Scope scope = contextManager.withContext(scopedDistContext)) {
-      DistributedContext innerDistContext =
+      CorrelationContext innerDistContext =
           contextManager
               .contextBuilder()
               .setNoParent()
               .put(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION)
               .build();
       assertThat(innerDistContext.getEntries())
-          .containsExactly(Entry.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
+          .containsExactly(Label.create(KEY_2, VALUE_2, METADATA_UNLIMITED_PROPAGATION));
     }
     assertThat(contextManager.getCurrentContext().getEntries()).isEmpty();
   }

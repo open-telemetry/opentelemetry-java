@@ -22,7 +22,7 @@ import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A key to a value stored in a {@link DistributedContext}.
+ * A key to a value stored in a {@link CorrelationContext}.
  *
  * <p>Each {@code EntryKey} has a {@code String} name. Names have a maximum length of {@link
  * #MAX_LENGTH} and contain only printable ASCII characters.
@@ -34,7 +34,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class EntryKey {
+public abstract class LabelKey {
   /**
    * The maximum length for an entry key name. The value is {@value #MAX_LENGTH}.
    *
@@ -42,7 +42,7 @@ public abstract class EntryKey {
    */
   public static final int MAX_LENGTH = 255;
 
-  EntryKey() {}
+  LabelKey() {}
 
   /**
    * Constructs an {@code EntryKey} with the given name.
@@ -59,9 +59,9 @@ public abstract class EntryKey {
    * @throws IllegalArgumentException if the name is not valid.
    * @since 0.1.0
    */
-  public static EntryKey create(String name) {
+  public static LabelKey create(String name) {
     Utils.checkArgument(isValid(name), "Invalid EntryKey name: %s", name);
-    return new AutoValue_EntryKey(name);
+    return new AutoValue_LabelKey(name);
   }
 
   /**

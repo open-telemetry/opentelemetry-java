@@ -22,34 +22,34 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An immutable implementation of the {@link DistributedContext} that does not contain any entries.
+ * An immutable implementation of the {@link CorrelationContext} that does not contain any entries.
  */
 @Immutable
-public class EmptyDistributedContext implements DistributedContext {
-  private static final Collection<Entry> EMPTY_COLLECTION = Collections.emptyList();
+public class EmptyCorrelationContext implements CorrelationContext {
+  private static final Collection<Label> EMPTY_COLLECTION = Collections.emptyList();
 
   /**
-   * Returns the single instance of the {@link EmptyDistributedContext} class.
+   * Returns the single instance of the {@link EmptyCorrelationContext} class.
    *
    * @return the single instance of the {@code EmptyDistributedContext} class.
    * @since 0.1.0
    */
-  public static DistributedContext getInstance() {
+  public static CorrelationContext getInstance() {
     return INSTANCE;
   }
 
-  private static final DistributedContext INSTANCE = new EmptyDistributedContext();
+  private static final CorrelationContext INSTANCE = new EmptyCorrelationContext();
 
   @Override
-  public Collection<Entry> getEntries() {
+  public Collection<Label> getEntries() {
     return EMPTY_COLLECTION;
   }
 
   @Nullable
   @Override
-  public EntryValue getEntryValue(EntryKey entryKey) {
+  public LabelValue getEntryValue(LabelKey entryKey) {
     return null;
   }
 
-  private EmptyDistributedContext() {}
+  private EmptyCorrelationContext() {}
 }

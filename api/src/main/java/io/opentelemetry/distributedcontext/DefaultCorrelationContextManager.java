@@ -27,71 +27,71 @@ import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * No-op implementations of {@link DistributedContextManager}.
+ * No-op implementations of {@link CorrelationContextManager}.
  *
  * @since 0.1.0
  */
 @ThreadSafe
-public final class DefaultDistributedContextManager implements DistributedContextManager {
-  private static final DefaultDistributedContextManager INSTANCE =
-      new DefaultDistributedContextManager();
-  private static final BinaryFormat<DistributedContext> BINARY_FORMAT = new NoopBinaryFormat();
-  private static final HttpTextFormat<DistributedContext> HTTP_TEXT_FORMAT =
+public final class DefaultCorrelationContextManager implements CorrelationContextManager {
+  private static final DefaultCorrelationContextManager INSTANCE =
+      new DefaultCorrelationContextManager();
+  private static final BinaryFormat<CorrelationContext> BINARY_FORMAT = new NoopBinaryFormat();
+  private static final HttpTextFormat<CorrelationContext> HTTP_TEXT_FORMAT =
       new NoopHttpTextFormat();
 
   /**
    * Returns a {@code DistributedContextManager} singleton that is the default implementation for
-   * {@link DistributedContextManager}.
+   * {@link CorrelationContextManager}.
    *
    * @return a {@code DistributedContextManager} singleton that is the default implementation for
-   *     {@link DistributedContextManager}.
+   *     {@link CorrelationContextManager}.
    * @since 0.1.0
    */
-  public static DistributedContextManager getInstance() {
+  public static CorrelationContextManager getInstance() {
     return INSTANCE;
   }
 
   @Override
-  public DistributedContext getCurrentContext() {
+  public CorrelationContext getCurrentContext() {
     return ContextUtils.getValue();
   }
 
   @Override
-  public DistributedContext.Builder contextBuilder() {
+  public CorrelationContext.Builder contextBuilder() {
     return new NoopDistributedContextBuilder();
   }
 
   @Override
-  public Scope withContext(DistributedContext distContext) {
+  public Scope withContext(CorrelationContext distContext) {
     return ContextUtils.withDistributedContext(distContext);
   }
 
   @Override
-  public BinaryFormat<DistributedContext> getBinaryFormat() {
+  public BinaryFormat<CorrelationContext> getBinaryFormat() {
     return BINARY_FORMAT;
   }
 
   @Override
-  public HttpTextFormat<DistributedContext> getHttpTextFormat() {
+  public HttpTextFormat<CorrelationContext> getHttpTextFormat() {
     return HTTP_TEXT_FORMAT;
   }
 
   @Immutable
-  private static final class NoopDistributedContextBuilder implements DistributedContext.Builder {
+  private static final class NoopDistributedContextBuilder implements CorrelationContext.Builder {
     @Override
-    public DistributedContext.Builder setParent(DistributedContext parent) {
+    public CorrelationContext.Builder setParent(CorrelationContext parent) {
       Utils.checkNotNull(parent, "parent");
       return this;
     }
 
     @Override
-    public DistributedContext.Builder setNoParent() {
+    public CorrelationContext.Builder setNoParent() {
       return this;
     }
 
     @Override
-    public DistributedContext.Builder put(
-        EntryKey key, EntryValue value, EntryMetadata tagMetadata) {
+    public CorrelationContext.Builder put(
+        LabelKey key, LabelValue value, LabelMetadata tagMetadata) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");
       Utils.checkNotNull(tagMetadata, "tagMetadata");
@@ -99,53 +99,53 @@ public final class DefaultDistributedContextManager implements DistributedContex
     }
 
     @Override
-    public DistributedContext.Builder remove(EntryKey key) {
+    public CorrelationContext.Builder remove(LabelKey key) {
       Utils.checkNotNull(key, "key");
       return this;
     }
 
     @Override
-    public DistributedContext build() {
-      return EmptyDistributedContext.getInstance();
+    public CorrelationContext build() {
+      return EmptyCorrelationContext.getInstance();
     }
   }
 
   @Immutable
-  private static final class NoopBinaryFormat implements BinaryFormat<DistributedContext> {
+  private static final class NoopBinaryFormat implements BinaryFormat<CorrelationContext> {
     static final byte[] EMPTY_BYTE_ARRAY = {};
 
     @Override
-    public byte[] toByteArray(DistributedContext distContext) {
+    public byte[] toByteArray(CorrelationContext distContext) {
       Utils.checkNotNull(distContext, "distContext");
       return EMPTY_BYTE_ARRAY;
     }
 
     @Override
-    public DistributedContext fromByteArray(byte[] bytes) {
+    public CorrelationContext fromByteArray(byte[] bytes) {
       Utils.checkNotNull(bytes, "bytes");
-      return EmptyDistributedContext.getInstance();
+      return EmptyCorrelationContext.getInstance();
     }
   }
 
   @Immutable
-  private static final class NoopHttpTextFormat implements HttpTextFormat<DistributedContext> {
+  private static final class NoopHttpTextFormat implements HttpTextFormat<CorrelationContext> {
     @Override
     public List<String> fields() {
       return Collections.emptyList();
     }
 
     @Override
-    public <C> void inject(DistributedContext distContext, C carrier, Setter<C> setter) {
+    public <C> void inject(CorrelationContext distContext, C carrier, Setter<C> setter) {
       Utils.checkNotNull(distContext, "distContext");
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(setter, "setter");
     }
 
     @Override
-    public <C> DistributedContext extract(C carrier, Getter<C> getter) {
+    public <C> CorrelationContext extract(C carrier, Getter<C> getter) {
       Utils.checkNotNull(carrier, "carrier");
       Utils.checkNotNull(getter, "getter");
-      return EmptyDistributedContext.getInstance();
+      return EmptyCorrelationContext.getInstance();
     }
   }
 }

@@ -46,7 +46,7 @@ final class Propagation extends BaseShimObject {
 
     io.opentelemetry.trace.SpanContext context =
         tracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
-    io.opentelemetry.distributedcontext.DistributedContext distContext =
+    io.opentelemetry.distributedcontext.CorrelationContext distContext =
         contextManager().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
 
     return new SpanContextShim(telemetryInfo, context, distContext);

@@ -18,17 +18,17 @@ package io.opentelemetry.distributedcontext.unsafe;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.distributedcontext.CorrelationContext;
 
 /**
- * A scope that manages the {@link Context} for a {@link DistributedContext}.
+ * A scope that manages the {@link Context} for a {@link CorrelationContext}.
  *
  * @since 0.1.0
  */
 final class DistributedContextInScope implements Scope {
   private final Context orig;
 
-  private DistributedContextInScope(DistributedContext distContext) {
+  private DistributedContextInScope(CorrelationContext distContext) {
     orig = ContextUtils.withValue(distContext).attach();
   }
 
@@ -38,7 +38,7 @@ final class DistributedContextInScope implements Scope {
    * @param distContext the {@code DistributedContext} to be added to the current {@code Context}.
    * @since 0.1.0
    */
-  static DistributedContextInScope create(DistributedContext distContext) {
+  static DistributedContextInScope create(CorrelationContext distContext) {
     return new DistributedContextInScope(distContext);
   }
 

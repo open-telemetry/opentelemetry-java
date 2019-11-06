@@ -16,21 +16,21 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.Entry;
-import io.opentelemetry.distributedcontext.EntryKey;
-import io.opentelemetry.distributedcontext.EntryMetadata;
-import io.opentelemetry.distributedcontext.EntryValue;
+import io.opentelemetry.distributedcontext.CorrelationContext;
+import io.opentelemetry.distributedcontext.Label;
+import io.opentelemetry.distributedcontext.LabelKey;
+import io.opentelemetry.distributedcontext.LabelMetadata;
+import io.opentelemetry.distributedcontext.LabelValue;
 import io.opentracing.SpanContext;
 import java.util.Iterator;
 import java.util.Map;
 
 final class SpanContextShim extends BaseShimObject implements SpanContext {
-  static final EntryMetadata DEFAULT_ENTRY_METADATA =
-      EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
+  static final LabelMetadata DEFAULT_ENTRY_METADATA =
+      LabelMetadata.create(LabelMetadata.HopLimit.UNLIMITED_PROPAGATION);
 
   private final io.opentelemetry.trace.SpanContext context;
-  private final DistributedContext distContext;
+  private final CorrelationContext distContext;
 
   public SpanContextShim(SpanShim spanShim) {
     this(
@@ -46,15 +46,15 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   public SpanContextShim(
       TelemetryInfo telemetryInfo,
       io.opentelemetry.trace.SpanContext context,
-      DistributedContext distContext) {
+      CorrelationContext distContext) {
     super(telemetryInfo);
     this.context = context;
     this.distContext = distContext;
   }
 
   SpanContextShim newWithKeyValue(String key, String value) {
-    DistributedContext.Builder builder = contextManager().contextBuilder().setParent(distContext);
-    builder.put(EntryKey.create(key), EntryValue.create(value), DEFAULT_ENTRY_METADATA);
+    CorrelationContext.Builder builder = contextManager().contextBuilder().setParent(distContext);
+    builder.put(LabelKey.create(key), LabelValue.create(value), DEFAULT_ENTRY_METADATA);
 
     return new SpanContextShim(telemetryInfo(), context, builder.build());
   }
@@ -63,7 +63,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
     return context;
   }
 
-  DistributedContext getDistributedContext() {
+  CorrelationContext getDistributedContext() {
     return distContext;
   }
 
@@ -79,20 +79,20 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
   @Override
   public Iterable<Map.Entry<String, String>> baggageItems() {
-    final Iterator<Entry> iterator = distContext.getEntries().iterator();
+    final Iterator<Label> iterator = distContext.getEntries().iterator();
     return new BaggageIterable(iterator);
   }
 
   @SuppressWarnings("ReturnMissingNullable")
   String getBaggageItem(String key) {
-    EntryValue value = distContext.getEntryValue(EntryKey.create(key));
+    LabelValue value = distContext.getEntryValue(LabelKey.create(key));
     return value == null ? null : value.asString();
   }
 
   static class BaggageIterable implements Iterable<Map.Entry<String, String>> {
-    final Iterator<Entry> iterator;
+    final Iterator<Label> iterator;
 
-    BaggageIterable(Iterator<Entry> iterator) {
+    BaggageIterable(Iterator<Label> iterator) {
       this.iterator = iterator;
     }
 
@@ -113,9 +113,9 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
   }
 
   static class BaggageEntry implements Map.Entry<String, String> {
-    final Entry entry;
+    final Label entry;
 
-    BaggageEntry(Entry entry) {
+    BaggageEntry(Label entry) {
       this.entry = entry;
     }
 

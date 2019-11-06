@@ -18,24 +18,24 @@ package io.opentelemetry.distributedcontext.unsafe;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.EmptyDistributedContext;
+import io.opentelemetry.distributedcontext.CorrelationContext;
+import io.opentelemetry.distributedcontext.EmptyCorrelationContext;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Utility methods for accessing the {@link DistributedContext} contained in the {@link
+ * Utility methods for accessing the {@link CorrelationContext} contained in the {@link
  * io.grpc.Context}.
  *
  * <p>Most code should interact with the current context via the public APIs in {@link
- * DistributedContext} and avoid accessing this class directly.
+ * CorrelationContext} and avoid accessing this class directly.
  *
  * @since 0.1.0
  */
 @Immutable
 public final class ContextUtils {
-  private static final Context.Key<DistributedContext> DIST_CONTEXT_KEY =
+  private static final Context.Key<CorrelationContext> DIST_CONTEXT_KEY =
       Context.keyWithDefault(
-          "opentelemetry-dist-context-key", EmptyDistributedContext.getInstance());
+          "opentelemetry-dist-context-key", EmptyCorrelationContext.getInstance());
 
   /**
    * Creates a new {@code Context} with the given value set.
@@ -44,7 +44,7 @@ public final class ContextUtils {
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(DistributedContext distContext) {
+  public static Context withValue(CorrelationContext distContext) {
     return Context.current().withValue(DIST_CONTEXT_KEY, distContext);
   }
 
@@ -56,7 +56,7 @@ public final class ContextUtils {
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(DistributedContext distContext, Context context) {
+  public static Context withValue(CorrelationContext distContext, Context context) {
     return context.withValue(DIST_CONTEXT_KEY, distContext);
   }
 
@@ -66,7 +66,7 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static DistributedContext getValue() {
+  public static CorrelationContext getValue() {
     return DIST_CONTEXT_KEY.get();
   }
 
@@ -77,7 +77,7 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static DistributedContext getValue(Context context) {
+  public static CorrelationContext getValue(Context context) {
     return DIST_CONTEXT_KEY.get(context);
   }
 
@@ -89,7 +89,7 @@ public final class ContextUtils {
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */
-  public static Scope withDistributedContext(DistributedContext distContext) {
+  public static Scope withDistributedContext(CorrelationContext distContext) {
     return DistributedContextInScope.create(distContext);
   }
 

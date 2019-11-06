@@ -19,11 +19,17 @@ package io.opentelemetry.context.propagation;
 import io.opentelemetry.context.Context;
 import javax.annotation.Nullable;
 
-public interface HttpExtractor {
-  <C> Context extract(Context ctx, C carrier, Getter<C> getter);
+public final class DefaultHttpExtractor implements HttpExtractor {
+  @Override
+  public <C> Context extract(Context ctx, C carrier, Getter<C> getter) {
+    return ctx;
+  }
 
-  interface Getter<C> {
+  static final class DefaultGetter<C> implements Getter<C> {
     @Nullable
-    String get(C carrier, String key);
+    @Override
+    public String get(C carrier, String key) {
+      return null;
+    }
   }
 }

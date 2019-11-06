@@ -19,7 +19,7 @@ package io.opentelemetry.opentracingshim;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
+import io.opentelemetry.sdk.distributedcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import org.junit.Test;
 
@@ -45,7 +45,7 @@ public class TraceShimTest {
   @Test
   public void createTracerShim() {
     TracerSdk tracer = new TracerSdk();
-    DistributedContextManagerSdk contextManager = new DistributedContextManagerSdk();
+    CorrelationContextManagerSdk contextManager = new CorrelationContextManagerSdk();
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim(tracer, contextManager);
     assertEquals(tracer, tracerShim.tracer());
     assertEquals(contextManager, tracerShim.contextManager());

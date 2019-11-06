@@ -16,11 +16,11 @@
 
 package io.opentelemetry.distributedcontext.spi;
 
-import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.distributedcontext.CorrelationContextManager;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * DistributedContextManagerProvider is a service provider for {@link DistributedContextManager}.
+ * DistributedContextManagerProvider is a service provider for {@link CorrelationContextManager}.
  * Fully qualified class name of the implementation should be registered in {@code
  * META-INF/services/io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider}.
  * <br>
@@ -32,7 +32,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @see io.opentelemetry.OpenTelemetry
  */
 @ThreadSafe
-public interface DistributedContextManagerProvider {
+public interface CorrelationContextManagerProvider {
 
   /**
    * Creates a new {@code DistributedContextManager} instance.
@@ -40,5 +40,5 @@ public interface DistributedContextManagerProvider {
    * @return a {@code DistributedContextManager} instance.
    * @since 0.1.0
    */
-  DistributedContextManager create();
+  CorrelationContextManager create();
 }

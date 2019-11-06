@@ -20,8 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.EmptyDistributedContext;
+import io.opentelemetry.distributedcontext.CorrelationContext;
+import io.opentelemetry.distributedcontext.EmptyCorrelationContext;
 import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,14 +30,14 @@ import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link DistributedContextManagerSdk}. */
+/** Unit tests for {@link CorrelationContextManagerSdk}. */
 @RunWith(JUnit4.class)
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
 public class DistributedContextManagerSdkTest {
-  @Mock private DistributedContext distContext;
-  private final DistributedContextManagerSdk contextManager = new DistributedContextManagerSdk();
+  @Mock private CorrelationContext distContext;
+  private final CorrelationContextManagerSdk contextManager = new CorrelationContextManagerSdk();
 
   @Before
   public void setUp() {
@@ -47,14 +47,14 @@ public class DistributedContextManagerSdkTest {
   @Test
   public void testGetCurrentContext_DefaultContext() {
     assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.getInstance());
+        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
   public void testGetCurrentContext_ContextSetToNull() {
     Context orig = ContextUtils.withValue(null).attach();
     try {
-      DistributedContext distContext = contextManager.getCurrentContext();
+      CorrelationContext distContext = contextManager.getCurrentContext();
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
     } finally {
@@ -65,7 +65,7 @@ public class DistributedContextManagerSdkTest {
   @Test
   public void testWithDistributedContext() {
     assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.getInstance());
+        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
     Scope wtm = contextManager.withContext(distContext);
     try {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
@@ -73,7 +73,7 @@ public class DistributedContextManagerSdkTest {
       wtm.close();
     }
     assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.getInstance());
+        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
@@ -95,7 +95,7 @@ public class DistributedContextManagerSdkTest {
       wtm.close();
     }
     assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyDistributedContext.getInstance());
+        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
     // When we run the runnable we will have the DistributedContext in the current Context.
     runnable.run();
   }

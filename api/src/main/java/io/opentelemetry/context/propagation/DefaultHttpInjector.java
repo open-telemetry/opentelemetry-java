@@ -17,13 +17,13 @@
 package io.opentelemetry.context.propagation;
 
 import io.opentelemetry.context.Context;
-import javax.annotation.Nullable;
 
-public interface HttpExtractor {
-  <C> Context extract(Context ctx, C carrier, Getter<C> getter);
+public final class DefaultHttpInjector implements HttpInjector {
+  @Override
+  public <C> void inject(Context ctx, C carrier, Setter<C> setter) {}
 
-  interface Getter<C> {
-    @Nullable
-    String get(C carrier, String key);
+  static final class DefaultSetter<C> implements Setter<C> {
+    @Override
+    public void put(C carrier, String key, String value) {}
   }
 }

@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A map from {@link EntryKey} to {@link EntryValue} and {@link EntryMetadata} that can be used to
+ * A map from {@link LabelKey} to {@link LabelValue} and {@link LabelMetadata} that can be used to
  * label anything that is associated with a specific operation.
  *
  * <p>For example, {@code DistributedContext}s can be used to label stats, log messages, or
@@ -30,7 +30,7 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 @Immutable
-public interface DistributedContext {
+public interface CorrelationContext {
   /**
    * Returns an immutable collection of the entries in this {@code DistributedContext}. Order of
    * entries is not guaranteed.
@@ -38,7 +38,7 @@ public interface DistributedContext {
    * @return an immutable collection of the entries in this {@code DistributedContext}.
    * @since 0.1.0
    */
-  Collection<Entry> getEntries();
+  Collection<Label> getEntries();
 
   /**
    * Returns the {@code EntryValue} associated with the given {@code EntryKey}.
@@ -48,36 +48,36 @@ public interface DistributedContext {
    *     no {@code Entry} with the given {@code entryKey} is in this {@code DistributedContext}.
    */
   @Nullable
-  EntryValue getEntryValue(EntryKey entryKey);
+  LabelValue getEntryValue(LabelKey entryKey);
 
   /**
-   * Builder for the {@link DistributedContext} class.
+   * Builder for the {@link CorrelationContext} class.
    *
    * @since 0.1.0
    */
   interface Builder {
     /**
-     * Sets the parent {@link DistributedContext} to use. If no parent is provided, the value of
-     * {@link DistributedContextManager#getCurrentContext()} at {@link #build()} time will be used
+     * Sets the parent {@link CorrelationContext} to use. If no parent is provided, the value of
+     * {@link CorrelationContextManager#getCurrentContext()} at {@link #build()} time will be used
      * as parent, unless {@link #setNoParent()} was called.
      *
-     * <p>This <b>must</b> be used to create a {@link DistributedContext} when manual Context
+     * <p>This <b>must</b> be used to create a {@link CorrelationContext} when manual Context
      * propagation is used.
      *
      * <p>If called multiple times, only the last specified value will be used.
      *
-     * @param parent the {@link DistributedContext} used as parent, not null.
+     * @param parent the {@link CorrelationContext} used as parent, not null.
      * @return this.
      * @throws NullPointerException if {@code parent} is {@code null}.
      * @see #setNoParent()
      * @since 0.1.0
      */
-    Builder setParent(DistributedContext parent);
+    Builder setParent(CorrelationContext parent);
 
     /**
-     * Sets the option to become a root {@link DistributedContext} with no parent. If <b>not</b>
-     * called, the value provided using {@link #setParent(DistributedContext)} or otherwise {@link
-     * DistributedContextManager#getCurrentContext()} at {@link #build()} time will be used as
+     * Sets the option to become a root {@link CorrelationContext} with no parent. If <b>not</b>
+     * called, the value provided using {@link #setParent(CorrelationContext)} or otherwise {@link
+     * CorrelationContextManager#getCurrentContext()} at {@link #build()} time will be used as
      * parent.
      *
      * @return this.
@@ -90,11 +90,11 @@ public interface DistributedContext {
      *
      * @param key the {@code EntryKey} which will be set.
      * @param value the {@code EntryValue} to set for the given key.
-     * @param entryMetadata the {@code EntryMetadata} associated with this {@link Entry}.
+     * @param entryMetadata the {@code EntryMetadata} associated with this {@link Label}.
      * @return this
      * @since 0.1.0
      */
-    Builder put(EntryKey key, EntryValue value, EntryMetadata entryMetadata);
+    Builder put(LabelKey key, LabelValue value, LabelMetadata entryMetadata);
 
     /**
      * Removes the key if it exists.
@@ -103,7 +103,7 @@ public interface DistributedContext {
      * @return this
      * @since 0.1.0
      */
-    Builder remove(EntryKey key);
+    Builder remove(LabelKey key);
 
     /**
      * Creates a {@code DistributedContext} from this builder.
@@ -111,6 +111,6 @@ public interface DistributedContext {
      * @return a {@code DistributedContext} with the same entries as this builder.
      * @since 0.1.0
      */
-    DistributedContext build();
+    CorrelationContext build();
   }
 }

@@ -19,32 +19,32 @@ package io.opentelemetry.distributedcontext;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
+import io.opentelemetry.distributedcontext.LabelMetadata.HopLimit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link Entry}. */
+/** Tests for {@link Label}. */
 @RunWith(JUnit4.class)
 public final class EntryTest {
 
-  private static final EntryKey KEY = EntryKey.create("KEY");
-  private static final EntryKey KEY_2 = EntryKey.create("KEY2");
-  private static final EntryValue VALUE = EntryValue.create("VALUE");
-  private static final EntryValue VALUE_2 = EntryValue.create("VALUE2");
-  private static final EntryMetadata METADATA_UNLIMITED_PROPAGATION =
-      EntryMetadata.create(EntryTtl.UNLIMITED_PROPAGATION);
-  private static final EntryMetadata METADATA_NO_PROPAGATION =
-      EntryMetadata.create(EntryTtl.NO_PROPAGATION);
+  private static final LabelKey KEY = LabelKey.create("KEY");
+  private static final LabelKey KEY_2 = LabelKey.create("KEY2");
+  private static final LabelValue VALUE = LabelValue.create("VALUE");
+  private static final LabelValue VALUE_2 = LabelValue.create("VALUE2");
+  private static final LabelMetadata METADATA_UNLIMITED_PROPAGATION =
+      LabelMetadata.create(HopLimit.UNLIMITED_PROPAGATION);
+  private static final LabelMetadata METADATA_NO_PROPAGATION =
+      LabelMetadata.create(HopLimit.NO_PROPAGATION);
 
   @Test
   public void testGetKey() {
-    assertThat(Entry.create(KEY, VALUE, METADATA_UNLIMITED_PROPAGATION).getKey()).isEqualTo(KEY);
+    assertThat(Label.create(KEY, VALUE, METADATA_UNLIMITED_PROPAGATION).getKey()).isEqualTo(KEY);
   }
 
   @Test
   public void testGetEntryMetadata() {
-    assertThat(Entry.create(KEY, VALUE, METADATA_NO_PROPAGATION).getEntryMetadata())
+    assertThat(Label.create(KEY, VALUE, METADATA_NO_PROPAGATION).getEntryMetadata())
         .isEqualTo(METADATA_NO_PROPAGATION);
   }
 
@@ -52,11 +52,11 @@ public final class EntryTest {
   public void testEntryEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            Entry.create(KEY, VALUE, METADATA_UNLIMITED_PROPAGATION),
-            Entry.create(KEY, VALUE, METADATA_UNLIMITED_PROPAGATION))
-        .addEqualityGroup(Entry.create(KEY, VALUE_2, METADATA_UNLIMITED_PROPAGATION))
-        .addEqualityGroup(Entry.create(KEY_2, VALUE, METADATA_UNLIMITED_PROPAGATION))
-        .addEqualityGroup(Entry.create(KEY, VALUE, METADATA_NO_PROPAGATION))
+            Label.create(KEY, VALUE, METADATA_UNLIMITED_PROPAGATION),
+            Label.create(KEY, VALUE, METADATA_UNLIMITED_PROPAGATION))
+        .addEqualityGroup(Label.create(KEY, VALUE_2, METADATA_UNLIMITED_PROPAGATION))
+        .addEqualityGroup(Label.create(KEY_2, VALUE, METADATA_UNLIMITED_PROPAGATION))
+        .addEqualityGroup(Label.create(KEY, VALUE, METADATA_NO_PROPAGATION))
         .testEquals();
   }
 }

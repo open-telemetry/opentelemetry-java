@@ -26,55 +26,55 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link EntryKey}. */
+/** Tests for {@link LabelKey}. */
 @RunWith(JUnit4.class)
 public final class EntryKeyTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testMaxLength() {
-    assertThat(EntryKey.MAX_LENGTH).isEqualTo(255);
+    assertThat(LabelKey.MAX_LENGTH).isEqualTo(255);
   }
 
   @Test
   public void testGetName() {
-    assertThat(EntryKey.create("foo").getName()).isEqualTo("foo");
+    assertThat(LabelKey.create("foo").getName()).isEqualTo("foo");
   }
 
   @Test
   public void create_AllowEntryKeyNameWithMaxLength() {
-    char[] chars = new char[EntryKey.MAX_LENGTH];
+    char[] chars = new char[LabelKey.MAX_LENGTH];
     Arrays.fill(chars, 'k');
     String key = new String(chars);
-    assertThat(EntryKey.create(key).getName()).isEqualTo(key);
+    assertThat(LabelKey.create(key).getName()).isEqualTo(key);
   }
 
   @Test
   public void create_DisallowEntryKeyNameOverMaxLength() {
-    char[] chars = new char[EntryKey.MAX_LENGTH + 1];
+    char[] chars = new char[LabelKey.MAX_LENGTH + 1];
     Arrays.fill(chars, 'k');
     String key = new String(chars);
     thrown.expect(IllegalArgumentException.class);
-    EntryKey.create(key);
+    LabelKey.create(key);
   }
 
   @Test
   public void create_DisallowUnprintableChars() {
     thrown.expect(IllegalArgumentException.class);
-    EntryKey.create("\2ab\3cd");
+    LabelKey.create("\2ab\3cd");
   }
 
   @Test
   public void createString_DisallowEmpty() {
     thrown.expect(IllegalArgumentException.class);
-    EntryKey.create("");
+    LabelKey.create("");
   }
 
   @Test
   public void testEntryKeyEquals() {
     new EqualsTester()
-        .addEqualityGroup(EntryKey.create("foo"), EntryKey.create("foo"))
-        .addEqualityGroup(EntryKey.create("bar"))
+        .addEqualityGroup(LabelKey.create("foo"), LabelKey.create("foo"))
+        .addEqualityGroup(LabelKey.create("bar"))
         .testEquals();
   }
 }

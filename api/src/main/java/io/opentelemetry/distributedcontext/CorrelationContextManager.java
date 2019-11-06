@@ -22,20 +22,20 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Object for creating new {@link DistributedContext}s and {@code DistributedContext}s based on the
+ * Object for creating new {@link CorrelationContext}s and {@code DistributedContext}s based on the
  * current context.
  *
- * <p>This class returns {@link DistributedContext.Builder builders} that can be used to create the
- * implementation-dependent {@link DistributedContext}s.
+ * <p>This class returns {@link CorrelationContext.Builder builders} that can be used to create the
+ * implementation-dependent {@link CorrelationContext}s.
  *
  * <p>Implementations may have different constraints and are free to convert entry contexts to their
  * own subtypes. This means callers cannot assume the {@link #getCurrentContext() current context}
- * is the same instance as the one {@link #withContext(DistributedContext) placed into scope}.
+ * is the same instance as the one {@link #withContext(CorrelationContext) placed into scope}.
  *
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DistributedContextManager {
+public interface CorrelationContextManager {
 
   /**
    * Returns the current {@code DistributedContext}.
@@ -43,7 +43,7 @@ public interface DistributedContextManager {
    * @return the current {@code DistributedContext}.
    * @since 0.1.0
    */
-  DistributedContext getCurrentContext();
+  CorrelationContext getCurrentContext();
 
   /**
    * Returns a new {@code Builder}.
@@ -51,7 +51,7 @@ public interface DistributedContextManager {
    * @return a new {@code Builder}.
    * @since 0.1.0
    */
-  DistributedContext.Builder contextBuilder();
+  CorrelationContext.Builder contextBuilder();
 
   /**
    * Enters the scope of code where the given {@code DistributedContext} is in the current context
@@ -63,7 +63,7 @@ public interface DistributedContextManager {
    *     current context.
    * @since 0.1.0
    */
-  Scope withContext(DistributedContext distContext);
+  Scope withContext(CorrelationContext distContext);
 
   /**
    * Returns the {@link BinaryFormat} for this implementation.
@@ -102,7 +102,7 @@ public interface DistributedContextManager {
    * @return the {@code BinaryFormat} for this implementation.
    * @since 0.1.0
    */
-  BinaryFormat<DistributedContext> getBinaryFormat();
+  BinaryFormat<CorrelationContext> getBinaryFormat();
 
   /**
    * Returns the {@link HttpTextFormat} for this implementation.
@@ -151,5 +151,5 @@ public interface DistributedContextManager {
    * @return the {@code HttpTextFormat} for this implementation.
    * @since 0.1.0
    */
-  HttpTextFormat<DistributedContext> getHttpTextFormat();
+  HttpTextFormat<CorrelationContext> getHttpTextFormat();
 }

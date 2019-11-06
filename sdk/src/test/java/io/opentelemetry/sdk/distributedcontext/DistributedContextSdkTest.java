@@ -20,12 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.distributedcontext.DistributedContextTestUtil.listToDistributedContext;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.distributedcontext.Entry;
-import io.opentelemetry.distributedcontext.EntryKey;
-import io.opentelemetry.distributedcontext.EntryMetadata;
-import io.opentelemetry.distributedcontext.EntryValue;
+import io.opentelemetry.distributedcontext.CorrelationContext;
+import io.opentelemetry.distributedcontext.CorrelationContextManager;
+import io.opentelemetry.distributedcontext.Label;
+import io.opentelemetry.distributedcontext.LabelKey;
+import io.opentelemetry.distributedcontext.LabelMetadata;
+import io.opentelemetry.distributedcontext.LabelValue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,46 +33,46 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Tests for {@link DistributedContextSdk} and {@link DistributedContextSdk.Builder}.
+ * Tests for {@link CorrelationContextSdk} and {@link CorrelationContextSdk.Builder}.
  *
- * <p>Tests for scope management with {@link DistributedContextManagerSdk} are in {@link
+ * <p>Tests for scope management with {@link CorrelationContextManagerSdk} are in {@link
  * ScopedDistributedContextTest}.
  */
 @RunWith(JUnit4.class)
 public class DistributedContextSdkTest {
-  private final DistributedContextManager contextManager = new DistributedContextManagerSdk();
+  private final CorrelationContextManager contextManager = new CorrelationContextManagerSdk();
 
-  private static final EntryMetadata TMD =
-      EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
+  private static final LabelMetadata TMD =
+      LabelMetadata.create(LabelMetadata.HopLimit.UNLIMITED_PROPAGATION);
 
-  private static final EntryKey K1 = EntryKey.create("k1");
-  private static final EntryKey K2 = EntryKey.create("k2");
+  private static final LabelKey K1 = LabelKey.create("k1");
+  private static final LabelKey K2 = LabelKey.create("k2");
 
-  private static final EntryValue V1 = EntryValue.create("v1");
-  private static final EntryValue V2 = EntryValue.create("v2");
+  private static final LabelValue V1 = LabelValue.create("v1");
+  private static final LabelValue V2 = LabelValue.create("v2");
 
-  private static final Entry T1 = Entry.create(K1, V1, TMD);
-  private static final Entry T2 = Entry.create(K2, V2, TMD);
+  private static final Label T1 = Label.create(K1, V1, TMD);
+  private static final Label T2 = Label.create(K2, V2, TMD);
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void getEntries_empty() {
-    DistributedContextSdk distContext = new DistributedContextSdk.Builder().build();
+    CorrelationContextSdk distContext = new CorrelationContextSdk.Builder().build();
     assertThat(distContext.getEntries()).isEmpty();
   }
 
   @Test
   public void getEntries_nonEmpty() {
-    DistributedContextSdk distContext = listToDistributedContext(T1, T2);
+    CorrelationContextSdk distContext = listToDistributedContext(T1, T2);
     assertThat(distContext.getEntries()).containsExactly(T1, T2);
   }
 
   @Test
   public void getEntries_chain() {
-    Entry t1alt = Entry.create(K1, V2, TMD);
-    DistributedContextSdk parent = listToDistributedContext(T1, T2);
-    DistributedContext distContext =
+    Label t1alt = Label.create(K1, V2, TMD);
+    CorrelationContextSdk parent = listToDistributedContext(T1, T2);
+    CorrelationContext distContext =
         contextManager
             .contextBuilder()
             .setParent(parent)
@@ -83,7 +83,7 @@ public class DistributedContextSdkTest {
 
   @Test
   public void put_newKey() {
-    DistributedContextSdk distContext = listToDistributedContext(T1);
+    CorrelationContextSdk distContext = listToDistributedContext(T1);
     assertThat(
             contextManager
                 .contextBuilder()
@@ -96,7 +96,7 @@ public class DistributedContextSdkTest {
 
   @Test
   public void put_existingKey() {
-    DistributedContextSdk distContext = listToDistributedContext(T1);
+    CorrelationContextSdk distContext = listToDistributedContext(T1);
     assertThat(
             contextManager
                 .contextBuilder()
@@ -104,13 +104,13 @@ public class DistributedContextSdkTest {
                 .put(K1, V2, TMD)
                 .build()
                 .getEntries())
-        .containsExactly(Entry.create(K1, V2, TMD));
+        .containsExactly(Label.create(K1, V2, TMD));
   }
 
   @Test
   public void put_nullKey() {
-    DistributedContextSdk distContext = listToDistributedContext(T1);
-    DistributedContext.Builder builder = contextManager.contextBuilder().setParent(distContext);
+    CorrelationContextSdk distContext = listToDistributedContext(T1);
+    CorrelationContext.Builder builder = contextManager.contextBuilder().setParent(distContext);
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("key");
     builder.put(null, V2, TMD);
@@ -118,8 +118,8 @@ public class DistributedContextSdkTest {
 
   @Test
   public void put_nullValue() {
-    DistributedContextSdk distContext = listToDistributedContext(T1);
-    DistributedContext.Builder builder = contextManager.contextBuilder().setParent(distContext);
+    CorrelationContextSdk distContext = listToDistributedContext(T1);
+    CorrelationContext.Builder builder = contextManager.contextBuilder().setParent(distContext);
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("value");
     builder.put(K2, null, TMD);
@@ -127,22 +127,22 @@ public class DistributedContextSdkTest {
 
   @Test
   public void setParent_nullValue() {
-    DistributedContextSdk parent = listToDistributedContext(T1);
+    CorrelationContextSdk parent = listToDistributedContext(T1);
     thrown.expect(NullPointerException.class);
     contextManager.contextBuilder().setParent(parent).setParent(null).build();
   }
 
   @Test
   public void setParent_setNoParent() {
-    DistributedContextSdk parent = listToDistributedContext(T1);
-    DistributedContext distContext =
+    CorrelationContextSdk parent = listToDistributedContext(T1);
+    CorrelationContext distContext =
         contextManager.contextBuilder().setParent(parent).setNoParent().build();
     assertThat(distContext.getEntries()).isEmpty();
   }
 
   @Test
   public void remove_existingKey() {
-    DistributedContextSdk.Builder builder = new DistributedContextSdk.Builder();
+    CorrelationContextSdk.Builder builder = new CorrelationContextSdk.Builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
@@ -151,7 +151,7 @@ public class DistributedContextSdkTest {
 
   @Test
   public void remove_differentKey() {
-    DistributedContextSdk.Builder builder = new DistributedContextSdk.Builder();
+    CorrelationContextSdk.Builder builder = new CorrelationContextSdk.Builder();
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
@@ -160,7 +160,7 @@ public class DistributedContextSdkTest {
 
   @Test
   public void remove_keyFromParent() {
-    DistributedContextSdk distContext = listToDistributedContext(T1, T2);
+    CorrelationContextSdk distContext = listToDistributedContext(T1, T2);
     assertThat(
             contextManager.contextBuilder().setParent(distContext).remove(K1).build().getEntries())
         .containsExactly(T2);
@@ -168,7 +168,7 @@ public class DistributedContextSdkTest {
 
   @Test
   public void remove_nullKey() {
-    DistributedContext.Builder builder = contextManager.contextBuilder();
+    CorrelationContext.Builder builder = contextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("key");
     builder.remove(null);

@@ -17,7 +17,7 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.distributedcontext.CorrelationContextManager;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.Tracer;
 
@@ -48,7 +48,7 @@ public final class TraceShim {
    * @since 0.1.0
    */
   public static io.opentracing.Tracer createTracerShim(
-      Tracer tracer, DistributedContextManager contextManager) {
+      Tracer tracer, CorrelationContextManager contextManager) {
     Utils.checkNotNull(tracer, "tracer");
     Utils.checkNotNull(contextManager, "contextManager");
     return new TracerShim(new TelemetryInfo(tracer, contextManager));

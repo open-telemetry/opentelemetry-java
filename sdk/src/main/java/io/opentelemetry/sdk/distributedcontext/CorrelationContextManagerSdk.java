@@ -19,40 +19,40 @@ package io.opentelemetry.sdk.distributedcontext;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.distributedcontext.CorrelationContext;
+import io.opentelemetry.distributedcontext.CorrelationContextManager;
+import io.opentelemetry.distributedcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
 
 /**
- * {@link DistributedContextManagerSdk} is SDK implementation of {@link DistributedContextManager}.
+ * {@link CorrelationContextManagerSdk} is SDK implementation of {@link CorrelationContextManager}.
  */
-public class DistributedContextManagerSdk implements DistributedContextManager {
+public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
   @Override
-  public DistributedContext getCurrentContext() {
+  public CorrelationContext getCurrentContext() {
     return ContextUtils.getValue();
   }
 
   @Override
-  public DistributedContext.Builder contextBuilder() {
-    return new DistributedContextSdk.Builder();
+  public CorrelationContext.Builder contextBuilder() {
+    return new CorrelationContextSdk.Builder();
   }
 
   @Override
-  public Scope withContext(DistributedContext distContext) {
+  public Scope withContext(CorrelationContext distContext) {
     return ContextUtils.withDistributedContext(distContext);
   }
 
   @Override
-  public BinaryFormat<DistributedContext> getBinaryFormat() {
+  public BinaryFormat<CorrelationContext> getBinaryFormat() {
     // TODO: Implement this.
-    return DefaultDistributedContextManager.getInstance().getBinaryFormat();
+    return DefaultCorrelationContextManager.getInstance().getBinaryFormat();
   }
 
   @Override
-  public HttpTextFormat<DistributedContext> getHttpTextFormat() {
+  public HttpTextFormat<CorrelationContext> getHttpTextFormat() {
     // TODO: Implement this.
-    return DefaultDistributedContextManager.getInstance().getHttpTextFormat();
+    return DefaultCorrelationContextManager.getInstance().getHttpTextFormat();
   }
 }

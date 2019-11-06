@@ -21,10 +21,10 @@
  * to label anything that is associated with a specific operation. For example, the {@code
  * opentelemetry.stats} package labels all stats with the current entries.
  *
- * <p>{@link io.opentelemetry.distributedcontext.Entry Entrys} are key-value pairs. The {@link
- * io.opentelemetry.distributedcontext.EntryKey keys} and {@link
- * io.opentelemetry.distributedcontext.EntryValue values} are wrapped {@code String}s. They are
- * stored as a map in a {@link io.opentelemetry.distributedcontext.DistributedContext}.
+ * <p>{@link io.opentelemetry.distributedcontext.Label Entrys} are key-value pairs. The {@link
+ * io.opentelemetry.distributedcontext.LabelKey keys} and {@link
+ * io.opentelemetry.distributedcontext.LabelValue values} are wrapped {@code String}s. They are
+ * stored as a map in a {@link io.opentelemetry.distributedcontext.CorrelationContext}.
  *
  * <p>Note that entries are independent of the tracing data that is propagated in the {@code
  * io.grpc.Context}, such as trace ID.
