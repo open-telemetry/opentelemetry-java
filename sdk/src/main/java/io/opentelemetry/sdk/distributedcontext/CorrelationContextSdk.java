@@ -156,7 +156,7 @@ class CorrelationContextSdk implements CorrelationContext {
     @Override
     public CorrelationContextSdk build() {
       if (parent == null && !noImplicitParent) {
-        parent = OpenTelemetry.getDistributedContextManager().getCurrentContext();
+        parent = OpenTelemetry.getCorrelationContextManager().getCurrentContext();
       }
       return new CorrelationContextSdk(entries, parent);
     }

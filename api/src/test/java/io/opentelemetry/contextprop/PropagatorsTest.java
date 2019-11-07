@@ -70,15 +70,15 @@ public class PropagatorsTest {
 
         // Implicit style (do not pass Context, use specific interface/object).
         CorrelationContext corrCtx =
-            OpenTelemetry.getDistributedContextManager()
+            OpenTelemetry.getCorrelationContextManager()
                 .contextBuilder()
-                .setParent(OpenTelemetry.getDistributedContextManager().getCurrentContext())
+                .setParent(OpenTelemetry.getCorrelationContextManager().getCurrentContext())
                 .put(
                     LabelKey.create("key1"),
                     LabelValue.create("label1"),
                     LabelMetadata.create(LabelMetadata.HopLimit.UNLIMITED_PROPAGATION))
                 .build();
-        try (Scope corrScope = OpenTelemetry.getDistributedContextManager().withContext(corrCtx)) {
+        try (Scope corrScope = OpenTelemetry.getCorrelationContextManager().withContext(corrCtx)) {
 
           // Inject everything that is active at this point.
           Map<String, String> outboundCarrier = new HashMap<>();

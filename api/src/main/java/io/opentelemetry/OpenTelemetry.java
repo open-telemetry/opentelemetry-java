@@ -82,7 +82,7 @@ public final class OpenTelemetry {
    *     found.
    * @since 0.1.0
    */
-  public static CorrelationContextManager getDistributedContextManager() {
+  public static CorrelationContextManager getCorrelationContextManager() {
     return getInstance().contextManager;
   }
 

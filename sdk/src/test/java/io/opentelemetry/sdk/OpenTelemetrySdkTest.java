@@ -31,7 +31,7 @@ public class OpenTelemetrySdkTest {
     assertThat(OpenTelemetrySdk.getTracerFactory())
         .isSameInstanceAs(OpenTelemetry.getTracerFactory());
     assertThat(OpenTelemetrySdk.getDistributedContextManager())
-        .isSameInstanceAs(OpenTelemetry.getDistributedContextManager());
+        .isSameInstanceAs(OpenTelemetry.getCorrelationContextManager());
     assertThat(OpenTelemetrySdk.getMeter()).isSameInstanceAs(OpenTelemetry.getMeter());
   }
 }

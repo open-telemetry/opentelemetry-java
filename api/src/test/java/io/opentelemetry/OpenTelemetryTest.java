@@ -84,10 +84,10 @@ public class OpenTelemetryTest {
         .isEqualTo(OpenTelemetry.getTracerFactory().get("testTracer"));
     assertThat(OpenTelemetry.getMeter()).isInstanceOf(DefaultMeter.getInstance().getClass());
     assertThat(OpenTelemetry.getMeter()).isEqualTo(OpenTelemetry.getMeter());
-    assertThat(OpenTelemetry.getDistributedContextManager())
+    assertThat(OpenTelemetry.getCorrelationContextManager())
         .isInstanceOf(DefaultCorrelationContextManager.getInstance().getClass());
-    assertThat(OpenTelemetry.getDistributedContextManager())
-        .isEqualTo(OpenTelemetry.getDistributedContextManager());
+    assertThat(OpenTelemetry.getCorrelationContextManager())
+        .isEqualTo(OpenTelemetry.getCorrelationContextManager());
   }
 
   @Test
@@ -165,11 +165,11 @@ public class OpenTelemetryTest {
             SecondDistributedContextManager.class);
     try {
       assertTrue(
-          (OpenTelemetry.getDistributedContextManager() instanceof FirstDistributedContextManager)
-              || (OpenTelemetry.getDistributedContextManager()
+          (OpenTelemetry.getCorrelationContextManager() instanceof FirstDistributedContextManager)
+              || (OpenTelemetry.getCorrelationContextManager()
                   instanceof SecondDistributedContextManager));
-      assertThat(OpenTelemetry.getDistributedContextManager())
-          .isEqualTo(OpenTelemetry.getDistributedContextManager());
+      assertThat(OpenTelemetry.getCorrelationContextManager())
+          .isEqualTo(OpenTelemetry.getCorrelationContextManager());
     } finally {
       serviceFile.delete();
     }
@@ -186,10 +186,10 @@ public class OpenTelemetryTest {
         CorrelationContextManagerProvider.class.getName(),
         SecondDistributedContextManager.class.getName());
     try {
-      assertThat(OpenTelemetry.getDistributedContextManager())
+      assertThat(OpenTelemetry.getCorrelationContextManager())
           .isInstanceOf(SecondDistributedContextManager.class);
-      assertThat(OpenTelemetry.getDistributedContextManager())
-          .isEqualTo(OpenTelemetry.getDistributedContextManager());
+      assertThat(OpenTelemetry.getCorrelationContextManager())
+          .isEqualTo(OpenTelemetry.getCorrelationContextManager());
     } finally {
       serviceFile.delete();
     }
@@ -199,7 +199,7 @@ public class OpenTelemetryTest {
   public void testDistributedContextManagerNotFound() {
     System.setProperty(CorrelationContextManagerProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getDistributedContextManager();
+    OpenTelemetry.getCorrelationContextManager();
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {

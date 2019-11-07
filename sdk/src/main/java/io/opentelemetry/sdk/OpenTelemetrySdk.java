@@ -57,11 +57,11 @@ public final class OpenTelemetrySdk {
   /**
    * Returns a {@link CorrelationContextManagerSdk}.
    *
-   * @return context manager returned by {@link OpenTelemetry#getDistributedContextManager()}.
+   * @return context manager returned by {@link OpenTelemetry#getCorrelationContextManager()}.
    * @since 0.1.0
    */
   public static CorrelationContextManagerSdk getDistributedContextManager() {
-    return (CorrelationContextManagerSdk) OpenTelemetry.getDistributedContextManager();
+    return (CorrelationContextManagerSdk) OpenTelemetry.getCorrelationContextManager();
   }
 
   private OpenTelemetrySdk() {}

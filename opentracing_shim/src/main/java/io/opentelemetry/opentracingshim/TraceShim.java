@@ -35,7 +35,7 @@ public final class TraceShim {
     return new TracerShim(
         new TelemetryInfo(
             OpenTelemetry.getTracerFactory().get("opentracingshim"),
-            OpenTelemetry.getDistributedContextManager()));
+            OpenTelemetry.getCorrelationContextManager()));
   }
 
   /**
