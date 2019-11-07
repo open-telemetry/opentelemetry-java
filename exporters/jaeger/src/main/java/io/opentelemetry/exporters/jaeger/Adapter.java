@@ -95,7 +95,8 @@ final class Adapter {
     target.addTags(
         Model.KeyValue.newBuilder()
             .setKey(KEY_SPAN_STATUS_MESSAGE)
-            .setVStr(span.getStatus().isOk() ? "" : span.getStatus().getDescription())
+            .setVStr(
+                span.getStatus().getDescription() == null ? "" : span.getStatus().getDescription())
             .build());
 
     target.addTags(
