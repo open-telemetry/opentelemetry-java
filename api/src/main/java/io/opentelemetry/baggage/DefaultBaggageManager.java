@@ -22,6 +22,11 @@ import io.opentelemetry.context.propagation.HttpInjector;
 import javax.annotation.Nullable;
 
 public final class DefaultBaggageManager implements BaggageManager {
+  private static final DefaultBaggageManager INSTANCE = new DefaultBaggageManager();
+
+  public static DefaultBaggageManager getInstance() {
+    return INSTANCE;
+  }
 
   @Override
   public Context setValue(Context ctx, String key, String value) {

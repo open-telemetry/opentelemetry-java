@@ -19,11 +19,11 @@ package io.opentelemetry.context.propagation;
 import io.opentelemetry.context.Context;
 
 public final class ChainedPropagators {
-  public HttpInjector chainInjectors(HttpInjector injector1, HttpInjector injector2) {
+  public static HttpInjector chain(HttpInjector injector1, HttpInjector injector2) {
     return new ChainedHttpInjector(injector1, injector2);
   }
 
-  public HttpExtractor chainExtractors(HttpExtractor extractor1, HttpExtractor extractor2) {
+  public static HttpExtractor chain(HttpExtractor extractor1, HttpExtractor extractor2) {
     return new ChainedHttpExtractor(extractor1, extractor2);
   }
 
