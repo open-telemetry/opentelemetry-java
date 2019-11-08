@@ -91,6 +91,7 @@ public class AdapterTest {
     keyValue = getValue(jaegerSpan.getTagsList(), "span.status.code");
     assertNotNull(keyValue);
     assertEquals(0, keyValue.getVInt64());
+    assertEquals(Model.ValueType.INT64, keyValue.getVType());
     keyValue = getValue(jaegerSpan.getTagsList(), "span.status.message");
     assertNotNull(keyValue);
     assertEquals("", keyValue.getVStr());
@@ -171,10 +172,14 @@ public class AdapterTest {
 
     // verify
     assertTrue(kvB.getVBool());
+    assertEquals(Model.ValueType.BOOL, kvB.getVType());
     assertEquals(1., kvD.getVFloat64(), 0);
+    assertEquals(Model.ValueType.FLOAT64, kvD.getVType());
     assertEquals(2, kvI.getVInt64());
+    assertEquals(Model.ValueType.INT64, kvI.getVType());
     assertEquals("foobar", kvS.getVStr());
     assertEquals("foobar", kvS.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvS.getVType());
   }
 
   @Test
