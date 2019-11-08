@@ -46,7 +46,7 @@ public final class OpenTelemetrySdk {
   /**
    * Returns a {@link MeterSdkFactory}.
    *
-   * @return meter returned by {@link OpenTelemetry#getMeterFactory()}.
+   * @return MeterFactory returned by {@link OpenTelemetry#getMeterFactory()}.
    * @since 0.1.0
    */
   public static MeterSdkFactory getMeterFactory() {
