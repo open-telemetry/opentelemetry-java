@@ -35,10 +35,10 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Adapts OpenTelemetry objects to Jaeger objects. */
 @ThreadSafe
 final class Adapter {
-  protected static final String KEY_LOG_MESSAGE = "message";
-  protected static final String KEY_SPAN_KIND = "span.kind";
-  protected static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
-  protected static final String KEY_SPAN_STATUS_CODE = "span.status.code";
+  static final String KEY_LOG_MESSAGE = "message";
+  static final String KEY_SPAN_KIND = "span.kind";
+  static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
+  static final String KEY_SPAN_STATUS_CODE = "span.status.code";
 
   private Adapter() {}
 
