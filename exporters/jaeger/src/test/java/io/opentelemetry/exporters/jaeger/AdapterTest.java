@@ -85,20 +85,20 @@ public class AdapterTest {
     assertEquals(duration, Durations.toMillis(jaegerSpan.getDuration()));
 
     assertEquals(4, jaegerSpan.getTagsCount());
-    Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), "span.kind");
+    Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
     assertNotNull(keyValue);
     assertEquals("SERVER", keyValue.getVStr());
-    keyValue = getValue(jaegerSpan.getTagsList(), "span.status.code");
+    keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_STATUS_CODE);
     assertNotNull(keyValue);
     assertEquals(0, keyValue.getVInt64());
     assertEquals(Model.ValueType.INT64, keyValue.getVType());
-    keyValue = getValue(jaegerSpan.getTagsList(), "span.status.message");
+    keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_STATUS_MESSAGE);
     assertNotNull(keyValue);
     assertEquals("", keyValue.getVStr());
 
     assertEquals(1, jaegerSpan.getLogsCount());
     Model.Log log = jaegerSpan.getLogs(0);
-    keyValue = getValue(log.getFieldsList(), "message");
+    keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_MESSAGE);
     assertNotNull(keyValue);
     assertEquals("the log message", keyValue.getVStr());
     keyValue = getValue(log.getFieldsList(), "foo");
@@ -134,7 +134,7 @@ public class AdapterTest {
     // verify
     assertEquals(2, log.getFieldsCount());
 
-    Model.KeyValue keyValue = getValue(log.getFieldsList(), "message");
+    Model.KeyValue keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_MESSAGE);
     assertNotNull(keyValue);
     assertEquals("the log message", keyValue.getVStr());
     keyValue = getValue(log.getFieldsList(), "foo");
