@@ -20,7 +20,7 @@ import io.opentelemetry.metrics.MeterFactory;
 import io.opentelemetry.metrics.spi.MeterFactoryProvider;
 
 /**
- * {@code Meter} provider implementation for {@link MeterFactoryProvider}.
+ * {@code MeterFactory} provider implementation for {@link MeterFactoryProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
