@@ -210,9 +210,10 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
     SpanShim spanShim = new SpanShim(telemetryInfo(), span);
 
-    if (distContext != null && distContext != telemetryInfo().emptyDistributedContext()) {
-      spanContextTable().create(spanShim, distContext);
+    if (distContext == null) {
+      distContext = telemetryInfo().emptyDistributedContext();
     }
+    spanContextTable().create(spanShim, distContext);
 
     return spanShim;
   }
