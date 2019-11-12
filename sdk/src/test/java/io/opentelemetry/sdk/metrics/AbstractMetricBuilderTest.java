@@ -159,9 +159,6 @@ public class AbstractMetricBuilderTest {
     public TestHandle getDefaultHandle() {
       return HANDLE;
     }
-
-    @Override
-    public void removeHandle(List<String> labelValues) {}
   }
 
   private static final class TestHandle {}

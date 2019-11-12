@@ -146,11 +146,6 @@ public final class DefaultMeter implements Meter {
       return new NoopHandle();
     }
 
-    @Override
-    public void removeHandle(List<String> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
     /** No-op implementations of Handle class. */
     @Immutable
     private static final class NoopHandle implements Handle {
@@ -197,11 +192,6 @@ public final class DefaultMeter implements Meter {
       return new NoopHandle();
     }
 
-    @Override
-    public void removeHandle(List<String> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
     /** No-op implementations of Handle class. */
     @Immutable
     private static final class NoopHandle implements Handle {
@@ -246,11 +236,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopHandle getDefaultHandle() {
       return NoopHandle.INSTANCE;
-    }
-
-    @Override
-    public void removeHandle(List<String> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
     }
 
     /** No-op implementations of Handle class. */
@@ -301,11 +286,6 @@ public final class DefaultMeter implements Meter {
       return NoopHandle.INSTANCE;
     }
 
-    @Override
-    public void removeHandle(List<String> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
     /** No-op implementations of Handle class. */
     @Immutable
     private static final class NoopHandle implements Handle {
@@ -353,11 +333,6 @@ public final class DefaultMeter implements Meter {
       return NoopHandle.INSTANCE;
     }
 
-    @Override
-    public void removeHandle(List<String> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
     /** No-op implementations of Handle class. */
     @Immutable
     private static final class NoopHandle implements Handle {
@@ -402,11 +377,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopHandle getDefaultHandle() {
       return NoopHandle.INSTANCE;
-    }
-
-    @Override
-    public void removeHandle(List<String> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
     }
 
     /** No-op implementations of Handle class. */
@@ -456,11 +426,6 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeHandle(List<String> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
-    }
-
-    @Override
     public void setCallback(Callback<Result> metricUpdater) {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
@@ -504,11 +469,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopHandle getDefaultHandle() {
       return NoopHandle.INSTANCE;
-    }
-
-    @Override
-    public void removeHandle(List<String> labelValues) {
-      Utils.checkNotNull(labelValues, "labelValues");
     }
 
     @Override

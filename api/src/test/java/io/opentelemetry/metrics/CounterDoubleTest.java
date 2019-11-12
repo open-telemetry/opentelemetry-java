@@ -123,20 +123,6 @@ public class CounterDoubleTest {
   }
 
   @Test
-  public void noopRemoveHandle_WithNullLabelValues() {
-    CounterDouble counterDouble =
-        meter
-            .counterDoubleBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
-    counterDouble.removeHandle(null);
-  }
-
-  @Test
   public void doesNotThrow() {
     CounterDouble counterDouble =
         meter

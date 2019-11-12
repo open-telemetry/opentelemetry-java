@@ -119,20 +119,6 @@ public class GaugeLongTest {
   }
 
   @Test
-  public void noopRemoveHandle_WithNullLabelValues() {
-    GaugeLong gaugeLong =
-        meter
-            .gaugeLongBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
-    gaugeLong.removeHandle(null);
-  }
-
-  @Test
   public void doesNotThrow() {
     GaugeLong gaugeLong =
         meter

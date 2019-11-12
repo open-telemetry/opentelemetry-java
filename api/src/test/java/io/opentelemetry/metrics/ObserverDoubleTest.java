@@ -120,18 +120,4 @@ public class ObserverDoubleTest {
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
     observerDouble.getHandle(EMPTY_LABEL_VALUES);
   }
-
-  @Test
-  public void noopRemoveHandle_WithNullLabelValues() {
-    ObserverDouble gaugeDouble =
-        meter
-            .observerDoubleBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
-    gaugeDouble.removeHandle(null);
-  }
 }

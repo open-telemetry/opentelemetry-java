@@ -122,20 +122,6 @@ public class CounterLongTest {
   }
 
   @Test
-  public void noopRemoveHandle_WithNullLabelValues() {
-    CounterLong counterLong =
-        meter
-            .counterLongBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
-    counterLong.removeHandle(null);
-  }
-
-  @Test
   public void doesNotThrow() {
     CounterLong counterLong =
         meter

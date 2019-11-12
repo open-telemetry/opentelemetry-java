@@ -56,17 +56,6 @@ public interface Metric<H> {
   H getDefaultHandle();
 
   /**
-   * Removes the {@code Handle} from the metric, if it is present. i.e. references to previous
-   * {@code Handle} are invalid (not part of the metric).
-   *
-   * <p>If value is missing for one of the predefined keys {@code null} must be used for that value.
-   *
-   * @param labelValues the list of label values.
-   * @since 0.1.0
-   */
-  void removeHandle(List<String> labelValues);
-
-  /**
    * The {@code Builder} class for the {@code Metric}.
    *
    * @param <B> the specific builder object.

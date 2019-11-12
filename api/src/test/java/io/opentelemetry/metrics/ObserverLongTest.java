@@ -120,18 +120,4 @@ public class ObserverLongTest {
     thrown.expectMessage("Label Keys and Label Values don't have same size.");
     observerLong.getHandle(EMPTY_LABEL_VALUES);
   }
-
-  @Test
-  public void noopRemoveHandle_WithNullLabelValues() {
-    ObserverLong observerLong =
-        meter
-            .observerLongBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
-    observerLong.removeHandle(null);
-  }
 }

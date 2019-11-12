@@ -91,9 +91,6 @@ public class AbstractObserverBuilderTest {
     }
 
     @Override
-    public void removeHandle(List<String> labelValues) {}
-
-    @Override
     public void setCallback(Callback<ObserverDouble.Result> metricUpdater) {}
   }
 }
