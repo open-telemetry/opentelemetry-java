@@ -68,7 +68,8 @@ public final class OpenTelemetry {
    * Returns a singleton {@link MeterFactory}.
    *
    * @return registered MeterFactory or default via {@link DefaultMeterFactory#getInstance()}.
-   * @throws IllegalStateException if a specified MeterFactory (via system properties) could not be found.
+   * @throws IllegalStateException if a specified MeterFactory (via system properties) could not be
+   *     found.
    * @since 0.1.0
    */
   public static MeterFactory getMeterFactory() {
