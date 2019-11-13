@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.spi.MeterProvider;
+import io.opentelemetry.metrics.spi.MeterFactoryProvider;
 
-/**
- * {@code Meter} provider implementation for {@link io.opentelemetry.metrics.spi.MeterProvider}.
- *
- * <p>This class is not intended to be used in application code and it is used only by {@link
- * io.opentelemetry.OpenTelemetry}.
- */
-public class MeterSdkProvider implements MeterProvider {
+public class DefaultMeterFactoryProvider implements MeterFactoryProvider {
+  private static final MeterFactoryProvider instance = new DefaultMeterFactoryProvider();
+
+  public static MeterFactoryProvider getInstance() {
+    return instance;
+  }
 
   @Override
-  public Meter create() {
-    return new MeterSdk();
+  public MeterFactory create() {
+    return DefaultMeterFactory.getInstance();
   }
 }

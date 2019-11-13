@@ -37,7 +37,7 @@ public class CounterLongTest {
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
   private static final List<String> EMPTY_LABEL_VALUES = Collections.emptyList();
 
-  private final Meter meter = OpenTelemetry.getMeter();
+  private final Meter meter = OpenTelemetry.getMeterFactory().get("counter_long_test");
 
   @Test
   public void preventNonPrintableName() {
