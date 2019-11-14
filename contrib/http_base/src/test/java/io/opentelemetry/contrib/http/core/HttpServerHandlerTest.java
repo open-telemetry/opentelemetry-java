@@ -117,7 +117,7 @@ public class HttpServerHandlerTest {
             new HttpStatus2OtStatusConverter(),
             OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID),
             OpenTelemetry.getDistributedContextManager(),
-            OpenTelemetry.getMeter(),
+            OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID),
             Boolean.TRUE);
     HttpRequestContext context = handler.handleStart(data, data);
     Span currentSpan = handler.getSpanFromContext(context);
@@ -172,7 +172,7 @@ public class HttpServerHandlerTest {
             new ExtendedHttpStatus2OtStatusConverter(),
             OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID),
             OpenTelemetry.getDistributedContextManager(),
-            OpenTelemetry.getMeter(),
+            OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID),
             Boolean.FALSE);
     HttpRequestContext context = handler.handleStart(data, data);
     Span currentSpan = handler.getSpanFromContext(context);

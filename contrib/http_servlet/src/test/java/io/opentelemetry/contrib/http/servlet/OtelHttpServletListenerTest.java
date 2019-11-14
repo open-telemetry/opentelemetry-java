@@ -84,7 +84,7 @@ public class OtelHttpServletListenerTest {
             statusConverter,
             tracer,
             OpenTelemetry.getDistributedContextManager(),
-            OpenTelemetry.getMeter(),
+            OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID),
             true);
     if (inMemoryTracing != null) {
       inMemoryTracing.reset();
