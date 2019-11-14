@@ -19,9 +19,11 @@ package io.opentelemetry;
 import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.distributedcontext.DistributedContextManager;
 import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
-import io.opentelemetry.metrics.DefaultMeter;
+import io.opentelemetry.metrics.DefaultMeterFactory;
+import io.opentelemetry.metrics.DefaultMeterFactoryProvider;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.spi.MeterProvider;
+import io.opentelemetry.metrics.MeterFactory;
+import io.opentelemetry.metrics.spi.MeterFactoryProvider;
 import io.opentelemetry.trace.DefaultTracerFactory;
 import io.opentelemetry.trace.DefaultTracerFactoryProvider;
 import io.opentelemetry.trace.Tracer;
@@ -38,7 +40,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
  * @see TracerFactory
- * @see MeterProvider
+ * @see MeterFactoryProvider
  * @see DistributedContextManagerProvider
  */
 @ThreadSafe
@@ -47,7 +49,7 @@ public final class OpenTelemetry {
   @Nullable private static volatile OpenTelemetry instance;
 
   private final TracerFactory tracerFactory;
-  private final Meter meter;
+  private final MeterFactory meterFactory;
   private final DistributedContextManager contextManager;
 
   /**
@@ -63,14 +65,15 @@ public final class OpenTelemetry {
   }
 
   /**
-   * Returns a singleton {@link Meter}.
+   * Returns a singleton {@link MeterFactory}.
    *
-   * @return registered meter or default via {@link DefaultMeter#getInstance()}.
-   * @throws IllegalStateException if a specified meter (via system properties) could not be found.
+   * @return registered MeterFactory or default via {@link DefaultMeterFactory#getInstance()}.
+   * @throws IllegalStateException if a specified MeterFactory (via system properties) could not be
+   *     found.
    * @since 0.1.0
    */
-  public static Meter getMeter() {
-    return getInstance().meter;
+  public static MeterFactory getMeterFactory() {
+    return getInstance().meterFactory;
   }
 
   /**
@@ -105,8 +108,11 @@ public final class OpenTelemetry {
             ? tracerFactoryProvider.create()
             : DefaultTracerFactoryProvider.getInstance().create();
 
-    MeterProvider meterProvider = loadSpi(MeterProvider.class);
-    meter = meterProvider != null ? meterProvider.create() : DefaultMeter.getInstance();
+    MeterFactoryProvider meterFactoryProvider = loadSpi(MeterFactoryProvider.class);
+    meterFactory =
+        meterFactoryProvider != null
+            ? meterFactoryProvider.create()
+            : DefaultMeterFactoryProvider.getInstance().create();
     DistributedContextManagerProvider contextManagerProvider =
         loadSpi(DistributedContextManagerProvider.class);
     contextManager =

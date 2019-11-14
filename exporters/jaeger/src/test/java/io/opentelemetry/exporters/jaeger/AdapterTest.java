@@ -85,19 +85,20 @@ public class AdapterTest {
     assertEquals(duration, Durations.toMillis(jaegerSpan.getDuration()));
 
     assertEquals(4, jaegerSpan.getTagsCount());
-    Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), "span.kind");
+    Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
     assertNotNull(keyValue);
     assertEquals("SERVER", keyValue.getVStr());
-    keyValue = getValue(jaegerSpan.getTagsList(), "span.status.code");
+    keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_STATUS_CODE);
     assertNotNull(keyValue);
     assertEquals(0, keyValue.getVInt64());
-    keyValue = getValue(jaegerSpan.getTagsList(), "span.status.message");
+    assertEquals(Model.ValueType.INT64, keyValue.getVType());
+    keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_STATUS_MESSAGE);
     assertNotNull(keyValue);
     assertEquals("", keyValue.getVStr());
 
     assertEquals(1, jaegerSpan.getLogsCount());
     Model.Log log = jaegerSpan.getLogs(0);
-    keyValue = getValue(log.getFieldsList(), "message");
+    keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_MESSAGE);
     assertNotNull(keyValue);
     assertEquals("the log message", keyValue.getVStr());
     keyValue = getValue(log.getFieldsList(), "foo");
@@ -133,7 +134,7 @@ public class AdapterTest {
     // verify
     assertEquals(2, log.getFieldsCount());
 
-    Model.KeyValue keyValue = getValue(log.getFieldsList(), "message");
+    Model.KeyValue keyValue = getValue(log.getFieldsList(), Adapter.KEY_LOG_MESSAGE);
     assertNotNull(keyValue);
     assertEquals("the log message", keyValue.getVStr());
     keyValue = getValue(log.getFieldsList(), "foo");
@@ -171,10 +172,14 @@ public class AdapterTest {
 
     // verify
     assertTrue(kvB.getVBool());
+    assertEquals(Model.ValueType.BOOL, kvB.getVType());
     assertEquals(1., kvD.getVFloat64(), 0);
+    assertEquals(Model.ValueType.FLOAT64, kvD.getVType());
     assertEquals(2, kvI.getVInt64());
+    assertEquals(Model.ValueType.INT64, kvI.getVType());
     assertEquals("foobar", kvS.getVStr());
     assertEquals("foobar", kvS.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvS.getVType());
   }
 
   @Test
@@ -205,6 +210,24 @@ public class AdapterTest {
     assertEquals(
         TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)), spanRef.getTraceId());
     assertEquals(Model.SpanRefType.FOLLOWS_FROM, spanRef.getRefType());
+  }
+
+  @Test
+  public void testStatusNotOk() {
+    long startMs = System.currentTimeMillis();
+    long endMs = startMs + 900;
+    SpanData span =
+        SpanData.newBuilder()
+            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
+            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setName("GET /api/endpoint")
+            .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
+            .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
+            .setKind(Span.Kind.SERVER)
+            .setStatus(Status.CANCELLED)
+            .build();
+
+    assertNotNull(Adapter.toJaeger(span));
   }
 
   private static TimedEvent getTimedEvent() {

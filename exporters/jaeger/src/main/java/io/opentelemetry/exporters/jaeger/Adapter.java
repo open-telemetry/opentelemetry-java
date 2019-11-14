@@ -35,10 +35,10 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Adapts OpenTelemetry objects to Jaeger objects. */
 @ThreadSafe
 final class Adapter {
-  private static final String KEY_LOG_MESSAGE = "message";
-  private static final String KEY_SPAN_KIND = "span.kind";
-  private static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
-  private static final String KEY_SPAN_STATUS_CODE = "span.status.code";
+  static final String KEY_LOG_MESSAGE = "message";
+  static final String KEY_SPAN_KIND = "span.kind";
+  static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
+  static final String KEY_SPAN_STATUS_CODE = "span.status.code";
 
   private Adapter() {}
 
@@ -95,13 +95,15 @@ final class Adapter {
     target.addTags(
         Model.KeyValue.newBuilder()
             .setKey(KEY_SPAN_STATUS_MESSAGE)
-            .setVStr(span.getStatus().isOk() ? "" : span.getStatus().getDescription())
+            .setVStr(
+                span.getStatus().getDescription() == null ? "" : span.getStatus().getDescription())
             .build());
 
     target.addTags(
         Model.KeyValue.newBuilder()
             .setKey(KEY_SPAN_STATUS_CODE)
             .setVInt64(span.getStatus().getCanonicalCode().value())
+            .setVType(Model.ValueType.INT64)
             .build());
 
     return target.build();
@@ -173,15 +175,19 @@ final class Adapter {
     switch (value.getType()) {
       case STRING:
         builder.setVStr(value.getStringValue());
+        builder.setVType(Model.ValueType.STRING);
         break;
       case LONG:
         builder.setVInt64(value.getLongValue());
+        builder.setVType(Model.ValueType.INT64);
         break;
       case BOOLEAN:
         builder.setVBool(value.getBooleanValue());
+        builder.setVType(Model.ValueType.BOOL);
         break;
       case DOUBLE:
         builder.setVFloat64(value.getDoubleValue());
+        builder.setVType(Model.ValueType.FLOAT64);
         break;
     }
 

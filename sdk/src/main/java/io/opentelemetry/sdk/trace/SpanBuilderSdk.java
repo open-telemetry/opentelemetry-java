@@ -157,6 +157,7 @@ class SpanBuilderSdk implements Span.Builder {
     }
     Decision samplingDecision =
         traceConfig.getSampler().shouldSample(parentContext, traceId, spanId, spanName, links);
+
     SpanContext spanContext =
         SpanContext.create(
             traceId,
@@ -174,6 +175,7 @@ class SpanBuilderSdk implements Span.Builder {
         instrumentationLibraryInfo,
         spanKind,
         parentContext != null ? parentContext.getSpanId() : null,
+        parentContext != null ? parentContext.isRemote() : false,
         traceConfig,
         spanProcessor,
         getClock(parentSpan(parentType, parent), clock),
