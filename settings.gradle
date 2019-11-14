@@ -14,6 +14,9 @@ include ":opentelemetry-sdk"
 include ":opentelemetry-sdk-contrib-async-processor"
 include ":opentelemetry-sdk-contrib-testbed"
 
+// context-prop prototype
+include ":opentelemetry-contrib-web-servlet-filter"
+
 project(':opentelemetry-all').projectDir = "$rootDir/all" as File
 project(':opentelemetry-api').projectDir = "$rootDir/api" as File
 project(':opentelemetry-proto').projectDir = "$rootDir/proto" as File
@@ -36,3 +39,7 @@ project(':opentelemetry-sdk-contrib-async-processor').projectDir =
         "$rootDir/sdk_contrib/async_processor" as File
 project(':opentelemetry-sdk-contrib-testbed').projectDir =
         "$rootDir/sdk_contrib/testbed" as File
+
+// context-prop prototype
+project(':opentelemetry-contrib-web-servlet-filter').projectDir =
+        "$rootDir/contrib/web_servlet_filter" as File
