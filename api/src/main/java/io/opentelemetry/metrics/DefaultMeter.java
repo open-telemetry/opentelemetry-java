@@ -119,8 +119,8 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public MeasureBatchRecorder newMeasureBatchRecorder() {
-    return new NoopMeasureBatchRecorder();
+  public BatchRecorder newMeasureBatchRecorder() {
+    return new NoopBatchRecorder();
   }
 
   /** No-op implementations of GaugeLong class. */
@@ -536,18 +536,18 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  private static final class NoopMeasureBatchRecorder implements MeasureBatchRecorder {
-    private NoopMeasureBatchRecorder() {}
+  private static final class NoopBatchRecorder implements BatchRecorder {
+    private NoopBatchRecorder() {}
 
     @Override
-    public MeasureBatchRecorder put(MeasureLong measure, long value) {
+    public BatchRecorder put(MeasureLong measure, long value) {
       Utils.checkNotNull(measure, "measure");
       Utils.checkArgument(value >= 0, "Unsupported negative values.");
       return this;
     }
 
     @Override
-    public MeasureBatchRecorder put(MeasureDouble measure, double value) {
+    public BatchRecorder put(MeasureDouble measure, double value) {
       Utils.checkNotNull(measure, "measure");
       Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
       return this;
