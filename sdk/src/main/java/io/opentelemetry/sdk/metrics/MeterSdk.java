@@ -16,11 +16,11 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.CounterDouble;
 import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.GaugeDouble;
 import io.opentelemetry.metrics.GaugeLong;
-import io.opentelemetry.metrics.MeasureBatchRecorder;
 import io.opentelemetry.metrics.MeasureDouble;
 import io.opentelemetry.metrics.MeasureLong;
 import io.opentelemetry.metrics.Meter;
@@ -71,7 +71,7 @@ public class MeterSdk implements Meter {
   }
 
   @Override
-  public MeasureBatchRecorder newMeasureBatchRecorder() {
+  public BatchRecorder newMeasureBatchRecorder() {
     throw new UnsupportedOperationException("to be implemented");
   }
 }
