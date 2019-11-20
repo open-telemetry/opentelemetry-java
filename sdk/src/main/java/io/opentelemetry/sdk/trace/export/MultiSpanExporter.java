@@ -21,8 +21,7 @@ import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILED_R
 import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.SUCCESS;
 
 import io.opentelemetry.sdk.trace.SpanData;
-import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,10 +35,10 @@ import java.util.logging.Logger;
  */
 public final class MultiSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(MultiSpanExporter.class.getName());
-  private final List<SpanExporter> spanExporters;
+  private final SpanExporter[] spanExporters;
 
   static SpanExporter create(List<SpanExporter> spanExporters) {
-    return new MultiSpanExporter(Collections.unmodifiableList(new ArrayList<>(spanExporters)));
+    return new MultiSpanExporter(spanExporters);
   }
 
   @Override
@@ -83,6 +82,6 @@ public final class MultiSpanExporter implements SpanExporter {
   }
 
   private MultiSpanExporter(List<SpanExporter> spanExporters) {
-    this.spanExporters = spanExporters;
+    this.spanExporters = spanExporters.toArray(new SpanExporter[spanExporters.size()]);
   }
 }

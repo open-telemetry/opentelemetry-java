@@ -1,0 +1,90 @@
+sourceSets {
+	benchmark {
+		java.srcDir 'src/benchmark/java'
+		resources.srcDir 'src/benchmark/resources'
+		compileClasspath += main.output
+		runtimeClasspath += main.output
+	}
+}
+
+def benchmarksAvailable = sourceSets.benchmark.java.getFiles().any { f -> f.exists() }
+
+dependencies {
+	benchmarkCompile 'org.openjdk.jmh:jmh-core:1.22'
+	benchmarkAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.22'
+}
+
+configurations {
+	benchmarkCompile {
+		extendsFrom compile
+	}
+
+	benchmarkImplementation {
+		extendsFrom implementation
+		extendsFrom benchmarkCompile
+	}
+
+	benchmark {
+		extendsFrom runtime
+		extendsFrom benchmarkCompile
+	}
+}
+
+compileBenchmarkJava {
+	enabled benchmarksAvailable
+	options.compilerArgs = compileJava.options.compilerArgs
+	options.fork = compileJava.options.fork
+	options.forkOptions = compileJava.options.forkOptions
+}
+
+task benchmarkRun(type: JavaExec) {
+	enabled benchmarksAvailable
+	description 'Run benchmarks. Use property benchmarkFilter to set benchmark filtering regex.'
+	group 'Verification'
+	classpath = sourceSets.benchmark.runtimeClasspath
+	main = 'org.openjdk.jmh.Main'
+	// Allows users to filter benchmark using a regex
+	args project.findProperty("benchmarkFilter") ?: ''
+}
+
+task benchmarkJar(type: Jar) {
+	dependsOn = ['compileBenchmarkJava']
+
+	enabled benchmarksAvailable
+	description 'Generate executable benchmark JAR, if any benchmarks exists.'
+	group 'Build'
+	classifier "benchmark"
+	doFirst {
+		manifest {
+			attributes('Main-Class': 'org.openjdk.jmh.Main', 'Class-Path': ([jar.archiveName] + configurations.runtimeClasspath.files.collect { it.getName() }).join(' '))
+		}
+	}
+	from {
+		// Only include benchmarks and JMH in Jar file
+		(configurations.benchmarkRuntimeClasspath.files - configurations.runtimeClasspath.files).collect { it.isDirectory() ? it : zipTree(it) }
+	} {
+		exclude 'META-INF/*.SF'
+		exclude 'META-INF/*.DSA'
+		exclude 'META-INF/*.RSA'
+		exclude 'log4j.properties'
+	}
+	from sourceSets.benchmark.output
+}
+
+artifacts {
+	if (benchmarksAvailable) {
+		archives benchmarkJar
+	}
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			if (benchmarksAvailable) {
+				artifact benchmarkJar {
+					classifier "benchmark"
+				}
+			}
+		}
+	}
+}
