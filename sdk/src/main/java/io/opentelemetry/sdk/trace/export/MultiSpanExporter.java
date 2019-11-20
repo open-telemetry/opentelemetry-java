@@ -21,7 +21,6 @@ import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILED_R
 import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.SUCCESS;
 
 import io.opentelemetry.sdk.trace.SpanData;
-
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
