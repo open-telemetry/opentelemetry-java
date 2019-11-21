@@ -16,6 +16,10 @@
 
 package io.opentelemetry;
 
+import io.opentelemetry.context.propagation.DefaultHttpExtractor;
+import io.opentelemetry.context.propagation.DefaultHttpInjector;
+import io.opentelemetry.context.propagation.HttpExtractor;
+import io.opentelemetry.context.propagation.HttpInjector;
 import io.opentelemetry.distributedcontext.CorrelationContextManager;
 import io.opentelemetry.distributedcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.distributedcontext.spi.CorrelationContextManagerProvider;
@@ -49,6 +53,29 @@ public final class OpenTelemetry {
   private final TracerFactory tracerFactory;
   private final Meter meter;
   private final CorrelationContextManager contextManager;
+
+  public static final class Propagators {
+    private static volatile HttpInjector httpInjector = new DefaultHttpInjector();
+    private static volatile HttpExtractor httpExtractor = new DefaultHttpExtractor();
+
+    public static HttpExtractor getHttpExtractor() {
+      return httpExtractor;
+    }
+
+    public static void setHttpExtractor(HttpExtractor httpExtractor) {
+      Propagators.httpExtractor = httpExtractor;
+    }
+
+    public static HttpInjector getHttpInjector() {
+      return httpInjector;
+    }
+
+    public static void setHttpInjector(HttpInjector httpInjector) {
+      Propagators.httpInjector = httpInjector;
+    }
+
+    private Propagators() {}
+  }
 
   /**
    * Returns a singleton {@link TracerFactory}.

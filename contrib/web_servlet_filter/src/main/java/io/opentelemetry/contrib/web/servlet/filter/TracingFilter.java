@@ -16,8 +16,11 @@
 
 package io.opentelemetry.contrib.web.servlet.filter;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ChainedPropagators;
+import io.opentelemetry.distributedcontext.propagation.DefaultCorrelationContextExtractor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
@@ -141,6 +144,11 @@ public class TracingFilter implements Filter {
     if (contextAttribute instanceof Pattern) {
       skipPattern = (Pattern) contextAttribute;
     }
+
+    // Initialize the extractor.
+    OpenTelemetry.Propagators.setHttpExtractor(
+        ChainedPropagators.chain(
+            new HttpTraceContextExtractor(), new DefaultCorrelationContextExtractor()));
   }
 
   @Override
@@ -160,9 +168,6 @@ public class TracingFilter implements Filter {
     if (servletRequest.getAttribute(SERVER_SPAN_CONTEXT) != null) {
       chain.doFilter(servletRequest, servletResponse);
     } else {
-      /* In a real world scenario, a single instance would be shared/used. */
-      HttpTraceContextExtractor extractor = new HttpTraceContextExtractor();
-
       /**
        * SpanContext *and* other members (such as correlationcontext) would be extracted here, and
        * make it available in the returned Context object.
@@ -172,7 +177,8 @@ public class TracingFilter implements Filter {
        * instance.
        */
       Context ctx =
-          extractor.extract(Context.current(), httpRequest, HttpServletRequestGetter.getInstance());
+          OpenTelemetry.Propagators.getHttpExtractor()
+              .extract(Context.current(), httpRequest, HttpServletRequestGetter.getInstance());
       SpanContext extractedContext = ctx.getValue(ContextKeys.getSpanContextKey());
 
       final Span span =
