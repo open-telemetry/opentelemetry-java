@@ -19,13 +19,13 @@ package io.opentelemetry.metrics;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Util class that can be use to atomically record measurements associated with a set of Measures.
+ * Util class that can be use to atomically record measurements associated with a set of Metrics.
  *
  * <p>This class is equivalent with individually calling record on every Measure, but has the
  * advantage that all these operations are recorded atomically and it is more efficient.
  */
 @ThreadSafe
-public interface MeasureBatchRecorder {
+public interface BatchRecorder {
   /**
    * Associates the {@link MeasureLong} with the given value. Subsequent updates to the same {@link
    * MeasureLong} will overwrite the previous value.
@@ -36,7 +36,7 @@ public interface MeasureBatchRecorder {
    * @throws IllegalArgumentException if value is negative.
    * @since 0.1.0
    */
-  MeasureBatchRecorder put(MeasureLong measure, long value);
+  BatchRecorder put(MeasureLong measure, long value);
 
   /**
    * Associates the {@link MeasureDouble} with the given value. Subsequent updates to the same
@@ -48,7 +48,7 @@ public interface MeasureBatchRecorder {
    * @throws IllegalArgumentException if value is negative.
    * @since 0.1.0
    */
-  MeasureBatchRecorder put(MeasureDouble measure, double value);
+  BatchRecorder put(MeasureDouble measure, double value);
 
   /**
    * Records all of the measures at the same time.

@@ -22,9 +22,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link MeasureBatchRecorder}. */
+/** Tests for {@link BatchRecorder}. */
 @RunWith(JUnit4.class)
-public class MeasureBatchRecorderTest {
+public class BatchRecorderTest {
   private static final Meter meter = DefaultMeter.getInstance();
   private static final MeasureLong measureLong = meter.measureLongBuilder("measure_long").build();
   private static final MeasureDouble measureDouble =
