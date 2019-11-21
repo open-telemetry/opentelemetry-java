@@ -16,6 +16,8 @@
 
 package io.opentelemetry.contextprop;
 
+import static io.opentelemetry.trace.propagation.ContextKeys.getSpanContextKey;
+
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.baggage.DefaultBaggageManager;
 import io.opentelemetry.baggage.propagation.DefaultBaggageExtractor;
@@ -31,6 +33,11 @@ import io.opentelemetry.distributedcontext.LabelMetadata;
 import io.opentelemetry.distributedcontext.LabelValue;
 import io.opentelemetry.distributedcontext.propagation.DefaultCorrelationContextExtractor;
 import io.opentelemetry.distributedcontext.propagation.DefaultCorrelationContextInjector;
+import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.Tracestate;
 import io.opentelemetry.trace.propagation.HttpTraceContextExtractor;
 import io.opentelemetry.trace.propagation.HttpTraceContextInjector;
 import java.util.HashMap;
@@ -59,14 +66,28 @@ public class PropagatorsTest {
                 new HttpTraceContextInjector(), new DefaultCorrelationContextInjector()),
             new DefaultBaggageInjector());
 
+    // Initialize by injecting an empty SpanContext.
+    Context initialCtx =
+        Context.current()
+            .setValue(
+                getSpanContextKey(),
+                SpanContext.create(
+                    TraceId.getInvalid(),
+                    SpanId.getInvalid(),
+                    TraceFlags.getDefault(),
+                    Tracestate.getDefault()));
+    injector.inject(initialCtx, inboundCarrier, new MapSetter());
+
     // Extract.
     Context ctx = extractor.extract(Context.current(), inboundCarrier, new MapGetter());
 
-    try (Scope scope = Context.setCurrent(ctx)) {
+    Scope scope = Context.setCurrent(ctx);
+    try {
       // Explicit style (pass Context, use opaque object underneath).
       Context newCtx =
           DefaultBaggageManager.getInstance().setValue(Context.current(), "mykey", "myvalue");
-      try (Scope bagScope = Context.setCurrent(newCtx)) {
+      Scope bagScope = Context.setCurrent(newCtx);
+      try {
 
         // Implicit style (do not pass Context, use specific interface/object).
         CorrelationContext corrCtx =
@@ -78,13 +99,19 @@ public class PropagatorsTest {
                     LabelValue.create("label1"),
                     LabelMetadata.create(LabelMetadata.HopLimit.UNLIMITED_PROPAGATION))
                 .build();
-        try (Scope corrScope = OpenTelemetry.getCorrelationContextManager().withContext(corrCtx)) {
-
+        Scope corrScope = OpenTelemetry.getCorrelationContextManager().withContext(corrCtx);
+        try {
           // Inject everything that is active at this point.
           Map<String, String> outboundCarrier = new HashMap<>();
           injector.inject(Context.current(), outboundCarrier, new MapSetter());
+        } finally {
+          corrScope.close();
         }
+      } finally {
+        bagScope.close();
       }
+    } finally {
+      scope.close();
     }
   }
 

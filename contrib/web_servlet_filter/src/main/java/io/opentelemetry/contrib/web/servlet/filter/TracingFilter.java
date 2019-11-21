@@ -54,14 +54,15 @@ import javax.servlet.http.HttpServletResponse;
  *  servletContext.addFilter("tracingFilter", filter);
  * }</pre>
  *
- * Or include filter in web.xml and:
+ * <p>Or include filter in web.xml and:
  *
  * <pre>{@code
  * GlobalTracer.register(tracer);
- * servletContext.setAttribute({@link TracingFilter#SPAN_DECORATORS}, listOfDecorators); // optional, if no present ServletFilterSpanDecorator.STANDARD_TAGS is applied
+ * // optional, if no present ServletFilterSpanDecorator.STANDARD_TAGS is applied
+ * servletContext.setAttribute({@link TracingFilter#SPAN_DECORATORS}, listOfDecorators);  *
  * }</pre>
  *
- * Current server span context is accessible via {@link HttpServletRequest#getAttribute(String)}
+ * <p>Current server span context is accessible via {@link HttpServletRequest#getAttribute(String)}
  * with name {@link TracingFilter#SERVER_SPAN_CONTEXT}.
  *
  * @author Pavol Loffay
@@ -69,14 +70,14 @@ import javax.servlet.http.HttpServletResponse;
 public class TracingFilter implements Filter {
   private static final Logger log = Logger.getLogger(TracingFilter.class.getName());
 
-  /** Use as a key of {@link ServletContext#setAttribute(String, Object)} to set span decorators */
+  /** Use as a key of {@link ServletContext#setAttribute(String, Object)} to set span decorators. */
   public static final String SPAN_DECORATORS = TracingFilter.class.getName() + ".spanDecorators";
-  /** Use as a key of {@link ServletContext#setAttribute(String, Object)} to skip pattern */
+  /** Use as a key of {@link ServletContext#setAttribute(String, Object)} to skip pattern. */
   public static final String SKIP_PATTERN = TracingFilter.class.getName() + ".skipPattern";
 
   /**
    * Used as a key of {@link HttpServletRequest#setAttribute(String, Object)} to inject server span
-   * context
+   * context.
    */
   public static final String SERVER_SPAN_CONTEXT =
       TracingFilter.class.getName() + ".activeSpanContext";
@@ -85,12 +86,18 @@ public class TracingFilter implements Filter {
   private List<ServletFilterSpanDecorator> spanDecorators;
   private Pattern skipPattern;
 
-  /** @param tracer */
+  /**
+   * Summary.
+   *
+   * @param tracer the tracer.
+   */
   public TracingFilter(Tracer tracer) {
     this(tracer, Collections.singletonList(ServletFilterSpanDecorator.STANDARD_TAGS), null);
   }
 
   /**
+   * Summary.
+   *
    * @param tracer tracer
    * @param spanDecorators decorators
    * @param skipPattern null or pattern to exclude certain paths from tracing e.g. "/health"
@@ -159,9 +166,10 @@ public class TracingFilter implements Filter {
       /**
        * SpanContext *and* other members (such as correlationcontext) would be extracted here, and
        * make it available in the returned Context object.
-       * 
-       * For further consumption, the returned Context object would need to be explicitly passed
-       * to DistributedContext/Baggage handlers, or else set it automatically as the current instance.
+       *
+       * <p>For further consumption, the returned Context object would need to be explicitly passed
+       * to DistributedContext/Baggage handlers, or else set it automatically as the current
+       * instance.
        */
       Context ctx =
           extractor.extract(Context.current(), httpRequest, HttpServletRequestGetter.getInstance());
@@ -180,7 +188,8 @@ public class TracingFilter implements Filter {
         spanDecorator.onRequest(httpRequest, span);
       }
 
-      try (Scope scope = tracer.withSpan(span)) {
+      Scope scope = tracer.withSpan(span);
+      try {
         chain.doFilter(servletRequest, servletResponse);
         if (!httpRequest.isAsyncStarted()) {
           for (ServletFilterSpanDecorator spanDecorator : spanDecorators) {
@@ -194,6 +203,8 @@ public class TracingFilter implements Filter {
         }
         throw ex;
       } finally {
+        scope.close();
+
         if (httpRequest.isAsyncStarted()) {
           // what if async is already finished? This would not be called
           httpRequest

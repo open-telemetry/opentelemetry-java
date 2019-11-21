@@ -45,7 +45,7 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
   }
 
   /**
-   * Constructor of ServletFilterHeaderSpanDecorator
+   * Constructor of ServletFilterHeaderSpanDecorator.
    *
    * @param allowedHeaders list of {@link HeaderEntry} to extract from the incoming request
    * @param prefix the prefix to prepend on each @{@link StringTag}. Can be null is not prefix is
@@ -103,13 +103,15 @@ public class ServletFilterHeaderSpanDecorator implements ServletFilterSpanDecora
   /**
    * HeaderEntry is used to configure {@link ServletFilterHeaderSpanDecorator} {@link #header} is
    * used to check if the header exists using {@link HttpServletRequest#getHeader(String)} {@link
-   * #tag} will be used as a {@link StringTag} if {@link #header} is found on the incoming request
+   * #tag} will be used as a {@link StringTag} if {@link #header} is found on the incoming request.
    */
   public static class HeaderEntry {
     private final String header;
     private final String tag;
 
     /**
+     * Summary.
+     *
      * @param header Header on the {@link HttpServletRequest}
      * @param tag Tag to be used if {@link #header} is found
      */
