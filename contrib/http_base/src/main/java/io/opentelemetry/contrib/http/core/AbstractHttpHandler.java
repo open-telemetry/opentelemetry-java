@@ -22,7 +22,7 @@ import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTAT
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.metrics.MeasureBatchRecorder;
+import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.MeasureDouble;
 import io.opentelemetry.metrics.MeasureLong;
 import io.opentelemetry.metrics.Meter;
@@ -192,14 +192,14 @@ abstract class AbstractHttpHandler<Q, P> {
   }
 
   protected void recordMeasurements(HttpRequestContext context, int httpCode) {
-    //    MeasureBatchRecorder recorder = meter.newMeasureBatchRecorder();
+    //    BatchRecorder recorder = meter.newMeasureBatchRecorder();
     try {
       meter.newMeasureBatchRecorder();
       meter.counterLongBuilder(HttpTraceConstants.MEASURE_COUNT + httpCode).build();
     } catch (UnsupportedOperationException ignore) {
       // NoOp
     }
-    MeasureBatchRecorder recorder = new TemporaryMeasureBatchRecorder();
+    BatchRecorder recorder = new TemporaryMeasureBatchRecorder();
     //    recorder.setDistributedContext(context.distContext);
     recorder.put(measureDuration, (System.nanoTime() - context.requestStartTime) / 1000000000.0);
     recorder.put(measureReceivedMessageSize, context.receiveMessageSize.longValue());

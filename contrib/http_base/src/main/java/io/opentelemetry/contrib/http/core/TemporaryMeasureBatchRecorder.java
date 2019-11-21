@@ -16,20 +16,20 @@
 
 package io.opentelemetry.contrib.http.core;
 
-import io.opentelemetry.metrics.MeasureBatchRecorder;
+import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.MeasureDouble;
 import io.opentelemetry.metrics.MeasureLong;
 
 /** Used to make implementations work until SDK implementation is available. */
-public class TemporaryMeasureBatchRecorder implements MeasureBatchRecorder {
+public class TemporaryMeasureBatchRecorder implements BatchRecorder {
 
   @Override
-  public MeasureBatchRecorder put(MeasureLong measure, long value) {
+  public BatchRecorder put(MeasureLong measure, long value) {
     return this;
   }
 
   @Override
-  public MeasureBatchRecorder put(MeasureDouble measure, double value) {
+  public BatchRecorder put(MeasureDouble measure, double value) {
     return this;
   }
 
