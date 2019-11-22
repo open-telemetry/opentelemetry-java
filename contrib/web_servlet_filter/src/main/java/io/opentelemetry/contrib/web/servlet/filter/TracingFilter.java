@@ -20,6 +20,8 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ChainedPropagators;
+import io.opentelemetry.context.propagation.DefaultHttpInjector;
+import io.opentelemetry.context.propagation.Propagators;
 import io.opentelemetry.distributedcontext.propagation.DefaultCorrelationContextExtractor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -145,10 +147,13 @@ public class TracingFilter implements Filter {
       skipPattern = (Pattern) contextAttribute;
     }
 
-    // Initialize the extractor.
-    OpenTelemetry.Propagators.setHttpExtractor(
-        ChainedPropagators.chain(
-            new HttpTraceContextExtractor(), new DefaultCorrelationContextExtractor()));
+    // Initialize the propagators.
+    Propagators propagators =
+        Propagators.create(
+            new DefaultHttpInjector(),
+            ChainedPropagators.chain(
+                new HttpTraceContextExtractor(), new DefaultCorrelationContextExtractor()));
+    OpenTelemetry.setPropagators(propagators);
   }
 
   @Override
@@ -177,7 +182,8 @@ public class TracingFilter implements Filter {
        * instance.
        */
       Context ctx =
-          OpenTelemetry.Propagators.getHttpExtractor()
+          OpenTelemetry.getPropagators()
+              .getHttpExtractor()
               .extract(Context.current(), httpRequest, HttpServletRequestGetter.getInstance());
       SpanContext extractedContext = ctx.getValue(ContextKeys.getSpanContextKey());
 
