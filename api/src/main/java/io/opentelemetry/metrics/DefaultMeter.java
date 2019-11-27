@@ -133,7 +133,7 @@ public final class DefaultMeter implements Meter {
   @Override
   public LabelSet createLabelSet(String k1, String v1, String k2, String v2) {
     Utils.checkNotNull(k1, "k1");
-    Utils.checkNotNull(v1, "k1");
+    Utils.checkNotNull(v1, "v1");
     Utils.checkNotNull(k2, "k2");
     Utils.checkNotNull(v2, "v2");
     return NoopLabelSet.INSTANCE;
