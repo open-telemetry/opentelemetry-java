@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
