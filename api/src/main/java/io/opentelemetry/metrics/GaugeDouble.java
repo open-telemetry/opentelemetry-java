@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.GaugeDouble.Handle;
-import java.util.List;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -55,7 +54,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface GaugeDouble extends Gauge<Handle> {
 
   @Override
-  Handle getHandle(List<String> labelValues);
+  Handle getHandle(LabelSet labelSet);
 
   @Override
   Handle getDefaultHandle();

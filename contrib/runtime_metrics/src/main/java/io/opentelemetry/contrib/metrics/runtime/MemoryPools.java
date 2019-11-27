@@ -79,13 +79,20 @@ public final class MemoryPools {
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
             .setMonotonic(false)
             .build();
-    final Handle usedHeap = areaMetric.getHandle(Arrays.asList(USED, HEAP));
-    final Handle usedNonHeap = areaMetric.getHandle(Arrays.asList(USED, NON_HEAP));
-    final Handle committedHeap = areaMetric.getHandle(Arrays.asList(COMMITTED, HEAP));
-    final Handle committedNonHeap = areaMetric.getHandle(Arrays.asList(COMMITTED, NON_HEAP));
+    final Handle usedHeap =
+        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP));
+    final Handle usedNonHeap =
+        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP));
+    final Handle committedHeap =
+        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP));
+    final Handle committedNonHeap =
+        areaMetric.getHandle(
+            meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, NON_HEAP));
     // TODO: Decide if max is needed or not. May be derived with some approximation from max(used).
-    final Handle maxHeap = areaMetric.getHandle(Arrays.asList(MAX, HEAP));
-    final Handle maxNonHeap = areaMetric.getHandle(Arrays.asList(MAX, NON_HEAP));
+    final Handle maxHeap =
+        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP));
+    final Handle maxNonHeap =
+        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP));
     areaMetric.setCallback(
         new ObserverLong.Callback<Result>() {
           @Override
@@ -117,9 +124,15 @@ public final class MemoryPools {
     final List<Handle> committedHandles = new ArrayList<>(poolBeans.size());
     final List<Handle> maxHandles = new ArrayList<>(poolBeans.size());
     for (final MemoryPoolMXBean pool : poolBeans) {
-      usedHandles.add(poolMetric.getHandle(Arrays.asList(USED, pool.getName())));
-      committedHandles.add(poolMetric.getHandle(Arrays.asList(COMMITTED, pool.getName())));
-      maxHandles.add(poolMetric.getHandle(Arrays.asList(MAX, pool.getName())));
+      usedHandles.add(
+          poolMetric.getHandle(
+              meter.createLabelSet(TYPE_LABEL_KEY, USED, POOL_LABEL_KEY, pool.getName())));
+      committedHandles.add(
+          poolMetric.getHandle(
+              meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, POOL_LABEL_KEY, pool.getName())));
+      maxHandles.add(
+          poolMetric.getHandle(
+              meter.createLabelSet(TYPE_LABEL_KEY, MAX, POOL_LABEL_KEY, pool.getName())));
     }
     poolMetric.setCallback(
         new Callback<Result>() {

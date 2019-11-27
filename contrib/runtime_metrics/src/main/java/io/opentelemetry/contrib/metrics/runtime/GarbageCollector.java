@@ -17,6 +17,7 @@
 package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.Observer.Callback;
 import io.opentelemetry.metrics.ObserverLong;
@@ -66,7 +67,8 @@ public final class GarbageCollector {
             .build();
     final List<ObserverLong.Handle> handles = new ArrayList<>(garbageCollectors.size());
     for (final GarbageCollectorMXBean gc : garbageCollectors) {
-      handles.add(gcMetric.getHandle(Collections.singletonList(gc.getName())));
+      LabelSet labelSet = meter.createLabelSet(GC_LABEL_KEY, gc.getName());
+      handles.add(gcMetric.getHandle(labelSet));
     }
 
     gcMetric.setCallback(

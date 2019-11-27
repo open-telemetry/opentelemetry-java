@@ -35,7 +35,6 @@ public class ObserverLongTest {
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
-  private static final List<String> EMPTY_LABEL_VALUES = Collections.emptyList();
 
   private final Meter meter = OpenTelemetry.getMeterFactory().get("observer_long_test");
 
@@ -94,7 +93,7 @@ public class ObserverLongTest {
   }
 
   @Test
-  public void noopGetHandle_WithNullLabelValues() {
+  public void noopGetHandle_WithNullLabelSet() {
     ObserverLong observerLong =
         meter
             .observerLongBuilder(NAME)
@@ -103,26 +102,12 @@ public class ObserverLongTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
+    thrown.expectMessage("labelSet");
     observerLong.getHandle(null);
   }
 
   @Test
-  public void noopGetHandle_WithInvalidLabelSize() {
-    ObserverLong observerLong =
-        meter
-            .observerLongBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    observerLong.getHandle(EMPTY_LABEL_VALUES);
-  }
-
-  @Test
-  public void noopRemoveHandle_WithNullLabelValues() {
+  public void noopRemoveHandle_WithNullHandle() {
     ObserverLong observerLong =
         meter
             .observerLongBuilder(NAME)
@@ -131,7 +116,7 @@ public class ObserverLongTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
+    thrown.expectMessage("handle");
     observerLong.removeHandle(null);
   }
 }

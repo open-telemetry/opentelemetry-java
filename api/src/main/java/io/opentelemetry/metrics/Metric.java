@@ -30,22 +30,18 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface Metric<H> {
   /**
-   * Returns a {@code Handle} with associated with specified {@code labelValues}. Multiples requests
-   * with the same {@code labelValues} may return the same {@code Handle}.
+   * Returns a {@code Handle} with associated with specified {@code labelSet}. Multiples requests
+   * with the same {@code labelSet} may return the same {@code Handle}.
    *
    * <p>It is recommended to keep a reference to the Handle instead of always calling this method
    * for every operations.
    *
-   * @param labelValues the list of label values. The number of label values must be the same to
-   *     that of the label keys passed to {@link GaugeDouble.Builder#setLabelKeys(List)}.
+   * @param labelSet the set of labels.
    * @return a {@code Handle} the value of single gauge.
-   * @throws NullPointerException if {@code labelValues} is null OR any element of {@code
-   *     labelValues} is null.
-   * @throws IllegalArgumentException if number of {@code labelValues}s are not equal to the label
-   *     keys.
+   * @throws NullPointerException if {@code labelValues} is null.
    * @since 0.1.0
    */
-  H getHandle(List<String> labelValues);
+  H getHandle(LabelSet labelSet);
 
   /**
    * Returns a {@code Handle} for a metric with all labels not set.
@@ -56,15 +52,13 @@ public interface Metric<H> {
   H getDefaultHandle();
 
   /**
-   * Removes the {@code Handle} from the metric, if it is present. i.e. references to previous
-   * {@code Handle} are invalid (not part of the metric).
+   * Removes the {@code Handle} from the metric. i.e. references to previous {@code Handle} are
+   * invalid (not part of the metric).
    *
-   * <p>If value is missing for one of the predefined keys {@code null} must be used for that value.
-   *
-   * @param labelValues the list of label values.
+   * @param handle the {@code Handle} to be removed.
    * @since 0.1.0
    */
-  void removeHandle(List<String> labelValues);
+  void removeHandle(H handle);
 
   /**
    * The {@code Builder} class for the {@code Metric}.
