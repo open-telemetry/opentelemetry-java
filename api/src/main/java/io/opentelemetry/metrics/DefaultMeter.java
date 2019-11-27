@@ -126,7 +126,7 @@ public final class DefaultMeter implements Meter {
   @Override
   public LabelSet createLabelSet(String k1, String v1) {
     Utils.checkNotNull(k1, "k1");
-    Utils.checkNotNull(v1, "k1");
+    Utils.checkNotNull(v1, "v1");
     return NoopLabelSet.INSTANCE;
   }
 
