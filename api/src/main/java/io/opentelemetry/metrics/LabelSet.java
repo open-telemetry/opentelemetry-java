@@ -19,5 +19,7 @@ package io.opentelemetry.metrics;
 /**
  * LabelSet is an implementation-level interface that represents a set of Labels for use as
  * pre-defined labels in the metrics API.
+ *
+ * <p>LabelSets that have the same key/value pairs should have the same equals/hashcode.
  */
 public interface LabelSet {}
