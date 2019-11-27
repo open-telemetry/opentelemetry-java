@@ -35,7 +35,6 @@ public class GaugeLongTest {
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
-  private static final List<String> EMPTY_LABEL_VALUES = Collections.emptyList();
 
   private final Meter meter = OpenTelemetry.getMeterFactory().get("gauge_long_test");
 
@@ -91,7 +90,7 @@ public class GaugeLongTest {
   }
 
   @Test
-  public void noopGetHandle_WithNullLabelValues() {
+  public void noopGetHandle_WithNullLabelSet() {
     GaugeLong gaugeLong =
         meter
             .gaugeLongBuilder(NAME)
@@ -100,26 +99,12 @@ public class GaugeLongTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
+    thrown.expectMessage("labelSet");
     gaugeLong.getHandle(null);
   }
 
   @Test
-  public void noopGetHandle_WithInvalidLabelSize() {
-    GaugeLong gaugeLong =
-        meter
-            .gaugeLongBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    gaugeLong.getHandle(EMPTY_LABEL_VALUES);
-  }
-
-  @Test
-  public void noopRemoveHandle_WithNullLabelValues() {
+  public void noopRemoveHandle_WithNullHandle() {
     GaugeLong gaugeLong =
         meter
             .gaugeLongBuilder(NAME)
@@ -128,7 +113,7 @@ public class GaugeLongTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
+    thrown.expectMessage("handle");
     gaugeLong.removeHandle(null);
   }
 

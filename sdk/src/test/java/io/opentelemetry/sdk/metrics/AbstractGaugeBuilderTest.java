@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.metrics.Gauge;
-import java.util.List;
+import io.opentelemetry.metrics.LabelSet;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -78,7 +78,7 @@ public class AbstractGaugeBuilderTest {
     private static final TestHandle HANDLE = new TestHandle();
 
     @Override
-    public TestHandle getHandle(List<String> labelValues) {
+    public TestHandle getHandle(LabelSet labelSet) {
       return HANDLE;
     }
 
@@ -88,7 +88,7 @@ public class AbstractGaugeBuilderTest {
     }
 
     @Override
-    public void removeHandle(List<String> labelValues) {}
+    public void removeHandle(TestHandle handle) {}
   }
 
   private static final class TestHandle {}

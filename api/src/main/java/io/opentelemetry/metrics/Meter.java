@@ -225,4 +225,57 @@ public interface Meter {
    * @since 0.1.0
    */
   BatchRecorder newMeasureBatchRecorder();
+
+  /**
+   * Returns a new {@link LabelSet} with the given label.
+   *
+   * @param k1 first key.
+   * @param v1 first value.
+   * @return a new {@link LabelSet} with the given label.
+   * @throws NullPointerException if any provided value is null.
+   */
+  LabelSet createLabelSet(String k1, String v1);
+
+  /**
+   * Returns a new {@link LabelSet} with the given labels.
+   *
+   * @param k1 first key.
+   * @param v1 first value.
+   * @param k2 second key.
+   * @param v2 second value.
+   * @return a new {@link LabelSet} with the given labels.
+   * @throws NullPointerException if any provided value is null.
+   */
+  LabelSet createLabelSet(String k1, String v1, String k2, String v2);
+
+  /**
+   * Returns a new {@link LabelSet} with the given labels.
+   *
+   * @param k1 first key.
+   * @param v1 first value.
+   * @param k2 second key.
+   * @param v2 second value.
+   * @param k3 third key.
+   * @param v3 third value.
+   * @return a new {@link LabelSet} with the given labels.
+   * @throws NullPointerException if any provided value is null.
+   */
+  LabelSet createLabelSet(String k1, String v1, String k2, String v2, String k3, String v3);
+
+  /**
+   * Returns a new {@link LabelSet} with the given labels.
+   *
+   * @param k1 first key.
+   * @param v1 first value.
+   * @param k2 second key.
+   * @param v2 second value.
+   * @param k3 third key.
+   * @param v3 third value.
+   * @param k4 fourth key.
+   * @param v4 fourth value.
+   * @return a new {@link LabelSet} with the given labels.
+   * @throws NullPointerException if any provided value is null.
+   */
+  LabelSet createLabelSet(
+      String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4);
 }

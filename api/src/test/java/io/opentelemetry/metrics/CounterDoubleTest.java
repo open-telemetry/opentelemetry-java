@@ -35,7 +35,6 @@ public class CounterDoubleTest {
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
-  private static final List<String> EMPTY_LABEL_VALUES = Collections.emptyList();
 
   private final Meter meter = OpenTelemetry.getMeterFactory().get("counter_double_test");
 
@@ -95,7 +94,7 @@ public class CounterDoubleTest {
   }
 
   @Test
-  public void noopGetHandle_WithNullLabelValues() {
+  public void noopGetHandle_WithNullLabelSet() {
     CounterDouble counterDouble =
         meter
             .counterDoubleBuilder(NAME)
@@ -104,26 +103,12 @@ public class CounterDoubleTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
+    thrown.expectMessage("labelSet");
     counterDouble.getHandle(null);
   }
 
   @Test
-  public void noopGetHandle_WithInvalidLabelSize() {
-    CounterDouble counterDouble =
-        meter
-            .counterDoubleBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Label Keys and Label Values don't have same size.");
-    counterDouble.getHandle(EMPTY_LABEL_VALUES);
-  }
-
-  @Test
-  public void noopRemoveHandle_WithNullLabelValues() {
+  public void noopRemoveHandle_WithNullHandle() {
     CounterDouble counterDouble =
         meter
             .counterDoubleBuilder(NAME)
@@ -132,7 +117,7 @@ public class CounterDoubleTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelValues");
+    thrown.expectMessage("handle");
     counterDouble.removeHandle(null);
   }
 

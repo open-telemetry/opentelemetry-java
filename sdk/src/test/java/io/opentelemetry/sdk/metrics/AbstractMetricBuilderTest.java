@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Metric;
 import java.util.Arrays;
 import java.util.Collections;
@@ -151,7 +152,7 @@ public class AbstractMetricBuilderTest {
     private static final TestHandle HANDLE = new TestHandle();
 
     @Override
-    public TestHandle getHandle(List<String> labelValues) {
+    public TestHandle getHandle(LabelSet labelSet) {
       return HANDLE;
     }
 
@@ -161,7 +162,7 @@ public class AbstractMetricBuilderTest {
     }
 
     @Override
-    public void removeHandle(List<String> labelValues) {}
+    public void removeHandle(TestHandle handle) {}
   }
 
   private static final class TestHandle {}
