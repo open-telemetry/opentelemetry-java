@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.sdk.common;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.sdk.trace.TracerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -28,8 +30,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class InstrumentationLibraryInfo {
-
-  static final InstrumentationLibraryInfo EMPTY = create("", null);
+  public static final InstrumentationLibraryInfo EMPTY = create("", null);
 
   /**
    * Creates a new instance of {@link InstrumentationLibraryInfo}.
@@ -39,7 +40,7 @@ public abstract class InstrumentationLibraryInfo {
    * @param version version of the instrumentation library (e.g., "semver:1.0.0"), might be null
    * @return the new instance
    */
-  static InstrumentationLibraryInfo create(String name, @Nullable String version) {
+  public static InstrumentationLibraryInfo create(String name, @Nullable String version) {
     Utils.checkNotNull(name, "name");
     return new AutoValue_InstrumentationLibraryInfo(name, version);
   }
