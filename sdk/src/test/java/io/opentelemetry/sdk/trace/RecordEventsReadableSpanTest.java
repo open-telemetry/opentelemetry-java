@@ -456,7 +456,7 @@ public class RecordEventsReadableSpanTest {
       Map<String, AttributeValue> attributes) {
     AttributesWithCapacity attributesWithCapacity =
         new AttributesWithCapacity(config.getMaxNumberOfAttributes());
-    attributesWithCapacity.putAll(attributes);
+    attributesWithCapacity.putAllAttributes(attributes);
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
@@ -535,7 +535,7 @@ public class RecordEventsReadableSpanTest {
     Resource resource = Resource.create(labels);
     Map<String, AttributeValue> attributes = TestUtils.generateRandomAttributes();
     AttributesWithCapacity attributesWithCapacity = new AttributesWithCapacity(32);
-    attributesWithCapacity.putAll(attributes);
+    attributesWithCapacity.putAllAttributes(attributes);
     Map<String, AttributeValue> event1Attributes = TestUtils.generateRandomAttributes();
     Map<String, AttributeValue> event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =

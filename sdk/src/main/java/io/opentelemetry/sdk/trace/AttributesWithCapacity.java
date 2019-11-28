@@ -45,6 +45,12 @@ final class AttributesWithCapacity extends LinkedHashMap<String, AttributeValue>
     put(key, value);
   }
 
+  void putAllAttributes(Map<String, AttributeValue> m) {
+    for (Map.Entry<String, AttributeValue> entry : m.entrySet()) {
+      putAttribute(entry.getKey(), entry.getValue());
+    }
+  }
+
   int getNumberOfDroppedAttributes() {
     return totalRecordedAttributes - size();
   }
