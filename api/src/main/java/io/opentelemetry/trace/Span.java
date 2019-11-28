@@ -449,6 +449,68 @@ public interface Span {
     Builder addLink(Link link);
 
     /**
+     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+     * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * @param key the key for this attribute.
+     * @param value the value for this attribute.
+     * @return this.
+     * @throws NullPointerException if {@code key} is {@code null}.
+     * @throws NullPointerException if {@code value} is {@code null}.
+     * @since 0.1.0
+     */
+    Builder setAttribute(String key, String value);
+
+    /**
+     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+     * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * @param key the key for this attribute.
+     * @param value the value for this attribute.
+     * @return this.
+     * @throws NullPointerException if {@code key} is {@code null}.
+     * @since 0.1.0
+     */
+    Builder setAttribute(String key, long value);
+
+    /**
+     * Sets an attribute to the newly created {@code Span}. If {@code Span} previously contained a
+     * mapping for the key, the old value is replaced by the specified value.
+     *
+     * @param key the key for this attribute.
+     * @param value the value for this attribute.
+     * @return this.
+     * @throws NullPointerException if {@code key} is {@code null}.
+     * @since 0.1.0
+     */
+    Builder setAttribute(String key, double value);
+
+    /**
+     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+     * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * @param key the key for this attribute.
+     * @param value the value for this attribute.
+     * @return this.
+     * @throws NullPointerException if {@code key} is {@code null}.
+     * @since 0.1.0
+     */
+    Builder setAttribute(String key, boolean value);
+
+    /**
+     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+     * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * @param key the key for this attribute.
+     * @param value the value for this attribute.
+     * @return this.
+     * @throws NullPointerException if {@code key} is {@code null}.
+     * @throws NullPointerException if {@code value} is {@code null}.
+     * @since 0.1.0
+     */
+    Builder setAttribute(String key, AttributeValue value);
+
+    /**
      * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the
      * implementation will provide a default value {@link Span.Kind#INTERNAL}.
      *

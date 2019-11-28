@@ -57,6 +57,7 @@ class SpanBuilderSdk implements Span.Builder {
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
+  private final AttributesWithCapacity attributes;
   private List<Link> links;
   private ParentType parentType = ParentType.CURRENT_SPAN;
   private long startEpochNanos = 0;
@@ -74,6 +75,7 @@ class SpanBuilderSdk implements Span.Builder {
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
+    this.attributes = new AttributesWithCapacity(traceConfig.getMaxNumberOfAttributes());
     this.links = Collections.emptyList();
     this.idsGenerator = idsGenerator;
     this.clock = clock;
@@ -133,6 +135,34 @@ class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
+  public Span.Builder setAttribute(String key, String value) {
+    return setAttribute(key, AttributeValue.stringAttributeValue(value));
+  }
+
+  @Override
+  public Span.Builder setAttribute(String key, long value) {
+    return setAttribute(key, AttributeValue.longAttributeValue(value));
+  }
+
+  @Override
+  public Span.Builder setAttribute(String key, double value) {
+    return setAttribute(key, AttributeValue.doubleAttributeValue(value));
+  }
+
+  @Override
+  public Span.Builder setAttribute(String key, boolean value) {
+    return setAttribute(key, AttributeValue.booleanAttributeValue(value));
+  }
+
+  @Override
+  public Span.Builder setAttribute(String key, AttributeValue value) {
+    Utils.checkNotNull(key, "key");
+    Utils.checkNotNull(value, "value");
+    attributes.putAttribute(key, value);
+    return this;
+  }
+
+  @Override
   public Span.Builder setStartTimestamp(long startTimestamp) {
     Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
     startEpochNanos = startTimestamp;
@@ -169,6 +199,8 @@ class SpanBuilderSdk implements Span.Builder {
       return DefaultSpan.create(spanContext);
     }
 
+    attributes.putAll(samplingDecision.attributes());
+
     return RecordEventsReadableSpan.startSpan(
         spanContext,
         spanName,
@@ -180,7 +212,7 @@ class SpanBuilderSdk implements Span.Builder {
         spanProcessor,
         getClock(parentSpan(parentType, parent), clock),
         resource,
-        samplingDecision.attributes(),
+        attributes,
         truncatedLinks(),
         links.size(),
         startEpochNanos);

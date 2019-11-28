@@ -454,6 +454,10 @@ public class RecordEventsReadableSpanTest {
       TraceConfig config,
       @Nullable SpanId parentSpanId,
       Map<String, AttributeValue> attributes) {
+    AttributesWithCapacity attributesWithCapacity =
+        new AttributesWithCapacity(config.getMaxNumberOfAttributes());
+    attributesWithCapacity.putAll(attributes);
+
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
             spanContext,
@@ -466,7 +470,7 @@ public class RecordEventsReadableSpanTest {
             spanProcessor,
             testClock,
             resource,
-            attributes,
+            attributesWithCapacity,
             Collections.singletonList(link),
             1,
             0);
@@ -530,6 +534,8 @@ public class RecordEventsReadableSpanTest {
     labels.put("foo", "bar");
     Resource resource = Resource.create(labels);
     Map<String, AttributeValue> attributes = TestUtils.generateRandomAttributes();
+    AttributesWithCapacity attributesWithCapacity = new AttributesWithCapacity(32);
+    attributesWithCapacity.putAll(attributes);
     Map<String, AttributeValue> event1Attributes = TestUtils.generateRandomAttributes();
     Map<String, AttributeValue> event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
@@ -549,7 +555,7 @@ public class RecordEventsReadableSpanTest {
             spanProcessor,
             clock,
             resource,
-            attributes,
+            attributesWithCapacity,
             links,
             1,
             0);
