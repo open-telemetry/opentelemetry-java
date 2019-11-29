@@ -28,7 +28,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class MeasureLongTest {
   private static final Meter meter = DefaultMeter.getInstance();
-
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test

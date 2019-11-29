@@ -21,6 +21,7 @@ import io.opentelemetry.metrics.CounterDouble;
 import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.GaugeDouble;
 import io.opentelemetry.metrics.GaugeLong;
+import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.MeasureDouble;
 import io.opentelemetry.metrics.MeasureLong;
 import io.opentelemetry.metrics.Meter;
@@ -72,6 +73,27 @@ public class MeterSdk implements Meter {
 
   @Override
   public BatchRecorder newMeasureBatchRecorder() {
+    throw new UnsupportedOperationException("to be implemented");
+  }
+
+  @Override
+  public LabelSet createLabelSet(String k1, String v1) {
+    throw new UnsupportedOperationException("to be implemented");
+  }
+
+  @Override
+  public LabelSet createLabelSet(String k1, String v1, String k2, String v2) {
+    throw new UnsupportedOperationException("to be implemented");
+  }
+
+  @Override
+  public LabelSet createLabelSet(String k1, String v1, String k2, String v2, String k3, String v3) {
+    throw new UnsupportedOperationException("to be implemented");
+  }
+
+  @Override
+  public LabelSet createLabelSet(
+      String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
     throw new UnsupportedOperationException("to be implemented");
   }
 }
