@@ -16,8 +16,8 @@
 
 package io.opentelemetry.contrib.http.core;
 
+import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.MeasureDouble;
-import java.util.List;
 
 /** Used to make implementations work until SDK implementation is available. */
 public class TemporaryMeasureDouble implements MeasureDouble {
@@ -29,7 +29,7 @@ public class TemporaryMeasureDouble implements MeasureDouble {
       };
 
   @Override
-  public Handle getHandle(List<String> labelValues) {
+  public Handle getHandle(LabelSet labelSet) {
     return HANDLE;
   }
 
@@ -39,5 +39,7 @@ public class TemporaryMeasureDouble implements MeasureDouble {
   }
 
   @Override
-  public void removeHandle(List<String> labelValues) {}
+  public void removeHandle(Handle handle) {
+    // NoOp
+  }
 }
