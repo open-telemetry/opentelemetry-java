@@ -47,17 +47,17 @@ public class HttpTraceConstants {
   public static final AttributeValue COMPONENT_ATTR_VALUE =
       AttributeValue.stringAttributeValue(COMPONENT_VALUE);
 
-  public static final String EVENT_NAME = "message";
-  public static final String EVENT_ATTR_TYPE = "message.type";
-  public static final String EVENT_TYPE_SENT = "SENT";
-  public static final String EVENT_TYPE_RECEIVED = "RECEIVED";
-  public static final String EVENT_ATTR_ID = "message.id";
-  public static final String EVENT_ATTR_COMPRESSED = "message.compressed_size";
-  public static final String EVENT_ATTR_UNCOMPRESSED = "message.uncompressed_size";
-  public static final AttributeValue EVENT_ATTR_SENT =
-      AttributeValue.stringAttributeValue(EVENT_TYPE_SENT);
-  public static final AttributeValue EVENT_ATTR_RECEIVED =
-      AttributeValue.stringAttributeValue(EVENT_TYPE_RECEIVED);
+  public static final String MSG_EVENT_NAME = "message";
+  public static final String MSG_EVENT_ATTR_TYPE = "message.type";
+  public static final String MSG_EVENT_TYPE_SENT = "SENT";
+  public static final String MSG_EVENT_TYPE_RECEIVED = "RECEIVED";
+  public static final String MSG_EVENT_ATTR_ID = "message.id";
+  public static final String MSG_EVENT_ATTR_COMPRESSED = "message.compressed_size";
+  public static final String MSG_EVENT_ATTR_UNCOMPRESSED = "message.uncompressed_size";
+  public static final AttributeValue MSG_EVENT_ATTR_SENT =
+      AttributeValue.stringAttributeValue(MSG_EVENT_TYPE_SENT);
+  public static final AttributeValue MSG_EVENT_ATTR_RECEIVED =
+      AttributeValue.stringAttributeValue(MSG_EVENT_TYPE_RECEIVED);
 
   public static final String LINK_TYPE = "link.type";
   public static final String LINK_ORIGINATING = "originating";

@@ -94,19 +94,19 @@ abstract class AbstractHttpHandler<Q, P> {
       long uncompressedMessageSize,
       long compressedMessageSize) {
     Map<String, AttributeValue> attributes = new HashMap<>();
-    attributes.put(HttpTraceConstants.EVENT_ATTR_TYPE, type);
-    attributes.put(HttpTraceConstants.EVENT_ATTR_ID, AttributeValue.longAttributeValue(id));
+    attributes.put(HttpTraceConstants.MSG_EVENT_ATTR_TYPE, type);
+    attributes.put(HttpTraceConstants.MSG_EVENT_ATTR_ID, AttributeValue.longAttributeValue(id));
     if (compressedMessageSize > 0L) {
       attributes.put(
-          HttpTraceConstants.EVENT_ATTR_COMPRESSED,
+          HttpTraceConstants.MSG_EVENT_ATTR_COMPRESSED,
           AttributeValue.longAttributeValue(compressedMessageSize));
     }
     if (uncompressedMessageSize > 0L) {
       attributes.put(
-          HttpTraceConstants.EVENT_ATTR_UNCOMPRESSED,
+          HttpTraceConstants.MSG_EVENT_ATTR_UNCOMPRESSED,
           AttributeValue.longAttributeValue(uncompressedMessageSize));
     }
-    span.addEvent(HttpTraceConstants.EVENT_NAME, attributes);
+    span.addEvent(HttpTraceConstants.MSG_EVENT_NAME, attributes);
   }
 
   private static void putAttributeIfNotEmptyOrNull(Span span, String key, @Nullable String value) {
@@ -128,7 +128,7 @@ abstract class AbstractHttpHandler<Q, P> {
     recordMessageEvent(
         context.span,
         context.sentSeqId.addAndGet(1L),
-        HttpTraceConstants.EVENT_ATTR_SENT,
+        HttpTraceConstants.MSG_EVENT_ATTR_SENT,
         bytes,
         0L);
   }
@@ -146,7 +146,7 @@ abstract class AbstractHttpHandler<Q, P> {
     recordMessageEvent(
         context.span,
         context.receviedSeqId.addAndGet(1L),
-        HttpTraceConstants.EVENT_ATTR_RECEIVED,
+        HttpTraceConstants.MSG_EVENT_ATTR_RECEIVED,
         bytes,
         0L);
   }
