@@ -56,6 +56,33 @@ public abstract class HttpExtractor<Q, P> {
   public abstract String getRoute(Q request);
 
   /**
+   * Returns the request user agent.
+   *
+   * @param request the HTTP request
+   * @return the request user agent
+   */
+  @Nullable
+  public abstract String getUserAgent(Q request);
+
+  /**
+   * Returns the HTTP protocol version used by the connection.
+   *
+   * @param request the HTTP request
+   * @return the HTTP flavor
+   */
+  @Nullable
+  public abstract String getHttpFlavor(Q request);
+
+  /**
+   * Returns the IP address of the calling client (Server-side only).
+   *
+   * @param request the HTTP request
+   * @return the IP address
+   */
+  @Nullable
+  public abstract String getClientIp(Q request);
+
+  /**
    * Returns the response status code for use as the value of the <code>http.status_code</code> span
    * attribute. If the response is null, this method should return {@code 0}.
    *

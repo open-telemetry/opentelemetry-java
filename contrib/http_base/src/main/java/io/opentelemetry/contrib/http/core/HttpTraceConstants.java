@@ -27,9 +27,23 @@ public class HttpTraceConstants {
   public static final String COMPONENT_VALUE = "http";
   public static final String HTTP_METHOD = "http.method";
   public static final String HTTP_URL = "http.url";
-  public static final String HTTP_ROUTE = "http.route";
+  public static final String HTTP_TARGET = "http.target";
+  public static final String HTTP_HOST = "http.host";
+  public static final String HTTP_SCHEME = "http.scheme";
   public static final String HTTP_STATUS_CODE = "http.status_code";
   public static final String HTTP_STATUS_TEXT = "http.status_text";
+  public static final String HTTP_FLAVOR = "http.flavor";
+  public static final String HTTP_FLAVOR_1_0 = "1.0";
+  public static final String HTTP_FLAVOR_1_1 = "1.1";
+  public static final String HTTP_FLAVOR_2 = "2";
+  public static final String HTTP_FLAVOR_SPDY = "SPDY";
+  public static final String HTTP_FLAVOR_QUIC = "QUIC";
+  public static final String HTTP_SERVERNAME = "http.server_name";
+  public static final String HOST_NAME = "host.name";
+  public static final String HOST_PORT = "host.port";
+  public static final String HTTP_ROUTE = "http.route";
+  public static final String HTTP_CLIENTIP = "http.client_ip";
+  public static final String HTTP_USERAGENT = "http.user_agent";
   public static final AttributeValue COMPONENT_ATTR_VALUE =
       AttributeValue.stringAttributeValue(COMPONENT_VALUE);
 

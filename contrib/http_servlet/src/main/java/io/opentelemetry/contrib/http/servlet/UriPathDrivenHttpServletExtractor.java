@@ -17,8 +17,15 @@
 package io.opentelemetry.contrib.http.servlet;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.HTTP_FLAVOR_1_0;
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.HTTP_FLAVOR_1_1;
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.HTTP_FLAVOR_2;
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.HTTP_FLAVOR_QUIC;
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.HTTP_FLAVOR_SPDY;
 
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.contrib.http.core.HttpExtractor;
+import java.util.Map;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +36,18 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class UriPathDrivenHttpServletExtractor
     extends HttpExtractor<HttpServletRequest, HttpServletResponse> {
+
+  private static final Map<String, String> PROTOCOL_MAP;
+
+  static {
+    ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+    builder.put("HTTP/1.0", HTTP_FLAVOR_1_0);
+    builder.put("HTTP/1.1", HTTP_FLAVOR_1_1);
+    builder.put("HTTP/2.0", HTTP_FLAVOR_2);
+    builder.put("SPDY", HTTP_FLAVOR_SPDY);
+    builder.put("QUIC", HTTP_FLAVOR_QUIC);
+    PROTOCOL_MAP = builder.build();
+  }
 
   @Override
   public String getMethod(HttpServletRequest request) {
@@ -47,6 +66,38 @@ public class UriPathDrivenHttpServletExtractor
   @Override
   public String getRoute(HttpServletRequest request) {
     return request.getRequestURI();
+  }
+
+  @Nullable
+  @Override
+  public String getUserAgent(HttpServletRequest request) {
+    return request.getHeader("User-Agent");
+  }
+
+  @Nullable
+  @Override
+  public String getHttpFlavor(HttpServletRequest request) {
+    String protocol = request.getProtocol();
+    if (isNullOrEmpty(protocol)) {
+      return null;
+    }
+    if (PROTOCOL_MAP.containsKey(protocol)) {
+      return PROTOCOL_MAP.get(protocol);
+    }
+    if (!isNullOrEmpty(request.getHeader(":method"))) {
+      return HTTP_FLAVOR_2;
+    }
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public String getClientIp(HttpServletRequest request) {
+    String addr = request.getHeader("X-Forwarded-For");
+    if (isNullOrEmpty(addr)) {
+      addr = request.getRemoteAddr();
+    }
+    return addr;
   }
 
   @Override

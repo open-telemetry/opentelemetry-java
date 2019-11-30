@@ -16,6 +16,7 @@
 
 package io.opentelemetry.contrib.http.servlet;
 
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.HTTP_FLAVOR_2;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,6 +33,11 @@ public class UriPathDrivenHttpServletExtractorTest {
     String method = "POST";
     String url = "https://api.example.com/users";
     String path = "/users";
+    String protocol = "HTTP/2.0";
+    String clientIp = "0:0:0:0:0:0:0:1";
+    String userAgent =
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/605.1.15 "
+            + "(KHTML, like Gecko) Version/13.0.3 Safari/605.1.15";
     int status = HttpServletResponse.SC_CREATED;
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpServletResponse response = mock(HttpServletResponse.class);
@@ -39,10 +45,16 @@ public class UriPathDrivenHttpServletExtractorTest {
     when(request.getRequestURL()).thenReturn(new StringBuffer(url));
     when(request.getRequestURI()).thenReturn(path);
     when(response.getStatus()).thenReturn(status);
+    when(request.getProtocol()).thenReturn(protocol);
+    when(request.getRemoteAddr()).thenReturn(clientIp);
+    when(request.getHeader("User-Agent")).thenReturn(userAgent);
     UriPathDrivenHttpServletExtractor extractor = new UriPathDrivenHttpServletExtractor();
     assertEquals(method, extractor.getMethod(request));
     assertEquals(url, extractor.getUrl(request));
     assertEquals(path, extractor.getRoute(request));
+    assertEquals(HTTP_FLAVOR_2, extractor.getHttpFlavor(request));
+    assertEquals(userAgent, extractor.getUserAgent(request));
+    assertEquals(clientIp, extractor.getClientIp(request));
     assertEquals(status, extractor.getStatusCode(response));
   }
 

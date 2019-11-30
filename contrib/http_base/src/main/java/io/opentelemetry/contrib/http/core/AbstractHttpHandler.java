@@ -181,6 +181,12 @@ abstract class AbstractHttpHandler<Q, P> {
         span, HttpTraceConstants.HTTP_METHOD, extractor.getMethod(request));
     putAttributeIfNotEmptyOrNull(span, HttpTraceConstants.HTTP_ROUTE, extractor.getRoute(request));
     putAttributeIfNotEmptyOrNull(span, HttpTraceConstants.HTTP_URL, extractor.getUrl(request));
+    putAttributeIfNotEmptyOrNull(
+        span, HttpTraceConstants.HTTP_USERAGENT, extractor.getUserAgent(request));
+    putAttributeIfNotEmptyOrNull(
+        span, HttpTraceConstants.HTTP_FLAVOR, extractor.getHttpFlavor(request));
+    putAttributeIfNotEmptyOrNull(
+        span, HttpTraceConstants.HTTP_CLIENTIP, extractor.getClientIp(request));
   }
 
   String extractErrorMessage(Throwable error) {

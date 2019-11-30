@@ -26,6 +26,9 @@ class TestOnlyMapHttpExtractor extends HttpExtractor<Map<String, String>, Map<St
   public static final String URL = "URL";
   public static final String PATH = "PATH";
   public static final String ROUTE = "ROUTE";
+  public static final String USERAGENT = "USERAGENT";
+  public static final String FLAVOR = "ROUFLAVORTE";
+  public static final String CLIENTIP = "CLIENTIP";
   public static final String STATUS = "STATUS";
 
   @Override
@@ -41,6 +44,21 @@ class TestOnlyMapHttpExtractor extends HttpExtractor<Map<String, String>, Map<St
   @Override
   public String getRoute(Map<String, String> request) {
     return request.get(ROUTE);
+  }
+
+  @Override
+  public String getUserAgent(Map<String, String> request) {
+    return request.get(USERAGENT);
+  }
+
+  @Override
+  public String getHttpFlavor(Map<String, String> request) {
+    return request.get(FLAVOR);
+  }
+
+  @Override
+  public String getClientIp(Map<String, String> request) {
+    return request.get(CLIENTIP);
   }
 
   @Override

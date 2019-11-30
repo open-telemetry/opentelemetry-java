@@ -43,6 +43,24 @@ public class UrlPathDrivenJaxrsClientHttpExtractor
     return request.getUri().getPath();
   }
 
+  @Nullable
+  @Override
+  public String getUserAgent(ClientRequestContext request) {
+    return request.getHeaderString("user-agent");
+  }
+
+  @Nullable
+  @Override
+  public String getHttpFlavor(ClientRequestContext request) {
+    return null;
+  }
+
+  @Nullable
+  @Override
+  public String getClientIp(ClientRequestContext request) {
+    return null; // NoOp
+  }
+
   @Override
   public int getStatusCode(@Nullable ClientResponseContext response) {
     return response != null ? response.getStatus() : 0;

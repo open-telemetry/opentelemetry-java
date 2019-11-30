@@ -16,6 +16,7 @@
 
 package io.opentelemetry.contrib.http.servlet;
 
+import static io.opentelemetry.contrib.http.core.HttpTraceConstants.HTTP_FLAVOR_2;
 import static org.junit.Assert.assertEquals;
 
 import javax.annotation.Nullable;
@@ -57,8 +58,16 @@ public class SpringMvcDrivenHttpExtractorTest {
     String method = "POST";
     String url = "http://localhost/users";
     String path = "/users";
+    String protocol = "HTTP/2.0";
+    String clientIp = "0:0:0:0:0:0:0:1";
+    String userAgent =
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/605.1.15 "
+            + "(KHTML, like Gecko) Version/13.0.3 Safari/605.1.15";
     int status = HttpServletResponse.SC_CREATED;
     MockHttpServletRequest request = new MockHttpServletRequest(method, path);
+    request.addHeader("user-agent", userAgent);
+    request.setProtocol(protocol);
+    request.setRemoteAddr(clientIp);
     MockHttpServletResponse response = new MockHttpServletResponse();
     response.setStatus(status);
     SpringMvcDrivenHttpExtractor extractor = new SpringMvcDrivenHttpExtractor();
@@ -66,6 +75,9 @@ public class SpringMvcDrivenHttpExtractorTest {
     assertEquals(method, extractor.getMethod(request));
     assertEquals(url, extractor.getUrl(request));
     assertEquals(path, extractor.getRoute(request));
+    assertEquals(HTTP_FLAVOR_2, extractor.getHttpFlavor(request));
+    assertEquals(userAgent, extractor.getUserAgent(request));
+    assertEquals(clientIp, extractor.getClientIp(request));
     assertEquals(status, extractor.getStatusCode(response));
   }
 

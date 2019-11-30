@@ -17,6 +17,7 @@
 package io.opentelemetry.contrib.http.jaxrs;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,6 +55,9 @@ public class UrlPathDrivenJaxrsClientHttpExtractorTest {
     assertEquals(uri.getPath(), extractor.getRoute(request));
     assertEquals(uri.toString(), extractor.getUrl(request));
     assertEquals(method, extractor.getMethod(request));
+    assertNull(extractor.getHttpFlavor(request));
+    assertNull(extractor.getClientIp(request));
+    assertEquals(userAgent, extractor.getUserAgent(request));
     assertEquals(Response.Status.OK.getStatusCode(), extractor.getStatusCode(response));
   }
 
