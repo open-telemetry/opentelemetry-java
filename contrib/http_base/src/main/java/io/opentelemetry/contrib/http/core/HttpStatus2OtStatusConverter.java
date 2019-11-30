@@ -41,12 +41,6 @@ public class HttpStatus2OtStatusConverter {
       status = Status.PERMISSION_DENIED;
     } else if (httpStatus == 404) {
       status = Status.NOT_FOUND;
-    } else if (httpStatus == 408) {
-      status = Status.ABORTED;
-    } else if (httpStatus == 409 || httpStatus == 412 || httpStatus == 402) {
-      status = Status.FAILED_PRECONDITION;
-    } else if (httpStatus == 416) {
-      status = Status.OUT_OF_RANGE;
     } else if (httpStatus == 429) {
       status = Status.RESOURCE_EXHAUSTED;
     } else if (httpStatus >= 400 && httpStatus < 500) {
