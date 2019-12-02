@@ -152,15 +152,18 @@ public class SpanBuilderSdkTest {
     spanBuilder.setAttribute("long", 12345L);
     spanBuilder.setAttribute("double", .12345);
     spanBuilder.setAttribute("boolean", true);
+    spanBuilder.setAttribute("stringAttribute", AttributeValue.stringAttributeValue("attrvalue"));
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       Map<String, AttributeValue> attrs = span.getAttributes();
-      assertThat(attrs).hasSize(4);
+      assertThat(attrs).hasSize(5);
       assertThat(attrs.get("string")).isEqualTo(AttributeValue.stringAttributeValue("value"));
       assertThat(attrs.get("long")).isEqualTo(AttributeValue.longAttributeValue(12345L));
       assertThat(attrs.get("double")).isEqualTo(AttributeValue.doubleAttributeValue(.12345));
       assertThat(attrs.get("boolean")).isEqualTo(AttributeValue.booleanAttributeValue(true));
+      assertThat(attrs.get("stringAttribute"))
+          .isEqualTo(AttributeValue.stringAttributeValue("attrvalue"));
     } finally {
       span.end();
     }
