@@ -475,7 +475,7 @@ public interface Span {
 
     /**
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
-     * mapping for the key, the old value is replaced by the specified value.
+     * contained a mapping for the key, the old value is replaced by the specified value.
      *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
