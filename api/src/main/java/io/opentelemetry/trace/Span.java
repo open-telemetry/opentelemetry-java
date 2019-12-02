@@ -457,7 +457,7 @@ public interface Span {
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
      * @throws NullPointerException if {@code value} is {@code null}.
-     * @since 0.1.0
+     * @since 0.3.0
      */
     Builder setAttribute(String key, String value);
 
