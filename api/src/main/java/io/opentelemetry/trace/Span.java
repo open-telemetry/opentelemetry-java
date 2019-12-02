@@ -474,7 +474,7 @@ public interface Span {
     Builder setAttribute(String key, long value);
 
     /**
-     * Sets an attribute to the newly created {@code Span}. If {@code Span} previously contained a
+     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * mapping for the key, the old value is replaced by the specified value.
      *
      * @param key the key for this attribute.
