@@ -146,6 +146,58 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
+  public void setAttribute() {
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    spanBuilder.setAttribute("string", "value");
+    spanBuilder.setAttribute("long", 12345L);
+    spanBuilder.setAttribute("double", .12345);
+    spanBuilder.setAttribute("boolean", true);
+    spanBuilder.setAttribute("stringAttribute", AttributeValue.stringAttributeValue("attrvalue"));
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      Map<String, AttributeValue> attrs = span.getAttributes();
+      assertThat(attrs).hasSize(5);
+      assertThat(attrs.get("string")).isEqualTo(AttributeValue.stringAttributeValue("value"));
+      assertThat(attrs.get("long")).isEqualTo(AttributeValue.longAttributeValue(12345L));
+      assertThat(attrs.get("double")).isEqualTo(AttributeValue.doubleAttributeValue(.12345));
+      assertThat(attrs.get("boolean")).isEqualTo(AttributeValue.booleanAttributeValue(true));
+      assertThat(attrs.get("stringAttribute"))
+          .isEqualTo(AttributeValue.stringAttributeValue("attrvalue"));
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  public void droppingAttributes() {
+    final int maxNumberOfAttrs = 8;
+    TraceConfig traceConfig =
+        tracerSdkFactory
+            .getActiveTraceConfig()
+            .toBuilder()
+            .setMaxNumberOfAttributes(maxNumberOfAttrs)
+            .build();
+    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    for (int i = 0; i < 2 * maxNumberOfAttrs; i++) {
+      spanBuilder.setAttribute("key" + i, i);
+    }
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      Map<String, AttributeValue> attrs = span.getAttributes();
+      assertThat(attrs.size()).isEqualTo(maxNumberOfAttrs);
+      for (int i = 0; i < maxNumberOfAttrs; i++) {
+        assertThat(attrs.get("key" + (i + maxNumberOfAttrs)))
+            .isEqualTo(AttributeValue.longAttributeValue(i + maxNumberOfAttrs));
+      }
+    } finally {
+      span.end();
+      tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
+    }
+  }
+
+  @Test
   public void recordEvents_default() {
     Span span = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
@@ -192,6 +244,7 @@ public class SpanBuilderSdkTest {
 
   @Test
   public void sampler_decisionAttributes() {
+    final String samplerAttributeName = "sampler-attribute";
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan)
             TestUtils.startSpanWithSampler(
@@ -216,7 +269,7 @@ public class SpanBuilderSdkTest {
                           public Map<String, AttributeValue> attributes() {
                             Map<String, AttributeValue> attributes = new LinkedHashMap<>();
                             attributes.put(
-                                "sampler-attribute", AttributeValue.stringAttributeValue("bar"));
+                                samplerAttributeName, AttributeValue.stringAttributeValue("bar"));
                             return attributes;
                           }
                         };
@@ -226,11 +279,13 @@ public class SpanBuilderSdkTest {
                       public String getDescription() {
                         return "test sampler";
                       }
-                    })
+                    },
+                    Collections.<String, AttributeValue>singletonMap(
+                        samplerAttributeName, AttributeValue.stringAttributeValue("none")))
                 .startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
-      assertThat(span.getAttributes()).containsKey("sampler-attribute");
+      assertThat(span.getAttributes()).containsKey(samplerAttributeName);
     } finally {
       span.end();
     }

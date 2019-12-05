@@ -24,6 +24,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -72,11 +73,36 @@ public final class TestUtils {
    */
   public static Span.Builder startSpanWithSampler(
       TracerSdkFactory tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
+    return startSpanWithSampler(
+        tracerSdkFactory,
+        tracer,
+        spanName,
+        sampler,
+        Collections.<String, AttributeValue>emptyMap());
+  }
+
+  /**
+   * Create a very basic SpanData instance, suitable for testing. It has the bare minimum viable
+   * data.
+   *
+   * @return A SpanData instance.
+   */
+  public static Span.Builder startSpanWithSampler(
+      TracerSdkFactory tracerSdkFactory,
+      Tracer tracer,
+      String spanName,
+      Sampler sampler,
+      Map<String, AttributeValue> attributes) {
     TraceConfig originalConfig = tracerSdkFactory.getActiveTraceConfig();
     tracerSdkFactory.updateActiveTraceConfig(
         originalConfig.toBuilder().setSampler(sampler).build());
     try {
-      return tracer.spanBuilder(spanName);
+      Span.Builder builder = tracer.spanBuilder(spanName);
+      for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
+        builder.setAttribute(entry.getKey(), entry.getValue());
+      }
+
+      return builder;
     } finally {
       tracerSdkFactory.updateActiveTraceConfig(originalConfig);
     }
