@@ -469,7 +469,7 @@ public interface Span {
      * @param value the value for this attribute.
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.1.0
+     * @since 0.3.0
      */
     Builder setAttribute(String key, long value);
 
@@ -481,7 +481,7 @@ public interface Span {
      * @param value the value for this attribute.
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.1.0
+     * @since 0.3.0
      */
     Builder setAttribute(String key, double value);
 
@@ -493,7 +493,7 @@ public interface Span {
      * @param value the value for this attribute.
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.1.0
+     * @since 0.3.0
      */
     Builder setAttribute(String key, boolean value);
 
@@ -506,7 +506,7 @@ public interface Span {
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
      * @throws NullPointerException if {@code value} is {@code null}.
-     * @since 0.1.0
+     * @since 0.3.0
      */
     Builder setAttribute(String key, AttributeValue value);
 
