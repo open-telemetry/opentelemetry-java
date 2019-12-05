@@ -18,6 +18,7 @@ package io.opentelemetry.opentracingshim;
 
 import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
@@ -67,6 +68,24 @@ public class SpanBuilderShimTest {
         assertEquals(
             getBaggageMap(childSpan.context().baggageItems()),
             getBaggageMap(parentSpan.context().baggageItems()));
+      } finally {
+        childSpan.finish();
+      }
+    } finally {
+      parentSpan.finish();
+    }
+  }
+
+  @Test
+  public void parent_NullContextShim() {
+    /* SpanContextShim is null until Span.context() or Span.getBaggageItem() are called.
+     * Verify a null SpanContextShim in the parent is handled properly. */
+    SpanShim parentSpan = (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).start();
+    try {
+      SpanShim childSpan =
+          (SpanShim) new SpanBuilderShim(telemetryInfo, SPAN_NAME).asChildOf(parentSpan).start();
+      try {
+        assertFalse(childSpan.context().baggageItems().iterator().hasNext());
       } finally {
         childSpan.finish();
       }
