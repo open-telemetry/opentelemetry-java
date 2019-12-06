@@ -24,7 +24,7 @@ import io.opentelemetry.trace.propagation.HttpTraceContext;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Tracer is a simple, interface for {@link Span} creation and in-process context interaction.
+ * Tracer is the interface for {@link Span} creation and interaction with the in-process context.
  *
  * <p>Users may choose to use manual or automatic Context propagation. Because of that this class
  * offers APIs to facilitate both usages.
