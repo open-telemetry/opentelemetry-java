@@ -1,0 +1,80 @@
+plugins {
+    // Provide convenience executables for trying out the examples.
+    id 'application'
+    // ASSUMES GRADLE 2.12 OR HIGHER. Use plugin version 0.7.5 with earlier gradle versions
+    id 'com.google.protobuf' version '0.8.8'
+    // Generate IntelliJ IDEA's .idea & .iml project files
+    id 'idea'
+    id 'java'
+}
+
+apply plugin: 'com.google.protobuf'
+
+group 'io.opentelemetry'
+version '0.3.0-SNAPSHOT'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+def grpcVersion = '1.24.0' // CURRENT_GRPC_VERSION
+def protobufVersion = '3.10.0'
+def protocVersion = protobufVersion
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+}
+
+dependencies {
+    compile('io.opentelemetry:opentelemetry-api:0.2.0-SNAPSHOT')
+    compile('io.opentelemetry:opentelemetry-sdk:0.2.0-SNAPSHOT')
+    compile('io.opentelemetry:opentelemetry-exporters-inmemory:0.2.0')
+
+    compile("io.grpc:grpc-protobuf:${grpcVersion}")
+    compile("io.grpc:grpc-stub:${grpcVersion}")
+    compile("javax.annotation:javax.annotation-api:1.2")
+    compile("io.grpc:grpc-netty-shaded:${grpcVersion}")
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+}
+
+// Inform IDEs like IntelliJ IDEA, Eclipse or NetBeans about the generated code.
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+// IntelliJ complains that the generated classes are not found, ask IntelliJ to include the
+// generated Java directories as source folders.
+idea {
+    module {
+        sourceDirs += file("build/generated/source/proto/main/java")
+        // If you have additional sourceSets and/or codegen plugins, add all of them
+    }
+}
+
+startScripts.enabled = false
+
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
