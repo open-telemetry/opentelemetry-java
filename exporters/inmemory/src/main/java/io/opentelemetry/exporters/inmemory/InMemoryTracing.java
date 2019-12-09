@@ -35,7 +35,7 @@ import java.util.List;
  *     Tracer tracer = tracing.getTracer();
  *     tracer.spanBuilder("span").startSpan().end();
  *
- *     {@code List<io.opentelemetry.sdk.trace.SpanData>} spans = tracing.getFinishedSpanItems();
+ *     List&lt;io.opentelemetry.sdk.trace.SpanData&gt; spans = tracing.getFinishedSpanItems();
  *     assertThat(spans.size()).isEqualTo(1);
  *     assertThat(spans.get(0).getName()).isEqualTo("span");
  *   }
