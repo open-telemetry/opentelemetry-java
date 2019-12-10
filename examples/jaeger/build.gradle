@@ -3,9 +3,7 @@ plugins {
 }
 
 group 'io.opentelemetry'
-version '0.3.0-SNAPSHOT'
-
-sourceCompatibility = 1.7
+version '0.2.0'
 
 //create a single Jar with all dependencies
 task fatJar(type: Jar) {
@@ -16,7 +14,6 @@ task fatJar(type: Jar) {
 
 repositories {
     mavenCentral()
-    maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
 }
 
 dependencies {
