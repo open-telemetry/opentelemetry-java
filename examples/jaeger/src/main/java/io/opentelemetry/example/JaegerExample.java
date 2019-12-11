@@ -35,7 +35,7 @@ public class JaegerExample {
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
     // Set to process the spans by the Jaeger Exporter
     tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(jaegerExporter).build());
-    // Give the name to the traces
+    // Give a name to the tracer
     this.tracer = tracerFactory.get("io.opentelemetry.example.JaegerExample");
   }
 
@@ -44,13 +44,13 @@ public class JaegerExample {
     Span span = tracer.spanBuilder("Start my wonderful use case").startSpan();
     span.addEvent("Event 0");
     // execute my use case - here we simulate a wait
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
-    }
+    doWork();
     span.addEvent("Event 1");
     span.end();
     jaegerExporter.shutdown();
+  }
+
+  private void doWork() {
     try {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
@@ -69,8 +69,8 @@ public class JaegerExample {
     }
     String ip = args[0];
     int port = Integer.parseInt(args[1]);
-    JaegerExample m = new JaegerExample(ip, port);
-    m.myWonderfulUseCase();
+    JaegerExample example = new JaegerExample(ip, port);
+    example.myWonderfulUseCase();
     System.out.println("Bye");
   }
 }
