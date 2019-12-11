@@ -33,124 +33,118 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HelloWorldClient {
-    private static final Logger logger = Logger.getLogger(HelloWorldClient.class.getName());
-    private final ManagedChannel channel;
-    private final GreeterGrpc.GreeterBlockingStub blockingStub;
+  private static final Logger logger = Logger.getLogger(HelloWorldClient.class.getName());
+  private final ManagedChannel channel;
+  private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
-    // OTel API
-    Tracer OTel;
-    // Export traces in memory
-    InMemorySpanExporter inMemexporter = InMemorySpanExporter.create();
-    // Share context via text headers
-    HttpTextFormat<SpanContext> textFormat;
-    // Inject context into the gRPC request metadata
-    HttpTextFormat.Setter<Metadata> setter = new HttpTextFormat.Setter<Metadata>() {
+  // OTel API
+  Tracer tracer;
+  // Export traces in memory
+  InMemorySpanExporter inMemexporter = InMemorySpanExporter.create();
+  // Share context via text headers
+  HttpTextFormat<SpanContext> textFormat;
+  // Inject context into the gRPC request metadata
+  HttpTextFormat.Setter<Metadata> setter =
+      new HttpTextFormat.Setter<Metadata>() {
         @Override
         public void put(Metadata carrier, String key, String value) {
-            carrier.put(
-                    Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER ),
-                    value
-            );
+          carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
         }
-    };
+      };
 
-    /** Construct client connecting to HelloWorld server at {@code host:port}. */
-    public HelloWorldClient(String host, int port) {
-        this.channel = ManagedChannelBuilder.forAddress(host, port)
-                // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
-                // needing certificates.
-                .usePlaintext()
-                // Intercept the request to tag the span context
-                .intercept(new OpenTelemetryClientInterceptor())
-                .build();
-        blockingStub = GreeterGrpc.newBlockingStub(channel);
-        // Initialize the OTel tracer
-        initTracer();
+  /** Construct client connecting to HelloWorld server at {@code host:port}. */
+  public HelloWorldClient(String host, int port) {
+    this.channel =
+        ManagedChannelBuilder.forAddress(host, port)
+            // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
+            // needing certificates.
+            .usePlaintext()
+            // Intercept the request to tag the span context
+            .intercept(new OpenTelemetryClientInterceptor())
+            .build();
+    blockingStub = GreeterGrpc.newBlockingStub(channel);
+    // Initialize the OTel tracer
+    initTracer();
+  }
+
+  private void initTracer() {
+    // Get the tracer
+    TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
+    // Set to process the spans in memory
+    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(inMemexporter).build());
+    // Set the traces's name
+    this.tracer = tracerFactory.get("io.opentelemetry.example.HelloWorldClient");
+    textFormat = this.tracer.getHttpTextFormat();
+  }
+
+  public void shutdown() throws InterruptedException {
+    channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
+  }
+
+  /** Say hello to server. */
+  public void greet(String name) {
+    logger.info("Will try to greet " + name + " ...");
+
+    // Start a span
+    Span span = tracer.spanBuilder("Request hello gRPC").startSpan();
+    span.setAttribute("MSG", "Will try to greet " + name + " ...");
+
+    // Set the context with the current span
+    tracer.withSpan(span);
+
+    HelloRequest request = HelloRequest.newBuilder().setName(name).build();
+    HelloReply response;
+    try {
+      response = blockingStub.sayHello(request);
+    } catch (StatusRuntimeException e) {
+      logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
+      return;
+    } finally {
+      span.end();
     }
+    logger.info("Greeting: " + response.getMessage());
+  }
 
+  public class OpenTelemetryClientInterceptor implements ClientInterceptor {
 
-    private void initTracer(){
-        // Get the tracer
-        TracerSdkFactory tracer = OpenTelemetrySdk.getTracerFactory();
-        // Set to process the spans in memory
-        tracer.addSpanProcessor(
-                SimpleSpansProcessor.newBuilder(inMemexporter).build()
-        );
-        // Set the traces's name
-        OTel = tracer.get("example/grpc");
-        textFormat = OTel.getHttpTextFormat();
-    }
-
-    public void shutdown() throws InterruptedException {
-        channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-    }
-
-    /** Say hello to server. */
-    public void greet(String name) {
-        logger.info("Will try to greet " + name + " ...");
-
-        // Start a span
-        Span span = OTel.spanBuilder("Request hello gRPC").startSpan();
-        span.setAttribute("MSG", "Will try to greet " + name + " ...");
-
-        // Set the context with the current span
-        OTel.withSpan(span);
-
-        HelloRequest request = HelloRequest.newBuilder().setName(name).build();
-        HelloReply response;
-        try {
-            response = blockingStub.sayHello(request);
-        } catch (StatusRuntimeException e) {
-            logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-            return;
-        } finally {
-            span.end();
-        }
-        logger.info("Greeting: " + response.getMessage());
-    }
-
-
-    public class OpenTelemetryClientInterceptor implements ClientInterceptor {
-
+    @Override
+    public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+        MethodDescriptor<ReqT, RespT> methodDescriptor, CallOptions callOptions, Channel channel) {
+      return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
+          channel.newCall(methodDescriptor, callOptions)) {
         @Override
-        public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> methodDescriptor, CallOptions callOptions, Channel channel) {
-            return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(channel.newCall(methodDescriptor, callOptions)) {
-                @Override
-                public void start(Listener<RespT> responseListener, Metadata headers) {
-                    // Extract from the Context the current span
-                    Span span = OTel.getCurrentSpan();
-                    // Inject the request with the span context
-                    textFormat.inject(span.getContext(), headers, setter);
-                    // Perform the gRPC request
-                    super.start(responseListener, headers);
-                }
-            };
+        public void start(Listener<RespT> responseListener, Metadata headers) {
+          // Extract from the Context the current span
+          Span span = tracer.getCurrentSpan();
+          // Inject the request with the span context
+          textFormat.inject(span.getContext(), headers, setter);
+          // Perform the gRPC request
+          super.start(responseListener, headers);
         }
+      };
     }
+  }
 
-
-    /**
-     * Greet server. If provided, the first element of {@code args} is the name to use in the
-     * greeting.
-     */
-    public static void main(String[] args) throws Exception {
-        // Access a service running on the local machine on port 50051
-        HelloWorldClient client = new HelloWorldClient("localhost", 50051);
-        try {
-            String user = "world";
-            // Use the arg as the name to greet if provided
-            if (args.length > 0) {
-                user = args[0];
-            }
-            client.greet(user);
-        } finally {
-            client.shutdown();
-        }
-        // Print the traces
-        for (SpanData spanData : client.inMemexporter.getFinishedSpanItems()) {
-            System.out.println("  - " + spanData);
-        }
-
+  /**
+   * Greet server. If provided, the first element of {@code args} is the name to use in the
+   * greeting.
+   */
+  public static void main(String[] args) throws Exception {
+    // Access a service running on the local machine on port 50051
+    HelloWorldClient client = new HelloWorldClient("localhost", 50051);
+    try {
+      String user = "world";
+      // Use the arg as the name to greet if provided
+      if (args.length > 0) {
+        user = args[0];
+      }
+      client.greet(user);
+    } finally {
+      client.shutdown();
     }
-
+    // Print the traces
+    for (SpanData spanData : client.inMemexporter.getFinishedSpanItems()) {
+      System.out.println("  - " + spanData);
+    }
+  }
 }

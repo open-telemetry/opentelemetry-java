@@ -11,7 +11,7 @@ plugins {
 apply plugin: 'com.google.protobuf'
 
 group 'io.opentelemetry'
-version '0.3.0-SNAPSHOT'
+version '0.2.0'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -22,13 +22,11 @@ def protocVersion = protobufVersion
 
 repositories {
     mavenCentral()
-    mavenLocal()
-    maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
 }
 
 dependencies {
-    compile('io.opentelemetry:opentelemetry-api:0.2.0-SNAPSHOT')
-    compile('io.opentelemetry:opentelemetry-sdk:0.2.0-SNAPSHOT')
+    compile('io.opentelemetry:opentelemetry-api:0.2.0')
+    compile('io.opentelemetry:opentelemetry-sdk:0.2.0')
     compile('io.opentelemetry:opentelemetry-exporters-inmemory:0.2.0')
 
     compile("io.grpc:grpc-protobuf:${grpcVersion}")
