@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 public class HelloWorldServer {
   private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
   private Server server;
+  private final int port = 50051;
 
   // Set a Context Key to access the Distributed Context
   public static final Context.Key<SpanContext> TRACE_ID_CTX_KEY = Context.key("traceId");
@@ -66,9 +67,9 @@ public class HelloWorldServer {
 
   private void start() throws IOException {
     /* The port on which the server should run */
-    int port = 50051;
+
     server =
-        ServerBuilder.forPort(port)
+        ServerBuilder.forPort(this.port)
             .addService(new GreeterImpl())
             // Intercept gRPC calls
             .intercept(new OpenTelemetryServerInterceptor())
@@ -122,8 +123,17 @@ public class HelloWorldServer {
       // Extract the Context from the gRPC request
       SpanContext ctx = TRACE_ID_CTX_KEY.get();
       // Build a span based on the received context
-      Span span = tracer.spanBuilder("hello handler").setParent(ctx).startSpan();
-
+      Span span =
+          tracer
+              .spanBuilder("helloworld.Greeter/SayHello")
+              .setParent(ctx)
+              .setSpanKind(Span.Kind.SERVER)
+              .startSpan();
+      // TODO provide attributes to Span.Builder
+      span.setAttribute("component", "grpc");
+      span.setAttribute("rpc.service", "helloworld.Greeter");
+      span.setAttribute("net.peer.name", "localhost");
+      span.setAttribute("net.peer.port", HelloWorldServer.this.port);
       HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + req.getName()).build();
       responseObserver.onNext(reply);
       responseObserver.onCompleted();

@@ -92,9 +92,8 @@ public class HelloWorldClient {
     logger.info("Will try to greet " + name + " ...");
 
     // Start a span
-    Span span = tracer.spanBuilder("helloworld.Greeter/SayHello")
-            .setSpanKind(Span.Kind.CLIENT)
-            .startSpan();
+    Span span =
+        tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(Span.Kind.CLIENT).startSpan();
     // TODO provide attributes to Span.Builder
     span.setAttribute("component", "grpc");
     span.setAttribute("rpc.service", "helloworld.Greeter");
