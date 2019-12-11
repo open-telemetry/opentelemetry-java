@@ -18,6 +18,7 @@
 package io.opentelemetry.example;
 
 import io.grpc.*;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -26,6 +27,7 @@ import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 
 import java.util.concurrent.TimeUnit;
@@ -35,6 +37,8 @@ import java.util.logging.Logger;
 public class HelloWorldClient {
   private static final Logger logger = Logger.getLogger(HelloWorldClient.class.getName());
   private final ManagedChannel channel;
+  private final String hostname;
+  private final Integer port;
   private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
   // OTel API
@@ -54,6 +58,8 @@ public class HelloWorldClient {
 
   /** Construct client connecting to HelloWorld server at {@code host:port}. */
   public HelloWorldClient(String host, int port) {
+    this.hostname = host;
+    this.port = port;
     this.channel =
         ManagedChannelBuilder.forAddress(host, port)
             // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
@@ -72,7 +78,7 @@ public class HelloWorldClient {
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
     // Set to process the spans in memory
     tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(inMemexporter).build());
-    // Set the traces's name
+    // Give a name to the tracer
     this.tracer = tracerFactory.get("io.opentelemetry.example.HelloWorldClient");
     textFormat = this.tracer.getHttpTextFormat();
   }
@@ -86,23 +92,31 @@ public class HelloWorldClient {
     logger.info("Will try to greet " + name + " ...");
 
     // Start a span
-    Span span = tracer.spanBuilder("Request hello gRPC").startSpan();
-    span.setAttribute("MSG", "Will try to greet " + name + " ...");
+    Span span = tracer.spanBuilder("helloworld.Greeter/SayHello")
+            .setSpanKind(Span.Kind.CLIENT)
+            .startSpan();
+    // TODO provide attributes to Span.Builder
+    span.setAttribute("component", "grpc");
+    span.setAttribute("rpc.service", "helloworld.Greeter");
+    span.setAttribute("net.peer.name", this.hostname);
+    span.setAttribute("net.peer.port", this.port);
 
     // Set the context with the current span
-    tracer.withSpan(span);
-
-    HelloRequest request = HelloRequest.newBuilder().setName(name).build();
-    HelloReply response;
-    try {
-      response = blockingStub.sayHello(request);
-    } catch (StatusRuntimeException e) {
-      logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-      return;
+    try (Scope scope = tracer.withSpan(span)) {
+      HelloRequest request = HelloRequest.newBuilder().setName(name).build();
+      try {
+        HelloReply response = blockingStub.sayHello(request);
+        span.setStatus(Status.OK);
+        logger.info("Greeting: " + response.getMessage());
+      } catch (StatusRuntimeException e) {
+        logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
+        // TODO create mapping for io.grpc.Status<->io.opentelemetry.trace.Status
+        span.setStatus(Status.UNKNOWN.withDescription("gRPC status: " + e.getStatus()));
+        return;
+      }
     } finally {
       span.end();
     }
-    logger.info("Greeting: " + response.getMessage());
   }
 
   public class OpenTelemetryClientInterceptor implements ClientInterceptor {
