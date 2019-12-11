@@ -17,8 +17,8 @@ repositories {
 }
 
 dependencies {
-    compile('io.opentelemetry:opentelemetry-api:0.2.0-SNAPSHOT')
-    compile('io.opentelemetry:opentelemetry-sdk:0.2.0-SNAPSHOT')
+    compile('io.opentelemetry:opentelemetry-api:0.2.0')
+    compile('io.opentelemetry:opentelemetry-sdk:0.2.0')
     compile('io.opentelemetry:opentelemetry-exporters-jaeger:0.2.0')
     compile('io.grpc:grpc-protobuf:1.24.0')
     compile('io.grpc:grpc-netty-shaded:1.24.0')

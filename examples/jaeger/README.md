@@ -15,5 +15,5 @@ gradlew fatJar
 
 ## 2 - Start the Application
 ```bash
-java -cp build/libs/opentelemetry-example-jaeger-all-0.3.0-SNAPSHOT.jar io.opentelemetry.example.Main localhost 6832
+java -cp build/libs/opentelemetry-example-jaeger-all-0.2.0.jar io.opentelemetry.example.Main localhost 6832
 ```
