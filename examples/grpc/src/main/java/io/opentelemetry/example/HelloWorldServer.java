@@ -27,9 +27,11 @@ import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.logging.Logger;
 
 /** Server that manages startup/shutdown of a {@code Greeter} server. */
@@ -37,9 +39,6 @@ public class HelloWorldServer {
   private static final Logger logger = Logger.getLogger(HelloWorldServer.class.getName());
   private Server server;
   private final int port = 50051;
-
-  // Set a Context Key to access the Distributed Context
-  public static final Context.Key<SpanContext> TRACE_ID_CTX_KEY = Context.key("traceId");
 
   // OTel API
   Tracer tracer;
@@ -120,25 +119,10 @@ public class HelloWorldServer {
 
     @Override
     public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
-      // Extract the Context from the gRPC request
-      SpanContext ctx = TRACE_ID_CTX_KEY.get();
-      // Build a span based on the received context
-      Span span =
-          tracer
-              .spanBuilder("helloworld.Greeter/SayHello")
-              .setParent(ctx)
-              .setSpanKind(Span.Kind.SERVER)
-              .startSpan();
-      // TODO provide attributes to Span.Builder
-      span.setAttribute("component", "grpc");
-      span.setAttribute("rpc.service", "Greeter");
-      span.setAttribute("net.peer.name", "localhost");
-      span.setAttribute("net.peer.port", HelloWorldServer.this.port);
+      // Serve the request
       HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + req.getName()).build();
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
-      // Terminate the span
-      span.end();
     }
   }
 
@@ -148,10 +132,27 @@ public class HelloWorldServer {
         ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
       // Extract the Span Context from the metadata of the gRPC request
       SpanContext sctx = textFormat.extract(headers, getter);
-      // Set it as value of the current gRPC context
-      Context ctx = Context.current().withValue(TRACE_ID_CTX_KEY, sctx);
+      InetSocketAddress clientInfo =
+          (InetSocketAddress) call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
+      // Build a span based on the received context
+      Span span =
+          tracer
+              .spanBuilder("helloworld.Greeter/SayHello")
+              .setParent(sctx)
+              .setSpanKind(Span.Kind.SERVER)
+              .startSpan();
+      // TODO provide attributes to Span.Builder
+      span.setAttribute("component", "grpc");
+      span.setAttribute("rpc.service", "Greeter");
+      span.setAttribute("net.peer.ip", clientInfo.getHostString());
+      span.setAttribute("net.peer.port", clientInfo.getPort());
       // Process the gRPC call normally
-      return Contexts.interceptCall(ctx, call, headers, next);
+      try {
+        span.setStatus(Status.OK);
+        return Contexts.interceptCall(Context.current(), call, headers, next);
+      } finally {
+        span.end();
+      }
     }
   }
 

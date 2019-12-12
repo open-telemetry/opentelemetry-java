@@ -37,8 +37,8 @@ import java.util.logging.Logger;
 public class HelloWorldClient {
   private static final Logger logger = Logger.getLogger(HelloWorldClient.class.getName());
   private final ManagedChannel channel;
-  private final String hostname;
-  private final Integer port;
+  private final String serverHostname;
+  private final Integer serverPort;
   private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
   // OTel API
@@ -58,8 +58,8 @@ public class HelloWorldClient {
 
   /** Construct client connecting to HelloWorld server at {@code host:port}. */
   public HelloWorldClient(String host, int port) {
-    this.hostname = host;
-    this.port = port;
+    this.serverHostname = host;
+    this.serverPort = port;
     this.channel =
         ManagedChannelBuilder.forAddress(host, port)
             // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
@@ -97,8 +97,8 @@ public class HelloWorldClient {
     // TODO provide attributes to Span.Builder
     span.setAttribute("component", "grpc");
     span.setAttribute("rpc.service", "Greeter");
-    span.setAttribute("net.peer.name", this.hostname);
-    span.setAttribute("net.peer.port", this.port);
+    span.setAttribute("net.peer.ip", this.serverHostname);
+    span.setAttribute("net.peer.port", this.serverPort);
 
     // Set the context with the current span
     try (Scope scope = tracer.withSpan(span)) {
