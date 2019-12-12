@@ -41,7 +41,7 @@ import java.util.List;
  *   public void getFinishedSpanData() {
  *     tracer.spanBuilder("span").startSpan().end();
  *
- *     {@code List<Span> spanItems} = exporter.getFinishedSpanItems();
+ *     List&lt;Span&gt; spanItems = exporter.getFinishedSpanItems();
  *     assertThat(spanItems).isNotNull();
  *     assertThat(spanItems.size()).isEqualTo(1);
  *     assertThat(spanItems.get(0).getName()).isEqualTo("span");

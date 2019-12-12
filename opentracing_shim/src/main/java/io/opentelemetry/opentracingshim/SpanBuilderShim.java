@@ -183,7 +183,8 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
       builder.setNoParent();
     } else if (parentSpan != null) {
       builder.setParent(parentSpan.getSpan());
-      distContext = spanContextTable().get(parentSpan).getDistributedContext();
+      SpanContextShim contextShim = spanContextTable().get(parentSpan);
+      distContext = contextShim == null ? null : contextShim.getDistributedContext();
     } else if (parentSpanContext != null) {
       builder.setParent(parentSpanContext.getSpanContext());
       distContext = parentSpanContext.getDistributedContext();
