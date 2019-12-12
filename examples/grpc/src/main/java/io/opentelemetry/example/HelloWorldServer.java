@@ -131,7 +131,7 @@ public class HelloWorldServer {
               .startSpan();
       // TODO provide attributes to Span.Builder
       span.setAttribute("component", "grpc");
-      span.setAttribute("rpc.service", "helloworld.Greeter");
+      span.setAttribute("rpc.service", "Greeter");
       span.setAttribute("net.peer.name", "localhost");
       span.setAttribute("net.peer.port", HelloWorldServer.this.port);
       HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + req.getName()).build();
