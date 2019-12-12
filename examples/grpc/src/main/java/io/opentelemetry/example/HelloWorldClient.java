@@ -96,7 +96,7 @@ public class HelloWorldClient {
         tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(Span.Kind.CLIENT).startSpan();
     // TODO provide attributes to Span.Builder
     span.setAttribute("component", "grpc");
-    span.setAttribute("rpc.service", "helloworld.Greeter");
+    span.setAttribute("rpc.service", "Greeter");
     span.setAttribute("net.peer.name", this.hostname);
     span.setAttribute("net.peer.port", this.port);
 
