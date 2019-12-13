@@ -80,18 +80,18 @@ public class AbstractObserverBuilderTest {
 
     @Nullable
     @Override
-    public Observer.Handle getHandle(LabelSet labelSet) {
+    public Observer.Bound getBound(LabelSet labelSet) {
       return null;
     }
 
     @Nullable
     @Override
-    public Observer.Handle getDefaultHandle() {
+    public Observer.Bound getDefaultBound() {
       return null;
     }
 
     @Override
-    public void removeHandle(Observer.Handle handle) {}
+    public void removeBound(Observer.Bound handle) {}
 
     @Override
     public void setCallback(Callback<ObserverDouble.Result> metricUpdater) {}

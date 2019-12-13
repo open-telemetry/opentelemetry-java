@@ -103,7 +103,7 @@ public class GaugeDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    gaugeDouble.getHandle(null);
+    gaugeDouble.getBound(null);
   }
 
   @Test
@@ -117,7 +117,7 @@ public class GaugeDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("handle");
-    gaugeDouble.removeHandle(null);
+    gaugeDouble.removeBound(null);
   }
 
   @Test
@@ -129,6 +129,6 @@ public class GaugeDoubleTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    gaugeDouble.getDefaultHandle().set(5.0);
+    gaugeDouble.getDefaultBound().set(5.0);
   }
 }

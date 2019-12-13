@@ -65,10 +65,10 @@ public final class GarbageCollector {
             .setLabelKeys(Collections.singletonList(GC_LABEL_KEY))
             .setMonotonic(true)
             .build();
-    final List<ObserverLong.Handle> handles = new ArrayList<>(garbageCollectors.size());
+    final List<ObserverLong.Bound> handles = new ArrayList<>(garbageCollectors.size());
     for (final GarbageCollectorMXBean gc : garbageCollectors) {
       LabelSet labelSet = meter.createLabelSet(GC_LABEL_KEY, gc.getName());
-      handles.add(gcMetric.getHandle(labelSet));
+      handles.add(gcMetric.getBound(labelSet));
     }
 
     gcMetric.setCallback(

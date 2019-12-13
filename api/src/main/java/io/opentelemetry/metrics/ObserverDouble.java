@@ -40,7 +40,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(Result result) {
- *             result.put(observer.getDefaultHandle(), 0.8 * count.addAndGet(1));
+ *             result.put(observer.getDefaultBound(), 0.8 * count.addAndGet(1));
  *           }
  *         });
  *   }
@@ -54,7 +54,7 @@ public interface ObserverDouble extends Observer<ObserverDouble.Result> {
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface Result {
-    void put(Handle handle, double value);
+    void put(Bound handle, double value);
   }
 
   @Override

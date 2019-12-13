@@ -78,17 +78,17 @@ public class AbstractGaugeBuilderTest {
     private static final TestHandle HANDLE = new TestHandle();
 
     @Override
-    public TestHandle getHandle(LabelSet labelSet) {
+    public TestHandle getBound(LabelSet labelSet) {
       return HANDLE;
     }
 
     @Override
-    public TestHandle getDefaultHandle() {
+    public TestHandle getDefaultBound() {
       return HANDLE;
     }
 
     @Override
-    public void removeHandle(TestHandle handle) {}
+    public void removeBound(TestHandle handle) {}
   }
 
   private static final class TestHandle {}

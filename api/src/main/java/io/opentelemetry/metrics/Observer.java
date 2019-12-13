@@ -21,17 +21,17 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * Base interface for all the Observer metrics.
  *
- * @param <R> the Handle.
+ * @param <R> the Bound.
  * @since 0.1.0
  */
-public interface Observer<R> extends Metric<Observer.Handle> {
+public interface Observer<R> extends Metric<Observer.Bound> {
   /**
-   * A {@code Handle} for a {@code Observer}.
+   * A {@code Bound} for a {@code Observer}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface Handle {}
+  interface Bound {}
 
   /**
    * A {@code Callback} for a {@code Observer}.

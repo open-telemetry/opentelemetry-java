@@ -100,7 +100,7 @@ public class GaugeLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    gaugeLong.getHandle(null);
+    gaugeLong.getBound(null);
   }
 
   @Test
@@ -114,7 +114,7 @@ public class GaugeLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("handle");
-    gaugeLong.removeHandle(null);
+    gaugeLong.removeBound(null);
   }
 
   @Test
@@ -126,6 +126,6 @@ public class GaugeLongTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    gaugeLong.getDefaultHandle().set(5);
+    gaugeLong.getDefaultBound().set(5);
   }
 }

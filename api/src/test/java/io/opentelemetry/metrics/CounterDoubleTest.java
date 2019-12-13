@@ -104,7 +104,7 @@ public class CounterDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    counterDouble.getHandle(null);
+    counterDouble.getBound(null);
   }
 
   @Test
@@ -118,7 +118,7 @@ public class CounterDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("handle");
-    counterDouble.removeHandle(null);
+    counterDouble.removeBound(null);
   }
 
   @Test
@@ -130,6 +130,6 @@ public class CounterDoubleTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    counterDouble.getDefaultHandle().add(1.0);
+    counterDouble.getDefaultBound().add(1.0);
   }
 }

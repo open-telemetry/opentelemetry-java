@@ -18,8 +18,8 @@ package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.metrics.Observer.Bound;
 import io.opentelemetry.metrics.Observer.Callback;
-import io.opentelemetry.metrics.Observer.Handle;
 import io.opentelemetry.metrics.ObserverLong;
 import io.opentelemetry.metrics.ObserverLong.Result;
 import java.lang.management.ManagementFactory;
@@ -79,20 +79,20 @@ public final class MemoryPools {
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
             .setMonotonic(false)
             .build();
-    final Handle usedHeap =
-        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP));
-    final Handle usedNonHeap =
-        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP));
-    final Handle committedHeap =
-        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP));
-    final Handle committedNonHeap =
-        areaMetric.getHandle(
+    final Bound usedHeap =
+        areaMetric.getBound(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP));
+    final Bound usedNonHeap =
+        areaMetric.getBound(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP));
+    final Bound committedHeap =
+        areaMetric.getBound(meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP));
+    final Bound committedNonHeap =
+        areaMetric.getBound(
             meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, NON_HEAP));
     // TODO: Decide if max is needed or not. May be derived with some approximation from max(used).
-    final Handle maxHeap =
-        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP));
-    final Handle maxNonHeap =
-        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP));
+    final Bound maxHeap =
+        areaMetric.getBound(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP));
+    final Bound maxNonHeap =
+        areaMetric.getBound(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP));
     areaMetric.setCallback(
         new ObserverLong.Callback<Result>() {
           @Override
@@ -120,18 +120,18 @@ public final class MemoryPools {
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))
             .setMonotonic(false)
             .build();
-    final List<Handle> usedHandles = new ArrayList<>(poolBeans.size());
-    final List<Handle> committedHandles = new ArrayList<>(poolBeans.size());
-    final List<Handle> maxHandles = new ArrayList<>(poolBeans.size());
+    final List<Bound> usedBounds = new ArrayList<>(poolBeans.size());
+    final List<Bound> committedBounds = new ArrayList<>(poolBeans.size());
+    final List<Bound> maxBounds = new ArrayList<>(poolBeans.size());
     for (final MemoryPoolMXBean pool : poolBeans) {
-      usedHandles.add(
-          poolMetric.getHandle(
+      usedBounds.add(
+          poolMetric.getBound(
               meter.createLabelSet(TYPE_LABEL_KEY, USED, POOL_LABEL_KEY, pool.getName())));
-      committedHandles.add(
-          poolMetric.getHandle(
+      committedBounds.add(
+          poolMetric.getBound(
               meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, POOL_LABEL_KEY, pool.getName())));
-      maxHandles.add(
-          poolMetric.getHandle(
+      maxBounds.add(
+          poolMetric.getBound(
               meter.createLabelSet(TYPE_LABEL_KEY, MAX, POOL_LABEL_KEY, pool.getName())));
     }
     poolMetric.setCallback(
@@ -140,11 +140,11 @@ public final class MemoryPools {
           public void update(Result result) {
             for (int i = 0; i < poolBeans.size(); i++) {
               MemoryUsage poolUsage = poolBeans.get(i).getUsage();
-              result.put(usedHandles.get(i), poolUsage.getUsed());
-              result.put(committedHandles.get(i), poolUsage.getCommitted());
+              result.put(usedBounds.get(i), poolUsage.getUsed());
+              result.put(committedBounds.get(i), poolUsage.getCommitted());
               // TODO: Decide if max is needed or not. May be derived with some approximation from
               //  max(used).
-              result.put(maxHandles.get(i), poolUsage.getMax());
+              result.put(maxBounds.get(i), poolUsage.getMax());
             }
           }
         });

@@ -19,7 +19,7 @@ package io.opentelemetry.metrics;
 /**
  * Base interface for all the Measure metrics.
  *
- * @param <H> the Handle.
+ * @param <H> the Bound.
  * @since 0.1.0
  */
 public interface Measure<H> extends Metric<H> {

@@ -103,7 +103,7 @@ public class CounterLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    counterLong.getHandle(null);
+    counterLong.getBound(null);
   }
 
   @Test
@@ -117,7 +117,7 @@ public class CounterLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("handle");
-    counterLong.removeHandle(null);
+    counterLong.removeBound(null);
   }
 
   @Test
@@ -129,6 +129,6 @@ public class CounterLongTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    counterLong.getDefaultHandle().add(1);
+    counterLong.getDefaultBound().add(1);
   }
 }

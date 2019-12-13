@@ -33,12 +33,12 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
- *   private static final MeasureDouble.Handle defaultHandle = measure.getDefaultHandle();
+ *   private static final MeasureDouble.Bound defaultBound = measure.getDefaultBound();
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
  *      // Your code here.
- *      defaultHandle.record((System.nanoTime() - startTime) / 1e6);
+ *      defaultBound.record((System.nanoTime() - startTime) / 1e6);
  *   }
  * }
  * }</pre>
@@ -46,14 +46,14 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface MeasureDouble extends Measure<MeasureDouble.Handle> {
+public interface MeasureDouble extends Measure<MeasureDouble.Bound> {
   /**
-   * A {@code Handle} for a {@code MeasureLong}.
+   * A {@code Bound} for a {@code MeasureLong}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface Handle {
+  interface Bound {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *
