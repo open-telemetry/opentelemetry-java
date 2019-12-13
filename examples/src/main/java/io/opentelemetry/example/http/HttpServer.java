@@ -13,22 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentelemetry.example;
+
+package io.opentelemetry.example.http;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.logging.LoggingExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
-import io.opentelemetry.trace.*;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
-
+import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.Tracer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,7 +83,7 @@ public class HttpServer {
       String response = "Hello World!";
       he.sendResponseHeaders(200, response.length());
       OutputStream os = he.getResponseBody();
-      os.write(response.getBytes());
+      os.write(response.getBytes(Charset.defaultCharset()));
       os.close();
       System.out.println("Served Client: " + he.getRemoteAddress());
 
@@ -86,7 +91,7 @@ public class HttpServer {
       Map<String, AttributeValue> event = new HashMap<>();
       event.put("answer", AttributeValue.stringAttributeValue(response));
       span.addEvent("Finish Processing", event);
-      
+
       // Everything works fine in this example
       span.setStatus(Status.OK);
     }
@@ -99,6 +104,8 @@ public class HttpServer {
   Tracer tracer;
   // Export traces in memory
   InMemorySpanExporter inMemexporter = InMemorySpanExporter.create();
+  // Export traces to log
+  LoggingExporter loggingExporter = new LoggingExporter();
   // Extract the context from http headers
   HttpTextFormat.Getter<HttpExchange> getter =
       new HttpTextFormat.Getter<HttpExchange>() {
@@ -111,11 +118,11 @@ public class HttpServer {
         }
       };
 
-  public HttpServer() throws IOException {
+  private HttpServer() throws IOException {
     this(port);
   }
 
-  public HttpServer(int port) throws IOException {
+  private HttpServer(int port) throws IOException {
     initTracer();
     server = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(port), 0);
     // Test urls
@@ -129,14 +136,22 @@ public class HttpServer {
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
     // Set to process in memory the spans
     tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(inMemexporter).build());
+    // Set to export the traces also to a log file
+    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
     // Give a name to the traces
-    this.tracer = tracerFactory.get("io.opentelemetry.example.HttpServer");
+    this.tracer = tracerFactory.get("io.opentelemetry.example.http.HttpServer");
   }
 
   private void stop() {
     server.stop(0);
   }
 
+  /**
+   * Main method to run the example.
+   *
+   * @param args It is not required.
+   * @throws Exception Something might go wrong.
+   */
   public static void main(String[] args) throws Exception {
     final HttpServer s = new HttpServer();
     // Gracefully close the server
@@ -161,6 +176,7 @@ public class HttpServer {
                 }
                 s.inMemexporter.reset();
               } catch (Exception e) {
+                System.err.println(e.getMessage());
               }
             }
           }

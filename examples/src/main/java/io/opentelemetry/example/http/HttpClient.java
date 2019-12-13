@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentelemetry.example;
+
+package io.opentelemetry.example.http;
 
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.logging.LoggingExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 
 public class HttpClient {
 
@@ -39,6 +39,8 @@ public class HttpClient {
   Tracer tracer;
   // Export traces in memory
   InMemorySpanExporter inMemexporter = InMemorySpanExporter.create();
+  // Export traces to log
+  LoggingExporter loggingExporter = new LoggingExporter();
   // Inject the span context into the request
   HttpTextFormat.Setter<HttpURLConnection> setter =
       new HttpTextFormat.Setter<HttpURLConnection>() {
@@ -53,11 +55,13 @@ public class HttpClient {
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
     // Set to process in memory the spans
     tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(inMemexporter).build());
+    // Set to export the traces also to a log file
+    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
     // Give a name to the traces
-    this.tracer = tracerFactory.get("io.opentelemetry.example.HttpClient");
+    this.tracer = tracerFactory.get("io.opentelemetry.example.http.HttpClient");
   }
 
-  public HttpClient() throws Exception {
+  private HttpClient() throws Exception {
     initTracer();
 
     // Connect to the server locally
@@ -66,8 +70,7 @@ public class HttpClient {
 
     // Name convention for the Span is not yet defined.
     // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
-    Span span =
-        tracer.spanBuilder("/").setSpanKind(Span.Kind.CLIENT).startSpan();
+    Span span = tracer.spanBuilder("/").setSpanKind(Span.Kind.CLIENT).startSpan();
     // TODO provide semantic convention attributes to Span.Builder
     span.setAttribute("component", "http");
     span.setAttribute("http.method", "GET");
@@ -89,7 +92,8 @@ public class HttpClient {
       // Process the request
       con.setRequestMethod("GET");
       status = con.getResponseCode();
-      BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+      BufferedReader in =
+          new BufferedReader(new InputStreamReader(con.getInputStream(), Charset.defaultCharset()));
       String inputLine;
       while ((inputLine = in.readLine()) != null) {
         content.append(inputLine);
@@ -108,7 +112,12 @@ public class HttpClient {
     System.out.println("Response Msg: " + content);
   }
 
-  public static void main(String[] args) throws Exception {
+  /**
+   * Main method to run the example.
+   *
+   * @param args It is not required.
+   */
+  public static void main(String[] args) {
     // Perform request every 5s
     Thread t =
         new Thread() {
@@ -124,7 +133,6 @@ public class HttpClient {
                 c.inMemexporter.reset();
               } catch (Exception e) {
                 System.out.println(e.getMessage());
-                e.printStackTrace(System.out);
               }
             }
           }

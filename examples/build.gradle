@@ -1,0 +1,22 @@
+description = 'OpenTelemetry Examples'
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+dependencies {
+    api project(':opentelemetry-api'),
+            project(':opentelemetry-sdk'),
+            project(':opentelemetry-exporters-inmemory'),
+            project(':opentelemetry-exporters-logging')
+}
+
+animalsniffer {
+    // Don't check sourceSets.jmh and sourceSets.test
+    sourceSets = [
+            sourceSets.main
+    ]
+}
