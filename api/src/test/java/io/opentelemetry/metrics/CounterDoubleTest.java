@@ -94,7 +94,7 @@ public class CounterDoubleTest {
   }
 
   @Test
-  public void noopGetHandle_WithNullLabelSet() {
+  public void noopGetBound_WithNullLabelSet() {
     CounterDouble counterDouble =
         meter
             .counterDoubleBuilder(NAME)
@@ -108,7 +108,7 @@ public class CounterDoubleTest {
   }
 
   @Test
-  public void noopRemoveHandle_WithNullHandle() {
+  public void noopRemoveBound_WithNullBound() {
     CounterDouble counterDouble =
         meter
             .counterDoubleBuilder(NAME)
@@ -117,7 +117,7 @@ public class CounterDoubleTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("handle");
+    thrown.expectMessage("bound");
     counterDouble.removeBound(null);
   }
 

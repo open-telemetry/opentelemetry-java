@@ -183,7 +183,7 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "handle");
+      Utils.checkNotNull(bound, "bound");
     }
 
     /** No-op implementations of Bound class. */
@@ -228,7 +228,7 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "handle");
+      Utils.checkNotNull(bound, "bound");
     }
 
     /** No-op implementations of Bound class. */
@@ -273,7 +273,7 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "handle");
+      Utils.checkNotNull(bound, "bound");
     }
 
     /** No-op implementations of Bound class. */
@@ -318,7 +318,7 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "handle");
+      Utils.checkNotNull(bound, "bound");
     }
 
     /** No-op implementations of Bound class. */
@@ -361,8 +361,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeBound(Bound handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(Bound bound) {
+      Utils.checkNotNull(bound, "bound");
     }
 
     /** No-op implementations of Bound class. */
@@ -406,8 +406,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeBound(Bound handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(Bound bound) {
+      Utils.checkNotNull(bound, "bound");
     }
 
     /** No-op implementations of Bound class. */
@@ -451,8 +451,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeBound(Bound handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(Bound bound) {
+      Utils.checkNotNull(bound, "bound");
     }
 
     @Override
@@ -496,8 +496,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void removeBound(Bound handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(Bound bound) {
+      Utils.checkNotNull(bound, "bound");
     }
 
     @Override

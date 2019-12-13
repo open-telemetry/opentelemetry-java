@@ -54,7 +54,7 @@ public interface ObserverLong extends Observer<ObserverLong.Result> {
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface Result {
-    void put(Bound handle, long value);
+    void put(Bound bound, long value);
   }
 
   @Override

@@ -93,7 +93,7 @@ public class CounterLongTest {
   }
 
   @Test
-  public void noopGetHandle_WithNullLabelSet() {
+  public void noopGetBound_WithNullLabelSet() {
     CounterLong counterLong =
         meter
             .counterLongBuilder(NAME)
@@ -107,7 +107,7 @@ public class CounterLongTest {
   }
 
   @Test
-  public void noopRemoveHandle_WithNullHandle() {
+  public void noopRemoveBound_WithNullBound() {
     CounterLong counterLong =
         meter
             .counterLongBuilder(NAME)
@@ -116,7 +116,7 @@ public class CounterLongTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("handle");
+    thrown.expectMessage("bound");
     counterLong.removeBound(null);
   }
 

@@ -54,7 +54,7 @@ public interface ObserverDouble extends Observer<ObserverDouble.Result> {
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface Result {
-    void put(Bound handle, double value);
+    void put(Bound bound, double value);
   }
 
   @Override
