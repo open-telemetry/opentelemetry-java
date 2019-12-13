@@ -30,13 +30,11 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
- * Implementation of the {@link SpanProcessor} that batches spans exported by the SDK then pushes
- * them to the exporter pipeline.
+ * Implementation of the {@link SpanProcessor} that repeatedly reports active spans that are older
  *
- * <p>All spans reported by the SDK implementation are first added to a synchronized queue (with a
- * {@code maxQueueSize} maximum size, after the size is reached spans are dropped) and exported
- * every {@code scheduleDelayMillis} to the exporter pipeline in batches of {@code
- * maxExportBatchSize}.
+ * <p>All spans started by the SDK are first added to a synchronized list (with a {@code
+ * maxQueueSize} maximum size, after the size is reached spans are dropped) and exported every
+ * {@code reportIntervalMillis} to the exporter pipeline in batches of {@code maxExportBatchSize}.
  *
  * <p>If the queue gets half full a preemptive notification is sent to the worker thread that
  * exports the spans to wake up and start a new export cycle.
@@ -54,10 +52,10 @@ public final class SpanWatcherProcessor implements SpanProcessor {
   private SpanWatcherProcessor(
       SpanExporter spanExporter,
       boolean sampled,
-      long scheduleDelayMillis,
+      long reportIntervalMillis,
       int maxQueueSize,
       int maxExportBatchSize) {
-    this.worker = new Worker(spanExporter, scheduleDelayMillis, maxQueueSize, maxExportBatchSize);
+    this.worker = new Worker(spanExporter, reportIntervalMillis, maxQueueSize, maxExportBatchSize);
     this.workerThread = newThread(worker);
     this.workerThread.start();
     this.sampled = sampled;
@@ -93,14 +91,14 @@ public final class SpanWatcherProcessor implements SpanProcessor {
 
   /** Builder class for {@link SpanWatcherProcessor}. */
   public static final class Builder {
-    private static final long SCHEDULE_DELAY_MILLIS = 5000;
+    private static final long REPORT_INTERVAL_MILLIS = 5000;
     private static final int MAX_QUEUE_SIZE = 2048;
     private static final int MAX_EXPORT_BATCH_SIZE = 512;
     private final SpanExporter spanExporter;
-    private long scheduleDelayMillis = SCHEDULE_DELAY_MILLIS;
-    private int maxQueueSize = MAX_QUEUE_SIZE;
+    private long reportIntervalMillis = REPORT_INTERVAL_MILLIS;
+    private int maxWatchlistSize = MAX_QUEUE_SIZE;
     private int maxExportBatchSize = MAX_EXPORT_BATCH_SIZE;
-    private boolean sampled = true;
+    private boolean reportOnlySampled = true;
 
     private Builder(SpanExporter spanExporter) {
       this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
@@ -115,7 +113,7 @@ public final class SpanWatcherProcessor implements SpanProcessor {
      * @return this.
      */
     public Builder reportOnlySampled(boolean sampled) {
-      this.sampled = sampled;
+      this.reportOnlySampled = sampled;
       return this;
     }
 
@@ -125,28 +123,25 @@ public final class SpanWatcherProcessor implements SpanProcessor {
      *
      * <p>Default value is {@code 5000}ms.
      *
-     * @param scheduleDelayMillis the delay interval between two consecutive exports.
+     * @param reportIntervalMillis the delay interval between two consecutive exports.
      * @return this.
      */
-    public Builder setScheduleDelayMillis(long scheduleDelayMillis) {
-      this.scheduleDelayMillis = scheduleDelayMillis;
+    public Builder setReportIntervalMillis(long reportIntervalMillis) {
+      this.reportIntervalMillis = reportIntervalMillis;
       return this;
     }
 
     /**
-     * Sets the maximum number of Spans that are kept in the queue before start dropping.
-     *
-     * <p>See the BatchSampledSpansProcessor class description for a high-level design description
-     * of this class.
+     * Sets the maximum number of Spans that are kept in the watchlist before start dropping.
      *
      * <p>Default value is {@code 2048}.
      *
-     * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
-     *     dropping.
+     * @param maxWatchlistSize the maximum number of Spans that are kept in the watchlist before
+     *     spans are dropped.
      * @return this.
      */
-    public Builder setMaxQueueSize(int maxQueueSize) {
-      this.maxQueueSize = maxQueueSize;
+    public Builder setMaxWatchlistSize(int maxWatchlistSize) {
+      this.maxWatchlistSize = maxWatchlistSize;
       return this;
     }
 
@@ -166,15 +161,18 @@ public final class SpanWatcherProcessor implements SpanProcessor {
     }
 
     /**
-     * Returns a new {@link SpanWatcherProcessor} that batches, then converts spans to proto and
-     * forwards them to the given {@code spanExporter}.
+     * Returns a new {@link SpanWatcherProcessor}.
      *
      * @return a new {@link SpanWatcherProcessor}.
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
     public SpanWatcherProcessor build() {
       return new SpanWatcherProcessor(
-          spanExporter, sampled, scheduleDelayMillis, maxQueueSize, maxExportBatchSize);
+          spanExporter,
+          reportOnlySampled,
+          reportIntervalMillis,
+          maxWatchlistSize,
+          maxExportBatchSize);
     }
   }
 
@@ -196,31 +194,34 @@ public final class SpanWatcherProcessor implements SpanProcessor {
   private static final class Worker implements Runnable {
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SpanExporter spanExporter;
-    private final long reportInterval;
-    private final int maxQueueSize;
+    private final long reportIntervalMillis;
+    private final int maxWatchlistSize;
     private final int maxExportBatchSize;
     private final Object monitor = new Object();
 
     @GuardedBy("monitor")
-    private final List<WeakReference<ReadableSpan>> spansList;
+    private final List<WeakReference<ReadableSpan>> spanWatchlist;
 
     private Worker(
-        SpanExporter spanExporter, long reportInterval, int maxQueueSize, int maxExportBatchSize) {
+        SpanExporter spanExporter,
+        long reportIntervalMillis,
+        int maxWatchlistSize,
+        int maxExportBatchSize) {
       this.spanExporter = spanExporter;
-      this.reportInterval = reportInterval;
-      this.maxQueueSize = maxQueueSize;
+      this.reportIntervalMillis = reportIntervalMillis;
+      this.maxWatchlistSize = maxWatchlistSize;
       this.maxExportBatchSize = maxExportBatchSize;
-      this.spansList = new ArrayList<>(maxQueueSize);
+      this.spanWatchlist = new ArrayList<>(maxWatchlistSize);
     }
 
     private void addSpan(ReadableSpan span) {
       synchronized (monitor) {
-        if (spansList.size() == maxQueueSize) {
+        if (spanWatchlist.size() == maxWatchlistSize) {
           // TODO: Record a counter for dropped spans.
           return;
         }
         // TODO: Record a gauge for referenced spans.
-        spansList.add(new WeakReference<>(span));
+        spanWatchlist.add(new WeakReference<>(span));
       }
 
       // TODO: We should keep track of spans that have ended but weren't yet removed
@@ -238,13 +239,13 @@ public final class SpanWatcherProcessor implements SpanProcessor {
             // In the case of a spurious wakeup we export only if we have at least one span in
             // the batch. It is acceptable because batching is a best effort mechanism here.
             try {
-              monitor.wait(reportInterval);
+              monitor.wait(reportIntervalMillis);
             } catch (InterruptedException ie) {
               // Preserve the interruption status as per guidance and stop doing any work.
               Thread.currentThread().interrupt();
               return;
             }
-          } while (spansList.isEmpty());
+          } while (spanWatchlist.isEmpty());
           unfinishedSpans = getUnfinishedSpans();
         }
         // Execute the batch export outside the synchronized to not block all producers.
@@ -256,8 +257,8 @@ public final class SpanWatcherProcessor implements SpanProcessor {
     private ArrayList<SpanData> getUnfinishedSpans() {
       ArrayList<SpanData> unfinishedSpans = new ArrayList<>();
       final long curTimeNanos = System.currentTimeMillis() * 1000L * 1000L;
-      for (int i = 0; i < spansList.size(); ) {
-        ReadableSpan span = spansList.get(i).get();
+      for (int i = 0; i < spanWatchlist.size(); ) {
+        ReadableSpan span = spanWatchlist.get(i).get();
         if (span == null) {
           dropSpan(i);
           continue;
@@ -271,7 +272,7 @@ public final class SpanWatcherProcessor implements SpanProcessor {
         // to be reported,
         // using the start timestamp makes just as much sense.
         final long age = curTimeNanos - data.getStartEpochNanos();
-        if (age > reportInterval) {
+        if (age > reportIntervalMillis) {
           // Many spans will be end()ed so soon that it won't bring much benefit to report them
           // earlier.
           unfinishedSpans.add(data);
@@ -283,11 +284,14 @@ public final class SpanWatcherProcessor implements SpanProcessor {
 
     @GuardedBy("monitor")
     private void dropSpan(int i) {
-      final int lastIdx = spansList.size() - 1;
+      // We don't care about the order of Spans in spanWatchlist,
+      // so just this is more efficient than just using remove(i).
+
+      final int lastIdx = spanWatchlist.size() - 1;
       if (i != lastIdx) {
-        spansList.set(i, spansList.get(lastIdx));
+        spanWatchlist.set(i, spanWatchlist.get(lastIdx));
       }
-      spansList.remove(lastIdx);
+      spanWatchlist.remove(lastIdx);
     }
 
     private void flush() {

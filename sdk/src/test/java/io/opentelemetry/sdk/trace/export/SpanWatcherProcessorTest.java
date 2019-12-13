@@ -43,11 +43,11 @@ import org.mockito.MockitoAnnotations;
 public class SpanWatcherProcessorTest {
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
-  private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
+  private static final long TEST_REPORT_INTERVAL = 500;
   private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
   private final Tracer tracer = tracerSdkFactory.get("BatchSpansProcessorTest");
   private final WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter();
-  @Mock private SpanExporter mockServiceHandler;
+  @Mock private SpanExporter throwingExporter;
 
   @Before
   public void setup() {
@@ -73,7 +73,7 @@ public class SpanWatcherProcessorTest {
   public void testSpanWatcherBasic() {
     tracerSdkFactory.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(waitingSpanExporter)
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+            .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());
 
     ReadableSpan span1 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
@@ -92,7 +92,7 @@ public class SpanWatcherProcessorTest {
   public void testUnreferencedSpansAreNotReported() {
     tracerSdkFactory.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(waitingSpanExporter)
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+            .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());
 
     @SuppressWarnings("unused")
@@ -115,9 +115,9 @@ public class SpanWatcherProcessorTest {
   public void exportMoreSpansThanTheBufferSize() {
     tracerSdkFactory.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(waitingSpanExporter)
-            .setMaxQueueSize(6)
+            .setMaxWatchlistSize(6)
             .setMaxExportBatchSize(2)
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+            .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());
 
     ReadableSpan span1 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
@@ -145,7 +145,7 @@ public class SpanWatcherProcessorTest {
         SpanWatcherProcessor.newBuilder(
                 MultiSpanExporter.create(
                     Arrays.<SpanExporter>asList(waitingSpanExporter, waitingSpanExporter2)))
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+            .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());
 
     ReadableSpan span1 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
@@ -161,8 +161,8 @@ public class SpanWatcherProcessorTest {
     final int maxQueuedSpans = 8;
     tracerSdkFactory.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(waitingSpanExporter)
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-            .setMaxQueueSize(maxQueuedSpans)
+            .setReportIntervalMillis(TEST_REPORT_INTERVAL)
+            .setMaxWatchlistSize(maxQueuedSpans)
             .setMaxExportBatchSize(maxQueuedSpans / 2)
             .build());
 
@@ -231,13 +231,13 @@ public class SpanWatcherProcessorTest {
   @Test
   public void serviceHandlerThrowsException() {
     doThrow(new IllegalArgumentException("No export for you."))
-        .when(mockServiceHandler)
+        .when(throwingExporter)
         .export(ArgumentMatchers.<SpanData>anyList());
 
     tracerSdkFactory.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(
-                MultiSpanExporter.create(Arrays.asList(mockServiceHandler, waitingSpanExporter)))
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+                MultiSpanExporter.create(Arrays.asList(throwingExporter, waitingSpanExporter)))
+            .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());
     ReadableSpan span1 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
     List<SpanData> exported = waitingSpanExporter.waitForExport(1);
@@ -254,7 +254,7 @@ public class SpanWatcherProcessorTest {
   public void exportNotSampledSpans() {
     tracerSdkFactory.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(waitingSpanExporter)
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+            .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());
 
     @SuppressWarnings("unused")
