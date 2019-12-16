@@ -20,8 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryFormat;
-import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.DistributedContextManager;
@@ -42,7 +40,6 @@ import io.opentelemetry.metrics.ObserverLong;
 import io.opentelemetry.metrics.spi.MeterFactoryProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerFactory;
 import io.opentelemetry.trace.spi.TracerFactoryProvider;
@@ -270,18 +267,6 @@ public class OpenTelemetryTest {
       return null;
     }
 
-    @Nullable
-    @Override
-    public BinaryFormat<SpanContext> getBinaryFormat() {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public HttpTextFormat<SpanContext> getHttpTextFormat() {
-      return null;
-    }
-
     @Override
     public TracerFactory create() {
       return new FirstTracerFactory();
@@ -431,18 +416,6 @@ public class OpenTelemetryTest {
     @Nullable
     @Override
     public Scope withContext(DistributedContext distContext) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public BinaryFormat<DistributedContext> getBinaryFormat() {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public HttpTextFormat<DistributedContext> getHttpTextFormat() {
       return null;
     }
   }

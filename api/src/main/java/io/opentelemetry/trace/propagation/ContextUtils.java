@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.unsafe;
+package io.opentelemetry.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
 import javax.annotation.concurrent.Immutable;
 
@@ -35,6 +36,8 @@ import javax.annotation.concurrent.Immutable;
 public final class ContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
       Context.<Span>keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.getInvalid());
+  private static final Context.Key<SpanContext> CONTEXT_SPANCONTEXT_KEY =
+      Context.<SpanContext>key("opentelemetry-trace-spancontext-key");
 
   /**
    * Creates a new {@code Context} with the given value set.
@@ -43,8 +46,8 @@ public final class ContextUtils {
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(Span span) {
-    return Context.current().withValue(CONTEXT_SPAN_KEY, span);
+  public static Context withSpan(Span span) {
+    return withSpan(span, Context.current());
   }
 
   /**
@@ -55,8 +58,33 @@ public final class ContextUtils {
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(Span span, Context context) {
-    return context.withValue(CONTEXT_SPAN_KEY, span);
+  public static Context withSpan(Span span, Context context) {
+    return context.withValue(CONTEXT_SPAN_KEY, span).withValue(CONTEXT_SPANCONTEXT_KEY, null);
+  }
+
+  /**
+   * Creates a new {@code Context} with the given {@code SpanContext} set.
+   *
+   * @param spanContext the value to be set.
+   * @return a new context with the given value set.
+   * @since 0.3.0
+   */
+  public static Context withSpanContext(SpanContext spanContext) {
+    return withSpanContext(spanContext, Context.current());
+  }
+
+  /**
+   * Creates a new {@code Context} with the given {@code SpanContext} set.
+   *
+   * @param spanContext the value to be set.
+   * @param context the parent {@code Context}.
+   * @return a new context with the given value set.
+   * @since 0.3.0
+   */
+  public static Context withSpanContext(SpanContext spanContext, Context context) {
+    return context
+        .withValue(CONTEXT_SPAN_KEY, null)
+        .withValue(CONTEXT_SPANCONTEXT_KEY, spanContext);
   }
 
   /**
@@ -65,7 +93,7 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static Span getValue() {
+  public static Span getSpan() {
     return CONTEXT_SPAN_KEY.get();
   }
 
@@ -76,8 +104,16 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static Span getValue(Context context) {
+  public static Span getSpan(Context context) {
     return CONTEXT_SPAN_KEY.get(context);
+  }
+
+  public static SpanContext getSpanContext() {
+    return CONTEXT_SPANCONTEXT_KEY.get();
+  }
+
+  public static SpanContext getSpanContext(Context context) {
+    return CONTEXT_SPANCONTEXT_KEY.get(context);
   }
 
   /**
@@ -88,7 +124,7 @@ public final class ContextUtils {
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */
-  public static Scope withSpan(Span span) {
+  public static Scope withScopedSpan(Span span) {
     return SpanInScope.create(span);
   }
 

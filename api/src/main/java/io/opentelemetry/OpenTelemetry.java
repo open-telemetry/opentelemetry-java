@@ -16,9 +16,12 @@
 
 package io.opentelemetry;
 
+import io.opentelemetry.context.propagation.DefaultPropagators;
+import io.opentelemetry.context.propagation.Propagators;
 import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.distributedcontext.DistributedContextManager;
 import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
+import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterFactory;
 import io.opentelemetry.metrics.DefaultMeterFactoryProvider;
 import io.opentelemetry.metrics.Meter;
@@ -28,6 +31,7 @@ import io.opentelemetry.trace.DefaultTracerFactory;
 import io.opentelemetry.trace.DefaultTracerFactoryProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerFactory;
+import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.spi.TracerFactoryProvider;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
@@ -51,6 +55,9 @@ public final class OpenTelemetry {
   private final TracerFactory tracerFactory;
   private final MeterFactory meterFactory;
   private final DistributedContextManager contextManager;
+
+  private volatile Propagators propagators =
+      DefaultPropagators.builder().addHttpTextFormat(new HttpTraceContext()).build();
 
   /**
    * Returns a singleton {@link TracerFactory}.
@@ -87,6 +94,34 @@ public final class OpenTelemetry {
    */
   public static DistributedContextManager getDistributedContextManager() {
     return getInstance().contextManager;
+  }
+
+  /**
+   * Returns a {@link Propagators} object, which can be used to access the set of registered
+   * propagators for each supported format.
+   *
+   * @return registered propagators container, defaulting to a {@link Propagators} object with
+   *     {@code HttpTraceContext} registered.
+   * @throws IllegalStateException if a specified manager (via system properties) could not be
+   *     found.
+   * @since 0.3.0
+   */
+  public static Propagators getPropagators() {
+    return getInstance().propagators;
+  }
+
+  /**
+   * Sets the {@link Propagators} object, which can be used to access the set of registered
+   * propagators for each supported format.
+   *
+   * @param propagators the {@link Propagators} object to be registered.
+   * @throws IllegalStateException if a specified manager (via system properties) could not be
+   *     found.
+   * @since 0.3.0
+   */
+  public static void setPropagators(Propagators propagators) {
+    Utils.checkNotNull(propagators, "propagators");
+    getInstance().propagators = propagators;
   }
 
   /** Lazy loads an instance. */

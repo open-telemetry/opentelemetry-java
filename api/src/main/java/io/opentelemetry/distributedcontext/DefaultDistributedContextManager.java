@@ -17,12 +17,8 @@
 package io.opentelemetry.distributedcontext;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryFormat;
-import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
 import io.opentelemetry.internal.Utils;
-import java.util.Collections;
-import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -35,9 +31,6 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class DefaultDistributedContextManager implements DistributedContextManager {
   private static final DefaultDistributedContextManager INSTANCE =
       new DefaultDistributedContextManager();
-  private static final BinaryFormat<DistributedContext> BINARY_FORMAT = new NoopBinaryFormat();
-  private static final HttpTextFormat<DistributedContext> HTTP_TEXT_FORMAT =
-      new NoopHttpTextFormat();
 
   /**
    * Returns a {@code DistributedContextManager} singleton that is the default implementation for
@@ -64,16 +57,6 @@ public final class DefaultDistributedContextManager implements DistributedContex
   @Override
   public Scope withContext(DistributedContext distContext) {
     return ContextUtils.withDistributedContext(distContext);
-  }
-
-  @Override
-  public BinaryFormat<DistributedContext> getBinaryFormat() {
-    return BINARY_FORMAT;
-  }
-
-  @Override
-  public HttpTextFormat<DistributedContext> getHttpTextFormat() {
-    return HTTP_TEXT_FORMAT;
   }
 
   @Immutable
@@ -106,45 +89,6 @@ public final class DefaultDistributedContextManager implements DistributedContex
 
     @Override
     public DistributedContext build() {
-      return EmptyDistributedContext.getInstance();
-    }
-  }
-
-  @Immutable
-  private static final class NoopBinaryFormat implements BinaryFormat<DistributedContext> {
-    static final byte[] EMPTY_BYTE_ARRAY = {};
-
-    @Override
-    public byte[] toByteArray(DistributedContext distContext) {
-      Utils.checkNotNull(distContext, "distContext");
-      return EMPTY_BYTE_ARRAY;
-    }
-
-    @Override
-    public DistributedContext fromByteArray(byte[] bytes) {
-      Utils.checkNotNull(bytes, "bytes");
-      return EmptyDistributedContext.getInstance();
-    }
-  }
-
-  @Immutable
-  private static final class NoopHttpTextFormat implements HttpTextFormat<DistributedContext> {
-    @Override
-    public List<String> fields() {
-      return Collections.emptyList();
-    }
-
-    @Override
-    public <C> void inject(DistributedContext distContext, C carrier, Setter<C> setter) {
-      Utils.checkNotNull(distContext, "distContext");
-      Utils.checkNotNull(carrier, "carrier");
-      Utils.checkNotNull(setter, "setter");
-    }
-
-    @Override
-    public <C> DistributedContext extract(C carrier, Getter<C> getter) {
-      Utils.checkNotNull(carrier, "carrier");
-      Utils.checkNotNull(getter, "getter");
       return EmptyDistributedContext.getInstance();
     }
   }

@@ -18,9 +18,6 @@ package io.opentelemetry.trace;
 
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryFormat;
-import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -153,109 +150,4 @@ public interface Tracer {
    * @since 0.1.0
    */
   Span.Builder spanBuilder(String spanName);
-
-  /**
-   * Returns the {@link BinaryFormat} for this tracer implementation.
-   *
-   * <p>If no tracer implementation is provided, this defaults to the W3C Trace Context binary
-   * format. For more details see <a href="https://w3c.github.io/trace-context-binary/">W3C Trace
-   * Context binary protocol</a>.
-   *
-   * <p>Example of usage on the client:
-   *
-   * <pre>{@code
-   * private static final Tracer tracer = OpenTelemetry.getTracer();
-   * private static final BinaryFormat binaryFormat = tracer.getBinaryFormat();
-   * void onSendRequest() {
-   *   Span span = tracer.spanBuilder("MyRequest").setSpanKind(Span.Kind.CLIENT).startSpan();
-   *   try (Scope ss = tracer.withSpan(span)) {
-   *     byte[] binaryValue = binaryFormat.toByteArray(tracer.getCurrentContext().context());
-   *     // Send the request including the binaryValue and wait for the response.
-   *   } finally {
-   *     span.end();
-   *   }
-   * }
-   * }</pre>
-   *
-   * <p>Example of usage on the server:
-   *
-   * <pre>{@code
-   * private static final Tracer tracer = OpenTelemetry.getTracer();
-   * private static final BinaryFormat binaryFormat = tracer.getBinaryFormat();
-   * void onRequestReceived() {
-   *   // Get the binaryValue from the request.
-   *   SpanContext spanContext = SpanContext.INVALID;
-   *   if (binaryValue != null) {
-   *     spanContext = binaryFormat.fromByteArray(binaryValue);
-   *   }
-   *   Span span = tracer.spanBuilder("MyRequest")
-   *       .setParent(spanContext)
-   *       .setSpanKind(Span.Kind.SERVER).startSpan();
-   *   try (Scope ss = tracer.withSpan(span)) {
-   *     // Handle request and send response back.
-   *   } finally {
-   *     span.end();
-   *   }
-   * }
-   * }</pre>
-   *
-   * @return the {@code BinaryFormat} for this implementation.
-   * @since 0.1.0
-   */
-  BinaryFormat<SpanContext> getBinaryFormat();
-
-  /**
-   * Returns the {@link HttpTextFormat} for this tracer implementation.
-   *
-   * <p>If no tracer implementation is provided, this defaults to the W3C Trace Context HTTP text
-   * format ({@link HttpTraceContext}). For more details see <a
-   * href="https://w3c.github.io/trace-context/">W3C Trace Context</a>.
-   *
-   * <p>Example of usage on the client:
-   *
-   * <pre>{@code
-   * private static final Tracer tracer = OpenTelemetry.getTracer();
-   * private static final HttpTextFormat textFormat = tracer.getHttpTextFormat();
-   * private static final HttpTextFormat.Setter setter =
-   *         new HttpTextFormat.Setter<HttpURLConnection>() {
-   *   public void put(HttpURLConnection carrier, String key, String value) {
-   *     carrier.setRequestProperty(field, value);
-   *   }
-   * }
-   *
-   * void makeHttpRequest() {
-   *   Span span = tracer.spanBuilder("MyRequest").setSpanKind(Span.Kind.CLIENT).startSpan();
-   *   try (Scope s = tracer.withSpan(span)) {
-   *     HttpURLConnection connection =
-   *         (HttpURLConnection) new URL("http://myserver").openConnection();
-   *     textFormat.inject(span.getContext(), connection, httpURLConnectionSetter);
-   *     // Send the request, wait for response and maybe set the status if not ok.
-   *   }
-   *   span.end();  // Can set a status.
-   * }
-   * }</pre>
-   *
-   * <p>Example of usage on the server:
-   *
-   * <pre>{@code
-   * private static final Tracer tracer = OpenTelemetry.getTracer();
-   * private static final HttpTextFormat textFormat = tracer.getHttpTextFormat();
-   * private static final HttpTextFormat.Getter<HttpRequest> getter = ...;
-   *
-   * void onRequestReceived(HttpRequest request) {
-   *   SpanContext spanContext = textFormat.extract(request, getter);
-   *   Span span = tracer.spanBuilder("MyRequest")
-   *       .setParent(spanContext)
-   *       .setSpanKind(Span.Kind.SERVER).startSpan();
-   *   try (Scope s = tracer.withSpan(span)) {
-   *     // Handle request and send response back.
-   *   }
-   *   span.end()
-   * }
-   * }</pre>
-   *
-   * @return the {@code HttpTextFormat} for this implementation.
-   * @since 0.1.0
-   */
-  HttpTextFormat<SpanContext> getHttpTextFormat();
 }

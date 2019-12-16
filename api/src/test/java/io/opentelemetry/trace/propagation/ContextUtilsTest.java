@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.unsafe;
+package io.opentelemetry.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -30,23 +30,23 @@ import org.junit.runners.JUnit4;
 public final class ContextUtilsTest {
   @Test
   public void testGetCurrentSpan_DefaultContext() {
-    Span span = ContextUtils.getValue(Context.current());
+    Span span = ContextUtils.getSpan(Context.current());
     assertThat(span).isNotNull();
     assertThat(span).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void testGetCurrentSpan_DefaultContext_WithoutExplicitContext() {
-    Span span = ContextUtils.getValue();
+    Span span = ContextUtils.getSpan();
     assertThat(span).isNotNull();
     assertThat(span).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void testGetCurrentSpan_ContextSetToNull() {
-    Context orig = ContextUtils.withValue(null, Context.current()).attach();
+    Context orig = ContextUtils.withSpan(null, Context.current()).attach();
     try {
-      Span span = ContextUtils.getValue(Context.current());
+      Span span = ContextUtils.getSpan(Context.current());
       assertThat(span).isNotNull();
       assertThat(span).isInstanceOf(DefaultSpan.class);
     } finally {
@@ -56,9 +56,9 @@ public final class ContextUtilsTest {
 
   @Test
   public void testGetCurrentSpan_ContextSetToNull_WithoutExplicitContext() {
-    Context orig = ContextUtils.withValue(null).attach();
+    Context orig = ContextUtils.withSpan(null).attach();
     try {
-      Span span = ContextUtils.getValue(Context.current());
+      Span span = ContextUtils.getSpan(Context.current());
       assertThat(span).isNotNull();
       assertThat(span).isInstanceOf(DefaultSpan.class);
     } finally {

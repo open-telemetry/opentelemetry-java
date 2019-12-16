@@ -19,8 +19,6 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.trace.propagation.BinaryTraceContext;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -72,16 +70,6 @@ public class DefaultTracerTest {
   @Test
   public void defaultSpanBuilderWithName() {
     assertThat(defaultTracer.spanBuilder(SPAN_NAME).startSpan()).isInstanceOf(DefaultSpan.class);
-  }
-
-  @Test
-  public void defaultHttpTextFormat() {
-    assertThat(defaultTracer.getHttpTextFormat()).isInstanceOf(HttpTraceContext.class);
-  }
-
-  @Test
-  public void defaultBinaryFormat() {
-    assertThat(defaultTracer.getBinaryFormat()).isInstanceOf(BinaryTraceContext.class);
   }
 
   @Test

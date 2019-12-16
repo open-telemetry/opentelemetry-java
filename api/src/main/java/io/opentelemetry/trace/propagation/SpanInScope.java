@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.unsafe;
+package io.opentelemetry.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
@@ -30,7 +30,7 @@ final class SpanInScope implements Scope {
   private final Context current;
 
   private SpanInScope(Span span) {
-    current = ContextUtils.withValue(span);
+    current = ContextUtils.withSpan(span);
     previous = current.attach();
   }
 
