@@ -19,7 +19,8 @@ package io.opentelemetry.metrics;
 /**
  * Base interface for all the Observer metrics.
  *
- * @param <R> the Bound.
+ * @param <B> the Bound type.
+ * @param <R> the callback Result type.
  * @since 0.1.0
  */
 public interface Observer<R, B> extends Metric<B> {

@@ -19,7 +19,7 @@ package io.opentelemetry.metrics;
 /**
  * Base interface for all the Gauge metrics.
  *
- * @param <H> the Bound.
+ * @param <H> the Bound type.
  * @since 0.1.0
  */
 public interface Gauge<H> extends Metric<H> {

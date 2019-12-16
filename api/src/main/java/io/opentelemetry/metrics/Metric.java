@@ -24,7 +24,7 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * Base interface for all metrics defined in this package.
  *
- * @param <B> the Bound.
+ * @param <B> the Bound type.
  * @since 0.1.0
  */
 @ThreadSafe
