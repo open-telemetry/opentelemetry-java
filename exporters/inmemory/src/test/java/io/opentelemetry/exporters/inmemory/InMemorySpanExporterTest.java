@@ -101,6 +101,7 @@ public class InMemorySpanExporterTest {
 
   static SpanData makeBasicSpan() {
     return SpanData.newBuilder()
+        .setHasBeenEnded(true)
         .setTraceId(io.opentelemetry.trace.TraceId.getInvalid())
         .setSpanId(io.opentelemetry.trace.SpanId.getInvalid())
         .setName("span")

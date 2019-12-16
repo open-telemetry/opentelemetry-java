@@ -179,6 +179,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     // Copy remainder within synchronized
     synchronized (lock) {
       return builder
+          .setHasBeenEnded(hasBeenEnded)
           .setAttributes(attributes)
           .setEndEpochNanos(getEndEpochNanos())
           .setStatus(getStatusWithDefault())
