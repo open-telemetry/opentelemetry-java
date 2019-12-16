@@ -178,7 +178,7 @@ public abstract class SpanData {
    * @return {@code true} if the span has already been ended, {@code false} if not.
    * @since 0.4.0
    */
-  public abstract boolean getHasBeenEnded();
+  public abstract boolean getHasEnded();
 
   /**
    * An immutable implementation of {@link Link}.
@@ -454,10 +454,10 @@ public abstract class SpanData {
     /**
      * Sets to true if the span has been ended.
      *
-     * @param hasBeenEnded A boolean indicating if the span has been ended.
+     * @param hasEnded A boolean indicating if the span has been ended.
      * @return this
      * @since 0.4.0
      */
-    public abstract Builder setHasBeenEnded(boolean hasBeenEnded);
+    public abstract Builder setHasEnded(boolean hasEnded);
   }
 }

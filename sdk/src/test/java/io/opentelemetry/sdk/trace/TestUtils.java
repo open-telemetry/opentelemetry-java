@@ -55,7 +55,7 @@ public final class TestUtils {
    */
   public static SpanData makeBasicSpan() {
     return SpanData.newBuilder()
-        .setHasBeenEnded(true)
+        .setHasEnded(true)
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
         .setName("span")
