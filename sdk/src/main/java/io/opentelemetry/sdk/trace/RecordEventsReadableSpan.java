@@ -201,6 +201,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
+  public boolean hasBeenEnded() {
+    synchronized (lock) {
+      return hasBeenEnded;
+    }
+  }
+
+  @Override
   public SpanContext getSpanContext() {
     return getContext();
   }
