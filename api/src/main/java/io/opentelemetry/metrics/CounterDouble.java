@@ -53,13 +53,13 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface CounterDouble extends Counter<BoundDoubleCounter> {
 
   @Override
-  BoundDoubleCounter getBound(LabelSet labelSet);
+  BoundDoubleCounter bind(LabelSet labelSet);
 
   @Override
   BoundDoubleCounter getDefaultBound();
 
   @Override
-  void removeBound(BoundDoubleCounter bound);
+  void unbind(BoundDoubleCounter bound);
 
   /**
    * A {@code Bound} for a {@code CounterDouble}.

@@ -103,7 +103,7 @@ public class ObserverLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    observerLong.getBound(null);
+    observerLong.bind(null);
   }
 
   @Test
@@ -117,6 +117,6 @@ public class ObserverLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("bound");
-    observerLong.removeBound(null);
+    observerLong.unbind(null);
   }
 }

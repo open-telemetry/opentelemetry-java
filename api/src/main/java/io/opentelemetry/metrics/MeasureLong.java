@@ -49,13 +49,13 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface MeasureLong extends Measure<BoundLongMeasure> {
   @Override
-  BoundLongMeasure getBound(LabelSet labelSet);
+  BoundLongMeasure bind(LabelSet labelSet);
 
   @Override
   BoundLongMeasure getDefaultBound();
 
   @Override
-  void removeBound(BoundLongMeasure bound);
+  void unbind(BoundLongMeasure bound);
 
   /**
    * A {@code Bound} for a {@code MeasureLong}.

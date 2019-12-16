@@ -37,11 +37,11 @@ public interface Metric<B> {
    * every operations.
    *
    * @param labelSet the set of labels.
-   * @return a {@code Bound} the value of single gauge.
+   * @return a {@code Bound} value of the metric.
    * @throws NullPointerException if {@code labelValues} is null.
    * @since 0.1.0
    */
-  B getBound(LabelSet labelSet);
+  B bind(LabelSet labelSet);
 
   /**
    * Returns a {@code Bound} for a metric with all labels not set.
@@ -58,7 +58,7 @@ public interface Metric<B> {
    * @param bound the {@code Bound} to be removed.
    * @since 0.1.0
    */
-  void removeBound(B bound);
+  void unbind(B bound);
 
   /**
    * The {@code Builder} class for the {@code Metric}.

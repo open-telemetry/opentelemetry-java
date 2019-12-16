@@ -54,13 +54,13 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface ObserverLong extends Observer<ResultLongObserver, BoundLongObserver> {
   @Override
-  BoundLongObserver getBound(LabelSet labelSet);
+  BoundLongObserver bind(LabelSet labelSet);
 
   @Override
   BoundLongObserver getDefaultBound();
 
   @Override
-  void removeBound(BoundLongObserver bound);
+  void unbind(BoundLongObserver bound);
 
   @Override
   void setCallback(Callback<ResultLongObserver> metricUpdater);

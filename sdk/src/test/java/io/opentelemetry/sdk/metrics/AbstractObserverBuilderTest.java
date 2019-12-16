@@ -79,7 +79,7 @@ public class AbstractObserverBuilderTest {
 
     @Nullable
     @Override
-    public TestBound getBound(LabelSet labelSet) {
+    public TestBound bind(LabelSet labelSet) {
       return null;
     }
 
@@ -90,7 +90,7 @@ public class AbstractObserverBuilderTest {
     }
 
     @Override
-    public void removeBound(TestBound handle) {}
+    public void unbind(TestBound handle) {}
 
     @Override
     public void setCallback(Callback<TestResult> metricUpdater) {}

@@ -104,7 +104,7 @@ public class CounterDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    counterDouble.getBound(null);
+    counterDouble.bind(null);
   }
 
   @Test
@@ -118,7 +118,7 @@ public class CounterDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("bound");
-    counterDouble.removeBound(null);
+    counterDouble.unbind(null);
   }
 
   @Test

@@ -53,13 +53,13 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface CounterLong extends Metric<BoundLongCounter> {
 
   @Override
-  BoundLongCounter getBound(LabelSet labelSet);
+  BoundLongCounter bind(LabelSet labelSet);
 
   @Override
   BoundLongCounter getDefaultBound();
 
   @Override
-  void removeBound(BoundLongCounter bound);
+  void unbind(BoundLongCounter bound);
 
   /**
    * A {@code Bound} for a {@code CounterLong}.

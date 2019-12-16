@@ -54,13 +54,13 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface GaugeLong extends Gauge<BoundLongGauge> {
 
   @Override
-  BoundLongGauge getBound(LabelSet labelSet);
+  BoundLongGauge bind(LabelSet labelSet);
 
   @Override
   BoundLongGauge getDefaultBound();
 
   @Override
-  void removeBound(BoundLongGauge bound);
+  void unbind(BoundLongGauge bound);
 
   /**
    * A {@code Bound} for a {@code GaugeLong}.

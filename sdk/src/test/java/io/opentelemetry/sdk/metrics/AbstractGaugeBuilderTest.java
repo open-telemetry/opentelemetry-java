@@ -78,7 +78,7 @@ public class AbstractGaugeBuilderTest {
     private static final TestBound HANDLE = new TestBound();
 
     @Override
-    public TestBound getBound(LabelSet labelSet) {
+    public TestBound bind(LabelSet labelSet) {
       return HANDLE;
     }
 
@@ -88,7 +88,7 @@ public class AbstractGaugeBuilderTest {
     }
 
     @Override
-    public void removeBound(TestBound handle) {}
+    public void unbind(TestBound handle) {}
   }
 
   private static final class TestBound {}
