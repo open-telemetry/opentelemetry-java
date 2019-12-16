@@ -112,14 +112,18 @@ public class RecordEventsReadableSpanTest {
   @Test
   public void endSpanTwice_DoNotCrash() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    assertThat(span.hasBeenEnded()).isFalse();
     span.end();
+    assertThat(span.hasBeenEnded()).isTrue();
     span.end();
+    assertThat(span.hasBeenEnded()).isTrue();
   }
 
   @Test
   public void toSpanData_ActiveSpan() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     try {
+      assertThat(span.hasBeenEnded()).isFalse();
       spanDoWork(span, null);
       SpanData spanData = span.toSpanData();
       SpanData.TimedEvent timedEvent =
@@ -136,9 +140,11 @@ public class RecordEventsReadableSpanTest {
           startEpochNanos,
           0,
           Status.OK);
+      assertThat(span.hasBeenEnded()).isFalse();
     } finally {
       span.end();
     }
+    assertThat(span.hasBeenEnded()).isTrue();
   }
 
   @Test
@@ -574,6 +580,7 @@ public class RecordEventsReadableSpanTest {
 
     SpanData expected =
         SpanData.newBuilder()
+            .setHasBeenEnded(true)
             .setName(name)
             .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
             .setKind(kind)

@@ -176,6 +176,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             .setResource(resource);
     synchronized (lock) {
       builder
+          .setHasBeenEnded(hasBeenEnded)
           .setName(getName())
           .setAttributes(hasBeenEnded ? attributes : new HashMap<>(attributes))
           .setEndEpochNanos(getEndEpochNanos())
