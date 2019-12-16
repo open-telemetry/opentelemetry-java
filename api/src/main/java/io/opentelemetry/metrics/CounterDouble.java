@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.CounterDouble.Handle;
+import io.opentelemetry.metrics.CounterDouble.BoundDoubleCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -36,13 +36,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setUnit("1")
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a Handle.
- *   private static final CounterDouble.Handle someWorkHandle =
- *       counter.getHandle(Collections.singletonList("SomeWork"));
+ *   // It is recommended to keep a reference of a Bound.
+ *   private static final BoundDoubleCounter someWorkBound =
+ *       counter.getBound(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      someWorkHandle.add(10.0);
+ *      someWorkBound.add(10.0);
  *   }
  * }
  * }</pre>
@@ -50,20 +50,23 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface CounterDouble extends Counter<Handle> {
+public interface CounterDouble extends Counter<BoundDoubleCounter> {
 
   @Override
-  Handle getHandle(LabelSet labelSet);
+  BoundDoubleCounter getBound(LabelSet labelSet);
 
   @Override
-  Handle getDefaultHandle();
+  BoundDoubleCounter getDefaultBound();
+
+  @Override
+  void removeBound(BoundDoubleCounter bound);
 
   /**
-   * A {@code Handle} for a {@code CounterDouble}.
+   * A {@code Bound} for a {@code CounterDouble}.
    *
    * @since 0.1.0
    */
-  interface Handle {
+  interface BoundDoubleCounter {
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
      * was set to {@code false}.

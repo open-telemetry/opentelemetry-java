@@ -16,6 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.ObserverLong.BoundLongObserver;
+import io.opentelemetry.metrics.ObserverLong.ResultLongObserver;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -39,8 +41,8 @@ import javax.annotation.concurrent.ThreadSafe;
  *         new ObserverLong.Callback<ObserverLong.Result>() {
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
- *           public void update(Result result) {
- *             result.put(observer.getDefaultHandle(), count.addAndGet(1));
+ *           public void update(ResultLongObserver result) {
+ *             result.put(observer.getDefaultBound(), count.addAndGet(1));
  *           }
  *         });
  *   }
@@ -50,16 +52,32 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface ObserverLong extends Observer<ObserverLong.Result> {
-
-  /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
-  interface Result {
-    void put(Handle handle, long value);
-  }
+public interface ObserverLong extends Observer<ResultLongObserver, BoundLongObserver> {
+  @Override
+  BoundLongObserver getBound(LabelSet labelSet);
 
   @Override
-  void setCallback(Callback<Result> metricUpdater);
+  BoundLongObserver getDefaultBound();
+
+  @Override
+  void removeBound(BoundLongObserver bound);
+
+  @Override
+  void setCallback(Callback<ResultLongObserver> metricUpdater);
 
   /** Builder class for {@link ObserverLong}. */
   interface Builder extends Observer.Builder<ObserverLong.Builder, ObserverLong> {}
+
+  /**
+   * A {@code Bound} for a {@code Observer}.
+   *
+   * @since 0.1.0
+   */
+  @ThreadSafe
+  interface BoundLongObserver {}
+
+  /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
+  interface ResultLongObserver {
+    void put(BoundLongObserver bound, long value);
+  }
 }

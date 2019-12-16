@@ -93,7 +93,7 @@ public class GaugeDoubleTest {
   }
 
   @Test
-  public void noopGetHandle_WithNullLabelSet() {
+  public void noopGetBound_WithNullLabelSet() {
     GaugeDouble gaugeDouble =
         meter
             .gaugeDoubleBuilder(NAME)
@@ -103,11 +103,11 @@ public class GaugeDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    gaugeDouble.getHandle(null);
+    gaugeDouble.getBound(null);
   }
 
   @Test
-  public void noopRemoveHandle_WithNullHandle() {
+  public void noopRemoveBound_WithNullBound() {
     GaugeDouble gaugeDouble =
         meter
             .gaugeDoubleBuilder(NAME)
@@ -116,8 +116,8 @@ public class GaugeDoubleTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("handle");
-    gaugeDouble.removeHandle(null);
+    thrown.expectMessage("bound");
+    gaugeDouble.removeBound(null);
   }
 
   @Test
@@ -129,6 +129,6 @@ public class GaugeDoubleTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    gaugeDouble.getDefaultHandle().set(5.0);
+    gaugeDouble.getDefaultBound().set(5.0);
   }
 }

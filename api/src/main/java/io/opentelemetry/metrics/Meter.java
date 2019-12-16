@@ -38,7 +38,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   private static final Meter meter = Metrics.getMeterFactory().get("my_library_name");
  *   private static final MeasureDouble cacheHit = meter.measureDoubleBuilder("cache_hit").build();
  *
- *   Response serverHandler(Request request) {
+ *   Response serverBoundr(Request request) {
  *     if (inCache(request)) {
  *       cacheHit.record(1);
  *       return fromCache(request);
@@ -70,7 +70,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *             for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
  *               LabelValue gcName = LabelValue.create(gc.getName());
  *               collectionMetric
- *                   .getHandle(Collections.singletonList(gcName))
+ *                   .getBound(Collections.singletonList(gcName))
  *                   .set(gc.getCollectionTime());
  *             }
  *           }
@@ -94,16 +94,16 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setLabelKeys(labelKeys)
  *           .build();
  *
- *   // It is recommended to keep a reference of a Handle.
- *   GaugeDouble.Handle inboundHandle = gauge.getHandle(labelValues);
+ *   // It is recommended to keep a reference of a Bound.
+ *   GaugeDouble.Bound inboundBound = gauge.getBound(labelValues);
  *
  *   void doAddElement() {
  *      // Your code here.
- *      inboundHandle.add(1);
+ *      inboundBound.add(1);
  *   }
  *
  *   void doRemoveElement() {
- *      inboundHandle.add(-1);
+ *      inboundBound.add(-1);
  *      // Your code here.
  *   }
  *

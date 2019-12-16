@@ -93,7 +93,7 @@ public class ObserverLongTest {
   }
 
   @Test
-  public void noopGetHandle_WithNullLabelSet() {
+  public void noopGetBound_WithNullLabelSet() {
     ObserverLong observerLong =
         meter
             .observerLongBuilder(NAME)
@@ -103,11 +103,11 @@ public class ObserverLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    observerLong.getHandle(null);
+    observerLong.getBound(null);
   }
 
   @Test
-  public void noopRemoveHandle_WithNullHandle() {
+  public void noopRemoveBound_WithNullBound() {
     ObserverLong observerLong =
         meter
             .observerLongBuilder(NAME)
@@ -116,7 +116,7 @@ public class ObserverLongTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("handle");
-    observerLong.removeHandle(null);
+    thrown.expectMessage("bound");
+    observerLong.removeBound(null);
   }
 }

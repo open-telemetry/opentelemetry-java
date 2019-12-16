@@ -167,28 +167,28 @@ public final class DefaultMeter implements Meter {
   /** No-op implementations of GaugeLong class. */
   @Immutable
   private static final class NoopGaugeLong implements GaugeLong {
-    /** Creates a new {@code NoopHandle}. */
+    /** Creates a new {@code NoopBound}. */
     private NoopGaugeLong() {}
 
     @Override
-    public NoopHandle getHandle(LabelSet labelSet) {
+    public NoopBoundLongGauge getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopHandle.INSTANCE;
+      return NoopBoundLongGauge.INSTANCE;
     }
 
     @Override
-    public NoopHandle getDefaultHandle() {
-      return NoopHandle.INSTANCE;
+    public NoopBoundLongGauge getDefaultBound() {
+      return NoopBoundLongGauge.INSTANCE;
     }
 
     @Override
-    public void removeHandle(Handle handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(BoundLongGauge boundLongGauge) {
+      Utils.checkNotNull(boundLongGauge, "boundLongGauge");
     }
 
-    /** No-op implementations of Handle class. */
+    /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopHandle implements Handle {
+    private enum NoopBoundLongGauge implements BoundLongGauge {
       INSTANCE;
 
       @Override
@@ -212,28 +212,28 @@ public final class DefaultMeter implements Meter {
   /** No-op implementations of GaugeDouble class. */
   @Immutable
   private static final class NoopGaugeDouble implements GaugeDouble {
-    /** Creates a new {@code NoopHandle}. */
+    /** Creates a new {@code NoopBound}. */
     private NoopGaugeDouble() {}
 
     @Override
-    public NoopHandle getHandle(LabelSet labelSet) {
+    public NoopBoundDoubleGauge getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopHandle.INSTANCE;
+      return NoopBoundDoubleGauge.INSTANCE;
     }
 
     @Override
-    public NoopHandle getDefaultHandle() {
-      return NoopHandle.INSTANCE;
+    public NoopBoundDoubleGauge getDefaultBound() {
+      return NoopBoundDoubleGauge.INSTANCE;
     }
 
     @Override
-    public void removeHandle(Handle handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(BoundDoubleGauge boundDoubleGauge) {
+      Utils.checkNotNull(boundDoubleGauge, "boundDoubleGauge");
     }
 
-    /** No-op implementations of Handle class. */
+    /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopHandle implements Handle {
+    private enum NoopBoundDoubleGauge implements BoundDoubleGauge {
       INSTANCE;
 
       @Override
@@ -257,28 +257,28 @@ public final class DefaultMeter implements Meter {
   /** No-op implementations of CounterDouble class. */
   @Immutable
   private static final class NoopCounterDouble implements CounterDouble {
-    /** Creates a new {@code NoopHandle}. */
+    /** Creates a new {@code NoopBound}. */
     private NoopCounterDouble() {}
 
     @Override
-    public NoopHandle getHandle(LabelSet labelSet) {
+    public NoopBoundDoubleCounter getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopHandle.INSTANCE;
+      return NoopBoundDoubleCounter.INSTANCE;
     }
 
     @Override
-    public NoopHandle getDefaultHandle() {
-      return NoopHandle.INSTANCE;
+    public NoopBoundDoubleCounter getDefaultBound() {
+      return NoopBoundDoubleCounter.INSTANCE;
     }
 
     @Override
-    public void removeHandle(Handle handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(BoundDoubleCounter boundDoubleCounter) {
+      Utils.checkNotNull(boundDoubleCounter, "boundDoubleCounter");
     }
 
-    /** No-op implementations of Handle class. */
+    /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopHandle implements Handle {
+    private enum NoopBoundDoubleCounter implements BoundDoubleCounter {
       INSTANCE;
 
       @Override
@@ -302,28 +302,28 @@ public final class DefaultMeter implements Meter {
   /** No-op implementations of CounterLong class. */
   @Immutable
   private static final class NoopCounterLong implements CounterLong {
-    /** Creates a new {@code NoopHandle}. */
+    /** Creates a new {@code NoopBound}. */
     private NoopCounterLong() {}
 
     @Override
-    public NoopHandle getHandle(LabelSet labelSet) {
+    public NoopBoundLongCounter getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopHandle.INSTANCE;
+      return NoopBoundLongCounter.INSTANCE;
     }
 
     @Override
-    public NoopHandle getDefaultHandle() {
-      return NoopHandle.INSTANCE;
+    public NoopBoundLongCounter getDefaultBound() {
+      return NoopBoundLongCounter.INSTANCE;
     }
 
     @Override
-    public void removeHandle(Handle handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(BoundLongCounter boundLongCounter) {
+      Utils.checkNotNull(boundLongCounter, "boundLongCounter");
     }
 
-    /** No-op implementations of Handle class. */
+    /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopHandle implements Handle {
+    private enum NoopBoundLongCounter implements BoundLongCounter {
       INSTANCE;
 
       @Override
@@ -346,28 +346,28 @@ public final class DefaultMeter implements Meter {
 
   @Immutable
   private static final class NoopMeasureDouble implements MeasureDouble {
-    /** Creates a new {@code NoopHandle}. */
+    /** Creates a new {@code NoopBound}. */
     private NoopMeasureDouble() {}
 
     @Override
-    public NoopHandle getHandle(LabelSet labelSet) {
+    public NoopBoundDoubleMeasure getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopHandle.INSTANCE;
+      return NoopBoundDoubleMeasure.INSTANCE;
     }
 
     @Override
-    public NoopHandle getDefaultHandle() {
-      return NoopHandle.INSTANCE;
+    public NoopBoundDoubleMeasure getDefaultBound() {
+      return NoopBoundDoubleMeasure.INSTANCE;
     }
 
     @Override
-    public void removeHandle(Handle handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(BoundDoubleMeasure boundDoubleMeasure) {
+      Utils.checkNotNull(boundDoubleMeasure, "boundDoubleMeasure");
     }
 
-    /** No-op implementations of Handle class. */
+    /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopHandle implements Handle {
+    private enum NoopBoundDoubleMeasure implements BoundDoubleMeasure {
       INSTANCE;
 
       @Override
@@ -395,24 +395,24 @@ public final class DefaultMeter implements Meter {
     private NoopMeasureLong() {}
 
     @Override
-    public NoopHandle getHandle(LabelSet labelSet) {
+    public NoopBoundLongMeasure getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopHandle.INSTANCE;
+      return NoopBoundLongMeasure.INSTANCE;
     }
 
     @Override
-    public NoopHandle getDefaultHandle() {
-      return NoopHandle.INSTANCE;
+    public NoopBoundLongMeasure getDefaultBound() {
+      return NoopBoundLongMeasure.INSTANCE;
     }
 
     @Override
-    public void removeHandle(Handle handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(BoundLongMeasure boundLongMeasure) {
+      Utils.checkNotNull(boundLongMeasure, "boundLongMeasure");
     }
 
-    /** No-op implementations of Handle class. */
+    /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopHandle implements Handle {
+    private enum NoopBoundLongMeasure implements BoundLongMeasure {
       INSTANCE;
 
       @Override
@@ -440,29 +440,29 @@ public final class DefaultMeter implements Meter {
     private NoopObserverDouble() {}
 
     @Override
-    public NoopHandle getHandle(LabelSet labelSet) {
+    public NoopBoundDoubleObserver getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopHandle.INSTANCE;
+      return NoopBoundDoubleObserver.INSTANCE;
     }
 
     @Override
-    public NoopHandle getDefaultHandle() {
-      return NoopHandle.INSTANCE;
+    public NoopBoundDoubleObserver getDefaultBound() {
+      return NoopBoundDoubleObserver.INSTANCE;
     }
 
     @Override
-    public void removeHandle(Handle handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(BoundDoubleObserver boundDoubleObserver) {
+      Utils.checkNotNull(boundDoubleObserver, "boundDoubleObserver");
     }
 
     @Override
-    public void setCallback(Callback<Result> metricUpdater) {
+    public void setCallback(Callback<ResultDoubleObserver> metricUpdater) {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
-    /** No-op implementations of Handle class. */
+    /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopHandle implements Handle {
+    private enum NoopBoundDoubleObserver implements BoundDoubleObserver {
       INSTANCE
     }
 
@@ -485,29 +485,29 @@ public final class DefaultMeter implements Meter {
     private NoopObserverLong() {}
 
     @Override
-    public NoopHandle getHandle(LabelSet labelSet) {
+    public NoopBoundLongObserver getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopHandle.INSTANCE;
+      return NoopBoundLongObserver.INSTANCE;
     }
 
     @Override
-    public NoopHandle getDefaultHandle() {
-      return NoopHandle.INSTANCE;
+    public NoopBoundLongObserver getDefaultBound() {
+      return NoopBoundLongObserver.INSTANCE;
     }
 
     @Override
-    public void removeHandle(Handle handle) {
-      Utils.checkNotNull(handle, "handle");
+    public void removeBound(BoundLongObserver boundLongObserver) {
+      Utils.checkNotNull(boundLongObserver, "boundLongObserver");
     }
 
     @Override
-    public void setCallback(Callback<Result> metricUpdater) {
+    public void setCallback(Callback<ResultLongObserver> metricUpdater) {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
-    /** No-op implementations of Handle class. */
+    /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopHandle implements Handle {
+    private enum NoopBoundLongObserver implements BoundLongObserver {
       INSTANCE
     }
 

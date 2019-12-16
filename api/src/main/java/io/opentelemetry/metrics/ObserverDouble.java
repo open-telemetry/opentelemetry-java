@@ -16,6 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.ObserverDouble.BoundDoubleObserver;
+import io.opentelemetry.metrics.ObserverDouble.ResultDoubleObserver;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -40,7 +42,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(Result result) {
- *             result.put(observer.getDefaultHandle(), 0.8 * count.addAndGet(1));
+ *             result.put(observer.getDefaultBound(), 0.8 * count.addAndGet(1));
  *           }
  *         });
  *   }
@@ -50,16 +52,32 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface ObserverDouble extends Observer<ObserverDouble.Result> {
-
-  /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
-  interface Result {
-    void put(Handle handle, double value);
-  }
+public interface ObserverDouble extends Observer<ResultDoubleObserver, BoundDoubleObserver> {
+  @Override
+  BoundDoubleObserver getBound(LabelSet labelSet);
 
   @Override
-  void setCallback(Callback<Result> metricUpdater);
+  BoundDoubleObserver getDefaultBound();
+
+  @Override
+  void removeBound(BoundDoubleObserver bound);
+
+  @Override
+  void setCallback(Callback<ResultDoubleObserver> metricUpdater);
 
   /** Builder class for {@link ObserverDouble}. */
   interface Builder extends Observer.Builder<ObserverDouble.Builder, ObserverDouble> {}
+
+  /**
+   * A {@code Bound} for a {@code Observer}.
+   *
+   * @since 0.1.0
+   */
+  @ThreadSafe
+  interface BoundDoubleObserver {}
+
+  /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
+  interface ResultDoubleObserver {
+    void put(BoundDoubleObserver bound, double value);
+  }
 }

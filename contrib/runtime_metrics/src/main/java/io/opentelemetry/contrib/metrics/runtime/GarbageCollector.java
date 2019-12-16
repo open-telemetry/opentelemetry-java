@@ -21,7 +21,8 @@ import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.Observer.Callback;
 import io.opentelemetry.metrics.ObserverLong;
-import io.opentelemetry.metrics.ObserverLong.Result;
+import io.opentelemetry.metrics.ObserverLong.BoundLongObserver;
+import io.opentelemetry.metrics.ObserverLong.ResultLongObserver;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
@@ -65,18 +66,18 @@ public final class GarbageCollector {
             .setLabelKeys(Collections.singletonList(GC_LABEL_KEY))
             .setMonotonic(true)
             .build();
-    final List<ObserverLong.Handle> handles = new ArrayList<>(garbageCollectors.size());
+    final List<BoundLongObserver> handles = new ArrayList<>(garbageCollectors.size());
     for (final GarbageCollectorMXBean gc : garbageCollectors) {
       LabelSet labelSet = meter.createLabelSet(GC_LABEL_KEY, gc.getName());
-      handles.add(gcMetric.getHandle(labelSet));
+      handles.add(gcMetric.getBound(labelSet));
     }
 
     gcMetric.setCallback(
-        new Callback<Result>() {
+        new Callback<ResultLongObserver>() {
           @Override
-          public void update(Result result) {
+          public void update(ResultLongObserver resultLongObserver) {
             for (int i = 0; i < garbageCollectors.size(); i++) {
-              result.put(handles.get(i), garbageCollectors.get(i).getCollectionTime());
+              resultLongObserver.put(handles.get(i), garbageCollectors.get(i).getCollectionTime());
             }
           }
         });

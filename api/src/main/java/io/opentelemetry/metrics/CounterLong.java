@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.CounterLong.Handle;
+import io.opentelemetry.metrics.CounterLong.BoundLongCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -36,13 +36,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setUnit("1")
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a Handle.
- *   private static final CounterLong.Handle someWorkHandle =
- *       counter.getHandle(Collections.singletonList("SomeWork"));
+ *   // It is recommended to keep a reference of a Bound.
+ *   private static final BoundLongCounter someWorkBound =
+ *       counter.getBound(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      someWorkHandle.add(10);
+ *      someWorkBound.add(10);
  *   }
  * }
  * }</pre>
@@ -50,20 +50,23 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface CounterLong extends Metric<Handle> {
+public interface CounterLong extends Metric<BoundLongCounter> {
 
   @Override
-  Handle getHandle(LabelSet labelSet);
+  BoundLongCounter getBound(LabelSet labelSet);
 
   @Override
-  Handle getDefaultHandle();
+  BoundLongCounter getDefaultBound();
+
+  @Override
+  void removeBound(BoundLongCounter bound);
 
   /**
-   * A {@code Handle} for a {@code CounterLong}.
+   * A {@code Bound} for a {@code CounterLong}.
    *
    * @since 0.1.0
    */
-  interface Handle {
+  interface BoundLongCounter {
 
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic

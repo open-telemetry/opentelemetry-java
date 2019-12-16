@@ -90,12 +90,12 @@ public final class MeasureLongTest {
     MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    myMeasure.getDefaultHandle().record(-5);
+    myMeasure.getDefaultBound().record(-5);
   }
 
   @Test
   public void doesNotThrow() {
     MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
-    myMeasure.getDefaultHandle().record(5);
+    myMeasure.getDefaultBound().record(5);
   }
 }

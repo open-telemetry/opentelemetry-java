@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.MeasureLong.BoundLongMeasure;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -33,12 +34,12 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("gRPC Latency")
  *           .setUnit("ns")
  *           .build();
- *   private static final MeasureLong.Handle defaultHandle = measure.getDefaultHandle();
+ *   private static final MeasureLong.Bound defaultBound = measure.getDefaultBound();
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
  *      // Your code here.
- *      defaultHandle.record(System.nanoTime() - startTime);
+ *      defaultBound.record(System.nanoTime() - startTime);
  *   }
  * }
  * }</pre>
@@ -46,14 +47,23 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface MeasureLong extends Measure<MeasureLong.Handle> {
+public interface MeasureLong extends Measure<BoundLongMeasure> {
+  @Override
+  BoundLongMeasure getBound(LabelSet labelSet);
+
+  @Override
+  BoundLongMeasure getDefaultBound();
+
+  @Override
+  void removeBound(BoundLongMeasure bound);
+
   /**
-   * A {@code Handle} for a {@code MeasureLong}.
+   * A {@code Bound} for a {@code MeasureLong}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface Handle {
+  interface BoundLongMeasure {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *

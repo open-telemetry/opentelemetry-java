@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.GaugeLong.Handle;
+import io.opentelemetry.metrics.GaugeLong.BoundLongGauge;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -36,13 +36,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setUnit("1")
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a Handle.
- *   private static final GaugeLong.Handle someWorkHandle =
- *       gauge.getHandle(Collections.singletonList("SomeWork"));
+ *   // It is recommended to keep a reference of a Bound.
+ *   private static final BoundLongGauge someWorkBound =
+ *       gauge.getBound(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      someWorkHandle.set(15);
+ *      someWorkBound.set(15);
  *   }
  *
  * }
@@ -51,20 +51,23 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface GaugeLong extends Gauge<Handle> {
+public interface GaugeLong extends Gauge<BoundLongGauge> {
 
   @Override
-  Handle getHandle(LabelSet labelSet);
+  BoundLongGauge getBound(LabelSet labelSet);
 
   @Override
-  Handle getDefaultHandle();
+  BoundLongGauge getDefaultBound();
+
+  @Override
+  void removeBound(BoundLongGauge bound);
 
   /**
-   * A {@code Handle} for a {@code GaugeLong}.
+   * A {@code Bound} for a {@code GaugeLong}.
    *
    * @since 0.1.0
    */
-  interface Handle {
+  interface BoundLongGauge {
 
     /**
      * Sets the given value.

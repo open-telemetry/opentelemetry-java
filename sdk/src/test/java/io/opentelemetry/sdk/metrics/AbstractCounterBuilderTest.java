@@ -74,22 +74,22 @@ public class AbstractCounterBuilderTest {
     }
   }
 
-  private static final class TestMetric implements Counter<TestHandle> {
-    private static final TestHandle HANDLE = new TestHandle();
+  private static final class TestMetric implements Counter<TestBound> {
+    private static final TestBound HANDLE = new TestBound();
 
     @Override
-    public TestHandle getHandle(LabelSet labelSet) {
+    public TestBound getBound(LabelSet labelSet) {
       return HANDLE;
     }
 
     @Override
-    public TestHandle getDefaultHandle() {
+    public TestBound getDefaultBound() {
       return HANDLE;
     }
 
     @Override
-    public void removeHandle(TestHandle handle) {}
+    public void removeBound(TestBound handle) {}
   }
 
-  private static final class TestHandle {}
+  private static final class TestBound {}
 }
