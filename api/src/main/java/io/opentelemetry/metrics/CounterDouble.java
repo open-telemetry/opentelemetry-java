@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.CounterDouble.Bound;
+import io.opentelemetry.metrics.CounterDouble.BoundDoubleCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -37,7 +37,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
  *   // It is recommended to keep a reference of a Bound.
- *   private static final CounterDouble.Bound someWorkBound =
+ *   private static final BoundDoubleCounter someWorkBound =
  *       counter.getBound(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
@@ -50,20 +50,23 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface CounterDouble extends Counter<Bound> {
+public interface CounterDouble extends Counter<BoundDoubleCounter> {
 
   @Override
-  Bound getBound(LabelSet labelSet);
+  BoundDoubleCounter getBound(LabelSet labelSet);
 
   @Override
-  Bound getDefaultBound();
+  BoundDoubleCounter getDefaultBound();
+
+  @Override
+  void removeBound(BoundDoubleCounter bound);
 
   /**
    * A {@code Bound} for a {@code CounterDouble}.
    *
    * @since 0.1.0
    */
-  interface Bound {
+  interface BoundDoubleCounter {
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
      * was set to {@code false}.

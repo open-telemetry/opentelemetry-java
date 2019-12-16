@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.GaugeDouble.Bound;
+import io.opentelemetry.metrics.GaugeDouble.BoundDoubleGauge;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -37,7 +37,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
  *   // It is recommended to keep a reference of a Bound.
- *   private static final GaugeDouble.Bound someWorkBound =
+ *   private static final BoundDoubleGauge someWorkBound =
  *       gauge.getBound(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
@@ -51,19 +51,22 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface GaugeDouble extends Gauge<Bound> {
+public interface GaugeDouble extends Gauge<BoundDoubleGauge> {
   @Override
-  Bound getBound(LabelSet labelSet);
+  BoundDoubleGauge getBound(LabelSet labelSet);
 
   @Override
-  Bound getDefaultBound();
+  BoundDoubleGauge getDefaultBound();
+
+  @Override
+  void removeBound(BoundDoubleGauge bound);
 
   /**
    * A {@code Bound} for a {@code GaugeDouble}.
    *
    * @since 0.1.0
    */
-  interface Bound {
+  interface BoundDoubleGauge {
 
     /**
      * Sets the given value.

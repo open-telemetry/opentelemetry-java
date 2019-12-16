@@ -171,24 +171,24 @@ public final class DefaultMeter implements Meter {
     private NoopGaugeLong() {}
 
     @Override
-    public NoopBound getBound(LabelSet labelSet) {
+    public NoopBoundLongGauge getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBound.INSTANCE;
+      return NoopBoundLongGauge.INSTANCE;
     }
 
     @Override
-    public NoopBound getDefaultBound() {
-      return NoopBound.INSTANCE;
+    public NoopBoundLongGauge getDefaultBound() {
+      return NoopBoundLongGauge.INSTANCE;
     }
 
     @Override
-    public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "bound");
+    public void removeBound(BoundLongGauge boundLongGauge) {
+      Utils.checkNotNull(boundLongGauge, "boundLongGauge");
     }
 
     /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopBound implements Bound {
+    private enum NoopBoundLongGauge implements BoundLongGauge {
       INSTANCE;
 
       @Override
@@ -216,24 +216,24 @@ public final class DefaultMeter implements Meter {
     private NoopGaugeDouble() {}
 
     @Override
-    public NoopBound getBound(LabelSet labelSet) {
+    public NoopBoundDoubleGauge getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBound.INSTANCE;
+      return NoopBoundDoubleGauge.INSTANCE;
     }
 
     @Override
-    public NoopBound getDefaultBound() {
-      return NoopBound.INSTANCE;
+    public NoopBoundDoubleGauge getDefaultBound() {
+      return NoopBoundDoubleGauge.INSTANCE;
     }
 
     @Override
-    public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "bound");
+    public void removeBound(BoundDoubleGauge boundDoubleGauge) {
+      Utils.checkNotNull(boundDoubleGauge, "boundDoubleGauge");
     }
 
     /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopBound implements Bound {
+    private enum NoopBoundDoubleGauge implements BoundDoubleGauge {
       INSTANCE;
 
       @Override
@@ -261,24 +261,24 @@ public final class DefaultMeter implements Meter {
     private NoopCounterDouble() {}
 
     @Override
-    public NoopBound getBound(LabelSet labelSet) {
+    public NoopBoundDoubleCounter getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBound.INSTANCE;
+      return NoopBoundDoubleCounter.INSTANCE;
     }
 
     @Override
-    public NoopBound getDefaultBound() {
-      return NoopBound.INSTANCE;
+    public NoopBoundDoubleCounter getDefaultBound() {
+      return NoopBoundDoubleCounter.INSTANCE;
     }
 
     @Override
-    public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "bound");
+    public void removeBound(BoundDoubleCounter boundDoubleCounter) {
+      Utils.checkNotNull(boundDoubleCounter, "boundDoubleCounter");
     }
 
     /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopBound implements Bound {
+    private enum NoopBoundDoubleCounter implements BoundDoubleCounter {
       INSTANCE;
 
       @Override
@@ -306,24 +306,24 @@ public final class DefaultMeter implements Meter {
     private NoopCounterLong() {}
 
     @Override
-    public NoopBound getBound(LabelSet labelSet) {
+    public NoopBoundLongCounter getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBound.INSTANCE;
+      return NoopBoundLongCounter.INSTANCE;
     }
 
     @Override
-    public NoopBound getDefaultBound() {
-      return NoopBound.INSTANCE;
+    public NoopBoundLongCounter getDefaultBound() {
+      return NoopBoundLongCounter.INSTANCE;
     }
 
     @Override
-    public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "bound");
+    public void removeBound(BoundLongCounter boundLongCounter) {
+      Utils.checkNotNull(boundLongCounter, "boundLongCounter");
     }
 
     /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopBound implements Bound {
+    private enum NoopBoundLongCounter implements BoundLongCounter {
       INSTANCE;
 
       @Override
@@ -350,24 +350,24 @@ public final class DefaultMeter implements Meter {
     private NoopMeasureDouble() {}
 
     @Override
-    public NoopBound getBound(LabelSet labelSet) {
+    public NoopBoundDoubleMeasure getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBound.INSTANCE;
+      return NoopBoundDoubleMeasure.INSTANCE;
     }
 
     @Override
-    public NoopBound getDefaultBound() {
-      return NoopBound.INSTANCE;
+    public NoopBoundDoubleMeasure getDefaultBound() {
+      return NoopBoundDoubleMeasure.INSTANCE;
     }
 
     @Override
-    public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "bound");
+    public void removeBound(BoundDoubleMeasure boundDoubleMeasure) {
+      Utils.checkNotNull(boundDoubleMeasure, "boundDoubleMeasure");
     }
 
     /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopBound implements Bound {
+    private enum NoopBoundDoubleMeasure implements BoundDoubleMeasure {
       INSTANCE;
 
       @Override
@@ -395,24 +395,24 @@ public final class DefaultMeter implements Meter {
     private NoopMeasureLong() {}
 
     @Override
-    public NoopBound getBound(LabelSet labelSet) {
+    public NoopBoundLongMeasure getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBound.INSTANCE;
+      return NoopBoundLongMeasure.INSTANCE;
     }
 
     @Override
-    public NoopBound getDefaultBound() {
-      return NoopBound.INSTANCE;
+    public NoopBoundLongMeasure getDefaultBound() {
+      return NoopBoundLongMeasure.INSTANCE;
     }
 
     @Override
-    public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "bound");
+    public void removeBound(BoundLongMeasure boundLongMeasure) {
+      Utils.checkNotNull(boundLongMeasure, "boundLongMeasure");
     }
 
     /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopBound implements Bound {
+    private enum NoopBoundLongMeasure implements BoundLongMeasure {
       INSTANCE;
 
       @Override
@@ -440,29 +440,29 @@ public final class DefaultMeter implements Meter {
     private NoopObserverDouble() {}
 
     @Override
-    public NoopBound getBound(LabelSet labelSet) {
+    public NoopBoundDoubleObserver getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBound.INSTANCE;
+      return NoopBoundDoubleObserver.INSTANCE;
     }
 
     @Override
-    public NoopBound getDefaultBound() {
-      return NoopBound.INSTANCE;
+    public NoopBoundDoubleObserver getDefaultBound() {
+      return NoopBoundDoubleObserver.INSTANCE;
     }
 
     @Override
-    public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "bound");
+    public void removeBound(BoundDoubleObserver boundDoubleObserver) {
+      Utils.checkNotNull(boundDoubleObserver, "boundDoubleObserver");
     }
 
     @Override
-    public void setCallback(Callback<Result> metricUpdater) {
+    public void setCallback(Callback<ResultDoubleObserver> metricUpdater) {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
     /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopBound implements Bound {
+    private enum NoopBoundDoubleObserver implements BoundDoubleObserver {
       INSTANCE
     }
 
@@ -485,29 +485,29 @@ public final class DefaultMeter implements Meter {
     private NoopObserverLong() {}
 
     @Override
-    public NoopBound getBound(LabelSet labelSet) {
+    public NoopBoundLongObserver getBound(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBound.INSTANCE;
+      return NoopBoundLongObserver.INSTANCE;
     }
 
     @Override
-    public NoopBound getDefaultBound() {
-      return NoopBound.INSTANCE;
+    public NoopBoundLongObserver getDefaultBound() {
+      return NoopBoundLongObserver.INSTANCE;
     }
 
     @Override
-    public void removeBound(Bound bound) {
-      Utils.checkNotNull(bound, "bound");
+    public void removeBound(BoundLongObserver boundLongObserver) {
+      Utils.checkNotNull(boundLongObserver, "boundLongObserver");
     }
 
     @Override
-    public void setCallback(Callback<Result> metricUpdater) {
+    public void setCallback(Callback<ResultLongObserver> metricUpdater) {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
     /** No-op implementations of Bound class. */
     @Immutable
-    private enum NoopBound implements Bound {
+    private enum NoopBoundLongObserver implements BoundLongObserver {
       INSTANCE
     }
 

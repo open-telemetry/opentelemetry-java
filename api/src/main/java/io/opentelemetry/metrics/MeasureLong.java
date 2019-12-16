@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.MeasureLong.BoundLongMeasure;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -46,14 +47,23 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface MeasureLong extends Measure<MeasureLong.Bound> {
+public interface MeasureLong extends Measure<BoundLongMeasure> {
+  @Override
+  BoundLongMeasure getBound(LabelSet labelSet);
+
+  @Override
+  BoundLongMeasure getDefaultBound();
+
+  @Override
+  void removeBound(BoundLongMeasure bound);
+
   /**
    * A {@code Bound} for a {@code MeasureLong}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface Bound {
+  interface BoundLongMeasure {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *
