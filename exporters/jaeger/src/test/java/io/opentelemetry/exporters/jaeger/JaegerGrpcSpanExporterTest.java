@@ -79,7 +79,7 @@ public class JaegerGrpcSpanExporterTest {
     long endMs = startMs + duration;
     SpanData span =
         SpanData.newBuilder()
-            .setHasBeenEnded(true)
+            .setHasEnded(true)
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
             .setName("GET /api/endpoint")

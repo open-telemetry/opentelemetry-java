@@ -67,7 +67,7 @@ public interface ReadableSpan {
    * @return {@code true} if the span has already been ended, {@code false} if not.
    * @since 0.4.0
    */
-  boolean hasBeenEnded();
+  boolean hasEnded();
 
   /**
    * Returns the latency of the {@code Span} in nanos. If still active then returns now() - start
