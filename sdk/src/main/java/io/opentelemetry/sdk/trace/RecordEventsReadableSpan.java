@@ -296,6 +296,19 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
+   * Returns the latency of the {@code Span} in nanos. If still active then returns now() - start
+   * time.
+   *
+   * @return the latency of the {@code Span} in nanos.
+   */
+  @Override
+  public long getLatencyNs() {
+    synchronized (lock) {
+      return (hasEnded ? endEpochNanos : clock.now()) - startEpochNanos;
+    }
+  }
+
+  /**
    * Returns the kind of this {@code Span}.
    *
    * @return the kind of this {@code Span}.

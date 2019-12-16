@@ -68,4 +68,13 @@ public interface ReadableSpan {
    * @since 0.4.0
    */
   boolean hasEnded();
+
+  /**
+   * Returns the latency of the {@code Span} in nanos. If still active then returns now() - start
+   * time.
+   *
+   * @return the latency of the {@code Span} in nanos.
+   * @since 0.4.0
+   */
+  long getLatencyNs();
 }
