@@ -302,7 +302,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return the latency of the {@code Span} in nanos.
    */
   @Override
-  public long getLatencyNs() {
+  public long getLatencyNanos() {
     synchronized (lock) {
       return (hasEnded ? endEpochNanos : clock.now()) - startEpochNanos;
     }

@@ -76,5 +76,5 @@ public interface ReadableSpan {
    * @return the latency of the {@code Span} in nanos.
    * @since 0.4.0
    */
-  long getLatencyNs();
+  long getLatencyNanos();
 }
