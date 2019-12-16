@@ -180,6 +180,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
           .setName(getName())
           .setAttributes(hasBeenEnded ? attributes : new HashMap<>(attributes))
           .setEndEpochNanos(getEndEpochNanos())
+          .setLatencyNanos(getLatencyNanos())
           .setStatus(getStatus())
           .setTimedEvents(adaptTimedEvents());
     }

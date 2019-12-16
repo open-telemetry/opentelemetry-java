@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Optional;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.AttributeValue;
@@ -181,6 +182,15 @@ public abstract class SpanData {
   public abstract boolean getHasBeenEnded();
 
   /**
+   * Returns the latency of the {@code Span} in nanos. If still active then returns now() - start
+   * time.
+   *
+   * @return the latency of the {@code Span} in nanos.
+   * @since 0.4.0
+   */
+  public abstract long getLatencyNanos();
+
+  /**
    * An immutable implementation of {@link Link}.
    *
    * @since 0.1.0
@@ -288,6 +298,12 @@ public abstract class SpanData {
 
     abstract List<io.opentelemetry.trace.Link> getLinks();
 
+    abstract Optional<Long> getStartEpochNanos();
+
+    abstract Optional<Long> getEndEpochNanos();
+
+    abstract Optional<Long> getLatencyNanos();
+
     /**
      * Create a new SpanData instance from the data in this.
      *
@@ -299,6 +315,14 @@ public abstract class SpanData {
       setAttributes(Collections.unmodifiableMap(new HashMap<>(getAttributes())));
       setTimedEvents(Collections.unmodifiableList(new ArrayList<>(getTimedEvents())));
       setLinks(Collections.unmodifiableList(new ArrayList<>(getLinks())));
+
+      // Calculate latency from start & end if possible.
+      if (!getLatencyNanos().isPresent()
+          && getStartEpochNanos().isPresent()
+          && getEndEpochNanos().isPresent()
+          && getEndEpochNanos().get() >= getStartEpochNanos().get()) {
+        setLatencyNanos(getEndEpochNanos().get() - getStartEpochNanos().get());
+      }
       return autoBuild();
     }
 
@@ -459,5 +483,14 @@ public abstract class SpanData {
      * @since 0.4.0
      */
     public abstract Builder setHasBeenEnded(boolean hasBeenEnded);
+
+    /**
+     * Sets to true if the span has been ended.
+     *
+     * @param latencyNanos A boolean indicating if the span has been ended.
+     * @return this
+     * @since 0.4.0
+     */
+    public abstract Builder setLatencyNanos(long latencyNanos);
   }
 }
