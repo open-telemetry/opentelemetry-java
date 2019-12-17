@@ -80,19 +80,18 @@ public final class MemoryPools {
             .setMonotonic(false)
             .build();
     final BoundLongObserver usedHeap =
-        areaMetric.getBound(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP));
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP));
     final BoundLongObserver usedNonHeap =
-        areaMetric.getBound(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP));
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP));
     final BoundLongObserver committedHeap =
-        areaMetric.getBound(meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP));
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP));
     final BoundLongObserver committedNonHeap =
-        areaMetric.getBound(
-            meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, NON_HEAP));
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, NON_HEAP));
     // TODO: Decide if max is needed or not. May be derived with some approximation from max(used).
     final BoundLongObserver maxHeap =
-        areaMetric.getBound(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP));
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP));
     final BoundLongObserver maxNonHeap =
-        areaMetric.getBound(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP));
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP));
     areaMetric.setCallback(
         new ObserverLong.Callback<ResultLongObserver>() {
           @Override
@@ -125,13 +124,13 @@ public final class MemoryPools {
     final List<BoundLongObserver> maxBounds = new ArrayList<>(poolBeans.size());
     for (final MemoryPoolMXBean pool : poolBeans) {
       usedBounds.add(
-          poolMetric.getBound(
+          poolMetric.bind(
               meter.createLabelSet(TYPE_LABEL_KEY, USED, POOL_LABEL_KEY, pool.getName())));
       committedBounds.add(
-          poolMetric.getBound(
+          poolMetric.bind(
               meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, POOL_LABEL_KEY, pool.getName())));
       maxBounds.add(
-          poolMetric.getBound(
+          poolMetric.bind(
               meter.createLabelSet(TYPE_LABEL_KEY, MAX, POOL_LABEL_KEY, pool.getName())));
     }
     poolMetric.setCallback(

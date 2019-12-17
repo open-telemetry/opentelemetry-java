@@ -103,7 +103,7 @@ public class ObserverDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    observerDouble.getBound(null);
+    observerDouble.bind(null);
   }
 
   @Test
@@ -117,6 +117,6 @@ public class ObserverDoubleTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("bound");
-    gaugeDouble.removeBound(null);
+    gaugeDouble.unbind(null);
   }
 }

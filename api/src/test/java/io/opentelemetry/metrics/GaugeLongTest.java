@@ -100,7 +100,7 @@ public class GaugeLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    gaugeLong.getBound(null);
+    gaugeLong.bind(null);
   }
 
   @Test
@@ -114,7 +114,7 @@ public class GaugeLongTest {
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("bound");
-    gaugeLong.removeBound(null);
+    gaugeLong.unbind(null);
   }
 
   @Test

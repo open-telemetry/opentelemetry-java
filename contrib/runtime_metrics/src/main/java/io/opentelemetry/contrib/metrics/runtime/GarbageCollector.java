@@ -69,7 +69,7 @@ public final class GarbageCollector {
     final List<BoundLongObserver> handles = new ArrayList<>(garbageCollectors.size());
     for (final GarbageCollectorMXBean gc : garbageCollectors) {
       LabelSet labelSet = meter.createLabelSet(GC_LABEL_KEY, gc.getName());
-      handles.add(gcMetric.getBound(labelSet));
+      handles.add(gcMetric.bind(labelSet));
     }
 
     gcMetric.setCallback(
