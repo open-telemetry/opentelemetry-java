@@ -106,7 +106,8 @@ public class RecordEventsReadableSpanTest {
         SPAN_NAME,
         startEpochNanos,
         startEpochNanos,
-        Status.OK);
+        Status.OK,
+        /*hasEnded=*/ true);
   }
 
   @Test
@@ -139,7 +140,8 @@ public class RecordEventsReadableSpanTest {
           SPAN_NEW_NAME,
           startEpochNanos,
           0,
-          Status.OK);
+          Status.OK,
+          /*hasEnded=*/ false);
       assertThat(span.hasEnded()).isFalse();
     } finally {
       span.end();
@@ -170,7 +172,8 @@ public class RecordEventsReadableSpanTest {
         SPAN_NEW_NAME,
         startEpochNanos,
         testClock.now(),
-        Status.CANCELLED);
+        Status.CANCELLED,
+        /*hasEnded=*/ true);
   }
 
   @Test
@@ -510,7 +513,8 @@ public class RecordEventsReadableSpanTest {
       String spanName,
       long startEpochNanos,
       long endEpochNanos,
-      Status status) {
+      Status status,
+      boolean hasEnded) {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
@@ -525,6 +529,7 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getStartEpochNanos()).isEqualTo(startEpochNanos);
     assertThat(spanData.getEndEpochNanos()).isEqualTo(endEpochNanos);
     assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
+    assertThat(spanData.getHasEnded()).isEqualTo(hasEnded);
   }
 
   @Test
