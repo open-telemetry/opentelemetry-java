@@ -87,6 +87,7 @@ public class SpanWatcherProcessorTest {
       if (!actual.addAll(exporter.waitForExport(1))) {
         actual.clear();
       }
+      assertThat(allowed).containsAtLeastElementsIn(actual);
     } while (!actual.containsAll(expected) || actual.size() != expected.size());
     assertThat(actual).containsExactlyElementsIn(expected);
 
