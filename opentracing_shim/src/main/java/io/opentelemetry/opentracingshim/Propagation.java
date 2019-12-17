@@ -16,11 +16,10 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,12 +29,15 @@ final class Propagation extends BaseShimObject {
   }
 
   public void injectTextFormat(SpanContextShim contextShim, TextMapInject carrier) {
-    tracer()
-        .getHttpTextFormat()
-        .inject(contextShim.getSpanContext(), carrier, TextMapSetter.INSTANCE);
-    contextManager()
-        .getHttpTextFormat()
-        .inject(contextShim.getDistributedContext(), carrier, TextMapSetter.INSTANCE);
+    Context context = Context.current();
+    context =
+        io.opentelemetry.trace.propagation.ContextUtils.withSpanContext(
+            contextShim.getSpanContext(), context);
+    context =
+        io.opentelemetry.distributedcontext.propagation.ContextUtils.withValue(
+            contextShim.getDistributedContext(), context);
+
+    propagators().getHttpTextFormat().inject(context, carrier, TextMapSetter.INSTANCE);
   }
 
   public SpanContextShim extractTextFormat(TextMapExtract carrier) {
@@ -44,12 +46,15 @@ final class Propagation extends BaseShimObject {
       carrierMap.put(entry.getKey(), entry.getValue());
     }
 
-    io.opentelemetry.trace.SpanContext context =
-        tracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
-    io.opentelemetry.distributedcontext.DistributedContext distContext =
-        contextManager().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
+    Context context =
+        propagators()
+            .getHttpTextFormat()
+            .extract(Context.current(), carrierMap, TextMapGetter.INSTANCE);
 
-    return new SpanContextShim(telemetryInfo, context, distContext);
+    return new SpanContextShim(
+        telemetryInfo,
+        io.opentelemetry.trace.propagation.ContextUtils.getSpanContext(context),
+        io.opentelemetry.distributedcontext.propagation.ContextUtils.getValue(context));
   }
 
   static final class TextMapSetter implements HttpTextFormat.Setter<TextMapInject> {
@@ -74,20 +79,5 @@ final class Propagation extends BaseShimObject {
     public String get(Map<String, String> carrier, String key) {
       return carrier.get(key);
     }
-  }
-
-  public void injectBinaryFormat(SpanContextShim context, Binary carrier) {
-    byte[] contextBuff = tracer().getBinaryFormat().toByteArray(context.getSpanContext());
-    ByteBuffer byteBuff = carrier.injectionBuffer(contextBuff.length);
-    byteBuff.put(contextBuff);
-  }
-
-  public SpanContextShim extractBinaryFormat(Binary carrier) {
-
-    ByteBuffer byteBuff = carrier.extractionBuffer();
-    byte[] buff = new byte[byteBuff.remaining()];
-    byteBuff.get(buff);
-
-    return new SpanContextShim(telemetryInfo, tracer().getBinaryFormat().fromByteArray(buff));
   }
 }

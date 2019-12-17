@@ -36,7 +36,8 @@ public final class TraceShim {
     return new TracerShim(
         new TelemetryInfo(
             getTracer(OpenTelemetry.getTracerFactory()),
-            OpenTelemetry.getDistributedContextManager()));
+            OpenTelemetry.getDistributedContextManager(),
+            OpenTelemetry.getPropagators()));
   }
 
   /**
@@ -52,7 +53,9 @@ public final class TraceShim {
       TracerFactory tracerFactory, DistributedContextManager contextManager) {
     Utils.checkNotNull(tracerFactory, "tracer");
     Utils.checkNotNull(contextManager, "contextManager");
-    return new TracerShim(new TelemetryInfo(getTracer(tracerFactory), contextManager));
+    return new TracerShim(
+        new TelemetryInfo(
+            getTracer(tracerFactory), contextManager, OpenTelemetry.getPropagators()));
   }
 
   private static Tracer getTracer(TracerFactory tracerFactory) {

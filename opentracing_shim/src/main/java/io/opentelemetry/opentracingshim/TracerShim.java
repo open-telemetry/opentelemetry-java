@@ -21,7 +21,6 @@ import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
-import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
@@ -73,8 +72,8 @@ final class TracerShim extends BaseShimObject implements Tracer {
         || format == Format.Builtin.TEXT_MAP_INJECT
         || format == Format.Builtin.HTTP_HEADERS) {
       propagation.injectTextFormat(contextShim, (TextMapInject) carrier);
-    } else if (format == Format.Builtin.BINARY) {
-      propagation.injectBinaryFormat(contextShim, (Binary) carrier);
+    } else {
+      logger.log(Level.WARNING, "Binary format is not implemented.");
     }
   }
 
@@ -86,8 +85,8 @@ final class TracerShim extends BaseShimObject implements Tracer {
           || format == Format.Builtin.TEXT_MAP_EXTRACT
           || format == Format.Builtin.HTTP_HEADERS) {
         return propagation.extractTextFormat((TextMapExtract) carrier);
-      } else if (format == Format.Builtin.BINARY) {
-        return propagation.extractBinaryFormat((Binary) carrier);
+      } else {
+        logger.log(Level.WARNING, "Binary format is not implemented.");
       }
     } catch (Exception e) {
       logger.log(
