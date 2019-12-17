@@ -42,7 +42,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(Result result) {
- *             result.put(observer.getDefaultBound(), 0.8 * count.addAndGet(1));
+ *             result.put(observer.bind(labelSet), 0.8 * count.addAndGet(1));
  *           }
  *         });
  *   }
@@ -55,9 +55,6 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface ObserverDouble extends Observer<ResultDoubleObserver, BoundDoubleObserver> {
   @Override
   BoundDoubleObserver bind(LabelSet labelSet);
-
-  @Override
-  BoundDoubleObserver getDefaultBound();
 
   @Override
   void unbind(BoundDoubleObserver bound);

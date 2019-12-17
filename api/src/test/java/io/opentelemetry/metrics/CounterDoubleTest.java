@@ -130,6 +130,6 @@ public class CounterDoubleTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    counterDouble.getDefaultBound().add(1.0);
+    counterDouble.bind(meter.createLabelSet("key", "value")).add(1.0);
   }
 }

@@ -34,12 +34,12 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
- *   private static final BoundDoubleMeasure defaultBound = measure.getDefaultBound();
+ *   private static final BoundDoubleMeasure boundMeasure = measure.bind(labelset);
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
  *      // Your code here.
- *      defaultBound.record((System.nanoTime() - startTime) / 1e6);
+ *      boundMeasure.record((System.nanoTime() - startTime) / 1e6);
  *   }
  * }
  * }</pre>
@@ -50,9 +50,6 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface MeasureDouble extends Measure<BoundDoubleMeasure> {
   @Override
   BoundDoubleMeasure bind(LabelSet labelSet);
-
-  @Override
-  BoundDoubleMeasure getDefaultBound();
 
   @Override
   void unbind(BoundDoubleMeasure bound);

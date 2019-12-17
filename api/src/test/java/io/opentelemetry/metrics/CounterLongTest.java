@@ -129,6 +129,6 @@ public class CounterLongTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    counterLong.getDefaultBound().add(1);
+    counterLong.bind(meter.createLabelSet("key", "value")).add(1);
   }
 }

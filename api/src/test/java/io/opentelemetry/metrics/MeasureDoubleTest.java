@@ -90,12 +90,12 @@ public final class MeasureDoubleTest {
     MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    myMeasure.getDefaultBound().record(-5.0);
+    myMeasure.bind(meter.createLabelSet("key", "value")).record(-5.0);
   }
 
   @Test
   public void doesNotThrow() {
     MeasureDouble myMeasure = meter.measureDoubleBuilder("MyMeasure").build();
-    myMeasure.getDefaultBound().record(5.0);
+    myMeasure.bind(meter.createLabelSet("key", "value")).record(5.0);
   }
 }

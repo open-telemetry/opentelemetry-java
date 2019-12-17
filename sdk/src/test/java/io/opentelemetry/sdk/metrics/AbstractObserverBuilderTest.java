@@ -83,12 +83,6 @@ public class AbstractObserverBuilderTest {
       return null;
     }
 
-    @Nullable
-    @Override
-    public TestBound getDefaultBound() {
-      return null;
-    }
-
     @Override
     public void unbind(TestBound handle) {}
 

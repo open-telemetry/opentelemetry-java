@@ -57,9 +57,6 @@ public interface GaugeLong extends Gauge<BoundLongGauge> {
   BoundLongGauge bind(LabelSet labelSet);
 
   @Override
-  BoundLongGauge getDefaultBound();
-
-  @Override
   void unbind(BoundLongGauge bound);
 
   /**

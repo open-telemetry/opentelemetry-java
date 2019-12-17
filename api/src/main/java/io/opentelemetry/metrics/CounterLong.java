@@ -56,9 +56,6 @@ public interface CounterLong extends Metric<BoundLongCounter> {
   BoundLongCounter bind(LabelSet labelSet);
 
   @Override
-  BoundLongCounter getDefaultBound();
-
-  @Override
   void unbind(BoundLongCounter bound);
 
   /**
