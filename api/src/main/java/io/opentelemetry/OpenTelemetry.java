@@ -117,6 +117,7 @@ public final class OpenTelemetry {
    * @param propagators the {@link Propagators} object to be registered.
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
+   * @throws NullPointerException if {@code propagators} is {@code null}.
    * @since 0.3.0
    */
   public static void setPropagators(Propagators propagators) {
