@@ -80,7 +80,8 @@ public class SpanWatcherProcessorTest {
   }
 
   // Wait for all the expected Spans and no more to be in the watchlist of exporter.
-  private static void waitForSpans(List<SpanData> expected, List<SpanData> allowed, WaitingSpanExporter exporter) {
+  private static void waitForSpans(
+      List<SpanData> expected, List<SpanData> allowed, WaitingSpanExporter exporter) {
     Set<SpanData> actual = new HashSet<>(expected.size());
     do {
       if (!actual.addAll(exporter.waitForExport(1))) {
