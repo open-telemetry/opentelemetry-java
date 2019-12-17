@@ -28,7 +28,9 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,9 +45,9 @@ import org.mockito.MockitoAnnotations;
 public class SpanWatcherProcessorTest {
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
-  private static final long TEST_REPORT_INTERVAL = 500;
+  private static final long TEST_REPORT_INTERVAL = 5;
   private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
-  private final Tracer tracer = tracerSdkFactory.get("BatchSpansProcessorTest");
+  private final Tracer tracer = tracerSdkFactory.get("SpanWatcherProcessorTest");
   private final WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter();
   @Mock private SpanExporter throwingExporter;
 
@@ -69,6 +71,28 @@ public class SpanWatcherProcessorTest {
         .startSpan();
   }
 
+  private void waitForSpans(List<SpanData> expected) {
+    waitForSpans(expected, expected, waitingSpanExporter);
+  }
+
+  private void waitForSpans(List<SpanData> expected, List<SpanData> allowed) {
+    waitForSpans(expected, allowed, waitingSpanExporter);
+  }
+
+  // Wait for all the expected Spans and no more to be in the watchlist of exporter.
+  private static void waitForSpans(List<SpanData> expected, List<SpanData> allowed, WaitingSpanExporter exporter) {
+    Set<SpanData> actual = new HashSet<>(expected.size());
+    do {
+      if (!actual.addAll(exporter.waitForExport(1))) {
+        actual.clear();
+      }
+    } while (!actual.containsAll(expected) || actual.size() != expected.size());
+    assertThat(actual).containsExactlyElementsIn(expected);
+
+    // No other spans should be in the watchlist.
+    assertThat(expected).containsAtLeastElementsIn(new HashSet<>(exporter.waitForExport(1)));
+  }
+
   @Test
   public void testSpanWatcherBasic() {
     tracerSdkFactory.addSpanProcessor(
@@ -78,14 +102,13 @@ public class SpanWatcherProcessorTest {
 
     ReadableSpan span1 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
     ReadableSpan span2 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_2);
-    List<SpanData> exported = waitingSpanExporter.waitForExport(2); // Active spans are reported
-    assertThat(exported).containsExactly(span1.toSpanData(), span2.toSpanData());
+    waitForSpans(Arrays.asList(span1.toSpanData(), span2.toSpanData()));
     ((Span) span1).setAttribute("foo", "bar");
-    exported = waitingSpanExporter.waitForExport(2); // Attribute changes get reflected
-    assertThat(exported).containsExactly(span1.toSpanData(), span2.toSpanData());
+    List<SpanData> initialExpected = Arrays.asList(span1.toSpanData(), span2.toSpanData());
+    waitForSpans(initialExpected);
     ((Span) span1).end();
-    exported = waitingSpanExporter.waitForExport(2); // Inactive spans are not reported
-    assertThat(exported).containsExactly(span2.toSpanData(), span2.toSpanData());
+
+    waitForSpans(Arrays.asList(span2.toSpanData()), initialExpected);
   }
 
   @Test
@@ -98,8 +121,7 @@ public class SpanWatcherProcessorTest {
     @SuppressWarnings("unused")
     ReadableSpan span1 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
     ReadableSpan span2 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_2);
-    List<SpanData> exported = waitingSpanExporter.waitForExport(2); // Active spans are reported
-    assertThat(exported).containsExactly(span1.toSpanData(), span2.toSpanData());
+    waitForSpans(Arrays.asList(span1.toSpanData(), span2.toSpanData()));
 
     //noinspection UnusedAssignment
     span1 = null;
@@ -107,8 +129,7 @@ public class SpanWatcherProcessorTest {
     // Make sure the span is GCd, so the weakref goes stale.
     System.gc();
     System.gc();
-    exported = waitingSpanExporter.waitForExport(2);
-    assertThat(exported).containsExactly(span2.toSpanData(), span2.toSpanData());
+    waitForSpans(Arrays.asList(span2.toSpanData()));
   }
 
   @Test
@@ -120,21 +141,20 @@ public class SpanWatcherProcessorTest {
             .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());
 
-    ReadableSpan span1 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
-    ReadableSpan span2 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_2);
-    ReadableSpan span3 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
-    ReadableSpan span4 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
-    ReadableSpan span5 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
-    ReadableSpan span6 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
-    List<SpanData> exported = waitingSpanExporter.waitForExport(6);
-    assertThat(exported)
-        .containsExactly(
+    ReadableSpan span1 = (ReadableSpan) createSampledActiveSpan("s*1");
+    ReadableSpan span2 = (ReadableSpan) createSampledActiveSpan("s*2");
+    ReadableSpan span3 = (ReadableSpan) createSampledActiveSpan("s*3");
+    ReadableSpan span4 = (ReadableSpan) createSampledActiveSpan("s*4");
+    ReadableSpan span5 = (ReadableSpan) createSampledActiveSpan("s*5");
+    ReadableSpan span6 = (ReadableSpan) createSampledActiveSpan("s*6");
+    waitForSpans(
+        Arrays.asList(
             span1.toSpanData(),
             span2.toSpanData(),
             span3.toSpanData(),
             span4.toSpanData(),
             span5.toSpanData(),
-            span6.toSpanData());
+            span6.toSpanData()));
   }
 
   @Test
@@ -150,21 +170,21 @@ public class SpanWatcherProcessorTest {
 
     ReadableSpan span1 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
     ReadableSpan span2 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_2);
-    List<SpanData> exported1 = waitingSpanExporter.waitForExport(2);
-    List<SpanData> exported2 = waitingSpanExporter2.waitForExport(2);
-    assertThat(exported1).containsExactly(span1.toSpanData(), span2.toSpanData());
-    assertThat(exported2).containsExactly(span1.toSpanData(), span2.toSpanData());
+    List<SpanData> expected = Arrays.asList(span1.toSpanData(), span2.toSpanData());
+    waitForSpans(expected, expected, waitingSpanExporter);
+    waitForSpans(expected, expected, waitingSpanExporter2);
   }
 
   @Test
   public void exportMoreSpansThanTheMaximumLimit() {
     final int maxQueuedSpans = 8;
-    tracerSdkFactory.addSpanProcessor(
+    final SpanWatcherProcessor processor =
         SpanWatcherProcessor.newBuilder(waitingSpanExporter)
             .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .setMaxWatchlistSize(maxQueuedSpans)
             .setMaxExportBatchSize(maxQueuedSpans / 2)
-            .build());
+            .build();
+    tracerSdkFactory.addSpanProcessor(processor);
 
     List<ReadableSpan> spansToExport = new ArrayList<>(maxQueuedSpans);
     // Wait to block the worker thread in the BatchSampledSpansProcessor. This ensures that no items
@@ -174,43 +194,47 @@ public class SpanWatcherProcessorTest {
 
     for (int i = 0; i < maxQueuedSpans - 1; i++) {
       // First export maxQueuedSpans, the worker thread is blocked so all items should be queued.
-      spansToExport.add((ReadableSpan) createSampledActiveSpan("span_1_" + i));
+      spansToExport.add((ReadableSpan) createSampledActiveSpan("span_ini_" + i));
     }
+
+    assertThat(spansToExport).hasSize(maxQueuedSpans); // INTERNAL test assertion
 
     // TODO: assertThat(spanExporter.getReferencedSpans()).isEqualTo(maxQueuedSpans);
 
+    // We keep strong references to these spans because we want to them to not be included
+    // even if any weak reference to them stays valid.
     @SuppressWarnings("ModifiedButNotUsed")
     List<Span> notIncludedSpans = new ArrayList<>();
+
     // Now we should start dropping.
     for (int i = 0; i < 7; i++) {
       // Keep a strong reference to these spans.
-      notIncludedSpans.add(createSampledActiveSpan("span_2_" + i));
+      notIncludedSpans.add(createSampledActiveSpan("span_not_" + i));
       // TODO: assertThat(getDroppedSpans()).isEqualTo(i + 1);
     }
 
     // TODO: assertThat(getReferencedSpans()).isEqualTo(maxQueuedSpans);
 
     // While we wait for maxQueuedSpans we ensure that the queue is also empty after this.
-    List<SpanData> exported = waitingSpanExporter.waitForExport(maxQueuedSpans);
-    assertThat(exported).isNotNull();
-    List<SpanData> expected = new ArrayList<>(spansToExport.size());
+
+    List<SpanData> expected = new ArrayList<>(spansToExport.size() * 2);
     for (ReadableSpan readableSpan : spansToExport) {
       expected.add(readableSpan.toSpanData());
     }
-    assertThat(exported).containsExactlyElementsIn(expected);
-    exported.clear();
+
+    waitForSpans(expected);
 
     // We cannot compare with maxReferencedSpans here because the worker thread may get
     // unscheduled immediately after exporting, but before updating the pushed spans, if that is
     // the case at most bufferSize spans will miss.
     // TODO: assertThat(getPushedSpans()).isAtLeast((long) maxQueuedSpans - maxBatchSize);
 
+    // End each but the last span.
     for (int i = 0; i < spansToExport.size() - 1; ++i) {
       ((Span) spansToExport.get(i)).end();
     }
 
-    assertThat(waitingSpanExporter.waitForExport(1))
-        .containsExactly(expected.get(expected.size() - 1));
+    waitForSpans(expected.subList(expected.size() - 1, expected.size()), expected);
 
     expected.clear();
 
@@ -223,9 +247,7 @@ public class SpanWatcherProcessorTest {
     for (ReadableSpan readableSpan : spansToExport) {
       expected.add(readableSpan.toSpanData());
     }
-    exported = waitingSpanExporter.waitForExport(maxQueuedSpans);
-    assertThat(exported).isNotNull();
-    assertThat(exported).containsExactlyElementsIn(expected);
+    waitForSpans(expected);
   }
 
   @Test
@@ -240,14 +262,12 @@ public class SpanWatcherProcessorTest {
             .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());
     ReadableSpan span1 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_1);
-    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(span1.toSpanData());
+    waitForSpans(Arrays.asList(span1.toSpanData()));
     ((Span) span1).end();
 
     // Continue to export after the exception was received.
     ReadableSpan span2 = (ReadableSpan) createSampledActiveSpan(SPAN_NAME_2);
-    exported = waitingSpanExporter.waitForExport(1);
-    assertThat(exported).containsExactly(span2.toSpanData());
+    waitForSpans(Arrays.asList(span2.toSpanData()));
   }
 
   @Test
@@ -267,7 +287,6 @@ public class SpanWatcherProcessorTest {
     // sampled span is not exported by creating and ending a sampled span after a non sampled span
     // and checking that the first exported span is the sampled span (the non sampled did not get
     // exported).
-    List<SpanData> exported = waitingSpanExporter.waitForExport(2);
-    assertThat(exported).containsExactly(span3.toSpanData(), span3.toSpanData());
+    waitForSpans(Arrays.asList(span3.toSpanData()));
   }
 }
