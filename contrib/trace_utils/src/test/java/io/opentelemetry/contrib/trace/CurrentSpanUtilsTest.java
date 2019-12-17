@@ -24,7 +24,7 @@ import io.grpc.Context;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.propagation.ContextUtils;
 import java.util.concurrent.Callable;
 import org.junit.Before;
 import org.junit.Test;
@@ -250,6 +250,6 @@ public class CurrentSpanUtilsTest {
   }
 
   private static Span getCurrentSpan() {
-    return ContextUtils.getValue(Context.current());
+    return ContextUtils.getSpan(Context.current());
   }
 }
