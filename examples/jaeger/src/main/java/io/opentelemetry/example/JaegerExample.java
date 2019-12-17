@@ -22,6 +22,15 @@ public class JaegerExample {
   // Export traces to Jaeger
   private JaegerGrpcSpanExporter jaegerExporter;
 
+  public JaegerExample(String ip, int port) {
+    this.ip = ip;
+    this.port = port;
+    // Instantiate the OTel factory
+    this.tracerFactory = OpenTelemetrySdk.getTracerFactory();
+    // Give a name to the tracer
+    this.tracer = tracerFactory.get("io.opentelemetry.example.JaegerExample");
+  }
+
   private void setupJaegerExporter() {
     // Create a channel towards Jaeger end point
     this.jaegerChannel = ManagedChannelBuilder.forAddress(ip, port).build();
@@ -34,13 +43,11 @@ public class JaegerExample {
             .build();
     
     // Set to process the spans by the Jaeger Exporter
-    this.tracerFactory = OpenTelemetrySdk.getTracerFactory();
     this.tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(this.jaegerExporter).build());
   }
 
   private void myWonderfulUseCase() {
-    // Give a name to the tracer
-    this.tracer = tracerFactory.get("io.opentelemetry.example.JaegerExample");
+    // Generate a span
     Span span = this.tracer.spanBuilder("Start my wonderful use case").startSpan();
     span.addEvent("Event 0");
     // execute my use case - here we simulate a wait
@@ -55,11 +62,6 @@ public class JaegerExample {
       Thread.sleep(1000);
     } catch (InterruptedException e) {
     }
-  }
-
-  public JaegerExample(String ip, int port) {
-    this.ip = ip;
-    this.port = port;
   }
 
   public static void main(String[] args) {
