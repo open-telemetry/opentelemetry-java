@@ -266,7 +266,7 @@ public final class SpanWatcherProcessor implements SpanProcessor {
         // We could also use the time we add()ed the span, but since only in-band spans are supposed
         // to be reported,
         // using the start timestamp makes just as much sense.
-        if (span.getLatencyNanos() > reportIntervalMillis) {
+        if (span.getLatencyNanos() > reportIntervalMillis * 1000L * 1000L) {
           // Many spans will be end()ed so soon that it won't bring much benefit to report them
           // earlier.
           unfinishedSpans.add(span);
