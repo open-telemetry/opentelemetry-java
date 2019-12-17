@@ -108,6 +108,7 @@ public class RecordEventsReadableSpanTest {
         startEpochNanos,
         Status.OK,
         /*hasEnded=*/ true);
+    assertThat(spanData.getLatencyNanos()).isEqualTo(0);
   }
 
   @Test
@@ -132,6 +133,7 @@ public class RecordEventsReadableSpanTest {
               startEpochNanos + NANOS_PER_SECOND,
               "event2",
               Collections.<String, AttributeValue>emptyMap());
+      long prevLatencyNanos = span.getLatencyNanos();
       verifySpanData(
           spanData,
           expectedAttributes,
@@ -142,6 +144,8 @@ public class RecordEventsReadableSpanTest {
           0,
           Status.OK,
           /*hasEnded=*/ false);
+      assertThat(spanData.getLatencyNanos()).isAtLeast(prevLatencyNanos);
+      assertThat(spanData.getLatencyNanos()).isAtMost(span.getLatencyNanos());
       assertThat(span.hasEnded()).isFalse();
     } finally {
       span.end();
@@ -174,6 +178,7 @@ public class RecordEventsReadableSpanTest {
         testClock.now(),
         Status.CANCELLED,
         /*hasEnded=*/ true);
+    assertThat(spanData.getLatencyNanos()).isEqualTo(testClock.now() - startEpochNanos);
   }
 
   @Test
