@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import com.google.auto.value.AutoValue;
 import java.util.Arrays;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -24,26 +25,27 @@ import javax.annotation.concurrent.Immutable;
  * A class that represents a span context. A span context contains the state that must propagate to
  * child {@link Span}s and across process boundaries. It contains the identifiers (a {@link TraceId
  * trace_id} and {@link SpanId span_id}) associated with the {@link Span} and a set of {@link
- * TraceFlags options}.
+ * TraceFlags options}, as well as the {@link Tracestate tracestate} and the {@link boolean remote}
+ * flag.
  *
  * @since 0.1.0
  */
 @Immutable
-public final class SpanContext {
+@AutoValue
+public abstract class SpanContext {
 
   private static final SpanContext INVALID =
-      new SpanContext(
-          TraceId.getInvalid(),
-          SpanId.getInvalid(),
-          TraceFlags.getDefault(),
-          Tracestate.getDefault(),
-          /* isRemote= */ false);
+      newBuilder()
+          .setTraceId(TraceId.getInvalid())
+          .setSpanId(SpanId.getInvalid())
+          .setTraceFlags(TraceFlags.getDefault())
+          .setTracestate(Tracestate.getDefault())
+          .setRemote(false)
+          .build();
 
-  private final TraceId traceId;
-  private final SpanId spanId;
-  private final TraceFlags traceFlags;
-  private final Tracestate tracestate;
-  private final boolean isRemote;
+  private static Builder newBuilder() {
+    return new AutoValue_SpanContext.Builder();
+  }
 
   /**
    * Returns the invalid {@code SpanContext} that can be used for no-op operations.
@@ -66,7 +68,13 @@ public final class SpanContext {
    */
   public static SpanContext create(
       TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
-    return new SpanContext(traceId, spanId, traceFlags, tracestate, /* isRemote= */ false);
+    return SpanContext.newBuilder()
+        .setTraceId(traceId)
+        .setSpanId(spanId)
+        .setTraceFlags(traceFlags)
+        .setTracestate(tracestate)
+        .setRemote(false)
+        .build();
   }
 
   /**
@@ -82,7 +90,13 @@ public final class SpanContext {
    */
   public static SpanContext createFromRemoteParent(
       TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
-    return new SpanContext(traceId, spanId, traceFlags, tracestate, /* isRemote= */ true);
+    return SpanContext.newBuilder()
+        .setTraceId(traceId)
+        .setSpanId(spanId)
+        .setTraceFlags(traceFlags)
+        .setTracestate(tracestate)
+        .setRemote(true)
+        .build();
   }
 
   /**
@@ -91,9 +105,7 @@ public final class SpanContext {
    * @return the trace identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public TraceId getTraceId() {
-    return traceId;
-  }
+  public abstract TraceId getTraceId();
 
   /**
    * Returns the span identifier associated with this {@code SpanContext}.
@@ -101,9 +113,7 @@ public final class SpanContext {
    * @return the span identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public SpanId getSpanId() {
-    return spanId;
-  }
+  public abstract SpanId getSpanId();
 
   /**
    * Returns the {@code TraceFlags} associated with this {@code SpanContext}.
@@ -111,9 +121,7 @@ public final class SpanContext {
    * @return the {@code TraceFlags} associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public TraceFlags getTraceFlags() {
-    return traceFlags;
-  }
+  public abstract TraceFlags getTraceFlags();
 
   /**
    * Returns the {@code Tracestate} associated with this {@code SpanContext}.
@@ -121,9 +129,7 @@ public final class SpanContext {
    * @return the {@code Tracestate} associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public Tracestate getTracestate() {
-    return tracestate;
-  }
+  public abstract Tracestate getTracestate();
 
   /**
    * Returns {@code true} if this {@code SpanContext} is valid.
@@ -132,7 +138,7 @@ public final class SpanContext {
    * @since 0.1.0
    */
   public boolean isValid() {
-    return traceId.isValid() && spanId.isValid();
+    return getTraceId().isValid() && getSpanId().isValid();
   }
 
   /**
@@ -141,12 +147,16 @@ public final class SpanContext {
    * @return {@code true} if the {@code SpanContext} was propagated from a remote parent.
    * @since 0.1.0
    */
-  public boolean isRemote() {
-    return isRemote;
-  }
+  public abstract boolean isRemote();
 
+  /**
+   * Note: This has a custom equals/hashcode implementation. The equals() method does not include
+   * the {@code tracestate}.
+   *
+   * <p>TODO: is this intentional? If it is, it should be documented as to *why* this is the case.
+   */
   @Override
-  public boolean equals(@Nullable Object obj) {
+  public final boolean equals(@Nullable Object obj) {
     if (obj == this) {
       return true;
     }
@@ -156,40 +166,36 @@ public final class SpanContext {
     }
 
     SpanContext that = (SpanContext) obj;
-    return traceId.equals(that.traceId)
-        && spanId.equals(that.spanId)
-        && traceFlags.equals(that.traceFlags)
-        && isRemote == that.isRemote;
+    return getTraceId().equals(that.getTraceId())
+        && getSpanId().equals(that.getSpanId())
+        && getTraceFlags().equals(that.getTraceFlags())
+        && isRemote() == that.isRemote();
   }
 
+  /**
+   * Note: This has a custom equals/hashcode implementation. The hashcode() method does not include
+   * the {@code tracestate} or the {@code remote} flag.
+   *
+   * <p>TODO: is this intentional? If it is, it should be documented as to *why* this is the case.
+   */
   @Override
-  public int hashCode() {
-    return Arrays.hashCode(new Object[] {traceId, spanId, traceFlags});
+  public final int hashCode() {
+    return Arrays.hashCode(new Object[] {getTraceId(), getSpanId(), getTraceFlags()});
   }
 
-  @Override
-  public String toString() {
-    return "SpanContext{traceId="
-        + traceId
-        + ", spanId="
-        + spanId
-        + ", traceFlags="
-        + traceFlags
-        + ", isRemote="
-        + isRemote
-        + "}";
-  }
+  /** A {@code Builder} for a {@link SpanContext}. */
+  @AutoValue.Builder
+  abstract static class Builder {
+    public abstract SpanContext build();
 
-  private SpanContext(
-      TraceId traceId,
-      SpanId spanId,
-      TraceFlags traceFlags,
-      Tracestate tracestate,
-      boolean isRemote) {
-    this.traceId = traceId;
-    this.spanId = spanId;
-    this.traceFlags = traceFlags;
-    this.tracestate = tracestate;
-    this.isRemote = isRemote;
+    public abstract Builder setTraceId(TraceId traceId);
+
+    public abstract Builder setSpanId(SpanId traceId);
+
+    public abstract Builder setTraceFlags(TraceFlags traceFlags);
+
+    public abstract Builder setTracestate(Tracestate tracestate);
+
+    public abstract Builder setRemote(boolean remote);
   }
 }
