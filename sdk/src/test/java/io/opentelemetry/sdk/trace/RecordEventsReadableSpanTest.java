@@ -40,6 +40,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.Before;
@@ -595,5 +599,30 @@ public class RecordEventsReadableSpanTest {
 
     SpanData result = readableSpan.toSpanData();
     assertEquals(expected, result);
+  }
+
+  @Test
+  public void testConcurrentModification() throws ExecutionException, InterruptedException {
+    final RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    ExecutorService es = Executors.newSingleThreadExecutor();
+    Future<?> modifierFuture =
+        es.submit(
+            new Runnable() {
+              @Override
+              public void run() {
+                for (int i = 0; i < 5096 * 5; ++i) {
+                  span.setAttribute("hey" + i, "");
+                }
+              }
+            });
+    try {
+      for (int i = 0; i < 5096 * 5; ++i) {
+        span.toSpanData();
+      }
+    } catch (Throwable t) {
+      modifierFuture.cancel(true);
+      throw t;
+    }
+    modifierFuture.get();
   }
 }
