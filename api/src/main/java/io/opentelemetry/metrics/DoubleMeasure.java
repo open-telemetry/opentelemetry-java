@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.MeasureDouble.BoundDoubleMeasure;
+import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -28,7 +28,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final MeasureDouble measure =
+ *   private static final DoubleMeasure measure =
  *       meter.
  *           .measureDoubleBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
@@ -47,7 +47,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface MeasureDouble extends Measure<BoundDoubleMeasure> {
+public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
   @Override
   BoundDoubleMeasure bind(LabelSet labelSet);
 
@@ -55,7 +55,7 @@ public interface MeasureDouble extends Measure<BoundDoubleMeasure> {
   void unbind(BoundDoubleMeasure bound);
 
   /**
-   * A {@code Bound} for a {@code MeasureLong}.
+   * A {@code Bound} for a {@code LongMeasure}.
    *
    * @since 0.1.0
    */
@@ -71,6 +71,6 @@ public interface MeasureDouble extends Measure<BoundDoubleMeasure> {
     void record(double value);
   }
 
-  /** Builder class for {@link MeasureDouble}. */
-  interface Builder extends Measure.Builder<Builder, MeasureDouble> {}
+  /** Builder class for {@link DoubleMeasure}. */
+  interface Builder extends Measure.Builder<Builder, DoubleMeasure> {}
 }

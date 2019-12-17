@@ -26,9 +26,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link GaugeLong}. */
+/** Unit tests for {@link DoubleGauge}. */
 @RunWith(JUnit4.class)
-public class GaugeLongTest {
+public class DoubleGaugeTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -36,12 +36,12 @@ public class GaugeLongTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterFactory().get("gauge_long_test");
+  private final Meter meter = OpenTelemetry.getMeterFactory().get("gauge_double_test");
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    meter.gaugeLongBuilder("\2").build();
+    meter.doubleGaugeBuilder("\2").build();
   }
 
   @Test
@@ -51,81 +51,84 @@ public class GaugeLongTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.gaugeLongBuilder(longName).build();
+    meter.doubleGaugeBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.gaugeLongBuilder("metric").setDescription(null).build();
+    meter.doubleGaugeBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.gaugeLongBuilder("metric").setUnit(null).build();
+    meter.doubleGaugeBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    meter.gaugeLongBuilder("metric").setLabelKeys(null).build();
+    meter.doubleGaugeBuilder("metric").setLabelKeys(null).build();
   }
 
   @Test
   public void preventNull_LabelKey() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
-    meter.gaugeLongBuilder("metric").setLabelKeys(Collections.<String>singletonList(null)).build();
+    meter
+        .doubleGaugeBuilder("metric")
+        .setLabelKeys(Collections.<String>singletonList(null))
+        .build();
   }
 
   @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.gaugeLongBuilder("metric").setConstantLabels(null).build();
+    meter.doubleGaugeBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
   public void noopGetBound_WithNullLabelSet() {
-    GaugeLong gaugeLong =
+    DoubleGauge doubleGauge =
         meter
-            .gaugeLongBuilder(NAME)
+            .doubleGaugeBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    gaugeLong.bind(null);
+    doubleGauge.bind(null);
   }
 
   @Test
   public void noopRemoveBound_WithNullBound() {
-    GaugeLong gaugeLong =
+    DoubleGauge doubleGauge =
         meter
-            .gaugeLongBuilder(NAME)
+            .doubleGaugeBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("bound");
-    gaugeLong.unbind(null);
+    doubleGauge.unbind(null);
   }
 
   @Test
   public void doesNotThrow() {
-    GaugeLong gaugeLong =
+    DoubleGauge doubleGauge =
         meter
-            .gaugeLongBuilder(NAME)
+            .doubleGaugeBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    gaugeLong.bind(TestLabelSet.empty()).set(5);
+    doubleGauge.bind(TestLabelSet.empty()).set(5.0);
   }
 }

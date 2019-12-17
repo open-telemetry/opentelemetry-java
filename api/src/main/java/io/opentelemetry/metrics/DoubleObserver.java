@@ -16,8 +16,8 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.ObserverDouble.BoundDoubleObserver;
-import io.opentelemetry.metrics.ObserverDouble.ResultDoubleObserver;
+import io.opentelemetry.metrics.DoubleObserver.BoundDoubleObserver;
+import io.opentelemetry.metrics.DoubleObserver.ResultDoubleObserver;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -29,7 +29,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final ObserverDouble observer =
+ *   private static final DoubleObserver observer =
  *       meter.
  *           .observerDoubleBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
@@ -38,7 +38,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void init() {
  *     observer.setCallback(
- *         new ObserverDouble.Callback<ObserverDouble.Result>() {
+ *         new DoubleObserver.Callback<DoubleObserver.Result>() {
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(Result result) {
@@ -52,7 +52,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface ObserverDouble extends Observer<ResultDoubleObserver, BoundDoubleObserver> {
+public interface DoubleObserver extends Observer<ResultDoubleObserver, BoundDoubleObserver> {
   @Override
   BoundDoubleObserver bind(LabelSet labelSet);
 
@@ -62,8 +62,8 @@ public interface ObserverDouble extends Observer<ResultDoubleObserver, BoundDoub
   @Override
   void setCallback(Callback<ResultDoubleObserver> metricUpdater);
 
-  /** Builder class for {@link ObserverDouble}. */
-  interface Builder extends Observer.Builder<ObserverDouble.Builder, ObserverDouble> {}
+  /** Builder class for {@link DoubleObserver}. */
+  interface Builder extends Observer.Builder<DoubleObserver.Builder, DoubleObserver> {}
 
   /**
    * A {@code Bound} for a {@code Observer}.

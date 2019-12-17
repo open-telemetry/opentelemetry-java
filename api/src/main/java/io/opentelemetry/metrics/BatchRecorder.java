@@ -27,28 +27,28 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface BatchRecorder {
   /**
-   * Associates the {@link MeasureLong} with the given value. Subsequent updates to the same {@link
-   * MeasureLong} will overwrite the previous value.
+   * Associates the {@link LongMeasure} with the given value. Subsequent updates to the same {@link
+   * LongMeasure} will overwrite the previous value.
    *
-   * @param measure the {@link MeasureLong}.
+   * @param measure the {@link LongMeasure}.
    * @param value the value to be associated with {@code measure}.
    * @return this.
    * @throws IllegalArgumentException if value is negative.
    * @since 0.1.0
    */
-  BatchRecorder put(MeasureLong measure, long value);
+  BatchRecorder put(LongMeasure measure, long value);
 
   /**
-   * Associates the {@link MeasureDouble} with the given value. Subsequent updates to the same
-   * {@link MeasureDouble} will overwrite the previous value.
+   * Associates the {@link DoubleMeasure} with the given value. Subsequent updates to the same
+   * {@link DoubleMeasure} will overwrite the previous value.
    *
-   * @param measure the {@link MeasureDouble}.
+   * @param measure the {@link DoubleMeasure}.
    * @param value the value to be associated with {@code measure}.
    * @return this.
    * @throws IllegalArgumentException if value is negative.
    * @since 0.1.0
    */
-  BatchRecorder put(MeasureDouble measure, double value);
+  BatchRecorder put(DoubleMeasure measure, double value);
 
   /**
    * Records all of the measures at the same time.
