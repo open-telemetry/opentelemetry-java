@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.distributedcontext.unsafe;
+package io.opentelemetry.distributedcontext.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;

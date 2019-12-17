@@ -17,7 +17,7 @@
 package io.opentelemetry.distributedcontext;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
+import io.opentelemetry.distributedcontext.propagation.ContextUtils;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;

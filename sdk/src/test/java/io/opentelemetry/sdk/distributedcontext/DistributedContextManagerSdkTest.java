@@ -22,7 +22,7 @@ import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.EmptyDistributedContext;
-import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
+import io.opentelemetry.distributedcontext.propagation.ContextUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

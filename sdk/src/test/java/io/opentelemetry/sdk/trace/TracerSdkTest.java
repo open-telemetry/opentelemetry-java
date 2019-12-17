@@ -23,9 +23,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.propagation.BinaryTraceContext;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
-import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.propagation.ContextUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,19 +64,9 @@ public class TracerSdkTest {
   }
 
   @Test
-  public void defaultHttpTextFormat() {
-    assertThat(tracer.getHttpTextFormat()).isInstanceOf(HttpTraceContext.class);
-  }
-
-  @Test
-  public void defaultBinaryFormat() {
-    assertThat(tracer.getBinaryFormat()).isInstanceOf(BinaryTraceContext.class);
-  }
-
-  @Test
   public void getCurrentSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Context origContext = ContextUtils.withValue(span).attach();
+    Context origContext = ContextUtils.withSpan(span).attach();
     // Make sure context is detached even if test fails.
     try {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);

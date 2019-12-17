@@ -17,12 +17,9 @@
 package io.opentelemetry.sdk.distributedcontext;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryFormat;
-import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.distributedcontext.unsafe.ContextUtils;
+import io.opentelemetry.distributedcontext.propagation.ContextUtils;
 
 /**
  * {@link DistributedContextManagerSdk} is SDK implementation of {@link DistributedContextManager}.
@@ -42,17 +39,5 @@ public class DistributedContextManagerSdk implements DistributedContextManager {
   @Override
   public Scope withContext(DistributedContext distContext) {
     return ContextUtils.withDistributedContext(distContext);
-  }
-
-  @Override
-  public BinaryFormat<DistributedContext> getBinaryFormat() {
-    // TODO: Implement this.
-    return DefaultDistributedContextManager.getInstance().getBinaryFormat();
-  }
-
-  @Override
-  public HttpTextFormat<DistributedContext> getHttpTextFormat() {
-    // TODO: Implement this.
-    return DefaultDistributedContextManager.getInstance().getHttpTextFormat();
   }
 }
