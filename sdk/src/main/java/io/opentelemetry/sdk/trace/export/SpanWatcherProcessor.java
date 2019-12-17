@@ -233,7 +233,7 @@ public final class SpanWatcherProcessor implements SpanProcessor {
       while (!Thread.currentThread().isInterrupted()) {
         // Copy all the batched spans in a separate list to release the monitor lock asap to
         // avoid blocking the producer thread.
-        ArrayList<SpanData> unfinishedSpans;
+        ArrayList<ReadableSpan> unfinishedSpans;
         synchronized (monitor) {
           do {
             // In the case of a spurious wakeup we export only if we have at least one span in
@@ -254,28 +254,22 @@ public final class SpanWatcherProcessor implements SpanProcessor {
     }
 
     @GuardedBy("monitor")
-    private ArrayList<SpanData> getUnfinishedSpans() {
-      ArrayList<SpanData> unfinishedSpans = new ArrayList<>();
-      final long curTimeNanos = System.currentTimeMillis() * 1000L * 1000L;
+    private ArrayList<ReadableSpan> getUnfinishedSpans() {
+      ArrayList<ReadableSpan> unfinishedSpans = new ArrayList<>();
       for (int i = 0; i < spanWatchlist.size(); ) {
         ReadableSpan span = spanWatchlist.get(i).get();
-        if (span == null) {
+        if (span == null || span.hasBeenEnded()) {
           dropSpan(i);
           continue;
         }
-        SpanData data = span.toSpanData();
-        if (data.getEndEpochNanos() != 0) {
-          dropSpan(i);
-          continue;
-        }
+
         // We could also use the time we add()ed the span, but since only in-band spans are supposed
         // to be reported,
         // using the start timestamp makes just as much sense.
-        final long age = curTimeNanos - data.getStartEpochNanos();
-        if (age > reportIntervalMillis) {
+        if (span.getLatencyNanos() > reportIntervalMillis) {
           // Many spans will be end()ed so soon that it won't bring much benefit to report them
           // earlier.
-          unfinishedSpans.add(data);
+          unfinishedSpans.add(span);
         }
         ++i;
       }
@@ -295,7 +289,7 @@ public final class SpanWatcherProcessor implements SpanProcessor {
     }
 
     private void flush() {
-      ArrayList<SpanData> unfinishedSpans;
+      ArrayList<ReadableSpan> unfinishedSpans;
       synchronized (monitor) {
         unfinishedSpans = getUnfinishedSpans();
       }
@@ -303,7 +297,7 @@ public final class SpanWatcherProcessor implements SpanProcessor {
       exportBatches(unfinishedSpans);
     }
 
-    private void exportBatches(ArrayList<SpanData> spanList) {
+    private void exportBatches(ArrayList<ReadableSpan> spanList) {
       // TODO: Record a counter for pushed spans.
       for (int i = 0; i < spanList.size(); ) {
         int batchSizeLimit = Math.min(i + maxExportBatchSize, spanList.size());
@@ -313,10 +307,10 @@ public final class SpanWatcherProcessor implements SpanProcessor {
     }
 
     private static List<SpanData> createSpanDataForExport(
-        ArrayList<SpanData> spanList, int startIndex, int numberToTake) {
+        ArrayList<ReadableSpan> spanList, int startIndex, int numberToTake) {
       List<SpanData> spanDataBuffer = new ArrayList<>(numberToTake);
       for (int i = startIndex; i < numberToTake; i++) {
-        spanDataBuffer.add(spanList.get(i));
+        spanDataBuffer.add(spanList.get(i).toSpanData());
         // Remove the reference to the SpanData to allow GC to free the memory.
         spanList.set(i, null);
       }
