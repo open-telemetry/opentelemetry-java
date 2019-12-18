@@ -53,6 +53,15 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface DoubleGauge extends Gauge<BoundDoubleGauge> {
 
+  /**
+   * Sets the given value.
+   *
+   * <p>The value added is associated with the current {@code Context}.
+   *
+   * @param val the new value.
+   * @param labelSet the labels to be associated to this recording
+   * @since 0.1.0
+   */
   void set(double val, LabelSet labelSet);
 
   @Override
