@@ -52,6 +52,9 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface DoubleGauge extends Gauge<BoundDoubleGauge> {
+
+  void set(double val, LabelSet labelSet);
+
   @Override
   BoundDoubleGauge bind(LabelSet labelSet);
 

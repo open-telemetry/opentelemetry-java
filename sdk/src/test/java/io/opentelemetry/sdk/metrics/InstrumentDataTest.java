@@ -28,7 +28,7 @@ import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link MetricData}. */
 @RunWith(JUnit4.class)
-public class MetricDataTest {
+public class InstrumentDataTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   private static final MetricDescriptor METRIC_DESCRIPTOR =

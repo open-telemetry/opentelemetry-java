@@ -52,6 +52,18 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface DoubleCounter extends Counter<BoundDoubleCounter> {
 
+  /**
+   * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
+   * was set to {@code false}.
+   *
+   * <p>The value added is associated with the current {@code Context}.
+   *
+   * @param delta the value to add.
+   * @param labelSet the labels to be associated to this recording
+   * @since 0.1.0
+   */
+  void add(double delta, LabelSet labelSet);
+
   @Override
   BoundDoubleCounter bind(LabelSet labelSet);
 

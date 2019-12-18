@@ -48,6 +48,17 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface LongMeasure extends Measure<BoundLongMeasure> {
+
+  /**
+   * Records the given measurement, associated with the current {@code Context}.
+   *
+   * @param value the measurement to record.
+   * @param labelSet the labels to be associated to this recording
+   * @throws IllegalArgumentException if value is negative.
+   * @since 0.1.0
+   */
+  void record(long value, LabelSet labelSet);
+
   @Override
   BoundLongMeasure bind(LabelSet labelSet);
 
@@ -72,5 +83,5 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
   }
 
   /** Builder class for {@link LongMeasure}. */
-  interface Builder extends Metric.Builder<Builder, LongMeasure> {}
+  interface Builder extends Instrument.Builder<Builder, LongMeasure> {}
 }

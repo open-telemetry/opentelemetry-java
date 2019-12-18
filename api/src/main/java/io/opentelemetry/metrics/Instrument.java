@@ -28,7 +28,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface Metric<B> {
+public interface Instrument<B> {
   /**
    * Returns a {@code Bound} with associated with specified {@code labelSet}. Multiples requests
    * with the same {@code labelSet} may return the same {@code Bound}.
@@ -53,56 +53,56 @@ public interface Metric<B> {
   void unbind(B bound);
 
   /**
-   * The {@code Builder} class for the {@code Metric}.
+   * The {@code Builder} class for the {@code Instrument}.
    *
    * @param <B> the specific builder object.
    * @param <V> the return value for {@code build()}.
    */
   interface Builder<B extends Builder<B, V>, V> {
     /**
-     * Sets the description of the {@code Metric}.
+     * Sets the description of the {@code Instrument}.
      *
      * <p>Default value is {@code ""}.
      *
-     * @param description the description of the Metric.
+     * @param description the description of the Instrument.
      * @return this.
      */
     B setDescription(String description);
 
     /**
-     * Sets the unit of the {@code Metric}.
+     * Sets the unit of the {@code Instrument}.
      *
      * <p>Default value is {@code "1"}.
      *
-     * @param unit the unit of the Metric.
+     * @param unit the unit of the Instrument.
      * @return this.
      */
     B setUnit(String unit);
 
     /**
-     * Sets the list of label keys for the Metric.
+     * Sets the list of label keys for the Instrument.
      *
      * <p>Default value is {@link Collections#emptyList()}
      *
-     * @param labelKeys the list of label keys for the Metric.
+     * @param labelKeys the list of label keys for the Instrument.
      * @return this.
      */
     B setLabelKeys(List<String> labelKeys);
 
     /**
-     * Sets the map of constant labels (they will be added to all the Bound) for the Metric.
+     * Sets the map of constant labels (they will be added to all the Bound) for the Instrument.
      *
      * <p>Default value is {@link Collections#emptyMap()}.
      *
-     * @param constantLabels the map of constant labels for the Metric.
+     * @param constantLabels the map of constant labels for the Instrument.
      * @return this.
      */
     B setConstantLabels(Map<String, String> constantLabels);
 
     /**
-     * Builds and returns a {@code Metric} with the desired options.
+     * Builds and returns a {@code Instrument} with the desired options.
      *
-     * @return a {@code Metric} with the desired options.
+     * @return a {@code Instrument} with the desired options.
      */
     V build();
   }

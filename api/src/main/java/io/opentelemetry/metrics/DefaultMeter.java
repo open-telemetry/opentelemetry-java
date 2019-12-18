@@ -530,8 +530,8 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  private abstract static class NoopAbstractMetricBuilder<B extends Metric.Builder<B, V>, V>
-      implements Metric.Builder<B, V> {
+  private abstract static class NoopAbstractMetricBuilder<B extends Instrument.Builder<B, V>, V>
+      implements Instrument.Builder<B, V> {
     @Override
     public B setDescription(String description) {
       Utils.checkNotNull(description, "description");

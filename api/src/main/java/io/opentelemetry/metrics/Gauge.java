@@ -22,11 +22,11 @@ package io.opentelemetry.metrics;
  * @param <H> the Bound type.
  * @since 0.1.0
  */
-public interface Gauge<H> extends Metric<H> {
+public interface Gauge<H> extends Instrument<H> {
   /** Builder class for {@link Gauge}. */
-  interface Builder<B extends Gauge.Builder<B, V>, V> extends Metric.Builder<B, V> {
+  interface Builder<B extends Gauge.Builder<B, V>, V> extends Instrument.Builder<B, V> {
     /**
-     * Sets the monotonicity property for this {@code Metric}. If {@code true} successive values are
+     * Sets the monotonicity property for this {@code Instrument}. If {@code true} successive values are
      * expected to rise monotonically.
      *
      * <p>Default value is {@code false}

@@ -22,12 +22,12 @@ package io.opentelemetry.metrics;
  * @param <H> the Bound type.
  * @since 0.1.0
  */
-public interface Counter<H> extends Metric<H> {
+public interface Counter<H> extends Instrument<H> {
 
   /** Builder class for {@link Counter}. */
-  interface Builder<B extends Counter.Builder<B, V>, V> extends Metric.Builder<B, V> {
+  interface Builder<B extends Counter.Builder<B, V>, V> extends Instrument.Builder<B, V> {
     /**
-     * Sets the monotonicity property for this {@code Metric}. If {@code true} only non-negative
+     * Sets the monotonicity property for this {@code Instrument}. If {@code true} only non-negative
      * values are expected.
      *
      * <p>Default value is {@code true}

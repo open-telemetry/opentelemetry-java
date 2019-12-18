@@ -23,7 +23,7 @@ package io.opentelemetry.metrics;
  * @param <R> the callback Result type.
  * @since 0.1.0
  */
-public interface Observer<R, B> extends Metric<B> {
+public interface Observer<R, B> extends Instrument<B> {
   /**
    * A {@code Callback} for a {@code Observer}.
    *
@@ -45,9 +45,9 @@ public interface Observer<R, B> extends Metric<B> {
   void setCallback(Callback<R> metricUpdater);
 
   /** Builder class for {@link Observer}. */
-  interface Builder<B extends Metric.Builder<B, V>, V> extends Metric.Builder<B, V> {
+  interface Builder<B extends Instrument.Builder<B, V>, V> extends Instrument.Builder<B, V> {
     /**
-     * Sets the monotonicity property for this {@code Metric}. If {@code true} successive values are
+     * Sets the monotonicity property for this {@code Instrument}. If {@code true} successive values are
      * expected to rise monotonically.
      *
      * <p>Default value is {@code false}
