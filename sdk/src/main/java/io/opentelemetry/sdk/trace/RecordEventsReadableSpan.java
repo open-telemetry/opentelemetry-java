@@ -159,24 +159,27 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public SpanData toSpanData() {
     SpanContext spanContext = getSpanContext();
-    return SpanData.newBuilder()
+    SpanData.Builder builder = SpanData.newBuilder()
         .setName(getName())
         .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
         .setTraceId(spanContext.getTraceId())
         .setSpanId(spanContext.getSpanId())
         .setTraceFlags(spanContext.getTraceFlags())
-        .setTracestate(spanContext.getTracestate())
-        .setAttributes(getAttributes())
-        .setStartEpochNanos(startEpochNanos)
-        .setEndEpochNanos(getEndEpochNanos())
-        .setKind(kind)
         .setLinks(getLinks())
+        .setKind(kind)
+        .setTracestate(spanContext.getTracestate())
         .setParentSpanId(parentSpanId)
         .setHasRemoteParent(hasRemoteParent)
         .setResource(resource)
-        .setStatus(getStatus())
-        .setTimedEvents(adaptTimedEvents())
-        .build();
+        .setStartEpochNanos(startEpochNanos);
+    synchronized (lock) {
+      return builder
+          .setAttributes(getAttributes())
+          .setEndEpochNanos(getEndEpochNanos())
+          .setStatus(getStatus())
+          .setTimedEvents(adaptTimedEvents())
+          .build();
+    }
   }
 
   private List<SpanData.TimedEvent> adaptTimedEvents() {
@@ -261,22 +264,20 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   List<Link> getLinks() {
-    synchronized (lock) {
-      if (links == null) {
-        return Collections.emptyList();
-      }
-      List<Link> result = new ArrayList<>(links.size());
-      for (Link link : links) {
-        Link newLink = link;
-        if (!(link instanceof SpanData.Link)) {
-          // Make a copy because the given Link may not be immutable and we may reference a lot of
-          // memory.
-          newLink = SpanData.Link.create(link.getContext(), link.getAttributes());
-        }
-        result.add(newLink);
-      }
-      return Collections.unmodifiableList(result);
+    if (links == null) {
+      return Collections.emptyList();
     }
+    List<Link> result = new ArrayList<>(links.size());
+    for (Link link : links) {
+      Link newLink = link;
+      if (!(link instanceof SpanData.Link)) {
+        // Make a copy because the given Link may not be immutable and we may reference a lot of
+        // memory.
+        newLink = SpanData.Link.create(link.getContext(), link.getAttributes());
+      }
+      result.add(newLink);
+    }
+    return Collections.unmodifiableList(result);
   }
 
   /**
@@ -286,9 +287,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    */
   @VisibleForTesting
   Map<String, AttributeValue> getAttributes() {
-    synchronized (lock) {
-      return Collections.unmodifiableMap(attributes);
-    }
+    return Collections.unmodifiableMap(attributes);
   }
 
   /**
