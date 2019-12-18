@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.CounterLong.BoundLongCounter;
+import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -50,7 +50,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface CounterLong extends Metric<BoundLongCounter> {
+public interface LongCounter extends Metric<BoundLongCounter> {
 
   @Override
   BoundLongCounter bind(LabelSet labelSet);
@@ -77,6 +77,6 @@ public interface CounterLong extends Metric<BoundLongCounter> {
     void add(long delta);
   }
 
-  /** Builder class for {@link CounterLong}. */
-  interface Builder extends Counter.Builder<Builder, CounterLong> {}
+  /** Builder class for {@link LongCounter}. */
+  interface Builder extends Counter.Builder<Builder, LongCounter> {}
 }

@@ -24,9 +24,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link MeasureLong}. */
+/** Tests for {@link LongMeasure}. */
 @RunWith(JUnit4.class)
-public final class MeasureLongTest {
+public final class LongMeasureTest {
   private static final Meter meter = DefaultMeter.getInstance();
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -34,7 +34,7 @@ public final class MeasureLongTest {
   public void preventNonPrintableMeasureName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.measureLongBuilder("\2").build();
+    meter.longMeasureBuilder("\2").build();
   }
 
   @Test
@@ -44,28 +44,28 @@ public final class MeasureLongTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.measureLongBuilder(longName).build();
+    meter.longMeasureBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.measureLongBuilder("metric").setDescription(null).build();
+    meter.longMeasureBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.measureLongBuilder("metric").setUnit(null).build();
+    meter.longMeasureBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    meter.measureLongBuilder("metric").setLabelKeys(null).build();
+    meter.longMeasureBuilder("metric").setLabelKeys(null).build();
   }
 
   @Test
@@ -73,7 +73,7 @@ public final class MeasureLongTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
     meter
-        .measureLongBuilder("metric")
+        .longMeasureBuilder("metric")
         .setLabelKeys(Collections.<String>singletonList(null))
         .build();
   }
@@ -82,12 +82,12 @@ public final class MeasureLongTest {
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.measureLongBuilder("metric").setConstantLabels(null).build();
+    meter.longMeasureBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
   public void preventNegativeValue() {
-    MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
+    LongMeasure myMeasure = meter.longMeasureBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
     myMeasure.bind(TestLabelSet.empty()).record(-5);
@@ -95,7 +95,7 @@ public final class MeasureLongTest {
 
   @Test
   public void doesNotThrow() {
-    MeasureLong myMeasure = meter.measureLongBuilder("MyMeasure").build();
+    LongMeasure myMeasure = meter.longMeasureBuilder("MyMeasure").build();
     myMeasure.bind(TestLabelSet.empty()).record(5);
   }
 }

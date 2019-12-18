@@ -26,9 +26,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link ObserverDouble}. */
+/** Unit tests for {@link LongObserver}. */
 @RunWith(JUnit4.class)
-public class ObserverDoubleTest {
+public class LongObserverTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -36,12 +36,12 @@ public class ObserverDoubleTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterFactory().get("observer_double_test");
+  private final Meter meter = OpenTelemetry.getMeterFactory().get("observer_long_test");
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    meter.observerDoubleBuilder("\2").build();
+    meter.longObserverBuilder("\2").build();
   }
 
   @Test
@@ -51,28 +51,28 @@ public class ObserverDoubleTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.observerDoubleBuilder(longName).build();
+    meter.longObserverBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.observerDoubleBuilder("metric").setDescription(null).build();
+    meter.longObserverBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.observerDoubleBuilder("metric").setUnit(null).build();
+    meter.longObserverBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    meter.observerDoubleBuilder("metric").setLabelKeys(null).build();
+    meter.longObserverBuilder("metric").setLabelKeys(null).build();
   }
 
   @Test
@@ -80,7 +80,7 @@ public class ObserverDoubleTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
     meter
-        .observerDoubleBuilder("metric")
+        .longObserverBuilder("metric")
         .setLabelKeys(Collections.<String>singletonList(null))
         .build();
   }
@@ -89,34 +89,34 @@ public class ObserverDoubleTest {
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.observerDoubleBuilder("metric").setConstantLabels(null).build();
+    meter.longObserverBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
   public void noopGetBound_WithNullLabelSet() {
-    ObserverDouble observerDouble =
+    LongObserver longObserver =
         meter
-            .observerDoubleBuilder(NAME)
+            .longObserverBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    observerDouble.bind(null);
+    longObserver.bind(null);
   }
 
   @Test
   public void noopRemoveBound_WithNullBound() {
-    ObserverDouble gaugeDouble =
+    LongObserver longObserver =
         meter
-            .observerDoubleBuilder(NAME)
+            .longObserverBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("bound");
-    gaugeDouble.unbind(null);
+    longObserver.unbind(null);
   }
 }

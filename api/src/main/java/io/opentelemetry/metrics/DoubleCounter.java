@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.CounterDouble.BoundDoubleCounter;
+import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -50,7 +50,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface CounterDouble extends Counter<BoundDoubleCounter> {
+public interface DoubleCounter extends Counter<BoundDoubleCounter> {
 
   @Override
   BoundDoubleCounter bind(LabelSet labelSet);
@@ -76,6 +76,6 @@ public interface CounterDouble extends Counter<BoundDoubleCounter> {
     void add(double delta);
   }
 
-  /** Builder class for {@link CounterDouble}. */
-  interface Builder extends Counter.Builder<Builder, CounterDouble> {}
+  /** Builder class for {@link DoubleCounter}. */
+  interface Builder extends Counter.Builder<Builder, DoubleCounter> {}
 }

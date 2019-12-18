@@ -17,11 +17,11 @@
 package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.metrics.LongObserver;
+import io.opentelemetry.metrics.LongObserver.BoundLongObserver;
+import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.Observer.Callback;
-import io.opentelemetry.metrics.ObserverLong;
-import io.opentelemetry.metrics.ObserverLong.BoundLongObserver;
-import io.opentelemetry.metrics.ObserverLong.ResultLongObserver;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
@@ -71,9 +71,9 @@ public final class MemoryPools {
   /** Export only the "area" metric. */
   public void exportMemoryAreaMetric() {
     // TODO: Set this as non-monotonic.
-    final ObserverLong areaMetric =
+    final LongObserver areaMetric =
         this.meter
-            .observerLongBuilder("area")
+            .longObserverBuilder("area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
@@ -93,7 +93,7 @@ public final class MemoryPools {
     final BoundLongObserver maxNonHeap =
         areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP));
     areaMetric.setCallback(
-        new ObserverLong.Callback<ResultLongObserver>() {
+        new LongObserver.Callback<ResultLongObserver>() {
           @Override
           public void update(ResultLongObserver resultLongObserver) {
             MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
@@ -111,9 +111,9 @@ public final class MemoryPools {
   /** Export only the "pool" metric. */
   public void exportMemoryPoolMetric() {
     // TODO: Set this as non-monotonic.
-    final ObserverLong poolMetric =
+    final LongObserver poolMetric =
         this.meter
-            .observerLongBuilder("pool")
+            .longObserverBuilder("pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))

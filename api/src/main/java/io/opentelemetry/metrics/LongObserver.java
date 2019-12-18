@@ -16,8 +16,8 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.ObserverLong.BoundLongObserver;
-import io.opentelemetry.metrics.ObserverLong.ResultLongObserver;
+import io.opentelemetry.metrics.LongObserver.BoundLongObserver;
+import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -29,7 +29,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final ObserverLong observer =
+ *   private static final LongObserver observer =
  *       meter.
  *           .observerLongBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
@@ -38,7 +38,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void init() {
  *     observer.setCallback(
- *         new ObserverLong.Callback<ObserverLong.Result>() {
+ *         new LongObserver.Callback<LongObserver.Result>() {
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(ResultLongObserver result) {
@@ -52,7 +52,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface ObserverLong extends Observer<ResultLongObserver, BoundLongObserver> {
+public interface LongObserver extends Observer<ResultLongObserver, BoundLongObserver> {
   @Override
   BoundLongObserver bind(LabelSet labelSet);
 
@@ -62,8 +62,8 @@ public interface ObserverLong extends Observer<ResultLongObserver, BoundLongObse
   @Override
   void setCallback(Callback<ResultLongObserver> metricUpdater);
 
-  /** Builder class for {@link ObserverLong}. */
-  interface Builder extends Observer.Builder<ObserverLong.Builder, ObserverLong> {}
+  /** Builder class for {@link LongObserver}. */
+  interface Builder extends Observer.Builder<LongObserver.Builder, LongObserver> {}
 
   /**
    * A {@code Bound} for a {@code Observer}.

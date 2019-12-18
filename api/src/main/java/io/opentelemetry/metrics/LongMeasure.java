@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.MeasureLong.BoundLongMeasure;
+import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -28,13 +28,13 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final MeasureLong measure =
+ *   private static final LongMeasure measure =
  *       meter.
  *           .measureLongBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
  *           .setUnit("ns")
  *           .build();
- *   private static final MeasureLong.BoundLongMeasure boundMeasure = measure.bind(labelset);
+ *   private static final LongMeasure.BoundLongMeasure boundMeasure = measure.bind(labelset);
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
@@ -47,7 +47,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface MeasureLong extends Measure<BoundLongMeasure> {
+public interface LongMeasure extends Measure<BoundLongMeasure> {
   @Override
   BoundLongMeasure bind(LabelSet labelSet);
 
@@ -55,7 +55,7 @@ public interface MeasureLong extends Measure<BoundLongMeasure> {
   void unbind(BoundLongMeasure bound);
 
   /**
-   * A {@code Bound} for a {@code MeasureLong}.
+   * A {@code Bound} for a {@code LongMeasure}.
    *
    * @since 0.1.0
    */
@@ -71,6 +71,6 @@ public interface MeasureLong extends Measure<BoundLongMeasure> {
     void record(long value);
   }
 
-  /** Builder class for {@link MeasureLong}. */
-  interface Builder extends Metric.Builder<Builder, MeasureLong> {}
+  /** Builder class for {@link LongMeasure}. */
+  interface Builder extends Metric.Builder<Builder, LongMeasure> {}
 }

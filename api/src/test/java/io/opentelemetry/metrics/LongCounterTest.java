@@ -26,9 +26,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link CounterDouble}. */
+/** Unit tests for {@link LongCounter}. */
 @RunWith(JUnit4.class)
-public class CounterDoubleTest {
+public class LongCounterTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -36,13 +36,12 @@ public class CounterDoubleTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterFactory().get("counter_double_test");
+  private final Meter meter = OpenTelemetry.getMeterFactory().get("counter_long_test");
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.counterDoubleBuilder("\2").build();
+    meter.longCounterBuilder("\2").build();
   }
 
   @Test
@@ -52,35 +51,28 @@ public class CounterDoubleTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.counterDoubleBuilder(longName).build();
+    meter.longCounterBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.counterDoubleBuilder("metric").setDescription(null).build();
+    meter.longCounterBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.counterDoubleBuilder("metric").setUnit(null).build();
+    meter.longCounterBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    meter.counterDoubleBuilder("metric").setLabelKeys(null).build();
-  }
-
-  @Test
-  public void preventNull_ConstantLabels() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("constantLabels");
-    meter.counterDoubleBuilder("metric").setConstantLabels(null).build();
+    meter.longCounterBuilder("metric").setLabelKeys(null).build();
   }
 
   @Test
@@ -88,48 +80,55 @@ public class CounterDoubleTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
     meter
-        .counterDoubleBuilder("metric")
+        .longCounterBuilder("metric")
         .setLabelKeys(Collections.<String>singletonList(null))
         .build();
   }
 
   @Test
+  public void preventNull_ConstantLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("constantLabels");
+    meter.longCounterBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
   public void noopGetBound_WithNullLabelSet() {
-    CounterDouble counterDouble =
+    LongCounter longCounter =
         meter
-            .counterDoubleBuilder(NAME)
+            .longCounterBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    counterDouble.bind(null);
+    longCounter.bind(null);
   }
 
   @Test
   public void noopRemoveBound_WithNullBound() {
-    CounterDouble counterDouble =
+    LongCounter longCounter =
         meter
-            .counterDoubleBuilder(NAME)
+            .longCounterBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("bound");
-    counterDouble.unbind(null);
+    longCounter.unbind(null);
   }
 
   @Test
   public void doesNotThrow() {
-    CounterDouble counterDouble =
+    LongCounter longCounter =
         meter
-            .counterDoubleBuilder(NAME)
+            .longCounterBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    counterDouble.bind(TestLabelSet.empty()).add(1.0);
+    longCounter.bind(TestLabelSet.empty()).add(1);
   }
 }

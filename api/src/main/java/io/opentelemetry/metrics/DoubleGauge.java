@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.GaugeDouble.BoundDoubleGauge;
+import io.opentelemetry.metrics.DoubleGauge.BoundDoubleGauge;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -29,14 +29,14 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final GaugeDouble gauge =
+ *   private static final DoubleGauge gauge =
  *       meter
  *           .gaugeDoubleBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a Bound.
+ *   // It is recommended to keep a reference to a Bound Instrument.
  *   private static final BoundDoubleGauge someWorkBound =
  *       gauge.getBound(Collections.singletonList("SomeWork"));
  *
@@ -51,7 +51,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface GaugeDouble extends Gauge<BoundDoubleGauge> {
+public interface DoubleGauge extends Gauge<BoundDoubleGauge> {
   @Override
   BoundDoubleGauge bind(LabelSet labelSet);
 
@@ -59,7 +59,7 @@ public interface GaugeDouble extends Gauge<BoundDoubleGauge> {
   void unbind(BoundDoubleGauge bound);
 
   /**
-   * A {@code Bound} for a {@code GaugeDouble}.
+   * A {@code Bound} for a {@code DoubleGauge}.
    *
    * @since 0.1.0
    */
@@ -76,6 +76,6 @@ public interface GaugeDouble extends Gauge<BoundDoubleGauge> {
     void set(double val);
   }
 
-  /** Builder class for {@link GaugeLong}. */
-  interface Builder extends Gauge.Builder<Builder, GaugeDouble> {}
+  /** Builder class for {@link LongGauge}. */
+  interface Builder extends Gauge.Builder<Builder, DoubleGauge> {}
 }
