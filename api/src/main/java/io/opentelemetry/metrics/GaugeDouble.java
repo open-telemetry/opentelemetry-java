@@ -56,9 +56,6 @@ public interface GaugeDouble extends Gauge<BoundDoubleGauge> {
   BoundDoubleGauge bind(LabelSet labelSet);
 
   @Override
-  BoundDoubleGauge getDefaultBound();
-
-  @Override
   void unbind(BoundDoubleGauge bound);
 
   /**

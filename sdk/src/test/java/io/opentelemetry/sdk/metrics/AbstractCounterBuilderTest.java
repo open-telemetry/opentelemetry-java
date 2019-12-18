@@ -83,11 +83,6 @@ public class AbstractCounterBuilderTest {
     }
 
     @Override
-    public TestBound getDefaultBound() {
-      return HANDLE;
-    }
-
-    @Override
     public void unbind(TestBound handle) {}
   }
 

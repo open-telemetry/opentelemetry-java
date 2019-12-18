@@ -177,11 +177,6 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundLongGauge getDefaultBound() {
-      return NoopBoundLongGauge.INSTANCE;
-    }
-
-    @Override
     public void unbind(BoundLongGauge boundLongGauge) {
       Utils.checkNotNull(boundLongGauge, "boundLongGauge");
     }
@@ -218,11 +213,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopBoundDoubleGauge bind(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBoundDoubleGauge.INSTANCE;
-    }
-
-    @Override
-    public NoopBoundDoubleGauge getDefaultBound() {
       return NoopBoundDoubleGauge.INSTANCE;
     }
 
@@ -267,11 +257,6 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundDoubleCounter getDefaultBound() {
-      return NoopBoundDoubleCounter.INSTANCE;
-    }
-
-    @Override
     public void unbind(BoundDoubleCounter boundDoubleCounter) {
       Utils.checkNotNull(boundDoubleCounter, "boundDoubleCounter");
     }
@@ -312,11 +297,6 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundLongCounter getDefaultBound() {
-      return NoopBoundLongCounter.INSTANCE;
-    }
-
-    @Override
     public void unbind(BoundLongCounter boundLongCounter) {
       Utils.checkNotNull(boundLongCounter, "boundLongCounter");
     }
@@ -352,11 +332,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopBoundDoubleMeasure bind(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBoundDoubleMeasure.INSTANCE;
-    }
-
-    @Override
-    public NoopBoundDoubleMeasure getDefaultBound() {
       return NoopBoundDoubleMeasure.INSTANCE;
     }
 
@@ -401,11 +376,6 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundLongMeasure getDefaultBound() {
-      return NoopBoundLongMeasure.INSTANCE;
-    }
-
-    @Override
     public void unbind(BoundLongMeasure boundLongMeasure) {
       Utils.checkNotNull(boundLongMeasure, "boundLongMeasure");
     }
@@ -446,11 +416,6 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundDoubleObserver getDefaultBound() {
-      return NoopBoundDoubleObserver.INSTANCE;
-    }
-
-    @Override
     public void unbind(BoundDoubleObserver boundDoubleObserver) {
       Utils.checkNotNull(boundDoubleObserver, "boundDoubleObserver");
     }
@@ -487,11 +452,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopBoundLongObserver bind(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBoundLongObserver.INSTANCE;
-    }
-
-    @Override
-    public NoopBoundLongObserver getDefaultBound() {
       return NoopBoundLongObserver.INSTANCE;
     }
 

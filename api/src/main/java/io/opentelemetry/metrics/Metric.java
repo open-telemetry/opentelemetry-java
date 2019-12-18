@@ -44,14 +44,6 @@ public interface Metric<B> {
   B bind(LabelSet labelSet);
 
   /**
-   * Returns a {@code Bound} for a metric with all labels not set.
-   *
-   * @return a {@code Bound} for a metric with all labels not set.
-   * @since 0.1.0
-   */
-  B getDefaultBound();
-
-  /**
    * Removes the {@code Bound} from the metric. i.e. references to previous {@code Bound} are
    * invalid (not part of the metric).
    *

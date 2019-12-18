@@ -126,6 +126,6 @@ public class GaugeLongTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    gaugeLong.getDefaultBound().set(5);
+    gaugeLong.bind(TestLabelSet.empty()).set(5);
   }
 }

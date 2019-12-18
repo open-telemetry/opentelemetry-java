@@ -56,9 +56,6 @@ public interface CounterDouble extends Counter<BoundDoubleCounter> {
   BoundDoubleCounter bind(LabelSet labelSet);
 
   @Override
-  BoundDoubleCounter getDefaultBound();
-
-  @Override
   void unbind(BoundDoubleCounter bound);
 
   /**
