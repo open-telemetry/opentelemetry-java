@@ -42,7 +42,7 @@ public class AbstractGaugeBuilderTest {
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
     assertThat(testMetricBuilder.getMonotonic()).isFalse();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
   }
 
   @Test
@@ -50,11 +50,11 @@ public class AbstractGaugeBuilderTest {
     TestMetricBuilder testMetricBuilder = TestMetricBuilder.newBuilder(NAME).setMonotonic(true);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getMonotonic()).isTrue();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
   }
 
   private static final class TestMetricBuilder
-      extends AbstractGaugeBuilder<TestMetricBuilder, TestInstrument> {
+      extends AbstractGaugeBuilder<TestMetricBuilder, TestMetric> {
     static TestMetricBuilder newBuilder(String name) {
       return new TestMetricBuilder(name);
     }
@@ -69,12 +69,12 @@ public class AbstractGaugeBuilderTest {
     }
 
     @Override
-    public TestInstrument build() {
-      return new TestInstrument();
+    public TestMetric build() {
+      return new TestMetric();
     }
   }
 
-  private static final class TestInstrument implements Gauge<TestBound> {
+  private static final class TestMetric implements Gauge<TestBound> {
     private static final TestBound HANDLE = new TestBound();
 
     @Override

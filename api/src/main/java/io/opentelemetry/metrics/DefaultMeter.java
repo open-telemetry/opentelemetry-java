@@ -171,6 +171,9 @@ public final class DefaultMeter implements Meter {
     private NoopLongGauge() {}
 
     @Override
+    public void set(long val, LabelSet labelSet) {}
+
+    @Override
     public NoopBoundLongGauge bind(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
       return NoopBoundLongGauge.INSTANCE;
@@ -209,6 +212,9 @@ public final class DefaultMeter implements Meter {
   private static final class NoopDoubleGauge implements DoubleGauge {
     /** Creates a new {@code NoopBound}. */
     private NoopDoubleGauge() {}
+
+    @Override
+    public void set(double val, LabelSet labelSet) {}
 
     @Override
     public NoopBoundDoubleGauge bind(LabelSet labelSet) {
@@ -251,6 +257,9 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleCounter() {}
 
     @Override
+    public void add(double delta, LabelSet labelSet) {}
+
+    @Override
     public NoopBoundDoubleCounter bind(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
       return NoopBoundDoubleCounter.INSTANCE;
@@ -289,6 +298,9 @@ public final class DefaultMeter implements Meter {
   private static final class NoopLongCounter implements LongCounter {
     /** Creates a new {@code NoopBound}. */
     private NoopLongCounter() {}
+
+    @Override
+    public void add(long delta, LabelSet labelSet) {}
 
     @Override
     public NoopBoundLongCounter bind(LabelSet labelSet) {
@@ -330,6 +342,11 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleMeasure() {}
 
     @Override
+    public void record(double value, LabelSet labelSet) {
+      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+    }
+
+    @Override
     public NoopBoundDoubleMeasure bind(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
       return NoopBoundDoubleMeasure.INSTANCE;
@@ -368,6 +385,11 @@ public final class DefaultMeter implements Meter {
   @Immutable
   private static final class NoopLongMeasure implements LongMeasure {
     private NoopLongMeasure() {}
+
+    @Override
+    public void record(long value, LabelSet labelSet) {
+      Utils.checkArgument(value >= 0, "Unsupported negative values.");
+    }
 
     @Override
     public NoopBoundLongMeasure bind(LabelSet labelSet) {
@@ -530,8 +552,8 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  private abstract static class NoopAbstractMetricBuilder<B extends Instrument.Builder<B, V>, V>
-      implements Instrument.Builder<B, V> {
+  private abstract static class NoopAbstractMetricBuilder<B extends Metric.Builder<B, V>, V>
+      implements Metric.Builder<B, V> {
     @Override
     public B setDescription(String description) {
       Utils.checkNotNull(description, "description");

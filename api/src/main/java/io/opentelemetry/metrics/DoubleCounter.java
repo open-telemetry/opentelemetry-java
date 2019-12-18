@@ -53,8 +53,8 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface DoubleCounter extends Counter<BoundDoubleCounter> {
 
   /**
-   * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
-   * was set to {@code false}.
+   * Adds the given {@code delta} to the current value. The values can be negative iff monotonic was
+   * set to {@code false}.
    *
    * <p>The value added is associated with the current {@code Context}.
    *

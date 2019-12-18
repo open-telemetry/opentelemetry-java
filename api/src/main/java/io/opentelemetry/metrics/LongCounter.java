@@ -50,7 +50,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongCounter extends Instrument<BoundLongCounter> {
+public interface LongCounter extends Metric<BoundLongCounter> {
 
   void add(long delta, LabelSet labelSet);
 

@@ -27,11 +27,11 @@ import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link MetricDescriptor}. */
 @RunWith(JUnit4.class)
-public class InstrumentDescriptorTest {
+public class MetricDescriptorTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   private static final String METRIC_NAME = "metric";
-  private static final String DESCRIPTION = "Instrument description.";
+  private static final String DESCRIPTION = "Metric description.";
   private static final String UNIT = "kb/s";
   private static final MetricDescriptor.Type TYPE = MetricDescriptor.Type.MONOTONIC_INT64;
   private static final String KEY_1 = "key1";

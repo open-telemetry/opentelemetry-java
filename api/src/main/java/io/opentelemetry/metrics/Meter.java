@@ -25,7 +25,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <ul>
  *   <li>Record raw measurements, and defer defining the aggregation and the labels for the exported
- *       Instrument. This should be used in libraries like gRPC to record measurements like
+ *       Metric. This should be used in libraries like gRPC to record measurements like
  *       "server_latency" or "received_bytes".
  *   <li>Record pre-defined aggregation data (or already aggregated data). This should be used to
  *       report cpu/memory usage, or simple metrics like "queue_length".
