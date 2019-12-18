@@ -22,7 +22,7 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * {@link Aggregation} is the process of combining a certain set of {@code MeasureValue}s for a
- * given {@code Measure} into the equivalent {@code Metric}.
+ * given {@code Measure} into the equivalent {@code Instrument}.
  *
  * <p>{@link Aggregation} currently supports 4 types of basic aggregation:
  *

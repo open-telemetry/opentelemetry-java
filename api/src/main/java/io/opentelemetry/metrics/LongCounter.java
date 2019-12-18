@@ -20,7 +20,7 @@ import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Counter metric, to report instantaneous measurement of a long value. Cumulative values can go up
+ * Counter instrument, to report instantaneous measurements of long values. Cumulative values can go up
  * or stay the same, but can never go down. Cumulative values cannot be negative.
  *
  * <p>Example:
@@ -29,14 +29,14 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final CounterLong counter =
+ *   private static final LongCounter counter =
  *       meter.
- *           .counterLongBuilder("processed_jobs")
+ *           .longCounterBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a Bound.
+ *   // It is recommended that the API user keep a reference to a Bound Counter.
  *   private static final BoundLongCounter someWorkBound =
  *       counter.getBound(Collections.singletonList("SomeWork"));
  *
@@ -50,7 +50,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongCounter extends Metric<BoundLongCounter> {
+public interface LongCounter extends Instrument<BoundLongCounter> {
 
   /**
    * Adds the given {@code delta} to the current value. The values can be negative iff monotonic was
@@ -68,10 +68,10 @@ public interface LongCounter extends Metric<BoundLongCounter> {
   BoundLongCounter bind(LabelSet labelSet);
 
   @Override
-  void unbind(BoundLongCounter bound);
+  void unbind(BoundLongCounter boundInstrument);
 
   /**
-   * A {@code Bound} for a {@code CounterLong}.
+   * A {@code Bound Instrument} for a {@code CounterLong}.
    *
    * @since 0.1.0
    */

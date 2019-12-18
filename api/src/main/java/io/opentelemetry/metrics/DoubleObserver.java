@@ -57,7 +57,7 @@ public interface DoubleObserver extends Observer<ResultDoubleObserver, BoundDoub
   BoundDoubleObserver bind(LabelSet labelSet);
 
   @Override
-  void unbind(BoundDoubleObserver bound);
+  void unbind(BoundDoubleObserver boundInstrument);
 
   @Override
   void setCallback(Callback<ResultDoubleObserver> metricUpdater);
@@ -66,7 +66,7 @@ public interface DoubleObserver extends Observer<ResultDoubleObserver, BoundDoub
   interface Builder extends Observer.Builder<DoubleObserver.Builder, DoubleObserver> {}
 
   /**
-   * A {@code Bound} for a {@code Observer}.
+   * A {@code BoundDoubleObserver} for a {@code Observer} for double values.
    *
    * @since 0.1.0
    */
@@ -75,6 +75,6 @@ public interface DoubleObserver extends Observer<ResultDoubleObserver, BoundDoub
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface ResultDoubleObserver {
-    void put(BoundDoubleObserver bound, double value);
+    void put(BoundDoubleObserver boundDoubleObserver, double value);
   }
 }

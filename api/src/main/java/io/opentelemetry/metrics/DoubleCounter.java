@@ -29,16 +29,16 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final CounterDouble counter =
+ *   private static final DoubleCounter counter =
  *       meter.
- *           .counterDoubleBuilder("processed_jobs")
+ *           .doubleCounterBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a Bound.
+ *   // It is recommended that the API user keep references to a Bound Counters.
  *   private static final BoundDoubleCounter someWorkBound =
- *       counter.getBound(Collections.singletonList("SomeWork"));
+ *       counter.bind(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
  *      // Your code here.
@@ -68,10 +68,10 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
   BoundDoubleCounter bind(LabelSet labelSet);
 
   @Override
-  void unbind(BoundDoubleCounter bound);
+  void unbind(BoundDoubleCounter boundInstrument);
 
   /**
-   * A {@code Bound} for a {@code CounterDouble}.
+   * A {@code Bound Instrument} for a {@code CounterDouble}.
    *
    * @since 0.1.0
    */

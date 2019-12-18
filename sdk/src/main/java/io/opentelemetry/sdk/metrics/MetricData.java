@@ -20,7 +20,7 @@ import com.google.auto.value.AutoValue;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A {@link MetricData} represents the data exported as part of aggregating one {@code Metric}.
+ * A {@link MetricData} represents the data exported as part of aggregating one {@code Instrument}.
  *
  * @since 0.1.0
  */
@@ -38,7 +38,7 @@ public abstract class MetricData {
   public abstract MetricDescriptor getMetricDescriptor();
 
   /**
-   * Returns the start epoch timestamp in nanos of this {@code Metric}, usually the time when the
+   * Returns the start epoch timestamp in nanos of this {@code Instrument}, usually the time when the
    * metric was created or an aggregation was enabled.
    *
    * @return the start epoch timestamp in nanos.
@@ -48,7 +48,7 @@ public abstract class MetricData {
 
   /**
    * Returns the the epoch timestamp in nanos when data were collected, usually it represents the
-   * moment when {@code Metric.getData()} was called.
+   * moment when {@code Instrument.getData()} was called.
    *
    * @return the epoch timestamp in nanos.
    * @since 0.1.0

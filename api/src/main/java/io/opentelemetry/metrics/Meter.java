@@ -25,7 +25,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <ul>
  *   <li>Record raw measurements, and defer defining the aggregation and the labels for the exported
- *       Metric. This should be used in libraries like gRPC to record measurements like
+ *       Instrument. This should be used in libraries like gRPC to record measurements like
  *       "server_latency" or "received_bytes".
  *   <li>Record pre-defined aggregation data (or already aggregated data). This should be used to
  *       report cpu/memory usage, or simple metrics like "queue_length".
@@ -88,14 +88,14 @@ import javax.annotation.concurrent.ThreadSafe;
  *   private static final List<String> values = Collections.singletonList("Inbound");
  *   private static final DoubleGauge gauge =
  *       meter
- *           .gaugeLongBuilder("queue_size")
+ *           .longGaugeBuilder("queue_size")
  *           .setDescription("Pending jobs")
  *           .setUnit("1")
  *           .setLabelKeys(labelKeys)
  *           .build();
  *
- *   // It is recommended to keep a reference of a Bound.
- *   DoubleGauge.Bound inboundBound = gauge.getBound(labelValues);
+ *   // It is recommended that API users keep a reference to a Bound Instrument.
+ *   DoubleGauge.BoundDoubleGauge inboundBound = gauge.bind(labelValues);
  *
  *   void doAddElement() {
  *      // Your code here.

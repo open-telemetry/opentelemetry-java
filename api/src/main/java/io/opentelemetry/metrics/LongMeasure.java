@@ -30,7 +30,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
  *   private static final LongMeasure measure =
  *       meter.
- *           .measureLongBuilder("doWork_latency")
+ *           .longMeasureBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
  *           .setUnit("ns")
  *           .build();
@@ -64,10 +64,10 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
   BoundLongMeasure bind(LabelSet labelSet);
 
   @Override
-  void unbind(BoundLongMeasure bound);
+  void unbind(BoundLongMeasure boundInstrument);
 
   /**
-   * A {@code Bound} for a {@code LongMeasure}.
+   * A {@code Bound Instrument} for a {@code LongMeasure}.
    *
    * @since 0.1.0
    */
@@ -84,5 +84,5 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
   }
 
   /** Builder class for {@link LongMeasure}. */
-  interface Builder extends Metric.Builder<Builder, LongMeasure> {}
+  interface Builder extends Instrument.Builder<Builder, LongMeasure> {}
 }

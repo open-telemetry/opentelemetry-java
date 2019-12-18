@@ -185,8 +185,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void unbind(BoundLongGauge boundLongGauge) {
-      Utils.checkNotNull(boundLongGauge, "boundLongGauge");
+    public void unbind(BoundLongGauge boundInstrument) {
+      Utils.checkNotNull(boundInstrument, "boundLongGauge");
     }
 
     /** No-op implementation of BoundLongGauge interface. */
@@ -228,8 +228,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void unbind(BoundDoubleGauge boundDoubleGauge) {
-      Utils.checkNotNull(boundDoubleGauge, "boundDoubleGauge");
+    public void unbind(BoundDoubleGauge boundInstrument) {
+      Utils.checkNotNull(boundInstrument, "boundDoubleGauge");
     }
 
     /** No-op implementation of BoundDoubleGauge interface. */
@@ -271,8 +271,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void unbind(BoundDoubleCounter boundDoubleCounter) {
-      Utils.checkNotNull(boundDoubleCounter, "boundDoubleCounter");
+    public void unbind(BoundDoubleCounter boundInstrument) {
+      Utils.checkNotNull(boundInstrument, "boundDoubleCounter");
     }
 
     /** No-op implementation of BoundDoubleCounter interface. */
@@ -314,8 +314,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void unbind(BoundLongCounter boundLongCounter) {
-      Utils.checkNotNull(boundLongCounter, "boundLongCounter");
+    public void unbind(BoundLongCounter boundInstrument) {
+      Utils.checkNotNull(boundInstrument, "boundLongCounter");
     }
 
     /** No-op implementation of BoundLongCounter interface. */
@@ -358,8 +358,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void unbind(BoundDoubleMeasure boundDoubleMeasure) {
-      Utils.checkNotNull(boundDoubleMeasure, "boundDoubleMeasure");
+    public void unbind(BoundDoubleMeasure boundInstrument) {
+      Utils.checkNotNull(boundInstrument, "boundDoubleMeasure");
     }
 
     /** No-op implementation of BoundDoubleMeasure interface. */
@@ -403,8 +403,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void unbind(BoundLongMeasure boundLongMeasure) {
-      Utils.checkNotNull(boundLongMeasure, "boundLongMeasure");
+    public void unbind(BoundLongMeasure boundInstrument) {
+      Utils.checkNotNull(boundInstrument, "boundLongMeasure");
     }
 
     /** No-op implementations of BoundLongMeasure interface. */
@@ -443,8 +443,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void unbind(BoundDoubleObserver boundDoubleObserver) {
-      Utils.checkNotNull(boundDoubleObserver, "boundDoubleObserver");
+    public void unbind(BoundDoubleObserver boundInstrument) {
+      Utils.checkNotNull(boundInstrument, "boundDoubleObserver");
     }
 
     @Override
@@ -452,7 +452,7 @@ public final class DefaultMeter implements Meter {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
-    /** No-op implementations of Bound class. */
+    /** No-op implementations of BoundDoubleObserver class. */
     @Immutable
     private enum NoopBoundDoubleObserver implements BoundDoubleObserver {
       INSTANCE
@@ -483,8 +483,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public void unbind(BoundLongObserver boundLongObserver) {
-      Utils.checkNotNull(boundLongObserver, "boundLongObserver");
+    public void unbind(BoundLongObserver boundInstrument) {
+      Utils.checkNotNull(boundInstrument, "boundLongObserver");
     }
 
     @Override
@@ -492,7 +492,7 @@ public final class DefaultMeter implements Meter {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
-    /** No-op implementations of Bound class. */
+    /** No-op implementation of BoundLongObserver interface. */
     @Immutable
     private enum NoopBoundLongObserver implements BoundLongObserver {
       INSTANCE
@@ -557,8 +557,8 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  private abstract static class NoopAbstractMetricBuilder<B extends Metric.Builder<B, V>, V>
-      implements Metric.Builder<B, V> {
+  private abstract static class NoopAbstractMetricBuilder<B extends Instrument.Builder<B, V>, V>
+      implements Instrument.Builder<B, V> {
     @Override
     public B setDescription(String description) {
       Utils.checkNotNull(description, "description");
