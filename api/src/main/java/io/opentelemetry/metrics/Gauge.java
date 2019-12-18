@@ -26,8 +26,8 @@ public interface Gauge<H> extends Instrument<H> {
   /** Builder class for {@link Gauge}. */
   interface Builder<B extends Gauge.Builder<B, V>, V> extends Instrument.Builder<B, V> {
     /**
-     * Sets the monotonicity property for this {@code Instrument}. If {@code true} successive values are
-     * expected to rise monotonically.
+     * Sets the monotonicity property for this {@code Instrument}. If {@code true} successive values
+     * are expected to rise monotonically.
      *
      * <p>Default value is {@code false}
      *

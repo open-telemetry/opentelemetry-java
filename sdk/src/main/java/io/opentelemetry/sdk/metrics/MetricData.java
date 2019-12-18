@@ -38,8 +38,8 @@ public abstract class MetricData {
   public abstract MetricDescriptor getMetricDescriptor();
 
   /**
-   * Returns the start epoch timestamp in nanos of this {@code Instrument}, usually the time when the
-   * metric was created or an aggregation was enabled.
+   * Returns the start epoch timestamp in nanos of this {@code Instrument}, usually the time when
+   * the metric was created or an aggregation was enabled.
    *
    * @return the start epoch timestamp in nanos.
    * @since 0.1.0

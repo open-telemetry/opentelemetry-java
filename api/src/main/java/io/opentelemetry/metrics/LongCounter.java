@@ -20,8 +20,8 @@ import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Counter instrument, to report instantaneous measurements of long values. Cumulative values can go up
- * or stay the same, but can never go down. Cumulative values cannot be negative.
+ * Counter instrument, to report instantaneous measurements of long values. Cumulative values can go
+ * up or stay the same, but can never go down. Cumulative values cannot be negative.
  *
  * <p>Example:
  *

@@ -47,8 +47,8 @@ public interface Observer<R, B> extends Instrument<B> {
   /** Builder class for {@link Observer}. */
   interface Builder<B extends Instrument.Builder<B, V>, V> extends Instrument.Builder<B, V> {
     /**
-     * Sets the monotonicity property for this {@code Instrument}. If {@code true} successive values are
-     * expected to rise monotonically.
+     * Sets the monotonicity property for this {@code Instrument}. If {@code true} successive values
+     * are expected to rise monotonically.
      *
      * <p>Default value is {@code false}
      *

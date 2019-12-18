@@ -16,10 +16,10 @@
 
 package io.opentelemetry.metrics;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Base interface for all metrics defined in this package.
@@ -90,7 +90,8 @@ public interface Instrument<B> {
     B setLabelKeys(List<String> labelKeys);
 
     /**
-     * Sets the map of constant labels (they will be added to all the Bound Instruments) for the Instrument.
+     * Sets the map of constant labels (they will be added to all the Bound Instruments) for the
+     * Instrument.
      *
      * <p>Default value is {@link Collections#emptyMap()}.
      *

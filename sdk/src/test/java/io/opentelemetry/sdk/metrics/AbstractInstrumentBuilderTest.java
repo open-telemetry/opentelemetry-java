@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Instrument;
+import io.opentelemetry.metrics.LabelSet;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
