@@ -158,6 +158,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public SpanData toSpanData() {
+
+    // Copy immutable fields outside synchronized block.
     SpanContext spanContext = getSpanContext();
     SpanData.Builder builder =
         SpanData.newBuilder()
@@ -173,12 +175,16 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             .setHasRemoteParent(hasRemoteParent)
             .setResource(resource)
             .setStartEpochNanos(startEpochNanos);
+
+    // Copy remainder within synchronized
     synchronized (lock) {
       return builder
           .setAttributes(getAttributes())
           .setEndEpochNanos(getEndEpochNanos())
           .setStatus(getStatus())
           .setTimedEvents(adaptTimedEvents())
+          // build() does the actual copying of the collections: it needs to be synchronized
+          // because of the attributes and events collections.
           .build();
     }
   }
