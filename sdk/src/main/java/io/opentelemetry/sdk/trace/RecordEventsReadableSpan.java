@@ -159,19 +159,20 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public SpanData toSpanData() {
     SpanContext spanContext = getSpanContext();
-    SpanData.Builder builder = SpanData.newBuilder()
-        .setName(getName())
-        .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
-        .setTraceId(spanContext.getTraceId())
-        .setSpanId(spanContext.getSpanId())
-        .setTraceFlags(spanContext.getTraceFlags())
-        .setLinks(getLinks())
-        .setKind(kind)
-        .setTracestate(spanContext.getTracestate())
-        .setParentSpanId(parentSpanId)
-        .setHasRemoteParent(hasRemoteParent)
-        .setResource(resource)
-        .setStartEpochNanos(startEpochNanos);
+    SpanData.Builder builder =
+        SpanData.newBuilder()
+            .setName(getName())
+            .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
+            .setTraceId(spanContext.getTraceId())
+            .setSpanId(spanContext.getSpanId())
+            .setTraceFlags(spanContext.getTraceFlags())
+            .setLinks(getLinks())
+            .setKind(kind)
+            .setTracestate(spanContext.getTracestate())
+            .setParentSpanId(parentSpanId)
+            .setHasRemoteParent(hasRemoteParent)
+            .setResource(resource)
+            .setStartEpochNanos(startEpochNanos);
     synchronized (lock) {
       return builder
           .setAttributes(getAttributes())
@@ -286,6 +287,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return An unmodifiable view of the attributes associated wit this span
    */
   @VisibleForTesting
+  @GuardedBy("lock")
   Map<String, AttributeValue> getAttributes() {
     return Collections.unmodifiableMap(attributes);
   }
