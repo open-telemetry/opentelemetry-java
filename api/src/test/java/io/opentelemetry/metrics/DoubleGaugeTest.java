@@ -129,6 +129,6 @@ public class DoubleGaugeTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    doubleGauge.bind(TestLabelSet.empty()).set(5.0);
+    doubleGauge.bind(meter.emptyLabelSet()).set(5.0);
   }
 }

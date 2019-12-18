@@ -126,6 +126,6 @@ public class LongGaugeTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    longGauge.bind(TestLabelSet.empty()).set(5);
+    longGauge.bind(meter.emptyLabelSet()).set(5);
   }
 }
