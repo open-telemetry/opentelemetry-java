@@ -96,4 +96,9 @@ public class MeterSdk implements Meter {
       String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
     throw new UnsupportedOperationException("to be implemented");
   }
+
+  @Override
+  public LabelSet emptyLabelSet() {
+    throw new UnsupportedOperationException("to be implemented");
+  }
 }

@@ -391,6 +391,12 @@ public class OpenTelemetryTest {
       return null;
     }
 
+    @Nullable
+    @Override
+    public LabelSet emptyLabelSet() {
+      return null;
+    }
+
     @Override
     public Meter get(String instrumentationName) {
       return new FirstMeterFactory();
