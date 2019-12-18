@@ -278,4 +278,12 @@ public interface Meter {
    */
   LabelSet createLabelSet(
       String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4);
+
+  /**
+   * Returns an empty {@link LabelSet}. The implementation is permitted to have this be a singleton
+   * instance.
+   *
+   * @return an empty {@link LabelSet}
+   */
+  LabelSet emptyLabelSet();
 }
