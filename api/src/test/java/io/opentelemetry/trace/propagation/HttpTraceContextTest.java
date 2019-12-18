@@ -21,8 +21,10 @@ import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACEPARENT;
 import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACESTATE;
 
 import io.grpc.Context;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -121,6 +123,46 @@ public class HttpTraceContextTest {
             TRACEPARENT_HEADER_NOT_SAMPLED,
             TRACESTATE,
             TRACESTATE_NOT_DEFAULT_ENCODING);
+  }
+
+  @Test
+  public void inject_Span() {
+    // Use non-default values to verify that the Span is actually consumed.
+    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Span span =
+        OpenTelemetry.getTracerFactory()
+            .get(null)
+            .spanBuilder("testSpan")
+            .setParent(
+                SpanContext.create(
+                    TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_NOT_DEFAULT))
+            .startSpan();
+    Context context = ContextUtils.withSpan(span);
+    httpTraceContext.inject(context, carrier, setter);
+    assertThat(carrier)
+        .containsExactly(
+            TRACEPARENT, TRACEPARENT_HEADER_SAMPLED, TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING);
+  }
+
+  @Test
+  public void inject_Span_SpanContextPresent() {
+    // Span has higher priority than SpanContext.
+    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Span span =
+        OpenTelemetry.getTracerFactory()
+            .get(null)
+            .spanBuilder("testSpan")
+            .setParent(
+                SpanContext.create(
+                    TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_NOT_DEFAULT))
+            .startSpan();
+    SpanContext spanContext =
+        SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT);
+    Context context = ContextUtils.withSpanContext(spanContext, ContextUtils.withSpan(span));
+    httpTraceContext.inject(context, carrier, setter);
+    assertThat(carrier)
+        .containsExactly(
+            TRACEPARENT, TRACEPARENT_HEADER_SAMPLED, TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING);
   }
 
   @Test

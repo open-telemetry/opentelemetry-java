@@ -86,10 +86,6 @@ public class HttpTraceContext implements HttpTextFormat {
       spanContext = span.getContext();
     }
 
-    if (spanContext == null) {
-      return;
-    }
-
     injectImpl(spanContext, carrier, setter);
   }
 

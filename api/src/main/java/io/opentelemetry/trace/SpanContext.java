@@ -50,7 +50,7 @@ public final class SpanContext {
    *
    * @return the invalid {@code SpanContext}.
    */
-  static SpanContext getInvalid() {
+  public static SpanContext getInvalid() {
     return INVALID;
   }
 
