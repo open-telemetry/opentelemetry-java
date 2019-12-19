@@ -90,7 +90,8 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static Scope withDistributedContext(DistributedContext distContext) {
-    return DistributedContextInScope.create(distContext);
+    Context context = withValue(distContext);
+    return io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
   }
 
   private ContextUtils() {}

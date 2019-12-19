@@ -143,34 +143,30 @@ public class DefaultTracerTest {
 
   @Test
   public void testSpanContextPropagationCurrentSpanContext() {
-    // TODO - Have an utility to create a Scope-d Context.
-    Context orig = ContextUtils.withSpanContext(spanContext).attach();
+    Context context = ContextUtils.withSpanContext(spanContext);
+    Scope scope = io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);
     } finally {
-      Context.current().detach(orig);
+      scope.close();
     }
   }
 
   @Test
   public void testSpanContextPropagationCurrentContextValues() {
-    // TODO - Have an utility to create a Scope-d Context.
-    Context orig =
+    Context context =
         ContextUtils.withSpanContext(
-                SpanContext.create(
-                    new TraceId(1, 1),
-                    new SpanId(1),
-                    TraceFlags.getDefault(),
-                    Tracestate.getDefault()),
-                ContextUtils.withSpan(new DefaultSpan(spanContext)))
-            .attach();
+            SpanContext.create(
+                new TraceId(1, 1), new SpanId(1), TraceFlags.getDefault(), Tracestate.getDefault()),
+            ContextUtils.withSpan(new DefaultSpan(spanContext)));
+    Scope scope = io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
     // Span in Context has higher priority than SpanContext.
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);
     } finally {
-      Context.current().detach(orig);
+      scope.close();
     }
   }
 }

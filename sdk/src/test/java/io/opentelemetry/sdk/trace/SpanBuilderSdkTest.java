@@ -493,7 +493,8 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentCurrentSpanContext() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Context orig = ContextUtils.withSpanContext(parent.getContext()).attach();
+    Context context = ContextUtils.withSpanContext(parent.getContext());
+    Scope scope = io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
@@ -504,7 +505,7 @@ public class SpanBuilderSdkTest {
         span.end();
       }
     } finally {
-      Context.current().detach(orig);
+      scope.close();
       parent.end();
     }
   }
@@ -512,8 +513,9 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentCurrentContextValues() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Context orig =
-        ContextUtils.withSpanContext(sampledSpanContext, ContextUtils.withSpan(parent)).attach();
+    Context context =
+        ContextUtils.withSpanContext(sampledSpanContext, ContextUtils.withSpan(parent));
+    Scope scope = io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
@@ -524,7 +526,7 @@ public class SpanBuilderSdkTest {
         span.end();
       }
     } finally {
-      Context.current().detach(orig);
+      scope.close();
       parent.end();
     }
   }

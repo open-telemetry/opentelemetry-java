@@ -170,7 +170,8 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static Scope withScopedSpan(Span span) {
-    return SpanInScope.create(span);
+    Context context = withSpan(span);
+    return io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
   }
 
   private ContextUtils() {}
