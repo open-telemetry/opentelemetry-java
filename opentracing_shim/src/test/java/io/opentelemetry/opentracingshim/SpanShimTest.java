@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.trace.Tracer;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class SpanShimTest {
   private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
-      new TelemetryInfo(tracer, new DistributedContextManagerSdk(), OpenTelemetry.getPropagators());
+      new TelemetryInfo(tracer, new CorrelationContextManagerSdk(), OpenTelemetry.getPropagators());
   private io.opentelemetry.trace.Span span;
 
   private static final String SPAN_NAME = "Span";

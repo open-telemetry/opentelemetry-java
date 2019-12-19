@@ -14,25 +14,33 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk;
+package io.opentelemetry.correlationcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.OpenTelemetry;
+import com.google.common.testing.EqualsTester;
+import io.opentelemetry.correlationcontext.EntryMetadata.EntryTtl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+/** Tests for {@link EntryMetadata}. */
 @RunWith(JUnit4.class)
-public class OpenTelemetrySdkTest {
+public class EntryMetadataTest {
 
   @Test
-  public void testDefault() {
-    assertThat(OpenTelemetrySdk.getTracerFactory())
-        .isSameInstanceAs(OpenTelemetry.getTracerFactory());
-    assertThat(OpenTelemetrySdk.getCorrelationContextManager())
-        .isSameInstanceAs(OpenTelemetry.getCorrelationContextManager());
-    assertThat(OpenTelemetrySdk.getMeterFactory())
-        .isSameInstanceAs(OpenTelemetry.getMeterFactory());
+  public void testGetEntryTtl() {
+    EntryMetadata entryMetadata = EntryMetadata.create(EntryTtl.NO_PROPAGATION);
+    assertThat(entryMetadata.getEntryTtl()).isEqualTo(EntryTtl.NO_PROPAGATION);
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(
+            EntryMetadata.create(EntryTtl.NO_PROPAGATION),
+            EntryMetadata.create(EntryTtl.NO_PROPAGATION))
+        .addEqualityGroup(EntryMetadata.create(EntryTtl.UNLIMITED_PROPAGATION))
+        .testEquals();
   }
 }

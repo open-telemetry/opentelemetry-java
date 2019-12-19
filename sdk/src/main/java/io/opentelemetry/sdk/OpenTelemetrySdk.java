@@ -17,14 +17,14 @@
 package io.opentelemetry.sdk;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.metrics.MeterSdkFactory;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for SDK telemetry objects {@link TracerSdkFactory},
- * {@link MeterSdkFactory} and {@link DistributedContextManagerSdk}.
+ * {@link MeterSdkFactory} and {@link CorrelationContextManagerSdk}.
  *
  * <p>This is a convenience class getting and casting the telemetry objects from {@link
  * OpenTelemetry}.
@@ -54,13 +54,13 @@ public final class OpenTelemetrySdk {
   }
 
   /**
-   * Returns a {@link DistributedContextManagerSdk}.
+   * Returns a {@link CorrelationContextManagerSdk}.
    *
-   * @return context manager returned by {@link OpenTelemetry#getDistributedContextManager()}.
+   * @return context manager returned by {@link OpenTelemetry#getCorrelationContextManager()}.
    * @since 0.1.0
    */
-  public static DistributedContextManagerSdk getDistributedContextManager() {
-    return (DistributedContextManagerSdk) OpenTelemetry.getDistributedContextManager();
+  public static CorrelationContextManagerSdk getCorrelationContextManager() {
+    return (CorrelationContextManagerSdk) OpenTelemetry.getCorrelationContextManager();
   }
 
   private OpenTelemetrySdk() {}

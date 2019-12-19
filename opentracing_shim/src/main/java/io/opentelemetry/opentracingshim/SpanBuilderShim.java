@@ -176,7 +176,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
   @Override
   public Span start() {
-    io.opentelemetry.distributedcontext.DistributedContext distContext = null;
+    io.opentelemetry.correlationcontext.CorrelationContext distContext = null;
     io.opentelemetry.trace.Span.Builder builder = tracer().spanBuilder(spanName);
 
     if (ignoreActiveSpan && parentSpan == null && parentSpanContext == null) {
@@ -184,10 +184,10 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
     } else if (parentSpan != null) {
       builder.setParent(parentSpan.getSpan());
       SpanContextShim contextShim = spanContextTable().get(parentSpan);
-      distContext = contextShim == null ? null : contextShim.getDistributedContext();
+      distContext = contextShim == null ? null : contextShim.getCorrelationContext();
     } else if (parentSpanContext != null) {
       builder.setParent(parentSpanContext.getSpanContext());
-      distContext = parentSpanContext.getDistributedContext();
+      distContext = parentSpanContext.getCorrelationContext();
     }
 
     for (io.opentelemetry.trace.SpanContext link : parentLinks) {
@@ -211,7 +211,7 @@ final class SpanBuilderShim extends BaseShimObject implements SpanBuilder {
 
     SpanShim spanShim = new SpanShim(telemetryInfo(), span);
 
-    if (distContext != null && distContext != telemetryInfo().emptyDistributedContext()) {
+    if (distContext != null && distContext != telemetryInfo().emptyCorrelationContext()) {
       spanContextTable().create(spanShim, distContext);
     }
 

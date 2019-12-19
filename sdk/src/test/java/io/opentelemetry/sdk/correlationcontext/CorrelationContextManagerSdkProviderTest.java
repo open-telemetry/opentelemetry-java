@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk;
+package io.opentelemetry.sdk.correlationcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.OpenTelemetry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class OpenTelemetrySdkTest {
+public class CorrelationContextManagerSdkProviderTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetrySdk.getTracerFactory())
-        .isSameInstanceAs(OpenTelemetry.getTracerFactory());
-    assertThat(OpenTelemetrySdk.getCorrelationContextManager())
-        .isSameInstanceAs(OpenTelemetry.getCorrelationContextManager());
-    assertThat(OpenTelemetrySdk.getMeterFactory())
-        .isSameInstanceAs(OpenTelemetry.getMeterFactory());
+    assertThat(new CorrelationContextManagerSdkProvider().create())
+        .isInstanceOf(CorrelationContextManagerSdk.class);
   }
 }
