@@ -76,14 +76,14 @@ public final class ContextUtilsTest {
   public void testGetCurrentSpanContext_DefaultContext() {
     SpanContext spanContext = ContextUtils.getSpanContext(Context.current());
     assertThat(spanContext).isNotNull();
-    assertThat(spanContext).isSameInstanceAs(SpanContext.getInvalid());
+    assertThat(spanContext).isSameInstanceAs(DefaultSpan.getInvalid().getContext());
   }
 
   @Test
   public void testGetCurrentSpanContext_DefaultContext_WithoutExplicitContext() {
     SpanContext spanContext = ContextUtils.getSpanContext();
     assertThat(spanContext).isNotNull();
-    assertThat(spanContext).isSameInstanceAs(SpanContext.getInvalid());
+    assertThat(spanContext).isSameInstanceAs(DefaultSpan.getInvalid().getContext());
   }
 
   @Test
@@ -92,7 +92,7 @@ public final class ContextUtilsTest {
     try {
       SpanContext spanContext = ContextUtils.getSpanContext(Context.current());
       assertThat(spanContext).isNotNull();
-      assertThat(spanContext).isSameInstanceAs(SpanContext.getInvalid());
+      assertThat(spanContext).isSameInstanceAs(DefaultSpan.getInvalid().getContext());
     } finally {
       Context.current().detach(orig);
     }

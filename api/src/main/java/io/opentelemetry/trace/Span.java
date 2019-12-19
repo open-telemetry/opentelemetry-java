@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.grpc.Context;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -398,6 +399,25 @@ public interface Span {
      * @since 0.1.0
      */
     Builder setParent(SpanContext remoteParent);
+
+    /**
+     * Sets the parent to use from the specified {@code Context}. If not set, the {@link Span} or
+     * {@link SpanContext} in {@code Context.current()} at {@link #startSpan()} time will be used as
+     * parent.
+     *
+     * <p>If no {@link Span} nor {@link SpanContext} is availablle in the specified {@code Context},
+     * the resulting {@code Span} will be a root instance, as if {@link #setNoParent()} had been
+     * called.
+     *
+     * <p>If called multiple times, only the last specified value will be used. Observe that the
+     * state defined by a previous call to {@link #setNoParent()} will be discarded.
+     *
+     * @param context the {@code Context}.
+     * @return this.
+     * @throws NullPointerException if {@code context} is {@code null}.
+     * @since 0.3.0
+     */
+    Builder setParent(Context context);
 
     /**
      * Sets the option to become a root {@code Span} for a new trace. If not set, the value of

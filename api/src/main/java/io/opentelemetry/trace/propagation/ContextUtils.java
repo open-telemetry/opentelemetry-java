@@ -38,7 +38,7 @@ public final class ContextUtils {
       Context.<Span>keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.getInvalid());
   private static final Context.Key<SpanContext> CONTEXT_SPANCONTEXT_KEY =
       Context.<SpanContext>keyWithDefault(
-          "opentelemetry-trace-spancontext-key", SpanContext.getInvalid());
+          "opentelemetry-trace-spancontext-key", DefaultSpan.getInvalid().getContext());
 
   /**
    * Creates a new {@code Context} with the given value set.

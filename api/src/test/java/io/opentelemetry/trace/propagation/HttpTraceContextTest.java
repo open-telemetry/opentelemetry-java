@@ -79,6 +79,13 @@ public class HttpTraceContextTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Test
+  public void inject_Nothing() {
+    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    httpTraceContext.inject(Context.current(), carrier, setter);
+    assertThat(carrier).hasSize(0);
+  }
+
+  @Test
   public void inject_SampledContext() {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     Context context =

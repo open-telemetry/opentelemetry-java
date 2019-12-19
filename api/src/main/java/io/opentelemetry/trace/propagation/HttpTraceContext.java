@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -77,16 +78,27 @@ public class HttpTraceContext implements HttpTextFormat {
     checkNotNull(setter, "setter");
     checkNotNull(carrier, "carrier");
 
-    SpanContext spanContext = null;
-    Span span = ContextUtils.getSpan(context);
-
-    if (DefaultSpan.getInvalid().equals(span)) { // No value is set.
-      spanContext = ContextUtils.getSpanContext(context);
-    } else {
-      spanContext = span.getContext();
+    SpanContext spanContext = getSpanContext(context);
+    if (spanContext == null) {
+      return;
     }
 
     injectImpl(spanContext, carrier, setter);
+  }
+
+  @Nullable
+  private static SpanContext getSpanContext(Context context) {
+    Span span = ContextUtils.getSpan(context);
+    if (!DefaultSpan.getInvalid().equals(span)) {
+      return span.getContext();
+    }
+
+    SpanContext spanContext = ContextUtils.getSpanContext(context);
+    if (!DefaultSpan.getInvalid().getContext().equals(spanContext)) {
+      return spanContext;
+    }
+
+    return null;
   }
 
   private static <C> void injectImpl(SpanContext spanContext, C carrier, Setter<C> setter) {

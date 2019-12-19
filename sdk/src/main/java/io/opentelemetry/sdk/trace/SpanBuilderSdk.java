@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.grpc.Context;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -60,7 +61,7 @@ class SpanBuilderSdk implements Span.Builder {
   private Kind spanKind = Kind.INTERNAL;
   private final AttributesWithCapacity attributes;
   private List<Link> links;
-  private ParentType parentType = ParentType.CURRENT_SPAN;
+  private ParentType parentType = ParentType.CURRENT_CONTEXT;
   private long startEpochNanos = 0;
 
   SpanBuilderSdk(
@@ -95,6 +96,22 @@ class SpanBuilderSdk implements Span.Builder {
     this.remoteParent = Utils.checkNotNull(remoteParent, "remoteParent");
     this.parent = null;
     this.parentType = ParentType.EXPLICIT_REMOTE_PARENT;
+    return this;
+  }
+
+  @Override
+  public Span.Builder setParent(Context context) {
+    Utils.checkNotNull(context, "context");
+
+    Span span = ContextUtils.getSpan(context);
+    SpanContext spanContext = ContextUtils.getSpanContext(context);
+    if (!DefaultSpan.getInvalid().equals(span)) {
+      setParent(span);
+    } else if (!DefaultSpan.getInvalid().getContext().equals(spanContext)) {
+      setParent(spanContext);
+    } else {
+      setNoParent();
+    }
     return this;
   }
 
@@ -239,12 +256,11 @@ class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static SpanContext parent(
       ParentType parentType, Span explicitParent, SpanContext remoteParent) {
-    Span currentSpan = ContextUtils.getSpan();
     switch (parentType) {
       case NO_PARENT:
         return null;
-      case CURRENT_SPAN:
-        return currentSpan != null ? currentSpan.getContext() : null;
+      case CURRENT_CONTEXT:
+        return getAnySpanContext(Context.current());
       case EXPLICIT_PARENT:
         return explicitParent.getContext();
       case EXPLICIT_REMOTE_PARENT:
@@ -256,8 +272,9 @@ class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
-      case CURRENT_SPAN:
-        return ContextUtils.getSpan();
+      case CURRENT_CONTEXT:
+        Span span = ContextUtils.getSpan();
+        return DefaultSpan.getInvalid().equals(span) ? null : span;
       case EXPLICIT_PARENT:
         return explicitParent;
       default:
@@ -265,8 +282,17 @@ class SpanBuilderSdk implements Span.Builder {
     }
   }
 
+  private static SpanContext getAnySpanContext(Context context) {
+    Span span = ContextUtils.getSpan(context);
+    if (!DefaultSpan.getInvalid().equals(span)) {
+      return span.getContext();
+    }
+
+    return ContextUtils.getSpanContext(context);
+  }
+
   private enum ParentType {
-    CURRENT_SPAN,
+    CURRENT_CONTEXT,
     EXPLICIT_PARENT,
     EXPLICIT_REMOTE_PARENT,
     NO_PARENT,

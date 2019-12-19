@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.propagation.ContextUtils;
@@ -53,25 +54,24 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return NoopSpanBuilder.create(this, spanName);
+    return NoopSpanBuilder.create(spanName);
   }
 
   private DefaultTracer() {}
 
   // Noop implementation of Span.Builder.
   private static final class NoopSpanBuilder implements Span.Builder {
-    static NoopSpanBuilder create(Tracer tracer, String spanName) {
-      return new NoopSpanBuilder(tracer, spanName);
+    static NoopSpanBuilder create(String spanName) {
+      return new NoopSpanBuilder(spanName);
     }
 
-    private final Tracer tracer;
     private boolean isRootSpan;
     private SpanContext spanContext;
 
     @Override
     public Span startSpan() {
       if (spanContext == null && !isRootSpan) {
-        spanContext = tracer.getCurrentSpan().getContext();
+        spanContext = getAnySpanContext(Context.current());
       }
 
       return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
@@ -91,6 +91,22 @@ public final class DefaultTracer implements Tracer {
       Utils.checkNotNull(remoteParent, "remoteParent");
       spanContext = remoteParent;
       return this;
+    }
+
+    @Override
+    public NoopSpanBuilder setParent(Context context) {
+      Utils.checkNotNull(context, "context");
+      spanContext = getAnySpanContext(context);
+      return this;
+    }
+
+    private static SpanContext getAnySpanContext(Context context) {
+      Span span = ContextUtils.getSpan(context);
+      if (span != DefaultSpan.getInvalid()) {
+        return span.getContext();
+      }
+
+      return ContextUtils.getSpanContext(context);
     }
 
     @Override
@@ -158,9 +174,8 @@ public final class DefaultTracer implements Tracer {
       return this;
     }
 
-    private NoopSpanBuilder(Tracer tracer, String name) {
+    private NoopSpanBuilder(String name) {
       Utils.checkNotNull(name, "name");
-      this.tracer = tracer;
     }
   }
 }

@@ -18,7 +18,9 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.trace.propagation.ContextUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -107,6 +109,27 @@ public class DefaultTracerTest {
   }
 
   @Test
+  public void testSpanContextPropagationFromSpanInContext() {
+    Context context =
+        ContextUtils.withSpanContext(
+            SpanContext.create(
+                new TraceId(1, 1), new SpanId(1), TraceFlags.getDefault(), Tracestate.getDefault()),
+            ContextUtils.withSpan(new DefaultSpan(spanContext)));
+
+    // Span in Context has higher priority than SpanContext.
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
+    assertThat(span.getContext()).isSameInstanceAs(spanContext);
+  }
+
+  @Test
+  public void testSpanContextPropagationFromContext() {
+    Context context = ContextUtils.withSpanContext(spanContext);
+
+    Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
+    assertThat(span.getContext()).isSameInstanceAs(spanContext);
+  }
+
+  @Test
   public void testSpanContextPropagationCurrentSpan() {
     DefaultSpan parent = new DefaultSpan(spanContext);
     Scope scope = defaultTracer.withSpan(parent);
@@ -115,6 +138,39 @@ public class DefaultTracerTest {
       assertThat(span.getContext()).isSameInstanceAs(spanContext);
     } finally {
       scope.close();
+    }
+  }
+
+  @Test
+  public void testSpanContextPropagationCurrentSpanContext() {
+    // TODO - Have an utility to create a Scope-d Context.
+    Context orig = ContextUtils.withSpanContext(spanContext).attach();
+    try {
+      Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+      assertThat(span.getContext()).isSameInstanceAs(spanContext);
+    } finally {
+      Context.current().detach(orig);
+    }
+  }
+
+  @Test
+  public void testSpanContextPropagationCurrentContextValues() {
+    // TODO - Have an utility to create a Scope-d Context.
+    Context orig =
+        ContextUtils.withSpanContext(
+                SpanContext.create(
+                    new TraceId(1, 1),
+                    new SpanId(1),
+                    TraceFlags.getDefault(),
+                    Tracestate.getDefault()),
+                ContextUtils.withSpan(new DefaultSpan(spanContext)))
+            .attach();
+    // Span in Context has higher priority than SpanContext.
+    try {
+      Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+      assertThat(span.getContext()).isSameInstanceAs(spanContext);
+    } finally {
+      Context.current().detach(orig);
     }
   }
 }
