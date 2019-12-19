@@ -250,6 +250,6 @@ public class CurrentSpanUtilsTest {
   }
 
   private static Span getCurrentSpan() {
-    return ContextUtils.getSpan(Context.current());
+    return ContextUtils.getSpanWithDefault(Context.current());
   }
 }

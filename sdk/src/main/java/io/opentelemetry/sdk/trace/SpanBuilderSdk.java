@@ -105,9 +105,9 @@ class SpanBuilderSdk implements Span.Builder {
 
     Span span = ContextUtils.getSpan(context);
     SpanContext spanContext = ContextUtils.getSpanContext(context);
-    if (!DefaultSpan.getInvalid().equals(span)) {
+    if (span != null) {
       setParent(span);
-    } else if (!DefaultSpan.getInvalid().getContext().equals(spanContext)) {
+    } else if (spanContext != null) {
       setParent(spanContext);
     } else {
       setNoParent();
@@ -260,7 +260,7 @@ class SpanBuilderSdk implements Span.Builder {
       case NO_PARENT:
         return null;
       case CURRENT_CONTEXT:
-        return getAnySpanContext(Context.current());
+        return ContextUtils.getAnySpanContext(Context.current());
       case EXPLICIT_PARENT:
         return explicitParent.getContext();
       case EXPLICIT_REMOTE_PARENT:
@@ -280,15 +280,6 @@ class SpanBuilderSdk implements Span.Builder {
       default:
         return null;
     }
-  }
-
-  private static SpanContext getAnySpanContext(Context context) {
-    Span span = ContextUtils.getSpan(context);
-    if (!DefaultSpan.getInvalid().equals(span)) {
-      return span.getContext();
-    }
-
-    return ContextUtils.getSpanContext(context);
   }
 
   private enum ParentType {

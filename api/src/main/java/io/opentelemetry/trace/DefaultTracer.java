@@ -44,7 +44,7 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return ContextUtils.getSpan();
+    return ContextUtils.getSpanWithDefault(Context.current());
   }
 
   @Override
@@ -71,7 +71,7 @@ public final class DefaultTracer implements Tracer {
     @Override
     public Span startSpan() {
       if (spanContext == null && !isRootSpan) {
-        spanContext = getAnySpanContext(Context.current());
+        spanContext = ContextUtils.getAnySpanContext(Context.current());
       }
 
       return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
@@ -96,17 +96,11 @@ public final class DefaultTracer implements Tracer {
     @Override
     public NoopSpanBuilder setParent(Context context) {
       Utils.checkNotNull(context, "context");
-      spanContext = getAnySpanContext(context);
-      return this;
-    }
-
-    private static SpanContext getAnySpanContext(Context context) {
-      Span span = ContextUtils.getSpan(context);
-      if (span != DefaultSpan.getInvalid()) {
-        return span.getContext();
+      spanContext = ContextUtils.getAnySpanContext(context);
+      if (spanContext == null) {
+        isRootSpan = true;
       }
-
-      return ContextUtils.getSpanContext(context);
+      return this;
     }
 
     @Override

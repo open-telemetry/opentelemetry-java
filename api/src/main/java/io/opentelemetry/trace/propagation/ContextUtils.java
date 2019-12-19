@@ -35,10 +35,10 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class ContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
-      Context.<Span>keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.getInvalid());
+      Context.<Span>key("opentelemetry-trace-span-key");
   private static final Context.Key<SpanContext> CONTEXT_SPANCONTEXT_KEY =
-      Context.<SpanContext>keyWithDefault(
-          "opentelemetry-trace-spancontext-key", DefaultSpan.getInvalid().getContext());
+      Context.<SpanContext>key("opentelemetry-trace-spancontext-key");
+  private static final Span DEFAULT_SPAN = DefaultSpan.getInvalid();
 
   /**
    * Creates a new {@code Context} with the given value set.
@@ -108,6 +108,19 @@ public final class ContextUtils {
   }
 
   /**
+   * Returns the {@code Span} from the specified {@code Context}, falling back to a default, no-op
+   * {@code Span}.
+   *
+   * @param context the specified {@code Context}.
+   * @return the value from the specified {@code Context}.
+   * @since 0.3.0
+   */
+  public static Span getSpanWithDefault(Context context) {
+    Span span = CONTEXT_SPAN_KEY.get(context);
+    return span == null ? DEFAULT_SPAN : span;
+  }
+
+  /**
    * Returns the {@link SpanContext} from the current {@code Context}.
    *
    * @return the value from the current {@code Context}.
@@ -126,6 +139,26 @@ public final class ContextUtils {
    */
   public static SpanContext getSpanContext(Context context) {
     return CONTEXT_SPANCONTEXT_KEY.get(context);
+  }
+
+  /**
+   * Returns any {@link SpanContext} from the specified {@code Context}.
+   *
+   * <p>This method tries to get any non-null {@link SpanContext} in {@code Context}, giving higher
+   * priority to {@code Span#getContext()} and then falling back to {@code SpanContext}. If none is
+   * found, this method returns {@code null}.
+   *
+   * @param context the specified {@code Context}.
+   * @return the value from the specified {@code Context}.
+   * @since 0.3.0
+   */
+  public static SpanContext getAnySpanContext(Context context) {
+    Span span = ContextUtils.getSpan(context);
+    if (span != null) {
+      return span.getContext();
+    }
+
+    return ContextUtils.getSpanContext(context);
   }
 
   /**

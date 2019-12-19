@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultTracer;
@@ -35,7 +36,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return ContextUtils.getSpan();
+    return ContextUtils.getSpanWithDefault(Context.current());
   }
 
   @Override
