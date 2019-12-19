@@ -17,12 +17,20 @@
 
 package io.opentelemetry.example;
 
-import io.grpc.*;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.ClientInterceptor;
+import io.grpc.ForwardingClientCall;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
+import io.grpc.MethodDescriptor;
+import io.grpc.StatusRuntimeException;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.logging.LoggingExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
@@ -44,7 +52,7 @@ public class HelloWorldClient {
   // OTel API
   Tracer tracer;
   // Export traces in memory
-  InMemorySpanExporter inMemexporter = InMemorySpanExporter.create();
+  LoggingExporter exporter = new LoggingExporter();
   // Share context via text headers
   HttpTextFormat<SpanContext> textFormat;
   // Inject context into the gRPC request metadata
@@ -77,7 +85,7 @@ public class HelloWorldClient {
     // Get the tracer
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
     // Set to process the spans in memory
-    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(inMemexporter).build());
+    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
     // Give a name to the tracer
     this.tracer = tracerFactory.get("io.opentelemetry.example.HelloWorldClient");
     textFormat = this.tracer.getHttpTextFormat();
@@ -154,10 +162,6 @@ public class HelloWorldClient {
       client.greet(user);
     } finally {
       client.shutdown();
-    }
-    // Print the traces
-    for (SpanData spanData : client.inMemexporter.getFinishedSpanItems()) {
-      System.out.println("  - " + spanData);
     }
   }
 }

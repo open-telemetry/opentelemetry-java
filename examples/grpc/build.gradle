@@ -27,7 +27,7 @@ repositories {
 dependencies {
     compile('io.opentelemetry:opentelemetry-api:0.2.0')
     compile('io.opentelemetry:opentelemetry-sdk:0.2.0')
-    compile('io.opentelemetry:opentelemetry-exporters-inmemory:0.2.0')
+    compile('io.opentelemetry:opentelemetry-exporters-logging:0.2.0')
 
     compile("io.grpc:grpc-protobuf:${grpcVersion}")
     compile("io.grpc:grpc-stub:${grpcVersion}")

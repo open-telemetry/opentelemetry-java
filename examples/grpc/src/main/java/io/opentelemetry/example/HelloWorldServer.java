@@ -17,12 +17,18 @@
 
 package io.opentelemetry.example;
 
-import io.grpc.*;
+import io.grpc.Context;
+import io.grpc.Contexts;
+import io.grpc.Grpc;
+import io.grpc.Metadata;
+import io.grpc.Server;
+import io.grpc.ServerBuilder;
+import io.grpc.ServerCall;
+import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.logging.LoggingExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
@@ -43,7 +49,7 @@ public class HelloWorldServer {
   // OTel API
   Tracer tracer;
   // Export traces in memory
-  InMemorySpanExporter inMemexporter = InMemorySpanExporter.create();
+  LoggingExporter exporter = new LoggingExporter();
   // Share context via text
   HttpTextFormat<SpanContext> textFormat;
 
@@ -86,7 +92,7 @@ public class HelloWorldServer {
                 System.err.println("*** server shut down");
                 System.err.println(
                     "*** forcing also the Tracer Exporter to shutdown and process the remaining traces");
-                inMemexporter.shutdown();
+                exporter.shutdown();
                 System.err.println("*** Trace Exporter shut down");
               }
             });
@@ -102,7 +108,7 @@ public class HelloWorldServer {
     // Get the tracer
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
     // Set to process in memory the spans
-    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(inMemexporter).build());
+    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
     // Give the name to the traces
     this.tracer = tracerFactory.get("io.opentelemetry.example.HelloWorldServer");
     textFormat = this.tracer.getHttpTextFormat();
@@ -160,26 +166,6 @@ public class HelloWorldServer {
   public static void main(String[] args) throws IOException, InterruptedException {
     final HelloWorldServer server = new HelloWorldServer();
     server.start();
-
-    // Print new traces every 1s
-    Thread t =
-        new Thread() {
-          @Override
-          public void run() {
-            while (true) {
-              try {
-                Thread.sleep(1000);
-                for (SpanData spanData : server.inMemexporter.getFinishedSpanItems()) {
-                  System.out.println("  - " + spanData);
-                }
-                server.inMemexporter.reset();
-              } catch (Exception e) {
-              }
-            }
-          }
-        };
-    t.start();
-
     server.blockUntilShutdown();
   }
 }
