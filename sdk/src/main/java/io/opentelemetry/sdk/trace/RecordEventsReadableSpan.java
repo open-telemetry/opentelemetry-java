@@ -179,9 +179,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     // Copy remainder within synchronized
     synchronized (lock) {
       return builder
-          .setAttributes(getAttributes())
+          .setAttributes(attributes)
           .setEndEpochNanos(getEndEpochNanos())
-          .setStatus(getStatus())
+          .setStatus(getStatusWithDefault())
           .setTimedEvents(adaptTimedEvents())
           // build() does the actual copying of the collections: it needs to be synchronized
           // because of the attributes and events collections.
@@ -189,10 +189,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
   }
 
+  @GuardedBy("lock")
   private List<SpanData.TimedEvent> adaptTimedEvents() {
-    List<io.opentelemetry.sdk.trace.TimedEvent> sourceEvents = getTimedEvents();
-    List<SpanData.TimedEvent> result = new ArrayList<>(sourceEvents.size());
-    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : sourceEvents) {
+    List<SpanData.TimedEvent> result = new ArrayList<>(events.size());
+    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
       result.add(
           SpanData.TimedEvent.create(
               sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
@@ -250,17 +250,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   Status getStatus() {
     synchronized (lock) {
       return getStatusWithDefault();
-    }
-  }
-
-  /**
-   * Returns a copy of the timed events for this span.
-   *
-   * @return The TimedEvents for this span.
-   */
-  private List<TimedEvent> getTimedEvents() {
-    synchronized (lock) {
-      return new ArrayList<>(events);
     }
   }
 
