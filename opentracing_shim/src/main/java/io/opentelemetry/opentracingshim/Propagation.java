@@ -34,7 +34,7 @@ final class Propagation extends BaseShimObject {
         io.opentelemetry.trace.propagation.ContextUtils.withSpanContext(
             contextShim.getSpanContext(), context);
     context =
-        io.opentelemetry.correlationcontext.propagation.ContextUtils.withValue(
+        io.opentelemetry.correlationcontext.propagation.ContextUtils.withCorrelationContext(
             contextShim.getCorrelationContext(), context);
 
     propagators().getHttpTextFormat().inject(context, carrier, TextMapSetter.INSTANCE);
@@ -54,7 +54,8 @@ final class Propagation extends BaseShimObject {
     return new SpanContextShim(
         telemetryInfo,
         io.opentelemetry.trace.propagation.ContextUtils.getSpanContext(context),
-        io.opentelemetry.correlationcontext.propagation.ContextUtils.getValue(context));
+        io.opentelemetry.correlationcontext.propagation.ContextUtils.getCorrelationContext(
+            context));
   }
 
   static final class TextMapSetter implements HttpTextFormat.Setter<TextMapInject> {

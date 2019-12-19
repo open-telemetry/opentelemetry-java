@@ -46,7 +46,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return ContextUtils.getValue();
+    return ContextUtils.getCorrelationContext();
   }
 
   @Override
@@ -56,7 +56,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public Scope withContext(CorrelationContext distContext) {
-    return ContextUtils.withCorrelationContext(distContext);
+    return ContextUtils.withScopedCorrelationContext(distContext);
   }
 
   @Immutable

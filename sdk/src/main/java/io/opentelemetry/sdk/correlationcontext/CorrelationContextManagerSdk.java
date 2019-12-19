@@ -28,7 +28,7 @@ public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return ContextUtils.getValue();
+    return ContextUtils.getCorrelationContext();
   }
 
   @Override
@@ -38,6 +38,6 @@ public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
   @Override
   public Scope withContext(CorrelationContext distContext) {
-    return ContextUtils.withCorrelationContext(distContext);
+    return ContextUtils.withScopedCorrelationContext(distContext);
   }
 }

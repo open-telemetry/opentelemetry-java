@@ -44,7 +44,7 @@ public final class ContextUtils {
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(CorrelationContext distContext) {
+  public static Context withCorrelationContext(CorrelationContext distContext) {
     return Context.current().withValue(DIST_CONTEXT_KEY, distContext);
   }
 
@@ -56,7 +56,7 @@ public final class ContextUtils {
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(CorrelationContext distContext, Context context) {
+  public static Context withCorrelationContext(CorrelationContext distContext, Context context) {
     return context.withValue(DIST_CONTEXT_KEY, distContext);
   }
 
@@ -66,7 +66,7 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static CorrelationContext getValue() {
+  public static CorrelationContext getCorrelationContext() {
     return DIST_CONTEXT_KEY.get();
   }
 
@@ -77,7 +77,7 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static CorrelationContext getValue(Context context) {
+  public static CorrelationContext getCorrelationContext(Context context) {
     return DIST_CONTEXT_KEY.get(context);
   }
 
@@ -89,8 +89,8 @@ public final class ContextUtils {
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */
-  public static Scope withCorrelationContext(CorrelationContext distContext) {
-    Context context = withValue(distContext);
+  public static Scope withScopedCorrelationContext(CorrelationContext distContext) {
+    Context context = withCorrelationContext(distContext);
     return io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
   }
 
