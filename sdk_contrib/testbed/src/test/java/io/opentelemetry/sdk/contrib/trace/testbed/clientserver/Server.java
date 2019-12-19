@@ -22,9 +22,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.propagation.ContextUtils;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.annotation.Nullable;
 
@@ -52,9 +50,8 @@ final class Server extends Thread {
                     return carrier.get(key);
                   }
                 });
-    SpanContext spanContext = ContextUtils.getSpanContext(context);
     Span span =
-        tracer.spanBuilder("receive").setSpanKind(Kind.SERVER).setParent(spanContext).startSpan();
+        tracer.spanBuilder("receive").setSpanKind(Kind.SERVER).setParent(context).startSpan();
     span.setAttribute("component", "example-server");
 
     try (Scope ignored = tracer.withSpan(span)) {
