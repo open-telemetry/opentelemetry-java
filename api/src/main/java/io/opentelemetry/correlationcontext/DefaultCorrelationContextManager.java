@@ -16,6 +16,7 @@
 
 package io.opentelemetry.correlationcontext;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.propagation.ContextUtils;
 import io.opentelemetry.internal.Utils;
@@ -46,7 +47,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return ContextUtils.getCorrelationContext();
+    return ContextUtils.getCorrelationContextWithDefault(Context.current());
   }
 
   @Override

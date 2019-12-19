@@ -28,36 +28,31 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class ContextUtilsTest {
   @Test
-  public void testGetCurrentDistributedContex_DefaultContext() {
+  public void testGetCurrentDistributedContext_DefaultContext() {
     CorrelationContext distContext = ContextUtils.getCorrelationContext(Context.current());
-    assertThat(distContext).isNotNull();
-    assertThat(distContext.getEntries()).isEmpty();
+    assertThat(distContext).isNull();
   }
 
   @Test
   public void testGetCurrentDistributedContex_DefaultContext_WithoutExplicitContext() {
     CorrelationContext distContext = ContextUtils.getCorrelationContext();
+    assertThat(distContext).isNull();
+  }
+
+  @Test
+  public void testGetCurrentDistributedContextWithDefault_DefaultContext() {
+    CorrelationContext distContext =
+        ContextUtils.getCorrelationContextWithDefault(Context.current());
     assertThat(distContext).isNotNull();
     assertThat(distContext.getEntries()).isEmpty();
   }
 
   @Test
-  public void testGetCurrentDistributedContex_ContextSetToNull() {
+  public void testGetCurrentDistributedContextWithDefault_ContextSetToNull() {
     Context orig = ContextUtils.withCorrelationContext(null, Context.current()).attach();
     try {
-      CorrelationContext distContext = ContextUtils.getCorrelationContext(Context.current());
-      assertThat(distContext).isNotNull();
-      assertThat(distContext.getEntries()).isEmpty();
-    } finally {
-      Context.current().detach(orig);
-    }
-  }
-
-  @Test
-  public void testGetCurrentDistributedContex_ContextSetToNull_WithoutExplicitContext() {
-    Context orig = ContextUtils.withCorrelationContext(null).attach();
-    try {
-      CorrelationContext distContext = ContextUtils.getCorrelationContext();
+      CorrelationContext distContext =
+          ContextUtils.getCorrelationContextWithDefault(Context.current());
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
     } finally {
