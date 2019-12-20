@@ -69,6 +69,12 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
     }
 
     @Override
+    public CorrelationContext.Builder setParent(Context context) {
+      Utils.checkNotNull(context, "context");
+      return this;
+    }
+
+    @Override
     public CorrelationContext.Builder setNoParent() {
       return this;
     }

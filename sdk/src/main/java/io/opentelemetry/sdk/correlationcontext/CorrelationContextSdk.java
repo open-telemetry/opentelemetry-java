@@ -18,12 +18,14 @@ package io.opentelemetry.sdk.correlationcontext;
 
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
+import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
 import io.opentelemetry.correlationcontext.EntryValue;
+import io.opentelemetry.correlationcontext.propagation.ContextUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Collection;
 import java.util.Collections;
@@ -124,6 +126,18 @@ class CorrelationContextSdk implements CorrelationContext {
     @Override
     public CorrelationContext.Builder setParent(CorrelationContext parent) {
       this.parent = Utils.checkNotNull(parent, "parent");
+      return this;
+    }
+
+    @Override
+    public CorrelationContext.Builder setParent(Context context) {
+      Utils.checkNotNull(context, "context");
+      CorrelationContext corrContext = ContextUtils.getCorrelationContext(context);
+      if (corrContext != null) {
+        setParent(corrContext);
+      } else {
+        setNoParent();
+      }
       return this;
     }
 

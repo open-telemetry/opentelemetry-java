@@ -20,12 +20,14 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.correlationcontext.CorrelationContextTestUtil.listToCorrelationContext;
 
 import com.google.common.testing.EqualsTester;
+import io.grpc.Context;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
 import io.opentelemetry.correlationcontext.EntryValue;
+import io.opentelemetry.correlationcontext.propagation.ContextUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -129,7 +131,30 @@ public class CorrelationContextSdkTest {
   public void setParent_nullValue() {
     CorrelationContextSdk parent = listToCorrelationContext(T1);
     thrown.expect(NullPointerException.class);
-    contextManager.contextBuilder().setParent(parent).setParent(null).build();
+    contextManager.contextBuilder().setParent(parent).setParent((CorrelationContext) null).build();
+  }
+
+  @Test
+  public void setParent_nullContext() {
+    CorrelationContextSdk parent = listToCorrelationContext(T1);
+    thrown.expect(NullPointerException.class);
+    contextManager.contextBuilder().setParent(parent).setParent((Context) null).build();
+  }
+
+  @Test
+  public void setParent_fromContext() {
+    Context context = ContextUtils.withCorrelationContext(listToCorrelationContext(T1));
+    CorrelationContext corrContext = contextManager.contextBuilder().setParent(context).build();
+    assertThat(corrContext.getEntries()).containsExactly(T1);
+  }
+
+  @Test
+  public void setParent_fromEmptyContext() {
+    CorrelationContextSdk parent = listToCorrelationContext(T1);
+    Context context = Context.current();
+    CorrelationContext corrContext =
+        contextManager.contextBuilder().setParent(parent).setParent(context).build();
+    assertThat(corrContext.getEntries()).isEmpty();
   }
 
   @Test
