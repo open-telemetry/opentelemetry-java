@@ -56,7 +56,7 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
    * Adds the given {@code delta} to the current value. The values can be negative iff monotonic was
    * set to {@code false}.
    *
-   * <p>The value added is associated with the current {@code Context}.
+   * <p>The value added is associated with the current {@code Context} and provided LabelSet.
    *
    * @param delta the value to add.
    * @param labelSet the labels to be associated to this recording

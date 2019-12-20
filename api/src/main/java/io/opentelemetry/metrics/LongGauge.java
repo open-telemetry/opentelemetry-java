@@ -56,7 +56,7 @@ public interface LongGauge extends Gauge<BoundLongGauge> {
   /**
    * Sets the given value for the gauge.
    *
-   * <p>The value added is associated with the current {@code Context}.
+   * <p>The value added is associated with the current {@code Context} and provided LabelSet.
    *
    * @param val the new value.
    * @param labelSet the labels to be associated to this value
