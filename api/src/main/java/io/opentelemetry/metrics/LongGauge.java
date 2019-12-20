@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.GaugeLong.Handle;
+import io.opentelemetry.metrics.LongGauge.BoundLongGauge;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -29,20 +29,20 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final GaugeLong gauge =
+ *   private static final LongGauge gauge =
  *       meter
  *           .gaugeLongBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a Handle.
- *   private static final GaugeLong.Handle someWorkHandle =
- *       gauge.getHandle(Collections.singletonList("SomeWork"));
+ *   // It is recommended to keep a reference to a Bound Metric.
+ *   private static final BoundLongGauge someWorkBound =
+ *       gauge.getBound(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      someWorkHandle.set(15);
+ *      someWorkBound.set(15);
  *   }
  *
  * }
@@ -51,23 +51,34 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface GaugeLong extends Gauge<Handle> {
-
-  @Override
-  Handle getHandle(LabelSet labelSet);
-
-  @Override
-  Handle getDefaultHandle();
+public interface LongGauge extends Gauge<BoundLongGauge> {
 
   /**
-   * A {@code Handle} for a {@code GaugeLong}.
+   * Sets the given value for the gauge.
+   *
+   * <p>The value added is associated with the current {@code Context} and provided LabelSet.
+   *
+   * @param val the new value.
+   * @param labelSet the labels to be associated to this value
+   * @since 0.1.0
+   */
+  void set(long val, LabelSet labelSet);
+
+  @Override
+  BoundLongGauge bind(LabelSet labelSet);
+
+  @Override
+  void unbind(BoundLongGauge bound);
+
+  /**
+   * A {@code Bound} for a {@code LongGauge}.
    *
    * @since 0.1.0
    */
-  interface Handle {
+  interface BoundLongGauge {
 
     /**
-     * Sets the given value.
+     * Sets the given value for the gauge.
      *
      * <p>The value added is associated with the current {@code Context}.
      *
@@ -77,6 +88,6 @@ public interface GaugeLong extends Gauge<Handle> {
     void set(long val);
   }
 
-  /** Builder class for {@link GaugeLong}. */
-  interface Builder extends Gauge.Builder<Builder, GaugeLong> {}
+  /** Builder class for {@link LongGauge}. */
+  interface Builder extends Gauge.Builder<Builder, LongGauge> {}
 }

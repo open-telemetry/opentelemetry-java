@@ -26,9 +26,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link ObserverDouble}. */
+/** Unit tests for {@link DoubleGauge}. */
 @RunWith(JUnit4.class)
-public class ObserverDoubleTest {
+public class DoubleGaugeTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -36,12 +36,12 @@ public class ObserverDoubleTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterFactory().get("observer_double_test");
+  private final Meter meter = OpenTelemetry.getMeterFactory().get("gauge_double_test");
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    meter.observerDoubleBuilder("\2").build();
+    meter.doubleGaugeBuilder("\2").build();
   }
 
   @Test
@@ -51,28 +51,28 @@ public class ObserverDoubleTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.observerDoubleBuilder(longName).build();
+    meter.doubleGaugeBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.observerDoubleBuilder("metric").setDescription(null).build();
+    meter.doubleGaugeBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.observerDoubleBuilder("metric").setUnit(null).build();
+    meter.doubleGaugeBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    meter.observerDoubleBuilder("metric").setLabelKeys(null).build();
+    meter.doubleGaugeBuilder("metric").setLabelKeys(null).build();
   }
 
   @Test
@@ -80,7 +80,7 @@ public class ObserverDoubleTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
     meter
-        .observerDoubleBuilder("metric")
+        .doubleGaugeBuilder("metric")
         .setLabelKeys(Collections.<String>singletonList(null))
         .build();
   }
@@ -89,34 +89,46 @@ public class ObserverDoubleTest {
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.observerDoubleBuilder("metric").setConstantLabels(null).build();
+    meter.doubleGaugeBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
-  public void noopGetHandle_WithNullLabelSet() {
-    ObserverDouble observerDouble =
+  public void noopGetBound_WithNullLabelSet() {
+    DoubleGauge doubleGauge =
         meter
-            .observerDoubleBuilder(NAME)
+            .doubleGaugeBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    observerDouble.getHandle(null);
+    doubleGauge.bind(null);
   }
 
   @Test
-  public void noopRemoveHandle_WithNullHandle() {
-    ObserverDouble gaugeDouble =
+  public void noopRemoveBound_WithNullBound() {
+    DoubleGauge doubleGauge =
         meter
-            .observerDoubleBuilder(NAME)
+            .doubleGaugeBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("handle");
-    gaugeDouble.removeHandle(null);
+    thrown.expectMessage("bound");
+    doubleGauge.unbind(null);
+  }
+
+  @Test
+  public void doesNotThrow() {
+    DoubleGauge doubleGauge =
+        meter
+            .doubleGaugeBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setLabelKeys(LABEL_KEY)
+            .setUnit(UNIT)
+            .build();
+    doubleGauge.bind(meter.emptyLabelSet()).set(5.0);
   }
 }

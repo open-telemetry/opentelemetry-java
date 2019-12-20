@@ -27,18 +27,18 @@ import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.distributedcontext.DistributedContextManager;
 import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
 import io.opentelemetry.metrics.BatchRecorder;
-import io.opentelemetry.metrics.CounterDouble;
-import io.opentelemetry.metrics.CounterLong;
 import io.opentelemetry.metrics.DefaultMeterFactory;
-import io.opentelemetry.metrics.GaugeDouble;
-import io.opentelemetry.metrics.GaugeLong;
+import io.opentelemetry.metrics.DoubleCounter;
+import io.opentelemetry.metrics.DoubleGauge;
+import io.opentelemetry.metrics.DoubleMeasure;
+import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.MeasureDouble;
-import io.opentelemetry.metrics.MeasureLong;
+import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LongGauge;
+import io.opentelemetry.metrics.LongMeasure;
+import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterFactory;
-import io.opentelemetry.metrics.ObserverDouble;
-import io.opentelemetry.metrics.ObserverLong;
 import io.opentelemetry.metrics.spi.MeterFactoryProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
@@ -313,49 +313,49 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public GaugeLong.Builder gaugeLongBuilder(String name) {
+    public LongGauge.Builder longGaugeBuilder(String name) {
       return null;
     }
 
     @Nullable
     @Override
-    public GaugeDouble.Builder gaugeDoubleBuilder(String name) {
+    public DoubleGauge.Builder doubleGaugeBuilder(String name) {
       return null;
     }
 
     @Nullable
     @Override
-    public CounterDouble.Builder counterDoubleBuilder(String name) {
+    public DoubleCounter.Builder doubleCounterBuilder(String name) {
       return null;
     }
 
     @Nullable
     @Override
-    public CounterLong.Builder counterLongBuilder(String name) {
+    public LongCounter.Builder longCounterBuilder(String name) {
       return null;
     }
 
     @Nullable
     @Override
-    public MeasureDouble.Builder measureDoubleBuilder(String name) {
+    public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
       return null;
     }
 
     @Nullable
     @Override
-    public MeasureLong.Builder measureLongBuilder(String name) {
+    public LongMeasure.Builder longMeasureBuilder(String name) {
       return null;
     }
 
     @Nullable
     @Override
-    public ObserverDouble.Builder observerDoubleBuilder(String name) {
+    public DoubleObserver.Builder doubleObserverBuilder(String name) {
       return null;
     }
 
     @Nullable
     @Override
-    public ObserverLong.Builder observerLongBuilder(String name) {
+    public LongObserver.Builder longObserverBuilder(String name) {
       return null;
     }
 
@@ -388,6 +388,12 @@ public class OpenTelemetryTest {
     @Override
     public LabelSet createLabelSet(
         String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public LabelSet emptyLabelSet() {
       return null;
     }
 

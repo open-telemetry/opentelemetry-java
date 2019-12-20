@@ -74,22 +74,17 @@ public class AbstractGaugeBuilderTest {
     }
   }
 
-  private static final class TestMetric implements Gauge<TestHandle> {
-    private static final TestHandle HANDLE = new TestHandle();
+  private static final class TestMetric implements Gauge<TestBound> {
+    private static final TestBound HANDLE = new TestBound();
 
     @Override
-    public TestHandle getHandle(LabelSet labelSet) {
+    public TestBound bind(LabelSet labelSet) {
       return HANDLE;
     }
 
     @Override
-    public TestHandle getDefaultHandle() {
-      return HANDLE;
-    }
-
-    @Override
-    public void removeHandle(TestHandle handle) {}
+    public void unbind(TestBound handle) {}
   }
 
-  private static final class TestHandle {}
+  private static final class TestBound {}
 }

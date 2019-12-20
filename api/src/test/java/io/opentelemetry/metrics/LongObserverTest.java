@@ -26,9 +26,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link CounterLong}. */
+/** Unit tests for {@link LongObserver}. */
 @RunWith(JUnit4.class)
-public class CounterLongTest {
+public class LongObserverTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -36,12 +36,12 @@ public class CounterLongTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterFactory().get("counter_long_test");
+  private final Meter meter = OpenTelemetry.getMeterFactory().get("observer_long_test");
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    meter.counterLongBuilder("\2").build();
+    meter.longObserverBuilder("\2").build();
   }
 
   @Test
@@ -51,28 +51,28 @@ public class CounterLongTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.counterLongBuilder(longName).build();
+    meter.longObserverBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.counterLongBuilder("metric").setDescription(null).build();
+    meter.longObserverBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.counterLongBuilder("metric").setUnit(null).build();
+    meter.longObserverBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    meter.counterLongBuilder("metric").setLabelKeys(null).build();
+    meter.longObserverBuilder("metric").setLabelKeys(null).build();
   }
 
   @Test
@@ -80,7 +80,7 @@ public class CounterLongTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
     meter
-        .counterLongBuilder("metric")
+        .longObserverBuilder("metric")
         .setLabelKeys(Collections.<String>singletonList(null))
         .build();
   }
@@ -89,46 +89,34 @@ public class CounterLongTest {
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.counterLongBuilder("metric").setConstantLabels(null).build();
+    meter.longObserverBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
-  public void noopGetHandle_WithNullLabelSet() {
-    CounterLong counterLong =
+  public void noopGetBound_WithNullLabelSet() {
+    LongObserver longObserver =
         meter
-            .counterLongBuilder(NAME)
+            .longObserverBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    counterLong.getHandle(null);
+    longObserver.bind(null);
   }
 
   @Test
-  public void noopRemoveHandle_WithNullHandle() {
-    CounterLong counterLong =
+  public void noopRemoveBound_WithNullBound() {
+    LongObserver longObserver =
         meter
-            .counterLongBuilder(NAME)
+            .longObserverBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("handle");
-    counterLong.removeHandle(null);
-  }
-
-  @Test
-  public void doesNotThrow() {
-    CounterLong counterLong =
-        meter
-            .counterLongBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    counterLong.getDefaultHandle().add(1);
+    thrown.expectMessage("bound");
+    longObserver.unbind(null);
   }
 }

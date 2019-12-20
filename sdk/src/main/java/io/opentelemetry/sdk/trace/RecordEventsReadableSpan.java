@@ -158,31 +158,41 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public SpanData toSpanData() {
+
+    // Copy immutable fields outside synchronized block.
     SpanContext spanContext = getSpanContext();
-    return SpanData.newBuilder()
-        .setName(getName())
-        .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
-        .setTraceId(spanContext.getTraceId())
-        .setSpanId(spanContext.getSpanId())
-        .setTraceFlags(spanContext.getTraceFlags())
-        .setTracestate(spanContext.getTracestate())
-        .setAttributes(getAttributes())
-        .setStartEpochNanos(startEpochNanos)
-        .setEndEpochNanos(getEndEpochNanos())
-        .setKind(kind)
-        .setLinks(getLinks())
-        .setParentSpanId(parentSpanId)
-        .setHasRemoteParent(hasRemoteParent)
-        .setResource(resource)
-        .setStatus(getStatus())
-        .setTimedEvents(adaptTimedEvents())
-        .build();
+    SpanData.Builder builder =
+        SpanData.newBuilder()
+            .setName(getName())
+            .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
+            .setTraceId(spanContext.getTraceId())
+            .setSpanId(spanContext.getSpanId())
+            .setTraceFlags(spanContext.getTraceFlags())
+            .setLinks(getLinks())
+            .setKind(kind)
+            .setTracestate(spanContext.getTracestate())
+            .setParentSpanId(parentSpanId)
+            .setHasRemoteParent(hasRemoteParent)
+            .setResource(resource)
+            .setStartEpochNanos(startEpochNanos);
+
+    // Copy remainder within synchronized
+    synchronized (lock) {
+      return builder
+          .setAttributes(attributes)
+          .setEndEpochNanos(getEndEpochNanos())
+          .setStatus(getStatusWithDefault())
+          .setTimedEvents(adaptTimedEvents())
+          // build() does the actual copying of the collections: it needs to be synchronized
+          // because of the attributes and events collections.
+          .build();
+    }
   }
 
+  @GuardedBy("lock")
   private List<SpanData.TimedEvent> adaptTimedEvents() {
-    List<io.opentelemetry.sdk.trace.TimedEvent> sourceEvents = getTimedEvents();
-    List<SpanData.TimedEvent> result = new ArrayList<>(sourceEvents.size());
-    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : sourceEvents) {
+    List<SpanData.TimedEvent> result = new ArrayList<>(events.size());
+    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
       result.add(
           SpanData.TimedEvent.create(
               sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
@@ -244,39 +254,26 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns a copy of the timed events for this span.
-   *
-   * @return The TimedEvents for this span.
-   */
-  private List<TimedEvent> getTimedEvents() {
-    synchronized (lock) {
-      return new ArrayList<>(events);
-    }
-  }
-
-  /**
    * Returns a copy of the links for this span.
    *
    * @return A copy of the Links for this span.
    */
   @VisibleForTesting
   List<Link> getLinks() {
-    synchronized (lock) {
-      if (links == null) {
-        return Collections.emptyList();
-      }
-      List<Link> result = new ArrayList<>(links.size());
-      for (Link link : links) {
-        Link newLink = link;
-        if (!(link instanceof SpanData.Link)) {
-          // Make a copy because the given Link may not be immutable and we may reference a lot of
-          // memory.
-          newLink = SpanData.Link.create(link.getContext(), link.getAttributes());
-        }
-        result.add(newLink);
-      }
-      return Collections.unmodifiableList(result);
+    if (links == null) {
+      return Collections.emptyList();
     }
+    List<Link> result = new ArrayList<>(links.size());
+    for (Link link : links) {
+      Link newLink = link;
+      if (!(link instanceof SpanData.Link)) {
+        // Make a copy because the given Link may not be immutable and we may reference a lot of
+        // memory.
+        newLink = SpanData.Link.create(link.getContext(), link.getAttributes());
+      }
+      result.add(newLink);
+    }
+    return Collections.unmodifiableList(result);
   }
 
   /**
@@ -285,10 +282,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @return An unmodifiable view of the attributes associated wit this span
    */
   @VisibleForTesting
+  @GuardedBy("lock")
   Map<String, AttributeValue> getAttributes() {
-    synchronized (lock) {
-      return Collections.unmodifiableMap(attributes);
-    }
+    return Collections.unmodifiableMap(attributes);
   }
 
   /**

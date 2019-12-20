@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -27,18 +28,18 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final MeasureDouble measure =
+ *   private static final DoubleMeasure measure =
  *       meter.
  *           .measureDoubleBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
- *   private static final MeasureDouble.Handle defaultHandle = measure.getDefaultHandle();
+ *   private static final BoundDoubleMeasure boundMeasure = measure.bind(labelset);
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
  *      // Your code here.
- *      defaultHandle.record((System.nanoTime() - startTime) / 1e6);
+ *      boundMeasure.record((System.nanoTime() - startTime) / 1e6);
  *   }
  * }
  * }</pre>
@@ -46,14 +47,32 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface MeasureDouble extends Measure<MeasureDouble.Handle> {
+public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
+
   /**
-   * A {@code Handle} for a {@code MeasureLong}.
+   * Records the given measurement, associated with the current {@code Context} and provided
+   * LabelSet.
+   *
+   * @param value the measurement to record.
+   * @param labelSet the labels to be associated to this recording
+   * @throws IllegalArgumentException if value is negative.
+   * @since 0.1.0
+   */
+  void record(double value, LabelSet labelSet);
+
+  @Override
+  BoundDoubleMeasure bind(LabelSet labelSet);
+
+  @Override
+  void unbind(BoundDoubleMeasure bound);
+
+  /**
+   * A {@code Bound} for a {@code LongMeasure}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface Handle {
+  interface BoundDoubleMeasure {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *
@@ -64,6 +83,6 @@ public interface MeasureDouble extends Measure<MeasureDouble.Handle> {
     void record(double value);
   }
 
-  /** Builder class for {@link MeasureDouble}. */
-  interface Builder extends Measure.Builder<Builder, MeasureDouble> {}
+  /** Builder class for {@link DoubleMeasure}. */
+  interface Builder extends Measure.Builder<Builder, DoubleMeasure> {}
 }

@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -27,18 +28,18 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final MeasureLong measure =
+ *   private static final LongMeasure measure =
  *       meter.
  *           .measureLongBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
  *           .setUnit("ns")
  *           .build();
- *   private static final MeasureLong.Handle defaultHandle = measure.getDefaultHandle();
+ *   private static final LongMeasure.BoundLongMeasure boundMeasure = measure.bind(labelset);
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
  *      // Your code here.
- *      defaultHandle.record(System.nanoTime() - startTime);
+ *      boundMeasure.record(System.nanoTime() - startTime);
  *   }
  * }
  * }</pre>
@@ -46,14 +47,32 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface MeasureLong extends Measure<MeasureLong.Handle> {
+public interface LongMeasure extends Measure<BoundLongMeasure> {
+
   /**
-   * A {@code Handle} for a {@code MeasureLong}.
+   * Records the given measurement, associated with the current {@code Context} and provided
+   * LabelSet.
+   *
+   * @param value the measurement to record.
+   * @param labelSet the labels to be associated to this recording
+   * @throws IllegalArgumentException if value is negative.
+   * @since 0.1.0
+   */
+  void record(long value, LabelSet labelSet);
+
+  @Override
+  BoundLongMeasure bind(LabelSet labelSet);
+
+  @Override
+  void unbind(BoundLongMeasure bound);
+
+  /**
+   * A {@code Bound} for a {@code LongMeasure}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface Handle {
+  interface BoundLongMeasure {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *
@@ -64,6 +83,6 @@ public interface MeasureLong extends Measure<MeasureLong.Handle> {
     void record(long value);
   }
 
-  /** Builder class for {@link MeasureLong}. */
-  interface Builder extends Metric.Builder<Builder, MeasureLong> {}
+  /** Builder class for {@link LongMeasure}. */
+  interface Builder extends Metric.Builder<Builder, LongMeasure> {}
 }

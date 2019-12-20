@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.CounterDouble.Handle;
+import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -36,13 +36,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setUnit("1")
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a Handle.
- *   private static final CounterDouble.Handle someWorkHandle =
- *       counter.getHandle(Collections.singletonList("SomeWork"));
+ *   // It is recommended to keep a reference of a Bound.
+ *   private static final BoundDoubleCounter someWorkBound =
+ *       counter.getBound(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      someWorkHandle.add(10.0);
+ *      someWorkBound.add(10.0);
  *   }
  * }
  * }</pre>
@@ -50,20 +50,32 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface CounterDouble extends Counter<Handle> {
-
-  @Override
-  Handle getHandle(LabelSet labelSet);
-
-  @Override
-  Handle getDefaultHandle();
+public interface DoubleCounter extends Counter<BoundDoubleCounter> {
 
   /**
-   * A {@code Handle} for a {@code CounterDouble}.
+   * Adds the given {@code delta} to the current value. The values can be negative iff monotonic was
+   * set to {@code false}.
+   *
+   * <p>The value added is associated with the current {@code Context} and provided LabelSet.
+   *
+   * @param delta the value to add.
+   * @param labelSet the labels to be associated to this recording
+   * @since 0.1.0
+   */
+  void add(double delta, LabelSet labelSet);
+
+  @Override
+  BoundDoubleCounter bind(LabelSet labelSet);
+
+  @Override
+  void unbind(BoundDoubleCounter bound);
+
+  /**
+   * A {@code Bound} for a {@code CounterDouble}.
    *
    * @since 0.1.0
    */
-  interface Handle {
+  interface BoundDoubleCounter {
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
      * was set to {@code false}.
@@ -76,6 +88,6 @@ public interface CounterDouble extends Counter<Handle> {
     void add(double delta);
   }
 
-  /** Builder class for {@link CounterDouble}. */
-  interface Builder extends Counter.Builder<Builder, CounterDouble> {}
+  /** Builder class for {@link DoubleCounter}. */
+  interface Builder extends Counter.Builder<Builder, DoubleCounter> {}
 }

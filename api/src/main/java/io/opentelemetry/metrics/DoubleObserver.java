@@ -16,6 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.DoubleObserver.BoundDoubleObserver;
+import io.opentelemetry.metrics.DoubleObserver.ResultDoubleObserver;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -27,20 +29,20 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final ObserverLong observer =
+ *   private static final DoubleObserver observer =
  *       meter.
- *           .observerLongBuilder("doWork_latency")
+ *           .observerDoubleBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
  *
  *   void init() {
  *     observer.setCallback(
- *         new ObserverLong.Callback<ObserverLong.Result>() {
+ *         new DoubleObserver.Callback<DoubleObserver.Result>() {
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(Result result) {
- *             result.put(observer.getDefaultHandle(), count.addAndGet(1));
+ *             result.put(observer.bind(labelSet), 0.8 * count.addAndGet(1));
  *           }
  *         });
  *   }
@@ -50,16 +52,29 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface ObserverLong extends Observer<ObserverLong.Result> {
-
-  /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
-  interface Result {
-    void put(Handle handle, long value);
-  }
+public interface DoubleObserver extends Observer<ResultDoubleObserver, BoundDoubleObserver> {
+  @Override
+  BoundDoubleObserver bind(LabelSet labelSet);
 
   @Override
-  void setCallback(Callback<Result> metricUpdater);
+  void unbind(BoundDoubleObserver bound);
 
-  /** Builder class for {@link ObserverLong}. */
-  interface Builder extends Observer.Builder<ObserverLong.Builder, ObserverLong> {}
+  @Override
+  void setCallback(Callback<ResultDoubleObserver> metricUpdater);
+
+  /** Builder class for {@link DoubleObserver}. */
+  interface Builder extends Observer.Builder<DoubleObserver.Builder, DoubleObserver> {}
+
+  /**
+   * A {@code Bound} for a {@code Observer}.
+   *
+   * @since 0.1.0
+   */
+  @ThreadSafe
+  interface BoundDoubleObserver {}
+
+  /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
+  interface ResultDoubleObserver {
+    void put(BoundDoubleObserver bound, double value);
+  }
 }

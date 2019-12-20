@@ -26,9 +26,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link CounterDouble}. */
+/** Unit tests for {@link DoubleCounter}. */
 @RunWith(JUnit4.class)
-public class CounterDoubleTest {
+public class DoubleCounterTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -42,7 +42,7 @@ public class CounterDoubleTest {
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.counterDoubleBuilder("\2").build();
+    meter.doubleCounterBuilder("\2").build();
   }
 
   @Test
@@ -52,35 +52,35 @@ public class CounterDoubleTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.counterDoubleBuilder(longName).build();
+    meter.doubleCounterBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.counterDoubleBuilder("metric").setDescription(null).build();
+    meter.doubleCounterBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.counterDoubleBuilder("metric").setUnit(null).build();
+    meter.doubleCounterBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    meter.counterDoubleBuilder("metric").setLabelKeys(null).build();
+    meter.doubleCounterBuilder("metric").setLabelKeys(null).build();
   }
 
   @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.counterDoubleBuilder("metric").setConstantLabels(null).build();
+    meter.doubleCounterBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
@@ -88,48 +88,48 @@ public class CounterDoubleTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
     meter
-        .counterDoubleBuilder("metric")
+        .doubleCounterBuilder("metric")
         .setLabelKeys(Collections.<String>singletonList(null))
         .build();
   }
 
   @Test
-  public void noopGetHandle_WithNullLabelSet() {
-    CounterDouble counterDouble =
+  public void noopGetBound_WithNullLabelSet() {
+    DoubleCounter doubleCounter =
         meter
-            .counterDoubleBuilder(NAME)
+            .doubleCounterBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelSet");
-    counterDouble.getHandle(null);
+    doubleCounter.bind(null);
   }
 
   @Test
-  public void noopRemoveHandle_WithNullHandle() {
-    CounterDouble counterDouble =
+  public void noopRemoveBound_WithNullBound() {
+    DoubleCounter doubleCounter =
         meter
-            .counterDoubleBuilder(NAME)
+            .doubleCounterBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("handle");
-    counterDouble.removeHandle(null);
+    thrown.expectMessage("bound");
+    doubleCounter.unbind(null);
   }
 
   @Test
   public void doesNotThrow() {
-    CounterDouble counterDouble =
+    DoubleCounter doubleCounter =
         meter
-            .counterDoubleBuilder(NAME)
+            .doubleCounterBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    counterDouble.getDefaultHandle().add(1.0);
+    doubleCounter.bind(meter.emptyLabelSet()).add(1.0);
   }
 }

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.GaugeDouble.Handle;
+import io.opentelemetry.metrics.DoubleGauge.BoundDoubleGauge;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -29,20 +29,20 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
- *   private static final GaugeDouble gauge =
+ *   private static final DoubleGauge gauge =
  *       meter
  *           .gaugeDoubleBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference of a Handle.
- *   private static final GaugeDouble.Handle someWorkHandle =
- *       gauge.getHandle(Collections.singletonList("SomeWork"));
+ *   // It is recommended to keep a reference to a Bound Metric.
+ *   private static final BoundDoubleGauge someWorkBound =
+ *       gauge.getBound(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
  *      // Your code here.
- *      someWorkHandle.set(15);
+ *      someWorkBound.set(15);
  *   }
  *
  * }
@@ -51,20 +51,31 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface GaugeDouble extends Gauge<Handle> {
-
-  @Override
-  Handle getHandle(LabelSet labelSet);
-
-  @Override
-  Handle getDefaultHandle();
+public interface DoubleGauge extends Gauge<BoundDoubleGauge> {
 
   /**
-   * A {@code Handle} for a {@code GaugeDouble}.
+   * Sets the given value.
+   *
+   * <p>The value added is associated with the current {@code Context} and provided LabelSet.
+   *
+   * @param val the new value.
+   * @param labelSet the labels to be associated to this recording
+   * @since 0.1.0
+   */
+  void set(double val, LabelSet labelSet);
+
+  @Override
+  BoundDoubleGauge bind(LabelSet labelSet);
+
+  @Override
+  void unbind(BoundDoubleGauge bound);
+
+  /**
+   * A {@code Bound} for a {@code DoubleGauge}.
    *
    * @since 0.1.0
    */
-  interface Handle {
+  interface BoundDoubleGauge {
 
     /**
      * Sets the given value.
@@ -77,6 +88,6 @@ public interface GaugeDouble extends Gauge<Handle> {
     void set(double val);
   }
 
-  /** Builder class for {@link GaugeLong}. */
-  interface Builder extends Gauge.Builder<Builder, GaugeDouble> {}
+  /** Builder class for {@link LongGauge}. */
+  interface Builder extends Gauge.Builder<Builder, DoubleGauge> {}
 }

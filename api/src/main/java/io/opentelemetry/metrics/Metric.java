@@ -24,41 +24,33 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * Base interface for all metrics defined in this package.
  *
- * @param <H> the Handle.
+ * @param <B> the Bound type.
  * @since 0.1.0
  */
 @ThreadSafe
-public interface Metric<H> {
+public interface Metric<B> {
   /**
-   * Returns a {@code Handle} with associated with specified {@code labelSet}. Multiples requests
-   * with the same {@code labelSet} may return the same {@code Handle}.
+   * Returns a {@code Bound} with associated with specified {@code labelSet}. Multiples requests
+   * with the same {@code labelSet} may return the same {@code Bound}.
    *
-   * <p>It is recommended to keep a reference to the Handle instead of always calling this method
-   * for every operations.
+   * <p>It is recommended to keep a reference to the Bound instead of always calling this method for
+   * every operations.
    *
    * @param labelSet the set of labels.
-   * @return a {@code Handle} the value of single gauge.
+   * @return a {@code Bound} value of the metric.
    * @throws NullPointerException if {@code labelValues} is null.
    * @since 0.1.0
    */
-  H getHandle(LabelSet labelSet);
+  B bind(LabelSet labelSet);
 
   /**
-   * Returns a {@code Handle} for a metric with all labels not set.
-   *
-   * @return a {@code Handle} for a metric with all labels not set.
-   * @since 0.1.0
-   */
-  H getDefaultHandle();
-
-  /**
-   * Removes the {@code Handle} from the metric. i.e. references to previous {@code Handle} are
+   * Removes the {@code Bound} from the metric. i.e. references to previous {@code Bound} are
    * invalid (not part of the metric).
    *
-   * @param handle the {@code Handle} to be removed.
+   * @param bound the {@code Bound} to be removed.
    * @since 0.1.0
    */
-  void removeHandle(H handle);
+  void unbind(B bound);
 
   /**
    * The {@code Builder} class for the {@code Metric}.
@@ -98,7 +90,7 @@ public interface Metric<H> {
     B setLabelKeys(List<String> labelKeys);
 
     /**
-     * Sets the map of constant labels (they will be added to all the Handle) for the Metric.
+     * Sets the map of constant labels (they will be added to all the Bound) for the Metric.
      *
      * <p>Default value is {@link Collections#emptyMap()}.
      *

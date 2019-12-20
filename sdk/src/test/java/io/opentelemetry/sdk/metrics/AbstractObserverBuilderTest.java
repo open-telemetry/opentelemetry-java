@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Observer;
-import io.opentelemetry.metrics.ObserverDouble;
 import javax.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,24 +75,22 @@ public class AbstractObserverBuilderTest {
     }
   }
 
-  private static final class TestMetric implements Observer<ObserverDouble.Result> {
+  private static final class TestMetric implements Observer<TestResult, TestBound> {
 
     @Nullable
     @Override
-    public Observer.Handle getHandle(LabelSet labelSet) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public Observer.Handle getDefaultHandle() {
+    public TestBound bind(LabelSet labelSet) {
       return null;
     }
 
     @Override
-    public void removeHandle(Observer.Handle handle) {}
+    public void unbind(TestBound handle) {}
 
     @Override
-    public void setCallback(Callback<ObserverDouble.Result> metricUpdater) {}
+    public void setCallback(Callback<TestResult> metricUpdater) {}
   }
+
+  private static final class TestBound {}
+
+  private static final class TestResult {}
 }
