@@ -406,7 +406,7 @@ public interface Span {
      * parent.
      *
      * <p>If no {@link Span} nor {@link SpanContext} is availablle in the specified {@code Context},
-     * the resulting {@code Span} will be a root instance, as if {@link #setNoParent()} had been
+     * the resulting {@code Span} will become a root instance, as if {@link #setNoParent()} had been
      * called.
      *
      * <p>If called multiple times, only the last specified value will be used. Observe that the
