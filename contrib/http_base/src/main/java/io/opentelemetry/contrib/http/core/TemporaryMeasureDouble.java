@@ -16,30 +16,27 @@
 
 package io.opentelemetry.contrib.http.core;
 
+import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.MeasureDouble;
 
 /** Used to make implementations work until SDK implementation is available. */
-public class TemporaryMeasureDouble implements MeasureDouble {
+public class TemporaryMeasureDouble implements DoubleMeasure {
 
-  private static final Handle HANDLE =
-      new Handle() {
+  private static final BoundDoubleMeasure BOUND =
+      new BoundDoubleMeasure() {
+
         @Override
         public void record(double value) {}
       };
 
   @Override
-  public Handle getHandle(LabelSet labelSet) {
-    return HANDLE;
+  public void record(double value, LabelSet labelSet) {}
+
+  @Override
+  public BoundDoubleMeasure bind(LabelSet labelSet) {
+    return BOUND;
   }
 
   @Override
-  public Handle getDefaultHandle() {
-    return HANDLE;
-  }
-
-  @Override
-  public void removeHandle(Handle handle) {
-    // NoOp
-  }
+  public void unbind(BoundDoubleMeasure bound) {}
 }

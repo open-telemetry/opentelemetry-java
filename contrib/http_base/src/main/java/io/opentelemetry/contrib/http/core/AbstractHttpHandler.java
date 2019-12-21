@@ -23,8 +23,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.metrics.BatchRecorder;
-import io.opentelemetry.metrics.MeasureDouble;
-import io.opentelemetry.metrics.MeasureLong;
+import io.opentelemetry.metrics.DoubleMeasure;
+import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
@@ -43,9 +43,9 @@ abstract class AbstractHttpHandler<Q, P> {
 
   @VisibleForTesting final HttpStatus2OtStatusConverter statusConverter;
   private final Meter meter;
-  private final MeasureDouble measureDuration;
-  private final MeasureLong measureSentMessageSize;
-  private final MeasureLong measureReceivedMessageSize;
+  private final DoubleMeasure measureDuration;
+  private final LongMeasure measureSentMessageSize;
+  private final LongMeasure measureReceivedMessageSize;
 
   /** Constructor to allow access from same package subclasses only. */
   AbstractHttpHandler(
@@ -201,7 +201,7 @@ abstract class AbstractHttpHandler<Q, P> {
     //    BatchRecorder recorder = meter.newMeasureBatchRecorder();
     try {
       meter.newMeasureBatchRecorder();
-      meter.counterLongBuilder(HttpTraceConstants.MEASURE_COUNT + httpCode).build();
+      meter.longCounterBuilder(HttpTraceConstants.MEASURE_COUNT + httpCode).build();
     } catch (UnsupportedOperationException ignore) {
       // NoOp
     }

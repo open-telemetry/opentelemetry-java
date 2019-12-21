@@ -17,29 +17,26 @@
 package io.opentelemetry.contrib.http.core;
 
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.MeasureLong;
+import io.opentelemetry.metrics.LongMeasure;
 
 /** Used to make implementations work until SDK implementation is available. */
-public class TemporaryMeasureLong implements MeasureLong {
+public class TemporaryMeasureLong implements LongMeasure {
 
-  private static final Handle HANDLE =
-      new Handle() {
+  private static final BoundLongMeasure BOUND =
+      new BoundLongMeasure() {
+
         @Override
         public void record(long value) {}
       };
 
   @Override
-  public Handle getHandle(LabelSet labelSet) {
-    return HANDLE;
+  public void record(long value, LabelSet labelSet) {}
+
+  @Override
+  public BoundLongMeasure bind(LabelSet labelSet) {
+    return BOUND;
   }
 
   @Override
-  public Handle getDefaultHandle() {
-    return HANDLE;
-  }
-
-  @Override
-  public void removeHandle(Handle handle) {
-    // NoOp
-  }
+  public void unbind(BoundLongMeasure bound) {}
 }
