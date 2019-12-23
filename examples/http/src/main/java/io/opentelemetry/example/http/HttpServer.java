@@ -18,6 +18,7 @@ package io.opentelemetry.example.http;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.exporters.logging.LoggingExporter;
@@ -101,7 +102,7 @@ public class HttpServer {
   static int port = 8080;
 
   // OTel API
-  Tracer tracer;
+  Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpServer");
   // Export traces in memory
   InMemorySpanExporter inMemexporter = InMemorySpanExporter.create();
   // Export traces to log
@@ -134,12 +135,12 @@ public class HttpServer {
   private void initTracer() {
     // Get the tracer
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
+    // Show that multiple exporters can be used
+
     // Set to process in memory the spans
     tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(inMemexporter).build());
     // Set to export the traces also to a log file
     tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
-    // Give a name to the traces
-    this.tracer = tracerFactory.get("io.opentelemetry.example.http.HttpServer");
   }
 
   private void stop() {
