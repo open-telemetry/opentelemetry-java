@@ -26,6 +26,7 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.logging.LoggingExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -47,11 +48,11 @@ public class HelloWorldServer {
   private final int port = 50051;
 
   // OTel API
-  Tracer tracer;
-  // Export traces in memory
+  Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.HelloWorldServer");
+  // Export traces as log
   LoggingExporter exporter = new LoggingExporter();
   // Share context via text
-  HttpTextFormat<SpanContext> textFormat;
+  HttpTextFormat<SpanContext> textFormat = this.tracer.getHttpTextFormat();;
 
   // Extract the Distributed Context from the gRPC metadata
   HttpTextFormat.Getter<Metadata> getter =
@@ -107,11 +108,8 @@ public class HelloWorldServer {
   private void initTracer() {
     // Get the tracer
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
-    // Set to process in memory the spans
+    // Set to process the the spans by the LogExporter
     tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
-    // Give the name to the traces
-    this.tracer = tracerFactory.get("io.opentelemetry.example.HelloWorldServer");
-    textFormat = this.tracer.getHttpTextFormat();
   }
 
   /** Await termination on the main thread since the grpc library uses daemon threads. */

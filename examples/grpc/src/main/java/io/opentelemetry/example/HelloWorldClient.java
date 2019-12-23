@@ -27,6 +27,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.logging.LoggingExporter;
@@ -50,11 +51,12 @@ public class HelloWorldClient {
   private final GreeterGrpc.GreeterBlockingStub blockingStub;
 
   // OTel API
-  Tracer tracer;
-  // Export traces in memory
+  Tracer tracer =
+      OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.HelloWorldClient");;
+  // Export traces as log
   LoggingExporter exporter = new LoggingExporter();
   // Share context via text headers
-  HttpTextFormat<SpanContext> textFormat;
+  HttpTextFormat<SpanContext> textFormat = tracer.getHttpTextFormat();
   // Inject context into the gRPC request metadata
   HttpTextFormat.Setter<Metadata> setter =
       new HttpTextFormat.Setter<Metadata>() {
@@ -82,13 +84,10 @@ public class HelloWorldClient {
   }
 
   private void initTracer() {
-    // Get the tracer
+    // Use the OpenTelemetry SDK
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
-    // Set to process the spans in memory
+    // Set to process the spans by the log exporter
     tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
-    // Give a name to the tracer
-    this.tracer = tracerFactory.get("io.opentelemetry.example.HelloWorldClient");
-    textFormat = this.tracer.getHttpTextFormat();
   }
 
   public void shutdown() throws InterruptedException {
