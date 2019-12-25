@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.metrics.Instrument;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.Metric;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +32,7 @@ import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link AbstractMetricBuilder}. */
 @RunWith(JUnit4.class)
-public class AbstractMetricBuilderTest {
+public class AbstractInstrumentBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -108,7 +108,7 @@ public class AbstractMetricBuilderTest {
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   @Test
@@ -124,11 +124,11 @@ public class AbstractMetricBuilderTest {
     assertThat(testMetricBuilder.getUnit()).isEqualTo(UNIT);
     assertThat(testMetricBuilder.getLabelKeys()).isEqualTo(LABEL_KEY);
     assertThat(testMetricBuilder.getConstantLabels()).isEqualTo(CONSTANT_LABELS);
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   private static final class TestMetricBuilder
-      extends AbstractMetricBuilder<TestMetricBuilder, TestMetric> {
+      extends AbstractMetricBuilder<TestMetricBuilder, TestInstrument> {
     static TestMetricBuilder newBuilder(String name) {
       return new TestMetricBuilder(name);
     }
@@ -143,12 +143,12 @@ public class AbstractMetricBuilderTest {
     }
 
     @Override
-    public TestMetric build() {
-      return new TestMetric();
+    public TestInstrument build() {
+      return new TestInstrument();
     }
   }
 
-  private static final class TestMetric implements Metric<TestBound> {
+  private static final class TestInstrument implements Instrument<TestBound> {
     private static final TestBound HANDLE = new TestBound();
 
     @Override
@@ -157,7 +157,7 @@ public class AbstractMetricBuilderTest {
     }
 
     @Override
-    public void unbind(TestBound handle) {}
+    public void unbind(TestBound boundInstrument) {}
   }
 
   private static final class TestBound {}

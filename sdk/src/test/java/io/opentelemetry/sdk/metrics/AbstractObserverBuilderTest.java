@@ -43,7 +43,7 @@ public class AbstractObserverBuilderTest {
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
     assertThat(testMetricBuilder.getMonotonic()).isFalse();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   @Test
@@ -51,11 +51,11 @@ public class AbstractObserverBuilderTest {
     TestMetricBuilder testMetricBuilder = TestMetricBuilder.newBuilder(NAME).setMonotonic(true);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getMonotonic()).isTrue();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   private static final class TestMetricBuilder
-      extends AbstractObserverBuilder<TestMetricBuilder, TestMetric> {
+      extends AbstractObserverBuilder<TestMetricBuilder, TestInstrument> {
     static TestMetricBuilder newBuilder(String name) {
       return new TestMetricBuilder(name);
     }
@@ -70,12 +70,12 @@ public class AbstractObserverBuilderTest {
     }
 
     @Override
-    public TestMetric build() {
-      return new TestMetric();
+    public TestInstrument build() {
+      return new TestInstrument();
     }
   }
 
-  private static final class TestMetric implements Observer<TestResult, TestBound> {
+  private static final class TestInstrument implements Observer<TestResult, TestBound> {
 
     @Nullable
     @Override
@@ -84,7 +84,7 @@ public class AbstractObserverBuilderTest {
     }
 
     @Override
-    public void unbind(TestBound handle) {}
+    public void unbind(TestBound boundInstrument) {}
 
     @Override
     public void setCallback(Callback<TestResult> metricUpdater) {}

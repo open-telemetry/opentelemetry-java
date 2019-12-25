@@ -64,10 +64,10 @@ public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
   BoundDoubleMeasure bind(LabelSet labelSet);
 
   @Override
-  void unbind(BoundDoubleMeasure bound);
+  void unbind(BoundDoubleMeasure boundInstrument);
 
   /**
-   * A {@code Bound} for a {@code LongMeasure}.
+   * A {@code Bound Instrument} for a {@code LongMeasure}.
    *
    * @since 0.1.0
    */
