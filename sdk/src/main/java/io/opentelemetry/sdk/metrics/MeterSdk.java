@@ -48,7 +48,7 @@ public class MeterSdk implements Meter {
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLongCounterBuilder.builder(name);
   }
 
   @Override
@@ -78,27 +78,27 @@ public class MeterSdk implements Meter {
 
   @Override
   public LabelSet createLabelSet(String k1, String v1) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.builder().add(k1, v1).build();
   }
 
   @Override
   public LabelSet createLabelSet(String k1, String v1, String k2, String v2) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.builder().add(k1, v1).add(k2, v2).build();
   }
 
   @Override
   public LabelSet createLabelSet(String k1, String v1, String k2, String v2, String k3, String v3) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.builder().add(k1, v1).add(k2, v2).add(k3, v3).build();
   }
 
   @Override
   public LabelSet createLabelSet(
       String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.builder().add(k1, v1).add(k2, v2).add(k3, v3).add(k4, v4).build();
   }
 
   @Override
   public LabelSet emptyLabelSet() {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.empty();
   }
 }
