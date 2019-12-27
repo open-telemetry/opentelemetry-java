@@ -373,8 +373,8 @@ public final class DefaultMeter implements Meter {
       }
     }
 
-    private static final class NoopBuilder extends NoopAbstractMetricBuilder<Builder, DoubleMeasure>
-        implements Builder {
+    private static final class NoopBuilder
+        extends NoopAbstractInstrumentBuilder<Builder, DoubleMeasure> implements Builder {
       @Override
       protected Builder getThis() {
         return this;
@@ -418,8 +418,8 @@ public final class DefaultMeter implements Meter {
       }
     }
 
-    private static final class NoopBuilder extends NoopAbstractMetricBuilder<Builder, LongMeasure>
-        implements Builder {
+    private static final class NoopBuilder
+        extends NoopAbstractInstrumentBuilder<Builder, LongMeasure> implements Builder {
       @Override
       protected Builder getThis() {
         return this;
@@ -534,7 +534,7 @@ public final class DefaultMeter implements Meter {
   }
 
   private abstract static class NoopAbstractGaugeBuilder<B extends Gauge.Builder<B, V>, V>
-      extends NoopAbstractMetricBuilder<B, V> implements Gauge.Builder<B, V> {
+      extends NoopAbstractInstrumentBuilder<B, V> implements Gauge.Builder<B, V> {
     @Override
     public B setMonotonic(boolean monotonic) {
       return getThis();
@@ -542,7 +542,7 @@ public final class DefaultMeter implements Meter {
   }
 
   private abstract static class NoopAbstractCounterBuilder<B extends Counter.Builder<B, V>, V>
-      extends NoopAbstractMetricBuilder<B, V> implements Counter.Builder<B, V> {
+      extends NoopAbstractInstrumentBuilder<B, V> implements Counter.Builder<B, V> {
     @Override
     public B setMonotonic(boolean monotonic) {
       return getThis();
@@ -550,14 +550,14 @@ public final class DefaultMeter implements Meter {
   }
 
   private abstract static class NoopAbstractObserverBuilder<B extends Observer.Builder<B, V>, V>
-      extends NoopAbstractMetricBuilder<B, V> implements Observer.Builder<B, V> {
+      extends NoopAbstractInstrumentBuilder<B, V> implements Observer.Builder<B, V> {
     @Override
     public B setMonotonic(boolean monotonic) {
       return getThis();
     }
   }
 
-  private abstract static class NoopAbstractMetricBuilder<B extends Instrument.Builder<B, V>, V>
+  private abstract static class NoopAbstractInstrumentBuilder<B extends Instrument.Builder<B, V>, V>
       implements Instrument.Builder<B, V> {
     @Override
     public B setDescription(String description) {
