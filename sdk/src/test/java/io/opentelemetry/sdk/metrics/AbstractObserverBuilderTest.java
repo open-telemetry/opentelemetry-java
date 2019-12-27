@@ -36,7 +36,7 @@ public class AbstractObserverBuilderTest {
 
   @Test
   public void defaultValue() {
-    TestMetricBuilder testMetricBuilder = TestMetricBuilder.newBuilder(NAME);
+    TestInstrumentBuilder testMetricBuilder = TestInstrumentBuilder.newBuilder(NAME);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getDescription()).isEmpty();
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
@@ -48,24 +48,25 @@ public class AbstractObserverBuilderTest {
 
   @Test
   public void setAndGetValues() {
-    TestMetricBuilder testMetricBuilder = TestMetricBuilder.newBuilder(NAME).setMonotonic(true);
+    TestInstrumentBuilder testMetricBuilder =
+        TestInstrumentBuilder.newBuilder(NAME).setMonotonic(true);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getMonotonic()).isTrue();
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
-  private static final class TestMetricBuilder
-      extends AbstractObserverBuilder<TestMetricBuilder, TestInstrument> {
-    static TestMetricBuilder newBuilder(String name) {
-      return new TestMetricBuilder(name);
+  private static final class TestInstrumentBuilder
+      extends AbstractObserverBuilder<TestInstrumentBuilder, TestInstrument> {
+    static TestInstrumentBuilder newBuilder(String name) {
+      return new TestInstrumentBuilder(name);
     }
 
-    TestMetricBuilder(String name) {
+    TestInstrumentBuilder(String name) {
       super(name);
     }
 
     @Override
-    TestMetricBuilder getThis() {
+    TestInstrumentBuilder getThis() {
       return this;
     }
 

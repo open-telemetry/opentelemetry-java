@@ -30,7 +30,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link AbstractMetricBuilder}. */
+/** Unit tests for {@link AbstractInstrumentBuilder}. */
 @RunWith(JUnit4.class)
 public class AbstractInstrumentBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
@@ -46,63 +46,64 @@ public class AbstractInstrumentBuilderTest {
   public void preventNull_Name() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    TestMetricBuilder.newBuilder(null);
+    TestInstrumentBuilder.newBuilder(null);
   }
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    TestMetricBuilder.newBuilder("\2");
+    TestInstrumentBuilder.newBuilder("\2");
   }
 
   @Test
   public void preventTooLongName() {
-    char[] chars = new char[AbstractMetricBuilder.NAME_MAX_LENGTH + 1];
+    char[] chars = new char[AbstractInstrumentBuilder.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(AbstractMetricBuilder.ERROR_MESSAGE_INVALID_NAME);
-    TestMetricBuilder.newBuilder(longName);
+    thrown.expectMessage(AbstractInstrumentBuilder.ERROR_MESSAGE_INVALID_NAME);
+    TestInstrumentBuilder.newBuilder(longName);
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    TestMetricBuilder.newBuilder("metric").setDescription(null);
+    TestInstrumentBuilder.newBuilder("metric").setDescription(null);
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    TestMetricBuilder.newBuilder("metric").setUnit(null);
+    TestInstrumentBuilder.newBuilder("metric").setUnit(null);
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    TestMetricBuilder.newBuilder("metric").setLabelKeys(null);
+    TestInstrumentBuilder.newBuilder("metric").setLabelKeys(null);
   }
 
   @Test
   public void preventNull_LabelKey() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
-    TestMetricBuilder.newBuilder("metric").setLabelKeys(Collections.<String>singletonList(null));
+    TestInstrumentBuilder.newBuilder("metric")
+        .setLabelKeys(Collections.<String>singletonList(null));
   }
 
   @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    TestMetricBuilder.newBuilder("metric").setConstantLabels(null);
+    TestInstrumentBuilder.newBuilder("metric").setConstantLabels(null);
   }
 
   @Test
   public void defaultValue() {
-    TestMetricBuilder testMetricBuilder = TestMetricBuilder.newBuilder(NAME);
+    TestInstrumentBuilder testMetricBuilder = TestInstrumentBuilder.newBuilder(NAME);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getDescription()).isEmpty();
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
@@ -113,8 +114,8 @@ public class AbstractInstrumentBuilderTest {
 
   @Test
   public void setAndGetValues() {
-    TestMetricBuilder testMetricBuilder =
-        TestMetricBuilder.newBuilder(NAME)
+    TestInstrumentBuilder testMetricBuilder =
+        TestInstrumentBuilder.newBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setUnit(UNIT)
             .setLabelKeys(LABEL_KEY)
@@ -127,18 +128,18 @@ public class AbstractInstrumentBuilderTest {
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
-  private static final class TestMetricBuilder
-      extends AbstractMetricBuilder<TestMetricBuilder, TestInstrument> {
-    static TestMetricBuilder newBuilder(String name) {
-      return new TestMetricBuilder(name);
+  private static final class TestInstrumentBuilder
+      extends AbstractInstrumentBuilder<TestInstrumentBuilder, TestInstrument> {
+    static TestInstrumentBuilder newBuilder(String name) {
+      return new TestInstrumentBuilder(name);
     }
 
-    TestMetricBuilder(String name) {
+    TestInstrumentBuilder(String name) {
       super(name);
     }
 
     @Override
-    TestMetricBuilder getThis() {
+    TestInstrumentBuilder getThis() {
       return this;
     }
 
