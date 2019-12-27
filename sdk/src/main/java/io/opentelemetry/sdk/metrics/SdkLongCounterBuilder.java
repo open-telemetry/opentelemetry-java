@@ -18,7 +18,9 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
-import java.util.HashMap;
+import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
+import io.opentelemetry.sdk.metrics.BaseInstrument.BaseBoundInstrument;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -40,77 +42,105 @@ public class SdkLongCounterBuilder extends AbstractCounterBuilder<LongCounter.Bu
 
   @Override
   public LongCounter build() {
-    return new SdkLongCounter(getName(), getDescription(), getMonotonic());
+    return new SdkLongCounter(
+        getName(), getDescription(), getConstantLabels(), getLabelKeys(), getMonotonic());
   }
 
-  private static class SdkLongCounter implements LongCounter {
+  private static class SdkLongCounter extends BaseInstrument<BoundLongCounter>
+      implements LongCounter {
 
-    private final Map<LabelSet, BoundLongCounter> boundCounters = new HashMap<>();
-    private final String description;
     private final boolean monotonic;
-    private final String name;
 
-    public SdkLongCounter(String name, String description, boolean monotonic) {
-      this.description = description;
+    protected SdkLongCounter(
+        String name,
+        String description,
+        Map<String, String> constantLabels,
+        List<String> labelKeys,
+        boolean monotonic) {
+      super(name, description, constantLabels, labelKeys);
       this.monotonic = monotonic;
-      this.name = name;
     }
 
     @Override
     public void add(long delta, LabelSet labelSet) {
-      getOrCreate(labelSet).add(delta);
+      create(labelSet).add(delta);
     }
 
     @Override
-    public BoundLongCounter bind(LabelSet labelSet) {
-      return getOrCreate(labelSet);
-    }
-
-    private BoundLongCounter getOrCreate(LabelSet labelSet) {
-      BoundLongCounter boundLongCounter = boundCounters.get(labelSet);
-      if (boundLongCounter == null) {
-        boundLongCounter = new LongCounterImpl(labelSet);
-        boundCounters.put(labelSet, boundLongCounter);
-      }
-      return boundLongCounter;
+    protected BoundLongCounter create(LabelSet labelSet) {
+      return new LongCounterImpl(this, labelSet, monotonic);
     }
 
     @Override
-    public void unbind(BoundLongCounter boundInstrument) {
-      boundCounters.remove(((LongCounterImpl) boundInstrument).labels);
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof SdkLongCounter)) {
+        return false;
+      }
+      if (!super.equals(o)) {
+        return false;
+      }
+
+      SdkLongCounter that = (SdkLongCounter) o;
+
+      return monotonic == that.monotonic;
     }
 
     @Override
-    public String toString() {
-      return "SdkLongCounter{"
-          + "boundCounters="
-          + boundCounters
-          + ", description='"
-          + description
-          + '\''
-          + ", monotonic="
-          + monotonic
-          + ", name='"
-          + name
-          + '\''
-          + '}';
+    public int hashCode() {
+      int result = super.hashCode();
+      result = 31 * result + (monotonic ? 1 : 0);
+      return result;
+    }
+  }
+
+  private static class LongCounterImpl extends BaseBoundInstrument<SdkLongCounter>
+      implements BoundLongCounter {
+
+    private final AtomicLong value = new AtomicLong();
+    private final boolean monotonic;
+
+    private LongCounterImpl(SdkLongCounter sdkLongCounter, LabelSet labels, boolean monotonic) {
+      super(sdkLongCounter, labels);
+      this.monotonic = monotonic;
     }
 
-    private class LongCounterImpl implements BoundLongCounter {
-      private final LabelSet labels;
-      private final AtomicLong value = new AtomicLong();
+    @Override
+    public void add(long delta) {
+      if (monotonic && delta < 0) {
+        throw new IllegalArgumentException("monotonic counters can only increase");
+      }
+      value.addAndGet(delta);
+    }
 
-      private LongCounterImpl(LabelSet labels) {
-        this.labels = labels;
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof LongCounterImpl)) {
+        return false;
+      }
+      if (!super.equals(o)) {
+        return false;
       }
 
-      @Override
-      public void add(long delta) {
-        if (monotonic && delta < 0) {
-          throw new IllegalArgumentException("monotonic counters can only increase");
-        }
-        value.addAndGet(delta);
+      LongCounterImpl that = (LongCounterImpl) o;
+
+      if (monotonic != that.monotonic) {
+        return false;
       }
+      return value != null ? value.equals(that.value) : that.value == null;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = super.hashCode();
+      result = 31 * result + (value != null ? value.hashCode() : 0);
+      result = 31 * result + (monotonic ? 1 : 0);
+      return result;
     }
   }
 }
