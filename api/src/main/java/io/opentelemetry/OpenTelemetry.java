@@ -30,14 +30,17 @@ import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerRegistry;
 import io.opentelemetry.trace.spi.TracerRegistryProvider;
 import java.util.ServiceLoader;
-import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link Meter}
  * and {@link CorrelationContextManager}.
  *
- * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
+ * <p>By default, the telemetry objects are lazy-loaded singletons resolved via the Java SPI {@link
+ * ServiceLoader} mechanism. This can be circumvented by calling setInstance methods on a individual
+ * components before any one has attempted to access the default singletons.
  *
  * @see TracerRegistry
  * @see MeterRegistryProvider
@@ -46,11 +49,15 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OpenTelemetry {
 
-  @Nullable private static volatile OpenTelemetry instance;
+  private static final Logger logger = Logger.getLogger(OpenTelemetry.class.getName());
 
-  private final TracerRegistry tracerRegistry;
-  private final MeterRegistry meterRegistry;
-  private final CorrelationContextManager contextManager;
+  private static final OpenTelemetry instance = new OpenTelemetry();
+
+  private final AtomicReference<TracerFactory> tracerFactory = new AtomicReference<>();
+  private final AtomicReference<MeterFactory> meterFactory = new AtomicReference<>();
+  private final AtomicReference<DistributedContextManager> contextManager = new AtomicReference<>();
+
+  private OpenTelemetry() {}
 
   /**
    * Returns a singleton {@link TracerRegistry}.
@@ -60,8 +67,11 @@ public final class OpenTelemetry {
    *     be found.
    * @since 0.1.0
    */
-  public static TracerRegistry getTracerRegistry() {
-    return getInstance().tracerRegistry;
+  public static TracerFactory getTracerFactory() {
+    if (instance.tracerFactory.get() == null) {
+      setTracerFactory(SpiOpenTelemetryProvider.makeSpiTracerFactory());
+    }
+    return instance.tracerFactory.get();
   }
 
   /**
@@ -72,8 +82,11 @@ public final class OpenTelemetry {
    *     found.
    * @since 0.1.0
    */
-  public static MeterRegistry getMeterRegistry() {
-    return getInstance().meterRegistry;
+  public static MeterFactory getMeterFactory() {
+    if (instance.meterFactory.get() == null) {
+      setMeterFactory(SpiOpenTelemetryProvider.makeSpiMeterFactory());
+    }
+    return instance.meterFactory.get();
   }
 
   /**
@@ -86,68 +99,98 @@ public final class OpenTelemetry {
    * @since 0.1.0
    */
   public static CorrelationContextManager getCorrelationContextManager() {
-    return getInstance().contextManager;
-  }
-
-  /** Lazy loads an instance. */
-  private static OpenTelemetry getInstance() {
-    if (instance == null) {
-      synchronized (OpenTelemetry.class) {
-        if (instance == null) {
-          instance = new OpenTelemetry();
-        }
-      }
+    if (instance.contextManager.get() == null) {
+      setDistributedContextManager(SpiOpenTelemetryProvider.makeSpiContextManager());
     }
-    return instance;
-  }
-
-  private OpenTelemetry() {
-    TracerRegistryProvider tracerRegistryProvider = loadSpi(TracerRegistryProvider.class);
-    this.tracerRegistry =
-        tracerRegistryProvider != null
-            ? tracerRegistryProvider.create()
-            : DefaultTracerRegistryProvider.getInstance().create();
-
-    MeterRegistryProvider meterRegistryProvider = loadSpi(MeterRegistryProvider.class);
-    meterRegistry =
-        meterRegistryProvider != null
-            ? meterRegistryProvider.create()
-            : DefaultMeterRegistryProvider.getInstance().create();
-    CorrelationContextManagerProvider contextManagerProvider =
-        loadSpi(CorrelationContextManagerProvider.class);
-    contextManager =
-        contextManagerProvider != null
-            ? contextManagerProvider.create()
-            : DefaultCorrelationContextManager.getInstance();
+    return instance.contextManager.get();
   }
 
   /**
-   * Load provider class via {@link ServiceLoader}. A specific provider class can be requested via
-   * setting a system property with FQCN.
+   * Assigns the global singleton MeterFactory instance. This can be done exactly once; subsequent
+   * calls will be ignored.
    *
-   * @param providerClass a provider class
-   * @param <T> provider type
-   * @return a provider or null if not found
-   * @throws IllegalStateException if a specified provider is not found
+   * <p>Note, if calls to the static accessor for the MeterFactory are made before this is called,
+   * the global singleton will be initialized with an SPI-provided implementation.
+   *
+   * <p>Therefore, if you wish to use a non-SPI provided instance, you must make sure to call this
+   * method before any instrumentation will have forced the SPI implementation to be loaded.
+   *
+   * @param meterFactory A fully configured and ready to operate MeterFactory implementation.
    */
-  @Nullable
-  private static <T> T loadSpi(Class<T> providerClass) {
-    String specifiedProvider = System.getProperty(providerClass.getName());
-    ServiceLoader<T> providers = ServiceLoader.load(providerClass);
-    for (T provider : providers) {
-      if (specifiedProvider == null || specifiedProvider.equals(provider.getClass().getName())) {
-        return provider;
-      }
+  public static void setMeterFactory(MeterFactory meterFactory) {
+    if (!instance.meterFactory.compareAndSet(null, meterFactory)) {
+      logger.warning(
+          "The global OpenTelemetry MeterFactory instance has already been set. "
+              + "Ignoring this assignment");
     }
-    if (specifiedProvider != null) {
-      throw new IllegalStateException(
-          String.format("Service provider %s not found", specifiedProvider));
-    }
-    return null;
   }
 
-  // for testing
+  /**
+   * Assigns the global singleton TracerFactory instance. This can be done exactly once; subsequent
+   * calls will be ignored.
+   *
+   * <p>Note, if calls to the static accessor for the TracerFactory are made before this is called,
+   * the global singleton will be initialized with an SPI-provided implementation.
+   *
+   * <p>Therefore, if you wish to use a non-SPI provided instance, you must make sure to call this
+   * method before any instrumentation will have forced the SPI implementation to be loaded.
+   *
+   * @param tracerFactory A fully configured and ready to operate {@link TracerFactory}
+   *     implementation.
+   */
+  public static void setTracerFactory(TracerFactory tracerFactory) {
+    if (!instance.tracerFactory.compareAndSet(null, tracerFactory)) {
+      logger.warning(
+          "The global OpenTelemetry TracerFactory instance has already been set. "
+              + "Ignoring this assignment");
+    }
+  }
+
+  private OpenTelemetry() {
+    TracerFactoryProvider tracerFactoryProvider = loadSpi(TracerFactoryProvider.class);
+    this.tracerFactory =
+        tracerFactoryProvider != null
+            ? tracerFactoryProvider.create()
+            : DefaultTracerFactoryProvider.getInstance().create();
+
+    MeterFactoryProvider meterFactoryProvider = loadSpi(MeterFactoryProvider.class);
+    meterFactory =
+        meterFactoryProvider != null
+            ? meterFactoryProvider.create()
+            : DefaultMeterFactoryProvider.getInstance().create();
+    DistributedContextManagerProvider contextManagerProvider =
+        loadSpi(DistributedContextManagerProvider.class);
+    contextManager =
+        contextManagerProvider != null
+            ? contextManagerProvider.create()
+            : DefaultDistributedContextManager.getInstance();
+  }
+
+  /**
+   * Assigns the global singleton DistributedContextManager instance. This can be done exactly once;
+   * subsequent calls will be ignored.
+   *
+   * <p>Note, if calls to the static accessor for the DistributedContextManager are made before this
+   * is called, the global singleton will be initialized with an SPI-provided implementation.
+   *
+   * <p>Therefore, if you wish to use a non-SPI provided instance, you must make sure to call this
+   * method before any instrumentation will have forced the SPI implementation to be loaded.
+   *
+   * @param contextManager A fully configured and ready to operate DistributedContextManager
+   *     implementation.
+   */
+  public static void setDistributedContextManager(DistributedContextManager contextManager) {
+    if (!instance.contextManager.compareAndSet(null, contextManager)) {
+      logger.warning(
+          "The global OpenTelemetry DistributedContextManager instance has already been set. "
+              + "Ignoring this assignment");
+    }
+  }
+
+  // for testing only
   static void reset() {
-    instance = null;
+    instance.meterFactory.set(null);
+    instance.tracerFactory.set(null);
+    instance.contextManager.set(null);
   }
 }

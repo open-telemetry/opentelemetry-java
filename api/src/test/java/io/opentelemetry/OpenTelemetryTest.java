@@ -18,6 +18,7 @@ package io.opentelemetry;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
@@ -41,6 +42,7 @@ import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterRegistry;
 import io.opentelemetry.metrics.spi.MeterRegistryProvider;
 import io.opentelemetry.trace.DefaultTracer;
+import io.opentelemetry.trace.DefaultTracerFactory;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
@@ -93,6 +95,30 @@ public class OpenTelemetryTest {
         .isInstanceOf(DefaultCorrelationContextManager.getInstance().getClass());
     assertThat(OpenTelemetry.getCorrelationContextManager())
         .isEqualTo(OpenTelemetry.getCorrelationContextManager());
+  }
+
+  @Test
+  public void testSetInstanceBeforeSingletonAccess() {
+    TracerFactory tracerFactory = mock(TracerFactory.class);
+    MeterFactory meterFactory = mock(MeterFactory.class);
+    DistributedContextManager contextManager = mock(DistributedContextManager.class);
+    OpenTelemetry.setTracerFactory(tracerFactory);
+    OpenTelemetry.setMeterFactory(meterFactory);
+    OpenTelemetry.setDistributedContextManager(contextManager);
+    assertThat(OpenTelemetry.getTracerFactory()).isSameInstanceAs(tracerFactory);
+    assertThat(OpenTelemetry.getMeterFactory()).isSameInstanceAs(meterFactory);
+    assertThat(OpenTelemetry.getDistributedContextManager()).isSameInstanceAs(contextManager);
+  }
+
+  @Test
+  public void testSetInstanceOneTimeOnly() {
+    TracerFactory tracerFactory = OpenTelemetry.getTracerFactory();
+    assertThat(tracerFactory).isInstanceOf(DefaultTracerFactory.class);
+
+    // this call should be ignored, since we've already accessed the singletons.
+    OpenTelemetry.setTracerFactory(mock(TracerFactory.class));
+
+    assertThat(OpenTelemetry.getTracerFactory()).isSameInstanceAs(tracerFactory);
   }
 
   @Test
