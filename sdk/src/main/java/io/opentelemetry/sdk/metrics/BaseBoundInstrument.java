@@ -16,27 +16,32 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LabelSet;
 
-public class SdkLongCounterBuilder extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
-    implements LongCounter.Builder {
+class BaseBoundInstrument<I extends BaseInstrument<?>> {
+  private final LabelSet labels;
 
-  protected SdkLongCounterBuilder(String name) {
-    super(name);
-  }
-
-  public static LongCounter.Builder builder(String name) {
-    return new SdkLongCounterBuilder(name);
+  BaseBoundInstrument(LabelSet labels) {
+    this.labels = labels;
+    // todo: associate with an aggregator/accumulator
   }
 
   @Override
-  SdkLongCounterBuilder getThis() {
-    return this;
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof BaseBoundInstrument)) {
+      return false;
+    }
+
+    BaseBoundInstrument<?> that = (BaseBoundInstrument<?>) o;
+
+    return labels != null ? labels.equals(that.labels) : that.labels == null;
   }
 
   @Override
-  public LongCounter build() {
-    return new SdkLongCounter(
-        getName(), getDescription(), getConstantLabels(), getLabelKeys(), getMonotonic());
+  public int hashCode() {
+    return labels != null ? labels.hashCode() : 0;
   }
 }

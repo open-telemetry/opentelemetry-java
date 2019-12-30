@@ -16,27 +16,23 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 
-public class SdkLongCounterBuilder extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
-    implements LongCounter.Builder {
+class SdkBoundLongCounter extends BaseBoundInstrument<SdkLongCounter> implements BoundLongCounter {
 
-  protected SdkLongCounterBuilder(String name) {
-    super(name);
-  }
+  private final boolean monotonic;
 
-  public static LongCounter.Builder builder(String name) {
-    return new SdkLongCounterBuilder(name);
-  }
-
-  @Override
-  SdkLongCounterBuilder getThis() {
-    return this;
+  SdkBoundLongCounter(LabelSet labels, boolean monotonic) {
+    super(labels);
+    this.monotonic = monotonic;
   }
 
   @Override
-  public LongCounter build() {
-    return new SdkLongCounter(
-        getName(), getDescription(), getConstantLabels(), getLabelKeys(), getMonotonic());
+  public void add(long delta) {
+    if (monotonic && delta < 0) {
+      throw new IllegalArgumentException("monotonic counters can only increase");
+    }
+    // todo: pass through to an aggregator/accumulator
   }
 }
