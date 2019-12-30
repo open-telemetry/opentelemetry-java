@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.LabelSet;
@@ -82,7 +83,7 @@ public class MeterSdkTest {
   public void testLabelSets() {
     MeterSdk testSdk = new MeterSdk();
 
-    assertEquals(testSdk.emptyLabelSet(), testSdk.emptyLabelSet());
+    assertSame(testSdk.emptyLabelSet(), testSdk.emptyLabelSet());
     assertEquals(testSdk.createLabelSet("key", "value"), testSdk.createLabelSet("key", "value"));
     assertEquals(
         testSdk.createLabelSet("k1", "v1", "k2", "v2"),

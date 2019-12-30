@@ -33,6 +33,9 @@ abstract class SdkLabelSet implements LabelSet {
   }
 
   public static LabelSet create(String... keyValuePairs) {
+    if (keyValuePairs.length == 0) {
+      return EMPTY;
+    }
     Preconditions.checkArgument(
         (keyValuePairs.length % 2) == 0,
         "LabelSets must be created with the same number of keys as values.");
