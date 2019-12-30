@@ -57,7 +57,7 @@ public interface LongObserver extends Observer<ResultLongObserver, BoundLongObse
   BoundLongObserver bind(LabelSet labelSet);
 
   @Override
-  void unbind(BoundLongObserver bound);
+  void unbind(BoundLongObserver boundInstrument);
 
   @Override
   void setCallback(Callback<ResultLongObserver> metricUpdater);

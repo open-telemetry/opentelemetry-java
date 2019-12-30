@@ -18,15 +18,15 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.metrics.Metric;
+import io.opentelemetry.metrics.Instrument;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-abstract class AbstractMetricBuilder<B extends Metric.Builder<B, V>, V>
-    implements Metric.Builder<B, V> {
+abstract class AbstractInstrumentBuilder<B extends Instrument.Builder<B, V>, V>
+    implements Instrument.Builder<B, V> {
   /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
   /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
       "Name should be a ASCII string with a length no greater than "
@@ -39,7 +39,7 @@ abstract class AbstractMetricBuilder<B extends Metric.Builder<B, V>, V>
   private List<String> labelKeys = Collections.emptyList();
   private Map<String, String> constantLabels = Collections.emptyMap();
 
-  AbstractMetricBuilder(String name) {
+  AbstractInstrumentBuilder(String name) {
     Utils.checkNotNull(name, "name");
     Utils.checkArgument(
         StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,

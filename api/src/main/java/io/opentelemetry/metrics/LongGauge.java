@@ -36,7 +36,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setUnit("1")
  *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
- *   // It is recommended to keep a reference to a Bound Metric.
+ *   // It is recommended to keep a reference to a Bound Instrument.
  *   private static final BoundLongGauge someWorkBound =
  *       gauge.getBound(Collections.singletonList("SomeWork"));
  *
@@ -68,10 +68,10 @@ public interface LongGauge extends Gauge<BoundLongGauge> {
   BoundLongGauge bind(LabelSet labelSet);
 
   @Override
-  void unbind(BoundLongGauge bound);
+  void unbind(BoundLongGauge boundInstrument);
 
   /**
-   * A {@code Bound} for a {@code LongGauge}.
+   * A {@code Bound Instrument} for a {@code LongGauge}.
    *
    * @since 0.1.0
    */

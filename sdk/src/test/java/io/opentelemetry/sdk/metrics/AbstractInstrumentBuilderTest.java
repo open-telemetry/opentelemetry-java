@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.metrics.Instrument;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.Metric;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -30,9 +30,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link AbstractMetricBuilder}. */
+/** Unit tests for {@link AbstractInstrumentBuilder}. */
 @RunWith(JUnit4.class)
-public class AbstractMetricBuilderTest {
+public class AbstractInstrumentBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -46,75 +46,76 @@ public class AbstractMetricBuilderTest {
   public void preventNull_Name() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    TestMetricBuilder.newBuilder(null);
+    TestInstrumentBuilder.newBuilder(null);
   }
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    TestMetricBuilder.newBuilder("\2");
+    TestInstrumentBuilder.newBuilder("\2");
   }
 
   @Test
   public void preventTooLongName() {
-    char[] chars = new char[AbstractMetricBuilder.NAME_MAX_LENGTH + 1];
+    char[] chars = new char[AbstractInstrumentBuilder.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(AbstractMetricBuilder.ERROR_MESSAGE_INVALID_NAME);
-    TestMetricBuilder.newBuilder(longName);
+    thrown.expectMessage(AbstractInstrumentBuilder.ERROR_MESSAGE_INVALID_NAME);
+    TestInstrumentBuilder.newBuilder(longName);
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    TestMetricBuilder.newBuilder("metric").setDescription(null);
+    TestInstrumentBuilder.newBuilder("metric").setDescription(null);
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    TestMetricBuilder.newBuilder("metric").setUnit(null);
+    TestInstrumentBuilder.newBuilder("metric").setUnit(null);
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    TestMetricBuilder.newBuilder("metric").setLabelKeys(null);
+    TestInstrumentBuilder.newBuilder("metric").setLabelKeys(null);
   }
 
   @Test
   public void preventNull_LabelKey() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
-    TestMetricBuilder.newBuilder("metric").setLabelKeys(Collections.<String>singletonList(null));
+    TestInstrumentBuilder.newBuilder("metric")
+        .setLabelKeys(Collections.<String>singletonList(null));
   }
 
   @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    TestMetricBuilder.newBuilder("metric").setConstantLabels(null);
+    TestInstrumentBuilder.newBuilder("metric").setConstantLabels(null);
   }
 
   @Test
   public void defaultValue() {
-    TestMetricBuilder testMetricBuilder = TestMetricBuilder.newBuilder(NAME);
+    TestInstrumentBuilder testMetricBuilder = TestInstrumentBuilder.newBuilder(NAME);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getDescription()).isEmpty();
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   @Test
   public void setAndGetValues() {
-    TestMetricBuilder testMetricBuilder =
-        TestMetricBuilder.newBuilder(NAME)
+    TestInstrumentBuilder testMetricBuilder =
+        TestInstrumentBuilder.newBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setUnit(UNIT)
             .setLabelKeys(LABEL_KEY)
@@ -124,31 +125,31 @@ public class AbstractMetricBuilderTest {
     assertThat(testMetricBuilder.getUnit()).isEqualTo(UNIT);
     assertThat(testMetricBuilder.getLabelKeys()).isEqualTo(LABEL_KEY);
     assertThat(testMetricBuilder.getConstantLabels()).isEqualTo(CONSTANT_LABELS);
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
-  private static final class TestMetricBuilder
-      extends AbstractMetricBuilder<TestMetricBuilder, TestMetric> {
-    static TestMetricBuilder newBuilder(String name) {
-      return new TestMetricBuilder(name);
+  private static final class TestInstrumentBuilder
+      extends AbstractInstrumentBuilder<TestInstrumentBuilder, TestInstrument> {
+    static TestInstrumentBuilder newBuilder(String name) {
+      return new TestInstrumentBuilder(name);
     }
 
-    TestMetricBuilder(String name) {
+    TestInstrumentBuilder(String name) {
       super(name);
     }
 
     @Override
-    TestMetricBuilder getThis() {
+    TestInstrumentBuilder getThis() {
       return this;
     }
 
     @Override
-    public TestMetric build() {
-      return new TestMetric();
+    public TestInstrument build() {
+      return new TestInstrument();
     }
   }
 
-  private static final class TestMetric implements Metric<TestBound> {
+  private static final class TestInstrument implements Instrument<TestBound> {
     private static final TestBound HANDLE = new TestBound();
 
     @Override
@@ -157,7 +158,7 @@ public class AbstractMetricBuilderTest {
     }
 
     @Override
-    public void unbind(TestBound handle) {}
+    public void unbind(TestBound boundInstrument) {}
   }
 
   private static final class TestBound {}
