@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
 import com.google.common.collect.ImmutableMap;
@@ -29,7 +30,8 @@ import org.junit.rules.ExpectedException;
 
 public class MeterSdkTest {
 
-  @Rule public ExpectedException thrown = ExpectedException.none();
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testLongCounter() {
@@ -76,5 +78,19 @@ public class MeterSdkTest {
 
     thrown.expect(IllegalArgumentException.class);
     longCounter.bind(testSdk.emptyLabelSet()).add(-9);
+  }
+
+  @Test
+  public void testLabelSets() {
+    MeterSdk testSdk = new MeterSdk();
+
+    assertEquals(testSdk.emptyLabelSet(), testSdk.emptyLabelSet());
+    assertEquals(testSdk.createLabelSet("key", "value"), testSdk.createLabelSet("key", "value"));
+    assertEquals(testSdk.createLabelSet("k1", "v1", "k2", "v2"),
+        testSdk.createLabelSet("k1", "v1", "k2", "v2"));
+    assertEquals(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"),
+        testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"));
+    assertEquals(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"),
+        testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"));
   }
 }

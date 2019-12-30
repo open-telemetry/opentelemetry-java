@@ -16,39 +16,33 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static java.util.Collections.unmodifiableMap;
-
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Preconditions;
 import io.opentelemetry.metrics.LabelSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 @AutoValue
 abstract class SdkLabelSet implements LabelSet {
 
-  private static final LabelSet EMPTY = builder().build();
+  private static final LabelSet EMPTY = create();
 
   public static LabelSet empty() {
     return EMPTY;
   }
 
+  public static LabelSet create(String... keyValuePairs) {
+    Preconditions.checkArgument(
+        (keyValuePairs.length % 2) == 0,
+        "LabelSets must be created with the same number of keys as values.");
+    Map<String, String> data = new HashMap<>(keyValuePairs.length / 2);
+    for (int i = 0; i < keyValuePairs.length; i++) {
+      String key = keyValuePairs[i];
+      data.put(key, keyValuePairs[++i]);
+    }
+    return new AutoValue_SdkLabelSet(Collections.unmodifiableMap(data));
+  }
+
   abstract Map<String, String> getLabels();
-
-  static Builder builder() {
-    return new Builder();
-  }
-
-  static class Builder {
-
-    private final Map<String, String> labels = new HashMap<>();
-
-    public Builder add(String key, String value) {
-      labels.put(key, value);
-      return this;
-    }
-
-    public LabelSet build() {
-      return new AutoValue_SdkLabelSet(unmodifiableMap(new HashMap<>(labels)));
-    }
-  }
 }
