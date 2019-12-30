@@ -16,12 +16,30 @@
 
 package io.opentelemetry.trace;
 
+import com.google.auto.value.AutoValue;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nullable;
+
 public class DefaultTracerRegistry implements TracerRegistry {
 
-  private static final TracerRegistry instance = new DefaultTracerRegistry();
+  private final Map<TracerKey, DefaultTracer> tracerRegistry = new HashMap<>();
+
+  private static final DefaultTracerFactory instance = new DefaultTracerFactory();
 
   public static TracerRegistry getInstance() {
     return instance;
+  }
+
+  /**
+   * Get a map of all the default tracers that were created via this factory.
+   *
+   * @return A Map of {@link TracerKey} to {@link DefaultTracer}
+   */
+  public static Map<TracerKey, DefaultTracer> getExistingTracers() {
+    synchronized (instance.tracerRegistry) {
+      return new HashMap<>(instance.tracerRegistry);
+    }
   }
 
   @Override
@@ -31,6 +49,28 @@ public class DefaultTracerRegistry implements TracerRegistry {
 
   @Override
   public Tracer get(String instrumentationName, String instrumentationVersion) {
-    return DefaultTracer.getInstance();
+    synchronized (instance.tracerRegistry) {
+      TracerKey key = TracerKey.makeKey(instrumentationName, instrumentationVersion);
+      DefaultTracer result = tracerRegistry.get(key);
+      if (result != null) {
+        return result;
+      }
+      DefaultTracer defaultTracer = new DefaultTracer();
+      tracerRegistry.put(key, defaultTracer);
+      return defaultTracer;
+    }
+  }
+
+  @AutoValue
+  public abstract static class TracerKey {
+
+    public static TracerKey makeKey(String name, String version) {
+      return new AutoValue_DefaultTracerFactory_TracerKey(name, version);
+    }
+
+    public abstract String getName();
+
+    @Nullable
+    public abstract String getVersion();
   }
 }

@@ -17,22 +17,28 @@
 package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.BinaryFormat;
+import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /** Unit tests for {@link DefaultTracer}. */
-@RunWith(JUnit4.class)
+@RunWith(MockitoJUnitRunner.class)
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
 @SuppressWarnings("MustBeClosedChecker")
 public class DefaultTracerTest {
+
   private static final Tracer defaultTracer = DefaultTracer.getInstance();
   private static final String SPAN_NAME = "MySpanName";
   private static final byte[] firstBytes =
@@ -46,9 +52,33 @@ public class DefaultTracerTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
+  @Mock HttpTextFormat<SpanContext> newHttpTextFormat;
+  @Mock BinaryFormat<SpanContext> newBinaryFormat;
+
   @Test
   public void defaultGetCurrentSpan() {
     assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+  }
+
+  @Test
+  public void testImplementationSwap() {
+    DefaultTracer testTracer = new DefaultTracer();
+    assertThat(testTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+
+    Tracer replacementTracer = mock(Tracer.class);
+    Span newSpan = mock(Span.class);
+    Span.Builder newBuilder = mock(Span.Builder.class);
+
+    when(replacementTracer.getCurrentSpan()).thenReturn(newSpan);
+    when(replacementTracer.spanBuilder("mySpan")).thenReturn(newBuilder);
+    when(replacementTracer.getHttpTextFormat()).thenReturn(newHttpTextFormat);
+    when(replacementTracer.getBinaryFormat()).thenReturn(newBinaryFormat);
+
+    testTracer.setImplementation(replacementTracer);
+    assertThat(testTracer.getCurrentSpan()).isSameInstanceAs(newSpan);
+    assertThat(testTracer.spanBuilder("mySpan")).isSameInstanceAs(newBuilder);
+    assertThat(testTracer.getHttpTextFormat()).isSameInstanceAs(newHttpTextFormat);
+    assertThat(testTracer.getBinaryFormat()).isSameInstanceAs(newBinaryFormat);
   }
 
   @Test

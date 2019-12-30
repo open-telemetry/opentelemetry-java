@@ -24,11 +24,15 @@ import io.opentelemetry.metrics.DefaultMeterRegistryProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterRegistry;
 import io.opentelemetry.metrics.spi.MeterRegistryProvider;
+import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.DefaultTracerRegistry;
 import io.opentelemetry.trace.DefaultTracerRegistryProvider;
+import io.opentelemetry.trace.DefaultTracerFactory.TracerKey;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerRegistry;
 import io.opentelemetry.trace.spi.TracerRegistryProvider;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
@@ -143,6 +147,14 @@ public final class OpenTelemetry {
       logger.warning(
           "The global OpenTelemetry TracerFactory instance has already been set. "
               + "Ignoring this assignment");
+      return;
+    }
+
+    // swap out any tracers that have been handed out with the proper ones.
+    Map<TracerKey, DefaultTracer> existingTracers = DefaultTracerFactory.getExistingTracers();
+    for (Entry<TracerKey, DefaultTracer> entry : existingTracers.entrySet()) {
+      TracerKey key = entry.getKey();
+      entry.getValue().setImplementation(tracerFactory.get(key.getName(), key.getVersion()));
     }
   }
 

@@ -24,6 +24,7 @@ import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -33,9 +34,12 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class DefaultTracer implements Tracer {
+
   private static final DefaultTracer INSTANCE = new DefaultTracer();
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
+
+  private final AtomicReference<Tracer> implementation = new AtomicReference<>();
 
   /**
    * Returns a {@code Tracer} singleton that is the default implementations for {@link Tracer}.
@@ -47,35 +51,65 @@ public final class DefaultTracer implements Tracer {
     return INSTANCE;
   }
 
-  @Override
-  public Span getCurrentSpan() {
-    return ContextUtils.getValue();
+  /**
+   * Replace the default implementation with a real one. This can only be done once.
+   *
+   * @param implementation The Tracer implementation that should be used for real.
+   */
+  public void setImplementation(Tracer implementation) {
+    this.implementation.compareAndSet(null, implementation);
   }
 
   @Override
+  public Span getCurrentSpan() {
+    if (useDefault()) {
+      return ContextUtils.getValue();
+    }
+    return implementation.get().getCurrentSpan();
+  }
+
+  @Override
+  @SuppressWarnings("MustBeClosedChecker")
   public Scope withSpan(Span span) {
-    return ContextUtils.withSpan(span);
+    if (useDefault()) {
+      return ContextUtils.withSpan(span);
+    }
+    return implementation.get().withSpan(span);
   }
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return NoopSpanBuilder.create(this, spanName);
+    if (useDefault()) {
+      return NoopSpanBuilder.create(this, spanName);
+    }
+    return implementation.get().spanBuilder(spanName);
+  }
+
+  private boolean useDefault() {
+    return implementation.get() == null;
   }
 
   @Override
   public BinaryFormat<SpanContext> getBinaryFormat() {
-    return BINARY_FORMAT;
+    if (useDefault()) {
+      return BINARY_FORMAT;
+    }
+    return implementation.get().getBinaryFormat();
   }
 
   @Override
   public HttpTextFormat<SpanContext> getHttpTextFormat() {
-    return HTTP_TEXT_FORMAT;
+    if (useDefault()) {
+      return HTTP_TEXT_FORMAT;
+    }
+    return implementation.get().getHttpTextFormat();
   }
 
-  private DefaultTracer() {}
+  DefaultTracer() {}
 
   // Noop implementation of Span.Builder.
   private static final class NoopSpanBuilder implements Span.Builder {
+
     static NoopSpanBuilder create(Tracer tracer, String spanName) {
       return new NoopSpanBuilder(tracer, spanName);
     }
