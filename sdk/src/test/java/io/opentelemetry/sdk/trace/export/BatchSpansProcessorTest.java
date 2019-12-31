@@ -28,6 +28,8 @@ import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.After;
@@ -42,12 +44,12 @@ import org.mockito.MockitoAnnotations;
 /** Unit tests for {@link BatchSpansProcessor}. */
 @RunWith(JUnit4.class)
 public class BatchSpansProcessorTest {
+
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
   private final Tracer tracer = tracerSdkFactory.get("BatchSpansProcessorTest");
-  private final WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter();
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
 
@@ -87,6 +89,7 @@ public class BatchSpansProcessorTest {
 
   @Test
   public void exportDifferentSampledSpans() {
+    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
     tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
@@ -94,12 +97,13 @@ public class BatchSpansProcessorTest {
 
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
-    List<SpanData> exported = waitingSpanExporter.waitForExport(2);
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span1.toSpanData(), span2.toSpanData());
   }
 
   @Test
   public void exportMoreSpansThanTheBufferSize() {
+    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(6);
     tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setMaxQueueSize(6)
@@ -113,7 +117,7 @@ public class BatchSpansProcessorTest {
     ReadableSpan span4 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span5 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span6 = createSampledEndedSpan(SPAN_NAME_1);
-    List<SpanData> exported = waitingSpanExporter.waitForExport(6);
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported)
         .containsExactly(
             span1.toSpanData(),
@@ -126,7 +130,8 @@ public class BatchSpansProcessorTest {
 
   @Test
   public void exportSpansToMultipleServices() {
-    WaitingSpanExporter waitingSpanExporter2 = new WaitingSpanExporter();
+    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
+    WaitingSpanExporter waitingSpanExporter2 = new WaitingSpanExporter(2);
     tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(
                 MultiSpanExporter.create(
@@ -136,8 +141,8 @@ public class BatchSpansProcessorTest {
 
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
-    List<SpanData> exported1 = waitingSpanExporter.waitForExport(2);
-    List<SpanData> exported2 = waitingSpanExporter2.waitForExport(2);
+    List<SpanData> exported1 = waitingSpanExporter.waitForExport();
+    List<SpanData> exported2 = waitingSpanExporter2.waitForExport();
     assertThat(exported1).containsExactly(span1.toSpanData(), span2.toSpanData());
     assertThat(exported2).containsExactly(span1.toSpanData(), span2.toSpanData());
   }
@@ -145,6 +150,7 @@ public class BatchSpansProcessorTest {
   @Test
   public void exportMoreSpansThanTheMaximumLimit() {
     final int maxQueuedSpans = 8;
+    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(maxQueuedSpans);
     tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
@@ -179,12 +185,13 @@ public class BatchSpansProcessorTest {
     blockingSpanExporter.unblock();
 
     // While we wait for maxQueuedSpans we ensure that the queue is also empty after this.
-    List<SpanData> exported = waitingSpanExporter.waitForExport(maxQueuedSpans);
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported).containsExactlyElementsIn(spansToExport);
     exported.clear();
     spansToExport.clear();
 
+    waitingSpanExporter.reset();
     // We cannot compare with maxReferencedSpans here because the worker thread may get
     // unscheduled immediately after exporting, but before updating the pushed spans, if that is
     // the case at most bufferSize spans will miss.
@@ -196,13 +203,14 @@ public class BatchSpansProcessorTest {
       // TODO: assertThat(getDroppedSpans()).isEqualTo(7);
     }
 
-    exported = waitingSpanExporter.waitForExport(maxQueuedSpans);
+    exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported).containsExactlyElementsIn(spansToExport);
   }
 
   @Test
   public void serviceHandlerThrowsException() {
+    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
     doThrow(new IllegalArgumentException("No export for you."))
         .when(mockServiceHandler)
         .export(ArgumentMatchers.<SpanData>anyList());
@@ -213,17 +221,47 @@ public class BatchSpansProcessorTest {
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
-    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span1.toSpanData());
-
+    waitingSpanExporter.reset();
     // Continue to export after the exception was received.
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
-    exported = waitingSpanExporter.waitForExport(1);
+    exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span2.toSpanData());
+  }
+
+  @Test(timeout = 200)
+  public void exporterTimesOut() {
+    WaitingSpanExporter waitingSpanExporter =
+        new WaitingSpanExporter(1) {
+          @Override
+          public ResultCode export(List<SpanData> spans) {
+            ResultCode result = super.export(spans);
+            try {
+              // sleep longer than the configured timout of 100ms
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              // ok
+            }
+            return result;
+          }
+        };
+
+    tracerSdkFactory.addSpanProcessor(
+        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+            .setExporterTimeoutMillis(100)
+            .setScheduleDelayMillis(1)
+            .setMaxQueueSize(1)
+            .build());
+
+    ReadableSpan span = createSampledEndedSpan(SPAN_NAME_1);
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).containsExactly(span.toSpanData());
   }
 
   @Test
   public void exportNotSampledSpans() {
+    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
     tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
@@ -236,7 +274,7 @@ public class BatchSpansProcessorTest {
     // sampled span is not exported by creating and ending a sampled span after a non sampled span
     // and checking that the first exported span is the sampled span (the non sampled did not get
     // exported).
-    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
     // Need to check this because otherwise the variable span1 is unused, other option is to not
     // have a span1 variable.
     assertThat(exported).containsExactly(span2.toSpanData());
@@ -277,6 +315,7 @@ public class BatchSpansProcessorTest {
 
   @Test(timeout = 10000L)
   public void shutdownFlushes() {
+    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
     // Set the export delay to zero, for no timeout, in order to confirm the #flush() below works
     tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter).setScheduleDelayMillis(0).build());
@@ -286,11 +325,12 @@ public class BatchSpansProcessorTest {
     // Force a shutdown, without this, the #waitForExport() call below would block indefinitely.
     tracerSdkFactory.shutdown();
 
-    List<SpanData> exported = waitingSpanExporter.waitForExport(1);
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span2.toSpanData());
   }
 
   private static final class BlockingSpanExporter implements SpanExporter {
+
     final Object monitor = new Object();
 
     private enum State {
@@ -344,44 +384,43 @@ public class BatchSpansProcessorTest {
     }
   }
 
-  static final class WaitingSpanExporter implements SpanExporter {
-    private final Object monitor = new Object();
+  static class WaitingSpanExporter implements SpanExporter {
 
-    @GuardedBy("monitor")
     private final List<SpanData> spanDataList = new ArrayList<>();
+    private final int numberToWaitFor;
+    private CountDownLatch countDownLatch;
+
+    public WaitingSpanExporter(int numberToWaitFor) {
+      countDownLatch = new CountDownLatch(numberToWaitFor);
+      this.numberToWaitFor = numberToWaitFor;
+    }
 
     /**
      * Waits until we received numberOfSpans spans to export. Returns the list of exported {@link
      * SpanData} objects, otherwise {@code null} if the current thread is interrupted.
      *
-     * @param numberOfSpans the number of minimum spans to be collected.
      * @return the list of exported {@link SpanData} objects, otherwise {@code null} if the current
      *     thread is interrupted.
      */
     @Nullable
-    List<SpanData> waitForExport(int numberOfSpans) {
-      List<SpanData> ret;
-      synchronized (monitor) {
-        while (spanDataList.size() < numberOfSpans) {
-          try {
-            monitor.wait();
-          } catch (InterruptedException e) {
-            // Preserve the interruption status as per guidance.
-            Thread.currentThread().interrupt();
-            return null;
-          }
-        }
-        ret = new ArrayList<>(spanDataList);
-        spanDataList.clear();
+    List<SpanData> waitForExport() {
+      try {
+        countDownLatch.await(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        // Preserve the interruption status as per guidance.
+        Thread.currentThread().interrupt();
+        return null;
       }
-      return ret;
+      List<SpanData> result = new ArrayList<>(spanDataList);
+      spanDataList.clear();
+      return result;
     }
 
     @Override
     public ResultCode export(List<SpanData> spans) {
-      synchronized (monitor) {
-        this.spanDataList.addAll(spans);
-        monitor.notifyAll();
+      this.spanDataList.addAll(spans);
+      for (int i = 0; i < spans.size(); i++) {
+        countDownLatch.countDown();
       }
       return ResultCode.SUCCESS;
     }
@@ -389,6 +428,10 @@ public class BatchSpansProcessorTest {
     @Override
     public void shutdown() {
       // Do nothing;
+    }
+
+    public void reset() {
+      this.countDownLatch = new CountDownLatch(numberToWaitFor);
     }
   }
 }
