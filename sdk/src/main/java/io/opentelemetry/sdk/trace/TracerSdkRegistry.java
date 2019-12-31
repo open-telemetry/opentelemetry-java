@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerRegistry;
-import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -51,9 +50,7 @@ public class TracerSdkRegistry implements TracerRegistry {
    */
   public static TracerSdkRegistry create() {
     return new TracerSdkRegistry(
-        MillisClock.getInstance(),
-        new RandomIdsGenerator(new SecureRandom()),
-        EnvVarResource.getResource());
+        MillisClock.getInstance(), new RandomIdsGenerator(), EnvVarResource.getResource());
   }
 
   private TracerSdkRegistry(Clock clock, IdsGenerator idsGenerator, Resource resource) {
