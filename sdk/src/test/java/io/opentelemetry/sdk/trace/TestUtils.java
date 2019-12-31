@@ -72,7 +72,7 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkFactory tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
+      TracerSdkRegistry tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
     return startSpanWithSampler(
         tracerSdkFactory,
         tracer,
@@ -88,7 +88,7 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkFactory tracerSdkFactory,
+      TracerSdkRegistry tracerSdkFactory,
       Tracer tracer,
       String spanName,
       Sampler sampler,

@@ -23,7 +23,7 @@ import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerFactory;
+import io.opentelemetry.trace.TracerRegistry;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,32 +31,32 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * {@code Tracer} provider implementation for {@link TracerFactory}.
+ * {@code Tracer} provider implementation for {@link TracerRegistry}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
  */
-public class TracerSdkFactory implements TracerFactory {
+public class TracerSdkRegistry implements TracerRegistry {
   private final Object lock = new Object();
-  private static final Logger logger = Logger.getLogger(TracerFactory.class.getName());
+  private static final Logger logger = Logger.getLogger(TracerRegistry.class.getName());
   private final Map<InstrumentationLibraryInfo, TracerSdk> tracerRegistry =
       new ConcurrentHashMap<>();
   private final TracerSharedState sharedState;
 
   /**
-   * Returns a new {@link TracerSdkFactory} with default {@link Clock}, {@link IdsGenerator} and
+   * Returns a new {@link TracerSdkRegistry} with default {@link Clock}, {@link IdsGenerator} and
    * {@link Resource}.
    *
-   * @return a new {@link TracerSdkFactory} with default configs.
+   * @return a new {@link TracerSdkRegistry} with default configs.
    */
-  public static TracerSdkFactory create() {
-    return new TracerSdkFactory(
+  public static TracerSdkRegistry create() {
+    return new TracerSdkRegistry(
         MillisClock.getInstance(),
         new RandomIdsGenerator(new SecureRandom()),
         EnvVarResource.getResource());
   }
 
-  private TracerSdkFactory(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+  private TracerSdkRegistry(Clock clock, IdsGenerator idsGenerator, Resource resource) {
     this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
   }
 

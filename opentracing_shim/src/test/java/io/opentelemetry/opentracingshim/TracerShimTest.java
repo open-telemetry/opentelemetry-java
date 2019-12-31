@@ -40,7 +40,7 @@ public class TracerShimTest {
     tracerShim =
         new TracerShim(
             new TelemetryInfo(
-                OpenTelemetry.getTracerFactory().get("opentracingshim"),
+                OpenTelemetry.getTracerRegistry().get("opentracingshim"),
                 OpenTelemetry.getDistributedContextManager()));
   }
 

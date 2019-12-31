@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.trace;
 
-import static com.google.common.truth.Truth.assertThat;
+import io.opentelemetry.trace.spi.TracerRegistryProvider;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+public class DefaultTracerRegistryProvider implements TracerRegistryProvider {
+  private static final TracerRegistryProvider instance = new DefaultTracerRegistryProvider();
 
-@RunWith(JUnit4.class)
-public class MeterSdkProviderTest {
+  public static TracerRegistryProvider getInstance() {
+    return instance;
+  }
 
-  @Test
-  public void testDefault() {
-    assertThat(new MeterSdkRegistryProvider().create()).isInstanceOf(MeterSdkRegistry.class);
+  @Override
+  public TracerRegistry create() {
+    return DefaultTracerRegistry.getInstance();
   }
 }

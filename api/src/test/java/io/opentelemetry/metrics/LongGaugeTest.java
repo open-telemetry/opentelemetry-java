@@ -36,7 +36,7 @@ public class LongGaugeTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterFactory().get("gauge_long_test");
+  private final Meter meter = OpenTelemetry.getMeterRegistry().get("gauge_long_test");
 
   @Test
   public void preventNonPrintableName() {

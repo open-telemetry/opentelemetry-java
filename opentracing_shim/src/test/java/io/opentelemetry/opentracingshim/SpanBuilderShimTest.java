@@ -21,12 +21,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.trace.Tracer;
 import org.junit.Test;
 
 public class SpanBuilderShimTest {
-  private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
+  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
       new TelemetryInfo(tracer, new DistributedContextManagerSdk());
