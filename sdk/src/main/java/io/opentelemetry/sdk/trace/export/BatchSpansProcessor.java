@@ -345,7 +345,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
       return Collections.unmodifiableList(spanDataBuffer);
     }
 
-    // Exports the list of Span protos to all the ServiceHandlers.
+    // Exports the list of SpanData to the SpanExporter.
     private void onBatchExport(final List<SpanData> spans) {
       Future<?> submission =
           executorService.submit(
