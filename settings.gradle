@@ -16,6 +16,7 @@ include ":opentelemetry-sdk-contrib-testbed"
 include ":opentelemetry-contrib-http-base"
 include ":opentelemetry-contrib-http-servlet"
 include ":opentelemetry-contrib-http-jaxrs"
+include ":spring-boot-opentelemetry-actuator"
 
 project(':opentelemetry-all').projectDir = "$rootDir/all" as File
 project(':opentelemetry-api').projectDir = "$rootDir/api" as File
@@ -42,3 +43,4 @@ project(':opentelemetry-sdk-contrib-testbed').projectDir =
 project(':opentelemetry-contrib-http-base').projectDir = "$rootDir/contrib/http_base" as File
 project(':opentelemetry-contrib-http-servlet').projectDir = "$rootDir/contrib/http_servlet" as File
 project(':opentelemetry-contrib-http-jaxrs').projectDir = "$rootDir/contrib/http_jaxrs" as File
+project(':spring-boot-opentelemetry-actuator').projectDir = "$rootDir/contrib/spring_boot_opentelemetry_actuator" as File

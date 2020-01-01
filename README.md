@@ -10,10 +10,10 @@ project.
 This project contains the following top level components:
 
 * [api](api/): The OpenTelemetry API.
-  * [trace](api/src/main/java/io/opentelemetry/trace/): The tracing api. Includes `Tracer`, `Span` and `SpanContext`.
+  * [trace](api/src/main/java/io/opentelemetry/trace/): The tracer api. Includes `Tracer`, `Span` and `SpanContext`.
   * [distributedcontext](api/src/main/java/io/opentelemetry/distributedcontext/): Collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
   * [context](api/src/main/java/io/opentelemetry/context/): In-process and inter-process propagation layer.
-  * [metrics](api/src/main/java/io/opentelemetry/metrics/): Metrics layer.
+  * [meter](api/src/main/java/io/opentelemetry/meter/): Metrics layer.
 * [sdk](sdk/): The reference implementation complying to the OpenTelemetry API.
 * [OpenTracing shim](opentracing_shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
 
@@ -85,7 +85,7 @@ release.
 
 ### Kick off the work towards 1.0
 
-After beta release we will encourage customers and tracing vendors to start
+After beta release we will encourage customers and tracer vendors to start
 using the new project, providing feedback as they go. So we can ensure a high
 quality v1.0 for the merged project:
 
@@ -98,7 +98,7 @@ quality v1.0 for the merged project:
 ### Summary
 
 We plan to merge projects and pave the path for future improvements as a unified
-community of tracing vendors, users and library authors who wants apps be
+community of tracer vendors, users and library authors who wants apps be
 managed better. We are open to feedback and suggestions from all of you!
 
 [circleci-image]: https://circleci.com/gh/open-telemetry/opentelemetry-java.svg?style=svg 

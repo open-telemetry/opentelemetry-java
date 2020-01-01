@@ -1,0 +1,31 @@
+description = 'OpenTelemetry Contrib JAX-RS Plugin'
+
+dependencies {
+    implementation platform('org.springframework.boot:spring-boot-dependencies:2.2.2.RELEASE')
+
+    api project(':opentelemetry-api')
+
+    annotationProcessor libraries.auto_value
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:2.2.2.RELEASE'
+
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework.boot:spring-boot-actuator'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+    implementation 'org.springframework.boot:spring-boot-actuator-autoconfigure'
+    implementation project(':opentelemetry-sdk')
+    implementation project(':opentelemetry-exporters-logging')
+    implementation libraries.guava
+
+    testImplementation project(':opentelemetry-exporters-inmemory')
+    testImplementation 'org.springframework:spring-test'
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    // Runtime metrics are not android compatible, because we have only one artifact for contrib,
+    // disable the android requirement for the moment.
+    // signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+}
+
+test {
+    systemProperty("java.util.logging.config.file", "${projectDir}/src/test/resources/test-logging.properties")
+
+}
