@@ -64,31 +64,62 @@ public class TracerSdkFactoryBean implements FactoryBean<TracerFactory>, Initial
   private final List<SpanProcessor> spanProcessors = new ArrayList<>();
   private final List<SpanExporter> spanExporters = new ArrayList<>();
 
+  /**
+   * Sets the Spring application properties used to configure the OpenTelemetry SDK.
+   *
+   * @param properties the properties
+   */
   @Autowired
   public void setProperties(OpenTelemetryProperties properties) {
     this.properties = properties;
   }
 
+  /**
+   * Sets the Spring-managed OpenTelemetry tracing {@link Sampler} implementation.
+   *
+   * @param sampler the sampler
+   */
   @Autowired(required = false)
   public void setSampler(Sampler sampler) {
     this.sampler = sampler;
   }
 
+  /**
+   * Sets the Spring-managed OpenTelemetry clock implementation for generating span timestamps.
+   *
+   * @param clock the clock
+   */
   @Autowired(required = false)
   public void setClock(Clock clock) {
     this.clock = clock;
   }
 
+  /**
+   * Sets the Spring-managed OpenTelemetry tracing IDs generator.
+   *
+   * @param idsGenerator the generator
+   */
   @Autowired(required = false)
   public void setIdsGenerator(IdsGenerator idsGenerator) {
     this.idsGenerator = idsGenerator;
   }
 
+  /**
+   * Sets the Spring-managed implementation of OpenTelemetry {@link Resource} which populates global
+   * application attributes.
+   *
+   * @param resource the resource populator
+   */
   @Autowired(required = false)
   public void setResource(Resource resource) {
     this.resource = resource;
   }
 
+  /**
+   * Sets all Spring-managed OpenTelemetry tracing span processors.
+   *
+   * @param spanProcessors the processors
+   */
   @Autowired(required = false)
   public void setSpanProcessors(List<SpanProcessor> spanProcessors) {
     if (spanProcessors != null) {
@@ -97,6 +128,11 @@ public class TracerSdkFactoryBean implements FactoryBean<TracerFactory>, Initial
     }
   }
 
+  /**
+   * Sets all Spring-managed OpenTelemetry tracing span exporters.
+   *
+   * @param spanExporters the exporters
+   */
   @Autowired(required = false)
   public void setSpanExporters(List<SpanExporter> spanExporters) {
     if (spanExporters != null) {
@@ -153,7 +189,7 @@ public class TracerSdkFactoryBean implements FactoryBean<TracerFactory>, Initial
     if (sampler != null) {
       return sampler;
     }
-    Sampler result = null;
+    Sampler result = Samplers.alwaysOff();
     switch (properties.getTracer().getSampler().getName()) {
       case ALWAYS_ON:
         result = Samplers.alwaysOn();

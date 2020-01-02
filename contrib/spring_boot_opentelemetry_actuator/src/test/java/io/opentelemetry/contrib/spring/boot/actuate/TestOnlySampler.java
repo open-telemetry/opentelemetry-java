@@ -34,12 +34,24 @@ public class TestOnlySampler implements Sampler {
   private double rate;
   private boolean enabled;
 
+  public int getReservoir() {
+    return reservoir;
+  }
+
   public void setReservoir(int reservoir) {
     this.reservoir = reservoir;
   }
 
+  public double getRate() {
+    return rate;
+  }
+
   public void setRate(double rate) {
     this.rate = rate;
+  }
+
+  public boolean isEnabled() {
+    return enabled;
   }
 
   public void setEnabled(boolean enabled) {
@@ -61,7 +73,7 @@ public class TestOnlySampler implements Sampler {
     return "Only for unit testing";
   }
 
-  class TestOnlyDecision implements Decision {
+  static class TestOnlyDecision implements Decision {
 
     @Override
     public boolean isSampled() {
