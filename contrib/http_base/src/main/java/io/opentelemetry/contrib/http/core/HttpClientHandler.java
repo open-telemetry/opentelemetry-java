@@ -73,7 +73,7 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
   public HttpClientHandler(
       HttpExtractor<Q, P> extractor,
       HttpTextFormat.Setter<C> setter,
-      HttpStatus2OtStatusConverter statusConverter,
+      StatusCodeConverter statusConverter,
       Tracer tracer,
       DistributedContextManager contextManager,
       Meter meter) {

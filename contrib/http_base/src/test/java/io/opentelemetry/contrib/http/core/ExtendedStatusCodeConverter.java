@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
  * Tests extension of standard status conversion to get custom behavior for only a few HTTP status
  * codes.
  */
-public class ExtendedHttpStatus2OtStatusConverter extends HttpStatus2OtStatusConverter {
+public class ExtendedStatusCodeConverter extends StatusCodeConverter {
 
   @Nullable
   @Override

@@ -41,7 +41,7 @@ abstract class AbstractHttpHandler<Q, P> {
   /** The {@link HttpExtractor} used to extract information from request/response. */
   @VisibleForTesting final HttpExtractor<Q, P> extractor;
 
-  @VisibleForTesting final HttpStatus2OtStatusConverter statusConverter;
+  @VisibleForTesting final StatusCodeConverter statusConverter;
   private final Meter meter;
   private final DoubleMeasure measureDuration;
   private final LongMeasure measureSentMessageSize;
@@ -49,11 +49,11 @@ abstract class AbstractHttpHandler<Q, P> {
 
   /** Constructor to allow access from same package subclasses only. */
   AbstractHttpHandler(
-      HttpExtractor<Q, P> extractor, HttpStatus2OtStatusConverter statusConverter, Meter meter) {
+      HttpExtractor<Q, P> extractor, StatusCodeConverter statusConverter, Meter meter) {
     checkNotNull(extractor, "extractor is required");
     this.extractor = extractor;
     if (statusConverter == null) {
-      this.statusConverter = new HttpStatus2OtStatusConverter();
+      this.statusConverter = new StatusCodeConverter();
     } else {
       this.statusConverter = statusConverter;
     }

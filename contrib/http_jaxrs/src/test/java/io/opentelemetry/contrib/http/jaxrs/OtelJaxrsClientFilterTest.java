@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.contrib.http.core.HttpStatus2OtStatusConverter;
+import io.opentelemetry.contrib.http.core.StatusCodeConverter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Tracer;
@@ -52,9 +52,7 @@ public class OtelJaxrsClientFilterTest {
   public void shouldStartNewSpanAndInjectPropagationDataOnClientCall() {
     OtelJaxrsClientFilter filter =
         new OtelJaxrsClientFilter(
-            new UrlPathDrivenJaxrsClientHttpExtractor(),
-            new HttpStatus2OtStatusConverter(),
-            TRACER);
+            new UrlPathDrivenJaxrsClientHttpExtractor(), new StatusCodeConverter(), TRACER);
     try (Scope parent = startParentScope()) {
       ClientRequestContext requestContext = constructRequestContext();
       ClientResponseContext responseContext = constructResponseContext();

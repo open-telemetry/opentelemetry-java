@@ -25,7 +25,7 @@ import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
 import io.opentelemetry.contrib.http.core.HttpClientHandler;
 import io.opentelemetry.contrib.http.core.HttpExtractor;
 import io.opentelemetry.contrib.http.core.HttpRequestContext;
-import io.opentelemetry.contrib.http.core.HttpStatus2OtStatusConverter;
+import io.opentelemetry.contrib.http.core.StatusCodeConverter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.logging.Level;
@@ -55,7 +55,7 @@ public class OtelJaxrsClientFilter implements ClientRequestFilter, ClientRespons
   public OtelJaxrsClientFilter() {
     this(
         new UrlPathDrivenJaxrsClientHttpExtractor(),
-        new HttpStatus2OtStatusConverter(),
+        new StatusCodeConverter(),
         OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID));
   }
 
@@ -68,7 +68,7 @@ public class OtelJaxrsClientFilter implements ClientRequestFilter, ClientRespons
    */
   public OtelJaxrsClientFilter(
       HttpExtractor<ClientRequestContext, ClientResponseContext> httpExtractor,
-      HttpStatus2OtStatusConverter statusConverter,
+      StatusCodeConverter statusConverter,
       Tracer tracer) {
     super();
     this.tracer = tracer;

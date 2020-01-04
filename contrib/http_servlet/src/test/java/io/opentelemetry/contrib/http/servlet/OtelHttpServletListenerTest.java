@@ -26,7 +26,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.contrib.http.core.HttpExtractor;
 import io.opentelemetry.contrib.http.core.HttpRequestContext;
 import io.opentelemetry.contrib.http.core.HttpServerHandler;
-import io.opentelemetry.contrib.http.core.HttpStatus2OtStatusConverter;
+import io.opentelemetry.contrib.http.core.StatusCodeConverter;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
@@ -71,7 +71,7 @@ public class OtelHttpServletListenerTest {
   @Before
   public void setUp() {
     tracer = OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID);
-    HttpStatus2OtStatusConverter statusConverter = new HttpStatus2OtStatusConverter();
+    StatusCodeConverter statusConverter = new StatusCodeConverter();
     HttpExtractor<HttpServletRequest, HttpServletResponse> httpExtractor =
         new UriPathDrivenHttpServletExtractor();
     MultiSchemeHttpPropagationGetter getter =

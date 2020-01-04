@@ -114,7 +114,7 @@ public class HttpServerHandlerTest {
         new HttpServerHandler<>(
             new TestOnlyMapHttpExtractor(),
             new TestOnlyMapGetterSetter(),
-            new HttpStatus2OtStatusConverter(),
+            new StatusCodeConverter(),
             OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID),
             OpenTelemetry.getDistributedContextManager(),
             OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID),
@@ -169,7 +169,7 @@ public class HttpServerHandlerTest {
         new HttpServerHandler<>(
             new TestOnlyMapHttpExtractor(),
             new TestOnlyMapGetterSetter(),
-            new ExtendedHttpStatus2OtStatusConverter(),
+            new ExtendedStatusCodeConverter(),
             OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID),
             OpenTelemetry.getDistributedContextManager(),
             OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID),

@@ -78,7 +78,7 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
   public HttpServerHandler(
       HttpExtractor<Q, P> extractor,
       HttpTextFormat.Getter<C> getter,
-      HttpStatus2OtStatusConverter statusConverter,
+      StatusCodeConverter statusConverter,
       Tracer tracer,
       DistributedContextManager contextManager,
       Meter meter,

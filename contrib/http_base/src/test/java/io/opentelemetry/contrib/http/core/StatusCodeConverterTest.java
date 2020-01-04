@@ -26,9 +26,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-/** Unit tests for {@link HttpStatus2OtStatusConverter}. */
+/** Unit tests for {@link StatusCodeConverter}. */
 @RunWith(value = Parameterized.class)
-public class HttpStatus2OtStatusConverterTest {
+public class StatusCodeConverterTest {
 
   @Parameters
   public static Collection<Object[]> data() {
@@ -88,7 +88,7 @@ public class HttpStatus2OtStatusConverterTest {
         });
   }
 
-  private final HttpStatus2OtStatusConverter converter = new HttpStatus2OtStatusConverter();
+  private final StatusCodeConverter converter = new StatusCodeConverter();
   private final int source;
   private final String description;
   private final Status target;
@@ -100,7 +100,7 @@ public class HttpStatus2OtStatusConverterTest {
    * @param description the http status description
    * @param target the equivalent OT status
    */
-  public HttpStatus2OtStatusConverterTest(int source, String description, Status target) {
+  public StatusCodeConverterTest(int source, String description, Status target) {
     this.source = source;
     this.description = description;
     this.target = target;

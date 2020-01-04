@@ -25,7 +25,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.contrib.http.core.HttpExtractor;
 import io.opentelemetry.contrib.http.core.HttpRequestContext;
 import io.opentelemetry.contrib.http.core.HttpServerHandler;
-import io.opentelemetry.contrib.http.core.HttpStatus2OtStatusConverter;
+import io.opentelemetry.contrib.http.core.StatusCodeConverter;
 import io.opentelemetry.trace.Tracer;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class OtelHttpServletFilter implements Filter {
   private Boolean publicEndpoint;
   private Tracer tracer;
   private final List<SchemeSpecificHttpPropagationGetter> additionalGetters = new ArrayList<>();
-  private HttpStatus2OtStatusConverter statusConverter = new HttpStatus2OtStatusConverter();
+  private StatusCodeConverter statusConverter = new StatusCodeConverter();
   private AntPathRequestMatcher requestMatcher;
   private HttpExtractor<HttpServletRequest, HttpServletResponse> httpExtractor;
   private HttpServerHandler<HttpServletRequest, HttpServletResponse, HttpServletRequest> handler;
@@ -123,7 +123,7 @@ public class OtelHttpServletFilter implements Filter {
    *
    * @param statusConverter the converter
    */
-  public void setStatusConverter(HttpStatus2OtStatusConverter statusConverter) {
+  public void setStatusConverter(StatusCodeConverter statusConverter) {
     if (statusConverter != null) {
       this.statusConverter = statusConverter;
     }
