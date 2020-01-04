@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkFactoryProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -160,7 +161,8 @@ public class TracerSdkFactoryBean implements FactoryBean<TracerFactory>, Initial
   }
 
   private TracerFactory initializeTracerFactory() {
-    TracerSdkFactory factory = TracerSdkFactory.create();
+    TracerSdkFactoryProvider provider = new TracerSdkFactoryProvider();
+    TracerSdkFactory factory = (TracerSdkFactory) provider.create();
     TraceConfig traceConfig =
         TraceConfig.getDefault()
             .toBuilder()
