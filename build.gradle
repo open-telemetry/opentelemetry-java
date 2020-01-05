@@ -1,11 +1,11 @@
 buildscript {
     repositories {
         mavenCentral()
-        mavenLocal()
+        jcenter()
         maven {
             url "https://plugins.gradle.org/m2/"
         }
-        jcenter()
+        mavenLocal()
     }
     dependencies {
         classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.5.0'
@@ -54,7 +54,7 @@ subprojects {
         it.options.compilerArgs += ["-Xlint:all", "-Xlint:-try", "-Xlint:-processing"]
         it.options.compilerArgs += ["-XepAllDisabledChecksAsWarnings", "-XepDisableWarningsInGeneratedCode"]
 
-	    // Doesn't currently use Var annotations.
+        // Doesn't currently use Var annotations.
         it.options.compilerArgs += ["-Xep:Var:OFF"]
 
         // ImmutableRefactoring suggests using com.google.errorprone.annotations.Immutable,
@@ -115,29 +115,29 @@ subprojects {
         protocVersion = '3.9.0'
 
         libraries = [
-                auto_value: "com.google.auto.value:auto-value:${autoValueVersion}",
+                auto_value           : "com.google.auto.value:auto-value:${autoValueVersion}",
                 auto_value_annotation: "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
-                disruptor: 'com.lmax:disruptor:3.4.2',
+                disruptor            : 'com.lmax:disruptor:3.4.2',
                 errorprone_annotation: "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
-                grpc_api: "io.grpc:grpc-api:${grpcVersion}",
-                grpc_context: "io.grpc:grpc-context:${grpcVersion}",
-                grpc_protobuf: "io.grpc:grpc-protobuf:${grpcVersion}",
-                grpc_stub: "io.grpc:grpc-stub:${grpcVersion}",
-                guava: "com.google.guava:guava:${guavaVersion}",
-                jsr305: "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
-                protobuf: "com.google.protobuf:protobuf-java:${protobufVersion}",
-                protobuf_util: "com.google.protobuf:protobuf-java-util:${protobufVersion}",
+                grpc_api             : "io.grpc:grpc-api:${grpcVersion}",
+                grpc_context         : "io.grpc:grpc-context:${grpcVersion}",
+                grpc_protobuf        : "io.grpc:grpc-protobuf:${grpcVersion}",
+                grpc_stub            : "io.grpc:grpc-stub:${grpcVersion}",
+                guava                : "com.google.guava:guava:${guavaVersion}",
+                jsr305               : "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
+                protobuf             : "com.google.protobuf:protobuf-java:${protobufVersion}",
+                protobuf_util        : "com.google.protobuf:protobuf-java-util:${protobufVersion}",
 
                 // Compatibility layer
-                opentracing: "io.opentracing:opentracing-api:${opentracingVersion}",
+                opentracing          : "io.opentracing:opentracing-api:${opentracingVersion}",
 
                 // Test dependencies.
-                guava_testlib: "com.google.guava:guava-testlib:${guavaVersion}",
-                junit: 'junit:junit:4.12',
-                mockito: 'org.mockito:mockito-core:2.25.1',
-                truth: 'com.google.truth:truth:1.0',
-                slf4jsimple: 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
-                awaitility: 'org.awaitility:awaitility:3.0.0', // Compatibility layer
+                guava_testlib        : "com.google.guava:guava-testlib:${guavaVersion}",
+                junit                : 'junit:junit:4.12',
+                mockito              : 'org.mockito:mockito-core:2.25.1',
+                truth                : 'com.google.truth:truth:1.0',
+                slf4jsimple          : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
+                awaitility           : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
         ]
     }
 
@@ -220,4 +220,9 @@ subprojects {
     }
 
     apply from: "${rootProject.projectDir}/gradle/publish.gradle"
+}
+
+wrapper {
+    distributionType = Wrapper.DistributionType.ALL
+    gradleVersion = '6.0.1'
 }

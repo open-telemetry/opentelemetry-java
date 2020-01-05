@@ -1,18 +1,18 @@
 rootProject.name = "opentelemetry-java"
 
-include ":opentelemetry-all"
-include ":opentelemetry-api"
-include ":opentelemetry-contrib-runtime-metrics"
-include ":opentelemetry-contrib-trace-utils"
-include ":opentelemetry-exporters-inmemory"
-include ":opentelemetry-exporters-jaeger"
-include ":opentelemetry-exporters-logging"
-include ":opentelemetry-exporters-otprotocol"
-include ":opentelemetry-opentracing-shim"
-include ":opentelemetry-proto"
-include ":opentelemetry-sdk"
-include ":opentelemetry-sdk-contrib-async-processor"
-include ":opentelemetry-sdk-contrib-testbed"
+include ":opentelemetry-all",
+        ":opentelemetry-api",
+        ":opentelemetry-contrib-runtime-metrics",
+        ":opentelemetry-contrib-trace-utils",
+        ":opentelemetry-exporters-inmemory",
+        ":opentelemetry-exporters-jaeger",
+        ":opentelemetry-exporters-logging",
+        ":opentelemetry-exporters-otprotocol",
+        ":opentelemetry-opentracing-shim",
+        ":opentelemetry-proto",
+        ":opentelemetry-sdk",
+        ":opentelemetry-sdk-contrib-async-processor",
+        ":opentelemetry-sdk-contrib-testbed"
 
 project(':opentelemetry-all').projectDir = "$rootDir/all" as File
 project(':opentelemetry-api').projectDir = "$rootDir/api" as File
