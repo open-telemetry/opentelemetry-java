@@ -34,22 +34,22 @@ jobs:
       - run:
           name: Publish coverage
           command:  bash <(curl -s https://codecov.io/bash)
-# Publish the snapshots using Java 8 (and only from master).
+#     Publish the snapshots using Java 8 (and only from master).
       - run:
           <<: *publish_snapshots_task
       - save_cache:
           paths:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}
-  java9:
+  java11:
     docker:
-      - image: circleci/openjdk:9-jdk
+      - image: circleci/openjdk:11.0.5-jdk-stretch
     steps:
       - checkout
       - restore_cache:
           keys:
-            - java9-gradle-{{ checksum "build.gradle" }}
-#     make in missing in openjdk:9-jdk image
+            - java11-gradle-{{ checksum "build.gradle" }}
+#     make in missing in openjdk:11-jdk image
       - run: sudo apt-get update && sudo apt-get install -y make
       - run:
           <<: *init_task
@@ -60,11 +60,11 @@ jobs:
       - save_cache:
           paths:
             - ~/.gradle
-          key: java9-gradle-{{ checksum "build.gradle" }}
+          key: java11-gradle-{{ checksum "build.gradle" }}
 
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
-      - java9
+      - java11
