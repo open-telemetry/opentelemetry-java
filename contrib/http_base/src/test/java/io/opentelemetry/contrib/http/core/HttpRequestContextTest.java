@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,8 @@ public class HttpRequestContextTest {
     DistributedContext distributedContext =
         OpenTelemetry.getDistributedContextManager().contextBuilder().setNoParent().build();
     HttpRequestContext context = new HttpRequestContext(span, distributedContext);
-    assertSame(span, context.span);
-    assertSame(distributedContext, context.distContext);
+    assertSame(span, context.getSpan());
+    assertSame(distributedContext, context.getDistContext());
   }
 
   @Test
@@ -60,7 +60,7 @@ public class HttpRequestContextTest {
             .setSpanKind(Kind.CLIENT)
             .startSpan();
     HttpRequestContext context = new HttpRequestContext(span, null);
-    assertSame(span, context.span);
+    assertSame(span, context.getSpan());
   }
 
   @Test
@@ -79,8 +79,8 @@ public class HttpRequestContextTest {
             .setSpanKind(Kind.CLIENT)
             .startSpan();
     HttpRequestContext context = new HttpRequestContext(span, null);
-    assertTrue(context.requestStartTime > 0L);
-    assertEquals(0L, context.receiveMessageSize.longValue());
-    assertEquals(0L, context.sentMessageSize.longValue());
+    assertTrue(context.getRequestStartTime() > 0L);
+    assertEquals(0L, context.getReceiveMessageSize());
+    assertEquals(0L, context.getSentMessageSize());
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package io.opentelemetry.contrib.http.core;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.distributedcontext.DistributedContext;
 import io.opentelemetry.trace.Span;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,20 +26,65 @@ import javax.annotation.Nullable;
 /** This class provides storage per request context on http client and server. */
 public class HttpRequestContext {
 
-  @VisibleForTesting static final long INVALID_STARTTIME = -1;
+  static final long INVALID_STARTTIME = -1;
 
-  @VisibleForTesting final long requestStartTime;
-  @VisibleForTesting final Span span;
-  @VisibleForTesting AtomicLong sentMessageSize = new AtomicLong();
-  @VisibleForTesting AtomicLong receiveMessageSize = new AtomicLong();
-  @VisibleForTesting AtomicLong sentSeqId = new AtomicLong();
-  @VisibleForTesting AtomicLong receviedSeqId = new AtomicLong();
-  @VisibleForTesting @Nullable final DistributedContext distContext;
+  private final long requestStartTime;
+  private final Span span;
+  private final AtomicLong sentMessageSize = new AtomicLong();
+  private final AtomicLong receiveMessageSize = new AtomicLong();
+  private final AtomicLong sentSeqId = new AtomicLong();
+  private final AtomicLong receviedSeqId = new AtomicLong();
+  @Nullable private final DistributedContext distContext;
 
   HttpRequestContext(Span span, @Nullable DistributedContext distContext) {
     checkNotNull(span, "span is required");
     this.span = span;
     this.distContext = distContext;
     requestStartTime = System.nanoTime();
+  }
+
+  long getRequestStartTime() {
+    return requestStartTime;
+  }
+
+  Span getSpan() {
+    return span;
+  }
+
+  long getSentMessageSize() {
+    return sentMessageSize.get();
+  }
+
+  void addSentMessageSize(long size) {
+    sentMessageSize.addAndGet(size);
+  }
+
+  long getReceiveMessageSize() {
+    return receiveMessageSize.get();
+  }
+
+  void addReceiveMessageSize(long size) {
+    receiveMessageSize.addAndGet(size);
+  }
+
+  long getSentSeqId() {
+    return sentSeqId.get();
+  }
+
+  long nextSentSeqId() {
+    return sentSeqId.incrementAndGet();
+  }
+
+  long getReceviedSeqId() {
+    return receviedSeqId.get();
+  }
+
+  long nextReceivedSeqId() {
+    return receviedSeqId.incrementAndGet();
+  }
+
+  @Nullable
+  DistributedContext getDistContext() {
+    return distContext;
   }
 }

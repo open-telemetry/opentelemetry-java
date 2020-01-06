@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
  *
  * @param <Q> the HTTP request entity.
  * @param <P> the HTTP response entity.
- * @param <C> the type of the carrier.
+ * @param <C> the type of the tracing propagation carrier.
  */
 public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
 
@@ -53,22 +53,34 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
   /**
    * Constructs a handler object.
    *
-   * @param extractor used to extract information from request/response
-   * @param setter the setter used to extract information from the carrier
+   * @param extractor the implementation of HTTP extractor which handles the particular classes used
+   *     to hold HTTP request and response info in the library being instrumented.
+   * @param setter the setter used to extract propagation information from the carrier.
    */
   public HttpClientHandler(HttpExtractor<Q, P> extractor, HttpTextFormat.Setter<C> setter) {
-    this(extractor, setter, null, null, null, null);
+    this(
+        extractor,
+        setter,
+        new StatusCodeConverter(),
+        OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID),
+        OpenTelemetry.getDistributedContextManager(),
+        OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID));
   }
 
   /**
    * Constructs a handler object.
    *
-   * @param extractor used to extract information from request/response
-   * @param setter the setter used to extract information from the carrier
-   * @param statusConverter the HTTP status to OT status translator
-   * @param tracer the OT tracer
-   * @param contextManager the OT distributed context manager
-   * @param meter the OT meter
+   * @param extractor the implementation of HTTP extractor which handles the particular classes used
+   *     to hold HTTP request and response info in the library being instrumented.
+   * @param setter the setter used to extract propagation information from the carrier.
+   * @param statusConverter the converter from HTTP status codes to OpenTelemetry statuses or {@code
+   *     null} to use the default.
+   * @param tracer the named OpenTelemetry tracer or {@code null} to use the library default of
+   *     {@code io.opentelemetry.contrib.http}.
+   * @param contextManager the OpenTelemetry distributed context manager or {@code null} to use the
+   *     default
+   * @param meter the named OpenTelemetry meter to use or {@code null} to use the library default of
+   *     {@code io.opentelemetry.contrib.http}.
    */
   public HttpClientHandler(
       HttpExtractor<Q, P> extractor,
@@ -145,11 +157,11 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     checkNotNull(context, "context");
     int httpCode = extractor.getStatusCode(response);
     recordMeasurements(context, httpCode);
-    spanEnd(context.span, httpCode, error);
+    endSpan(context.getSpan(), httpCode, error);
   }
 
   private Span constructClientSpan(@Nullable Span parent, Q request) {
-    Span.Builder builder = tracer.spanBuilder(getSpanName(request));
+    Span.Builder builder = tracer.spanBuilder(extractSpanName(request));
     Span span =
         builder
             .setParent(parent == null ? tracer.getCurrentSpan() : parent)

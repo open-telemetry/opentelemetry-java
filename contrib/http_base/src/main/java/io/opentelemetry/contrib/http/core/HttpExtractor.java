@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ import javax.annotation.Nullable;
  * An adaptor to extract information from request and response.
  *
  * <p>Please refer to this <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md">document</a>
+ * href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-http.md">document</a>
  * for more information about the HTTP attributes recorded in Open Telemetry.
  *
  * @param <Q> the HTTP request entity.
  * @param <P> the HTTP response entity.
  */
-public abstract class HttpExtractor<Q, P> {
+public interface HttpExtractor<Q, P> {
 
   /**
    * Returns the request method for use as the value of the <code>http.method</code> span attribute.
@@ -36,7 +36,7 @@ public abstract class HttpExtractor<Q, P> {
    * @param request the HTTP request
    * @return the HTTP method
    */
-  public abstract String getMethod(Q request);
+  String getMethod(Q request);
 
   /**
    * Returns the request URL for use as the value of the <code>http.url</code> span attribute.
@@ -44,7 +44,7 @@ public abstract class HttpExtractor<Q, P> {
    * @param request the HTTP request
    * @return the request URL
    */
-  public abstract String getUrl(Q request);
+  String getUrl(Q request);
 
   /**
    * Returns the request route for use as the span name. This should be in the format <code>
@@ -53,7 +53,7 @@ public abstract class HttpExtractor<Q, P> {
    * @param request the HTTP request
    * @return the request route
    */
-  public abstract String getRoute(Q request);
+  String getRoute(Q request);
 
   /**
    * Returns the request user agent.
@@ -62,7 +62,7 @@ public abstract class HttpExtractor<Q, P> {
    * @return the request user agent
    */
   @Nullable
-  public abstract String getUserAgent(Q request);
+  String getUserAgent(Q request);
 
   /**
    * Returns the HTTP protocol version used by the connection.
@@ -71,7 +71,7 @@ public abstract class HttpExtractor<Q, P> {
    * @return the HTTP flavor
    */
   @Nullable
-  public abstract String getHttpFlavor(Q request);
+  String getHttpFlavor(Q request);
 
   /**
    * Returns the IP address of the calling client (Server-side only).
@@ -80,7 +80,7 @@ public abstract class HttpExtractor<Q, P> {
    * @return the IP address
    */
   @Nullable
-  public abstract String getClientIp(Q request);
+  String getClientIp(Q request);
 
   /**
    * Returns the response status code for use as the value of the <code>http.status_code</code> span
@@ -89,5 +89,5 @@ public abstract class HttpExtractor<Q, P> {
    * @param response the HTTP response
    * @return the response status code
    */
-  public abstract int getStatusCode(@Nullable P response);
+  int getStatusCode(@Nullable P response);
 }

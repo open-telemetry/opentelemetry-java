@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package io.opentelemetry.contrib.http.core;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -32,7 +33,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 
-/** Base class for handling request on http client and server. */
+/**
+ * Base class for handling request on http client and server.
+ *
+ * @param <Q> the HTTP request entity.
+ * @param <P> the HTTP response entity.
+ */
 abstract class AbstractHttpHandler<Q, P> {
 
   /** The {@link HttpExtractor} used to extract information from request/response. */
@@ -41,9 +47,33 @@ abstract class AbstractHttpHandler<Q, P> {
   @VisibleForTesting final StatusCodeConverter statusConverter;
   private final Meter meter;
 
-  /** Constructor to allow access from same package subclasses only. */
+  /**
+   * Constructor to allow access from subclasses in the same package only.
+   *
+   * @param extractor the implementation of HTTP extractor which handles the particular classes used
+   *     to hold HTTP request and response info in the library being instrumented.
+   */
+  AbstractHttpHandler(HttpExtractor<Q, P> extractor) {
+    this(
+        extractor,
+        new StatusCodeConverter(),
+        OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID));
+  }
+
+  /**
+   * Constructor to allow access from subclasses in the same package only.
+   *
+   * @param extractor the implementation of HTTP extractor which handles the particular classes used
+   *     to hold HTTP request and response info in the library being instrumented.
+   * @param statusConverter the converter from HTTP status codes to OpenTelemetry statuses or {@code
+   *     null} to use the default.
+   * @param meter the named OpenTelemetry meter to use or {@code null} to use the library default of
+   *     {@code io.opentelemetry.contrib.http}.
+   */
   AbstractHttpHandler(
-      HttpExtractor<Q, P> extractor, StatusCodeConverter statusConverter, Meter meter) {
+      HttpExtractor<Q, P> extractor,
+      @Nullable StatusCodeConverter statusConverter,
+      @Nullable Meter meter) {
     checkNotNull(extractor, "extractor is required");
     this.extractor = extractor;
     if (statusConverter == null) {
@@ -63,8 +93,8 @@ abstract class AbstractHttpHandler<Q, P> {
    *
    * @param span the span which this {@code Event} will be added to.
    * @param type the type of event.
-   * @param uncompressedMessageSize size of the message before compressed (optional).
-   * @param compressedMessageSize size of the message after compressed (optional).
+   * @param uncompressedMessageSize size of the message before compressed or zero if unknown.
+   * @param compressedMessageSize size of the message after compressed or zero if unknown.
    */
   static void recordMessageEvent(
       Span span,
@@ -103,10 +133,10 @@ abstract class AbstractHttpHandler<Q, P> {
    */
   public final void handleMessageSent(HttpRequestContext context, long bytes) {
     checkNotNull(context, "context is required");
-    context.sentMessageSize.addAndGet(bytes);
+    context.addSentMessageSize(bytes);
     recordMessageEvent(
-        context.span,
-        context.sentSeqId.addAndGet(1L),
+        context.getSpan(),
+        context.nextSentSeqId(),
         HttpTraceConstants.MSG_EVENT_ATTR_SENT,
         bytes,
         0L);
@@ -121,16 +151,16 @@ abstract class AbstractHttpHandler<Q, P> {
    */
   public final void handleMessageReceived(HttpRequestContext context, long bytes) {
     checkNotNull(context, "context is required");
-    context.receiveMessageSize.addAndGet(bytes);
+    context.addReceiveMessageSize(bytes);
     recordMessageEvent(
-        context.span,
-        context.receviedSeqId.addAndGet(1L),
+        context.getSpan(),
+        context.nextReceivedSeqId(),
         HttpTraceConstants.MSG_EVENT_ATTR_RECEIVED,
         bytes,
         0L);
   }
 
-  void spanEnd(Span span, int httpStatus, @Nullable Throwable error) {
+  void endSpan(Span span, int httpStatus, @Nullable Throwable error) {
     span.setAttribute(
         HttpTraceConstants.HTTP_STATUS_CODE, AttributeValue.longAttributeValue(httpStatus));
     if (error != null) {
@@ -143,7 +173,7 @@ abstract class AbstractHttpHandler<Q, P> {
     span.end();
   }
 
-  final String getSpanName(Q request) {
+  String extractSpanName(Q request) {
     String spanName = extractor.getRoute(request);
     if (spanName == null) {
       spanName = "/";
@@ -170,13 +200,14 @@ abstract class AbstractHttpHandler<Q, P> {
 
   String extractErrorMessage(Throwable error) {
     String message = error.getMessage();
-    if (message == null) {
-      message = error.getClass().getSimpleName();
+    if (!isNullOrEmpty(message)) {
+      return message;
     }
-    return message;
+    return error.getClass().getSimpleName();
   }
 
   protected void recordMeasurements(HttpRequestContext context, int httpCode) {
+    // TODO implement method correctly after MeterSdk is functional
     try {
       meter.newMeasureBatchRecorder();
       meter.longCounterBuilder(HttpTraceConstants.MEASURE_COUNT + httpCode).build();
@@ -195,7 +226,7 @@ abstract class AbstractHttpHandler<Q, P> {
    */
   public Span getSpanFromContext(HttpRequestContext context) {
     checkNotNull(context, "context is required");
-    return context.span;
+    return context.getSpan();
   }
 
   HttpRequestContext getNewContext(Span span, DistributedContext distributedContext) {

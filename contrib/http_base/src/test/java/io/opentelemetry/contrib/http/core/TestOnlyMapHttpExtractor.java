@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Only used for testing to pull values from a map constructed in a test case. */
-class TestOnlyMapHttpExtractor extends HttpExtractor<Map<String, String>, Map<String, String>> {
+class TestOnlyMapHttpExtractor implements HttpExtractor<Map<String, String>, Map<String, String>> {
 
   public static final String METHOD = "METHOD";
   public static final String URL = "URL";
