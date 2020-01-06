@@ -48,16 +48,17 @@ abstract class AbstractHttpHandler<Q, P> {
   private final Meter meter;
 
   /**
-   * Constructor to allow access from subclasses in the same package only.
+   * Constructor to allow access from subclasses in the same package only. Uses the defaults for
+   * status converter and meter.
    *
    * @param extractor the implementation of HTTP extractor which handles the particular classes used
    *     to hold HTTP request and response info in the library being instrumented.
    */
   AbstractHttpHandler(HttpExtractor<Q, P> extractor) {
-    this(
-        extractor,
-        new StatusCodeConverter(),
-        OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID));
+    checkNotNull(extractor, "extractor is required");
+    this.extractor = extractor;
+    this.statusConverter = new StatusCodeConverter();
+    this.meter = OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID);
   }
 
   /**
@@ -65,31 +66,28 @@ abstract class AbstractHttpHandler<Q, P> {
    *
    * @param extractor the implementation of HTTP extractor which handles the particular classes used
    *     to hold HTTP request and response info in the library being instrumented.
-   * @param statusConverter the converter from HTTP status codes to OpenTelemetry statuses or {@code
-   *     null} to use the default.
-   * @param meter the named OpenTelemetry meter to use or {@code null} to use the library default of
-   *     {@code io.opentelemetry.contrib.http}.
+   * @param statusConverter the converter from HTTP status codes to OpenTelemetry statuses.
+   * @param meter the named OpenTelemetry meter to use.
    */
   AbstractHttpHandler(
       HttpExtractor<Q, P> extractor,
       @Nullable StatusCodeConverter statusConverter,
       @Nullable Meter meter) {
     checkNotNull(extractor, "extractor is required");
+    checkNotNull(statusConverter, "statusConverter is required");
+    checkNotNull(meter, "meter is required");
     this.extractor = extractor;
-    if (statusConverter == null) {
-      this.statusConverter = new StatusCodeConverter();
-    } else {
-      this.statusConverter = statusConverter;
-    }
-    if (meter == null) {
-      this.meter = OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID);
-    } else {
-      this.meter = meter;
-    }
+    this.statusConverter = statusConverter;
+    this.meter = meter;
   }
 
   /**
-   * A convenience to record a {@link Event} with given parameters.
+   * A convenience method to record a {@link Event} with given parameters. This approach comes from
+   * gRPC where multiple messages are sent across the same span. Each message is an event but the
+   * message size measurements are recorded at the end of the span as a total of all messages. Using
+   * this approach supports WebSocket (RFC 6455) and Server-Sent Events spans. In addition, message
+   * events are published consistently whether messages are HTTP or gRPC or potentially other
+   * protocols.
    *
    * @param span the span which this {@code Event} will be added to.
    * @param type the type of event.
@@ -210,7 +208,7 @@ abstract class AbstractHttpHandler<Q, P> {
     // TODO implement method correctly after MeterSdk is functional
     try {
       meter.newMeasureBatchRecorder();
-      meter.longCounterBuilder(HttpTraceConstants.MEASURE_COUNT + httpCode).build();
+      meter.longCounterBuilder("temporary.requests." + httpCode).build();
     } catch (UnsupportedOperationException ignore) {
       // NoOp
     }

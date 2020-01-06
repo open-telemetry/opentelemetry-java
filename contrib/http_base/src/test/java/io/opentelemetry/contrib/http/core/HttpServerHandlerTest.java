@@ -36,17 +36,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /** Unit tests for {@link HttpServerHandler}. */
 public class HttpServerHandlerTest {
 
   private static final Logger LOGGER = Logger.getLogger(HttpServerHandlerTest.class.getName());
-  private static InMemoryTracing inMemoryTracing;
 
-  @BeforeClass
-  public static void configureTracing() {
+  private InMemoryTracing inMemoryTracing;
+
+  @Before
+  public void configureTracing() {
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOn()).build();
     TracerSdkFactory tracerSdk = (TracerSdkFactory) OpenTelemetry.getTracerFactory();
@@ -54,17 +54,10 @@ public class HttpServerHandlerTest {
     inMemoryTracing = new InMemoryTracing(tracerSdk);
   }
 
-  @Before
-  public void reset() {
-    if (inMemoryTracing != null) {
-      inMemoryTracing.reset();
-    }
-  }
-
   @After
   public void printSpans() {
     for (SpanData span : inMemoryTracing.getFinishedSpanItems()) {
-      LOGGER.log(Level.FINE, span.toString());
+      LOGGER.log(Level.FINEST, span.toString());
     }
   }
 

@@ -64,10 +64,5 @@ public class HttpTraceConstants {
   public static final AttributeValue LINK_ATTR_ORIGINATING =
       AttributeValue.stringAttributeValue(LINK_ORIGINATING);
 
-  public static final String MEASURE_COUNT = "http_server_requests_count_";
-  public static final String MEASURE_DURATION = "http_server_requests_seconds";
-  public static final String MEASURE_REQ_SIZE = "http_server_requests_bytes";
-  public static final String MEASURE_RESP_SIZE = "http_server_responses_bytes";
-
   private HttpTraceConstants() {}
 }

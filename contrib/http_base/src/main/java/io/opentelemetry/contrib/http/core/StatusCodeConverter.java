@@ -16,11 +16,29 @@
 
 package io.opentelemetry.contrib.http.core;
 
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.trace.Status;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 /** Provides standard translation from HTTP status codes to Open Telemetry trace status values. */
 public class StatusCodeConverter {
+
+  private static final Map<Integer, Status> STATUS_MAP;
+
+  static {
+    ImmutableMap.Builder<Integer, Status> builder = ImmutableMap.builder();
+    builder.put(400, Status.INVALID_ARGUMENT);
+    builder.put(401, Status.UNAUTHENTICATED);
+    builder.put(403, Status.PERMISSION_DENIED);
+    builder.put(404, Status.NOT_FOUND);
+    builder.put(429, Status.RESOURCE_EXHAUSTED);
+    builder.put(500, Status.INTERNAL);
+    builder.put(501, Status.UNIMPLEMENTED);
+    builder.put(503, Status.UNAVAILABLE);
+    builder.put(504, Status.DEADLINE_EXCEEDED);
+    STATUS_MAP = builder.build();
+  }
 
   /**
    * Translates the supplied HTTP status code to equivalent Open Telemetry status.
@@ -34,23 +52,14 @@ public class StatusCodeConverter {
       return status;
     }
     if (httpStatus >= 200 && httpStatus < 400) {
-      status = Status.OK;
-    } else if (httpStatus == 401) {
-      status = Status.UNAUTHENTICATED;
-    } else if (httpStatus == 403) {
-      status = Status.PERMISSION_DENIED;
-    } else if (httpStatus == 404) {
-      status = Status.NOT_FOUND;
-    } else if (httpStatus == 429) {
-      status = Status.RESOURCE_EXHAUSTED;
-    } else if (httpStatus >= 400 && httpStatus < 500) {
+      return Status.OK;
+    }
+    status = STATUS_MAP.get(httpStatus);
+    if (status != null) {
+      return status;
+    }
+    if (httpStatus >= 400 && httpStatus < 500) {
       status = Status.INVALID_ARGUMENT;
-    } else if (httpStatus == 501) {
-      status = Status.UNIMPLEMENTED;
-    } else if (httpStatus == 503) {
-      status = Status.UNAVAILABLE;
-    } else if (httpStatus == 504) {
-      status = Status.DEADLINE_EXCEEDED;
     } else if (httpStatus >= 500 && httpStatus < 600) {
       status = Status.INTERNAL;
     } else {

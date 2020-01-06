@@ -58,13 +58,13 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
    * @param setter the setter used to extract propagation information from the carrier.
    */
   public HttpClientHandler(HttpExtractor<Q, P> extractor, HttpTextFormat.Setter<C> setter) {
-    this(
-        extractor,
-        setter,
-        new StatusCodeConverter(),
-        OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID),
-        OpenTelemetry.getDistributedContextManager(),
-        OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID));
+    super(extractor);
+    checkNotNull(setter, "setter is required");
+    this.tracer = OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID);
+    this.contextManager = OpenTelemetry.getDistributedContextManager();
+    this.setter = setter;
+    this.spanContextHttpTextFormat = this.tracer.getHttpTextFormat();
+    this.distributedContextHttpTextFormat = this.contextManager.getHttpTextFormat();
   }
 
   /**
@@ -73,14 +73,10 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
    * @param extractor the implementation of HTTP extractor which handles the particular classes used
    *     to hold HTTP request and response info in the library being instrumented.
    * @param setter the setter used to extract propagation information from the carrier.
-   * @param statusConverter the converter from HTTP status codes to OpenTelemetry statuses or {@code
-   *     null} to use the default.
-   * @param tracer the named OpenTelemetry tracer or {@code null} to use the library default of
-   *     {@code io.opentelemetry.contrib.http}.
-   * @param contextManager the OpenTelemetry distributed context manager or {@code null} to use the
-   *     default
-   * @param meter the named OpenTelemetry meter to use or {@code null} to use the library default of
-   *     {@code io.opentelemetry.contrib.http}.
+   * @param statusConverter the converter from HTTP status codes to OpenTelemetry statuses.
+   * @param tracer the named OpenTelemetry tracer.
+   * @param contextManager the OpenTelemetry distributed context manager
+   * @param meter the named OpenTelemetry meter to use.
    */
   public HttpClientHandler(
       HttpExtractor<Q, P> extractor,
@@ -91,16 +87,10 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
       Meter meter) {
     super(extractor, statusConverter, meter);
     checkNotNull(setter, "setter is required");
-    if (tracer == null) {
-      this.tracer = OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID);
-    } else {
-      this.tracer = tracer;
-    }
-    if (contextManager == null) {
-      this.contextManager = OpenTelemetry.getDistributedContextManager();
-    } else {
-      this.contextManager = contextManager;
-    }
+    checkNotNull(tracer, "tracer is required");
+    checkNotNull(contextManager, "contextManager is required");
+    this.tracer = tracer;
+    this.contextManager = contextManager;
     this.setter = setter;
     this.spanContextHttpTextFormat = this.tracer.getHttpTextFormat();
     this.distributedContextHttpTextFormat = this.contextManager.getHttpTextFormat();
