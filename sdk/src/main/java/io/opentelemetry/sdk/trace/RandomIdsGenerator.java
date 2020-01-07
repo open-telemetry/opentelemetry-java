@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import java.security.SecureRandom;
 import java.util.Random;
 
 final class RandomIdsGenerator implements IdsGenerator {
@@ -27,7 +26,7 @@ final class RandomIdsGenerator implements IdsGenerator {
       new ThreadLocal<Random>() {
         @Override
         protected Random initialValue() {
-          return new SecureRandom();
+          return new Random();
         }
       };
   private static final long INVALID_ID = 0;
