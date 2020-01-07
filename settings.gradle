@@ -17,7 +17,6 @@ pluginManagement {
     }
 }
 
-
 rootProject.name = "opentelemetry-java"
 include ":opentelemetry-all",
         ":opentelemetry-api",
