@@ -28,7 +28,6 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,7 +39,7 @@ import org.junit.runners.JUnit4;
 public class SamplersTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final int NUM_SAMPLE_TRIES = 1000;
-  private final IdsGenerator idsGenerator = new RandomIdsGenerator(new Random(1234));
+  private final IdsGenerator idsGenerator = new RandomIdsGenerator();
   private final TraceId traceId = idsGenerator.generateTraceId();
   private final SpanId spanId = idsGenerator.generateSpanId();
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
