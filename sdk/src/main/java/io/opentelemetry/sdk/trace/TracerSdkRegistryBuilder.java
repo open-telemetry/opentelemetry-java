@@ -16,11 +16,13 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
 import java.security.SecureRandom;
+import javax.annotation.Nonnull;
 
 /**
  * Builder class for the TracerSdkFactory. Has fully functional default implementations of all three
@@ -28,7 +30,7 @@ import java.security.SecureRandom;
  *
  * @since 0.4.0
  */
-public class TracerSdkFactoryBuilder {
+public class TracerSdkRegistryBuilder {
 
   private Clock clock = MillisClock.getInstance();
   private IdsGenerator idsGenerator = new RandomIdsGenerator(new SecureRandom());
@@ -40,7 +42,8 @@ public class TracerSdkFactoryBuilder {
    * @param clock The clock to use for all temporal needs.
    * @return this
    */
-  public TracerSdkFactoryBuilder setClock(Clock clock) {
+  public TracerSdkRegistryBuilder setClock(@Nonnull Clock clock) {
+    Utils.checkNotNull(clock, "The Clock must be non-null");
     this.clock = clock;
     return this;
   }
@@ -52,7 +55,8 @@ public class TracerSdkFactoryBuilder {
    *     contention free as possible.
    * @return this
    */
-  public TracerSdkFactoryBuilder setIdsGenerator(IdsGenerator idsGenerator) {
+  public TracerSdkRegistryBuilder setIdsGenerator(@Nonnull IdsGenerator idsGenerator) {
+    Utils.checkNotNull(idsGenerator, "The IdsGenerator must be non-null");
     this.idsGenerator = idsGenerator;
     return this;
   }
@@ -63,7 +67,8 @@ public class TracerSdkFactoryBuilder {
    * @param resource A Resource implementation.
    * @return this
    */
-  public TracerSdkFactoryBuilder setResource(Resource resource) {
+  public TracerSdkRegistryBuilder setResource(@Nonnull Resource resource) {
+    Utils.checkNotNull(resource, "The Resource must be non-null");
     this.resource = resource;
     return this;
   }
@@ -73,7 +78,7 @@ public class TracerSdkFactoryBuilder {
    *
    * @return An initialized TracerSdkFactory.
    */
-  public TracerSdkFactory build() {
-    return new TracerSdkFactory(clock, idsGenerator, resource);
+  public TracerSdkRegistry build() {
+    return new TracerSdkRegistry(clock, idsGenerator, resource);
   }
 }
