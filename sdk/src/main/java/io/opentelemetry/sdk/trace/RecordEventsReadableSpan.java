@@ -310,7 +310,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Use getEndNanoTimeInternal to avoid over-locking.
   @GuardedBy("lock")
   private long getEndNanoTimeInternal() {
-    return hasBeenEnded ? endEpochNanos : clock.now();
+    return hasEnded ? endEpochNanos : clock.now();
   }
 
   /**
