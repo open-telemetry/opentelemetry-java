@@ -1,0 +1,17 @@
+description = 'OpenTelemetry SDK AWS Support'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    api project(':opentelemetry-api'),
+            project(':opentelemetry-sdk')
+
+    implementation libraries.guava,
+            libraries.disruptor
+
+    implementation 'com.amazonaws:aws-xray-recorder-sdk-core:2.4.0'
+    implementation 'com.amazonaws:aws-java-sdk-core:1.11.701'
+
+    signature "org.codehaus.mojo.signature:java18:1.0@signature"
+}
