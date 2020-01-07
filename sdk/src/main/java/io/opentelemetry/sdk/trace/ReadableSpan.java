@@ -60,4 +60,12 @@ public interface ReadableSpan {
    *     library
    */
   InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+
+  /**
+   * Returns whether this Span has already been ended.
+   *
+   * @return {@code true} if the span has already been ended, {@code false} if not.
+   * @since 0.4.0
+   */
+  boolean hasEnded();
 }
