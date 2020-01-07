@@ -21,7 +21,6 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
-import java.security.SecureRandom;
 import javax.annotation.Nonnull;
 
 /**
@@ -33,7 +32,7 @@ import javax.annotation.Nonnull;
 public class TracerSdkRegistryBuilder {
 
   private Clock clock = MillisClock.getInstance();
-  private IdsGenerator idsGenerator = new RandomIdsGenerator(new SecureRandom());
+  private IdsGenerator idsGenerator = new RandomIdsGenerator();
   private Resource resource = EnvVarResource.getResource();
 
   /**
