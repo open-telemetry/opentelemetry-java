@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "management.opentelemetry.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable telemetry collection and export.",
+      "defaultValue": true
+    }
+  ]
+}
