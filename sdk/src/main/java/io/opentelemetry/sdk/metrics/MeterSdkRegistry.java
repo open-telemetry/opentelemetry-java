@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.metrics;
+package io.opentelemetry.sdk.metrics;
 
-public class DefaultMeterFactory implements MeterFactory {
+import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.metrics.MeterRegistry;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-  private static final MeterFactory instance = new DefaultMeterFactory();
-
-  public static MeterFactory getInstance() {
-    return instance;
-  }
+/**
+ * {@code Meter} provider implementation for {@link MeterRegistry}.
+ *
+ * <p>This class is not intended to be used in application code and it is used only by {@link
+ * io.opentelemetry.OpenTelemetry}.
+ */
+public class MeterSdkRegistry implements MeterRegistry {
+  private final Map<String, Meter> metersByKey =
+      Collections.synchronizedMap(new HashMap<String, Meter>());
 
   @Override
   public Meter get(String instrumentationName) {
@@ -31,6 +39,14 @@ public class DefaultMeterFactory implements MeterFactory {
 
   @Override
   public Meter get(String instrumentationName, String instrumentationVersion) {
-    return DefaultMeter.getInstance();
+    String key = instrumentationName + "/" + instrumentationVersion;
+    Meter meter = metersByKey.get(key);
+
+    if (meter == null) {
+      meter = new MeterSdk();
+      metersByKey.put(key, meter);
+    }
+
+    return meter;
   }
 }

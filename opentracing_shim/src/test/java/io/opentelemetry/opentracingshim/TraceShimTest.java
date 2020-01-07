@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import org.junit.Test;
 
 public class TraceShimTest {
@@ -28,7 +28,7 @@ public class TraceShimTest {
   @Test
   public void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim();
-    assertEquals(OpenTelemetry.getTracerFactory().get("opentracingshim"), tracerShim.tracer());
+    assertEquals(OpenTelemetry.getTracerRegistry().get("opentracingshim"), tracerShim.tracer());
     assertEquals(OpenTelemetry.getDistributedContextManager(), tracerShim.contextManager());
   }
 
@@ -39,12 +39,12 @@ public class TraceShimTest {
 
   @Test(expected = NullPointerException.class)
   public void createTracerShim_nullContextManager() {
-    TraceShim.createTracerShim(OpenTelemetry.getTracerFactory(), null);
+    TraceShim.createTracerShim(OpenTelemetry.getTracerRegistry(), null);
   }
 
   @Test
   public void createTracerShim() {
-    TracerSdkFactory sdk = TracerSdkFactory.create();
+    TracerSdkRegistry sdk = TracerSdkRegistry.create();
     DistributedContextManagerSdk contextManager = new DistributedContextManagerSdk();
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim(sdk, contextManager);
     assertEquals(sdk.get("opentracingshim"), tracerShim.tracer());

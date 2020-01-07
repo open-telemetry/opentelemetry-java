@@ -36,7 +36,7 @@ public class LongObserverTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterFactory().get("observer_long_test");
+  private final Meter meter = OpenTelemetry.getMeterRegistry().get("observer_long_test");
 
   @Test
   public void preventNonPrintableName() {

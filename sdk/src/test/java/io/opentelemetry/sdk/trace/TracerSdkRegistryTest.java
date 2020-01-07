@@ -30,11 +30,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link TracerSdkFactory}. */
+/** Unit tests for {@link TracerSdkRegistry}. */
 @RunWith(JUnit4.class)
-public class TracerSdkFactoryTest {
+public class TracerSdkRegistryTest {
   @Mock private SpanProcessor spanProcessor;
-  private final TracerSdkFactory tracerFactory = TracerSdkFactory.create();
+  private final TracerSdkRegistry tracerFactory = TracerSdkRegistry.create();
 
   @Before
   public void setUp() {

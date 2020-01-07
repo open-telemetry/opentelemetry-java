@@ -16,27 +16,27 @@
 
 package io.opentelemetry.metrics.spi;
 
-import io.opentelemetry.metrics.MeterFactory;
+import io.opentelemetry.metrics.MeterRegistry;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * MeterFactoryProvider is a service provider for {@link MeterFactory}. Fully qualified class name
+ * MeterRegistryProvider is a service provider for {@link MeterRegistry}. Fully qualified class name
  * of the implementation should be registered in {@code
- * META-INF/services/io.opentelemetry.metrics.spi.MeterFactoryProvider}. <br>
+ * META-INF/services/io.opentelemetry.metrics.spi.MeterRegistryProvider}. <br>
  * <br>
  * A specific implementation can be selected by a system property {@code
- * io.opentelemetry.metrics.spi.MeterFactoryProvider} with value of fully qualified class name.
+ * io.opentelemetry.metrics.spi.MeterRegistryProvider} with value of fully qualified class name.
  *
  * @see io.opentelemetry.OpenTelemetry
  */
 @ThreadSafe
-public interface MeterFactoryProvider {
+public interface MeterRegistryProvider {
 
   /**
-   * Creates a new meter factory instance.
+   * Creates a new meter registry instance.
    *
    * @return a meter factory instance.
    * @since 0.1.0
    */
-  MeterFactory create();
+  MeterRegistry create();
 }

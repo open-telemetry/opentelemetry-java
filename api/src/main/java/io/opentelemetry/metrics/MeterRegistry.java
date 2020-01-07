@@ -14,39 +14,38 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace;
+package io.opentelemetry.metrics;
 
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * A factory for creating named {@link Tracer}s.
+ * A registry for creating named {@link Meter}s.
  *
  * @see io.opentelemetry.OpenTelemetry
- * @see io.opentelemetry.trace.Tracer
+ * @see io.opentelemetry.metrics.Meter
  * @since 0.1.0
  */
 @ThreadSafe
-public interface TracerFactory {
+public interface MeterRegistry {
 
   /**
-   * Gets or creates a named tracer instance.
+   * Gets or creates a named meter instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   *     instrument*ed* library.
    * @return a tracer instance.
    * @since 0.1.0
    */
-  Tracer get(String instrumentationName);
+  Meter get(String instrumentationName);
 
   /**
-   * Gets or creates a named and versioned tracer instance.
+   * Gets or creates a named and versioned meter instance.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
-   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
-   * @param instrumentationVersion The version of the instrumentation library (e.g.,
-   *     "semver:1.0.0").
+   *     instrument*ed* library.
+   * @param instrumentationVersion The version of the instrumentation library.
    * @return a tracer instance.
    * @since 0.1.0
    */
-  Tracer get(String instrumentationName, String instrumentationVersion);
+  Meter get(String instrumentationName, String instrumentationVersion);
 }

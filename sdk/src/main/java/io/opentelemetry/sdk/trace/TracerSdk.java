@@ -77,7 +77,7 @@ public class TracerSdk implements Tracer {
 
   /**
    * Returns the instrumentation library specified when creating the tracer using {@link
-   * TracerSdkFactory}.
+   * TracerSdkRegistry}.
    *
    * @return an instance of {@link InstrumentationLibraryInfo}
    */

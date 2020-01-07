@@ -16,27 +16,27 @@
 
 package io.opentelemetry.trace.spi;
 
-import io.opentelemetry.trace.TracerFactory;
+import io.opentelemetry.trace.TracerRegistry;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * TracerFactoryProvider is a service provider for a {@link TracerFactory}. Fully qualified class
+ * TracerRegistryProvider is a service provider for a {@link TracerRegistry}. Fully qualified class
  * name of the implementation should be registered in {@code
- * META-INF/services/io.opentelemetry.trace.spi.TracerFactoryProvider}. <br>
+ * META-INF/services/io.opentelemetry.trace.spi.TracerRegistryProvider}. <br>
  * <br>
  * A specific implementation can be selected by a system property {@code
- * io.opentelemetry.trace.spi.TracerFactoryProvider} with value of fully qualified class name.
+ * io.opentelemetry.trace.spi.TracerRegistryProvider} with value of fully qualified class name.
  *
  * @see io.opentelemetry.OpenTelemetry
  */
 @ThreadSafe
-public interface TracerFactoryProvider {
+public interface TracerRegistryProvider {
 
   /**
-   * Creates a new TracerFactory.
+   * Creates a new TracerRegistry.
    *
-   * @return a new TracerFactory.
+   * @return a new TracerRegistry.
    * @since 0.1.0
    */
-  TracerFactory create();
+  TracerRegistry create();
 }
