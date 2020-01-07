@@ -19,10 +19,10 @@ gradlew fatJar
 
 ## 2 - Start the Server
 ```bash
-java -cp examples/build/libs/opentelemetry-examples-0.3.0-SNAPSHOT-all.jar io.opentelemetry.example.http.HttpServer
+java -cp ./build/libs/opentelemetry-example-http-all-0.2.0.jar io.opentelemetry.example.http.HttpServer
 ```
  
 ## 3 - Start the Client
 ```bash
-java -cp examples/build/libs/opentelemetry-examples-0.3.0-SNAPSHOT-all.jar io.opentelemetry.example.http.HttpClient
+java -cp ./build/libs/opentelemetry-example-http-all-0.2.0.jar io.opentelemetry.example.http.HttpClient
 ```

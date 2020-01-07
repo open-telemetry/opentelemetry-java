@@ -20,17 +20,12 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.exporters.logging.LoggingExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
-import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.*;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -103,8 +98,6 @@ public class HttpServer {
 
   // OTel API
   Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpServer");
-  // Export traces in memory
-  InMemorySpanExporter inMemexporter = InMemorySpanExporter.create();
   // Export traces to log
   LoggingExporter loggingExporter = new LoggingExporter();
   // Extract the context from http headers
@@ -137,8 +130,6 @@ public class HttpServer {
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
     // Show that multiple exporters can be used
 
-    // Set to process in memory the spans
-    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(inMemexporter).build());
     // Set to export the traces also to a log file
     tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
   }
@@ -164,24 +155,5 @@ public class HttpServer {
                 s.stop();
               }
             });
-    // Print new traces every 1s
-    Thread t =
-        new Thread() {
-          @Override
-          public void run() {
-            while (true) {
-              try {
-                Thread.sleep(1000);
-                for (SpanData spanData : s.inMemexporter.getFinishedSpanItems()) {
-                  System.out.println("  - " + spanData);
-                }
-                s.inMemexporter.reset();
-              } catch (Exception e) {
-                System.err.println(e.getMessage());
-              }
-            }
-          }
-        };
-    t.start();
   }
 }

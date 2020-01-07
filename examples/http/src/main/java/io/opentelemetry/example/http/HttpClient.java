@@ -18,15 +18,14 @@ package io.opentelemetry.example.http;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.exporters.logging.LoggingExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdkFactory;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -38,8 +37,6 @@ public class HttpClient {
   static int port = 8080;
   // OTel API
   Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpClient");
-  // Export traces in memory
-  InMemorySpanExporter inMemexporter = InMemorySpanExporter.create();
   // Export traces to log
   LoggingExporter loggingExporter = new LoggingExporter();
   // Inject the span context into the request
@@ -56,8 +53,6 @@ public class HttpClient {
     TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
     // Show that multiple exporters can be used
 
-    // Set to process in memory the spans
-    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(inMemexporter).build());
     // Set to export the traces also to a log file
     tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
   }
@@ -128,10 +123,6 @@ public class HttpClient {
               try {
                 HttpClient c = new HttpClient();
                 Thread.sleep(5000);
-                for (SpanData spanData : c.inMemexporter.getFinishedSpanItems()) {
-                  System.out.println("  - " + spanData);
-                }
-                c.inMemexporter.reset();
               } catch (Exception e) {
                 System.out.println(e.getMessage());
               }
