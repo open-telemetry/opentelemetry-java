@@ -70,8 +70,7 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     return result;
   }
 
-  static class SdkBoundLongCounter extends BaseBoundInstrument<SdkLongCounter>
-      implements BoundLongCounter {
+  static class SdkBoundLongCounter extends BaseBoundInstrument implements BoundLongCounter {
 
     private final boolean monotonic;
 

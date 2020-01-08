@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 
-class BaseBoundInstrument<I extends BaseInstrument<?>> {
+class BaseBoundInstrument {
   private final LabelSet labels;
 
   BaseBoundInstrument(LabelSet labels) {
@@ -35,7 +35,7 @@ class BaseBoundInstrument<I extends BaseInstrument<?>> {
       return false;
     }
 
-    BaseBoundInstrument<?> that = (BaseBoundInstrument<?>) o;
+    BaseBoundInstrument that = (BaseBoundInstrument) o;
 
     return labels != null ? labels.equals(that.labels) : that.labels == null;
   }
