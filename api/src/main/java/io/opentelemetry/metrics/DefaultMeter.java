@@ -20,6 +20,7 @@ import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -165,7 +166,7 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public LabelSet createLabelSet(Map<String, String> labels) {
+  public LabelSet createLabelSet(@Nonnull Map<String, String> labels) {
     Utils.checkNotNull(labels, "labels");
     return NoopLabelSet.INSTANCE;
   }

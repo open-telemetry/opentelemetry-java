@@ -31,6 +31,7 @@ import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
 import java.util.Map;
+import javax.annotation.Nonnull;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
 public class MeterSdk implements Meter {
@@ -102,7 +103,7 @@ public class MeterSdk implements Meter {
   }
 
   @Override
-  public LabelSet createLabelSet(Map<String, String> labels) {
+  public LabelSet createLabelSet(@Nonnull Map<String, String> labels) {
     throw new UnsupportedOperationException("to be implemented");
   }
 

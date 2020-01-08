@@ -17,6 +17,7 @@
 package io.opentelemetry.metrics;
 
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -118,7 +119,7 @@ public interface Meter {
    * Returns a builder for a {@link LongGauge}.
    *
    * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
-   * characters.
+   *     characters.
    * @return a {@code LongGauge.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -131,7 +132,7 @@ public interface Meter {
    * Returns a builder for a {@link DoubleGauge}.
    *
    * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
-   * characters.
+   *     characters.
    * @return a {@code DoubleGauge.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -144,7 +145,7 @@ public interface Meter {
    * Returns a builder for a {@link DoubleCounter}.
    *
    * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
-   * characters.
+   *     characters.
    * @return a {@code DoubleCounter.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -157,7 +158,7 @@ public interface Meter {
    * Returns a builder for a {@link LongCounter}.
    *
    * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
-   * characters.
+   *     characters.
    * @return a {@code LongCounter.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -170,7 +171,7 @@ public interface Meter {
    * Returns a new builder for a {@link DoubleMeasure}.
    *
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
-   * greater than 255 characters.
+   *     greater than 255 characters.
    * @return a new builder for a {@code DoubleMeasure}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -183,7 +184,7 @@ public interface Meter {
    * Returns a new builder for a {@link LongMeasure}.
    *
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
-   * greater than 255 characters.
+   *     greater than 255 characters.
    * @return a new builder for a {@code LongMeasure}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -196,7 +197,7 @@ public interface Meter {
    * Returns a new builder for a {@link DoubleObserver}.
    *
    * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
-   * greater than 255 characters.
+   *     greater than 255 characters.
    * @return a new builder for a {@code DoubleObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -209,7 +210,7 @@ public interface Meter {
    * Returns a new builder for a {@link LongObserver}.
    *
    * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
-   * greater than 255 characters.
+   *     greater than 255 characters.
    * @return a new builder for a {@code LongObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -222,7 +223,7 @@ public interface Meter {
    * Utility method that allows users to atomically record measurements to a set of Measures.
    *
    * @return a {@code MeasureBatchRecorder} that can be use to atomically record a set of
-   * measurements associated with different Measures.
+   *     measurements associated with different Measures.
    * @since 0.1.0
    */
   BatchRecorder newMeasureBatchRecorder();
@@ -285,8 +286,9 @@ public interface Meter {
    *
    * @param labels The key-value pairs to turn into labels.
    * @return a new {@link LabelSet} with the given labels.
+   * @throws NullPointerException if the map is null.
    */
-  LabelSet createLabelSet(Map<String, String> labels);
+  LabelSet createLabelSet(@Nonnull Map<String, String> labels);
 
   /**
    * Returns an empty {@link LabelSet}. The implementation is permitted to have this be a singleton
