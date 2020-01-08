@@ -28,11 +28,11 @@ abstract class SdkLabelSet implements LabelSet {
 
   private static final LabelSet EMPTY = create();
 
-  public static LabelSet empty() {
+  static LabelSet empty() {
     return EMPTY;
   }
 
-  public static LabelSet create(String... keyValuePairs) {
+  static LabelSet create(String... keyValuePairs) {
     if (keyValuePairs.length == 0) {
       return EMPTY;
     }

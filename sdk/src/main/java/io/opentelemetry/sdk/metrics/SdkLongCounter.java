@@ -26,7 +26,7 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
 
   private final boolean monotonic;
 
-  protected SdkLongCounter(
+  SdkLongCounter(
       String name,
       String description,
       Map<String, String> constantLabels,
@@ -42,7 +42,7 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
   }
 
   @Override
-  protected BoundLongCounter create(LabelSet labelSet) {
+  BoundLongCounter create(LabelSet labelSet) {
     return new SdkBoundLongCounter(labelSet, monotonic);
   }
 
@@ -68,5 +68,24 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     int result = super.hashCode();
     result = 31 * result + (monotonic ? 1 : 0);
     return result;
+  }
+
+  static class SdkBoundLongCounter extends BaseBoundInstrument<SdkLongCounter>
+      implements BoundLongCounter {
+
+    private final boolean monotonic;
+
+    SdkBoundLongCounter(LabelSet labels, boolean monotonic) {
+      super(labels);
+      this.monotonic = monotonic;
+    }
+
+    @Override
+    public void add(long delta) {
+      if (monotonic && delta < 0) {
+        throw new IllegalArgumentException("monotonic counters can only increase");
+      }
+      // todo: pass through to an aggregator/accumulator
+    }
   }
 }

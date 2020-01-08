@@ -21,14 +21,14 @@ import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-public abstract class BaseInstrument<B> implements Instrument<B> {
+abstract class BaseInstrument<B> implements Instrument<B> {
 
   private final String name;
   private final String description;
   private final Map<String, String> constantLabels;
   private final List<String> labelKeys;
 
-  protected BaseInstrument(
+  BaseInstrument(
       String name, String description, Map<String, String> constantLabels, List<String> labelKeys) {
     this.name = name;
     this.description = description;
@@ -36,13 +36,13 @@ public abstract class BaseInstrument<B> implements Instrument<B> {
     this.labelKeys = labelKeys;
   }
 
+  abstract B create(LabelSet labelSet);
+
   @Override
   public B bind(LabelSet labelSet) {
     return create(labelSet);
     // todo: associate with an aggregator/accumulator
   }
-
-  protected abstract B create(LabelSet labelSet);
 
   @Override
   public void unbind(B boundInstrument) {
