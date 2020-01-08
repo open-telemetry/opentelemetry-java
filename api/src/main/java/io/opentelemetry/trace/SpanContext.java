@@ -17,8 +17,6 @@
 package io.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
-import java.util.Arrays;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -35,17 +33,11 @@ import javax.annotation.concurrent.Immutable;
 public abstract class SpanContext {
 
   private static final SpanContext INVALID =
-      newBuilder()
-          .setTraceId(TraceId.getInvalid())
-          .setSpanId(SpanId.getInvalid())
-          .setTraceFlags(TraceFlags.getDefault())
-          .setTracestate(Tracestate.getDefault())
-          .setRemote(false)
-          .build();
-
-  private static Builder newBuilder() {
-    return new AutoValue_SpanContext.Builder();
-  }
+      create(
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
+          TraceFlags.getDefault(),
+          Tracestate.getDefault());
 
   /**
    * Returns the invalid {@code SpanContext} that can be used for no-op operations.
@@ -68,13 +60,7 @@ public abstract class SpanContext {
    */
   public static SpanContext create(
       TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
-    return SpanContext.newBuilder()
-        .setTraceId(traceId)
-        .setSpanId(spanId)
-        .setTraceFlags(traceFlags)
-        .setTracestate(tracestate)
-        .setRemote(false)
-        .build();
+    return new AutoValue_SpanContext(traceId, spanId, traceFlags, tracestate, /* remote=*/ false);
   }
 
   /**
@@ -90,13 +76,7 @@ public abstract class SpanContext {
    */
   public static SpanContext createFromRemoteParent(
       TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
-    return SpanContext.newBuilder()
-        .setTraceId(traceId)
-        .setSpanId(spanId)
-        .setTraceFlags(traceFlags)
-        .setTracestate(tracestate)
-        .setRemote(true)
-        .build();
+    return new AutoValue_SpanContext(traceId, spanId, traceFlags, tracestate, /* remote=*/ true);
   }
 
   /**
@@ -148,54 +128,4 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public abstract boolean isRemote();
-
-  /**
-   * Note: This has a custom equals/hashcode implementation. The equals() method does not include
-   * the {@code tracestate}.
-   *
-   * <p>TODO: is this intentional? If it is, it should be documented as to *why* this is the case.
-   */
-  @Override
-  public final boolean equals(@Nullable Object obj) {
-    if (obj == this) {
-      return true;
-    }
-
-    if (!(obj instanceof SpanContext)) {
-      return false;
-    }
-
-    SpanContext that = (SpanContext) obj;
-    return getTraceId().equals(that.getTraceId())
-        && getSpanId().equals(that.getSpanId())
-        && getTraceFlags().equals(that.getTraceFlags())
-        && isRemote() == that.isRemote();
-  }
-
-  /**
-   * Note: This has a custom equals/hashcode implementation. The hashcode() method does not include
-   * the {@code tracestate} or the {@code remote} flag.
-   *
-   * <p>TODO: is this intentional? If it is, it should be documented as to *why* this is the case.
-   */
-  @Override
-  public final int hashCode() {
-    return Arrays.hashCode(new Object[] {getTraceId(), getSpanId(), getTraceFlags()});
-  }
-
-  /** A {@code Builder} for a {@link SpanContext}. */
-  @AutoValue.Builder
-  abstract static class Builder {
-    public abstract SpanContext build();
-
-    public abstract Builder setTraceId(TraceId traceId);
-
-    public abstract Builder setSpanId(SpanId traceId);
-
-    public abstract Builder setTraceFlags(TraceFlags traceFlags);
-
-    public abstract Builder setTracestate(Tracestate tracestate);
-
-    public abstract Builder setRemote(boolean remote);
-  }
 }
