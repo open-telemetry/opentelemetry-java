@@ -93,15 +93,15 @@ public class HttpServer {
     }
   }
 
-  com.sun.net.httpserver.HttpServer server;
-  static int port = 8080;
+  private com.sun.net.httpserver.HttpServer server;
+  private static int port = 8080;
 
   // OTel API
-  Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpServer");
+  private static Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpServer");
   // Export traces to log
-  LoggingExporter loggingExporter = new LoggingExporter();
+  private static LoggingExporter loggingExporter = new LoggingExporter();
   // Extract the context from http headers
-  HttpTextFormat.Getter<HttpExchange> getter =
+  private static HttpTextFormat.Getter<HttpExchange> getter =
       new HttpTextFormat.Getter<HttpExchange>() {
         @Override
         public String get(HttpExchange carrier, String key) {

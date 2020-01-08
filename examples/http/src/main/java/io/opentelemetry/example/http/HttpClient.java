@@ -34,13 +34,13 @@ import java.nio.charset.Charset;
 
 public class HttpClient {
 
-  static int port = 8080;
+
   // OTel API
-  Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpClient");
+  private static Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpClient");
   // Export traces to log
-  LoggingExporter loggingExporter = new LoggingExporter();
+  private static LoggingExporter loggingExporter = new LoggingExporter();
   // Inject the span context into the request
-  HttpTextFormat.Setter<HttpURLConnection> setter =
+  private static HttpTextFormat.Setter<HttpURLConnection> setter =
       new HttpTextFormat.Setter<HttpURLConnection>() {
         @Override
         public void put(HttpURLConnection carrier, String key, String value) {
@@ -61,6 +61,7 @@ public class HttpClient {
     initTracer();
 
     // Connect to the server locally
+    int port = 8080;
     URL url = new URL("http://127.0.0.1:" + port);
     HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
