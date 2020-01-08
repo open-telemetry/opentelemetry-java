@@ -94,7 +94,7 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void noopGetBound_WithNullLabelSet() {
+  public void noopBind_WithNullLabelSet() {
     DoubleCounter doubleCounter =
         meter
             .doubleCounterBuilder(NAME)
@@ -108,7 +108,7 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void noopRemoveBound_WithNullBound() {
+  public void noopUnbind_WithNullInstrument() {
     DoubleCounter doubleCounter =
         meter
             .doubleCounterBuilder(NAME)
@@ -117,7 +117,7 @@ public class DoubleCounterTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("bound");
+    thrown.expectMessage("boundDoubleCounter");
     doubleCounter.unbind(null);
   }
 
