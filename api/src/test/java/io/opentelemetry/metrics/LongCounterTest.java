@@ -93,7 +93,7 @@ public class LongCounterTest {
   }
 
   @Test
-  public void noopGetBound_WithNullLabelSet() {
+  public void noopBind_WithNullLabelSet() {
     LongCounter longCounter =
         meter
             .longCounterBuilder(NAME)
@@ -107,7 +107,7 @@ public class LongCounterTest {
   }
 
   @Test
-  public void noopRemoveBound_WithNullBound() {
+  public void noopUnbind_WithNullInstrument() {
     LongCounter longCounter =
         meter
             .longCounterBuilder(NAME)
@@ -116,7 +116,7 @@ public class LongCounterTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("bound");
+    thrown.expectMessage("boundLongCounter");
     longCounter.unbind(null);
   }
 

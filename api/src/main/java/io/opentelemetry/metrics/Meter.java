@@ -95,15 +95,15 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .build();
  *
  *   // It is recommended that API users keep a reference to a Bound Instrument.
- *   DoubleGauge.BoundDoubleGauge inboundBound = gauge.bind(labelValues);
+ *   DoubleGauge.BoundDoubleGauge inboundBoundGauge = gauge.bind(labelValues);
  *
  *   void doAddElement() {
  *      // Your code here.
- *      inboundBound.add(1);
+ *      inboundBoundGauge.set(1);
  *   }
  *
  *   void doRemoveElement() {
- *      inboundBound.add(-1);
+ *      inboundBoundGauge.set(-1);
  *      // Your code here.
  *   }
  *

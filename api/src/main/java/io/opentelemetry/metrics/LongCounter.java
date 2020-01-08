@@ -71,7 +71,7 @@ public interface LongCounter extends Instrument<BoundLongCounter> {
   void unbind(BoundLongCounter boundInstrument);
 
   /**
-   * A {@code Bound Instrument} for a {@code CounterLong}.
+   * A {@code Bound Instrument} for a {@code LongCounter}.
    *
    * @since 0.1.0
    */

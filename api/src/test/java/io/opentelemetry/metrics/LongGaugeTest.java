@@ -90,7 +90,7 @@ public class LongGaugeTest {
   }
 
   @Test
-  public void noopGetBound_WithNullLabelSet() {
+  public void noopBind_WithNullLabelSet() {
     LongGauge longGauge =
         meter
             .longGaugeBuilder(NAME)
@@ -104,7 +104,7 @@ public class LongGaugeTest {
   }
 
   @Test
-  public void noopRemoveBound_WithNullBound() {
+  public void noopUnbind_WithNullBound() {
     LongGauge longGauge =
         meter
             .longGaugeBuilder(NAME)
@@ -113,7 +113,7 @@ public class LongGaugeTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("bound");
+    thrown.expectMessage("boundLongGauge");
     longGauge.unbind(null);
   }
 
