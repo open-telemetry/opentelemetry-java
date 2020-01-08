@@ -1,8 +1,5 @@
 description = 'Spring Boot OpenTelemetry Actuator'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 dependencies {
     implementation platform('org.springframework.boot:spring-boot-dependencies:2.2.2.RELEASE')
 
