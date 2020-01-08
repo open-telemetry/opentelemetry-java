@@ -51,6 +51,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -390,6 +391,11 @@ public class OpenTelemetryTest {
     @Override
     public LabelSet createLabelSet(
         String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
+      return null;
+    }
+
+    @Override
+    public LabelSet createLabelSet(Map<String, String> labels) {
       return null;
     }
 

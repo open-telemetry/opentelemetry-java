@@ -30,6 +30,7 @@ import io.opentelemetry.metrics.LongGauge;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
+import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
 public class MeterSdk implements Meter {
@@ -98,6 +99,11 @@ public class MeterSdk implements Meter {
   public LabelSet createLabelSet(
       String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
     return SdkLabelSet.create(ImmutableMap.of(k1, v1, k2, v2, k3, v3, k4, v4));
+  }
+
+  @Override
+  public LabelSet createLabelSet(Map<String, String> labels) {
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override

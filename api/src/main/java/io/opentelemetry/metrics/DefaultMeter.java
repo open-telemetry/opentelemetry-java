@@ -165,6 +165,12 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
+  public LabelSet createLabelSet(Map<String, String> labels) {
+    Utils.checkNotNull(labels, "labels");
+    return NoopLabelSet.INSTANCE;
+  }
+
+  @Override
   public LabelSet emptyLabelSet() {
     return NoopLabelSet.INSTANCE;
   }
