@@ -23,6 +23,6 @@ import io.opentelemetry.trace.spi.TracerRegistryProvider;
 public class TracerSdkRegistryProvider implements TracerRegistryProvider {
   @Override
   public TracerRegistry create() {
-    return TracerSdkRegistry.create();
+    return TracerSdkRegistry.builder().build();
   }
 }

@@ -30,12 +30,12 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class EnvVarResource {
-  private static final String OC_RESOURCE_LABELS_ENV = "OC_RESOURCE_LABELS";
+  private static final String OTEL_RESOURCE_LABELS_ENV = "OTEL_RESOURCE_LABELS";
   private static final String LABEL_LIST_SPLITTER = ",";
   private static final String LABEL_KEY_VALUE_SPLITTER = "=";
 
   private static final Resource ENV_VAR_RESOURCE =
-      Resource.create(parseResourceLabels(System.getenv(OC_RESOURCE_LABELS_ENV)));
+      Resource.create(parseResourceLabels(System.getenv(OTEL_RESOURCE_LABELS_ENV)));
 
   private EnvVarResource() {}
 
