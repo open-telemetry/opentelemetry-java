@@ -36,11 +36,11 @@ abstract class BaseInstrument<B> implements Instrument<B> {
     this.labelKeys = labelKeys;
   }
 
-  abstract B create(LabelSet labelSet);
+  abstract B createBoundInstrument(LabelSet labelSet);
 
   @Override
   public B bind(LabelSet labelSet) {
-    return create(labelSet);
+    return createBoundInstrument(labelSet);
     // todo: associate with an aggregator/accumulator
   }
 

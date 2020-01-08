@@ -51,7 +51,7 @@ public class MeterSdk implements Meter {
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
-    return SdkLongCounterBuilder.builder(name);
+    return SdkLongCounter.SdkLongCounterBuilder.builder(name);
   }
 
   @Override

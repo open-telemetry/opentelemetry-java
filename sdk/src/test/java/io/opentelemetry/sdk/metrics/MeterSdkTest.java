@@ -17,25 +17,23 @@
 package io.opentelemetry.sdk.metrics;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import java.util.Collections;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+/** Unit tests for {@link MeterSdk}. */
+@RunWith(JUnit4.class)
 public class MeterSdkTest {
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testLongCounter() {
     MeterSdk testSdk = new MeterSdk();
-    LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
     LongCounter longCounter =
         testSdk
@@ -46,37 +44,10 @@ public class MeterSdkTest {
             .setUnit("metric tonnes")
             .setMonotonic(true)
             .build();
-
-    longCounter.add(45, testSdk.emptyLabelSet());
-
-    BoundLongCounter boundLongCounter = longCounter.bind(labelSet);
-    boundLongCounter.add(334);
-    BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
-    assertEquals(boundLongCounter, duplicateBoundCounter);
-
-    longCounter.unbind(boundLongCounter);
+    assertNotNull(longCounter);
+    assertEquals(SdkLongCounter.class, longCounter.getClass());
 
     // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
-  }
-
-  @Test
-  public void testLongCounter_monotonicity() {
-    MeterSdk testSdk = new MeterSdk();
-
-    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
-
-    thrown.expect(IllegalArgumentException.class);
-    longCounter.add(-45, testSdk.emptyLabelSet());
-  }
-
-  @Test
-  public void testBoundLongCounter_monotonicity() {
-    MeterSdk testSdk = new MeterSdk();
-
-    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
-
-    thrown.expect(IllegalArgumentException.class);
-    longCounter.bind(testSdk.emptyLabelSet()).add(-9);
   }
 
   @Test

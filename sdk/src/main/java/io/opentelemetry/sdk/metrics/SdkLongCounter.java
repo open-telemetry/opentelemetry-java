@@ -26,7 +26,7 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
 
   private final boolean monotonic;
 
-  SdkLongCounter(
+  private SdkLongCounter(
       String name,
       String description,
       Map<String, String> constantLabels,
@@ -38,11 +38,11 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
 
   @Override
   public void add(long delta, LabelSet labelSet) {
-    create(labelSet).add(delta);
+    createBoundInstrument(labelSet).add(delta);
   }
 
   @Override
-  BoundLongCounter create(LabelSet labelSet) {
+  BoundLongCounter createBoundInstrument(LabelSet labelSet) {
     return new SdkBoundLongCounter(labelSet, monotonic);
   }
 
@@ -70,7 +70,7 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     return result;
   }
 
-  static class SdkBoundLongCounter extends BaseBoundInstrument implements BoundLongCounter {
+  private static class SdkBoundLongCounter extends BaseBoundInstrument implements BoundLongCounter {
 
     private final boolean monotonic;
 
@@ -85,6 +85,30 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
       // todo: pass through to an aggregator/accumulator
+    }
+  }
+
+  static class SdkLongCounterBuilder
+      extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
+      implements LongCounter.Builder {
+
+    private SdkLongCounterBuilder(String name) {
+      super(name);
+    }
+
+    static LongCounter.Builder builder(String name) {
+      return new SdkLongCounterBuilder(name);
+    }
+
+    @Override
+    SdkLongCounterBuilder getThis() {
+      return this;
+    }
+
+    @Override
+    public LongCounter build() {
+      return new SdkLongCounter(
+          getName(), getDescription(), getConstantLabels(), getLabelKeys(), getMonotonic());
     }
   }
 }
