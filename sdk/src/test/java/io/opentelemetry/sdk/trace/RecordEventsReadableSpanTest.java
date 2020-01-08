@@ -142,7 +142,7 @@ public class RecordEventsReadableSpanTest {
           Collections.singletonList(link),
           SPAN_NEW_NAME,
           startEpochNanos,
-          testClock.now(),
+          0,
           Status.OK,
           /*hasEnded=*/ false);
       assertThat(span.hasEnded()).isFalse();
@@ -261,10 +261,10 @@ public class RecordEventsReadableSpanTest {
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
       long elapsedTimeNanos1 = testClock.now() - startEpochNanos;
-      assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos1);
+      assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos1);
       testClock.advanceMillis(MILLIS_PER_SECOND);
       long elapsedTimeNanos2 = testClock.now() - startEpochNanos;
-      assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos2);
+      assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos2);
     } finally {
       span.end();
     }
@@ -276,9 +276,9 @@ public class RecordEventsReadableSpanTest {
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.end();
     long elapsedTimeNanos = testClock.now() - startEpochNanos;
-    assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos);
+    assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos);
     testClock.advanceMillis(MILLIS_PER_SECOND);
-    assertThat(span.getLatencyNs()).isEqualTo(elapsedTimeNanos);
+    assertThat(span.getLatencyNanos()).isEqualTo(elapsedTimeNanos);
   }
 
   @Test

@@ -238,14 +238,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns the end nano time (see {@link System#nanoTime()}). If the current {@code Span} is not
-   * ended then returns {@link Clock#nanoTime()}.
+   * Returns the end nano time (see {@link System#nanoTime()}) or zero if the current {@code Span}
+   * is not ended.
    *
    * @return the end nano time.
    */
   private long getEndEpochNanos() {
     synchronized (lock) {
-      return getEndNanoTimeInternal();
+      return endEpochNanos;
     }
   }
 
@@ -301,16 +301,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the latency of the {@code Span} in nanos.
    */
-  long getLatencyNs() {
+  @Override
+  public long getLatencyNanos() {
     synchronized (lock) {
-      return getEndNanoTimeInternal() - startEpochNanos;
+      return (hasEnded ? endEpochNanos : clock.now()) - startEpochNanos;
     }
-  }
-
-  // Use getEndNanoTimeInternal to avoid over-locking.
-  @GuardedBy("lock")
-  private long getEndNanoTimeInternal() {
-    return hasEnded ? endEpochNanos : clock.now();
   }
 
   /**
