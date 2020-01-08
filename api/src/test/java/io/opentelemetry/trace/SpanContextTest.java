@@ -113,5 +113,4 @@ public class SpanContextTest {
     assertThat(second.isRemote()).isFalse();
     assertThat(remote.isRemote()).isTrue();
   }
-
 }
