@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
-import static java.util.Collections.singletonMap;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.LongCounter;
@@ -26,7 +25,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link MeterSdk}. */
+/**
+ * Unit tests for {@link MeterSdk}.
+ */
 @RunWith(JUnit4.class)
 public class MeterSdkTest {
 
@@ -54,19 +55,15 @@ public class MeterSdkTest {
     MeterSdk testSdk = new MeterSdk();
 
     assertThat(testSdk.emptyLabelSet()).isSameInstanceAs(testSdk.emptyLabelSet());
+    assertThat(testSdk.emptyLabelSet()).isSameInstanceAs(testSdk.createLabelSet());
     assertThat(testSdk.emptyLabelSet())
         .isSameInstanceAs(testSdk.createLabelSet(Collections.<String, String>emptyMap()));
-    assertThat(testSdk.createLabelSet("key", "value"))
-        .isEqualTo(testSdk.createLabelSet("key", "value"));
-    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2"))
-        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2"));
-    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"))
-        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"));
-    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"))
-        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"));
 
     assertThat(testSdk.createLabelSet("key", "value"))
-        .isEqualTo(testSdk.createLabelSet(singletonMap("key", "value")));
+        .isEqualTo(testSdk.createLabelSet("key", "value"));
+
+    assertThat(testSdk.createLabelSet(Collections.singletonMap("key", "value")))
+        .isEqualTo(testSdk.createLabelSet("key", "value"));
 
     assertThat(testSdk.createLabelSet("key", "value"))
         .isNotEqualTo(testSdk.createLabelSet("value", "key"));

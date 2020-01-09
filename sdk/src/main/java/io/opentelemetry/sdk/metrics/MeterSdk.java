@@ -16,9 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static java.util.Collections.singletonMap;
-
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleGauge;
@@ -82,7 +79,7 @@ public class MeterSdk implements Meter {
 
   @Override
   public LabelSet createLabelSet(String... keyValuePairs) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.create(keyValuePairs);
   }
 
   @Override

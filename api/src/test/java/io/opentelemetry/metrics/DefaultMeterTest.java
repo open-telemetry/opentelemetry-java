@@ -16,15 +16,11 @@
 
 package io.opentelemetry.metrics;
 
-import java.util.Arrays;
-import java.util.Collection;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 /** Unit tests for {@link DefaultMeter}. */
 @RunWith(JUnit4.class)
@@ -87,5 +83,4 @@ public final class DefaultMeterTest {
     thrown.expectMessage("null");
     defaultMeter.createLabelSet(null, "value");
   }
-
 }
