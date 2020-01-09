@@ -125,49 +125,21 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public LabelSet createLabelSet(String k1, String v1) {
-    Utils.checkNotNull(k1, "k1");
-    Utils.checkNotNull(v1, "v1");
-    return NoopLabelSet.INSTANCE;
-  }
-
-  @Override
-  public LabelSet createLabelSet(String k1, String v1, String k2, String v2) {
-    Utils.checkNotNull(k1, "k1");
-    Utils.checkNotNull(v1, "v1");
-    Utils.checkNotNull(k2, "k2");
-    Utils.checkNotNull(v2, "v2");
-    return NoopLabelSet.INSTANCE;
-  }
-
-  @Override
-  public LabelSet createLabelSet(String k1, String v1, String k2, String v2, String k3, String v3) {
-    Utils.checkNotNull(k1, "k1");
-    Utils.checkNotNull(v1, "v1");
-    Utils.checkNotNull(k2, "k2");
-    Utils.checkNotNull(v2, "v2");
-    Utils.checkNotNull(k3, "k3");
-    Utils.checkNotNull(v3, "v3");
-    return NoopLabelSet.INSTANCE;
-  }
-
-  @Override
-  public LabelSet createLabelSet(
-      String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
-    Utils.checkNotNull(k1, "k1");
-    Utils.checkNotNull(v1, "v1");
-    Utils.checkNotNull(k2, "k2");
-    Utils.checkNotNull(v2, "v2");
-    Utils.checkNotNull(k3, "k3");
-    Utils.checkNotNull(v3, "v3");
-    Utils.checkNotNull(k4, "k4");
-    Utils.checkNotNull(v4, "v4");
+  public LabelSet createLabelSet(String... keyValuePairs) {
+    Utils.checkArgument(
+        keyValuePairs.length % 2 == 0,
+        "You must provide an even number of key/value pair arguments.");
+    for (int i = 0; i < keyValuePairs.length; i+=2) {
+      String argument = keyValuePairs[i];
+      Utils.checkNotNull(argument, "You cannot provide null keys for LabelSet creation.");
+    }
     return NoopLabelSet.INSTANCE;
   }
 
   @Override
   public LabelSet createLabelSet(Map<String, String> labels) {
     Utils.checkNotNull(labels, "labels");
+    Utils.checkMapKeysNotNull(labels, "Null map keys are not allowed for LabelSet creation");
     return NoopLabelSet.INSTANCE;
   }
 

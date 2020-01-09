@@ -16,11 +16,15 @@
 
 package io.opentelemetry.metrics;
 
+import java.util.Arrays;
+import java.util.Collection;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /** Unit tests for {@link DefaultMeter}. */
 @RunWith(JUnit4.class)
@@ -69,4 +73,19 @@ public final class DefaultMeterTest {
     thrown.expectMessage("name");
     defaultMeter.longMeasureBuilder(null);
   }
+
+  @Test
+  public void testVarargsLabelSetValidation_UnmatchedKeysAndValues() throws Exception {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("even");
+    defaultMeter.createLabelSet("key");
+  }
+
+  @Test
+  public void testVarargsLabelSetValidation_NullKey() throws Exception {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("null");
+    defaultMeter.createLabelSet(null, "value");
+  }
+
 }

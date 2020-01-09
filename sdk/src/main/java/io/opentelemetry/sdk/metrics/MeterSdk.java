@@ -81,24 +81,8 @@ public class MeterSdk implements Meter {
   }
 
   @Override
-  public LabelSet createLabelSet(String k1, String v1) {
-    return SdkLabelSet.create(singletonMap(k1, v1));
-  }
-
-  @Override
-  public LabelSet createLabelSet(String k1, String v1, String k2, String v2) {
-    return SdkLabelSet.create(ImmutableMap.of(k1, v1, k2, v2));
-  }
-
-  @Override
-  public LabelSet createLabelSet(String k1, String v1, String k2, String v2, String k3, String v3) {
-    return SdkLabelSet.create(ImmutableMap.of(k1, v1, k2, v2, k3, v3));
-  }
-
-  @Override
-  public LabelSet createLabelSet(
-      String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
-    return SdkLabelSet.create(ImmutableMap.of(k1, v1, k2, v2, k3, v3, k4, v4));
+  public LabelSet createLabelSet(String... keyValuePairs) {
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override

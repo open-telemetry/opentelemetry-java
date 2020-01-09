@@ -371,27 +371,7 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public LabelSet createLabelSet(String k1, String v1) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public LabelSet createLabelSet(String k1, String v1, String k2, String v2) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public LabelSet createLabelSet(
-        String k1, String v1, String k2, String v2, String k3, String v3) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public LabelSet createLabelSet(
-        String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
+    public LabelSet createLabelSet(String... keyValuePairs) {
       return null;
     }
 
