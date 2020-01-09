@@ -113,7 +113,7 @@ public final class DefaultPropagators implements Propagators {
 
     @Override
     public List<String> fields() {
-      return Collections.<String>emptyList();
+      return Collections.emptyList();
     }
 
     @Override
