@@ -16,6 +16,8 @@
 
 package io.opentelemetry.trace.propagation;
 
+import static io.opentelemetry.context.propagation.ContextUtils.withScopedContext;
+
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.DefaultSpan;
@@ -170,8 +172,7 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static Scope withScopedSpan(Span span) {
-    Context context = withSpan(span);
-    return io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
+    return withScopedContext(withSpan(span));
   }
 
   private ContextUtils() {}
