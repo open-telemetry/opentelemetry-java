@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.Collections.singletonMap;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.LongCounter;
@@ -53,6 +54,8 @@ public class MeterSdkTest {
     MeterSdk testSdk = new MeterSdk();
 
     assertThat(testSdk.emptyLabelSet()).isSameInstanceAs(testSdk.emptyLabelSet());
+    assertThat(testSdk.emptyLabelSet())
+        .isSameInstanceAs(testSdk.createLabelSet(Collections.<String, String>emptyMap()));
     assertThat(testSdk.createLabelSet("key", "value"))
         .isEqualTo(testSdk.createLabelSet("key", "value"));
     assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2"))
@@ -61,5 +64,11 @@ public class MeterSdkTest {
         .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"));
     assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"))
         .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"));
+
+    assertThat(testSdk.createLabelSet("key", "value"))
+        .isEqualTo(testSdk.createLabelSet(singletonMap("key", "value")));
+
+    assertThat(testSdk.createLabelSet("key", "value"))
+        .isNotEqualTo(testSdk.createLabelSet("value", "key"));
   }
 }

@@ -104,7 +104,7 @@ public class MeterSdk implements Meter {
 
   @Override
   public LabelSet createLabelSet(@Nonnull Map<String, String> labels) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.create(labels);
   }
 
   @Override
