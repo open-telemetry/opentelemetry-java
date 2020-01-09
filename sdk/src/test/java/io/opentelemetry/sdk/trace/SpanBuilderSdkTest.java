@@ -87,7 +87,7 @@ public class SpanBuilderSdkTest {
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      assertThat(span.getLinks()).hasSize(3);
+      assertThat(span.toSpanData().getLinks()).hasSize(3);
     } finally {
       span.end();
     }
@@ -111,9 +111,10 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.getDroppedLinksCount()).isEqualTo(maxNumberOfLinks);
-      assertThat(span.getLinks().size()).isEqualTo(maxNumberOfLinks);
+      List<Link> links = span.toSpanData().getLinks();
+      assertThat(links.size()).isEqualTo(maxNumberOfLinks);
       for (int i = 0; i < maxNumberOfLinks; i++) {
-        assertThat(span.getLinks().get(i)).isEqualTo(SpanData.Link.create(sampledSpanContext));
+        assertThat(links.get(i)).isEqualTo(SpanData.Link.create(sampledSpanContext));
       }
     } finally {
       span.end();

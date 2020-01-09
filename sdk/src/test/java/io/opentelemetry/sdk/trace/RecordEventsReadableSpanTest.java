@@ -204,13 +204,13 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      assertThat(span.getStatus()).isEqualTo(Status.OK);
+      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.OK);
       span.setStatus(Status.CANCELLED);
-      assertThat(span.getStatus()).isEqualTo(Status.CANCELLED);
+      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.CANCELLED);
     } finally {
       span.end();
     }
-    assertThat(span.getStatus()).isEqualTo(Status.CANCELLED);
+    assertThat(span.toSpanData().getStatus()).isEqualTo(Status.CANCELLED);
   }
 
   @Test

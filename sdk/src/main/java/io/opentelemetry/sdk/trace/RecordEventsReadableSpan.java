@@ -250,24 +250,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns the status of the {@code Span}. If not set defaults to {@link Status#OK}.
-   *
-   * @return the status of the {@code Span}.
-   */
-  @VisibleForTesting
-  Status getStatus() {
-    synchronized (lock) {
-      return getStatusWithDefault();
-    }
-  }
-
-  /**
    * Returns a copy of the links for this span.
    *
    * @return A copy of the Links for this span.
    */
-  @VisibleForTesting
-  List<Link> getLinks() {
+  private List<Link> getLinks() {
     if (links == null) {
       return Collections.emptyList();
     }
@@ -539,17 +526,4 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     return totalRecordedLinks - links.size();
   }
 
-  @VisibleForTesting
-  int getNumberOfChildren() {
-    synchronized (lock) {
-      return numberOfChildren;
-    }
-  }
-
-  @VisibleForTesting
-  int getTotalRecordedEvents() {
-    synchronized (lock) {
-      return totalRecordedEvents;
-    }
-  }
 }
