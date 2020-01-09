@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.LabelSet;
@@ -54,7 +54,7 @@ public class SdkLongCounterTest {
     BoundLongCounter boundLongCounter = longCounter.bind(labelSet);
     boundLongCounter.add(334);
     BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
-    assertEquals(boundLongCounter, duplicateBoundCounter);
+    assertThat(duplicateBoundCounter).isEqualTo(boundLongCounter);
 
     // todo: verify that this has done something, when it has been done.
     longCounter.unbind(boundLongCounter);
