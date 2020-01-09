@@ -37,11 +37,11 @@ class BaseBoundInstrument {
 
     BaseBoundInstrument that = (BaseBoundInstrument) o;
 
-    return labels != null ? labels.equals(that.labels) : that.labels == null;
+    return labels.equals(that.labels);
   }
 
   @Override
   public int hashCode() {
-    return labels != null ? labels.hashCode() : 0;
+    return labels.hashCode();
   }
 }
