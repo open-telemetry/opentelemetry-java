@@ -26,9 +26,9 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class BatchRecorderTest {
   private static final Meter meter = DefaultMeter.getInstance();
-  private static final MeasureLong measureLong = meter.measureLongBuilder("measure_long").build();
-  private static final MeasureDouble measureDouble =
-      meter.measureDoubleBuilder("measure_double").build();
+  private static final LongMeasure LONG_MEASURE = meter.longMeasureBuilder("measure_long").build();
+  private static final DoubleMeasure DOUBLE_MEASURE =
+      meter.doubleMeasureBuilder("measure_double").build();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -36,32 +36,32 @@ public class BatchRecorderTest {
   public void preventNull_MeasureLong() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("measure");
-    meter.newMeasureBatchRecorder().put((MeasureLong) null, 5L).record();
+    meter.newMeasureBatchRecorder().put((LongMeasure) null, 5L).record();
   }
 
   @Test
   public void preventNegativeValues_MeasureLong() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    meter.newMeasureBatchRecorder().put(measureLong, -5L).record();
+    meter.newMeasureBatchRecorder().put(LONG_MEASURE, -5L).record();
   }
 
   @Test
   public void preventNull_MeasureDouble() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("measure");
-    meter.newMeasureBatchRecorder().put((MeasureDouble) null, 5L).record();
+    meter.newMeasureBatchRecorder().put((DoubleMeasure) null, 5L).record();
   }
 
   @Test
   public void preventNegativeValues_MeasureDouble() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    meter.newMeasureBatchRecorder().put(measureDouble, -5.0).record();
+    meter.newMeasureBatchRecorder().put(DOUBLE_MEASURE, -5.0).record();
   }
 
   @Test
   public void doesNotThrow() {
-    meter.newMeasureBatchRecorder().put(measureLong, 5).put(measureDouble, 3.5).record();
+    meter.newMeasureBatchRecorder().put(LONG_MEASURE, 5).put(DOUBLE_MEASURE, 3.5).record();
   }
 }

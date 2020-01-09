@@ -22,17 +22,17 @@ import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.metrics.DefaultMeterFactory;
-import io.opentelemetry.metrics.DefaultMeterFactoryProvider;
+import io.opentelemetry.metrics.DefaultMeterRegistry;
+import io.opentelemetry.metrics.DefaultMeterRegistryProvider;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.MeterFactory;
-import io.opentelemetry.metrics.spi.MeterFactoryProvider;
-import io.opentelemetry.trace.DefaultTracerFactory;
-import io.opentelemetry.trace.DefaultTracerFactoryProvider;
+import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.metrics.spi.MeterRegistryProvider;
+import io.opentelemetry.trace.DefaultTracerRegistry;
+import io.opentelemetry.trace.DefaultTracerRegistryProvider;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerFactory;
+import io.opentelemetry.trace.TracerRegistry;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
-import io.opentelemetry.trace.spi.TracerFactoryProvider;
+import io.opentelemetry.trace.spi.TracerRegistryProvider;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -43,8 +43,8 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
- * @see TracerFactory
- * @see MeterFactoryProvider
+ * @see TracerRegistry
+ * @see MeterRegistryProvider
  * @see CorrelationContextManagerProvider
  */
 @ThreadSafe
@@ -52,35 +52,35 @@ public final class OpenTelemetry {
 
   @Nullable private static volatile OpenTelemetry instance;
 
-  private final TracerFactory tracerFactory;
-  private final MeterFactory meterFactory;
+  private final TracerRegistry tracerRegistry;
+  private final MeterRegistry meterRegistry;
   private final CorrelationContextManager contextManager;
 
   private volatile Propagators propagators =
       DefaultPropagators.builder().addHttpTextFormat(new HttpTraceContext()).build();
 
   /**
-   * Returns a singleton {@link TracerFactory}.
+   * Returns a singleton {@link TracerRegistry}.
    *
-   * @return registered TracerFactory of default via {@link DefaultTracerFactory#getInstance()}.
-   * @throws IllegalStateException if a specified TracerFactory (via system properties) could not be
-   *     found.
+   * @return registered TracerRegistry of default via {@link DefaultTracerRegistry#getInstance()}.
+   * @throws IllegalStateException if a specified TracerRegistry (via system properties) could not
+   *     be found.
    * @since 0.1.0
    */
-  public static TracerFactory getTracerFactory() {
-    return getInstance().tracerFactory;
+  public static TracerRegistry getTracerRegistry() {
+    return getInstance().tracerRegistry;
   }
 
   /**
-   * Returns a singleton {@link MeterFactory}.
+   * Returns a singleton {@link MeterRegistry}.
    *
-   * @return registered MeterFactory or default via {@link DefaultMeterFactory#getInstance()}.
-   * @throws IllegalStateException if a specified MeterFactory (via system properties) could not be
+   * @return registered MeterRegistry or default via {@link DefaultMeterRegistry#getInstance()}.
+   * @throws IllegalStateException if a specified MeterRegistry (via system properties) could not be
    *     found.
    * @since 0.1.0
    */
-  public static MeterFactory getMeterFactory() {
-    return getInstance().meterFactory;
+  public static MeterRegistry getMeterRegistry() {
+    return getInstance().meterRegistry;
   }
 
   /**
@@ -138,17 +138,17 @@ public final class OpenTelemetry {
   }
 
   private OpenTelemetry() {
-    TracerFactoryProvider tracerFactoryProvider = loadSpi(TracerFactoryProvider.class);
-    this.tracerFactory =
-        tracerFactoryProvider != null
-            ? tracerFactoryProvider.create()
-            : DefaultTracerFactoryProvider.getInstance().create();
+    TracerRegistryProvider tracerRegistryProvider = loadSpi(TracerRegistryProvider.class);
+    this.tracerRegistry =
+        tracerRegistryProvider != null
+            ? tracerRegistryProvider.create()
+            : DefaultTracerRegistryProvider.getInstance().create();
 
-    MeterFactoryProvider meterFactoryProvider = loadSpi(MeterFactoryProvider.class);
-    meterFactory =
-        meterFactoryProvider != null
-            ? meterFactoryProvider.create()
-            : DefaultMeterFactoryProvider.getInstance().create();
+    MeterRegistryProvider meterRegistryProvider = loadSpi(MeterRegistryProvider.class);
+    meterRegistry =
+        meterRegistryProvider != null
+            ? meterRegistryProvider.create()
+            : DefaultMeterRegistryProvider.getInstance().create();
     CorrelationContextManagerProvider contextManagerProvider =
         loadSpi(CorrelationContextManagerProvider.class);
     contextManager =

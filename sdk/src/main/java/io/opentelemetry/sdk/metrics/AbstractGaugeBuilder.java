@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.Gauge;
 
 abstract class AbstractGaugeBuilder<B extends Gauge.Builder<B, V>, V>
-    extends AbstractMetricBuilder<B, V> implements Gauge.Builder<B, V> {
+    extends AbstractInstrumentBuilder<B, V> implements Gauge.Builder<B, V> {
   private boolean monotonic = false;
 
   protected AbstractGaugeBuilder(String name) {

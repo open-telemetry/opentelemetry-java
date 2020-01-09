@@ -173,6 +173,14 @@ public abstract class SpanData {
   public abstract boolean getHasRemoteParent();
 
   /**
+   * Returns whether this Span has already been ended.
+   *
+   * @return {@code true} if the span has already been ended, {@code false} if not.
+   * @since 0.4.0
+   */
+  public abstract boolean getHasEnded();
+
+  /**
    * An immutable implementation of {@link Link}.
    *
    * @since 0.1.0
@@ -442,5 +450,14 @@ public abstract class SpanData {
      * @since 0.3.0
      */
     public abstract Builder setHasRemoteParent(boolean hasRemoteParent);
+
+    /**
+     * Sets to true if the span has been ended.
+     *
+     * @param hasEnded A boolean indicating if the span has been ended.
+     * @return this
+     * @since 0.4.0
+     */
+    public abstract Builder setHasEnded(boolean hasEnded);
   }
 }

@@ -23,7 +23,7 @@ import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.Scope;
@@ -34,7 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class OpenTelemetryInteroperabilityTest {
-  private final TracerSdkFactory sdk = TracerSdkFactory.create();
+  private final TracerSdkRegistry sdk = TracerSdkRegistry.create();
   private final io.opentelemetry.trace.Tracer tracer = sdk.get("opentracingshim");
   private final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
   private final Tracer otTracer =

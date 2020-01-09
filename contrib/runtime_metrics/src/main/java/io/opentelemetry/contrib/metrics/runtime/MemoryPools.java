@@ -17,11 +17,11 @@
 package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.metrics.LongObserver;
+import io.opentelemetry.metrics.LongObserver.BoundLongObserver;
+import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.Observer.Callback;
-import io.opentelemetry.metrics.Observer.Handle;
-import io.opentelemetry.metrics.ObserverLong;
-import io.opentelemetry.metrics.ObserverLong.Result;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
@@ -65,46 +65,45 @@ public final class MemoryPools {
   public MemoryPools() {
     this.memoryBean = ManagementFactory.getMemoryMXBean();
     this.poolBeans = ManagementFactory.getMemoryPoolMXBeans();
-    this.meter = OpenTelemetry.getMeterFactory().get("jvm_memory");
+    this.meter = OpenTelemetry.getMeterRegistry().get("jvm_memory");
   }
 
   /** Export only the "area" metric. */
   public void exportMemoryAreaMetric() {
     // TODO: Set this as non-monotonic.
-    final ObserverLong areaMetric =
+    final LongObserver areaMetric =
         this.meter
-            .observerLongBuilder("area")
+            .longObserverBuilder("area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
             .setMonotonic(false)
             .build();
-    final Handle usedHeap =
-        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP));
-    final Handle usedNonHeap =
-        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP));
-    final Handle committedHeap =
-        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP));
-    final Handle committedNonHeap =
-        areaMetric.getHandle(
-            meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, NON_HEAP));
+    final BoundLongObserver usedHeap =
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP));
+    final BoundLongObserver usedNonHeap =
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP));
+    final BoundLongObserver committedHeap =
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP));
+    final BoundLongObserver committedNonHeap =
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, NON_HEAP));
     // TODO: Decide if max is needed or not. May be derived with some approximation from max(used).
-    final Handle maxHeap =
-        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP));
-    final Handle maxNonHeap =
-        areaMetric.getHandle(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP));
+    final BoundLongObserver maxHeap =
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP));
+    final BoundLongObserver maxNonHeap =
+        areaMetric.bind(meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP));
     areaMetric.setCallback(
-        new ObserverLong.Callback<Result>() {
+        new LongObserver.Callback<ResultLongObserver>() {
           @Override
-          public void update(Result result) {
+          public void update(ResultLongObserver resultLongObserver) {
             MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
             MemoryUsage nonHeapUsage = memoryBean.getNonHeapMemoryUsage();
-            result.put(usedHeap, heapUsage.getUsed());
-            result.put(usedNonHeap, nonHeapUsage.getUsed());
-            result.put(committedHeap, heapUsage.getUsed());
-            result.put(committedNonHeap, nonHeapUsage.getUsed());
-            result.put(maxHeap, heapUsage.getUsed());
-            result.put(maxNonHeap, nonHeapUsage.getUsed());
+            resultLongObserver.put(usedHeap, heapUsage.getUsed());
+            resultLongObserver.put(usedNonHeap, nonHeapUsage.getUsed());
+            resultLongObserver.put(committedHeap, heapUsage.getUsed());
+            resultLongObserver.put(committedNonHeap, nonHeapUsage.getUsed());
+            resultLongObserver.put(maxHeap, heapUsage.getUsed());
+            resultLongObserver.put(maxNonHeap, nonHeapUsage.getUsed());
           }
         });
   }
@@ -112,39 +111,39 @@ public final class MemoryPools {
   /** Export only the "pool" metric. */
   public void exportMemoryPoolMetric() {
     // TODO: Set this as non-monotonic.
-    final ObserverLong poolMetric =
+    final LongObserver poolMetric =
         this.meter
-            .observerLongBuilder("pool")
+            .longObserverBuilder("pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))
             .setMonotonic(false)
             .build();
-    final List<Handle> usedHandles = new ArrayList<>(poolBeans.size());
-    final List<Handle> committedHandles = new ArrayList<>(poolBeans.size());
-    final List<Handle> maxHandles = new ArrayList<>(poolBeans.size());
+    final List<BoundLongObserver> usedBounds = new ArrayList<>(poolBeans.size());
+    final List<BoundLongObserver> committedBounds = new ArrayList<>(poolBeans.size());
+    final List<BoundLongObserver> maxBounds = new ArrayList<>(poolBeans.size());
     for (final MemoryPoolMXBean pool : poolBeans) {
-      usedHandles.add(
-          poolMetric.getHandle(
+      usedBounds.add(
+          poolMetric.bind(
               meter.createLabelSet(TYPE_LABEL_KEY, USED, POOL_LABEL_KEY, pool.getName())));
-      committedHandles.add(
-          poolMetric.getHandle(
+      committedBounds.add(
+          poolMetric.bind(
               meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, POOL_LABEL_KEY, pool.getName())));
-      maxHandles.add(
-          poolMetric.getHandle(
+      maxBounds.add(
+          poolMetric.bind(
               meter.createLabelSet(TYPE_LABEL_KEY, MAX, POOL_LABEL_KEY, pool.getName())));
     }
     poolMetric.setCallback(
-        new Callback<Result>() {
+        new Callback<ResultLongObserver>() {
           @Override
-          public void update(Result result) {
+          public void update(ResultLongObserver resultLongObserver) {
             for (int i = 0; i < poolBeans.size(); i++) {
               MemoryUsage poolUsage = poolBeans.get(i).getUsage();
-              result.put(usedHandles.get(i), poolUsage.getUsed());
-              result.put(committedHandles.get(i), poolUsage.getCommitted());
+              resultLongObserver.put(usedBounds.get(i), poolUsage.getUsed());
+              resultLongObserver.put(committedBounds.get(i), poolUsage.getCommitted());
               // TODO: Decide if max is needed or not. May be derived with some approximation from
               //  max(used).
-              result.put(maxHandles.get(i), poolUsage.getMax());
+              resultLongObserver.put(maxBounds.get(i), poolUsage.getMax());
             }
           }
         });

@@ -109,7 +109,7 @@ public final class ContextUtilsTest {
 
   @Test
   public void testSetSpanAndSpanContext() {
-    Span span = OpenTelemetry.getTracerFactory().get(null).spanBuilder("testSpan").startSpan();
+    Span span = OpenTelemetry.getTracerRegistry().get(null).spanBuilder("testSpan").startSpan();
     SpanContext spanContext =
         SpanContext.create(
             new TraceId(1, 1), new SpanId(1), TraceFlags.getDefault(), Tracestate.getDefault());

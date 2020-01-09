@@ -18,13 +18,13 @@ package io.opentelemetry.sdk;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
-import io.opentelemetry.sdk.metrics.MeterSdkFactory;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * This class provides a static global accessor for SDK telemetry objects {@link TracerSdkFactory},
- * {@link MeterSdkFactory} and {@link CorrelationContextManagerSdk}.
+ * This class provides a static global accessor for SDK telemetry objects {@link TracerSdkRegistry},
+ * {@link MeterSdkRegistry} and {@link CorrelationContextManagerSdk}.
  *
  * <p>This is a convenience class getting and casting the telemetry objects from {@link
  * OpenTelemetry}.
@@ -34,23 +34,23 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class OpenTelemetrySdk {
   /**
-   * Returns a {@link TracerSdkFactory}.
+   * Returns a {@link TracerSdkRegistry}.
    *
-   * @return TracerFactory returned by {@link OpenTelemetry#getTracerFactory()}.
+   * @return TracerRegistry returned by {@link OpenTelemetry#getTracerRegistry()}.
    * @since 0.1.0
    */
-  public static TracerSdkFactory getTracerFactory() {
-    return (TracerSdkFactory) OpenTelemetry.getTracerFactory();
+  public static TracerSdkRegistry getTracerRegistry() {
+    return (TracerSdkRegistry) OpenTelemetry.getTracerRegistry();
   }
 
   /**
-   * Returns a {@link MeterSdkFactory}.
+   * Returns a {@link MeterSdkRegistry}.
    *
-   * @return MeterFactory returned by {@link OpenTelemetry#getMeterFactory()}.
+   * @return MeterRegistry returned by {@link OpenTelemetry#getMeterRegistry()}.
    * @since 0.1.0
    */
-  public static MeterSdkFactory getMeterFactory() {
-    return (MeterSdkFactory) OpenTelemetry.getMeterFactory();
+  public static MeterSdkRegistry getMeterRegistry() {
+    return (MeterSdkRegistry) OpenTelemetry.getMeterRegistry();
   }
 
   /**

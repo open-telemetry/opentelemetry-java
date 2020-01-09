@@ -18,7 +18,7 @@ package io.opentelemetry.exporters.inmemory;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import java.util.List;
 
@@ -35,7 +35,7 @@ import java.util.List;
  *     Tracer tracer = tracing.getTracer();
  *     tracer.spanBuilder("span").startSpan().end();
  *
- *     {@code List<io.opentelemetry.sdk.trace.SpanData>} spans = tracing.getFinishedSpanItems();
+ *     List&lt;io.opentelemetry.sdk.trace.SpanData&gt; spans = tracing.getFinishedSpanItems();
  *     assertThat(spans.size()).isEqualTo(1);
  *     assertThat(spans.get(0).getName()).isEqualTo("span");
  *   }
@@ -44,7 +44,7 @@ import java.util.List;
  * @since 0.1.0
  */
 public final class InMemoryTracing {
-  private final TracerSdkFactory tracerSdkFactory;
+  private final TracerSdkRegistry tracerSdkRegistry;
   private final InMemorySpanExporter exporter;
 
   /**
@@ -53,22 +53,22 @@ public final class InMemoryTracing {
    * @since 0.1.0
    */
   public InMemoryTracing() {
-    this(TracerSdkFactory.create());
+    this(TracerSdkRegistry.create());
   }
 
   /**
    * Creates a new {@code InMemoryTracing} with the specified {@code TracerSdk}.
    *
-   * @param tracerSdkFactory the {@code TracerSdkFactory} to be used.
+   * @param tracerSdkRegistry the {@code TracerSdkRegistry} to be used.
    * @throws NullPointerException if {@code tracer} is {@code null}.
    * @since 0.1.0
    */
-  public InMemoryTracing(TracerSdkFactory tracerSdkFactory) {
-    Utils.checkNotNull(tracerSdkFactory, "tracerSdkFactory");
+  public InMemoryTracing(TracerSdkRegistry tracerSdkRegistry) {
+    Utils.checkNotNull(tracerSdkRegistry, "tracerSdkFactory");
 
-    this.tracerSdkFactory = tracerSdkFactory;
+    this.tracerSdkRegistry = tracerSdkRegistry;
     this.exporter = InMemorySpanExporter.create();
-    tracerSdkFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    tracerSdkRegistry.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
   }
 
   /**
@@ -78,8 +78,8 @@ public final class InMemoryTracing {
    * @return the {@code Tracer} to be used to create {@code Span}s.
    * @since 0.1.0
    */
-  public TracerSdkFactory getTracerFactory() {
-    return tracerSdkFactory;
+  public TracerSdkRegistry getTracerRegistry() {
+    return tracerSdkRegistry;
   }
 
   /**
@@ -108,6 +108,6 @@ public final class InMemoryTracing {
    * @since 0.1.0
    */
   public void shutdown() {
-    tracerSdkFactory.shutdown();
+    tracerSdkRegistry.shutdown();
   }
 }
