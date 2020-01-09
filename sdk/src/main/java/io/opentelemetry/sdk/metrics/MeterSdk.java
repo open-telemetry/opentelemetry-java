@@ -16,6 +16,9 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static java.util.Collections.singletonMap;
+
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleGauge;
@@ -48,7 +51,7 @@ public class MeterSdk implements Meter {
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLongCounter.SdkLongCounterBuilder.builder(name);
   }
 
   @Override
@@ -78,27 +81,27 @@ public class MeterSdk implements Meter {
 
   @Override
   public LabelSet createLabelSet(String k1, String v1) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.create(singletonMap(k1, v1));
   }
 
   @Override
   public LabelSet createLabelSet(String k1, String v1, String k2, String v2) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.create(ImmutableMap.of(k1, v1, k2, v2));
   }
 
   @Override
   public LabelSet createLabelSet(String k1, String v1, String k2, String v2, String k3, String v3) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.create(ImmutableMap.of(k1, v1, k2, v2, k3, v3));
   }
 
   @Override
   public LabelSet createLabelSet(
       String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.create(ImmutableMap.of(k1, v1, k2, v2, k3, v3, k4, v4));
   }
 
   @Override
   public LabelSet emptyLabelSet() {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLabelSet.empty();
   }
 }
