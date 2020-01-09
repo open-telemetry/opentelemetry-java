@@ -16,9 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.LongCounter;
@@ -44,8 +42,8 @@ public class MeterSdkTest {
             .setUnit("metric tonnes")
             .setMonotonic(true)
             .build();
-    assertNotNull(longCounter);
-    assertEquals(SdkLongCounter.class, longCounter.getClass());
+    assertThat(longCounter).isNotNull();
+    assertThat(longCounter).isInstanceOf(SdkLongCounter.class);
 
     // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
   }
@@ -54,16 +52,14 @@ public class MeterSdkTest {
   public void testLabelSets() {
     MeterSdk testSdk = new MeterSdk();
 
-    assertSame(testSdk.emptyLabelSet(), testSdk.emptyLabelSet());
-    assertEquals(testSdk.createLabelSet("key", "value"), testSdk.createLabelSet("key", "value"));
-    assertEquals(
-        testSdk.createLabelSet("k1", "v1", "k2", "v2"),
-        testSdk.createLabelSet("k1", "v1", "k2", "v2"));
-    assertEquals(
-        testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"),
-        testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"));
-    assertEquals(
-        testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"),
-        testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"));
+    assertThat(testSdk.emptyLabelSet()).isSameInstanceAs(testSdk.emptyLabelSet());
+    assertThat(testSdk.createLabelSet("key", "value"))
+        .isEqualTo(testSdk.createLabelSet("key", "value"));
+    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2"))
+        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2"));
+    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"))
+        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"));
+    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"))
+        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"));
   }
 }
