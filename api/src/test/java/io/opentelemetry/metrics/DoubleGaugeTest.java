@@ -93,7 +93,7 @@ public class DoubleGaugeTest {
   }
 
   @Test
-  public void noopGetBound_WithNullLabelSet() {
+  public void noopBind_WithNullLabelSet() {
     DoubleGauge doubleGauge =
         meter
             .doubleGaugeBuilder(NAME)
@@ -107,7 +107,7 @@ public class DoubleGaugeTest {
   }
 
   @Test
-  public void noopRemoveBound_WithNullBound() {
+  public void noopUnbind_WithNullInstrument() {
     DoubleGauge doubleGauge =
         meter
             .doubleGaugeBuilder(NAME)
@@ -116,7 +116,7 @@ public class DoubleGaugeTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("bound");
+    thrown.expectMessage("boundDoubleGauge");
     doubleGauge.unbind(null);
   }
 

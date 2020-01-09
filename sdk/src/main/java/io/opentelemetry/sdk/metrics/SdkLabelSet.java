@@ -14,15 +14,29 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.trace.TracerRegistry;
-import io.opentelemetry.trace.spi.TracerRegistryProvider;
+import static java.util.Collections.unmodifiableMap;
 
-/** SDK implementation of the TracerProviderFactory for SPI. */
-public class TracerSdkRegistryProvider implements TracerRegistryProvider {
-  @Override
-  public TracerRegistry create() {
-    return TracerSdkRegistry.builder().build();
+import com.google.auto.value.AutoValue;
+import io.opentelemetry.metrics.LabelSet;
+import java.util.Map;
+
+@AutoValue
+abstract class SdkLabelSet implements LabelSet {
+
+  private static final LabelSet EMPTY = create(null);
+
+  static LabelSet empty() {
+    return EMPTY;
   }
+
+  static LabelSet create(Map<String, String> labels) {
+    if (labels == null || labels.isEmpty()) {
+      return EMPTY;
+    }
+    return new AutoValue_SdkLabelSet(unmodifiableMap(labels));
+  }
+
+  abstract Map<String, String> getLabels();
 }

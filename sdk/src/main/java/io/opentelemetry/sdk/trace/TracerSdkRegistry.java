@@ -18,13 +18,10 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.internal.MillisClock;
-import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerRegistry;
-import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -34,7 +31,8 @@ import java.util.logging.Logger;
  * {@code Tracer} provider implementation for {@link TracerRegistry}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
- * io.opentelemetry.OpenTelemetry}.
+ * io.opentelemetry.OpenTelemetry}. However, if you need a custom implementation of the factory, you
+ * can create one as needed.
  */
 public class TracerSdkRegistry implements TracerRegistry {
   private final Object lock = new Object();
@@ -50,13 +48,14 @@ public class TracerSdkRegistry implements TracerRegistry {
    * @return a new {@link TracerSdkRegistry} with default configs.
    */
   public static TracerSdkRegistry create() {
-    return new TracerSdkRegistry(
-        MillisClock.getInstance(),
-        new RandomIdsGenerator(new SecureRandom()),
-        EnvVarResource.getResource());
+    return builder().build();
   }
 
-  private TracerSdkRegistry(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+  public static TracerSdkRegistryBuilder builder() {
+    return new TracerSdkRegistryBuilder();
+  }
+
+  TracerSdkRegistry(Clock clock, IdsGenerator idsGenerator, Resource resource) {
     this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
   }
 
