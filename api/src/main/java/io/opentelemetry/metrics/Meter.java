@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import java.util.Map;
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -288,7 +287,7 @@ public interface Meter {
    * @return a new {@link LabelSet} with the given labels.
    * @throws NullPointerException if the map is null.
    */
-  LabelSet createLabelSet(@Nonnull Map<String, String> labels);
+  LabelSet createLabelSet(Map<String, String> labels);
 
   /**
    * Returns an empty {@link LabelSet}. The implementation is permitted to have this be a singleton
