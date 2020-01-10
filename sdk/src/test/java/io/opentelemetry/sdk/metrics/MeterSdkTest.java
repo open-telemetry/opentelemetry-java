@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.singletonMap;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.LongCounter;
 import java.util.Collections;
 import org.junit.Test;
@@ -45,6 +46,25 @@ public class MeterSdkTest {
             .build();
     assertThat(longCounter).isNotNull();
     assertThat(longCounter).isInstanceOf(SdkLongCounter.class);
+
+    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+  }
+
+  @Test
+  public void testDoubleCounter() {
+    MeterSdk testSdk = new MeterSdk();
+
+    DoubleCounter doubleCounter =
+        testSdk
+            .doubleCounterBuilder("testCounter")
+            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own counter")
+            .setUnit("metric tonnes")
+            .setMonotonic(true)
+            .build();
+    assertThat(doubleCounter).isNotNull();
+    assertThat(doubleCounter).isInstanceOf(SdkDoubleCounter.class);
 
     // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
   }
