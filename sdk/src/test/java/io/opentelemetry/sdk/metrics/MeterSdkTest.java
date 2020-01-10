@@ -60,6 +60,9 @@ public class MeterSdkTest {
     assertThat(testSdk.createLabelSet("key", "value"))
         .isEqualTo(testSdk.createLabelSet("key", "value"));
 
+    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2"))
+        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2"));
+
     assertThat(testSdk.createLabelSet(Collections.singletonMap("key", "value")))
         .isEqualTo(testSdk.createLabelSet("key", "value"));
 
