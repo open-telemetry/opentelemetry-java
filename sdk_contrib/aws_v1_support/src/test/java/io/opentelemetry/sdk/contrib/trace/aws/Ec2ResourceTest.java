@@ -18,7 +18,9 @@ package io.opentelemetry.sdk.contrib.trace.aws;
 
 import static org.junit.Assert.assertEquals;
 
+import com.amazonaws.util.EC2MetadataUtils.InstanceInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceConstants;
 import org.junit.Test;
 
 public class Ec2ResourceTest {
@@ -26,6 +28,52 @@ public class Ec2ResourceTest {
   @Test
   public void shouldReturnResourceWithOnlyCloudProviderLabelIfNotRunningOnEc2() {
     Resource resource = Ec2Resource.getResource();
-    assertEquals(1, resource.getLabels().size());
+    assertEquals(
+        Ec2Resource.CLOUD_PROVIDER_AWS, resource.getLabels().get(ResourceConstants.CLOUD_PROVIDER));
+  }
+
+  @Test
+  public void shouldReturnResourceWithValuesFromEc2MetadataEndpointIfAvailable() {
+    String pendingTime = "0.0";
+    String instanceType = "t2.micro";
+    String imageId = "ami-00eb20669e0990cb4";
+    String instanceId = "i-06b058d0aea36e96e";
+    String[] billingProducts = new String[0];
+    String architecture = "x86_64 HVM gp2";
+    String accountId = "123456789012";
+    String kernelId = "not available";
+    String ramdiskId = "not available";
+    String region = "us-east-1";
+    String version = "2018.03.0.20190826";
+    String availabilityZone = "us-east-1a";
+    String privateIp = "172.31.30.166";
+    String[] devpayProductCodes = new String[0];
+    InstanceInfo instanceInfo =
+        new InstanceInfo(
+            pendingTime,
+            instanceType,
+            imageId,
+            instanceId,
+            billingProducts,
+            architecture,
+            accountId,
+            kernelId,
+            ramdiskId,
+            region,
+            version,
+            availabilityZone,
+            privateIp,
+            devpayProductCodes);
+    String hostname = "ip-172-31-30-166.ec2.internal";
+    Resource resource = Ec2Resource.getResourceFromInfoAndHost(instanceInfo, hostname);
+    assertEquals(
+        Ec2Resource.CLOUD_PROVIDER_AWS, resource.getLabels().get(ResourceConstants.CLOUD_PROVIDER));
+    assertEquals(accountId, resource.getLabels().get(ResourceConstants.CLOUD_ACCOUNT));
+    assertEquals(region, resource.getLabels().get(ResourceConstants.CLOUD_REGION));
+    assertEquals(availabilityZone, resource.getLabels().get(ResourceConstants.CLOUD_ZONE));
+    assertEquals(instanceId, resource.getLabels().get(ResourceConstants.HOST_ID));
+    assertEquals(privateIp, resource.getLabels().get(ResourceConstants.HOST_NAME));
+    assertEquals(instanceType, resource.getLabels().get(ResourceConstants.HOST_TYPE));
+    assertEquals(hostname, resource.getLabels().get(ResourceConstants.HOST_HOSTNAME));
   }
 }

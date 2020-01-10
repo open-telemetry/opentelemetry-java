@@ -24,12 +24,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /** Provides for lookup and population of {@link Resource} labels when running on AWS EC2. */
 public class Ec2Resource {
 
   /** OpenTelemetry semantic convention identifier for AWS cloud. */
-  public static final String CLOUD_PROVIDER_AWS = "aws";
+  static final String CLOUD_PROVIDER_AWS = "aws";
 
   /**
    * Returns a resource with all host and cloud labels populated with the information obtained from
@@ -38,14 +39,15 @@ public class Ec2Resource {
    * @return the resource
    */
   public static Resource getResource() {
-    Map<String, String> labels = new HashMap<>();
-    labels.put(ResourceConstants.CLOUD_PROVIDER, CLOUD_PROVIDER_AWS);
-    addEc2InstanceData(labels);
-    return Resource.create(labels);
+    return getResourceFromInfoAndHost(
+        EC2MetadataUtils.getInstanceInfo(), EC2MetadataUtils.getLocalHostName());
   }
 
-  private static void addEc2InstanceData(Map<String, String> labels) {
-    InstanceInfo info = EC2MetadataUtils.getInstanceInfo();
+  // This can be tested now with a fake info and host.
+  static Resource getResourceFromInfoAndHost(
+      @Nullable InstanceInfo info, @Nullable String hostname) {
+    Map<String, String> labels = new HashMap<>();
+    labels.put(ResourceConstants.CLOUD_PROVIDER, CLOUD_PROVIDER_AWS);
     if (info != null) {
       labels.put(ResourceConstants.CLOUD_ACCOUNT, info.getAccountId());
       labels.put(ResourceConstants.CLOUD_REGION, info.getRegion());
@@ -54,10 +56,10 @@ public class Ec2Resource {
       labels.put(ResourceConstants.HOST_NAME, info.getPrivateIp());
       labels.put(ResourceConstants.HOST_TYPE, info.getInstanceType());
     }
-    String hostname = EC2MetadataUtils.getLocalHostName();
     if (!isNullOrEmpty(hostname)) {
       labels.put(ResourceConstants.HOST_HOSTNAME, hostname);
     }
+    return Resource.create(labels);
   }
 
   private Ec2Resource() {}

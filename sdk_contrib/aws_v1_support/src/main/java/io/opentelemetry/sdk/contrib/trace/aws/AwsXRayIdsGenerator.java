@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.contrib.trace.aws;
 
 import com.amazonaws.xray.ThreadLocalStorage;
-import com.amazonaws.xray.entities.TraceID;
 import io.opentelemetry.sdk.trace.IdsGenerator;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
@@ -41,7 +40,7 @@ public class AwsXRayIdsGenerator implements IdsGenerator {
 
   @Override
   public TraceId generateTraceId() {
-    String traceIdStr = new TraceID().toString();
+    String traceIdStr = new com.amazonaws.xray.entities.TraceID().toString();
     return TraceId.fromLowerBase16(traceIdStr.substring(2, 10) + traceIdStr.substring(11, 35), 0);
   }
 
