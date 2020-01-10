@@ -23,7 +23,7 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
@@ -46,8 +46,8 @@ public class SpanWatcherProcessorTest {
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
   private static final long TEST_REPORT_INTERVAL = 5;
-  private final TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
-  private final Tracer tracer = tracerSdkFactory.get("SpanWatcherProcessorTest");
+  private final TracerSdkRegistry tracerSdkRegistry = TracerSdkRegistry.create();
+  private final Tracer tracer = tracerSdkRegistry.get("SpanWatcherProcessorTest");
   private final WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter();
   @Mock private SpanExporter throwingExporter;
 
@@ -58,16 +58,16 @@ public class SpanWatcherProcessorTest {
 
   @After
   public void cleanup() {
-    tracerSdkFactory.shutdown();
+    tracerSdkRegistry.shutdown();
   }
 
   private Span createSampledActiveSpan(String spanName) {
-    return TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOn())
+    return TestUtils.startSpanWithSampler(tracerSdkRegistry, tracer, spanName, Samplers.alwaysOn())
         .startSpan();
   }
 
   private Span createNotSampledActiveSpan(String spanName) {
-    return TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOff())
+    return TestUtils.startSpanWithSampler(tracerSdkRegistry, tracer, spanName, Samplers.alwaysOff())
         .startSpan();
   }
 
@@ -97,7 +97,7 @@ public class SpanWatcherProcessorTest {
 
   @Test
   public void testSpanWatcherBasic() {
-    tracerSdkFactory.addSpanProcessor(
+    tracerSdkRegistry.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(waitingSpanExporter)
             .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());
@@ -115,7 +115,7 @@ public class SpanWatcherProcessorTest {
 
   @Test
   public void testUnreferencedSpansAreNotReported() {
-    tracerSdkFactory.addSpanProcessor(
+    tracerSdkRegistry.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(waitingSpanExporter)
             .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());
@@ -136,7 +136,7 @@ public class SpanWatcherProcessorTest {
 
   @Test
   public void exportMoreSpansThanTheBufferSize() {
-    tracerSdkFactory.addSpanProcessor(
+    tracerSdkRegistry.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(waitingSpanExporter)
             .setMaxWatchlistSize(6)
             .setMaxExportBatchSize(2)
@@ -163,7 +163,7 @@ public class SpanWatcherProcessorTest {
   public void exportSpansToMultipleServices() {
     io.opentelemetry.sdk.trace.export.WaitingSpanExporter waitingSpanExporter2 =
         new io.opentelemetry.sdk.trace.export.WaitingSpanExporter();
-    tracerSdkFactory.addSpanProcessor(
+    tracerSdkRegistry.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(
                 MultiSpanExporter.create(
                     Arrays.<SpanExporter>asList(waitingSpanExporter, waitingSpanExporter2)))
@@ -186,7 +186,7 @@ public class SpanWatcherProcessorTest {
             .setMaxWatchlistSize(maxQueuedSpans)
             .setMaxExportBatchSize(maxQueuedSpans / 2)
             .build();
-    tracerSdkFactory.addSpanProcessor(processor);
+    tracerSdkRegistry.addSpanProcessor(processor);
 
     List<ReadableSpan> spansToExport = new ArrayList<>(maxQueuedSpans);
     // Wait to block the worker thread in the BatchSampledSpansProcessor. This ensures that no items
@@ -258,7 +258,7 @@ public class SpanWatcherProcessorTest {
         .when(throwingExporter)
         .export(ArgumentMatchers.<SpanData>anyList());
 
-    tracerSdkFactory.addSpanProcessor(
+    tracerSdkRegistry.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(throwingExporter, waitingSpanExporter)))
             .setReportIntervalMillis(TEST_REPORT_INTERVAL)
@@ -274,7 +274,7 @@ public class SpanWatcherProcessorTest {
 
   @Test
   public void exportNotSampledSpans() {
-    tracerSdkFactory.addSpanProcessor(
+    tracerSdkRegistry.addSpanProcessor(
         SpanWatcherProcessor.newBuilder(waitingSpanExporter)
             .setReportIntervalMillis(TEST_REPORT_INTERVAL)
             .build());

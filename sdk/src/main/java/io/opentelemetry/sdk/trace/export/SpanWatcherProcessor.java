@@ -258,7 +258,7 @@ public final class SpanWatcherProcessor implements SpanProcessor {
       ArrayList<ReadableSpan> unfinishedSpans = new ArrayList<>();
       for (int i = 0; i < spanWatchlist.size(); ) {
         ReadableSpan span = spanWatchlist.get(i).get();
-        if (span == null || span.hasBeenEnded()) {
+        if (span == null || span.hasEnded()) {
           dropSpan(i);
           continue;
         }
