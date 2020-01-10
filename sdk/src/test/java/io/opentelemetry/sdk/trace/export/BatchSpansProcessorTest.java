@@ -231,7 +231,8 @@ public class BatchSpansProcessorTest {
   }
 
   @Test(timeout = 200)
-  public void exporterTimesOut() {
+  public void exporterTimesOut() throws Exception {
+    final CountDownLatch interruptMarker = new CountDownLatch(1);
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1) {
           @Override
@@ -241,7 +242,7 @@ public class BatchSpansProcessorTest {
               // sleep longer than the configured timout of 100ms
               Thread.sleep(1000);
             } catch (InterruptedException e) {
-              // ok
+              interruptMarker.countDown();
             }
             return result;
           }
@@ -257,6 +258,11 @@ public class BatchSpansProcessorTest {
     ReadableSpan span = createSampledEndedSpan(SPAN_NAME_1);
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span.toSpanData());
+
+    // since the interrupt happens outside the execution of the test method, we'll block to make
+    // sure that the thread was actually interrupted due to the timeout.
+    // The test itself will fail if the test timeout is exceeded due to this waiting.
+    interruptMarker.await();
   }
 
   @Test
