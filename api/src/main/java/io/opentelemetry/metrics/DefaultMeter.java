@@ -130,8 +130,8 @@ public final class DefaultMeter implements Meter {
         keyValuePairs.length % 2 == 0,
         "You must provide an even number of key/value pair arguments.");
     for (int i = 0; i < keyValuePairs.length; i += 2) {
-      String argument = keyValuePairs[i];
-      Utils.checkNotNull(argument, "You cannot provide null keys for LabelSet creation.");
+      String key = keyValuePairs[i];
+      Utils.checkNotNull(key, "You cannot provide null keys for LabelSet creation.");
     }
     return NoopLabelSet.INSTANCE;
   }
