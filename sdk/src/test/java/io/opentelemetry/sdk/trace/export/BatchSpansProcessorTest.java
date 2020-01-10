@@ -230,7 +230,7 @@ public class BatchSpansProcessorTest {
     assertThat(exported).containsExactly(span2.toSpanData());
   }
 
-  @Test(timeout = 200)
+  @Test
   public void exporterTimesOut() throws Exception {
     final CountDownLatch interruptMarker = new CountDownLatch(1);
     WaitingSpanExporter waitingSpanExporter =
@@ -248,9 +248,10 @@ public class BatchSpansProcessorTest {
           }
         };
 
+    int exporterTimeoutMillis = 100;
     tracerSdkFactory.addSpanProcessor(
         BatchSpansProcessor.newBuilder(waitingSpanExporter)
-            .setExporterTimeoutMillis(100)
+            .setExporterTimeoutMillis(exporterTimeoutMillis)
             .setScheduleDelayMillis(1)
             .setMaxQueueSize(1)
             .build());
@@ -261,8 +262,7 @@ public class BatchSpansProcessorTest {
 
     // since the interrupt happens outside the execution of the test method, we'll block to make
     // sure that the thread was actually interrupted due to the timeout.
-    // The test itself will fail if the test timeout is exceeded due to this waiting.
-    interruptMarker.await();
+    assertThat(interruptMarker.await(exporterTimeoutMillis * 2, TimeUnit.MILLISECONDS)).isTrue();
   }
 
   @Test
@@ -396,7 +396,7 @@ public class BatchSpansProcessorTest {
     private final int numberToWaitFor;
     private CountDownLatch countDownLatch;
 
-    public WaitingSpanExporter(int numberToWaitFor) {
+    WaitingSpanExporter(int numberToWaitFor) {
       countDownLatch = new CountDownLatch(numberToWaitFor);
       this.numberToWaitFor = numberToWaitFor;
     }
