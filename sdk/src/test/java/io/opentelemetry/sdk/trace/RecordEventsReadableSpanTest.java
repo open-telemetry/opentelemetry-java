@@ -485,7 +485,6 @@ public class RecordEventsReadableSpanTest {
             resource,
             attributesWithCapacity,
             Collections.singletonList(link),
-            1,
             0);
     Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span);
     return span;
@@ -572,7 +571,6 @@ public class RecordEventsReadableSpanTest {
             resource,
             attributesWithCapacity,
             links,
-            1,
             0);
     long startEpochNanos = clock.now();
     clock.advanceMillis(4);

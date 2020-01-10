@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.sdk.common.Clock;
@@ -59,8 +58,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // The displayed name of the span.
   // List of recorded links to parent and child spans.
   private final List<Link> links;
-  // Number of links recorded.
-  private final int totalRecordedLinks;
 
   // Lock used to internally guard the mutable state of this instance
   private final Object lock = new Object();
@@ -83,12 +80,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // List of recorded events.
   @GuardedBy("lock")
   private final EvictingQueue<TimedEvent> events;
-  // Number of events recorded.
-  @GuardedBy("lock")
-  private int totalRecordedEvents = 0;
-  // The number of children.
-  @GuardedBy("lock")
-  private int numberOfChildren;
   // The status of the span.
   @GuardedBy("lock")
   @Nullable
@@ -115,10 +106,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
    * @param links the links set during span creation, may be truncated.
-   * @param totalRecordedLinks the total number of links set (including dropped links).
    * @return a new and started span.
    */
-  @VisibleForTesting
   static RecordEventsReadableSpan startSpan(
       SpanContext context,
       String name,
@@ -132,7 +121,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       Resource resource,
       AttributesWithCapacity attributes,
       List<Link> links,
-      int totalRecordedLinks,
       long startEpochNanos) {
     RecordEventsReadableSpan span =
         new RecordEventsReadableSpan(
@@ -148,7 +136,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             resource,
             attributes,
             links,
-            totalRecordedLinks,
             startEpochNanos == 0 ? clock.now() : startEpochNanos);
     // Call onStart here instead of calling in the constructor to make sure the span is completely
     // initialized.
@@ -158,7 +145,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public SpanData toSpanData() {
-
     // Copy immutable fields outside synchronized block.
     SpanContext spanContext = getSpanContext();
     SpanData.Builder builder =
@@ -272,17 +258,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns an unmodifiable view of the attributes associated with this span.
-   *
-   * @return An unmodifiable view of the attributes associated wit this span
-   */
-  @VisibleForTesting
-  @GuardedBy("lock")
-  Map<String, AttributeValue> getAttributes() {
-    return Collections.unmodifiableMap(attributes);
-  }
-
-  /**
    * Returns the latency of the {@code Span} in nanos. If still active then returns now() - start
    * time.
    *
@@ -305,22 +280,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns the span id of this span's parent span.
-   *
-   * @return The span id of the parent span.
-   */
-  @VisibleForTesting
-  public SpanId getParentSpanId() {
-    return parentSpanId;
-  }
-
-  /**
    * Returns the {@code Clock} used by this {@code Span}.
    *
    * @return the {@code Clock} used by this {@code Span}.
    */
-  @VisibleForTesting
-  public Clock getClock() {
+  Clock getClock() {
     return clock;
   }
 
@@ -394,7 +358,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         return;
       }
       events.add(timedEvent);
-      totalRecordedEvents++;
     }
   }
 
@@ -459,9 +422,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
-        return;
       }
-      numberOfChildren++;
     }
   }
 
@@ -485,20 +446,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       Resource resource,
       AttributesWithCapacity attributes,
       List<Link> links,
-      int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.parentSpanId = parentSpanId;
     this.hasRemoteParent = hasRemoteParent;
     this.links = links;
-    this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
     this.kind = kind;
     this.spanProcessor = spanProcessor;
     this.resource = resource;
     this.hasEnded = false;
-    this.numberOfChildren = 0;
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
@@ -515,15 +473,4 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
     super.finalize();
   }
-
-  /**
-   * The count of links that have been dropped.
-   *
-   * @return The number of links that have been dropped.
-   */
-  @VisibleForTesting
-  int getDroppedLinksCount() {
-    return totalRecordedLinks - links.size();
-  }
-
 }

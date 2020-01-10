@@ -208,14 +208,13 @@ class SpanBuilderSdk implements Span.Builder {
         instrumentationLibraryInfo,
         spanKind,
         parentContext != null ? parentContext.getSpanId() : null,
-        parentContext != null ? parentContext.isRemote() : false,
+        parentContext != null && parentContext.isRemote(),
         traceConfig,
         spanProcessor,
         getClock(parentSpan(parentType, parent), clock),
         resource,
         attributes,
         truncatedLinks(),
-        links.size(),
         startEpochNanos);
   }
 
