@@ -28,6 +28,7 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 public final class DefaultMeter implements Meter {
+
   private static final DefaultMeter INSTANCE = new DefaultMeter();
 
   /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
@@ -165,6 +166,12 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
+  public LabelSet createLabelSet(Map<String, String> labels) {
+    Utils.checkNotNull(labels, "labels");
+    return NoopLabelSet.INSTANCE;
+  }
+
+  @Override
   public LabelSet emptyLabelSet() {
     return NoopLabelSet.INSTANCE;
   }
@@ -172,6 +179,7 @@ public final class DefaultMeter implements Meter {
   /** No-op implementation of LongGauge interface. */
   @Immutable
   private static final class NoopLongGauge implements LongGauge {
+
     /** Creates a new {@code NoopBound}. */
     private NoopLongGauge() {}
 
@@ -200,6 +208,7 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder extends NoopAbstractGaugeBuilder<Builder, LongGauge>
         implements Builder {
+
       @Override
       protected Builder getThis() {
         return this;
@@ -215,6 +224,7 @@ public final class DefaultMeter implements Meter {
   /** No-op implementation of DoubleGauge interface. */
   @Immutable
   private static final class NoopDoubleGauge implements DoubleGauge {
+
     /** Creates a new {@code NoopBound}. */
     private NoopDoubleGauge() {}
 
@@ -243,6 +253,7 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder extends NoopAbstractGaugeBuilder<Builder, DoubleGauge>
         implements Builder {
+
       @Override
       protected Builder getThis() {
         return this;
@@ -258,6 +269,7 @@ public final class DefaultMeter implements Meter {
   /** No-op implementation of DoubleCounter interface. */
   @Immutable
   private static final class NoopDoubleCounter implements DoubleCounter {
+
     /** Creates a new {@code NoopBound}. */
     private NoopDoubleCounter() {}
 
@@ -286,6 +298,7 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder
         extends NoopAbstractCounterBuilder<Builder, DoubleCounter> implements Builder {
+
       @Override
       protected Builder getThis() {
         return this;
@@ -301,6 +314,7 @@ public final class DefaultMeter implements Meter {
   /** No-op implementation of CounterLong interface. */
   @Immutable
   private static final class NoopLongCounter implements LongCounter {
+
     /** Creates a new {@code NoopBound}. */
     private NoopLongCounter() {}
 
@@ -329,6 +343,7 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder extends NoopAbstractCounterBuilder<Builder, LongCounter>
         implements Builder {
+
       @Override
       protected Builder getThis() {
         return this;
@@ -343,6 +358,7 @@ public final class DefaultMeter implements Meter {
 
   @Immutable
   private static final class NoopDoubleMeasure implements DoubleMeasure {
+
     /** Creates a new {@code NoopDoubleMeasure}. */
     private NoopDoubleMeasure() {}
 
@@ -375,6 +391,7 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder
         extends NoopAbstractInstrumentBuilder<Builder, DoubleMeasure> implements Builder {
+
       @Override
       protected Builder getThis() {
         return this;
@@ -389,6 +406,7 @@ public final class DefaultMeter implements Meter {
 
   @Immutable
   private static final class NoopLongMeasure implements LongMeasure {
+
     private NoopLongMeasure() {}
 
     @Override
@@ -420,6 +438,7 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder
         extends NoopAbstractInstrumentBuilder<Builder, LongMeasure> implements Builder {
+
       @Override
       protected Builder getThis() {
         return this;
@@ -434,6 +453,7 @@ public final class DefaultMeter implements Meter {
 
   @Immutable
   private static final class NoopDoubleObserver implements DoubleObserver {
+
     private NoopDoubleObserver() {}
 
     @Override
@@ -460,6 +480,7 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder
         extends NoopAbstractObserverBuilder<Builder, DoubleObserver> implements Builder {
+
       @Override
       protected Builder getThis() {
         return this;
@@ -474,6 +495,7 @@ public final class DefaultMeter implements Meter {
 
   @Immutable
   private static final class NoopLongObserver implements LongObserver {
+
     private NoopLongObserver() {}
 
     @Override
@@ -500,6 +522,7 @@ public final class DefaultMeter implements Meter {
 
     private static final class NoopBuilder
         extends NoopAbstractObserverBuilder<Builder, LongObserver> implements Builder {
+
       @Override
       protected Builder getThis() {
         return this;
@@ -513,6 +536,7 @@ public final class DefaultMeter implements Meter {
   }
 
   private static final class NoopBatchRecorder implements BatchRecorder {
+
     private NoopBatchRecorder() {}
 
     @Override
@@ -535,6 +559,7 @@ public final class DefaultMeter implements Meter {
 
   private abstract static class NoopAbstractGaugeBuilder<B extends Gauge.Builder<B, V>, V>
       extends NoopAbstractInstrumentBuilder<B, V> implements Gauge.Builder<B, V> {
+
     @Override
     public B setMonotonic(boolean monotonic) {
       return getThis();
@@ -543,6 +568,7 @@ public final class DefaultMeter implements Meter {
 
   private abstract static class NoopAbstractCounterBuilder<B extends Counter.Builder<B, V>, V>
       extends NoopAbstractInstrumentBuilder<B, V> implements Counter.Builder<B, V> {
+
     @Override
     public B setMonotonic(boolean monotonic) {
       return getThis();
@@ -551,6 +577,7 @@ public final class DefaultMeter implements Meter {
 
   private abstract static class NoopAbstractObserverBuilder<B extends Observer.Builder<B, V>, V>
       extends NoopAbstractInstrumentBuilder<B, V> implements Observer.Builder<B, V> {
+
     @Override
     public B setMonotonic(boolean monotonic) {
       return getThis();
@@ -559,6 +586,7 @@ public final class DefaultMeter implements Meter {
 
   private abstract static class NoopAbstractInstrumentBuilder<B extends Instrument.Builder<B, V>, V>
       implements Instrument.Builder<B, V> {
+
     @Override
     public B setDescription(String description) {
       Utils.checkNotNull(description, "description");
