@@ -47,7 +47,7 @@ public class MeterSdk implements Meter {
 
   @Override
   public DoubleCounter.Builder doubleCounterBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkDoubleCounter.SdkDoubleCounterBuilder.builder(name);
   }
 
   @Override
