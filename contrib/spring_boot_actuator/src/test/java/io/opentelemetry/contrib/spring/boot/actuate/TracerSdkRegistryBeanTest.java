@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 package io.opentelemetry.contrib.spring.boot.actuate;
 
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.SamplerName;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
@@ -43,7 +42,7 @@ public class TracerSdkRegistryBeanTest {
     factoryBean.afterPropertiesSet();
     TracerSdkRegistry tracerSdkRegistry = (TracerSdkRegistry) factoryBean.getObject();
     TraceConfig traceConfig = tracerSdkRegistry.getActiveTraceConfig();
-    assertTrue(traceConfig.getSampler() instanceof TestOnlySampler);
+    assertThat(traceConfig.getSampler()).isInstanceOf(TestOnlySampler.class);
   }
 
   @Test
@@ -56,6 +55,6 @@ public class TracerSdkRegistryBeanTest {
     factoryBean.afterPropertiesSet();
     TracerSdkRegistry tracerSdkRegistry = (TracerSdkRegistry) factoryBean.getObject();
     TraceConfig traceConfig = tracerSdkRegistry.getActiveTraceConfig();
-    assertSame(sampler, traceConfig.getSampler());
+    assertThat(traceConfig.getSampler()).isSameInstanceAs(sampler);
   }
 }

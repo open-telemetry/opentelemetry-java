@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,18 +30,15 @@ import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
-import io.opentelemetry.sdk.trace.TracerSdkRegistryProvider;
+import io.opentelemetry.sdk.trace.TracerSdkRegistryBuilder;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TracerRegistry;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.BeanCreationException;
@@ -161,8 +158,12 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
   }
 
   private TracerRegistry initializeTracerRegistry() {
-    TracerSdkRegistryProvider provider = new TracerSdkRegistryProvider();
-    TracerSdkRegistry registry = (TracerSdkRegistry) provider.create();
+    TracerSdkRegistry registry =
+        new TracerSdkRegistryBuilder()
+            .setClock(prepareClock())
+            .setIdsGenerator(prepareIdsGenerator())
+            .setResource(prepareResource())
+            .build();
     TraceConfig traceConfig =
         TraceConfig.getDefault()
             .toBuilder()
@@ -176,7 +177,6 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
                 properties.getTracer().getMaxNumberOfAttributesPerLink())
             .build();
     registry.updateActiveTraceConfig(traceConfig);
-    constructTracerSharedState();
     if (spanProcessors.isEmpty()) {
       registry.addSpanProcessor(constructSpanExportingProcessor());
     } else {
@@ -252,14 +252,6 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
     return sampler;
   }
 
-  private Object constructTracerSharedState() {
-    Map<String, Object> state = new HashMap<>();
-    state.put("clock", prepareClock());
-    state.put("idsGenerator", prepareIdsGenerator());
-    state.put("resource", prepareResource());
-    return state;
-  }
-
   private Clock prepareClock() {
     if (clock != null) {
       return clock;
@@ -271,7 +263,7 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
     if (idsGenerator != null) {
       return idsGenerator;
     }
-    return new DummyIdsGenerator();
+    return new SpringManagedRandomIdsGenerator();
   }
 
   private Resource prepareResource() {
@@ -291,18 +283,5 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
     return SimpleSpansProcessor.newBuilder(spanExporter)
         .reportOnlySampled(properties.getTracer().isExportSampledOnly())
         .build();
-  }
-
-  private static class DummyIdsGenerator implements IdsGenerator {
-
-    @Override
-    public SpanId generateSpanId() {
-      return SpanId.getInvalid();
-    }
-
-    @Override
-    public TraceId generateTraceId() {
-      return TraceId.getInvalid();
-    }
   }
 }

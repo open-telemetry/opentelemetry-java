@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@
 
 package io.opentelemetry.contrib.spring.boot.actuate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
+import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.TracerRegistry;
@@ -36,13 +39,25 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class SpringWiringTest {
 
   @Autowired private TracerRegistry tracerRegistry;
+  @Autowired private MeterRegistry meterRegistry;
+  @Autowired private DistributedContextManager distributedContextManager;
 
   @Test
-  public void shouldConstructFullyConfiguredTracerFactory() {
-    assertTrue(tracerRegistry instanceof TracerSdkRegistry);
+  public void shouldConstructFullyConfiguredTracerRegistry() {
+    assertThat(tracerRegistry).isInstanceOf(TracerSdkRegistry.class);
     TracerSdkRegistry tracerSdkFactory = (TracerSdkRegistry) tracerRegistry;
     TraceConfig traceConfig = tracerSdkFactory.getActiveTraceConfig();
-    assertEquals(16, traceConfig.getMaxNumberOfAttributes());
-    assertEquals(32, traceConfig.getMaxNumberOfEvents());
+    assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(16);
+    assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(32);
+  }
+
+  @Test
+  public void shouldConstructFullyConfiguredMeterRegistry() {
+    assertThat(meterRegistry).isInstanceOf(MeterSdkRegistry.class);
+  }
+
+  @Test
+  public void shouldConstructFullyConfiguredDistributedContextManager() {
+    assertThat(distributedContextManager).isInstanceOf(DistributedContextManagerSdk.class);
   }
 }

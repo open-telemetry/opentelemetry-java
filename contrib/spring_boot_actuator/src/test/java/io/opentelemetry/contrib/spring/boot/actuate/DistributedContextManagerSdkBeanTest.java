@@ -16,8 +16,9 @@
 
 package io.opentelemetry.contrib.spring.boot.actuate;
 
-import static org.junit.Assert.assertNotNull;
+import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.distributedcontext.DistributedContextManager;
 import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ public class DistributedContextManagerSdkBeanTest {
     DistributedContextManagerSdkBean factoryBean = new DistributedContextManagerSdkBean();
     factoryBean.setProperties(properties);
     factoryBean.afterPropertiesSet();
-    DistributedContextManagerSdk manager = (DistributedContextManagerSdk) factoryBean.getObject();
-    assertNotNull(manager);
+    DistributedContextManager manager = factoryBean.getObject();
+    assertThat(manager).isInstanceOf(DistributedContextManagerSdk.class);
   }
 }

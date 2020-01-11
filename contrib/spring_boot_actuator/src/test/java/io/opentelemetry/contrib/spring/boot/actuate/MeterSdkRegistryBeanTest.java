@@ -16,8 +16,9 @@
 
 package io.opentelemetry.contrib.spring.boot.actuate;
 
-import static org.junit.Assert.assertNotNull;
+import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.metrics.MeterRegistry;
 import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ public class MeterSdkRegistryBeanTest {
     MeterSdkRegistryBean factoryBean = new MeterSdkRegistryBean();
     factoryBean.setProperties(properties);
     factoryBean.afterPropertiesSet();
-    MeterSdkRegistry meterSdkRegistry = (MeterSdkRegistry) factoryBean.getObject();
-    assertNotNull(meterSdkRegistry);
+    MeterRegistry meterRegistry = factoryBean.getObject();
+    assertThat(meterRegistry).isInstanceOf(MeterSdkRegistry.class);
   }
 }

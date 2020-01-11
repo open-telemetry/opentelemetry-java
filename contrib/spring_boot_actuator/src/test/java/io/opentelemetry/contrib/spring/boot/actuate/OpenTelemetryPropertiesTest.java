@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.opentelemetry.contrib.spring.boot.actuate;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_CLOCK;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_EXPORT_SAMPLED_ONLY;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_IDS_GENERATOR;
@@ -27,8 +28,6 @@ import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperti
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_SPAN_MAX_NUM_EVENTS;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_SPAN_MAX_NUM_LINKS;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -38,23 +37,22 @@ public class OpenTelemetryPropertiesTest {
   @Test
   public void shouldSetPropertiesToDefaultsIfNotProvided() {
     OpenTelemetryProperties properties = new OpenTelemetryProperties();
-    assertTrue(properties.isEnabled());
-    assertEquals(DEFAULT_SAMPLER, properties.getTracer().getSampler().getName());
-    assertTrue(properties.getTracer().getSampler().getProperties().isEmpty());
-    assertEquals(
-        DEFAULT_SPAN_MAX_NUM_ATTRIBUTES, properties.getTracer().getMaxNumberOfAttributes());
-    assertEquals(DEFAULT_SPAN_MAX_NUM_EVENTS, properties.getTracer().getMaxNumberOfEvents());
-    assertEquals(DEFAULT_SPAN_MAX_NUM_LINKS, properties.getTracer().getMaxNumberOfLinks());
-    assertEquals(
-        DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT,
-        properties.getTracer().getMaxNumberOfAttributesPerEvent());
-    assertEquals(
-        DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK,
-        properties.getTracer().getMaxNumberOfAttributesPerLink());
-    assertEquals(DEFAULT_CLOCK, properties.getTracer().getClockImpl());
-    assertEquals(DEFAULT_IDS_GENERATOR, properties.getTracer().getIdsGeneratorImpl());
-    assertEquals(DEFAULT_RESOURCE, properties.getTracer().getResourceImpl());
-    assertEquals(DEFAULT_EXPORT_SAMPLED_ONLY, properties.getTracer().isExportSampledOnly());
-    assertEquals(DEFAULT_LOG_SPANS, properties.getTracer().isLogSpans());
+    assertThat(properties.isEnabled()).isTrue();
+    assertThat(properties.getTracer().getSampler().getName()).isEqualTo(DEFAULT_SAMPLER);
+    assertThat(properties.getTracer().getSampler().getProperties().isEmpty()).isTrue();
+    assertThat(properties.getTracer().getMaxNumberOfAttributes())
+        .isEqualTo(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES);
+    assertThat(properties.getTracer().getMaxNumberOfEvents())
+        .isEqualTo(DEFAULT_SPAN_MAX_NUM_EVENTS);
+    assertThat(properties.getTracer().getMaxNumberOfLinks()).isEqualTo(DEFAULT_SPAN_MAX_NUM_LINKS);
+    assertThat(properties.getTracer().getMaxNumberOfAttributesPerEvent())
+        .isEqualTo(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT);
+    assertThat(properties.getTracer().getMaxNumberOfAttributesPerLink())
+        .isEqualTo(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK);
+    assertThat(properties.getTracer().getClockImpl()).isEqualTo(DEFAULT_CLOCK);
+    assertThat(properties.getTracer().getIdsGeneratorImpl()).isEqualTo(DEFAULT_IDS_GENERATOR);
+    assertThat(properties.getTracer().getResourceImpl()).isEqualTo(DEFAULT_RESOURCE);
+    assertThat(properties.getTracer().isExportSampledOnly()).isEqualTo(DEFAULT_EXPORT_SAMPLED_ONLY);
+    assertThat(properties.getTracer().isLogSpans()).isEqualTo(DEFAULT_LOG_SPANS);
   }
 }
