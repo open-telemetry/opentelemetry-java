@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.aws;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.amazonaws.util.EC2MetadataUtils.InstanceInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -28,8 +28,8 @@ public class Ec2ResourceTest {
   @Test
   public void shouldReturnResourceWithOnlyCloudProviderLabelIfNotRunningOnEc2() {
     Resource resource = Ec2Resource.getResource();
-    assertEquals(
-        Ec2Resource.CLOUD_PROVIDER_AWS, resource.getLabels().get(ResourceConstants.CLOUD_PROVIDER));
+    assertThat(resource.getLabels().get(ResourceConstants.CLOUD_PROVIDER))
+        .isEqualTo(Ec2Resource.CLOUD_PROVIDER_AWS);
   }
 
   @Test
@@ -66,14 +66,14 @@ public class Ec2ResourceTest {
             devpayProductCodes);
     String hostname = "ip-172-31-30-166.ec2.internal";
     Resource resource = Ec2Resource.getResourceFromInfoAndHost(instanceInfo, hostname);
-    assertEquals(
-        Ec2Resource.CLOUD_PROVIDER_AWS, resource.getLabels().get(ResourceConstants.CLOUD_PROVIDER));
-    assertEquals(accountId, resource.getLabels().get(ResourceConstants.CLOUD_ACCOUNT));
-    assertEquals(region, resource.getLabels().get(ResourceConstants.CLOUD_REGION));
-    assertEquals(availabilityZone, resource.getLabels().get(ResourceConstants.CLOUD_ZONE));
-    assertEquals(instanceId, resource.getLabels().get(ResourceConstants.HOST_ID));
-    assertEquals(privateIp, resource.getLabels().get(ResourceConstants.HOST_NAME));
-    assertEquals(instanceType, resource.getLabels().get(ResourceConstants.HOST_TYPE));
-    assertEquals(hostname, resource.getLabels().get(ResourceConstants.HOST_HOSTNAME));
+    assertThat(resource.getLabels().get(ResourceConstants.CLOUD_PROVIDER))
+        .isEqualTo(Ec2Resource.CLOUD_PROVIDER_AWS);
+    assertThat(resource.getLabels().get(ResourceConstants.CLOUD_ACCOUNT)).isEqualTo(accountId);
+    assertThat(resource.getLabels().get(ResourceConstants.CLOUD_REGION)).isEqualTo(region);
+    assertThat(resource.getLabels().get(ResourceConstants.CLOUD_ZONE)).isEqualTo(availabilityZone);
+    assertThat(resource.getLabels().get(ResourceConstants.HOST_ID)).isEqualTo(instanceId);
+    assertThat(resource.getLabels().get(ResourceConstants.HOST_NAME)).isEqualTo(privateIp);
+    assertThat(resource.getLabels().get(ResourceConstants.HOST_TYPE)).isEqualTo(instanceType);
+    assertThat(resource.getLabels().get(ResourceConstants.HOST_HOSTNAME)).isEqualTo(hostname);
   }
 }
