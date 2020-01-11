@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -278,6 +279,15 @@ public interface Meter {
    */
   LabelSet createLabelSet(
       String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4);
+
+  /**
+   * Returns a new {@link LabelSet} with labels built from the keys and values in the provided Map.
+   *
+   * @param labels The key-value pairs to turn into labels.
+   * @return a new {@link LabelSet} with the given labels.
+   * @throws NullPointerException if the map is null.
+   */
+  LabelSet createLabelSet(Map<String, String> labels);
 
   /**
    * Returns an empty {@link LabelSet}. The implementation is permitted to have this be a singleton
