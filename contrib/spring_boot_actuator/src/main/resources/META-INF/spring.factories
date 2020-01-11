@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryConfiguration
+  io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryAutoConfiguration

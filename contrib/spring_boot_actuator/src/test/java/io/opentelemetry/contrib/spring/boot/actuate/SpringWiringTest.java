@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /** Testing of Spring wiring. */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {OpenTelemetryConfiguration.class})
+@ContextConfiguration(classes = {OpenTelemetryAutoConfiguration.class})
 @TestPropertySource(locations = {"classpath:application.properties"})
 public class SpringWiringTest {
 

@@ -22,8 +22,6 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 
 import io.opentelemetry.exporters.logging.LoggingExporter;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.MillisClock;
-import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdsGenerator;
 import io.opentelemetry.sdk.trace.Sampler;
@@ -45,6 +43,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /** Creates an OpenTelemetry {@link TracerRegistry} from the default SDK the Spring way. */
@@ -87,7 +86,7 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
    *
    * @param clock the clock
    */
-  @Autowired(required = false)
+  @Autowired
   public void setClock(Clock clock) {
     this.clock = clock;
   }
@@ -97,7 +96,7 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
    *
    * @param idsGenerator the generator
    */
-  @Autowired(required = false)
+  @Autowired
   public void setIdsGenerator(IdsGenerator idsGenerator) {
     this.idsGenerator = idsGenerator;
   }
@@ -108,7 +107,8 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
    *
    * @param resource the resource populator
    */
-  @Autowired(required = false)
+  @Autowired
+  @Qualifier("otelResource")
   public void setResource(Resource resource) {
     this.resource = resource;
   }
@@ -160,9 +160,9 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
   private TracerRegistry initializeTracerRegistry() {
     TracerSdkRegistry registry =
         new TracerSdkRegistryBuilder()
-            .setClock(prepareClock())
-            .setIdsGenerator(prepareIdsGenerator())
-            .setResource(prepareResource())
+            .setClock(clock)
+            .setIdsGenerator(idsGenerator)
+            .setResource(resource)
             .build();
     TraceConfig traceConfig =
         TraceConfig.getDefault()
@@ -250,27 +250,6 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
       }
     }
     return sampler;
-  }
-
-  private Clock prepareClock() {
-    if (clock != null) {
-      return clock;
-    }
-    return MillisClock.getInstance();
-  }
-
-  private IdsGenerator prepareIdsGenerator() {
-    if (idsGenerator != null) {
-      return idsGenerator;
-    }
-    return new SpringManagedRandomIdsGenerator();
-  }
-
-  private Resource prepareResource() {
-    if (resource != null) {
-      return resource;
-    }
-    return EnvVarResource.getResource();
   }
 
   private SpanProcessor constructSpanExportingProcessor() {

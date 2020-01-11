@@ -30,10 +30,6 @@ public class OpenTelemetryProperties {
   public static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;
   public static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
   public static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
-  public static final String DEFAULT_CLOCK = "io.opentelemetry.sdk.internal.MillisClock";
-  public static final String DEFAULT_IDS_GENERATOR =
-      "io.opentelemetry.sdk.trace.RandomIdsGenerator";
-  public static final String DEFAULT_RESOURCE = "io.opentelemetry.sdk.resources.EnvVarResource";
   public static final boolean DEFAULT_EXPORT_SAMPLED_ONLY = true;
   public static final boolean DEFAULT_LOG_SPANS = false;
 
@@ -73,9 +69,6 @@ public class OpenTelemetryProperties {
     private int maxNumberOfLinks = DEFAULT_SPAN_MAX_NUM_LINKS;
     private int maxNumberOfAttributesPerEvent = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT;
     private int maxNumberOfAttributesPerLink = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK;
-    private String clockImpl = DEFAULT_CLOCK;
-    private String idsGeneratorImpl = DEFAULT_IDS_GENERATOR;
-    private String resourceImpl = DEFAULT_RESOURCE;
     private boolean exportSampledOnly = DEFAULT_EXPORT_SAMPLED_ONLY;
     private boolean logSpans = DEFAULT_LOG_SPANS;
 
@@ -125,30 +118,6 @@ public class OpenTelemetryProperties {
 
     public void setMaxNumberOfAttributesPerLink(int maxNumberOfAttributesPerLink) {
       this.maxNumberOfAttributesPerLink = maxNumberOfAttributesPerLink;
-    }
-
-    public String getClockImpl() {
-      return clockImpl;
-    }
-
-    public void setClockImpl(String clockImpl) {
-      this.clockImpl = clockImpl;
-    }
-
-    public String getIdsGeneratorImpl() {
-      return idsGeneratorImpl;
-    }
-
-    public void setIdsGeneratorImpl(String idsGeneratorImpl) {
-      this.idsGeneratorImpl = idsGeneratorImpl;
-    }
-
-    public String getResourceImpl() {
-      return resourceImpl;
-    }
-
-    public void setResourceImpl(String resourceImpl) {
-      this.resourceImpl = resourceImpl;
     }
 
     public boolean isExportSampledOnly() {

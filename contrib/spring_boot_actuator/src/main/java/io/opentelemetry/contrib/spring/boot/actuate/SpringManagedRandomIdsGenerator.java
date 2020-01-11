@@ -21,6 +21,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import java.util.concurrent.ThreadLocalRandom;
 
+/** Implementation of {@link IdsGenerator} which can be managed by Spring. */
 public class SpringManagedRandomIdsGenerator implements IdsGenerator {
 
   private static final long INVALID_ID = 0;

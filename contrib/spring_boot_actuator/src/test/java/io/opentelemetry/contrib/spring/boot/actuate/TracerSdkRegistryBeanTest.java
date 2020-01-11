@@ -19,6 +19,7 @@ package io.opentelemetry.contrib.spring.boot.actuate;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.SamplerName;
+import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import org.junit.Test;
@@ -38,6 +39,7 @@ public class TracerSdkRegistryBeanTest {
     properties.getTracer().getSampler().getProperties().put("rate", "2.5");
     properties.getTracer().getSampler().getProperties().put("enabled", "true");
     TracerSdkRegistryBean factoryBean = new TracerSdkRegistryBean();
+    addDependencies(factoryBean);
     factoryBean.setProperties(properties);
     factoryBean.afterPropertiesSet();
     TracerSdkRegistry tracerSdkRegistry = (TracerSdkRegistry) factoryBean.getObject();
@@ -50,11 +52,19 @@ public class TracerSdkRegistryBeanTest {
     TestOnlySampler sampler = new TestOnlySampler();
     OpenTelemetryProperties properties = new OpenTelemetryProperties();
     TracerSdkRegistryBean factoryBean = new TracerSdkRegistryBean();
+    addDependencies(factoryBean);
     factoryBean.setProperties(properties);
     factoryBean.setSampler(sampler);
     factoryBean.afterPropertiesSet();
     TracerSdkRegistry tracerSdkRegistry = (TracerSdkRegistry) factoryBean.getObject();
     TraceConfig traceConfig = tracerSdkRegistry.getActiveTraceConfig();
     assertThat(traceConfig.getSampler()).isSameInstanceAs(sampler);
+  }
+
+  private static void addDependencies(TracerSdkRegistryBean factoryBean) {
+    factoryBean.setClock(MillisClock.getInstance());
+    factoryBean.setIdsGenerator(new SpringManagedRandomIdsGenerator());
+    ServiceResourceFactory serviceResourceFactory = new ServiceResourceFactory("junit", null, null);
+    factoryBean.setResource(serviceResourceFactory.getObject());
   }
 }

@@ -17,11 +17,8 @@
 package io.opentelemetry.contrib.spring.boot.actuate;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_CLOCK;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_EXPORT_SAMPLED_ONLY;
-import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_IDS_GENERATOR;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_LOG_SPANS;
-import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_RESOURCE;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_SAMPLER;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_SPAN_MAX_NUM_ATTRIBUTES;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT;
@@ -49,9 +46,6 @@ public class OpenTelemetryPropertiesTest {
         .isEqualTo(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT);
     assertThat(properties.getTracer().getMaxNumberOfAttributesPerLink())
         .isEqualTo(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK);
-    assertThat(properties.getTracer().getClockImpl()).isEqualTo(DEFAULT_CLOCK);
-    assertThat(properties.getTracer().getIdsGeneratorImpl()).isEqualTo(DEFAULT_IDS_GENERATOR);
-    assertThat(properties.getTracer().getResourceImpl()).isEqualTo(DEFAULT_RESOURCE);
     assertThat(properties.getTracer().isExportSampledOnly()).isEqualTo(DEFAULT_EXPORT_SAMPLED_ONLY);
     assertThat(properties.getTracer().isLogSpans()).isEqualTo(DEFAULT_LOG_SPANS);
   }
