@@ -98,7 +98,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private long endEpochNanos;
   // True if the span is ended.
   @GuardedBy("lock")
-  private boolean hasBeenEnded;
+  private boolean hasEnded;
 
   /**
    * Creates and starts a span with the given configuration.
@@ -179,6 +179,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     // Copy remainder within synchronized
     synchronized (lock) {
       return builder
+          .setHasEnded(hasEnded)
           .setAttributes(attributes)
           .setEndEpochNanos(getEndEpochNanos())
           .setStatus(getStatusWithDefault())
@@ -198,6 +199,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
               sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
     }
     return result;
+  }
+
+  @Override
+  public boolean hasEnded() {
+    synchronized (lock) {
+      return hasEnded;
+    }
   }
 
   @Override
@@ -230,14 +238,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns the end nano time (see {@link System#nanoTime()}). If the current {@code Span} is not
-   * ended then returns {@link Clock#nanoTime()}.
+   * Returns the end nano time (see {@link System#nanoTime()}) or zero if the current {@code Span}
+   * is not ended.
    *
    * @return the end nano time.
    */
   private long getEndEpochNanos() {
     synchronized (lock) {
-      return getEndNanoTimeInternal();
+      return endEpochNanos;
     }
   }
 
@@ -293,16 +301,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the latency of the {@code Span} in nanos.
    */
-  long getLatencyNs() {
+  @Override
+  public long getLatencyNanos() {
     synchronized (lock) {
-      return getEndNanoTimeInternal() - startEpochNanos;
+      return (hasEnded ? endEpochNanos : clock.now()) - startEpochNanos;
     }
-  }
-
-  // Use getEndNanoTimeInternal to avoid over-locking.
-  @GuardedBy("lock")
-  private long getEndNanoTimeInternal() {
-    return hasBeenEnded ? endEpochNanos : clock.now();
   }
 
   /**
@@ -359,7 +362,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
     synchronized (lock) {
-      if (hasBeenEnded) {
+      if (hasEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
@@ -399,7 +402,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private void addTimedEvent(TimedEvent timedEvent) {
     synchronized (lock) {
-      if (hasBeenEnded) {
+      if (hasEnded) {
         logger.log(Level.FINE, "Calling addEvent() on an ended Span.");
         return;
       }
@@ -412,7 +415,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public void setStatus(Status status) {
     Preconditions.checkNotNull(status, "status");
     synchronized (lock) {
-      if (hasBeenEnded) {
+      if (hasEnded) {
         logger.log(Level.FINE, "Calling setStatus() on an ended Span.");
         return;
       }
@@ -424,7 +427,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public void updateName(String name) {
     Preconditions.checkNotNull(name, "name");
     synchronized (lock) {
-      if (hasBeenEnded) {
+      if (hasEnded) {
         logger.log(Level.FINE, "Calling updateName() on an ended Span.");
         return;
       }
@@ -445,12 +448,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private void endInternal(long endEpochNanos) {
     synchronized (lock) {
-      if (hasBeenEnded) {
+      if (hasEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
         return;
       }
       this.endEpochNanos = endEpochNanos;
-      hasBeenEnded = true;
+      hasEnded = true;
     }
     spanProcessor.onEnd(this);
   }
@@ -467,7 +470,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   void addChild() {
     synchronized (lock) {
-      if (hasBeenEnded) {
+      if (hasEnded) {
         logger.log(Level.FINE, "Calling end() on an ended Span.");
         return;
       }
@@ -507,7 +510,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.kind = kind;
     this.spanProcessor = spanProcessor;
     this.resource = resource;
-    this.hasBeenEnded = false;
+    this.hasEnded = false;
     this.numberOfChildren = 0;
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
@@ -519,7 +522,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   protected void finalize() throws Throwable {
     synchronized (lock) {
-      if (!hasBeenEnded) {
+      if (!hasEnded) {
         logger.log(Level.SEVERE, "Span " + name + " is GC'ed without being ended.");
       }
     }

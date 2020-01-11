@@ -14,15 +14,34 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.trace.TracerRegistry;
-import io.opentelemetry.trace.spi.TracerRegistryProvider;
+import io.opentelemetry.metrics.LabelSet;
 
-/** SDK implementation of the TracerProviderFactory for SPI. */
-public class TracerSdkRegistryProvider implements TracerRegistryProvider {
+class BaseBoundInstrument {
+  private final LabelSet labels;
+
+  BaseBoundInstrument(LabelSet labels) {
+    this.labels = labels;
+    // todo: associate with an aggregator/accumulator
+  }
+
   @Override
-  public TracerRegistry create() {
-    return TracerSdkRegistry.builder().build();
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof BaseBoundInstrument)) {
+      return false;
+    }
+
+    BaseBoundInstrument that = (BaseBoundInstrument) o;
+
+    return labels.equals(that.labels);
+  }
+
+  @Override
+  public int hashCode() {
+    return labels.hashCode();
   }
 }
