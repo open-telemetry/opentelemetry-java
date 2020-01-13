@@ -22,12 +22,10 @@ import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdkProvi
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * Creates an OpenTelemetry {@link DistributedContextManager} from the default SDK the Spring way.
  */
-@Component
 public class DistributedContextManagerSdkBean
     implements FactoryBean<DistributedContextManager>, InitializingBean {
 

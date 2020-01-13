@@ -28,10 +28,8 @@ import java.util.Map;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /** Creates an OpenTelemetry {@link MeterRegistry} from the default SDK the Spring way. */
-@Component
 public class MeterSdkRegistryBean implements FactoryBean<MeterRegistry>, InitializingBean {
 
   private OpenTelemetryProperties properties;

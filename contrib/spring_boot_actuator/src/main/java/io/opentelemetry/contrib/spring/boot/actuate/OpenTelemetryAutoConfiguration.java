@@ -16,10 +16,15 @@
 
 package io.opentelemetry.contrib.spring.boot.actuate;
 
+import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.metrics.MeterRegistry;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdsGenerator;
+import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.trace.TracerRegistry;
 import java.util.List;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +99,75 @@ public class OpenTelemetryAutoConfiguration {
       }
     }
     return bean;
+  }
+
+  /**
+   * Returns a {@link TracerRegistry} from the OpenTelemetry SDK configured with the components
+   * supplied as parameters. Only executes if another tracer registry bean has not been defined.
+   *
+   * @param properties the configuration properties from Spring property sources
+   * @param clock the timestamp generator to use
+   * @param idsGenerator the id generator to use
+   * @param resource the resource labels to add to telemetry data
+   * @param spanProcessors all tracing span processors managed by Spring
+   * @param spanExporters all trace data exporters managed by Spring
+   * @return the tracer registry
+   */
+  @ConditionalOnMissingBean
+  @Bean
+  public TracerRegistry tracerRegistry(
+      OpenTelemetryProperties properties,
+      Clock clock,
+      IdsGenerator idsGenerator,
+      Resource resource,
+      List<SpanProcessor> spanProcessors,
+      List<SpanExporter> spanExporters) {
+    TracerSdkRegistryBean factory = new TracerSdkRegistryBean();
+    factory.setProperties(properties);
+    factory.setOtelClock(clock);
+    factory.setOtelIdsGenerator(idsGenerator);
+    factory.setOtelResource(resource);
+    factory.setSpanProcessors(spanProcessors);
+    factory.setSpanExporters(spanExporters);
+    factory.afterPropertiesSet();
+    return factory.getObject();
+  }
+
+  /**
+   * Returns a {@link MeterRegistry} from the OpenTelemetry SDK configured with the components
+   * supplied as parameters. Only executes if another meter registry bean has not been defined.
+   *
+   * @param properties the configuration properties from Spring property sources
+   * @param clock the timestamp generator to use
+   * @param resource the resource labels to add to telemetry data
+   * @return the meter registry
+   */
+  @ConditionalOnMissingBean
+  @Bean
+  public MeterRegistry meterRegistry(
+      OpenTelemetryProperties properties, Clock clock, Resource resource) {
+    MeterSdkRegistryBean factory = new MeterSdkRegistryBean();
+    factory.setProperties(properties);
+    factory.setClock(clock);
+    factory.setResource(resource);
+    factory.afterPropertiesSet();
+    return factory.getObject();
+  }
+
+  /**
+   * Returns a {@link DistributedContextManager} from the OpenTelemetry SDK configured with the
+   * components supplied as parameters. Only executes if another manager bean has not been defined.
+   *
+   * @param properties the configuration properties from Spring property sources
+   * @return the distributed context manager
+   */
+  @ConditionalOnMissingBean
+  @Bean
+  public DistributedContextManager distributedContextManager(OpenTelemetryProperties properties) {
+    DistributedContextManagerSdkBean factory = new DistributedContextManagerSdkBean();
+    factory.setProperties(properties);
+    factory.afterPropertiesSet();
+    return factory.getObject();
   }
 
   private Resource constructServiceResource() {
