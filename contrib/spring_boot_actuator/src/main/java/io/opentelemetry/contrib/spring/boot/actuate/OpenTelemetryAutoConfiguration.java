@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdsGenerator;
 import java.util.List;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -58,7 +59,7 @@ public class OpenTelemetryAutoConfiguration {
    */
   @ConditionalOnMissingBean
   @Bean
-  public Clock otelTracerClock() {
+  public Clock otelClock() {
     return MillisClock.getInstance();
   }
 
@@ -70,21 +71,27 @@ public class OpenTelemetryAutoConfiguration {
    */
   @ConditionalOnMissingBean
   @Bean
-  public IdsGenerator otelTracerIdsGenerator() {
+  public IdsGenerator otelIdsGenerator() {
     return new SpringManagedRandomIdsGenerator();
   }
 
   /**
    * Returns the composite {@link Resource} with all info that can be auto-configured included.
    *
-   * @param resourceList all resource beans in the application context
+   * @param resourceList all resource supplier beans in the application context
    * @return the composite resource
    */
   @Bean
-  public Resource otelResource(List<Resource> resourceList) {
+  public Resource otelResource(List<ResourceProvider> resourceList) {
     Resource bean = constructServiceResource();
-    for (Resource resource : resourceList) {
-      bean = bean.merge(resource);
+    for (ResourceProvider resource : resourceList) {
+      try {
+        bean = bean.merge(resource.getObject());
+      } catch (RuntimeException cause) {
+        throw cause;
+      } catch (Exception cause) {
+        throw new BeanCreationException("Unable to retrieve Resouce info", cause);
+      }
     }
     return bean;
   }

@@ -62,9 +62,9 @@ public class TracerSdkRegistryBeanTest {
   }
 
   private static void addDependencies(TracerSdkRegistryBean factoryBean) {
-    factoryBean.setClock(MillisClock.getInstance());
-    factoryBean.setIdsGenerator(new SpringManagedRandomIdsGenerator());
+    factoryBean.setOtelClock(MillisClock.getInstance());
+    factoryBean.setOtelIdsGenerator(new SpringManagedRandomIdsGenerator());
     ServiceResourceFactory serviceResourceFactory = new ServiceResourceFactory("junit", null, null);
-    factoryBean.setResource(serviceResourceFactory.getObject());
+    factoryBean.setOtelResource(serviceResourceFactory.getObject());
   }
 }

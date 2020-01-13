@@ -54,9 +54,9 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
 
   private OpenTelemetryProperties properties;
   private Sampler sampler;
-  private Clock clock;
-  private IdsGenerator idsGenerator;
-  private Resource resource;
+  private Clock otelClock;
+  private IdsGenerator otelIdsGenerator;
+  private Resource otelResource;
   private TracerRegistry tracerRegistry;
   private final List<SpanProcessor> spanProcessors = new ArrayList<>();
   private final List<SpanExporter> spanExporters = new ArrayList<>();
@@ -84,33 +84,33 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
   /**
    * Sets the Spring-managed OpenTelemetry clock implementation for generating span timestamps.
    *
-   * @param clock the clock
+   * @param otelClock the clock
    */
   @Autowired
-  public void setClock(Clock clock) {
-    this.clock = clock;
+  public void setOtelClock(Clock otelClock) {
+    this.otelClock = otelClock;
   }
 
   /**
    * Sets the Spring-managed OpenTelemetry tracing IDs generator.
    *
-   * @param idsGenerator the generator
+   * @param otelIdsGenerator the generator
    */
   @Autowired
-  public void setIdsGenerator(IdsGenerator idsGenerator) {
-    this.idsGenerator = idsGenerator;
+  public void setOtelIdsGenerator(IdsGenerator otelIdsGenerator) {
+    this.otelIdsGenerator = otelIdsGenerator;
   }
 
   /**
    * Sets the Spring-managed implementation of OpenTelemetry {@link Resource} which populates global
    * application attributes.
    *
-   * @param resource the resource populator
+   * @param otelResource the resource populator
    */
   @Autowired
   @Qualifier("otelResource")
-  public void setResource(Resource resource) {
-    this.resource = resource;
+  public void setOtelResource(Resource otelResource) {
+    this.otelResource = otelResource;
   }
 
   /**
@@ -160,9 +160,9 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
   private TracerRegistry initializeTracerRegistry() {
     TracerSdkRegistry registry =
         new TracerSdkRegistryBuilder()
-            .setClock(clock)
-            .setIdsGenerator(idsGenerator)
-            .setResource(resource)
+            .setClock(otelClock)
+            .setIdsGenerator(otelIdsGenerator)
+            .setResource(otelResource)
             .build();
     TraceConfig traceConfig =
         TraceConfig.getDefault()
@@ -223,7 +223,7 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
 
   private Sampler constructCustomSampler() {
     Class<?> implClass = resolveClassName(properties.getTracer().getSampler().getImplClass(), null);
-    Sampler sampler = instantiateClass(implClass, Sampler.class);
+    Sampler customSampler = instantiateClass(implClass, Sampler.class);
     for (Map.Entry<String, String> entry :
         properties.getTracer().getSampler().getProperties().entrySet()) {
       PropertyDescriptor descriptor = getPropertyDescriptor(implClass, entry.getKey());
@@ -243,13 +243,13 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
         } else if (BigDecimal.class.isAssignableFrom(propType)) {
           value = new BigDecimal(entry.getValue());
         }
-        descriptor.getWriteMethod().invoke(sampler, value);
+        descriptor.getWriteMethod().invoke(customSampler, value);
       } catch (IllegalAccessException | InvocationTargetException cause) {
         throw new BeanCreationException(
             "tracerSampler", "unable to set " + entry.getKey() + " to " + entry.getValue(), cause);
       }
     }
-    return sampler;
+    return customSampler;
   }
 
   private SpanProcessor constructSpanExportingProcessor() {
