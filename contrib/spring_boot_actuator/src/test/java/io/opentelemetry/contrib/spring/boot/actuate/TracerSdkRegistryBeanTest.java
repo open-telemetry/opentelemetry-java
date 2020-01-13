@@ -23,8 +23,11 @@ import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link TracerSdkRegistryBean}. */
+@RunWith(JUnit4.class)
 public class TracerSdkRegistryBeanTest {
 
   @Test

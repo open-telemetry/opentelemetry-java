@@ -27,8 +27,11 @@ import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperti
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_SPAN_MAX_NUM_LINKS;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link OpenTelemetryProperties}. */
+@RunWith(JUnit4.class)
 public class OpenTelemetryPropertiesTest {
 
   @Test

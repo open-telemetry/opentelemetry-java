@@ -22,10 +22,13 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import java.util.Properties;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.info.GitProperties;
 
 /** Unit tests for {@link ServiceResourceFactory}. */
+@RunWith(JUnit4.class)
 public class ServiceResourceFactoryTest {
 
   @Test

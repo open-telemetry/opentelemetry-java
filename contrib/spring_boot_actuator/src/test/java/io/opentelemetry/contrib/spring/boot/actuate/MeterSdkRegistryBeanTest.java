@@ -21,8 +21,11 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.metrics.MeterRegistry;
 import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link MeterSdkRegistryBean}. */
+@RunWith(JUnit4.class)
 public class MeterSdkRegistryBeanTest {
 
   @Test
