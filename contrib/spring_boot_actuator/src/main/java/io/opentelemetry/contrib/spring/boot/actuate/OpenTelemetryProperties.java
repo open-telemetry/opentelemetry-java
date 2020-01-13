@@ -31,7 +31,7 @@ public class OpenTelemetryProperties {
   public static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
   public static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
   public static final boolean DEFAULT_EXPORT_SAMPLED_ONLY = true;
-  public static final boolean DEFAULT_LOG_SPANS = false;
+  public static final boolean DEFAULT_EXPORT_SPANS = false;
 
   private boolean enabled = true;
   private Tracer tracer = new Tracer();
@@ -70,7 +70,10 @@ public class OpenTelemetryProperties {
     private int maxNumberOfAttributesPerEvent = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT;
     private int maxNumberOfAttributesPerLink = DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK;
     private boolean exportSampledOnly = DEFAULT_EXPORT_SAMPLED_ONLY;
-    private boolean logSpans = DEFAULT_LOG_SPANS;
+    private boolean logSpans = DEFAULT_EXPORT_SPANS;
+    private boolean exportInmemory = DEFAULT_EXPORT_SPANS;
+    private boolean exportCollector = DEFAULT_EXPORT_SPANS;
+    private boolean exportJaeger = DEFAULT_EXPORT_SPANS;
 
     public Sampler getSampler() {
       return sampler;
@@ -134,6 +137,30 @@ public class OpenTelemetryProperties {
 
     public void setLogSpans(boolean logSpans) {
       this.logSpans = logSpans;
+    }
+
+    public boolean isExportInmemory() {
+      return exportInmemory;
+    }
+
+    public void setExportInmemory(boolean exportInmemory) {
+      this.exportInmemory = exportInmemory;
+    }
+
+    public boolean isExportCollector() {
+      return exportCollector;
+    }
+
+    public void setExportCollector(boolean exportCollector) {
+      this.exportCollector = exportCollector;
+    }
+
+    public boolean isExportJaeger() {
+      return exportJaeger;
+    }
+
+    public void setExportJaeger(boolean exportJaeger) {
+      this.exportJaeger = exportJaeger;
     }
   }
 

@@ -18,7 +18,7 @@ package io.opentelemetry.contrib.spring.boot.actuate;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_EXPORT_SAMPLED_ONLY;
-import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_LOG_SPANS;
+import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_EXPORT_SPANS;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_SAMPLER;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_SPAN_MAX_NUM_ATTRIBUTES;
 import static io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT;
@@ -50,6 +50,9 @@ public class OpenTelemetryPropertiesTest {
     assertThat(properties.getTracer().getMaxNumberOfAttributesPerLink())
         .isEqualTo(DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK);
     assertThat(properties.getTracer().isExportSampledOnly()).isEqualTo(DEFAULT_EXPORT_SAMPLED_ONLY);
-    assertThat(properties.getTracer().isLogSpans()).isEqualTo(DEFAULT_LOG_SPANS);
+    assertThat(properties.getTracer().isLogSpans()).isEqualTo(DEFAULT_EXPORT_SPANS);
+    assertThat(properties.getTracer().isExportInmemory()).isEqualTo(DEFAULT_EXPORT_SPANS);
+    assertThat(properties.getTracer().isExportCollector()).isEqualTo(DEFAULT_EXPORT_SPANS);
+    assertThat(properties.getTracer().isExportJaeger()).isEqualTo(DEFAULT_EXPORT_SPANS);
   }
 }

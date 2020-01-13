@@ -254,7 +254,10 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
     SpanExporter spanExporter;
     if (spanExporters.isEmpty()) {
       spanExporter = new LoggingExporter();
+    } else if (spanExporters.size() == 1) {
+      spanExporter = spanExporters.get(0);
     } else {
+      // TODO fix after MultiSpanExporter.create is changed to public
       spanExporter = spanExporters.get(0);
     }
     return SimpleSpansProcessor.newBuilder(spanExporter)

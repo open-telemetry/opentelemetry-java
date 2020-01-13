@@ -17,6 +17,7 @@
 package io.opentelemetry.contrib.spring.boot.actuate;
 
 import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.exporters.logging.LoggingExporter;
 import io.opentelemetry.metrics.MeterRegistry;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
@@ -168,6 +169,30 @@ public class OpenTelemetryAutoConfiguration {
     factory.setProperties(properties);
     factory.afterPropertiesSet();
     return factory.getObject();
+  }
+
+  /**
+   * Returns a span exporter which only logs all the span data if <code>
+   * management.opentelemetry.tracer.log-spans</code> is set to <code>true</code>.
+   *
+   * @return the span logger
+   */
+  @ConditionalOnProperty({"management.opentelemetry.tracer.log-spans"})
+  @Bean
+  public SpanExporter loggingExporter() {
+    return new LoggingExporter();
+  }
+
+  /**
+   * Returns a span exporter which stores exported spans in-memory if <code>
+   * management.opentelemetry.tracer.export-inmemory</code> is set to <code>true</code>.
+   *
+   * @return the in-memory span storage
+   */
+  @ConditionalOnProperty({"management.opentelemetry.tracer.export-inmemory"})
+  @Bean
+  public SpanExporter inmemoryExporter() {
+    return io.opentelemetry.exporters.inmemory.InMemorySpanExporter.create();
   }
 
   private Resource constructServiceResource() {
