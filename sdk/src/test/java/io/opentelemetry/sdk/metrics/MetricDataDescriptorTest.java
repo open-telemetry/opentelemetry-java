@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.metrics.MetricData.Descriptor;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,42 +26,42 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link MetricDescriptor}. */
+/** Unit tests for {@link MetricData.Descriptor}. */
 @RunWith(JUnit4.class)
-public class InstrumentDescriptorTest {
+public class MetricDataDescriptorTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   private static final String METRIC_NAME = "metric";
   private static final String DESCRIPTION = "Instrument description.";
   private static final String UNIT = "kb/s";
-  private static final MetricDescriptor.Type TYPE = MetricDescriptor.Type.MONOTONIC_INT64;
+  private static final Descriptor.Type TYPE = Descriptor.Type.MONOTONIC_INT64;
   private static final String KEY_1 = "key1";
   private static final String KEY_2 = "key2";
   private static final String VALUE_2 = "key2";
 
   @Test
   public void testGet() {
-    MetricDescriptor metricDescriptor =
-        MetricDescriptor.createInternal(
+    Descriptor descriptor =
+        Descriptor.createInternal(
             METRIC_NAME,
             DESCRIPTION,
             UNIT,
             TYPE,
             Collections.singletonList(KEY_1),
             Collections.singletonMap(KEY_2, VALUE_2));
-    assertThat(metricDescriptor.getName()).isEqualTo(METRIC_NAME);
-    assertThat(metricDescriptor.getDescription()).isEqualTo(DESCRIPTION);
-    assertThat(metricDescriptor.getUnit()).isEqualTo(UNIT);
-    assertThat(metricDescriptor.getType()).isEqualTo(TYPE);
-    assertThat(metricDescriptor.getLabelKeys()).containsExactly(KEY_1);
-    assertThat(metricDescriptor.getConstantLabels()).containsExactly(KEY_2, VALUE_2);
+    assertThat(descriptor.getName()).isEqualTo(METRIC_NAME);
+    assertThat(descriptor.getDescription()).isEqualTo(DESCRIPTION);
+    assertThat(descriptor.getUnit()).isEqualTo(UNIT);
+    assertThat(descriptor.getType()).isEqualTo(TYPE);
+    assertThat(descriptor.getLabelKeys()).containsExactly(KEY_1);
+    assertThat(descriptor.getConstantLabels()).containsExactly(KEY_2, VALUE_2);
   }
 
   @Test
   public void create_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    MetricDescriptor.createInternal(
+    Descriptor.createInternal(
         null,
         DESCRIPTION,
         UNIT,
@@ -73,7 +74,7 @@ public class InstrumentDescriptorTest {
   public void create_NullDescription() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    MetricDescriptor.createInternal(
+    Descriptor.createInternal(
         METRIC_NAME,
         null,
         UNIT,
@@ -86,7 +87,7 @@ public class InstrumentDescriptorTest {
   public void create_NullUnit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    MetricDescriptor.createInternal(
+    Descriptor.createInternal(
         METRIC_NAME,
         DESCRIPTION,
         null,
@@ -99,7 +100,7 @@ public class InstrumentDescriptorTest {
   public void create_NullType() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("type");
-    MetricDescriptor.createInternal(
+    Descriptor.createInternal(
         METRIC_NAME,
         DESCRIPTION,
         UNIT,
@@ -112,7 +113,7 @@ public class InstrumentDescriptorTest {
   public void create_NullLabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    MetricDescriptor.createInternal(
+    Descriptor.createInternal(
         METRIC_NAME, DESCRIPTION, UNIT, TYPE, null, Collections.singletonMap(KEY_2, VALUE_2));
   }
 
@@ -120,7 +121,7 @@ public class InstrumentDescriptorTest {
   public void create_NullConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    MetricDescriptor.createInternal(
+    Descriptor.createInternal(
         METRIC_NAME, DESCRIPTION, UNIT, TYPE, Collections.singletonList(KEY_1), null);
   }
 }
