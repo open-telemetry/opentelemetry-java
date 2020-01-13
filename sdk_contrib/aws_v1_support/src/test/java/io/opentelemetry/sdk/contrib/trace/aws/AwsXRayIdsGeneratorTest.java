@@ -28,8 +28,11 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link AwsXRayIdsGenerator}. */
+@RunWith(JUnit4.class)
 public class AwsXRayIdsGeneratorTest {
 
   @Test

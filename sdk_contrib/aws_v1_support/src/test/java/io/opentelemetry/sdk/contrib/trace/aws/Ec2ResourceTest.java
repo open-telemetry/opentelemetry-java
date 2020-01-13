@@ -22,7 +22,11 @@ import com.amazonaws.util.EC2MetadataUtils.InstanceInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+/** Unit tests for {@link Ec2Resource}. */
+@RunWith(JUnit4.class)
 public class Ec2ResourceTest {
 
   @Test
