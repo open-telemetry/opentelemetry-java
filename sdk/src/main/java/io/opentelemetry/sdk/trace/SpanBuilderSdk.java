@@ -215,6 +215,7 @@ class SpanBuilderSdk implements Span.Builder {
         resource,
         attributes,
         truncatedLinks(),
+        links.size(),
         startEpochNanos);
   }
 

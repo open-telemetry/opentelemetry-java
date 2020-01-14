@@ -16,9 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
@@ -41,23 +40,28 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link SpanData}. */
+/**
+ * Unit tests for {@link SpanData}.
+ */
 @RunWith(JUnit4.class)
 public class SpanDataTest {
+
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void defaultValues() {
     SpanData spanData = createBasicSpanBuilder().build();
 
-    assertFalse(spanData.getParentSpanId().isValid());
-    assertEquals(Collections.<String, AttributeValue>emptyMap(), spanData.getAttributes());
-    assertEquals(emptyList(), spanData.getTimedEvents());
-    assertEquals(emptyList(), spanData.getLinks());
-    assertEquals(InstrumentationLibraryInfo.EMPTY, spanData.getInstrumentationLibraryInfo());
-    assertEquals(false, spanData.getHasRemoteParent());
+    assertThat(spanData.getParentSpanId().isValid()).isFalse();
+    assertThat(spanData.getAttributes()).isEqualTo(Collections.<String, AttributeValue>emptyMap());
+    assertThat(spanData.getTimedEvents()).isEqualTo(emptyList());
+    assertThat(spanData.getLinks()).isEqualTo(emptyList());
+    assertThat(spanData.getInstrumentationLibraryInfo())
+        .isSameInstanceAs(InstrumentationLibraryInfo.EMPTY);
+    assertThat(spanData.getHasRemoteParent()).isFalse();
   }
 
   @Test
@@ -113,6 +117,9 @@ public class SpanDataTest {
         .setEndEpochNanos(END_EPOCH_NANOS)
         .setKind(Kind.SERVER)
         .setStatus(Status.OK)
-        .setHasRemoteParent(false);
+        .setHasRemoteParent(false)
+        .setTotalRecordedEvents(0)
+        .setTotalRecordedLinks(0)
+        .setNumberOfChildren(0);
   }
 }

@@ -420,6 +420,7 @@ public class RecordEventsReadableSpanTest {
                 "event2",
                 Collections.<String, AttributeValue>emptyMap());
         assertThat(spanData.getTimedEvents().get(i)).isEqualTo(expectedEvent);
+        assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
       }
     } finally {
       span.end();
@@ -485,6 +486,7 @@ public class RecordEventsReadableSpanTest {
             resource,
             attributesWithCapacity,
             Collections.singletonList(link),
+            1,
             0);
     Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span);
     return span;
@@ -571,6 +573,7 @@ public class RecordEventsReadableSpanTest {
             resource,
             attributesWithCapacity,
             links,
+            1,
             0);
     long startEpochNanos = clock.now();
     clock.advanceMillis(4);
@@ -597,13 +600,16 @@ public class RecordEventsReadableSpanTest {
                 Arrays.asList(
                     SpanData.TimedEvent.create(firstEventEpochNanos, "event1", event1Attributes),
                     SpanData.TimedEvent.create(secondEventTimeNanos, "event2", event2Attributes)))
+            .setTotalRecordedEvents(2)
             .setResource(resource)
             .setParentSpanId(parentSpanId)
             .setLinks(links)
+            .setTotalRecordedLinks(links.size())
             .setTraceId(traceId)
             .setSpanId(spanId)
             .setAttributes(attributes)
             .setHasRemoteParent(false)
+            .setNumberOfChildren(0)
             .build();
 
     SpanData result = readableSpan.toSpanData();
