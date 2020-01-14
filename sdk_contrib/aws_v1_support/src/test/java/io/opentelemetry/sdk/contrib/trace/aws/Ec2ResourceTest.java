@@ -31,7 +31,7 @@ public class Ec2ResourceTest {
 
   @Test
   public void shouldReturnResourceWithOnlyCloudProviderLabelIfNotRunningOnEc2() {
-    Resource resource = Ec2Resource.getResource();
+    Resource resource = Ec2Resource.getResourceFromInfoAndHost(null, null);
     assertThat(resource.getLabels().get(ResourceConstants.CLOUD_PROVIDER))
         .isEqualTo(Ec2Resource.CLOUD_PROVIDER_AWS);
   }
