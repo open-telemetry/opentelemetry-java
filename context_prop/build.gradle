@@ -1,9 +1,7 @@
-description = 'OpenTelemetry API'
+description = 'OpenTelemetry Context Propagation'
 
 dependencies {
-    api project(':opentelemetry-context-prop')
-
-    annotationProcessor libraries.auto_value
+    api libraries.grpc_context
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
