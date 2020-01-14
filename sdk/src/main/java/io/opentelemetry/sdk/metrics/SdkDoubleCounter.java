@@ -70,7 +70,8 @@ class SdkDoubleCounter extends BaseInstrument<BoundDoubleCounter> implements Dou
     return result;
   }
 
-  private static class SdkBoundDoubleCounter extends BaseBoundInstrument implements BoundDoubleCounter {
+  private static class SdkBoundDoubleCounter extends BaseBoundInstrument
+      implements BoundDoubleCounter {
 
     private final boolean monotonic;
 
