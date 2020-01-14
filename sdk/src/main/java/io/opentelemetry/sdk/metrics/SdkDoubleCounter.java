@@ -16,17 +16,17 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.metrics.DoubleCounter;
+import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import java.util.List;
 import java.util.Map;
 
-class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCounter {
+class SdkDoubleCounter extends BaseInstrument<BoundDoubleCounter> implements DoubleCounter {
 
   private final boolean monotonic;
 
-  private SdkLongCounter(
+  private SdkDoubleCounter(
       String name,
       String description,
       Map<String, String> constantLabels,
@@ -37,13 +37,13 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
   }
 
   @Override
-  public void add(long delta, LabelSet labelSet) {
+  public void add(double delta, LabelSet labelSet) {
     createBoundInstrument(labelSet).add(delta);
   }
 
   @Override
-  BoundLongCounter createBoundInstrument(LabelSet labelSet) {
-    return new SdkBoundLongCounter(labelSet, monotonic);
+  BoundDoubleCounter createBoundInstrument(LabelSet labelSet) {
+    return new SdkBoundDoubleCounter(labelSet, monotonic);
   }
 
   @Override
@@ -51,14 +51,14 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     if (this == o) {
       return true;
     }
-    if (!(o instanceof SdkLongCounter)) {
+    if (!(o instanceof SdkDoubleCounter)) {
       return false;
     }
     if (!super.equals(o)) {
       return false;
     }
 
-    SdkLongCounter that = (SdkLongCounter) o;
+    SdkDoubleCounter that = (SdkDoubleCounter) o;
 
     return monotonic == that.monotonic;
   }
@@ -70,17 +70,18 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     return result;
   }
 
-  private static class SdkBoundLongCounter extends BaseBoundInstrument implements BoundLongCounter {
+  private static class SdkBoundDoubleCounter extends BaseBoundInstrument
+      implements BoundDoubleCounter {
 
     private final boolean monotonic;
 
-    SdkBoundLongCounter(LabelSet labels, boolean monotonic) {
+    SdkBoundDoubleCounter(LabelSet labels, boolean monotonic) {
       super(labels);
       this.monotonic = monotonic;
     }
 
     @Override
-    public void add(long delta) {
+    public void add(double delta) {
       if (monotonic && delta < 0) {
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
@@ -88,14 +89,14 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     }
   }
 
-  static class Builder extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
-      implements LongCounter.Builder {
+  static class Builder extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
+      implements DoubleCounter.Builder {
 
     private Builder(String name) {
       super(name);
     }
 
-    static LongCounter.Builder builder(String name) {
+    static DoubleCounter.Builder builder(String name) {
       return new Builder(name);
     }
 
@@ -105,8 +106,8 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     }
 
     @Override
-    public LongCounter build() {
-      return new SdkLongCounter(
+    public DoubleCounter build() {
+      return new SdkDoubleCounter(
           getName(), getDescription(), getConstantLabels(), getLabelKeys(), getMonotonic());
     }
   }
