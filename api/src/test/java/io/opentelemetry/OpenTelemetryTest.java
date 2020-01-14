@@ -22,10 +22,10 @@ import static org.junit.Assert.assertTrue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
+import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
+import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DefaultMeterRegistry;
 import io.opentelemetry.metrics.DoubleCounter;
@@ -77,7 +77,7 @@ public class OpenTelemetryTest {
     OpenTelemetry.reset();
     System.clearProperty(TracerRegistryProvider.class.getName());
     System.clearProperty(MeterRegistryProvider.class.getName());
-    System.clearProperty(DistributedContextManagerProvider.class.getName());
+    System.clearProperty(CorrelationContextManagerProvider.class.getName());
   }
 
   @Test
@@ -89,10 +89,10 @@ public class OpenTelemetryTest {
     assertThat(OpenTelemetry.getMeterRegistry())
         .isInstanceOf(DefaultMeterRegistry.getInstance().getClass());
     assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
-    assertThat(OpenTelemetry.getDistributedContextManager())
-        .isInstanceOf(DefaultDistributedContextManager.getInstance().getClass());
-    assertThat(OpenTelemetry.getDistributedContextManager())
-        .isEqualTo(OpenTelemetry.getDistributedContextManager());
+    assertThat(OpenTelemetry.getCorrelationContextManager())
+        .isInstanceOf(DefaultCorrelationContextManager.getInstance().getClass());
+    assertThat(OpenTelemetry.getCorrelationContextManager())
+        .isEqualTo(OpenTelemetry.getCorrelationContextManager());
   }
 
   @Test
@@ -167,49 +167,49 @@ public class OpenTelemetryTest {
   }
 
   @Test
-  public void testDistributedContextManagerLoadArbitrary() throws IOException {
+  public void testCorrelationContextManagerLoadArbitrary() throws IOException {
     File serviceFile =
         createService(
-            DistributedContextManagerProvider.class,
-            FirstDistributedContextManager.class,
-            SecondDistributedContextManager.class);
+            CorrelationContextManagerProvider.class,
+            FirstCorrelationContextManager.class,
+            SecondCorrelationContextManager.class);
     try {
       assertTrue(
-          (OpenTelemetry.getDistributedContextManager() instanceof FirstDistributedContextManager)
-              || (OpenTelemetry.getDistributedContextManager()
-                  instanceof SecondDistributedContextManager));
-      assertThat(OpenTelemetry.getDistributedContextManager())
-          .isEqualTo(OpenTelemetry.getDistributedContextManager());
+          (OpenTelemetry.getCorrelationContextManager() instanceof FirstCorrelationContextManager)
+              || (OpenTelemetry.getCorrelationContextManager()
+                  instanceof SecondCorrelationContextManager));
+      assertThat(OpenTelemetry.getCorrelationContextManager())
+          .isEqualTo(OpenTelemetry.getCorrelationContextManager());
     } finally {
       serviceFile.delete();
     }
   }
 
   @Test
-  public void testDistributedContextManagerSystemProperty() throws IOException {
+  public void testCorrelationContextManagerSystemProperty() throws IOException {
     File serviceFile =
         createService(
-            DistributedContextManagerProvider.class,
-            FirstDistributedContextManager.class,
-            SecondDistributedContextManager.class);
+            CorrelationContextManagerProvider.class,
+            FirstCorrelationContextManager.class,
+            SecondCorrelationContextManager.class);
     System.setProperty(
-        DistributedContextManagerProvider.class.getName(),
-        SecondDistributedContextManager.class.getName());
+        CorrelationContextManagerProvider.class.getName(),
+        SecondCorrelationContextManager.class.getName());
     try {
-      assertThat(OpenTelemetry.getDistributedContextManager())
-          .isInstanceOf(SecondDistributedContextManager.class);
-      assertThat(OpenTelemetry.getDistributedContextManager())
-          .isEqualTo(OpenTelemetry.getDistributedContextManager());
+      assertThat(OpenTelemetry.getCorrelationContextManager())
+          .isInstanceOf(SecondCorrelationContextManager.class);
+      assertThat(OpenTelemetry.getCorrelationContextManager())
+          .isEqualTo(OpenTelemetry.getCorrelationContextManager());
     } finally {
       serviceFile.delete();
     }
   }
 
   @Test
-  public void testDistributedContextManagerNotFound() {
-    System.setProperty(DistributedContextManagerProvider.class.getName(), "io.does.not.exists");
+  public void testCorrelationContextManagerNotFound() {
+    System.setProperty(CorrelationContextManagerProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getDistributedContextManager();
+    OpenTelemetry.getCorrelationContextManager();
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {
@@ -418,47 +418,35 @@ public class OpenTelemetryTest {
     }
   }
 
-  public static class SecondDistributedContextManager extends FirstDistributedContextManager {
+  public static class SecondCorrelationContextManager extends FirstCorrelationContextManager {
     @Override
-    public DistributedContextManager create() {
-      return new SecondDistributedContextManager();
+    public CorrelationContextManager create() {
+      return new SecondCorrelationContextManager();
     }
   }
 
-  public static class FirstDistributedContextManager
-      implements DistributedContextManager, DistributedContextManagerProvider {
+  public static class FirstCorrelationContextManager
+      implements CorrelationContextManager, CorrelationContextManagerProvider {
     @Override
-    public DistributedContextManager create() {
-      return new FirstDistributedContextManager();
+    public CorrelationContextManager create() {
+      return new FirstCorrelationContextManager();
     }
 
     @Nullable
     @Override
-    public DistributedContext getCurrentContext() {
+    public CorrelationContext getCurrentContext() {
       return null;
     }
 
     @Nullable
     @Override
-    public DistributedContext.Builder contextBuilder() {
+    public CorrelationContext.Builder contextBuilder() {
       return null;
     }
 
     @Nullable
     @Override
-    public Scope withContext(DistributedContext distContext) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public BinaryFormat<DistributedContext> getBinaryFormat() {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public HttpTextFormat<DistributedContext> getHttpTextFormat() {
+    public Scope withContext(CorrelationContext distContext) {
       return null;
     }
   }
