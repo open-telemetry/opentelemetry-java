@@ -88,20 +88,19 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     }
   }
 
-  static class SdkLongCounterBuilder
-      extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
+  static class Builder extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
       implements LongCounter.Builder {
 
-    private SdkLongCounterBuilder(String name) {
+    private Builder(String name) {
       super(name);
     }
 
     static LongCounter.Builder builder(String name) {
-      return new SdkLongCounterBuilder(name);
+      return new Builder(name);
     }
 
     @Override
-    SdkLongCounterBuilder getThis() {
+    Builder getThis() {
       return this;
     }
 

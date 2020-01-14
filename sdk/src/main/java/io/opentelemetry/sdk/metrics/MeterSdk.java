@@ -47,12 +47,12 @@ public class MeterSdk implements Meter {
 
   @Override
   public DoubleCounter.Builder doubleCounterBuilder(String name) {
-    return SdkDoubleCounter.SdkDoubleCounterBuilder.builder(name);
+    return SdkDoubleCounter.Builder.builder(name);
   }
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
-    return SdkLongCounter.SdkLongCounterBuilder.builder(name);
+    return SdkLongCounter.Builder.builder(name);
   }
 
   @Override

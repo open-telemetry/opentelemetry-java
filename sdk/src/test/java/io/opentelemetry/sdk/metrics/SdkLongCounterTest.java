@@ -41,7 +41,7 @@ public class SdkLongCounterTest {
     LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
     LongCounter longCounter =
-        SdkLongCounter.SdkLongCounterBuilder.builder("testCounter")
+        SdkLongCounter.Builder.builder("testCounter")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
@@ -65,7 +65,7 @@ public class SdkLongCounterTest {
     MeterSdk testSdk = new MeterSdk();
 
     LongCounter longCounter =
-        SdkLongCounter.SdkLongCounterBuilder.builder("testCounter").setMonotonic(true).build();
+        SdkLongCounter.Builder.builder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     longCounter.add(-45, testSdk.emptyLabelSet());
@@ -76,7 +76,7 @@ public class SdkLongCounterTest {
     MeterSdk testSdk = new MeterSdk();
 
     LongCounter longCounter =
-        SdkLongCounter.SdkLongCounterBuilder.builder("testCounter").setMonotonic(true).build();
+        SdkLongCounter.Builder.builder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     longCounter.bind(testSdk.emptyLabelSet()).add(-9);

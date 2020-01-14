@@ -89,20 +89,19 @@ class SdkDoubleCounter extends BaseInstrument<BoundDoubleCounter> implements Dou
     }
   }
 
-  static class SdkDoubleCounterBuilder
-      extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
+  static class Builder extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
       implements DoubleCounter.Builder {
 
-    private SdkDoubleCounterBuilder(String name) {
+    private Builder(String name) {
       super(name);
     }
 
     static DoubleCounter.Builder builder(String name) {
-      return new SdkDoubleCounterBuilder(name);
+      return new Builder(name);
     }
 
     @Override
-    SdkDoubleCounterBuilder getThis() {
+    Builder getThis() {
       return this;
     }
 
