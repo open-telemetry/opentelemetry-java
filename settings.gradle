@@ -13,6 +13,7 @@ include ":opentelemetry-all",
         ":opentelemetry-proto",
         ":opentelemetry-sdk",
         ":opentelemetry-sdk-contrib-async-processor",
+        ":opentelemetry-sdk-contrib-aws-v1-support",
         ":opentelemetry-sdk-contrib-testbed"
 
 project(':opentelemetry-all').projectDir = "$rootDir/all" as File
@@ -37,5 +38,7 @@ project(':opentelemetry-opentracing-shim').projectDir =
 project(':opentelemetry-sdk').projectDir = "$rootDir/sdk" as File
 project(':opentelemetry-sdk-contrib-async-processor').projectDir =
         "$rootDir/sdk_contrib/async_processor" as File
+project(':opentelemetry-sdk-contrib-aws-v1-support').projectDir =
+        "$rootDir/sdk_contrib/aws_v1_support" as File
 project(':opentelemetry-sdk-contrib-testbed').projectDir =
         "$rootDir/sdk_contrib/testbed" as File
