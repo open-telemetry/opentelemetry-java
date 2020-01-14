@@ -294,11 +294,14 @@ public abstract class SpanData {
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.EMPTY)
         .setLinks(Collections.<io.opentelemetry.trace.Link>emptyList())
+        .setTotalRecordedLinks(0)
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
         .setTimedEvents(Collections.<TimedEvent>emptyList())
+        .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
         .setTracestate(Tracestate.getDefault())
         .setTraceFlags(TraceFlags.getDefault())
+        .setNumberOfChildren(0)
         .setHasRemoteParent(false);
   }
 

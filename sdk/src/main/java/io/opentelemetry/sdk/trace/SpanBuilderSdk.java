@@ -60,6 +60,7 @@ class SpanBuilderSdk implements Span.Builder {
   private Kind spanKind = Kind.INTERNAL;
   private final AttributesWithCapacity attributes;
   private List<Link> links;
+  private int totalNumberOfLinksAdded = 0;
   private ParentType parentType = ParentType.CURRENT_SPAN;
   private long startEpochNanos = 0;
 
@@ -127,8 +128,9 @@ class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder addLink(Link link) {
     Utils.checkNotNull(link, "link");
-    //don't bother doing anything with any links beyond the max.
-    //todo: generate a metric for dropped links
+    totalNumberOfLinksAdded++;
+    // don't bother doing anything with any links beyond the max.
+    // todo: generate a metric for dropped links
     if (links.size() == traceConfig.getMaxNumberOfLinks()) {
       return this;
     }
@@ -222,7 +224,7 @@ class SpanBuilderSdk implements Span.Builder {
         resource,
         attributes,
         links,
-        links.size(),
+        totalNumberOfLinksAdded,
         startEpochNanos);
   }
 
