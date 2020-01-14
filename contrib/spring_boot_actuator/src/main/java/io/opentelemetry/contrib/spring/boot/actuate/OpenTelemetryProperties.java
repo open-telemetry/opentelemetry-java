@@ -72,8 +72,6 @@ public class OpenTelemetryProperties {
     private boolean exportSampledOnly = DEFAULT_EXPORT_SAMPLED_ONLY;
     private boolean logSpans = DEFAULT_EXPORT_SPANS;
     private boolean exportInmemory = DEFAULT_EXPORT_SPANS;
-    private boolean exportCollector = DEFAULT_EXPORT_SPANS;
-    private boolean exportJaeger = DEFAULT_EXPORT_SPANS;
 
     public Sampler getSampler() {
       return sampler;
@@ -145,22 +143,6 @@ public class OpenTelemetryProperties {
 
     public void setExportInmemory(boolean exportInmemory) {
       this.exportInmemory = exportInmemory;
-    }
-
-    public boolean isExportCollector() {
-      return exportCollector;
-    }
-
-    public void setExportCollector(boolean exportCollector) {
-      this.exportCollector = exportCollector;
-    }
-
-    public boolean isExportJaeger() {
-      return exportJaeger;
-    }
-
-    public void setExportJaeger(boolean exportJaeger) {
-      this.exportJaeger = exportJaeger;
     }
   }
 

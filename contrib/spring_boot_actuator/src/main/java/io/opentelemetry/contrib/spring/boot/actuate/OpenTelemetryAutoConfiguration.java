@@ -192,7 +192,7 @@ public class OpenTelemetryAutoConfiguration {
   @ConditionalOnProperty({"management.opentelemetry.tracer.export-inmemory"})
   @Bean
   public SpanExporter inmemoryExporter() {
-    return io.opentelemetry.exporters.inmemory.InMemorySpanExporter.create();
+    return new InMemorySpanExporterFactory().create();
   }
 
   private Resource constructServiceResource() {

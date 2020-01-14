@@ -52,7 +52,5 @@ public class OpenTelemetryPropertiesTest {
     assertThat(properties.getTracer().isExportSampledOnly()).isEqualTo(DEFAULT_EXPORT_SAMPLED_ONLY);
     assertThat(properties.getTracer().isLogSpans()).isEqualTo(DEFAULT_EXPORT_SPANS);
     assertThat(properties.getTracer().isExportInmemory()).isEqualTo(DEFAULT_EXPORT_SPANS);
-    assertThat(properties.getTracer().isExportCollector()).isEqualTo(DEFAULT_EXPORT_SPANS);
-    assertThat(properties.getTracer().isExportJaeger()).isEqualTo(DEFAULT_EXPORT_SPANS);
   }
 }
