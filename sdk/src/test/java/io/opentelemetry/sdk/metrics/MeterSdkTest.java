@@ -52,9 +52,8 @@ public class MeterSdkTest {
   public void testLabelSets() {
     MeterSdk testSdk = new MeterSdk();
 
-    assertThat(testSdk.emptyLabelSet()).isSameInstanceAs(testSdk.emptyLabelSet());
-    assertThat(testSdk.emptyLabelSet()).isSameInstanceAs(testSdk.createLabelSet());
-    assertThat(testSdk.emptyLabelSet())
+    assertThat(testSdk.createLabelSet()).isSameInstanceAs(testSdk.createLabelSet());
+    assertThat(testSdk.createLabelSet())
         .isSameInstanceAs(testSdk.createLabelSet(Collections.<String, String>emptyMap()));
 
     assertThat(testSdk.createLabelSet("key", "value"))

@@ -129,6 +129,6 @@ public class LongCounterTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    longCounter.bind(meter.emptyLabelSet()).add(1);
+    longCounter.bind(meter.createLabelSet()).add(1);
   }
 }

@@ -248,12 +248,4 @@ public interface Meter {
    * @throws NullPointerException if the map is null.
    */
   LabelSet createLabelSet(Map<String, String> labels);
-
-  /**
-   * Returns an empty {@link LabelSet}. The implementation is permitted to have this be a singleton
-   * instance.
-   *
-   * @return an empty {@link LabelSet}
-   */
-  LabelSet emptyLabelSet();
 }

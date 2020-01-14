@@ -49,7 +49,7 @@ public class SdkLongCounterTest {
             .setMonotonic(true)
             .build();
 
-    longCounter.add(45, testSdk.emptyLabelSet());
+    longCounter.add(45, testSdk.createLabelSet());
 
     BoundLongCounter boundLongCounter = longCounter.bind(labelSet);
     boundLongCounter.add(334);
@@ -68,7 +68,7 @@ public class SdkLongCounterTest {
         SdkLongCounter.SdkLongCounterBuilder.builder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    longCounter.add(-45, testSdk.emptyLabelSet());
+    longCounter.add(-45, testSdk.createLabelSet());
   }
 
   @Test
@@ -79,6 +79,6 @@ public class SdkLongCounterTest {
         SdkLongCounter.SdkLongCounterBuilder.builder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    longCounter.bind(testSdk.emptyLabelSet()).add(-9);
+    longCounter.bind(testSdk.createLabelSet()).add(-9);
   }
 }

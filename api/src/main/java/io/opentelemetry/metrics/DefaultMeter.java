@@ -143,11 +143,6 @@ public final class DefaultMeter implements Meter {
     return NoopLabelSet.INSTANCE;
   }
 
-  @Override
-  public LabelSet emptyLabelSet() {
-    return NoopLabelSet.INSTANCE;
-  }
-
   /** No-op implementation of LongGauge interface. */
   @Immutable
   private static final class NoopLongGauge implements LongGauge {

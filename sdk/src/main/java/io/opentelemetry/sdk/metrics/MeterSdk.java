@@ -86,9 +86,4 @@ public class MeterSdk implements Meter {
   public LabelSet createLabelSet(Map<String, String> labels) {
     return SdkLabelSet.create(labels);
   }
-
-  @Override
-  public LabelSet emptyLabelSet() {
-    return SdkLabelSet.empty();
-  }
 }
