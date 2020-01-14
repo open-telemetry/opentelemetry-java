@@ -40,16 +40,13 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Unit tests for {@link SpanData}.
- */
+/** Unit tests for {@link SpanData}. */
 @RunWith(JUnit4.class)
 public class SpanDataTest {
 
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
-  @Rule
-  public final ExpectedException thrown = ExpectedException.none();
+  @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void defaultValues() {
