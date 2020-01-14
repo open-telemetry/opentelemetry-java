@@ -87,7 +87,7 @@ public class SpanBuilderSdkTest {
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      assertThat(span.getLinks()).hasSize(3);
+      assertThat(span.toSpanData().getLinks()).hasSize(3);
     } finally {
       span.end();
     }
@@ -110,10 +110,10 @@ public class SpanBuilderSdkTest {
     }
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      assertThat(span.getDroppedLinksCount()).isEqualTo(maxNumberOfLinks);
-      assertThat(span.getLinks().size()).isEqualTo(maxNumberOfLinks);
+      List<Link> links = span.toSpanData().getLinks();
+      assertThat(links.size()).isEqualTo(maxNumberOfLinks);
       for (int i = 0; i < maxNumberOfLinks; i++) {
-        assertThat(span.getLinks().get(i)).isEqualTo(SpanData.Link.create(sampledSpanContext));
+        assertThat(links.get(i)).isEqualTo(SpanData.Link.create(sampledSpanContext));
       }
     } finally {
       span.end();
@@ -156,7 +156,7 @@ public class SpanBuilderSdkTest {
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      Map<String, AttributeValue> attrs = span.getAttributes();
+      Map<String, AttributeValue> attrs = span.toSpanData().getAttributes();
       assertThat(attrs).hasSize(5);
       assertThat(attrs.get("string")).isEqualTo(AttributeValue.stringAttributeValue("value"));
       assertThat(attrs.get("long")).isEqualTo(AttributeValue.longAttributeValue(12345L));
@@ -185,7 +185,7 @@ public class SpanBuilderSdkTest {
     }
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      Map<String, AttributeValue> attrs = span.getAttributes();
+      Map<String, AttributeValue> attrs = span.toSpanData().getAttributes();
       assertThat(attrs.size()).isEqualTo(maxNumberOfAttrs);
       for (int i = 0; i < maxNumberOfAttrs; i++) {
         assertThat(attrs.get("key" + (i + maxNumberOfAttrs)))
@@ -285,7 +285,7 @@ public class SpanBuilderSdkTest {
                 .startSpan();
     try {
       assertThat(span.getContext().getTraceFlags().isSampled()).isTrue();
-      assertThat(span.getAttributes()).containsKey(samplerAttributeName);
+      assertThat(span.toSpanData().getAttributes()).containsKey(samplerAttributeName);
     } finally {
       span.end();
     }
@@ -347,7 +347,7 @@ public class SpanBuilderSdkTest {
               tracerSdk.spanBuilder(SPAN_NAME).setNoParent().setParent(parent).startSpan();
       try {
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
-        assertThat(span.getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
+        assertThat(span.toSpanData().getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
 
         RecordEventsReadableSpan span2 =
             (RecordEventsReadableSpan)
@@ -383,7 +383,7 @@ public class SpanBuilderSdkTest {
                   .startSpan();
       try {
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
-        assertThat(span.getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
+        assertThat(span.toSpanData().getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
       } finally {
         span.end();
       }
@@ -401,7 +401,7 @@ public class SpanBuilderSdkTest {
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
       try {
         assertThat(span.getContext().getTraceId()).isEqualTo(parent.getContext().getTraceId());
-        assertThat(span.getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
+        assertThat(span.toSpanData().getParentSpanId()).isEqualTo(parent.getContext().getSpanId());
       } finally {
         span.end();
       }
@@ -420,37 +420,9 @@ public class SpanBuilderSdkTest {
             tracerSdk.spanBuilder(SPAN_NAME).setParent(parent.getContext()).startSpan();
     try {
       assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
-      assertFalse(span.getParentSpanId().isValid());
+      assertFalse(span.toSpanData().getParentSpanId().isValid());
     } finally {
       span.end();
-    }
-  }
-
-  @Test
-  public void parent_timestampConverter() {
-    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try {
-      RecordEventsReadableSpan span =
-          (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
-
-      assertThat(span.getClock()).isEqualTo(((RecordEventsReadableSpan) parent).getClock());
-    } finally {
-      parent.end();
-    }
-  }
-
-  @Test
-  public void parentCurrentSpan_timestampConverter() {
-    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Scope scope = tracerSdk.withSpan(parent);
-    try {
-      RecordEventsReadableSpan span =
-          (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-
-      assertThat(span.getClock()).isEqualTo(((RecordEventsReadableSpan) parent).getClock());
-    } finally {
-      scope.close();
-      parent.end();
     }
   }
 
@@ -459,5 +431,31 @@ public class SpanBuilderSdkTest {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Negative startTimestamp");
     tracerSdk.spanBuilder(SPAN_NAME).setStartTimestamp(-1);
+  }
+
+  @Test
+  public void parent_clockIsSame() {
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+    try {
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
+
+      assertThat(span.getClock()).isSameInstanceAs(((RecordEventsReadableSpan) parent).getClock());
+    } finally {
+      parent.end();
+    }
+  }
+
+  @Test
+  public void parentCurrentSpan_clockIsSame() {
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+    try (Scope scope = tracerSdk.withSpan(parent)) {
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+
+      assertThat(span.getClock()).isSameInstanceAs(((RecordEventsReadableSpan) parent).getClock());
+    } finally {
+      parent.end();
+    }
   }
 }
