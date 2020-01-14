@@ -432,4 +432,30 @@ public class SpanBuilderSdkTest {
     thrown.expectMessage("Negative startTimestamp");
     tracerSdk.spanBuilder(SPAN_NAME).setStartTimestamp(-1);
   }
+
+  @Test
+  public void parent_clockIsSame() {
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+    try {
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).setParent(parent).startSpan();
+
+      assertThat(span.getClock()).isSameInstanceAs(((RecordEventsReadableSpan) parent).getClock());
+    } finally {
+      parent.end();
+    }
+  }
+
+  @Test
+  public void parentCurrentSpan_clockIsSame() {
+    Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+    try (Scope scope = tracerSdk.withSpan(parent)) {
+      RecordEventsReadableSpan span =
+          (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
+
+      assertThat(span.getClock()).isSameInstanceAs(((RecordEventsReadableSpan) parent).getClock());
+    } finally {
+      parent.end();
+    }
+  }
 }
