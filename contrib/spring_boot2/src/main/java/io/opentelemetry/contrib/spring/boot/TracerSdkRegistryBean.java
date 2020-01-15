@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.contrib.spring.boot.actuate;
+package io.opentelemetry.contrib.spring.boot;
 
 import static org.springframework.beans.BeanUtils.getPropertyDescriptor;
 import static org.springframework.beans.BeanUtils.instantiateClass;

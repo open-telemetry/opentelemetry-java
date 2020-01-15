@@ -14,18 +14,5 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.contrib.spring.boot.actuate;
-
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-
-/**
- * Constructs and initializes an {@link InMemorySpanExporter} instance. This is a separate class so
- * the in-memory span exporter module only has to be on the classpath if it is being used.
- */
-class InMemorySpanExporterFactory {
-
-  SpanExporter create() {
-    return InMemorySpanExporter.create();
-  }
-}
+/** Provides instrumentation of Spring Boot autoconfiguration of OpenTelemetry instrumentation. */
+package io.opentelemetry.contrib.spring.boot;

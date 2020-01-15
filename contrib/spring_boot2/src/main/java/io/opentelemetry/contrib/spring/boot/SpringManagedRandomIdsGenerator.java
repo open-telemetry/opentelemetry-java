@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.contrib.spring.boot.actuate;
+package io.opentelemetry.contrib.spring.boot;
 
 import io.opentelemetry.sdk.trace.IdsGenerator;
 import io.opentelemetry.trace.SpanId;

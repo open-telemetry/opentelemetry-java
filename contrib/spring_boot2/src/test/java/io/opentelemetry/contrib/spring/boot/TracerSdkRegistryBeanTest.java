@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.contrib.spring.boot.actuate;
+package io.opentelemetry.contrib.spring.boot;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.contrib.spring.boot.actuate.OpenTelemetryProperties.SamplerName;
+import io.opentelemetry.contrib.spring.boot.OpenTelemetryProperties.SamplerName;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -37,7 +37,7 @@ public class TracerSdkRegistryBeanTest {
     properties
         .getTracer()
         .getSampler()
-        .setImplClass("io.opentelemetry.contrib.spring.boot.actuate.TestOnlySampler");
+        .setImplClass("io.opentelemetry.contrib.spring.boot.TestOnlySampler");
     properties.getTracer().getSampler().getProperties().put("reservoir", "10");
     properties.getTracer().getSampler().getProperties().put("rate", "2.5");
     properties.getTracer().getSampler().getProperties().put("enabled", "true");

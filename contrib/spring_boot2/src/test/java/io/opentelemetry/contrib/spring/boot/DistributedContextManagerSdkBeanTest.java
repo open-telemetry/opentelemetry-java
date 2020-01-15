@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.contrib.spring.boot.actuate;
+package io.opentelemetry.contrib.spring.boot;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.metrics.MeterRegistry;
-import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
+import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link MeterSdkRegistryBean}. */
+/** Unit tests for {@link DistributedContextManagerSdkBean}. */
 @RunWith(JUnit4.class)
-public class MeterSdkRegistryBeanTest {
+public class DistributedContextManagerSdkBeanTest {
 
   @Test
-  public void shouldConstructMeterRegistryFromDefaults() {
+  public void shouldConstructDistributedContextManagerFromDefaults() {
     OpenTelemetryProperties properties = new OpenTelemetryProperties();
-    MeterSdkRegistryBean factoryBean = new MeterSdkRegistryBean();
+    DistributedContextManagerSdkBean factoryBean = new DistributedContextManagerSdkBean();
     factoryBean.setProperties(properties);
     factoryBean.afterPropertiesSet();
-    MeterRegistry meterRegistry = factoryBean.getObject();
-    assertThat(meterRegistry).isInstanceOf(MeterSdkRegistry.class);
+    DistributedContextManager manager = factoryBean.getObject();
+    assertThat(manager).isInstanceOf(DistributedContextManagerSdk.class);
   }
 }
