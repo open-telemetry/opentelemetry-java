@@ -24,7 +24,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "management.opentelemetry")
 public class OpenTelemetryProperties {
 
-  public static final SamplerName DEFAULT_SAMPLER = SamplerName.ALWAYS_ON;
+  public static final SamplerName DEFAULT_SAMPLER = SamplerName.ALWAYS_OFF;
   public static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
   public static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
   public static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;
@@ -173,7 +173,7 @@ public class OpenTelemetryProperties {
     }
   }
 
-  public static enum SamplerName {
+  public enum SamplerName {
     ALWAYS_ON,
     ALWAYS_OFF,
     PROBABILITY,
