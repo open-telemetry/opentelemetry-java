@@ -5,7 +5,6 @@ dependencies {
 
     api project(':opentelemetry-api')
 
-    annotationProcessor libraries.auto_value
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:2.2.2.RELEASE'
 
     implementation 'org.springframework:spring-context'
