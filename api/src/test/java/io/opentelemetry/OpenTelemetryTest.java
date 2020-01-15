@@ -449,5 +449,17 @@ public class OpenTelemetryTest {
     public Scope withContext(CorrelationContext distContext) {
       return null;
     }
+
+    @Nullable
+    @Override
+    public BinaryFormat<CorrelationContext> getBinaryFormat() {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public HttpTextFormat<CorrelationContext> getHttpTextFormat() {
+      return null;
+    }
   }
 }
