@@ -69,4 +69,18 @@ public final class DefaultMeterTest {
     thrown.expectMessage("name");
     defaultMeter.longMeasureBuilder(null);
   }
+
+  @Test
+  public void testVarargsLabelSetValidation_UnmatchedKeysAndValues() throws Exception {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("even");
+    defaultMeter.createLabelSet("key");
+  }
+
+  @Test
+  public void testVarargsLabelSetValidation_NullKey() throws Exception {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("null");
+    defaultMeter.createLabelSet(null, "value");
+  }
 }

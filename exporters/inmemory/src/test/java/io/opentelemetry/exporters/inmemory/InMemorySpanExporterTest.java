@@ -109,6 +109,9 @@ public class InMemorySpanExporterTest {
         .setStartEpochNanos(100_000_000_100L)
         .setStatus(io.opentelemetry.trace.Status.OK)
         .setEndEpochNanos(200_000_000_200L)
+        .setTotalRecordedLinks(0)
+        .setTotalRecordedEvents(0)
+        .setNumberOfChildren(0)
         .build();
   }
 }

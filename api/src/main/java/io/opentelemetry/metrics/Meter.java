@@ -228,57 +228,17 @@ public interface Meter {
   BatchRecorder newMeasureBatchRecorder();
 
   /**
-   * Returns a new {@link LabelSet} with the given label.
-   *
-   * @param k1 first key.
-   * @param v1 first value.
-   * @return a new {@link LabelSet} with the given label.
-   * @throws NullPointerException if any provided value is null.
-   */
-  LabelSet createLabelSet(String k1, String v1);
-
-  /**
    * Returns a new {@link LabelSet} with the given labels.
    *
-   * @param k1 first key.
-   * @param v1 first value.
-   * @param k2 second key.
-   * @param v2 second value.
-   * @return a new {@link LabelSet} with the given labels.
-   * @throws NullPointerException if any provided value is null.
-   */
-  LabelSet createLabelSet(String k1, String v1, String k2, String v2);
-
-  /**
-   * Returns a new {@link LabelSet} with the given labels.
+   * <p>The arguments must are in key, value pairs, so an even number of arguments are required.
    *
-   * @param k1 first key.
-   * @param v1 first value.
-   * @param k2 second key.
-   * @param v2 second value.
-   * @param k3 third key.
-   * @param v3 third value.
-   * @return a new {@link LabelSet} with the given labels.
-   * @throws NullPointerException if any provided value is null.
-   */
-  LabelSet createLabelSet(String k1, String v1, String k2, String v2, String k3, String v3);
-
-  /**
-   * Returns a new {@link LabelSet} with the given labels.
+   * <p>If no arguments are provided, the resulting LabelSet will be the empty one.
    *
-   * @param k1 first key.
-   * @param v1 first value.
-   * @param k2 second key.
-   * @param v2 second value.
-   * @param k3 third key.
-   * @param v3 third value.
-   * @param k4 fourth key.
-   * @param v4 fourth value.
+   * @param keyValuePairs pairs of keys and values for the labels.
    * @return a new {@link LabelSet} with the given labels.
-   * @throws NullPointerException if any provided value is null.
+   * @throws IllegalArgumentException if there aren't an even number of arguments.
    */
-  LabelSet createLabelSet(
-      String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4);
+  LabelSet createLabelSet(String... keyValuePairs);
 
   /**
    * Returns a new {@link LabelSet} with labels built from the keys and values in the provided Map.
@@ -288,12 +248,4 @@ public interface Meter {
    * @throws NullPointerException if the map is null.
    */
   LabelSet createLabelSet(Map<String, String> labels);
-
-  /**
-   * Returns an empty {@link LabelSet}. The implementation is permitted to have this be a singleton
-   * instance.
-   *
-   * @return an empty {@link LabelSet}
-   */
-  LabelSet emptyLabelSet();
 }

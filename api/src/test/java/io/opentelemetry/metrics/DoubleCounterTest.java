@@ -130,6 +130,6 @@ public class DoubleCounterTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    doubleCounter.bind(meter.emptyLabelSet()).add(1.0);
+    doubleCounter.bind(meter.createLabelSet()).add(1.0);
   }
 }

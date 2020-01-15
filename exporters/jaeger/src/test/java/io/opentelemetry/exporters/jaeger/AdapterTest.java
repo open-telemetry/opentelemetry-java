@@ -226,6 +226,9 @@ public class AdapterTest {
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
             .setStatus(Status.CANCELLED)
+            .setTotalRecordedEvents(0)
+            .setTotalRecordedLinks(0)
+            .setNumberOfChildren(0)
             .build();
 
     assertNotNull(Adapter.toJaeger(span));
@@ -254,10 +257,13 @@ public class AdapterTest {
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
         .setAttributes(attributes)
         .setTimedEvents(Collections.singletonList(getTimedEvent()))
+        .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
+        .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
         .setResource(Resource.create(Collections.<String, String>emptyMap()))
         .setStatus(Status.OK)
+        .setNumberOfChildren(0)
         .build();
   }
 
