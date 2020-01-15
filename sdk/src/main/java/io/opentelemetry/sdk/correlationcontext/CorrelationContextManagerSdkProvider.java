@@ -14,31 +14,22 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.opentracingshim;
+package io.opentelemetry.sdk.correlationcontext;
 
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
 
-abstract class BaseShimObject {
-  final TelemetryInfo telemetryInfo;
+/**
+ * {@code CorrelationContextManager} provider implementation for {@link
+ * io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider}.
+ *
+ * <p>This class is not intended to be used in application code and it is used only by {@link
+ * io.opentelemetry.OpenTelemetry}.
+ */
+public class CorrelationContextManagerSdkProvider implements CorrelationContextManagerProvider {
 
-  BaseShimObject(TelemetryInfo telemetryInfo) {
-    this.telemetryInfo = telemetryInfo;
-  }
-
-  TelemetryInfo telemetryInfo() {
-    return telemetryInfo;
-  }
-
-  Tracer tracer() {
-    return telemetryInfo.tracer();
-  }
-
-  CorrelationContextManager contextManager() {
-    return telemetryInfo.contextManager();
-  }
-
-  SpanContextShimTable spanContextTable() {
-    return telemetryInfo.spanContextTable();
+  @Override
+  public CorrelationContextManager create() {
+    return new CorrelationContextManagerSdk();
   }
 }

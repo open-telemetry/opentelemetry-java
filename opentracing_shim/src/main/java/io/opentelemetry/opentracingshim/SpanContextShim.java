@@ -16,11 +16,11 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.Entry;
-import io.opentelemetry.distributedcontext.EntryKey;
-import io.opentelemetry.distributedcontext.EntryMetadata;
-import io.opentelemetry.distributedcontext.EntryValue;
+import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.correlationcontext.Entry;
+import io.opentelemetry.correlationcontext.EntryKey;
+import io.opentelemetry.correlationcontext.EntryMetadata;
+import io.opentelemetry.correlationcontext.EntryValue;
 import io.opentracing.SpanContext;
 import java.util.Iterator;
 import java.util.Map;
@@ -30,30 +30,30 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
       EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);
 
   private final io.opentelemetry.trace.SpanContext context;
-  private final DistributedContext distContext;
+  private final CorrelationContext distContext;
 
   public SpanContextShim(SpanShim spanShim) {
     this(
         spanShim.telemetryInfo(),
         spanShim.getSpan().getContext(),
-        spanShim.telemetryInfo().emptyDistributedContext());
+        spanShim.telemetryInfo().emptyCorrelationContext());
   }
 
   public SpanContextShim(TelemetryInfo telemetryInfo, io.opentelemetry.trace.SpanContext context) {
-    this(telemetryInfo, context, telemetryInfo.emptyDistributedContext());
+    this(telemetryInfo, context, telemetryInfo.emptyCorrelationContext());
   }
 
   public SpanContextShim(
       TelemetryInfo telemetryInfo,
       io.opentelemetry.trace.SpanContext context,
-      DistributedContext distContext) {
+      CorrelationContext distContext) {
     super(telemetryInfo);
     this.context = context;
     this.distContext = distContext;
   }
 
   SpanContextShim newWithKeyValue(String key, String value) {
-    DistributedContext.Builder builder = contextManager().contextBuilder().setParent(distContext);
+    CorrelationContext.Builder builder = contextManager().contextBuilder().setParent(distContext);
     builder.put(EntryKey.create(key), EntryValue.create(value), DEFAULT_ENTRY_METADATA);
 
     return new SpanContextShim(telemetryInfo(), context, builder.build());
@@ -63,7 +63,7 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
     return context;
   }
 
-  DistributedContext getDistributedContext() {
+  CorrelationContext getCorrelationContext() {
     return distContext;
   }
 

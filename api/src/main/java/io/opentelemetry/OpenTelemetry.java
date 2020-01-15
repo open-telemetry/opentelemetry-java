@@ -16,9 +16,9 @@
 
 package io.opentelemetry;
 
-import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
+import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
 import io.opentelemetry.metrics.DefaultMeterRegistry;
 import io.opentelemetry.metrics.DefaultMeterRegistryProvider;
 import io.opentelemetry.metrics.Meter;
@@ -35,13 +35,13 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for telemetry objects {@link Tracer}, {@link Meter}
- * and {@link DistributedContextManager}.
+ * and {@link CorrelationContextManager}.
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
  * @see TracerRegistry
  * @see MeterRegistryProvider
- * @see DistributedContextManagerProvider
+ * @see CorrelationContextManagerProvider
  */
 @ThreadSafe
 public final class OpenTelemetry {
@@ -50,7 +50,7 @@ public final class OpenTelemetry {
 
   private final TracerRegistry tracerRegistry;
   private final MeterRegistry meterRegistry;
-  private final DistributedContextManager contextManager;
+  private final CorrelationContextManager contextManager;
 
   /**
    * Returns a singleton {@link TracerRegistry}.
@@ -77,15 +77,15 @@ public final class OpenTelemetry {
   }
 
   /**
-   * Returns a singleton {@link DistributedContextManager}.
+   * Returns a singleton {@link CorrelationContextManager}.
    *
    * @return registered manager or default via {@link
-   *     DefaultDistributedContextManager#getInstance()}.
+   *     DefaultCorrelationContextManager#getInstance()}.
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
    * @since 0.1.0
    */
-  public static DistributedContextManager getDistributedContextManager() {
+  public static CorrelationContextManager getCorrelationContextManager() {
     return getInstance().contextManager;
   }
 
@@ -113,12 +113,12 @@ public final class OpenTelemetry {
         meterRegistryProvider != null
             ? meterRegistryProvider.create()
             : DefaultMeterRegistryProvider.getInstance().create();
-    DistributedContextManagerProvider contextManagerProvider =
-        loadSpi(DistributedContextManagerProvider.class);
+    CorrelationContextManagerProvider contextManagerProvider =
+        loadSpi(CorrelationContextManagerProvider.class);
     contextManager =
         contextManagerProvider != null
             ? contextManagerProvider.create()
-            : DefaultDistributedContextManager.getInstance();
+            : DefaultCorrelationContextManager.getInstance();
   }
 
   /**

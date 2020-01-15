@@ -20,7 +20,7 @@ import static io.opentelemetry.opentracingshim.TestUtils.getBaggageMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.trace.Tracer;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class SpanBuilderShimTest {
   private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
-      new TelemetryInfo(tracer, new DistributedContextManagerSdk());
+      new TelemetryInfo(tracer, new CorrelationContextManagerSdk());
 
   private static final String SPAN_NAME = "Span";
 
