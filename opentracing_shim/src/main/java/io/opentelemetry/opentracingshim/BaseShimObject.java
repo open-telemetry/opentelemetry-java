@@ -16,7 +16,7 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.trace.Tracer;
 
 abstract class BaseShimObject {
@@ -34,7 +34,7 @@ abstract class BaseShimObject {
     return telemetryInfo.tracer();
   }
 
-  DistributedContextManager contextManager() {
+  CorrelationContextManager contextManager() {
     return telemetryInfo.contextManager();
   }
 
