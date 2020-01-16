@@ -18,7 +18,6 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.testing.EqualsTester;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -113,48 +112,5 @@ public class SpanContextTest {
     assertThat(first.isRemote()).isFalse();
     assertThat(second.isRemote()).isFalse();
     assertThat(remote.isRemote()).isTrue();
-  }
-
-  @Test
-  public void spanContext_EqualsAndHashCode() {
-    EqualsTester tester = new EqualsTester();
-    tester.addEqualityGroup(
-        first,
-        SpanContext.create(
-            TraceId.fromBytes(firstTraceIdBytes, 0),
-            SpanId.fromBytes(firstSpanIdBytes, 0),
-            TraceFlags.getDefault(),
-            emptyTracestate),
-        SpanContext.create(
-            TraceId.fromBytes(firstTraceIdBytes, 0),
-            SpanId.fromBytes(firstSpanIdBytes, 0),
-            TraceFlags.builder().setIsSampled(false).build(),
-            firstTracestate));
-    tester.addEqualityGroup(
-        second,
-        SpanContext.create(
-            TraceId.fromBytes(secondTraceIdBytes, 0),
-            SpanId.fromBytes(secondSpanIdBytes, 0),
-            TraceFlags.builder().setIsSampled(true).build(),
-            secondTracestate));
-    tester.addEqualityGroup(
-        remote,
-        SpanContext.createFromRemoteParent(
-            TraceId.fromBytes(secondTraceIdBytes, 0),
-            SpanId.fromBytes(secondSpanIdBytes, 0),
-            TraceFlags.builder().setIsSampled(true).build(),
-            emptyTracestate));
-    tester.testEquals();
-  }
-
-  @Test
-  public void spanContext_ToString() {
-    assertThat(first.toString()).contains(TraceId.fromBytes(firstTraceIdBytes, 0).toString());
-    assertThat(first.toString()).contains(SpanId.fromBytes(firstSpanIdBytes, 0).toString());
-    assertThat(first.toString()).contains(TraceFlags.getDefault().toString());
-    assertThat(second.toString()).contains(TraceId.fromBytes(secondTraceIdBytes, 0).toString());
-    assertThat(second.toString()).contains(SpanId.fromBytes(secondSpanIdBytes, 0).toString());
-    assertThat(second.toString())
-        .contains(TraceFlags.builder().setIsSampled(true).build().toString());
   }
 }

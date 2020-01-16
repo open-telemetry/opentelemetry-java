@@ -36,7 +36,7 @@ public class DoubleCounterTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterFactory().get("counter_double_test");
+  private final Meter meter = OpenTelemetry.getMeterRegistry().get("counter_double_test");
 
   @Test
   public void preventNonPrintableName() {
@@ -94,7 +94,7 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void noopGetBound_WithNullLabelSet() {
+  public void noopBind_WithNullLabelSet() {
     DoubleCounter doubleCounter =
         meter
             .doubleCounterBuilder(NAME)
@@ -108,7 +108,7 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void noopRemoveBound_WithNullBound() {
+  public void noopUnbind_WithNullInstrument() {
     DoubleCounter doubleCounter =
         meter
             .doubleCounterBuilder(NAME)
@@ -117,7 +117,7 @@ public class DoubleCounterTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("bound");
+    thrown.expectMessage("boundDoubleCounter");
     doubleCounter.unbind(null);
   }
 
@@ -130,6 +130,6 @@ public class DoubleCounterTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    doubleCounter.bind(meter.emptyLabelSet()).add(1.0);
+    doubleCounter.bind(meter.createLabelSet()).add(1.0);
   }
 }

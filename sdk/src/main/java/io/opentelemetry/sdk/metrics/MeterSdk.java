@@ -27,6 +27,7 @@ import io.opentelemetry.metrics.LongGauge;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
+import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
 public class MeterSdk implements Meter {
@@ -43,12 +44,12 @@ public class MeterSdk implements Meter {
 
   @Override
   public DoubleCounter.Builder doubleCounterBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkDoubleCounter.Builder.builder(name);
   }
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLongCounter.Builder.builder(name);
   }
 
   @Override
@@ -77,28 +78,12 @@ public class MeterSdk implements Meter {
   }
 
   @Override
-  public LabelSet createLabelSet(String k1, String v1) {
-    throw new UnsupportedOperationException("to be implemented");
+  public LabelSet createLabelSet(String... keyValuePairs) {
+    return SdkLabelSet.create(keyValuePairs);
   }
 
   @Override
-  public LabelSet createLabelSet(String k1, String v1, String k2, String v2) {
-    throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public LabelSet createLabelSet(String k1, String v1, String k2, String v2, String k3, String v3) {
-    throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public LabelSet createLabelSet(
-      String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
-    throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public LabelSet emptyLabelSet() {
-    throw new UnsupportedOperationException("to be implemented");
+  public LabelSet createLabelSet(Map<String, String> labels) {
+    return SdkLabelSet.create(labels);
   }
 }

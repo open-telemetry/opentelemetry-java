@@ -36,7 +36,7 @@ public class LongGaugeTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterFactory().get("gauge_long_test");
+  private final Meter meter = OpenTelemetry.getMeterRegistry().get("gauge_long_test");
 
   @Test
   public void preventNonPrintableName() {
@@ -90,7 +90,7 @@ public class LongGaugeTest {
   }
 
   @Test
-  public void noopGetBound_WithNullLabelSet() {
+  public void noopBind_WithNullLabelSet() {
     LongGauge longGauge =
         meter
             .longGaugeBuilder(NAME)
@@ -104,7 +104,7 @@ public class LongGaugeTest {
   }
 
   @Test
-  public void noopRemoveBound_WithNullBound() {
+  public void noopUnbind_WithNullBound() {
     LongGauge longGauge =
         meter
             .longGaugeBuilder(NAME)
@@ -113,7 +113,7 @@ public class LongGaugeTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("bound");
+    thrown.expectMessage("boundLongGauge");
     longGauge.unbind(null);
   }
 
@@ -126,6 +126,6 @@ public class LongGaugeTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    longGauge.bind(meter.emptyLabelSet()).set(5);
+    longGauge.bind(meter.createLabelSet()).set(5);
   }
 }

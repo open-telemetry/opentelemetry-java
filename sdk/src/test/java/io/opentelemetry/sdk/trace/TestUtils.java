@@ -55,6 +55,7 @@ public final class TestUtils {
    */
   public static SpanData makeBasicSpan() {
     return SpanData.newBuilder()
+        .setHasEnded(true)
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
         .setName("span")
@@ -62,6 +63,9 @@ public final class TestUtils {
         .setStartEpochNanos(TimeUnit.SECONDS.toNanos(100) + 100)
         .setStatus(Status.OK)
         .setEndEpochNanos(TimeUnit.SECONDS.toNanos(200) + 200)
+        .setNumberOfChildren(0)
+        .setTotalRecordedLinks(0)
+        .setTotalRecordedEvents(0)
         .build();
   }
 
@@ -72,7 +76,7 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkFactory tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
+      TracerSdkRegistry tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
     return startSpanWithSampler(
         tracerSdkFactory,
         tracer,
@@ -88,7 +92,7 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkFactory tracerSdkFactory,
+      TracerSdkRegistry tracerSdkFactory,
       Tracer tracer,
       String spanName,
       Sampler sampler,

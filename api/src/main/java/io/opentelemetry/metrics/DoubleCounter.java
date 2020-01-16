@@ -28,7 +28,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <pre>{@code
  * class YourClass {
  *
- *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
+ *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
  *   private static final DoubleCounter counter =
  *       meter.
  *           .doubleCounterBuilder("processed_jobs")

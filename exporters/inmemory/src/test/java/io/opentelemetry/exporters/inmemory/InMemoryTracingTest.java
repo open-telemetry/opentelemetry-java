@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
@@ -34,7 +34,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class InMemoryTracingTest {
   private final InMemoryTracing tracing = new InMemoryTracing();
-  private final Tracer tracer = tracing.getTracerFactory().get("InMemoryTracing");
+  private final Tracer tracer = tracing.getTracerRegistry().get("InMemoryTracing");
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -45,9 +45,9 @@ public class InMemoryTracingTest {
 
   @Test
   public void ctor_tracer() {
-    TracerSdkFactory tracerSdkFactory = TracerSdkFactory.create();
+    TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
     InMemoryTracing tracing = new InMemoryTracing(tracerSdkFactory);
-    assertThat(tracing.getTracerFactory()).isSameInstanceAs(tracerSdkFactory);
+    assertThat(tracing.getTracerRegistry()).isSameInstanceAs(tracerSdkFactory);
   }
 
   @Test
@@ -69,7 +69,7 @@ public class InMemoryTracingTest {
   @Test
   public void getFinishedSpanItems_sampled() {
     tracer.spanBuilder("A").startSpan().end();
-    TracerSdkFactory tracerSdkFactory = tracing.getTracerFactory();
+    TracerSdkRegistry tracerSdkFactory = tracing.getTracerRegistry();
     TraceConfig originalConfig = tracerSdkFactory.getActiveTraceConfig();
     tracerSdkFactory.updateActiveTraceConfig(
         originalConfig.toBuilder().setSampler(Samplers.alwaysOff()).build());

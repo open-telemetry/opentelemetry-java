@@ -1,19 +1,20 @@
 rootProject.name = "opentelemetry-java"
 
-include ":opentelemetry-all"
-include ":opentelemetry-api"
-include ":opentelemetry-contrib-http-base"
-include ":opentelemetry-contrib-runtime-metrics"
-include ":opentelemetry-contrib-trace-utils"
-include ":opentelemetry-exporters-inmemory"
-include ":opentelemetry-exporters-jaeger"
-include ":opentelemetry-exporters-logging"
-include ":opentelemetry-exporters-otprotocol"
-include ":opentelemetry-opentracing-shim"
-include ":opentelemetry-proto"
-include ":opentelemetry-sdk"
-include ":opentelemetry-sdk-contrib-async-processor"
-include ":opentelemetry-sdk-contrib-testbed"
+include ":opentelemetry-all",
+        ":opentelemetry-api",
+        ":opentelemetry-contrib-http-base",
+        ":opentelemetry-contrib-runtime-metrics",
+        ":opentelemetry-contrib-trace-utils",
+        ":opentelemetry-exporters-inmemory",
+        ":opentelemetry-exporters-jaeger",
+        ":opentelemetry-exporters-logging",
+        ":opentelemetry-exporters-otprotocol",
+        ":opentelemetry-opentracing-shim",
+        ":opentelemetry-proto",
+        ":opentelemetry-sdk",
+        ":opentelemetry-sdk-contrib-async-processor",
+        ":opentelemetry-sdk-contrib-aws-v1-support",
+        ":opentelemetry-sdk-contrib-testbed"
 
 project(':opentelemetry-all').projectDir = "$rootDir/all" as File
 project(':opentelemetry-api').projectDir = "$rootDir/api" as File
@@ -37,5 +38,7 @@ project(':opentelemetry-opentracing-shim').projectDir =
 project(':opentelemetry-sdk').projectDir = "$rootDir/sdk" as File
 project(':opentelemetry-sdk-contrib-async-processor').projectDir =
         "$rootDir/sdk_contrib/async_processor" as File
+project(':opentelemetry-sdk-contrib-aws-v1-support').projectDir =
+        "$rootDir/sdk_contrib/aws_v1_support" as File
 project(':opentelemetry-sdk-contrib-testbed').projectDir =
         "$rootDir/sdk_contrib/testbed" as File

@@ -19,8 +19,8 @@ package io.opentelemetry.opentracingshim;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import org.junit.Test;
 
 public class TraceShimTest {
@@ -28,24 +28,24 @@ public class TraceShimTest {
   @Test
   public void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim();
-    assertEquals(OpenTelemetry.getTracerFactory().get("opentracingshim"), tracerShim.tracer());
-    assertEquals(OpenTelemetry.getDistributedContextManager(), tracerShim.contextManager());
+    assertEquals(OpenTelemetry.getTracerRegistry().get("opentracingshim"), tracerShim.tracer());
+    assertEquals(OpenTelemetry.getCorrelationContextManager(), tracerShim.contextManager());
   }
 
   @Test(expected = NullPointerException.class)
   public void createTracerShim_nullTracer() {
-    TraceShim.createTracerShim(null, OpenTelemetry.getDistributedContextManager());
+    TraceShim.createTracerShim(null, OpenTelemetry.getCorrelationContextManager());
   }
 
   @Test(expected = NullPointerException.class)
   public void createTracerShim_nullContextManager() {
-    TraceShim.createTracerShim(OpenTelemetry.getTracerFactory(), null);
+    TraceShim.createTracerShim(OpenTelemetry.getTracerRegistry(), null);
   }
 
   @Test
   public void createTracerShim() {
-    TracerSdkFactory sdk = TracerSdkFactory.create();
-    DistributedContextManagerSdk contextManager = new DistributedContextManagerSdk();
+    TracerSdkRegistry sdk = TracerSdkRegistry.create();
+    CorrelationContextManagerSdk contextManager = new CorrelationContextManagerSdk();
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim(sdk, contextManager);
     assertEquals(sdk.get("opentracingshim"), tracerShim.tracer());
     assertEquals(contextManager, tracerShim.contextManager());

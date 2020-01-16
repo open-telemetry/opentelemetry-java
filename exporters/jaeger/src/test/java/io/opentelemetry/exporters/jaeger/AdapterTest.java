@@ -218,6 +218,7 @@ public class AdapterTest {
     long endMs = startMs + 900;
     SpanData span =
         SpanData.newBuilder()
+            .setHasEnded(true)
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
             .setName("GET /api/endpoint")
@@ -225,6 +226,9 @@ public class AdapterTest {
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
             .setStatus(Status.CANCELLED)
+            .setTotalRecordedEvents(0)
+            .setTotalRecordedLinks(0)
+            .setNumberOfChildren(0)
             .build();
 
     assertNotNull(Adapter.toJaeger(span));
@@ -244,6 +248,7 @@ public class AdapterTest {
     Link link = SpanData.Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return SpanData.newBuilder()
+        .setHasEnded(true)
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
         .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
@@ -252,10 +257,13 @@ public class AdapterTest {
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
         .setAttributes(attributes)
         .setTimedEvents(Collections.singletonList(getTimedEvent()))
+        .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
+        .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
         .setResource(Resource.create(Collections.<String, String>emptyMap()))
         .setStatus(Status.OK)
+        .setNumberOfChildren(0)
         .build();
   }
 

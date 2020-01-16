@@ -36,7 +36,7 @@ public class LongCounterTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterFactory().get("counter_long_test");
+  private final Meter meter = OpenTelemetry.getMeterRegistry().get("counter_long_test");
 
   @Test
   public void preventNonPrintableName() {
@@ -93,7 +93,7 @@ public class LongCounterTest {
   }
 
   @Test
-  public void noopGetBound_WithNullLabelSet() {
+  public void noopBind_WithNullLabelSet() {
     LongCounter longCounter =
         meter
             .longCounterBuilder(NAME)
@@ -107,7 +107,7 @@ public class LongCounterTest {
   }
 
   @Test
-  public void noopRemoveBound_WithNullBound() {
+  public void noopUnbind_WithNullInstrument() {
     LongCounter longCounter =
         meter
             .longCounterBuilder(NAME)
@@ -116,7 +116,7 @@ public class LongCounterTest {
             .setUnit(UNIT)
             .build();
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("bound");
+    thrown.expectMessage("boundLongCounter");
     longCounter.unbind(null);
   }
 
@@ -129,6 +129,6 @@ public class LongCounterTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    longCounter.bind(meter.emptyLabelSet()).add(1);
+    longCounter.bind(meter.createLabelSet()).add(1);
   }
 }

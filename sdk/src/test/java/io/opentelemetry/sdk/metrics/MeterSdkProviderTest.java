@@ -27,6 +27,6 @@ public class MeterSdkProviderTest {
 
   @Test
   public void testDefault() {
-    assertThat(new MeterSdkFactoryProvider().create()).isInstanceOf(MeterSdkFactory.class);
+    assertThat(new MeterSdkRegistryProvider().create()).isInstanceOf(MeterSdkRegistry.class);
   }
 }

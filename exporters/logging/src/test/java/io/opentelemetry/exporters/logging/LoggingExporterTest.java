@@ -37,6 +37,7 @@ public class LoggingExporterTest {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     SpanData spanData =
         SpanData.newBuilder()
+            .setHasEnded(true)
             .setTraceId(new TraceId(1234L, 6789L))
             .setSpanId(new SpanId(9876L))
             .setStartEpochNanos(epochNanos)
@@ -50,6 +51,9 @@ public class LoggingExporterTest {
                         epochNanos + 500,
                         "somethingHappenedHere",
                         singletonMap("important", AttributeValue.booleanAttributeValue(true)))))
+            .setTotalRecordedEvents(1)
+            .setTotalRecordedLinks(0)
+            .setNumberOfChildren(0)
             .build();
     ResultCode resultCode = exporter.export(singletonList(spanData));
     assertEquals(ResultCode.SUCCESS, resultCode);

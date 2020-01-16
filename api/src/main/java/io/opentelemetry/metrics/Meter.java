@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -35,7 +36,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Meter meter = Metrics.getMeterFactory().get("my_library_name");
+ *   private static final Meter meter = Metrics.getMeterRegistry().get("my_library_name");
  *   private static final DoubleMeasure cacheHit = meter.measureDoubleBuilder("cache_hit").build();
  *
  *   Response serverBoundr(Request request) {
@@ -53,7 +54,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = Metrics.getMeterFactory().get("my_library_name");
+ *   private static final Meter meter = Metrics.getMeterRegistry().get("my_library_name");
  *   private static final CounterLong collectionMetric =
  *       meter
  *           .counterLongBuilder("collection")
@@ -83,7 +84,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = Metrics.getMeterFactory().get("my_library_name");
+ *   private static final Meter meter = Metrics.getMeterRegistry().get("my_library_name");
  *   private static final List<String> keys = Collections.singletonList("Name");
  *   private static final List<String> values = Collections.singletonList("Inbound");
  *   private static final DoubleGauge gauge =
@@ -95,15 +96,15 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .build();
  *
  *   // It is recommended that API users keep a reference to a Bound Instrument.
- *   DoubleGauge.BoundDoubleGauge inboundBound = gauge.bind(labelValues);
+ *   DoubleGauge.BoundDoubleGauge inboundBoundGauge = gauge.bind(labelValues);
  *
  *   void doAddElement() {
  *      // Your code here.
- *      inboundBound.add(1);
+ *      inboundBoundGauge.set(1);
  *   }
  *
  *   void doRemoveElement() {
- *      inboundBound.add(-1);
+ *      inboundBoundGauge.set(-1);
  *      // Your code here.
  *   }
  *
@@ -227,63 +228,24 @@ public interface Meter {
   BatchRecorder newMeasureBatchRecorder();
 
   /**
-   * Returns a new {@link LabelSet} with the given label.
-   *
-   * @param k1 first key.
-   * @param v1 first value.
-   * @return a new {@link LabelSet} with the given label.
-   * @throws NullPointerException if any provided value is null.
-   */
-  LabelSet createLabelSet(String k1, String v1);
-
-  /**
    * Returns a new {@link LabelSet} with the given labels.
    *
-   * @param k1 first key.
-   * @param v1 first value.
-   * @param k2 second key.
-   * @param v2 second value.
+   * <p>The arguments must are in key, value pairs, so an even number of arguments are required.
+   *
+   * <p>If no arguments are provided, the resulting LabelSet will be the empty one.
+   *
+   * @param keyValuePairs pairs of keys and values for the labels.
    * @return a new {@link LabelSet} with the given labels.
-   * @throws NullPointerException if any provided value is null.
+   * @throws IllegalArgumentException if there aren't an even number of arguments.
    */
-  LabelSet createLabelSet(String k1, String v1, String k2, String v2);
+  LabelSet createLabelSet(String... keyValuePairs);
 
   /**
-   * Returns a new {@link LabelSet} with the given labels.
+   * Returns a new {@link LabelSet} with labels built from the keys and values in the provided Map.
    *
-   * @param k1 first key.
-   * @param v1 first value.
-   * @param k2 second key.
-   * @param v2 second value.
-   * @param k3 third key.
-   * @param v3 third value.
+   * @param labels The key-value pairs to turn into labels.
    * @return a new {@link LabelSet} with the given labels.
-   * @throws NullPointerException if any provided value is null.
+   * @throws NullPointerException if the map is null.
    */
-  LabelSet createLabelSet(String k1, String v1, String k2, String v2, String k3, String v3);
-
-  /**
-   * Returns a new {@link LabelSet} with the given labels.
-   *
-   * @param k1 first key.
-   * @param v1 first value.
-   * @param k2 second key.
-   * @param v2 second value.
-   * @param k3 third key.
-   * @param v3 third value.
-   * @param k4 fourth key.
-   * @param v4 fourth value.
-   * @return a new {@link LabelSet} with the given labels.
-   * @throws NullPointerException if any provided value is null.
-   */
-  LabelSet createLabelSet(
-      String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4);
-
-  /**
-   * Returns an empty {@link LabelSet}. The implementation is permitted to have this be a singleton
-   * instance.
-   *
-   * @return an empty {@link LabelSet}
-   */
-  LabelSet emptyLabelSet();
+  LabelSet createLabelSet(Map<String, String> labels);
 }

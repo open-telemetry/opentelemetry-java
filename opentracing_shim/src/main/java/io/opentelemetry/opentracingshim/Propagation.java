@@ -35,7 +35,7 @@ final class Propagation extends BaseShimObject {
         .inject(contextShim.getSpanContext(), carrier, TextMapSetter.INSTANCE);
     contextManager()
         .getHttpTextFormat()
-        .inject(contextShim.getDistributedContext(), carrier, TextMapSetter.INSTANCE);
+        .inject(contextShim.getCorrelationContext(), carrier, TextMapSetter.INSTANCE);
   }
 
   public SpanContextShim extractTextFormat(TextMapExtract carrier) {
@@ -46,7 +46,7 @@ final class Propagation extends BaseShimObject {
 
     io.opentelemetry.trace.SpanContext context =
         tracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
-    io.opentelemetry.distributedcontext.DistributedContext distContext =
+    io.opentelemetry.correlationcontext.CorrelationContext distContext =
         contextManager().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
 
     return new SpanContextShim(telemetryInfo, context, distContext);

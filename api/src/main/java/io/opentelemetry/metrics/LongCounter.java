@@ -28,7 +28,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <pre>{@code
  * class YourClass {
  *
- *   private static final Meter meter = OpenTelemetry.getMeterFactory().get("my_library_name");
+ *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
  *   private static final LongCounter counter =
  *       meter.
  *           .longCounterBuilder("processed_jobs")
@@ -71,7 +71,7 @@ public interface LongCounter extends Instrument<BoundLongCounter> {
   void unbind(BoundLongCounter boundInstrument);
 
   /**
-   * A {@code Bound Instrument} for a {@code CounterLong}.
+   * A {@code Bound Instrument} for a {@code LongCounter}.
    *
    * @since 0.1.0
    */
