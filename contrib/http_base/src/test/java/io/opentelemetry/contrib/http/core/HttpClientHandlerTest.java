@@ -16,10 +16,8 @@
 
 package io.opentelemetry.contrib.http.core;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
@@ -42,8 +40,11 @@ import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link HttpClientHandler}. */
+@RunWith(JUnit4.class)
 public class HttpClientHandlerTest {
 
   private static final Logger LOGGER = Logger.getLogger(HttpClientHandlerTest.class.getName());
@@ -84,14 +85,15 @@ public class HttpClientHandlerTest {
       Span currentSpan = handler.getSpanFromContext(context);
       LOGGER.log(Level.INFO, currentSpan.getContext().toString());
       try {
-        assertEquals(parentSpan.getContext().getTraceId(), currentSpan.getContext().getTraceId());
-        assertFalse(
-            parentSpan.getContext().getSpanId().equals(currentSpan.getContext().getSpanId()));
-        assertTrue(currentSpan.isRecording());
+        assertThat(currentSpan.getContext().getTraceId())
+            .isEqualTo(parentSpan.getContext().getTraceId());
+        assertThat(currentSpan.getContext().getSpanId())
+            .isNotEqualTo(parentSpan.getContext().getSpanId());
+        assertThat(currentSpan.isRecording()).isTrue();
       } finally {
         handler.handleEnd(context, data, data, null);
       }
-      assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
+      assertThat(inMemoryTracing.getFinishedSpanItems().isEmpty()).isFalse();
       printSpans();
     }
   }
@@ -108,13 +110,15 @@ public class HttpClientHandlerTest {
     Span currentSpan = handler.getSpanFromContext(context);
     LOGGER.log(Level.INFO, currentSpan.getContext().toString());
     try {
-      assertEquals(parentSpan.getContext().getTraceId(), currentSpan.getContext().getTraceId());
-      assertFalse(parentSpan.getContext().getSpanId().equals(currentSpan.getContext().getSpanId()));
-      assertTrue(currentSpan.isRecording());
+      assertThat(currentSpan.getContext().getTraceId())
+          .isEqualTo(parentSpan.getContext().getTraceId());
+      assertThat(currentSpan.getContext().getSpanId())
+          .isNotEqualTo(parentSpan.getContext().getSpanId());
+      assertThat(currentSpan.isRecording()).isTrue();
     } finally {
       handler.handleEnd(context, data, data, null);
     }
-    assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
+    assertThat(inMemoryTracing.getFinishedSpanItems().isEmpty()).isFalse();
     printSpans();
   }
 
@@ -127,12 +131,12 @@ public class HttpClientHandlerTest {
     Span currentSpan = handler.getSpanFromContext(context);
     LOGGER.log(Level.INFO, currentSpan.getContext().toString());
     try {
-      assertTrue(currentSpan.getContext().isValid());
-      assertTrue(currentSpan.isRecording());
+      assertThat(currentSpan.getContext().isValid()).isTrue();
+      assertThat(currentSpan.isRecording()).isTrue();
     } finally {
       handler.handleEnd(context, data, data, null);
     }
-    assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
+    assertThat(inMemoryTracing.getFinishedSpanItems().isEmpty()).isFalse();
     printSpans();
   }
 
@@ -153,14 +157,15 @@ public class HttpClientHandlerTest {
       LOGGER.log(Level.INFO, currentSpan.getContext().toString());
       IllegalStateException error = new IllegalStateException("this is a test");
       try {
-        assertEquals(parentSpan.getContext().getTraceId(), currentSpan.getContext().getTraceId());
-        assertFalse(
-            parentSpan.getContext().getSpanId().equals(currentSpan.getContext().getSpanId()));
-        assertTrue(currentSpan.isRecording());
+        assertThat(currentSpan.getContext().getTraceId())
+            .isEqualTo(parentSpan.getContext().getTraceId());
+        assertThat(currentSpan.getContext().getSpanId())
+            .isNotEqualTo(parentSpan.getContext().getSpanId());
+        assertThat(currentSpan.isRecording()).isTrue();
       } finally {
         handler.handleEnd(context, data, data, error);
       }
-      assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
+      assertThat(inMemoryTracing.getFinishedSpanItems().isEmpty()).isFalse();
       printSpans();
     }
   }

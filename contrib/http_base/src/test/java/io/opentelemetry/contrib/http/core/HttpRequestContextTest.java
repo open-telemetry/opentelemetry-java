@@ -16,10 +16,8 @@
 
 package io.opentelemetry.contrib.http.core;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.correlationcontext.CorrelationContext;
@@ -28,8 +26,11 @@ import io.opentelemetry.trace.Span.Kind;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link HttpRequestContext}. */
+@RunWith(JUnit4.class)
 public class HttpRequestContextTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
@@ -46,8 +47,8 @@ public class HttpRequestContextTest {
     CorrelationContext correlationContext =
         OpenTelemetry.getCorrelationContextManager().contextBuilder().setNoParent().build();
     HttpRequestContext context = new HttpRequestContext(span, correlationContext);
-    assertSame(span, context.getSpan());
-    assertSame(correlationContext, context.getCorrlatContext());
+    assertThat(context.getSpan()).isSameInstanceAs(span);
+    assertThat(context.getCorrlatContext()).isSameInstanceAs(correlationContext);
   }
 
   @Test
@@ -60,7 +61,7 @@ public class HttpRequestContextTest {
             .setSpanKind(Kind.CLIENT)
             .startSpan();
     HttpRequestContext context = new HttpRequestContext(span, null);
-    assertSame(span, context.getSpan());
+    assertThat(context.getSpan()).isSameInstanceAs(span);
   }
 
   @Test
@@ -79,8 +80,8 @@ public class HttpRequestContextTest {
             .setSpanKind(Kind.CLIENT)
             .startSpan();
     HttpRequestContext context = new HttpRequestContext(span, null);
-    assertTrue(context.getRequestStartTime() > 0L);
-    assertEquals(0L, context.getReceiveMessageSize());
-    assertEquals(0L, context.getSentMessageSize());
+    assertThat(context.getRequestStartTime()).isGreaterThan(0L);
+    assertThat(context.getReceiveMessageSize()).isEqualTo(0L);
+    assertThat(context.getSentMessageSize()).isEqualTo(0L);
   }
 }

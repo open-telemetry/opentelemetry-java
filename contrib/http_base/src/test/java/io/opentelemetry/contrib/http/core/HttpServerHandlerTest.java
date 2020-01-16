@@ -16,10 +16,8 @@
 
 package io.opentelemetry.contrib.http.core;
 
+import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTATION_LIB_ID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
@@ -37,8 +35,11 @@ import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link HttpServerHandler}. */
+@RunWith(JUnit4.class)
 public class HttpServerHandlerTest {
 
   private static final Logger LOGGER = Logger.getLogger(HttpServerHandlerTest.class.getName());
@@ -80,13 +81,13 @@ public class HttpServerHandlerTest {
     HttpRequestContext context = handler.handleStart(data, data);
     Span currentSpan = handler.getSpanFromContext(context);
     try {
-      assertEquals(traceId, currentSpan.getContext().getTraceId());
-      assertFalse(spanId.equals(currentSpan.getContext().getSpanId()));
-      assertTrue(currentSpan.isRecording());
+      assertThat(currentSpan.getContext().getTraceId()).isEqualTo(traceId);
+      assertThat(currentSpan.getContext().getSpanId()).isNotEqualTo(spanId);
+      assertThat(currentSpan.isRecording()).isTrue();
     } finally {
       handler.handleEnd(context, data, data, null);
     }
-    assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
+    assertThat(inMemoryTracing.getFinishedSpanItems().isEmpty()).isFalse();
   }
 
   @Test
@@ -115,12 +116,12 @@ public class HttpServerHandlerTest {
     HttpRequestContext context = handler.handleStart(data, data);
     Span currentSpan = handler.getSpanFromContext(context);
     try {
-      assertFalse(traceId.equals(currentSpan.getContext().getTraceId()));
-      assertFalse(spanId.equals(currentSpan.getContext().getSpanId()));
+      assertThat(traceId.equals(currentSpan.getContext().getTraceId())).isFalse();
+      assertThat(currentSpan.getContext().getSpanId()).isNotEqualTo(spanId);
     } finally {
       handler.handleEnd(context, data, data, null);
     }
-    assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
+    assertThat(inMemoryTracing.getFinishedSpanItems().isEmpty()).isFalse();
   }
 
   @Test
@@ -137,11 +138,11 @@ public class HttpServerHandlerTest {
     HttpRequestContext context = handler.handleStart(data, data);
     Span currentSpan = handler.getSpanFromContext(context);
     try {
-      assertTrue(currentSpan.getContext().isValid());
+      assertThat(currentSpan.getContext().isValid()).isTrue();
     } finally {
       handler.handleEnd(context, data, data, null);
     }
-    assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
+    assertThat(inMemoryTracing.getFinishedSpanItems().isEmpty()).isFalse();
   }
 
   @Test
@@ -171,11 +172,11 @@ public class HttpServerHandlerTest {
     Span currentSpan = handler.getSpanFromContext(context);
     IllegalStateException error = new IllegalStateException("this is a test");
     try {
-      assertEquals(traceId, currentSpan.getContext().getTraceId());
-      assertFalse(spanId.equals(currentSpan.getContext().getSpanId()));
+      assertThat(currentSpan.getContext().getTraceId()).isEqualTo(traceId);
+      assertThat(currentSpan.getContext().getSpanId()).isNotEqualTo(spanId);
     } finally {
       handler.handleEnd(context, data, data, error);
     }
-    assertFalse(inMemoryTracing.getFinishedSpanItems().isEmpty());
+    assertThat(inMemoryTracing.getFinishedSpanItems().isEmpty()).isFalse();
   }
 }

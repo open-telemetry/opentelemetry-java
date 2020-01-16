@@ -16,11 +16,13 @@
 
 package io.opentelemetry.contrib.http.core;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.trace.Status;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -29,6 +31,8 @@ import org.junit.runners.Parameterized.Parameters;
 /** Unit tests for {@link StatusCodeConverter}. */
 @RunWith(value = Parameterized.class)
 public class StatusCodeConverterTest {
+
+  private static final Logger LOGGER = Logger.getLogger(StatusCodeConverterTest.class.getName());
 
   /**
    * Provides parameterized data.
@@ -113,7 +117,7 @@ public class StatusCodeConverterTest {
 
   @Test
   public void shouldConvertAllStandardHttpStatusCodesCorrectly() {
-    assertEquals(
-        description + " should have mapped to " + target, target, converter.convert(source));
+    LOGGER.log(Level.FINER, "testing " + description);
+    assertThat(converter.convert(source)).isEqualTo(target);
   }
 }
