@@ -18,23 +18,23 @@ package io.opentelemetry.contrib.spring.boot;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DistributedContextManagerSdkBean}. */
+/** Unit tests for {@link CorrelationContextManagerSdkBean}. */
 @RunWith(JUnit4.class)
-public class DistributedContextManagerSdkBeanTest {
+public class CorrelationContextManagerSdkBeanTest {
 
   @Test
   public void shouldConstructDistributedContextManagerFromDefaults() {
     OpenTelemetryProperties properties = new OpenTelemetryProperties();
-    DistributedContextManagerSdkBean factoryBean = new DistributedContextManagerSdkBean();
+    CorrelationContextManagerSdkBean factoryBean = new CorrelationContextManagerSdkBean();
     factoryBean.setProperties(properties);
     factoryBean.afterPropertiesSet();
-    DistributedContextManager manager = factoryBean.getObject();
-    assertThat(manager).isInstanceOf(DistributedContextManagerSdk.class);
+    CorrelationContextManager manager = factoryBean.getObject();
+    assertThat(manager).isInstanceOf(CorrelationContextManagerSdk.class);
   }
 }

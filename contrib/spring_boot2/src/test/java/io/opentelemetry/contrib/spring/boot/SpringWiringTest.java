@@ -18,9 +18,9 @@ package io.opentelemetry.contrib.spring.boot;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.metrics.MeterRegistry;
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -40,7 +40,7 @@ public class SpringWiringTest {
 
   @Autowired private TracerRegistry tracerRegistry;
   @Autowired private MeterRegistry meterRegistry;
-  @Autowired private DistributedContextManager distributedContextManager;
+  @Autowired private CorrelationContextManager distributedContextManager;
 
   @Test
   public void shouldConstructFullyConfiguredTracerRegistry() {
@@ -57,7 +57,7 @@ public class SpringWiringTest {
   }
 
   @Test
-  public void shouldConstructFullyConfiguredDistributedContextManager() {
-    assertThat(distributedContextManager).isInstanceOf(DistributedContextManagerSdk.class);
+  public void shouldConstructFullyConfiguredCorrelationContextManager() {
+    assertThat(distributedContextManager).isInstanceOf(CorrelationContextManagerSdk.class);
   }
 }

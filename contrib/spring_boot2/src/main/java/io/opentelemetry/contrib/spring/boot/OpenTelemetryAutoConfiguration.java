@@ -16,7 +16,7 @@
 
 package io.opentelemetry.contrib.spring.boot;
 
-import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.exporters.logging.LoggingExporter;
 import io.opentelemetry.metrics.MeterRegistry;
 import io.opentelemetry.sdk.common.Clock;
@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Configuration;
  * Boot actuator-based applications.
  */
 @Configuration
-@ComponentScan(basePackages = "io.opentelemetry.contrib.spring.boot.actuate")
+@ComponentScan(basePackages = "io.opentelemetry.contrib.spring.boot")
 @ConditionalOnProperty(value = "management.opentelemetry.enabled", matchIfMissing = true)
 @EnableConfigurationProperties(OpenTelemetryProperties.class)
 public class OpenTelemetryAutoConfiguration {
@@ -156,16 +156,16 @@ public class OpenTelemetryAutoConfiguration {
   }
 
   /**
-   * Returns a {@link DistributedContextManager} from the OpenTelemetry SDK configured with the
+   * Returns a {@link CorrelationContextManager} from the OpenTelemetry SDK configured with the
    * components supplied as parameters. Only executes if another manager bean has not been defined.
    *
    * @param properties the configuration properties from Spring property sources
-   * @return the distributed context manager
+   * @return the correlation context manager
    */
   @ConditionalOnMissingBean
   @Bean
-  public DistributedContextManager distributedContextManager(OpenTelemetryProperties properties) {
-    DistributedContextManagerSdkBean factory = new DistributedContextManagerSdkBean();
+  public CorrelationContextManager correlationContextManager(OpenTelemetryProperties properties) {
+    CorrelationContextManagerSdkBean factory = new CorrelationContextManagerSdkBean();
     factory.setProperties(properties);
     factory.afterPropertiesSet();
     return factory.getObject();

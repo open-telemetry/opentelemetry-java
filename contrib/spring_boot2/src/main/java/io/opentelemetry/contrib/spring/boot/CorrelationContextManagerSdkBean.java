@@ -16,21 +16,21 @@
 
 package io.opentelemetry.contrib.spring.boot;
 
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdk;
-import io.opentelemetry.sdk.distributedcontext.DistributedContextManagerSdkProvider;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdkProvider;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Creates an OpenTelemetry {@link DistributedContextManager} from the default SDK the Spring way.
+ * Creates an OpenTelemetry {@link CorrelationContextManager} from the default SDK the Spring way.
  */
-public class DistributedContextManagerSdkBean
-    implements FactoryBean<DistributedContextManager>, InitializingBean {
+public class CorrelationContextManagerSdkBean
+    implements FactoryBean<CorrelationContextManager>, InitializingBean {
 
   private OpenTelemetryProperties properties;
-  private DistributedContextManager distributedContextManager;
+  private CorrelationContextManager correlationContextManager;
 
   /**
    * Sets the Spring application properties used to configure the OpenTelemetry SDK.
@@ -44,25 +44,25 @@ public class DistributedContextManagerSdkBean
 
   @Override
   public void afterPropertiesSet() {
-    distributedContextManager = initializeDistributedContextManager();
+    correlationContextManager = initializeCorrelationContextManager();
   }
 
   @Override
-  public DistributedContextManager getObject() {
-    if (distributedContextManager == null) {
-      distributedContextManager = initializeDistributedContextManager();
+  public CorrelationContextManager getObject() {
+    if (correlationContextManager == null) {
+      correlationContextManager = initializeCorrelationContextManager();
     }
-    return distributedContextManager;
+    return correlationContextManager;
   }
 
   @Override
   public Class<?> getObjectType() {
-    return DistributedContextManager.class;
+    return CorrelationContextManager.class;
   }
 
-  private DistributedContextManager initializeDistributedContextManager() {
-    DistributedContextManagerSdkProvider provider = new DistributedContextManagerSdkProvider();
-    DistributedContextManagerSdk manager = (DistributedContextManagerSdk) provider.create();
+  private CorrelationContextManager initializeCorrelationContextManager() {
+    CorrelationContextManagerSdkProvider provider = new CorrelationContextManagerSdkProvider();
+    CorrelationContextManagerSdk manager = (CorrelationContextManagerSdk) provider.create();
     if (properties.isEnabled()) {
       manager.getHttpTextFormat();
     }
