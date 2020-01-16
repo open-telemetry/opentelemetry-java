@@ -34,12 +34,12 @@ public class MeterSdk implements Meter {
 
   @Override
   public LongGauge.Builder longGaugeBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLongGauge.Builder.builder(name);
   }
 
   @Override
   public DoubleGauge.Builder doubleGaugeBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkDoubleGauge.Builder.builder(name);
   }
 
   @Override
