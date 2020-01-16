@@ -21,12 +21,12 @@ import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTAT
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.distributedcontext.EntryKey;
-import io.opentelemetry.distributedcontext.EntryMetadata;
-import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
-import io.opentelemetry.distributedcontext.EntryValue;
+import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.correlationcontext.EntryKey;
+import io.opentelemetry.correlationcontext.EntryMetadata;
+import io.opentelemetry.correlationcontext.EntryMetadata.EntryTtl;
+import io.opentelemetry.correlationcontext.EntryValue;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -48,11 +48,11 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
   private static final Logger LOGGER = Logger.getLogger(HttpServerHandler.class.getName());
 
   private final Tracer tracer;
-  private final DistributedContextManager contextManager;
+  private final CorrelationContextManager contextManager;
   private final HttpTextFormat.Getter<C> getter;
   private final boolean publicEndpoint;
   private final HttpTextFormat<SpanContext> spanContextHttpTextFormat;
-  private final HttpTextFormat<DistributedContext> distributedContextHttpTextFormat;
+  private final HttpTextFormat<CorrelationContext> correlationContextHttpTextFormat;
 
   /**
    * Constructs a handler object.
@@ -64,12 +64,12 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
   public HttpServerHandler(HttpExtractor<Q, P> extractor, HttpTextFormat.Getter<C> getter) {
     super(extractor);
     checkNotNull(getter, "getter is required");
-    this.tracer = OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID);
-    this.contextManager = OpenTelemetry.getDistributedContextManager();
+    this.tracer = OpenTelemetry.getTracerRegistry().get(INSTRUMENTATION_LIB_ID);
+    this.contextManager = OpenTelemetry.getCorrelationContextManager();
     this.getter = getter;
     this.publicEndpoint = false;
     this.spanContextHttpTextFormat = this.tracer.getHttpTextFormat();
-    this.distributedContextHttpTextFormat = this.contextManager.getHttpTextFormat();
+    this.correlationContextHttpTextFormat = this.contextManager.getHttpTextFormat();
   }
 
   /**
@@ -80,7 +80,7 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
    * @param getter the getter used to extract propagation information from the carrier
    * @param statusConverter the converter from HTTP status codes to OpenTelemetry statuses.
    * @param tracer the named OpenTelemetry tracer.
-   * @param contextManager the OpenTelemetry distributed context manager
+   * @param contextManager the OpenTelemetry correlation context manager
    * @param meter the named OpenTelemetry meter to use.
    * @param publicEndpoint whether a new trace should be started for all requests or not
    */
@@ -89,7 +89,7 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
       HttpTextFormat.Getter<C> getter,
       StatusCodeConverter statusConverter,
       Tracer tracer,
-      DistributedContextManager contextManager,
+      CorrelationContextManager contextManager,
       Meter meter,
       Boolean publicEndpoint) {
     super(extractor, statusConverter, meter);
@@ -102,7 +102,7 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     this.getter = getter;
     this.publicEndpoint = publicEndpoint;
     this.spanContextHttpTextFormat = this.tracer.getHttpTextFormat();
-    this.distributedContextHttpTextFormat = this.contextManager.getHttpTextFormat();
+    this.correlationContextHttpTextFormat = this.contextManager.getHttpTextFormat();
   }
 
   /**
@@ -122,7 +122,7 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     checkNotNull(carrier, "carrier");
     checkNotNull(request, "request");
     Span.Builder spanBuilder = tracer.spanBuilder(extractSpanName(request));
-    DistributedContext.Builder dctxBuilder = contextManager.contextBuilder();
+    CorrelationContext.Builder dctxBuilder = contextManager.contextBuilder();
 
     SpanContext spanContext = null;
     try {
@@ -130,9 +130,9 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     } catch (IllegalArgumentException ignore) {
       // NoOp
     }
-    DistributedContext distContext = null;
+    CorrelationContext corrltContext = null;
     try {
-      distContext = distributedContextHttpTextFormat.extract(carrier, getter);
+      corrltContext = correlationContextHttpTextFormat.extract(carrier, getter);
     } catch (IllegalArgumentException ignore) {
       // NoOp
     }
@@ -141,12 +141,12 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
       dctxBuilder.setNoParent();
     } else {
       spanBuilder.setParent(spanContext);
-      if (distContext == null) {
+      if (corrltContext == null) {
         dctxBuilder.setParent(contextManager.getCurrentContext());
       } else {
-        dctxBuilder.setParent(distContext);
+        dctxBuilder.setParent(corrltContext);
       }
-      addTracestateToDistributedContext(dctxBuilder, spanContext.getTracestate());
+      addTracestateToCorrelationContext(dctxBuilder, spanContext.getTracestate());
     }
 
     Span span = spanBuilder.setSpanKind(Kind.SERVER).startSpan();
@@ -158,8 +158,8 @@ public class HttpServerHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     return getNewContext(span, dctxBuilder.build());
   }
 
-  private static void addTracestateToDistributedContext(
-      DistributedContext.Builder dctxBuilder, Tracestate tracestate) {
+  private static void addTracestateToCorrelationContext(
+      CorrelationContext.Builder dctxBuilder, Tracestate tracestate) {
     if (tracestate != null) {
       for (Tracestate.Entry entry : tracestate.getEntries()) {
         dctxBuilder.put(

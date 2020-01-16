@@ -22,7 +22,7 @@ import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTAT
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
@@ -58,7 +58,7 @@ abstract class AbstractHttpHandler<Q, P> {
     checkNotNull(extractor, "extractor is required");
     this.extractor = extractor;
     this.statusConverter = new StatusCodeConverter();
-    this.meter = OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID);
+    this.meter = OpenTelemetry.getMeterRegistry().get(INSTRUMENTATION_LIB_ID);
   }
 
   /**
@@ -227,7 +227,7 @@ abstract class AbstractHttpHandler<Q, P> {
     return context.getSpan();
   }
 
-  HttpRequestContext getNewContext(Span span, DistributedContext distributedContext) {
-    return new HttpRequestContext(span, distributedContext);
+  HttpRequestContext getNewContext(Span span, CorrelationContext correlationContext) {
+    return new HttpRequestContext(span, correlationContext);
   }
 }

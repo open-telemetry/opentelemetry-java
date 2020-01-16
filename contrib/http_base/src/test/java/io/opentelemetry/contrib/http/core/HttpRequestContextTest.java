@@ -22,7 +22,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import org.junit.Rule;
@@ -37,23 +37,23 @@ public class HttpRequestContextTest {
   @Test
   public void shouldCreateWithProvidedSpanAndDistributedContext() {
     Span span =
-        OpenTelemetry.getTracerFactory()
+        OpenTelemetry.getTracerRegistry()
             .get(INSTRUMENTATION_LIB_ID)
             .spanBuilder("/junit")
             .setNoParent()
             .setSpanKind(Kind.CLIENT)
             .startSpan();
-    DistributedContext distributedContext =
-        OpenTelemetry.getDistributedContextManager().contextBuilder().setNoParent().build();
-    HttpRequestContext context = new HttpRequestContext(span, distributedContext);
+    CorrelationContext correlationContext =
+        OpenTelemetry.getCorrelationContextManager().contextBuilder().setNoParent().build();
+    HttpRequestContext context = new HttpRequestContext(span, correlationContext);
     assertSame(span, context.getSpan());
-    assertSame(distributedContext, context.getDistContext());
+    assertSame(correlationContext, context.getCorrlatContext());
   }
 
   @Test
   public void shouldCreateWithProvidedSpan() {
     Span span =
-        OpenTelemetry.getTracerFactory()
+        OpenTelemetry.getTracerRegistry()
             .get(INSTRUMENTATION_LIB_ID)
             .spanBuilder("/junit")
             .setNoParent()
@@ -72,7 +72,7 @@ public class HttpRequestContextTest {
   @Test
   public void shouldInitializeValuesOnCreation() {
     Span span =
-        OpenTelemetry.getTracerFactory()
+        OpenTelemetry.getTracerRegistry()
             .get(INSTRUMENTATION_LIB_ID)
             .spanBuilder("/junit")
             .setNoParent()

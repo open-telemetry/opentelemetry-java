@@ -18,7 +18,7 @@ package io.opentelemetry.contrib.http.core;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import io.opentelemetry.distributedcontext.DistributedContext;
+import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.trace.Span;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Nullable;
@@ -34,12 +34,12 @@ public class HttpRequestContext {
   private final AtomicLong receiveMessageSize = new AtomicLong();
   private final AtomicLong sentSeqId = new AtomicLong();
   private final AtomicLong receviedSeqId = new AtomicLong();
-  @Nullable private final DistributedContext distContext;
+  @Nullable private final CorrelationContext corrlatContext;
 
-  HttpRequestContext(Span span, @Nullable DistributedContext distContext) {
+  HttpRequestContext(Span span, @Nullable CorrelationContext corrlatContext) {
     checkNotNull(span, "span is required");
     this.span = span;
-    this.distContext = distContext;
+    this.corrlatContext = corrlatContext;
     requestStartTime = System.nanoTime();
   }
 
@@ -84,7 +84,7 @@ public class HttpRequestContext {
   }
 
   @Nullable
-  DistributedContext getDistContext() {
-    return distContext;
+  CorrelationContext getCorrlatContext() {
+    return corrlatContext;
   }
 }

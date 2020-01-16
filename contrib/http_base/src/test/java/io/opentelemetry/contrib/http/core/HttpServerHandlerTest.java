@@ -25,7 +25,7 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
@@ -49,7 +49,7 @@ public class HttpServerHandlerTest {
   public void configureTracing() {
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOn()).build();
-    TracerSdkFactory tracerSdk = (TracerSdkFactory) OpenTelemetry.getTracerFactory();
+    TracerSdkRegistry tracerSdk = (TracerSdkRegistry) OpenTelemetry.getTracerRegistry();
     tracerSdk.updateActiveTraceConfig(traceConfig);
     inMemoryTracing = new InMemoryTracing(tracerSdk);
   }
@@ -108,9 +108,9 @@ public class HttpServerHandlerTest {
             new TestOnlyMapHttpExtractor(),
             new TestOnlyMapGetterSetter(),
             new StatusCodeConverter(),
-            OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID),
-            OpenTelemetry.getDistributedContextManager(),
-            OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID),
+            OpenTelemetry.getTracerRegistry().get(INSTRUMENTATION_LIB_ID),
+            OpenTelemetry.getCorrelationContextManager(),
+            OpenTelemetry.getMeterRegistry().get(INSTRUMENTATION_LIB_ID),
             Boolean.TRUE);
     HttpRequestContext context = handler.handleStart(data, data);
     Span currentSpan = handler.getSpanFromContext(context);
@@ -163,9 +163,9 @@ public class HttpServerHandlerTest {
             new TestOnlyMapHttpExtractor(),
             new TestOnlyMapGetterSetter(),
             new ExtendedStatusCodeConverter(),
-            OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID),
-            OpenTelemetry.getDistributedContextManager(),
-            OpenTelemetry.getMeterFactory().get(INSTRUMENTATION_LIB_ID),
+            OpenTelemetry.getTracerRegistry().get(INSTRUMENTATION_LIB_ID),
+            OpenTelemetry.getCorrelationContextManager(),
+            OpenTelemetry.getMeterRegistry().get(INSTRUMENTATION_LIB_ID),
             Boolean.FALSE);
     HttpRequestContext context = handler.handleStart(data, data);
     Span currentSpan = handler.getSpanFromContext(context);

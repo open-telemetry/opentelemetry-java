@@ -23,15 +23,15 @@ import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.EntryKey;
-import io.opentelemetry.distributedcontext.EntryMetadata;
-import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
-import io.opentelemetry.distributedcontext.EntryValue;
+import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.correlationcontext.EntryKey;
+import io.opentelemetry.correlationcontext.EntryMetadata;
+import io.opentelemetry.correlationcontext.EntryMetadata.EntryTtl;
+import io.opentelemetry.correlationcontext.EntryValue;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -54,7 +54,7 @@ public class HttpClientHandlerTest {
   public void configureTracing() {
     TraceConfig traceConfig =
         TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOn()).build();
-    TracerSdkFactory tracerSdk = (TracerSdkFactory) OpenTelemetry.getTracerFactory();
+    TracerSdkRegistry tracerSdk = (TracerSdkRegistry) OpenTelemetry.getTracerRegistry();
     LOGGER.log(Level.INFO, "Original trace config: " + tracerSdk.getActiveTraceConfig());
     tracerSdk.updateActiveTraceConfig(traceConfig);
     LOGGER.log(Level.INFO, "Updated trace config: " + tracerSdk.getActiveTraceConfig());
@@ -74,12 +74,12 @@ public class HttpClientHandlerTest {
     HttpClientHandler<Map<String, String>, Map<String, String>, Map<String, String>> handler =
         new HttpClientHandler<>(new TestOnlyMapHttpExtractor(), new TestOnlyMapGetterSetter());
     Span parentSpan = constructParentSpan();
-    DistributedContext parentContext = constructParentContext();
+    CorrelationContext parentContext = constructParentContext();
     LOGGER.log(Level.INFO, parentSpan.getContext().toString());
     try (Scope parent =
-            OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID).withSpan(parentSpan);
+            OpenTelemetry.getTracerRegistry().get(INSTRUMENTATION_LIB_ID).withSpan(parentSpan);
         Scope contextScope =
-            OpenTelemetry.getDistributedContextManager().withContext(parentContext)) {
+            OpenTelemetry.getCorrelationContextManager().withContext(parentContext)) {
       HttpRequestContext context = handler.handleStart(null, null, data, data);
       Span currentSpan = handler.getSpanFromContext(context);
       LOGGER.log(Level.INFO, currentSpan.getContext().toString());
@@ -102,7 +102,7 @@ public class HttpClientHandlerTest {
     HttpClientHandler<Map<String, String>, Map<String, String>, Map<String, String>> handler =
         new HttpClientHandler<>(new TestOnlyMapHttpExtractor(), new TestOnlyMapGetterSetter());
     Span parentSpan = constructParentSpan();
-    DistributedContext parentContext = constructParentContext();
+    CorrelationContext parentContext = constructParentContext();
     LOGGER.log(Level.INFO, parentSpan.getContext().toString());
     HttpRequestContext context = handler.handleStart(parentSpan, parentContext, data, data);
     Span currentSpan = handler.getSpanFromContext(context);
@@ -142,12 +142,12 @@ public class HttpClientHandlerTest {
     HttpClientHandler<Map<String, String>, Map<String, String>, Map<String, String>> handler =
         new HttpClientHandler<>(new TestOnlyMapHttpExtractor(), new TestOnlyMapGetterSetter());
     Span parentSpan = constructParentSpan();
-    DistributedContext parentContext = constructParentContext();
+    CorrelationContext parentContext = constructParentContext();
     LOGGER.log(Level.INFO, parentSpan.getContext().toString());
     try (Scope parent =
-            OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID).withSpan(parentSpan);
+            OpenTelemetry.getTracerRegistry().get(INSTRUMENTATION_LIB_ID).withSpan(parentSpan);
         Scope contextScope =
-            OpenTelemetry.getDistributedContextManager().withContext(parentContext)) {
+            OpenTelemetry.getCorrelationContextManager().withContext(parentContext)) {
       HttpRequestContext context = handler.handleStart(null, null, data, data);
       Span currentSpan = handler.getSpanFromContext(context);
       LOGGER.log(Level.INFO, currentSpan.getContext().toString());
@@ -166,7 +166,7 @@ public class HttpClientHandlerTest {
   }
 
   private static Span constructParentSpan() {
-    return OpenTelemetry.getTracerFactory()
+    return OpenTelemetry.getTracerRegistry()
         .get(INSTRUMENTATION_LIB_ID)
         .spanBuilder("/junit")
         .setNoParent()
@@ -174,8 +174,8 @@ public class HttpClientHandlerTest {
         .startSpan();
   }
 
-  private static DistributedContext constructParentContext() {
-    return OpenTelemetry.getDistributedContextManager()
+  private static CorrelationContext constructParentContext() {
+    return OpenTelemetry.getCorrelationContextManager()
         .contextBuilder()
         .put(
             EntryKey.create("testClass"),

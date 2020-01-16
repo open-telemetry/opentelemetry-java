@@ -21,10 +21,10 @@ import static io.opentelemetry.contrib.http.core.HttpTraceConstants.INSTRUMENTAT
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.distributedcontext.Entry;
-import io.opentelemetry.distributedcontext.EntryMetadata.EntryTtl;
+import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.correlationcontext.Entry;
+import io.opentelemetry.correlationcontext.EntryMetadata.EntryTtl;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -45,10 +45,10 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
   private static final Logger LOGGER = Logger.getLogger(HttpClientHandler.class.getName());
 
   private final Tracer tracer;
-  private final DistributedContextManager contextManager;
+  private final CorrelationContextManager contextManager;
   private final HttpTextFormat.Setter<C> setter;
   private final HttpTextFormat<SpanContext> spanContextHttpTextFormat;
-  private final HttpTextFormat<DistributedContext> distributedContextHttpTextFormat;
+  private final HttpTextFormat<CorrelationContext> correlationContextHttpTextFormat;
 
   /**
    * Constructs a handler object.
@@ -60,11 +60,11 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
   public HttpClientHandler(HttpExtractor<Q, P> extractor, HttpTextFormat.Setter<C> setter) {
     super(extractor);
     checkNotNull(setter, "setter is required");
-    this.tracer = OpenTelemetry.getTracerFactory().get(INSTRUMENTATION_LIB_ID);
-    this.contextManager = OpenTelemetry.getDistributedContextManager();
+    this.tracer = OpenTelemetry.getTracerRegistry().get(INSTRUMENTATION_LIB_ID);
+    this.contextManager = OpenTelemetry.getCorrelationContextManager();
     this.setter = setter;
     this.spanContextHttpTextFormat = this.tracer.getHttpTextFormat();
-    this.distributedContextHttpTextFormat = this.contextManager.getHttpTextFormat();
+    this.correlationContextHttpTextFormat = this.contextManager.getHttpTextFormat();
   }
 
   /**
@@ -75,7 +75,7 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
    * @param setter the setter used to extract propagation information from the carrier.
    * @param statusConverter the converter from HTTP status codes to OpenTelemetry statuses.
    * @param tracer the named OpenTelemetry tracer.
-   * @param contextManager the OpenTelemetry distributed context manager
+   * @param contextManager the OpenTelemetry correlation context manager
    * @param meter the named OpenTelemetry meter to use.
    */
   public HttpClientHandler(
@@ -83,7 +83,7 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
       HttpTextFormat.Setter<C> setter,
       StatusCodeConverter statusConverter,
       Tracer tracer,
-      DistributedContextManager contextManager,
+      CorrelationContextManager contextManager,
       Meter meter) {
     super(extractor, statusConverter, meter);
     checkNotNull(setter, "setter is required");
@@ -93,7 +93,7 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     this.contextManager = contextManager;
     this.setter = setter;
     this.spanContextHttpTextFormat = this.tracer.getHttpTextFormat();
-    this.distributedContextHttpTextFormat = this.contextManager.getHttpTextFormat();
+    this.correlationContextHttpTextFormat = this.contextManager.getHttpTextFormat();
   }
 
   /**
@@ -106,7 +106,7 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
    * scope of this span. Use {@link AbstractHttpHandler#getSpanFromContext} to retrieve the span.
    *
    * @param parentSpan the parent {@link Span}. {@code null} indicates using current span.
-   * @param parentContext the parent {@link DistributedContext}. {@code null} indicates using
+   * @param parentContext the parent {@link CorrelationContext}. {@code null} indicates using
    *     current context.
    * @param carrier the entity that holds the HTTP information.
    * @param request the request entity.
@@ -114,16 +114,16 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
    *     request.
    */
   public HttpRequestContext handleStart(
-      @Nullable Span parentSpan, @Nullable DistributedContext parentContext, C carrier, Q request) {
+      @Nullable Span parentSpan, @Nullable CorrelationContext parentContext, C carrier, Q request) {
     checkNotNull(carrier, "carrier");
     checkNotNull(request, "request");
     Span span = constructClientSpan(parentSpan, request);
-    DistributedContext propagatedContext = constructPropagatedContext(parentContext);
+    CorrelationContext propagatedContext = constructPropagatedContext(parentContext);
 
     SpanContext spanContext = span.getContext();
     if (spanContext.isValid()) {
       spanContextHttpTextFormat.inject(spanContext, carrier, setter);
-      distributedContextHttpTextFormat.inject(propagatedContext, carrier, setter);
+      correlationContextHttpTextFormat.inject(propagatedContext, carrier, setter);
     }
     return getNewContext(span, propagatedContext);
   }
@@ -161,18 +161,18 @@ public class HttpClientHandler<Q, P, C> extends AbstractHttpHandler<Q, P> {
     return span;
   }
 
-  private DistributedContext constructPropagatedContext(DistributedContext context) {
-    DistributedContext localContext =
+  private CorrelationContext constructPropagatedContext(CorrelationContext context) {
+    CorrelationContext localContext =
         context == null ? contextManager.getCurrentContext() : context;
-    DistributedContext.Builder builder = contextManager.contextBuilder();
+    CorrelationContext.Builder builder = contextManager.contextBuilder();
     if (localContext == null) {
       builder.setNoParent();
     } else {
       builder.setParent(localContext);
-    }
-    for (Entry entry : localContext.getEntries()) {
-      if (EntryTtl.UNLIMITED_PROPAGATION.equals(entry.getEntryMetadata().getEntryTtl())) {
-        builder.put(entry.getKey(), entry.getValue(), entry.getEntryMetadata());
+      for (Entry entry : localContext.getEntries()) {
+        if (EntryTtl.UNLIMITED_PROPAGATION.equals(entry.getEntryMetadata().getEntryTtl())) {
+          builder.put(entry.getKey(), entry.getValue(), entry.getEntryMetadata());
+        }
       }
     }
     return builder.build();
