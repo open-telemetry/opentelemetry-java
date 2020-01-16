@@ -4,6 +4,9 @@
 [![Coverage Status][codecov-image]][codecov-url]
 [![Maven Central][maven-image]][maven-url]
 
+We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#java-sdk).
+
+## Overview
 OpenTelemetry is a working name of a combined OpenCensus and OpenTracing
 project.
 
@@ -100,6 +103,25 @@ quality v1.0 for the merged project:
 We plan to merge projects and pave the path for future improvements as a unified
 community of tracing vendors, users and library authors who wants apps be
 managed better. We are open to feedback and suggestions from all of you!
+
+## Owners
+
+Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
+
+- [Pavol Loffay](https://github.com/pavolloffay), RedHat
+- [Yang Song](https://github.com/songy23), Google
+- [Tyler Benson](https://github.com/tylerbenson), DataDog
+- [Armin Ruech](https://github.com/arminru), Dynatrace
+- [John Watson](https://github.com/jkwatson), NewRelic
+
+*Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
+
+Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-telemetry/teams/java-maintainers)):
+
+- [Bogdan Drutu](https://github.com/BogdanDrutu), Google
+- [Carlos Alberto](https://github.com/carlosalberto), LightStep
+
+*Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
 
 [circleci-image]: https://circleci.com/gh/open-telemetry/opentelemetry-java.svg?style=svg 
 [circleci-url]: https://circleci.com/gh/open-telemetry/opentelemetry-java
