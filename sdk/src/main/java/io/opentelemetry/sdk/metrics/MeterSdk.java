@@ -16,17 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.BatchRecorder;
-import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleGauge;
-import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.DoubleObserver;
-import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongGauge;
-import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.metrics.LongObserver;
-import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.metrics.*;
 import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
@@ -54,12 +44,12 @@ public class MeterSdk implements Meter {
 
   @Override
   public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkDoubleMeasure.Builder.builder(name);
   }
 
   @Override
   public LongMeasure.Builder longMeasureBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return SdkLongMeasure.Builder.builder(name);
   }
 
   @Override
