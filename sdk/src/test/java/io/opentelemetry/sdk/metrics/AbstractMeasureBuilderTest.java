@@ -75,17 +75,17 @@ public class AbstractMeasureBuilderTest {
     }
   }
 
-  private static final class TestInstrument implements Measure<TestBound> {
-    private static final TestBound HANDLE = new TestBound();
+  private static final class TestInstrument implements Measure<TestBoundMeasure> {
+    private static final TestBoundMeasure HANDLE = new TestBoundMeasure();
 
     @Override
-    public TestBound bind(LabelSet labelSet) {
+    public TestBoundMeasure bind(LabelSet labelSet) {
       return HANDLE;
     }
 
     @Override
-    public void unbind(TestBound boundInstrument) {}
+    public void unbind(TestBoundMeasure boundInstrument) {}
   }
 
-  private static final class TestBound {}
+  private static final class TestBoundMeasure {}
 }
