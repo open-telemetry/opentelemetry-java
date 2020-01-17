@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -137,6 +138,9 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setAttribute(String key, String value) {
+    if (StringUtils.isNullOrBlank(value)) {
+      return this;
+    }
     return setAttribute(key, AttributeValue.stringAttributeValue(value));
   }
 
