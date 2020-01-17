@@ -83,11 +83,14 @@ public interface Span {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
+   * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
+   * dropped. Note: this behavior could change in the future.
+   *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  void setAttribute(String key, String value);
+  void setAttribute(String key, @Nullable String value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for

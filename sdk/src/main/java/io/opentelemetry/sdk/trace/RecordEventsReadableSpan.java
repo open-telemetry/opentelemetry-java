@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
+import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -303,6 +304,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void setAttribute(String key, String value) {
+    if (StringUtils.isNullOrBlank(value)) {
+      return;
+    }
     setAttribute(key, AttributeValue.stringAttributeValue(value));
   }
 

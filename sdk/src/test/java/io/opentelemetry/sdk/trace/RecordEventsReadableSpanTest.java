@@ -286,6 +286,8 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
       span.setAttribute("StringKey", "StringVal");
+      span.setAttribute("NullStringKey", (String) null);
+      span.setAttribute("EmptyStringKey", "");
       span.setAttribute("LongKey", 1000L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);
