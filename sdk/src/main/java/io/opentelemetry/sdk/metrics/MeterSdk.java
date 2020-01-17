@@ -16,7 +16,17 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.*;
+import io.opentelemetry.metrics.BatchRecorder;
+import io.opentelemetry.metrics.DoubleCounter;
+import io.opentelemetry.metrics.DoubleGauge;
+import io.opentelemetry.metrics.DoubleMeasure;
+import io.opentelemetry.metrics.DoubleObserver;
+import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LongGauge;
+import io.opentelemetry.metrics.LongMeasure;
+import io.opentelemetry.metrics.LongObserver;
+import io.opentelemetry.metrics.Meter;
 import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */

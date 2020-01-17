@@ -83,7 +83,7 @@ class SdkDoubleMeasure extends BaseInstrument<BoundDoubleMeasure> implements Dou
     @Override
     public void record(double value) {
       if (this.absolute && value < 0) {
-        throw new IllegalArgumentException("absolute measure can only increase");
+        throw new IllegalArgumentException("absolute measure can only record positive values");
       }
       // todo: pass through to an aggregator/accumulator
     }

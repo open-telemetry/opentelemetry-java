@@ -82,7 +82,7 @@ class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMea
     @Override
     public void record(long value) {
       if (this.absolute && value < 0) {
-        throw new IllegalArgumentException("absolute measure can only increase");
+        throw new IllegalArgumentException("absolute measure can only record positive values");
       }
       // todo: pass through to an aggregator/accumulator
     }

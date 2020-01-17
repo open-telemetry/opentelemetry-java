@@ -61,7 +61,7 @@ public class SdkLongMeasureTest {
   }
 
   @Test
-  public void testLongMeasure_monotonicity() {
+  public void testLongMeasure_absolute() {
     MeterSdk testSdk = new MeterSdk();
 
     LongMeasure longMeasure =
@@ -72,7 +72,7 @@ public class SdkLongMeasureTest {
   }
 
   @Test
-  public void testBoundLongMeasure_monotonicity() {
+  public void testBoundLongMeasure_absolute() {
     MeterSdk testSdk = new MeterSdk();
 
     LongMeasure longMeasure =

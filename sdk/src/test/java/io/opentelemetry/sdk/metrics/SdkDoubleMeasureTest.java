@@ -61,7 +61,7 @@ public class SdkDoubleMeasureTest {
   }
 
   @Test
-  public void testDoubleMeasure_monotonicity() {
+  public void testDoubleMeasure_absolute() {
     MeterSdk testSdk = new MeterSdk();
 
     DoubleMeasure doubleMeasure =
@@ -72,7 +72,7 @@ public class SdkDoubleMeasureTest {
   }
 
   @Test
-  public void testBoundDoubleMeasure_monotonicity() {
+  public void testBoundDoubleMeasure_absolute() {
     MeterSdk testSdk = new MeterSdk();
 
     DoubleMeasure doubleMeasure =
