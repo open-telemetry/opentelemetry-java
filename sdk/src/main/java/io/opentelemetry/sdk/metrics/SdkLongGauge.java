@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ class SdkLongGauge extends BaseInstrument<BoundLongGauge> implements LongGauge {
   private static class SdkBoundLongGauge extends BaseBoundInstrument implements BoundLongGauge {
 
     private final boolean monotonic;
-    @Nullable private Long prev = null;
+    @Nullable private Long currentValue = null;
 
     SdkBoundLongGauge(LabelSet labels, boolean monotonic) {
       super(labels);
@@ -82,11 +82,11 @@ class SdkLongGauge extends BaseInstrument<BoundLongGauge> implements LongGauge {
     }
 
     @Override
-    public void set(long val) {
-      if (monotonic && (prev != null && val < prev)) {
+    public void set(long value) {
+      if (monotonic && (currentValue != null && value < currentValue)) {
         throw new IllegalArgumentException("monotonic gauge can only increase");
       }
-      prev = val;
+      currentValue = value;
       // todo: pass through to an aggregator/accumulator
     }
   }
