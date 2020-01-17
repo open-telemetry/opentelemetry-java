@@ -130,7 +130,6 @@ class SpanBuilderSdk implements Span.Builder {
     Utils.checkNotNull(link, "link");
     totalNumberOfLinksAdded++;
     // don't bother doing anything with any links beyond the max.
-    // todo: generate a metric for dropped links
     if (links.size() == traceConfig.getMaxNumberOfLinks()) {
       return this;
     }
