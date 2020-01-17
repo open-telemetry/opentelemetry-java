@@ -25,5 +25,16 @@ package io.opentelemetry.metrics;
 public interface Measure<H> extends Instrument<H> {
 
   /** Builder class for {@link Measure}. */
-  interface Builder<B extends Measure.Builder<B, V>, V> extends Instrument.Builder<B, V> {}
+  interface Builder<B extends Measure.Builder<B, V>, V> extends Instrument.Builder<B, V> {
+    /**
+     * Sets the absolute property for this {@code Builder}. If {@code true} only positive values are
+     * expected.
+     *
+     * <p>Default value is {@code true}
+     *
+     * @param absolute {@code true} only positive values are expected.
+     * @return this.
+     */
+    B setAbsolute(boolean absolute);
+  }
 }

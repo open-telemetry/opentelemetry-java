@@ -84,5 +84,5 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
   }
 
   /** Builder class for {@link LongMeasure}. */
-  interface Builder extends Instrument.Builder<Builder, LongMeasure> {}
+  interface Builder extends Measure.Builder<Builder, LongMeasure> {}
 }
