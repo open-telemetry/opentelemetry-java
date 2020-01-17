@@ -170,6 +170,17 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
+  public void setAttribute_nullStringValue() throws Exception {
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    spanBuilder.setAttribute("emptyString", "");
+    spanBuilder.setAttribute("nullString", (String) null);
+    spanBuilder.setAttribute("nullStringAttributeValue", AttributeValue.stringAttributeValue(null));
+    spanBuilder.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    assertThat(span.toSpanData().getAttributes()).isEmpty();
+  }
+
+  @Test
   public void droppingAttributes() {
     final int maxNumberOfAttrs = 8;
     TraceConfig traceConfig =
