@@ -288,6 +288,8 @@ public class RecordEventsReadableSpanTest {
       span.setAttribute("StringKey", "StringVal");
       span.setAttribute("NullStringKey", (String) null);
       span.setAttribute("EmptyStringKey", "");
+      span.setAttribute("NullStringAttributeValue", AttributeValue.stringAttributeValue(null));
+      span.setAttribute("EmptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
       span.setAttribute("LongKey", 1000L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);

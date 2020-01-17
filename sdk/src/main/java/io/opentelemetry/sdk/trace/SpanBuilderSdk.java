@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -138,9 +139,6 @@ class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setAttribute(String key, String value) {
-    if (StringUtils.isNullOrBlank(value)) {
-      return this;
-    }
     return setAttribute(key, AttributeValue.stringAttributeValue(value));
   }
 
@@ -163,6 +161,9 @@ class SpanBuilderSdk implements Span.Builder {
   public Span.Builder setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
     Utils.checkNotNull(value, "value");
+    if (value.getType() == Type.STRING && StringUtils.isNullOrBlank(value.getStringValue())) {
+      return this;
+    }
     attributes.putAttribute(key, value);
     return this;
   }
