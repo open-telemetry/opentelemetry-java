@@ -62,6 +62,7 @@ class SpanBuilderSdk implements Span.Builder {
   private Kind spanKind = Kind.INTERNAL;
   private final AttributesWithCapacity attributes;
   private List<Link> links;
+  private int totalNumberOfLinksAdded = 0;
   private ParentType parentType = ParentType.CURRENT_SPAN;
   private long startEpochNanos = 0;
 
@@ -129,10 +130,17 @@ class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder addLink(Link link) {
     Utils.checkNotNull(link, "link");
+    totalNumberOfLinksAdded++;
+    // don't bother doing anything with any links beyond the max.
+    if (links.size() == traceConfig.getMaxNumberOfLinks()) {
+      return this;
+    }
+
     // This is the Collection.emptyList which is immutable.
     if (links.isEmpty()) {
       links = new ArrayList<>();
     }
+
     links.add(link);
     return this;
   }
@@ -219,16 +227,9 @@ class SpanBuilderSdk implements Span.Builder {
         getClock(parentSpan(parentType, parent), clock),
         resource,
         attributes,
-        truncatedLinks(),
-        links.size(),
+        links,
+        totalNumberOfLinksAdded,
         startEpochNanos);
-  }
-
-  private List<Link> truncatedLinks() {
-    if (links.size() <= traceConfig.getMaxNumberOfLinks()) {
-      return links;
-    }
-    return links.subList(links.size() - traceConfig.getMaxNumberOfLinks(), links.size());
   }
 
   private static Clock getClock(Span parent, Clock clock) {
