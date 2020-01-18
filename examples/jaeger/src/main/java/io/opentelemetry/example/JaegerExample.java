@@ -33,7 +33,7 @@ public class JaegerExample {
         JaegerGrpcSpanExporter.newBuilder()
             .setServiceName("example")
             .setChannel(jaegerChannel)
-            .setDeadline(30)
+            .setDeadline(30000)
             .build();
 
     // Set to process the spans by the Jaeger Exporter
