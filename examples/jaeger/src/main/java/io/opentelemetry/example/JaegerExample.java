@@ -27,7 +27,7 @@ public class JaegerExample {
 
   private void setupJaegerExporter() {
     // Create a channel towards Jaeger end point
-    ManagedChannel jaegerChannel = ManagedChannelBuilder.forAddress(ip, port).build();
+    ManagedChannel jaegerChannel = ManagedChannelBuilder.forAddress(ip, port).usePlaintext().build();
     // Export traces to Jaeger
     this.jaegerExporter =
         JaegerGrpcSpanExporter.newBuilder()
