@@ -108,7 +108,7 @@ class SdkDoubleCounter extends BaseInstrument<BoundDoubleCounter> implements Dou
     @Override
     public DoubleCounter build() {
       return new SdkDoubleCounter(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), getMonotonic());
+          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
     }
   }
 }
