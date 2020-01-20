@@ -32,7 +32,7 @@ class TestOnlyMapGetterSetter
   }
 
   @Override
-  public void put(Map<String, String> carrier, String key, String value) {
+  public void set(Map<String, String> carrier, String key, String value) {
     carrier.put(key, value);
   }
 }
