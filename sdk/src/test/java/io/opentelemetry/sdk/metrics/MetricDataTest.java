@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.metrics.MetricData.Descriptor;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
@@ -31,12 +32,12 @@ import org.junit.runners.JUnit4;
 public class MetricDataTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
-  private static final MetricDescriptor METRIC_DESCRIPTOR =
-      MetricDescriptor.createInternal(
+  private static final Descriptor METRIC_DESCRIPTOR =
+      Descriptor.createInternal(
           "metric_name",
           "metric_description",
           "ms",
-          MetricDescriptor.Type.MONOTONIC_INT64,
+          Descriptor.Type.MONOTONIC_INT64,
           Collections.singletonList("key"),
           Collections.singletonMap("key_const", "value_const"));
   private static final long START_EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(1000);
@@ -46,7 +47,7 @@ public class MetricDataTest {
   public void testGet() {
     MetricData metricData =
         MetricData.createInternal(METRIC_DESCRIPTOR, START_EPOCH_NANOS, EPOCH_NANOS);
-    assertThat(metricData.getMetricDescriptor()).isEqualTo(METRIC_DESCRIPTOR);
+    assertThat(metricData.getDescriptor()).isEqualTo(METRIC_DESCRIPTOR);
     assertThat(metricData.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(metricData.getEpochNanos()).isEqualTo(EPOCH_NANOS);
   }
@@ -54,7 +55,7 @@ public class MetricDataTest {
   @Test
   public void create_NullDescriptor() {
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("metricDescriptor");
+    thrown.expectMessage("descriptor");
     MetricData.createInternal(null, START_EPOCH_NANOS, EPOCH_NANOS);
   }
 }

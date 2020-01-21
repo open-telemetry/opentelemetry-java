@@ -18,9 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Observer;
-import io.opentelemetry.metrics.ObserverDouble;
-import java.util.List;
 import javax.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,63 +36,62 @@ public class AbstractObserverBuilderTest {
 
   @Test
   public void defaultValue() {
-    TestMetricBuilder testMetricBuilder = TestMetricBuilder.newBuilder(NAME);
+    TestInstrumentBuilder testMetricBuilder = TestInstrumentBuilder.newBuilder(NAME);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getDescription()).isEmpty();
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
     assertThat(testMetricBuilder.getMonotonic()).isFalse();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   @Test
   public void setAndGetValues() {
-    TestMetricBuilder testMetricBuilder = TestMetricBuilder.newBuilder(NAME).setMonotonic(true);
+    TestInstrumentBuilder testMetricBuilder =
+        TestInstrumentBuilder.newBuilder(NAME).setMonotonic(true);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getMonotonic()).isTrue();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
-  private static final class TestMetricBuilder
-      extends AbstractObserverBuilder<TestMetricBuilder, TestMetric> {
-    static TestMetricBuilder newBuilder(String name) {
-      return new TestMetricBuilder(name);
+  private static final class TestInstrumentBuilder
+      extends AbstractObserverBuilder<TestInstrumentBuilder, TestInstrument> {
+    static TestInstrumentBuilder newBuilder(String name) {
+      return new TestInstrumentBuilder(name);
     }
 
-    TestMetricBuilder(String name) {
+    TestInstrumentBuilder(String name) {
       super(name);
     }
 
     @Override
-    TestMetricBuilder getThis() {
+    TestInstrumentBuilder getThis() {
       return this;
     }
 
     @Override
-    public TestMetric build() {
-      return new TestMetric();
+    public TestInstrument build() {
+      return new TestInstrument();
     }
   }
 
-  private static final class TestMetric implements Observer<ObserverDouble.Result> {
+  private static final class TestInstrument implements Observer<TestResult, TestBound> {
 
     @Nullable
     @Override
-    public Observer.Handle getHandle(List<String> labelValues) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public Observer.Handle getDefaultHandle() {
+    public TestBound bind(LabelSet labelSet) {
       return null;
     }
 
     @Override
-    public void removeHandle(List<String> labelValues) {}
+    public void unbind(TestBound boundInstrument) {}
 
     @Override
-    public void setCallback(Callback<ObserverDouble.Result> metricUpdater) {}
+    public void setCallback(Callback<TestResult> metricUpdater) {}
   }
+
+  private static final class TestBound {}
+
+  private static final class TestResult {}
 }

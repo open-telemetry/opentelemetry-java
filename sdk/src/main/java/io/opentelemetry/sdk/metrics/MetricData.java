@@ -17,10 +17,12 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A {@link MetricData} represents the data exported as part of aggregating one {@code Metric}.
+ * A {@link MetricData} represents the data exported as part of aggregating one {@code Instrument}.
  *
  * @since 0.1.0
  */
@@ -30,16 +32,16 @@ public abstract class MetricData {
   MetricData() {}
 
   /**
-   * Returns the {@link MetricDescriptor} of this metric.
+   * Returns the {@link Descriptor} of this metric.
    *
    * @return the {@code MetricDescriptor} of this metric.
    * @since 0.1.0
    */
-  public abstract MetricDescriptor getMetricDescriptor();
+  public abstract Descriptor getDescriptor();
 
   /**
-   * Returns the start epoch timestamp in nanos of this {@code Metric}, usually the time when the
-   * metric was created or an aggregation was enabled.
+   * Returns the start epoch timestamp in nanos of this {@code Instrument}, usually the time when
+   * the metric was created or an aggregation was enabled.
    *
    * @return the start epoch timestamp in nanos.
    * @since 0.1.0
@@ -48,7 +50,7 @@ public abstract class MetricData {
 
   /**
    * Returns the the epoch timestamp in nanos when data were collected, usually it represents the
-   * moment when {@code Metric.getData()} was called.
+   * moment when {@code Instrument.getData()} was called.
    *
    * @return the epoch timestamp in nanos.
    * @since 0.1.0
@@ -57,8 +59,113 @@ public abstract class MetricData {
 
   // TODO: Add TimeSeries/Point
 
-  static MetricData createInternal(
-      MetricDescriptor metricDescriptor, long startEpochNanos, long epochNanos) {
-    return new AutoValue_MetricData(metricDescriptor, startEpochNanos, epochNanos);
+  static MetricData createInternal(Descriptor descriptor, long startEpochNanos, long epochNanos) {
+    return new AutoValue_MetricData(descriptor, startEpochNanos, epochNanos);
+  }
+
+  /**
+   * {@link Descriptor} defines metadata about the {@code MetricData} type and its schema.
+   *
+   * @since 0.1.0
+   */
+  @Immutable
+  @AutoValue
+  public abstract static class Descriptor {
+    Descriptor() {}
+
+    /**
+     * The kind of metric. It describes how the data is reported.
+     *
+     * @since 0.1.0
+     */
+    public enum Type {
+
+      /**
+       * An instantaneous measurement of an int64 value.
+       *
+       * @since 0.1.0
+       */
+      NON_MONOTONIC_INT64,
+
+      /**
+       * An instantaneous measurement of a double value.
+       *
+       * @since 0.1.0
+       */
+      NON_MONOTONIC_DOUBLE,
+
+      /**
+       * An cumulative measurement of an int64 value.
+       *
+       * @since 0.1.0
+       */
+      MONOTONIC_INT64,
+
+      /**
+       * An cumulative measurement of a double value.
+       *
+       * @since 0.1.0
+       */
+      MONOTONIC_DOUBLE,
+    }
+
+    /**
+     * Returns the metric descriptor name.
+     *
+     * @return the metric descriptor name.
+     * @since 0.1.0
+     */
+    public abstract String getName();
+
+    /**
+     * Returns the description of this metric descriptor.
+     *
+     * @return the description of this metric descriptor.
+     * @since 0.1.0
+     */
+    public abstract String getDescription();
+
+    /**
+     * Returns the unit of this metric descriptor.
+     *
+     * @return the unit of this metric descriptor.
+     * @since 0.1.0
+     */
+    public abstract String getUnit();
+
+    /**
+     * Returns the type of this metric descriptor.
+     *
+     * @return the type of this metric descriptor.
+     * @since 0.1.0
+     */
+    public abstract Type getType();
+
+    /**
+     * Returns the label keys associated with this metric descriptor.
+     *
+     * @return the label keys associated with this metric descriptor.
+     * @since 0.1.0
+     */
+    public abstract List<String> getLabelKeys();
+
+    /**
+     * Returns the constant labels associated with this metric descriptor.
+     *
+     * @return the constant labels associated with this metric descriptor.
+     * @since 0.1.0
+     */
+    public abstract Map<String, String> getConstantLabels();
+
+    static Descriptor createInternal(
+        String name,
+        String description,
+        String unit,
+        Type type,
+        List<String> labelKeys,
+        Map<String, String> constantLabels) {
+      return new AutoValue_MetricData_Descriptor(
+          name, description, unit, type, labelKeys, constantLabels);
+    }
   }
 }

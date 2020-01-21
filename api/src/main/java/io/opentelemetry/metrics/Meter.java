@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -25,7 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <ul>
  *   <li>Record raw measurements, and defer defining the aggregation and the labels for the exported
- *       Metric. This should be used in libraries like gRPC to record measurements like
+ *       Instrument. This should be used in libraries like gRPC to record measurements like
  *       "server_latency" or "received_bytes".
  *   <li>Record pre-defined aggregation data (or already aggregated data). This should be used to
  *       report cpu/memory usage, or simple metrics like "queue_length".
@@ -35,10 +36,10 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class MyClass {
- *   private static final Meter meter = Metrics.getMeterFactory().get("my_library_name");
- *   private static final MeasureDouble cacheHit = meter.measureDoubleBuilder("cache_hit").build();
+ *   private static final Meter meter = Metrics.getMeterRegistry().get("my_library_name");
+ *   private static final DoubleMeasure cacheHit = meter.measureDoubleBuilder("cache_hit").build();
  *
- *   Response serverHandler(Request request) {
+ *   Response serverBoundr(Request request) {
  *     if (inCache(request)) {
  *       cacheHit.record(1);
  *       return fromCache(request);
@@ -53,7 +54,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = Metrics.getMeterFactory().get("my_library_name");
+ *   private static final Meter meter = Metrics.getMeterRegistry().get("my_library_name");
  *   private static final CounterLong collectionMetric =
  *       meter
  *           .counterLongBuilder("collection")
@@ -70,7 +71,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *             for (GarbageCollectorMXBean gc : ManagementFactory.getGarbageCollectorMXBeans()) {
  *               LabelValue gcName = LabelValue.create(gc.getName());
  *               collectionMetric
- *                   .getHandle(Collections.singletonList(gcName))
+ *                   .getBound(Collections.singletonList(gcName))
  *                   .set(gc.getCollectionTime());
  *             }
  *           }
@@ -83,27 +84,27 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <pre>{@code
  * class YourClass {
- *   private static final Meter meter = Metrics.getMeterFactory().get("my_library_name");
+ *   private static final Meter meter = Metrics.getMeterRegistry().get("my_library_name");
  *   private static final List<String> keys = Collections.singletonList("Name");
  *   private static final List<String> values = Collections.singletonList("Inbound");
- *   private static final GaugeDouble gauge =
+ *   private static final DoubleGauge gauge =
  *       meter
- *           .gaugeLongBuilder("queue_size")
+ *           .longGaugeBuilder("queue_size")
  *           .setDescription("Pending jobs")
  *           .setUnit("1")
  *           .setLabelKeys(labelKeys)
  *           .build();
  *
- *   // It is recommended to keep a reference of a Handle.
- *   GaugeDouble.Handle inboundHandle = gauge.getHandle(labelValues);
+ *   // It is recommended that API users keep a reference to a Bound Instrument.
+ *   DoubleGauge.BoundDoubleGauge inboundBoundGauge = gauge.bind(labelValues);
  *
  *   void doAddElement() {
  *      // Your code here.
- *      inboundHandle.add(1);
+ *      inboundBoundGauge.set(1);
  *   }
  *
  *   void doRemoveElement() {
- *      inboundHandle.add(-1);
+ *      inboundBoundGauge.set(-1);
  *      // Your code here.
  *   }
  *
@@ -114,108 +115,108 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface Meter {
 
   /**
-   * Returns a builder for a {@link GaugeLong}.
+   * Returns a builder for a {@link LongGauge}.
    *
    * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
    *     characters.
-   * @return a {@code GaugeLong.Builder}.
+   * @return a {@code LongGauge.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  GaugeLong.Builder gaugeLongBuilder(String name);
+  LongGauge.Builder longGaugeBuilder(String name);
 
   /**
-   * Returns a builder for a {@link GaugeDouble}.
+   * Returns a builder for a {@link DoubleGauge}.
    *
    * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
    *     characters.
-   * @return a {@code GaugeDouble.Builder}.
+   * @return a {@code DoubleGauge.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  GaugeDouble.Builder gaugeDoubleBuilder(String name);
+  DoubleGauge.Builder doubleGaugeBuilder(String name);
 
   /**
-   * Returns a builder for a {@link CounterDouble}.
+   * Returns a builder for a {@link DoubleCounter}.
    *
    * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
    *     characters.
-   * @return a {@code CounterDouble.Builder}.
+   * @return a {@code DoubleCounter.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  CounterDouble.Builder counterDoubleBuilder(String name);
+  DoubleCounter.Builder doubleCounterBuilder(String name);
 
   /**
-   * Returns a builder for a {@link CounterLong}.
+   * Returns a builder for a {@link LongCounter}.
    *
    * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
    *     characters.
-   * @return a {@code CounterLong.Builder}.
+   * @return a {@code LongCounter.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  CounterLong.Builder counterLongBuilder(String name);
+  LongCounter.Builder longCounterBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link MeasureDouble}.
+   * Returns a new builder for a {@link DoubleMeasure}.
    *
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
-   * @return a new builder for a {@code MeasureDouble}.
+   * @return a new builder for a {@code DoubleMeasure}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  MeasureDouble.Builder measureDoubleBuilder(String name);
+  DoubleMeasure.Builder doubleMeasureBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link MeasureLong}.
+   * Returns a new builder for a {@link LongMeasure}.
    *
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
-   * @return a new builder for a {@code MeasureLong}.
+   * @return a new builder for a {@code LongMeasure}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  MeasureLong.Builder measureLongBuilder(String name);
+  LongMeasure.Builder longMeasureBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link ObserverDouble}.
+   * Returns a new builder for a {@link DoubleObserver}.
    *
    * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
-   * @return a new builder for a {@code ObserverDouble}.
+   * @return a new builder for a {@code DoubleObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  ObserverDouble.Builder observerDoubleBuilder(String name);
+  DoubleObserver.Builder doubleObserverBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link ObserverLong}.
+   * Returns a new builder for a {@link LongObserver}.
    *
    * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
-   * @return a new builder for a {@code ObserverLong}.
+   * @return a new builder for a {@code LongObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  ObserverLong.Builder observerLongBuilder(String name);
+  LongObserver.Builder longObserverBuilder(String name);
 
   /**
    * Utility method that allows users to atomically record measurements to a set of Measures.
@@ -225,4 +226,26 @@ public interface Meter {
    * @since 0.1.0
    */
   BatchRecorder newMeasureBatchRecorder();
+
+  /**
+   * Returns a new {@link LabelSet} with the given labels.
+   *
+   * <p>The arguments must are in key, value pairs, so an even number of arguments are required.
+   *
+   * <p>If no arguments are provided, the resulting LabelSet will be the empty one.
+   *
+   * @param keyValuePairs pairs of keys and values for the labels.
+   * @return a new {@link LabelSet} with the given labels.
+   * @throws IllegalArgumentException if there aren't an even number of arguments.
+   */
+  LabelSet createLabelSet(String... keyValuePairs);
+
+  /**
+   * Returns a new {@link LabelSet} with labels built from the keys and values in the provided Map.
+   *
+   * @param labels The key-value pairs to turn into labels.
+   * @return a new {@link LabelSet} with the given labels.
+   * @throws NullPointerException if the map is null.
+   */
+  LabelSet createLabelSet(Map<String, String> labels);
 }

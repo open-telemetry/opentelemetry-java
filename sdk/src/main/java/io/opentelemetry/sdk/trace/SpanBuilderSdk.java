@@ -16,13 +16,16 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -57,7 +60,9 @@ class SpanBuilderSdk implements Span.Builder {
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
+  private final AttributesWithCapacity attributes;
   private List<Link> links;
+  private int totalNumberOfLinksAdded = 0;
   private ParentType parentType = ParentType.CURRENT_SPAN;
   private long startEpochNanos = 0;
 
@@ -74,6 +79,7 @@ class SpanBuilderSdk implements Span.Builder {
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
+    this.attributes = new AttributesWithCapacity(traceConfig.getMaxNumberOfAttributes());
     this.links = Collections.emptyList();
     this.idsGenerator = idsGenerator;
     this.clock = clock;
@@ -124,11 +130,49 @@ class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder addLink(Link link) {
     Utils.checkNotNull(link, "link");
+    totalNumberOfLinksAdded++;
+    // don't bother doing anything with any links beyond the max.
+    if (links.size() == traceConfig.getMaxNumberOfLinks()) {
+      return this;
+    }
+
     // This is the Collection.emptyList which is immutable.
     if (links.isEmpty()) {
       links = new ArrayList<>();
     }
+
     links.add(link);
+    return this;
+  }
+
+  @Override
+  public Span.Builder setAttribute(String key, String value) {
+    return setAttribute(key, AttributeValue.stringAttributeValue(value));
+  }
+
+  @Override
+  public Span.Builder setAttribute(String key, long value) {
+    return setAttribute(key, AttributeValue.longAttributeValue(value));
+  }
+
+  @Override
+  public Span.Builder setAttribute(String key, double value) {
+    return setAttribute(key, AttributeValue.doubleAttributeValue(value));
+  }
+
+  @Override
+  public Span.Builder setAttribute(String key, boolean value) {
+    return setAttribute(key, AttributeValue.booleanAttributeValue(value));
+  }
+
+  @Override
+  public Span.Builder setAttribute(String key, AttributeValue value) {
+    Utils.checkNotNull(key, "key");
+    Utils.checkNotNull(value, "value");
+    if (value.getType() == Type.STRING && StringUtils.isNullOrBlank(value.getStringValue())) {
+      return this;
+    }
+    attributes.putAttribute(key, value);
     return this;
   }
 
@@ -169,28 +213,23 @@ class SpanBuilderSdk implements Span.Builder {
       return DefaultSpan.create(spanContext);
     }
 
+    attributes.putAllAttributes(samplingDecision.attributes());
+
     return RecordEventsReadableSpan.startSpan(
         spanContext,
         spanName,
         instrumentationLibraryInfo,
         spanKind,
         parentContext != null ? parentContext.getSpanId() : null,
-        parentContext != null ? parentContext.isRemote() : false,
+        parentContext != null && parentContext.isRemote(),
         traceConfig,
         spanProcessor,
         getClock(parentSpan(parentType, parent), clock),
         resource,
-        samplingDecision.attributes(),
-        truncatedLinks(),
-        links.size(),
+        attributes,
+        links,
+        totalNumberOfLinksAdded,
         startEpochNanos);
-  }
-
-  private List<Link> truncatedLinks() {
-    if (links.size() <= traceConfig.getMaxNumberOfLinks()) {
-      return links;
-    }
-    return links.subList(links.size() - traceConfig.getMaxNumberOfLinks(), links.size());
   }
 
   private static Clock getClock(Span parent, Clock clock) {

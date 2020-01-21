@@ -58,7 +58,7 @@ public class HttpTraceContextTest {
   private static final Setter<Map<String, String>> setter =
       new Setter<Map<String, String>>() {
         @Override
-        public void put(Map<String, String> carrier, String key, String value) {
+        public void set(Map<String, String> carrier, String key, String value) {
           carrier.put(key, value);
         }
       };
@@ -72,6 +72,8 @@ public class HttpTraceContextTest {
       };
   // Encoding preserves the order which is the reverse order of adding.
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING = "bar=baz,foo=bar";
+  private static final String TRACESTATE_NOT_DEFAULT_ENCODING_WITH_SPACES =
+      "bar=baz   ,    foo=bar";
   private final HttpTraceContext httpTraceContext = new HttpTraceContext();
   @Rule public ExpectedException thrown = ExpectedException.none();
 
@@ -189,7 +191,7 @@ public class HttpTraceContextTest {
   public void extract_NotSampledContext_TraceStateWithSpaces() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
-    carrier.put(TRACESTATE, "foo=bar   ,    bar=baz");
+    carrier.put(TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING_WITH_SPACES);
     assertThat(httpTraceContext.extract(carrier, getter))
         .isEqualTo(
             SpanContext.createFromRemoteParent(

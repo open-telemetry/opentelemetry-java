@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.Observer;
 
 abstract class AbstractObserverBuilder<B extends Observer.Builder<B, V>, V>
-    extends AbstractMetricBuilder<B, V> implements Observer.Builder<B, V> {
+    extends AbstractInstrumentBuilder<B, V> implements Observer.Builder<B, V> {
   private boolean monotonic = false;
 
   protected AbstractObserverBuilder(String name) {

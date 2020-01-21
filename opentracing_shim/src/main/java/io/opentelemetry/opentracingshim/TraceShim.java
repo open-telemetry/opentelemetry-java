@@ -17,17 +17,17 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerFactory;
+import io.opentelemetry.trace.TracerRegistry;
 
 public final class TraceShim {
   private TraceShim() {}
 
   /**
    * Creates a {@code io.opentracing.Tracer} shim out of {@code OpenTelemetry.getTracer()} and
-   * {@code OpenTelemetry.getDistributedContextManager()}.
+   * {@code OpenTelemetry.getCorrelationContextManager()}.
    *
    * @return a {@code io.opentracing.Tracer}.
    * @since 0.1.0
@@ -35,27 +35,27 @@ public final class TraceShim {
   public static io.opentracing.Tracer createTracerShim() {
     return new TracerShim(
         new TelemetryInfo(
-            getTracer(OpenTelemetry.getTracerFactory()),
-            OpenTelemetry.getDistributedContextManager()));
+            getTracer(OpenTelemetry.getTracerRegistry()),
+            OpenTelemetry.getCorrelationContextManager()));
   }
 
   /**
    * Creates a {@code io.opentracing.Tracer} shim out the specified {@code Tracer} and {@code
-   * DistributedContextManager}.
+   * CorrelationContextManager}.
    *
-   * @param tracerFactory the {@code TracerFactory} used by this shim.
-   * @param contextManager the {@code DistributedContextManager} used by this shim.
+   * @param tracerRegistry the {@code TracerRegistry} used by this shim.
+   * @param contextManager the {@code CorrelationContextManager} used by this shim.
    * @return a {@code io.opentracing.Tracer}.
    * @since 0.1.0
    */
   public static io.opentracing.Tracer createTracerShim(
-      TracerFactory tracerFactory, DistributedContextManager contextManager) {
-    Utils.checkNotNull(tracerFactory, "tracer");
+      TracerRegistry tracerRegistry, CorrelationContextManager contextManager) {
+    Utils.checkNotNull(tracerRegistry, "tracerRegistry");
     Utils.checkNotNull(contextManager, "contextManager");
-    return new TracerShim(new TelemetryInfo(getTracer(tracerFactory), contextManager));
+    return new TracerShim(new TelemetryInfo(getTracer(tracerRegistry), contextManager));
   }
 
-  private static Tracer getTracer(TracerFactory tracerFactory) {
-    return tracerFactory.get("opentracingshim");
+  private static Tracer getTracer(TracerRegistry tracerRegistry) {
+    return tracerRegistry.get("opentracingshim");
   }
 }

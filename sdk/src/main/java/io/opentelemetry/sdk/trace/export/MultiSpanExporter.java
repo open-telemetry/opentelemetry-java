@@ -36,7 +36,13 @@ public final class MultiSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(MultiSpanExporter.class.getName());
   private final SpanExporter[] spanExporters;
 
-  static SpanExporter create(List<SpanExporter> spanExporters) {
+  /**
+   * Constructs and returns an instance of this class.
+   *
+   * @param spanExporters the exporters spans should be sent to
+   * @return the aggregate span exporter
+   */
+  public static SpanExporter create(List<SpanExporter> spanExporters) {
     return new MultiSpanExporter(spanExporters);
   }
 

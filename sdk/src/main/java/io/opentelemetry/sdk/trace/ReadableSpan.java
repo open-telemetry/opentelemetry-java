@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 
@@ -59,4 +60,21 @@ public interface ReadableSpan {
    *     library
    */
   InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+
+  /**
+   * Returns whether this Span has already been ended.
+   *
+   * @return {@code true} if the span has already been ended, {@code false} if not.
+   * @since 0.4.0
+   */
+  boolean hasEnded();
+
+  /**
+   * Returns the latency of the {@code Span} in nanos. If still active then returns now() - start
+   * time.
+   *
+   * @return the latency of the {@code Span} in nanos.
+   * @since 0.4.0
+   */
+  long getLatencyNanos();
 }

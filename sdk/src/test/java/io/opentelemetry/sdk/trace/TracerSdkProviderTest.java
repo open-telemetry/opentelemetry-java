@@ -24,10 +24,10 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class TracerSdkProviderTest {
-  private final TracerSdkFactoryProvider tracerFactoryProvider = new TracerSdkFactoryProvider();
+  private final TracerSdkRegistryProvider tracerFactoryProvider = new TracerSdkRegistryProvider();
 
   @Test
   public void testDefault() {
-    assertThat(tracerFactoryProvider.create()).isInstanceOf(TracerSdkFactory.class);
+    assertThat(tracerFactoryProvider.create()).isInstanceOf(TracerSdkRegistry.class);
   }
 }

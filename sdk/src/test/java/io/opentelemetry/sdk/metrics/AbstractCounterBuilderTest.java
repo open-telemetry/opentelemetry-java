@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.metrics.Counter;
-import java.util.List;
+import io.opentelemetry.metrics.LabelSet;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,61 +35,57 @@ public class AbstractCounterBuilderTest {
 
   @Test
   public void defaultValue() {
-    TestMetricBuilder testMetricBuilder = TestMetricBuilder.newBuilder(NAME);
+    TestInstrumentBuilder testMetricBuilder = TestInstrumentBuilder.newBuilder(NAME);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getDescription()).isEmpty();
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
     assertThat(testMetricBuilder.getMonotonic()).isTrue();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   @Test
   public void setAndGetValues() {
-    TestMetricBuilder testMetricBuilder = TestMetricBuilder.newBuilder(NAME).setMonotonic(false);
+    TestInstrumentBuilder testMetricBuilder =
+        TestInstrumentBuilder.newBuilder(NAME).setMonotonic(false);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getMonotonic()).isFalse();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestMetric.class);
+    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
-  private static final class TestMetricBuilder
-      extends AbstractCounterBuilder<TestMetricBuilder, TestMetric> {
-    static TestMetricBuilder newBuilder(String name) {
-      return new TestMetricBuilder(name);
+  private static final class TestInstrumentBuilder
+      extends AbstractCounterBuilder<TestInstrumentBuilder, TestInstrument> {
+    static TestInstrumentBuilder newBuilder(String name) {
+      return new TestInstrumentBuilder(name);
     }
 
-    TestMetricBuilder(String name) {
+    TestInstrumentBuilder(String name) {
       super(name);
     }
 
     @Override
-    TestMetricBuilder getThis() {
+    TestInstrumentBuilder getThis() {
       return this;
     }
 
     @Override
-    public TestMetric build() {
-      return new TestMetric();
+    public TestInstrument build() {
+      return new TestInstrument();
     }
   }
 
-  private static final class TestMetric implements Counter<TestHandle> {
-    private static final TestHandle HANDLE = new TestHandle();
+  private static final class TestInstrument implements Counter<TestBound> {
+    private static final TestBound HANDLE = new TestBound();
 
     @Override
-    public TestHandle getHandle(List<String> labelValues) {
+    public TestBound bind(LabelSet labelSet) {
       return HANDLE;
     }
 
     @Override
-    public TestHandle getDefaultHandle() {
-      return HANDLE;
-    }
-
-    @Override
-    public void removeHandle(List<String> labelValues) {}
+    public void unbind(TestBound boundInstrument) {}
   }
 
-  private static final class TestHandle {}
+  private static final class TestBound {}
 }

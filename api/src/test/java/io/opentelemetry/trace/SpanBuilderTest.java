@@ -56,6 +56,11 @@ public class SpanBuilderTest {
             return Collections.emptyMap();
           }
         });
+    spanBuilder.setAttribute("key", "value");
+    spanBuilder.setAttribute("key", 12345L);
+    spanBuilder.setAttribute("key", .12345);
+    spanBuilder.setAttribute("key", true);
+    spanBuilder.setAttribute("key", AttributeValue.stringAttributeValue("value"));
     spanBuilder.setStartTimestamp(12345L);
     assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);
   }

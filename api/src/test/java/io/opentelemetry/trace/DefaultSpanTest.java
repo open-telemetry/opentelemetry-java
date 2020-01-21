@@ -53,6 +53,8 @@ public class DefaultSpanTest {
         "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
     span.setAttribute("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
     span.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
+    span.setAttribute("NullString", (String) null);
+    span.setAttribute("EmptyString", "");
     span.addEvent("event");
     span.addEvent("event", 0);
     span.addEvent(

@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.Counter;
 
 abstract class AbstractCounterBuilder<B extends Counter.Builder<B, V>, V>
-    extends AbstractMetricBuilder<B, V> implements Counter.Builder<B, V> {
+    extends AbstractInstrumentBuilder<B, V> implements Counter.Builder<B, V> {
   private boolean monotonic = true;
 
   protected AbstractCounterBuilder(String name) {

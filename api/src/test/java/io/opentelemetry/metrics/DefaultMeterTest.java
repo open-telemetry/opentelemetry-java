@@ -32,41 +32,55 @@ public final class DefaultMeterTest {
   public void noopAddLongGauge_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    defaultMeter.gaugeLongBuilder(null);
+    defaultMeter.longGaugeBuilder(null);
   }
 
   @Test
   public void noopAddDoubleGauge_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    defaultMeter.gaugeDoubleBuilder(null);
+    defaultMeter.doubleGaugeBuilder(null);
   }
 
   @Test
   public void noopAddDoubleCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    defaultMeter.counterDoubleBuilder(null);
+    defaultMeter.doubleCounterBuilder(null);
   }
 
   @Test
   public void noopAddLongCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    defaultMeter.counterLongBuilder(null);
+    defaultMeter.longCounterBuilder(null);
   }
 
   @Test
   public void noopAddMeasureDouble_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    defaultMeter.measureDoubleBuilder(null);
+    defaultMeter.doubleMeasureBuilder(null);
   }
 
   @Test
   public void noopAddMeasureLong_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    defaultMeter.measureLongBuilder(null);
+    defaultMeter.longMeasureBuilder(null);
+  }
+
+  @Test
+  public void testVarargsLabelSetValidation_UnmatchedKeysAndValues() throws Exception {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("even");
+    defaultMeter.createLabelSet("key");
+  }
+
+  @Test
+  public void testVarargsLabelSetValidation_NullKey() throws Exception {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("null");
+    defaultMeter.createLabelSet(null, "value");
   }
 }

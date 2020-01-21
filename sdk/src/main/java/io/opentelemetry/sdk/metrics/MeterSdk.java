@@ -17,61 +17,73 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.BatchRecorder;
-import io.opentelemetry.metrics.CounterDouble;
-import io.opentelemetry.metrics.CounterLong;
-import io.opentelemetry.metrics.GaugeDouble;
-import io.opentelemetry.metrics.GaugeLong;
-import io.opentelemetry.metrics.MeasureDouble;
-import io.opentelemetry.metrics.MeasureLong;
+import io.opentelemetry.metrics.DoubleCounter;
+import io.opentelemetry.metrics.DoubleGauge;
+import io.opentelemetry.metrics.DoubleMeasure;
+import io.opentelemetry.metrics.DoubleObserver;
+import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LongGauge;
+import io.opentelemetry.metrics.LongMeasure;
+import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.ObserverDouble;
-import io.opentelemetry.metrics.ObserverLong;
+import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
 public class MeterSdk implements Meter {
 
   @Override
-  public GaugeLong.Builder gaugeLongBuilder(String name) {
+  public LongGauge.Builder longGaugeBuilder(String name) {
     throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
-  public GaugeDouble.Builder gaugeDoubleBuilder(String name) {
+  public DoubleGauge.Builder doubleGaugeBuilder(String name) {
     throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
-  public CounterDouble.Builder counterDoubleBuilder(String name) {
+  public DoubleCounter.Builder doubleCounterBuilder(String name) {
+    return SdkDoubleCounter.Builder.builder(name);
+  }
+
+  @Override
+  public LongCounter.Builder longCounterBuilder(String name) {
+    return SdkLongCounter.Builder.builder(name);
+  }
+
+  @Override
+  public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
+    return SdkDoubleMeasure.Builder.builder(name);
+  }
+
+  @Override
+  public LongMeasure.Builder longMeasureBuilder(String name) {
+    return SdkLongMeasure.Builder.builder(name);
+  }
+
+  @Override
+  public DoubleObserver.Builder doubleObserverBuilder(String name) {
     throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
-  public CounterLong.Builder counterLongBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public MeasureDouble.Builder measureDoubleBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public MeasureLong.Builder measureLongBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public ObserverDouble.Builder observerDoubleBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public ObserverLong.Builder observerLongBuilder(String name) {
+  public LongObserver.Builder longObserverBuilder(String name) {
     throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
   public BatchRecorder newMeasureBatchRecorder() {
     throw new UnsupportedOperationException("to be implemented");
+  }
+
+  @Override
+  public LabelSet createLabelSet(String... keyValuePairs) {
+    return SdkLabelSet.create(keyValuePairs);
+  }
+
+  @Override
+  public LabelSet createLabelSet(Map<String, String> labels) {
+    return SdkLabelSet.create(labels);
   }
 }
