@@ -32,7 +32,7 @@ abstract class AbstractGaugeBuilder<B extends Gauge.Builder<B, V>, V>
     return getThis();
   }
 
-  final boolean getMonotonic() {
+  final boolean isMonotonic() {
     return this.monotonic;
   }
 }

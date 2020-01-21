@@ -107,7 +107,7 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     @Override
     public LongCounter build() {
       return new SdkLongCounter(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), getMonotonic());
+          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
     }
   }
 }

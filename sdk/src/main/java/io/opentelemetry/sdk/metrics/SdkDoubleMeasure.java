@@ -108,7 +108,7 @@ class SdkDoubleMeasure extends BaseInstrument<BoundDoubleMeasure> implements Dou
     @Override
     public DoubleMeasure build() {
       return new SdkDoubleMeasure(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), getAbsolute());
+          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isAbsolute());
     }
   }
 }

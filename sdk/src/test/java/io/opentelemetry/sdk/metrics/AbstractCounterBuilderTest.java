@@ -41,7 +41,7 @@ public class AbstractCounterBuilderTest {
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
-    assertThat(testMetricBuilder.getMonotonic()).isTrue();
+    assertThat(testMetricBuilder.isMonotonic()).isTrue();
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
@@ -50,7 +50,7 @@ public class AbstractCounterBuilderTest {
     TestInstrumentBuilder testMetricBuilder =
         TestInstrumentBuilder.newBuilder(NAME).setMonotonic(false);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
-    assertThat(testMetricBuilder.getMonotonic()).isFalse();
+    assertThat(testMetricBuilder.isMonotonic()).isFalse();
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 

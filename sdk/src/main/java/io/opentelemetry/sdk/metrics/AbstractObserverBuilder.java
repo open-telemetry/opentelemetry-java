@@ -32,7 +32,7 @@ abstract class AbstractObserverBuilder<B extends Observer.Builder<B, V>, V>
     return getThis();
   }
 
-  final boolean getMonotonic() {
+  final boolean isMonotonic() {
     return this.monotonic;
   }
 }
