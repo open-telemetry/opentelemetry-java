@@ -1,4 +1,5 @@
 description = 'OpenTelemetry OpenTracing Bridge'
+ext.moduleName = "io.opentelemetry.opentracingshim"
 
 def protobufVersion = '3.7.1'
 
@@ -17,4 +18,11 @@ dependencies {
 test {
     dependsOn cleanTest
     testLogging.showStandardStreams = true
+}
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes  'Automatic-Module-Name': moduleName
+    }
 }

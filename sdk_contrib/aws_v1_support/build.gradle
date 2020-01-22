@@ -1,4 +1,5 @@
 description = 'OpenTelemetry SDK AWS SDK v1.x Support'
+ext.moduleName = "io.opentelemetry.sdk.contrib.trace.aws"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -14,4 +15,12 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-ec2:1.11.701'
 
     signature "org.codehaus.mojo.signature:java18:1.0@signature"
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes  'Automatic-Module-Name': moduleName
+    }
 }

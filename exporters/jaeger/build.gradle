@@ -1,7 +1,7 @@
 description = 'OpenTelemetry - Jaeger Exporter'
+ext.moduleName = "io.opentelemetry.exporters.jaeger"
 
 apply plugin: 'com.google.protobuf'
-
 
 buildscript {
     repositories {
@@ -56,5 +56,13 @@ idea {
     module {
         sourceDirs += file("build/generated/source/proto/main/java")
         // If you have additional sourceSets and/or codegen plugins, add all of them
+    }
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes  'Automatic-Module-Name': moduleName
     }
 }

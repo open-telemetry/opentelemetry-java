@@ -1,4 +1,5 @@
 description = 'OpenTelemetry Contrib Runtime Metrics'
+ext.moduleName = "io.opentelemetry.contrib.metrics.runtime"
 
 dependencies {
     implementation project(':opentelemetry-api')
@@ -9,4 +10,12 @@ dependencies {
     // Runtime metrics are not android compatible, because we have only one artifact for contrib,
     // disable the android requirement for the moment.
     // signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+}
+
+jar {
+    inputs.property("moduleName", moduleName)
+
+    manifest {
+        attributes  'Automatic-Module-Name': moduleName
+    }
 }
