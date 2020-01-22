@@ -101,7 +101,7 @@ public interface HttpTextFormat {
      * @param value the value of the field.
      * @since 0.1.0
      */
-    void put(C carrier, String key, String value);
+    void set(C carrier, String key, String value);
   }
 
   /**

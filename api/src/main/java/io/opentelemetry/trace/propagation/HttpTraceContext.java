@@ -93,7 +93,7 @@ public class HttpTraceContext implements HttpTextFormat {
     spanContext.getSpanId().copyLowerBase16To(chars, SPAN_ID_OFFSET);
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
-    setter.put(carrier, TRACEPARENT, new String(chars));
+    setter.set(carrier, TRACEPARENT, new String(chars));
     List<Tracestate.Entry> entries = spanContext.getTracestate().getEntries();
     if (entries.isEmpty()) {
       // No need to add an empty "tracestate" header.
@@ -109,7 +109,7 @@ public class HttpTraceContext implements HttpTextFormat {
           .append(TRACESTATE_KEY_VALUE_DELIMITER)
           .append(entry.getValue());
     }
-    setter.put(carrier, TRACESTATE, stringBuilder.toString());
+    setter.set(carrier, TRACESTATE, stringBuilder.toString());
   }
 
   @Override

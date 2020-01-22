@@ -41,5 +41,9 @@ public final class StringUtils {
     return ch >= ' ' && ch <= '~';
   }
 
+  public static boolean isNullOrBlank(String value) {
+    return value == null || value.length() == 0;
+  }
+
   private StringUtils() {}
 }

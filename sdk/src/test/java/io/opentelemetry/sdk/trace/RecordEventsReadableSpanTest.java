@@ -204,13 +204,13 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      assertThat(span.getStatus()).isEqualTo(Status.OK);
+      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.OK);
       span.setStatus(Status.CANCELLED);
-      assertThat(span.getStatus()).isEqualTo(Status.CANCELLED);
+      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.CANCELLED);
     } finally {
       span.end();
     }
-    assertThat(span.getStatus()).isEqualTo(Status.CANCELLED);
+    assertThat(span.toSpanData().getStatus()).isEqualTo(Status.CANCELLED);
   }
 
   @Test
@@ -286,6 +286,10 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
       span.setAttribute("StringKey", "StringVal");
+      span.setAttribute("NullStringKey", (String) null);
+      span.setAttribute("EmptyStringKey", "");
+      span.setAttribute("NullStringAttributeValue", AttributeValue.stringAttributeValue(null));
+      span.setAttribute("EmptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
       span.setAttribute("LongKey", 1000L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);
@@ -420,6 +424,7 @@ public class RecordEventsReadableSpanTest {
                 "event2",
                 Collections.<String, AttributeValue>emptyMap());
         assertThat(spanData.getTimedEvents().get(i)).isEqualTo(expectedEvent);
+        assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
       }
     } finally {
       span.end();
@@ -599,13 +604,16 @@ public class RecordEventsReadableSpanTest {
                 Arrays.asList(
                     SpanData.TimedEvent.create(firstEventEpochNanos, "event1", event1Attributes),
                     SpanData.TimedEvent.create(secondEventTimeNanos, "event2", event2Attributes)))
+            .setTotalRecordedEvents(2)
             .setResource(resource)
             .setParentSpanId(parentSpanId)
             .setLinks(links)
+            .setTotalRecordedLinks(links.size())
             .setTraceId(traceId)
             .setSpanId(spanId)
             .setAttributes(attributes)
             .setHasRemoteParent(false)
+            .setNumberOfChildren(0)
             .build();
 
     SpanData result = readableSpan.toSpanData();

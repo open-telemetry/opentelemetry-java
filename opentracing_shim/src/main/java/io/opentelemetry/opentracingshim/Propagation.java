@@ -64,7 +64,7 @@ final class Propagation extends BaseShimObject {
     public static final TextMapSetter INSTANCE = new TextMapSetter();
 
     @Override
-    public void put(TextMapInject carrier, String key, String value) {
+    public void set(TextMapInject carrier, String key, String value) {
       carrier.put(key, value);
     }
   }

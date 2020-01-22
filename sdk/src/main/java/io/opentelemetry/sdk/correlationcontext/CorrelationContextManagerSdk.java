@@ -16,11 +16,13 @@
 
 package io.opentelemetry.sdk.correlationcontext;
 
-import io.grpc.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.BinaryFormat;
+import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.correlationcontext.propagation.ContextUtils;
+import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
+import io.opentelemetry.correlationcontext.unsafe.ContextUtils;
 
 /**
  * {@link CorrelationContextManagerSdk} is SDK implementation of {@link CorrelationContextManager}.
@@ -29,7 +31,7 @@ public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return ContextUtils.getCorrelationContextWithDefault(Context.current());
+    return ContextUtils.getValue();
   }
 
   @Override
@@ -39,6 +41,18 @@ public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
   @Override
   public Scope withContext(CorrelationContext distContext) {
-    return ContextUtils.withScopedCorrelationContext(distContext);
+    return ContextUtils.withCorrelationContext(distContext);
+  }
+
+  @Override
+  public BinaryFormat<CorrelationContext> getBinaryFormat() {
+    // TODO: Implement this.
+    return DefaultCorrelationContextManager.getInstance().getBinaryFormat();
+  }
+
+  @Override
+  public HttpTextFormat<CorrelationContext> getHttpTextFormat() {
+    // TODO: Implement this.
+    return DefaultCorrelationContextManager.getInstance().getHttpTextFormat();
   }
 }

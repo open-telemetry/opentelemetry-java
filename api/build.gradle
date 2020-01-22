@@ -1,7 +1,7 @@
 description = 'OpenTelemetry API'
 
 dependencies {
-    api libraries.grpc_context
+    api project(':opentelemetry-context-prop')
 
     annotationProcessor libraries.auto_value
 

@@ -16,10 +16,13 @@
 
 package io.opentelemetry.correlationcontext;
 
-import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.correlationcontext.propagation.ContextUtils;
+import io.opentelemetry.context.propagation.BinaryFormat;
+import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.correlationcontext.unsafe.ContextUtils;
 import io.opentelemetry.internal.Utils;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -32,6 +35,9 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class DefaultCorrelationContextManager implements CorrelationContextManager {
   private static final DefaultCorrelationContextManager INSTANCE =
       new DefaultCorrelationContextManager();
+  private static final BinaryFormat<CorrelationContext> BINARY_FORMAT = new NoopBinaryFormat();
+  private static final HttpTextFormat<CorrelationContext> HTTP_TEXT_FORMAT =
+      new NoopHttpTextFormat();
 
   /**
    * Returns a {@code CorrelationContextManager} singleton that is the default implementation for
@@ -47,7 +53,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return ContextUtils.getCorrelationContextWithDefault(Context.current());
+    return ContextUtils.getValue();
   }
 
   @Override
@@ -57,7 +63,17 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public Scope withContext(CorrelationContext distContext) {
-    return ContextUtils.withScopedCorrelationContext(distContext);
+    return ContextUtils.withCorrelationContext(distContext);
+  }
+
+  @Override
+  public BinaryFormat<CorrelationContext> getBinaryFormat() {
+    return BINARY_FORMAT;
+  }
+
+  @Override
+  public HttpTextFormat<CorrelationContext> getHttpTextFormat() {
+    return HTTP_TEXT_FORMAT;
   }
 
   @Immutable
@@ -65,12 +81,6 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
     @Override
     public CorrelationContext.Builder setParent(CorrelationContext parent) {
       Utils.checkNotNull(parent, "parent");
-      return this;
-    }
-
-    @Override
-    public CorrelationContext.Builder setParent(Context context) {
-      Utils.checkNotNull(context, "context");
       return this;
     }
 
@@ -96,6 +106,45 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
     @Override
     public CorrelationContext build() {
+      return EmptyCorrelationContext.getInstance();
+    }
+  }
+
+  @Immutable
+  private static final class NoopBinaryFormat implements BinaryFormat<CorrelationContext> {
+    static final byte[] EMPTY_BYTE_ARRAY = {};
+
+    @Override
+    public byte[] toByteArray(CorrelationContext distContext) {
+      Utils.checkNotNull(distContext, "distContext");
+      return EMPTY_BYTE_ARRAY;
+    }
+
+    @Override
+    public CorrelationContext fromByteArray(byte[] bytes) {
+      Utils.checkNotNull(bytes, "bytes");
+      return EmptyCorrelationContext.getInstance();
+    }
+  }
+
+  @Immutable
+  private static final class NoopHttpTextFormat implements HttpTextFormat<CorrelationContext> {
+    @Override
+    public List<String> fields() {
+      return Collections.emptyList();
+    }
+
+    @Override
+    public <C> void inject(CorrelationContext distContext, C carrier, Setter<C> setter) {
+      Utils.checkNotNull(distContext, "distContext");
+      Utils.checkNotNull(carrier, "carrier");
+      Utils.checkNotNull(setter, "setter");
+    }
+
+    @Override
+    public <C> CorrelationContext extract(C carrier, Getter<C> getter) {
+      Utils.checkNotNull(carrier, "carrier");
+      Utils.checkNotNull(getter, "getter");
       return EmptyCorrelationContext.getInstance();
     }
   }

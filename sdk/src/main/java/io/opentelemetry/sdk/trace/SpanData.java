@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Span.Kind;
@@ -181,6 +182,33 @@ public abstract class SpanData {
   public abstract boolean getHasEnded();
 
   /**
+   * The total number of {@link SpanData.TimedEvent} events that were recorded on this span. This
+   * number may be larger than the number of events that are attached to this span, if the total
+   * number recorded was greater than the configured maximum value. See: {@link
+   * TraceConfig#getMaxNumberOfEvents()}
+   *
+   * @return The total number of events recorded on this span.
+   */
+  public abstract int getTotalRecordedEvents();
+
+  /**
+   * The total number of child spans that were created for this span.
+   *
+   * @return The total number of child spans created from this span.
+   */
+  public abstract int getNumberOfChildren();
+
+  /**
+   * The total number of {@link SpanData.Link} links that were recorded on this span. This number
+   * may be larger than the number of links that are attached to this span, if the total number
+   * recorded was greater than the configured maximum value. See: {@link
+   * TraceConfig#getMaxNumberOfLinks()}
+   *
+   * @return The total number of links recorded on this span.
+   */
+  public abstract int getTotalRecordedLinks();
+
+  /**
    * An immutable implementation of {@link Link}.
    *
    * @since 0.1.0
@@ -188,6 +216,7 @@ public abstract class SpanData {
   @Immutable
   @AutoValue
   public abstract static class Link implements io.opentelemetry.trace.Link {
+
     /**
      * Returns a new immutable {@code Link}.
      *
@@ -222,6 +251,7 @@ public abstract class SpanData {
   @Immutable
   @AutoValue
   public abstract static class TimedEvent implements Event {
+
     /**
      * Returns a new immutable {@code TimedEvent}.
      *
@@ -264,11 +294,14 @@ public abstract class SpanData {
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.EMPTY)
         .setLinks(Collections.<io.opentelemetry.trace.Link>emptyList())
+        .setTotalRecordedLinks(0)
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
         .setTimedEvents(Collections.<TimedEvent>emptyList())
+        .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
         .setTracestate(Tracestate.getDefault())
         .setTraceFlags(TraceFlags.getDefault())
+        .setNumberOfChildren(0)
         .setHasRemoteParent(false);
   }
 
@@ -459,5 +492,32 @@ public abstract class SpanData {
      * @since 0.4.0
      */
     public abstract Builder setHasEnded(boolean hasEnded);
+
+    /**
+     * Set the total number of events recorded on this span.
+     *
+     * @param totalRecordedEvents The total number of events recorded.
+     * @return this
+     * @since 0.4.0
+     */
+    public abstract Builder setTotalRecordedEvents(int totalRecordedEvents);
+
+    /**
+     * Set the total number of links recorded on this span.
+     *
+     * @param totalRecordedLinks The total number of links recorded.
+     * @return this
+     * @since 0.4.0
+     */
+    public abstract Builder setTotalRecordedLinks(int totalRecordedLinks);
+
+    /**
+     * Set the total number of child spans on this span.
+     *
+     * @param numberOfChildren The total number of children.
+     * @return this
+     * @since 0.4.0
+     */
+    public abstract Builder setNumberOfChildren(int numberOfChildren);
   }
 }

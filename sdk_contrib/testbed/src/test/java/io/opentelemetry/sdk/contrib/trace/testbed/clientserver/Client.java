@@ -49,7 +49,7 @@ final class Client {
               message,
               new Setter<Message>() {
                 @Override
-                public void put(Message carrier, String key, String value) {
+                public void set(Message carrier, String key, String value) {
                   carrier.put(key, value);
                 }
               });
