@@ -42,7 +42,7 @@ import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterRegistry;
 import io.opentelemetry.metrics.spi.MeterRegistryProvider;
 import io.opentelemetry.trace.DefaultTracer;
-import io.opentelemetry.trace.DefaultTracerFactory;
+import io.opentelemetry.trace.DefaultTracerRegistry;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
@@ -99,26 +99,26 @@ public class OpenTelemetryTest {
 
   @Test
   public void testSetInstanceBeforeSingletonAccess() {
-    TracerFactory tracerFactory = mock(TracerFactory.class);
-    MeterFactory meterFactory = mock(MeterFactory.class);
-    DistributedContextManager contextManager = mock(DistributedContextManager.class);
-    OpenTelemetry.setTracerFactory(tracerFactory);
-    OpenTelemetry.setMeterFactory(meterFactory);
-    OpenTelemetry.setDistributedContextManager(contextManager);
-    assertThat(OpenTelemetry.getTracerFactory()).isSameInstanceAs(tracerFactory);
-    assertThat(OpenTelemetry.getMeterFactory()).isSameInstanceAs(meterFactory);
-    assertThat(OpenTelemetry.getDistributedContextManager()).isSameInstanceAs(contextManager);
+    TracerRegistry tracerRegistry = mock(TracerRegistry.class);
+    MeterRegistry meterRegistry = mock(MeterRegistry.class);
+    CorrelationContextManager contextManager = mock(CorrelationContextManager.class);
+    OpenTelemetry.setTracerRegistry(tracerRegistry);
+    OpenTelemetry.setMeterRegistry(meterRegistry);
+    OpenTelemetry.setCorrelationContextManager(contextManager);
+    assertThat(OpenTelemetry.getTracerRegistry()).isSameInstanceAs(tracerRegistry);
+    assertThat(OpenTelemetry.getMeterRegistry()).isSameInstanceAs(meterRegistry);
+    assertThat(OpenTelemetry.getCorrelationContextManager()).isSameInstanceAs(contextManager);
   }
 
   @Test
   public void testSetInstanceOneTimeOnly() {
-    TracerFactory tracerFactory = OpenTelemetry.getTracerFactory();
-    assertThat(tracerFactory).isInstanceOf(DefaultTracerFactory.class);
+    TracerRegistry tracerRegistry = OpenTelemetry.getTracerRegistry();
+    assertThat(tracerRegistry).isInstanceOf(DefaultTracerRegistry.class);
 
     // this call should be ignored, since we've already accessed the singletons.
-    OpenTelemetry.setTracerFactory(mock(TracerFactory.class));
+    OpenTelemetry.setTracerRegistry(mock(TracerRegistry.class));
 
-    assertThat(OpenTelemetry.getTracerFactory()).isSameInstanceAs(tracerFactory);
+    assertThat(OpenTelemetry.getTracerRegistry()).isSameInstanceAs(tracerRegistry);
   }
 
   @Test

@@ -16,15 +16,15 @@
 
 package io.opentelemetry;
 
-import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
-import io.opentelemetry.metrics.DefaultMeterFactoryProvider;
-import io.opentelemetry.metrics.MeterFactory;
-import io.opentelemetry.metrics.spi.MeterFactoryProvider;
-import io.opentelemetry.trace.DefaultTracerFactoryProvider;
-import io.opentelemetry.trace.TracerFactory;
-import io.opentelemetry.trace.spi.TracerFactoryProvider;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
+import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
+import io.opentelemetry.metrics.DefaultMeterRegistryProvider;
+import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.metrics.spi.MeterRegistryProvider;
+import io.opentelemetry.trace.DefaultTracerRegistryProvider;
+import io.opentelemetry.trace.TracerRegistry;
+import io.opentelemetry.trace.spi.TracerRegistryProvider;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 
@@ -58,25 +58,25 @@ public class SpiOpenTelemetryProvider {
     return null;
   }
 
-  static TracerFactory makeSpiTracerFactory() {
-    TracerFactoryProvider tracerFactoryProvider = loadSpi(TracerFactoryProvider.class);
-    return tracerFactoryProvider != null
-        ? tracerFactoryProvider.create()
-        : DefaultTracerFactoryProvider.getInstance().create();
+  static TracerRegistry makeSpiTracerRegistry() {
+    TracerRegistryProvider tracerRegistryProvider = loadSpi(TracerRegistryProvider.class);
+    return tracerRegistryProvider != null
+        ? tracerRegistryProvider.create()
+        : DefaultTracerRegistryProvider.getInstance().create();
   }
 
-  static MeterFactory makeSpiMeterFactory() {
-    MeterFactoryProvider meterFactoryProvider = loadSpi(MeterFactoryProvider.class);
-    return meterFactoryProvider != null
-        ? meterFactoryProvider.create()
-        : DefaultMeterFactoryProvider.getInstance().create();
+  static MeterRegistry makeSpiMeterRegistry() {
+    MeterRegistryProvider meterRegistryProvider = loadSpi(MeterRegistryProvider.class);
+    return meterRegistryProvider != null
+        ? meterRegistryProvider.create()
+        : DefaultMeterRegistryProvider.getInstance().create();
   }
 
-  static DistributedContextManager makeSpiContextManager() {
-    DistributedContextManagerProvider contextManagerProvider =
-        loadSpi(DistributedContextManagerProvider.class);
+  static CorrelationContextManager makeSpiContextManager() {
+    CorrelationContextManagerProvider contextManagerProvider =
+        loadSpi(CorrelationContextManagerProvider.class);
     return contextManagerProvider != null
         ? contextManagerProvider.create()
-        : DefaultDistributedContextManager.getInstance();
+        : DefaultCorrelationContextManager.getInstance();
   }
 }

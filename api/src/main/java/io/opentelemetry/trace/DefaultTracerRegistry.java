@@ -25,7 +25,7 @@ public class DefaultTracerRegistry implements TracerRegistry {
 
   private final Map<TracerKey, DefaultTracer> tracerRegistry = new HashMap<>();
 
-  private static final DefaultTracerFactory instance = new DefaultTracerFactory();
+  private static final DefaultTracerRegistry instance = new DefaultTracerRegistry();
 
   public static TracerRegistry getInstance() {
     return instance;
@@ -65,7 +65,7 @@ public class DefaultTracerRegistry implements TracerRegistry {
   public abstract static class TracerKey {
 
     public static TracerKey makeKey(String name, String version) {
-      return new AutoValue_DefaultTracerFactory_TracerKey(name, version);
+      return new AutoValue_DefaultTracerRegistry_TracerKey(name, version);
     }
 
     public abstract String getName();
