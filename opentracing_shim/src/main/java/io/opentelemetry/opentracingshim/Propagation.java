@@ -50,7 +50,7 @@ final class Propagation extends BaseShimObject {
     io.opentelemetry.correlationcontext.CorrelationContext distContext =
         contextManager().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
     if (context == SpanContext.getInvalid()) {
-      throw new IllegalArgumentException("Extracted span context invalid");
+      throw new IllegalArgumentException("Extracted span context is invalid");
     }
     return new SpanContextShim(telemetryInfo, context, distContext);
   }
