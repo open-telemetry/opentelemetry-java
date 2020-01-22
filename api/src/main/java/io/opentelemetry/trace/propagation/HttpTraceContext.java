@@ -110,7 +110,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
     TraceFlags traceFlags;
     String traceparent = getter.get(carrier, TRACEPARENT);
     if (traceparent == null) {
-      throw new IllegalArgumentException("Traceparent not present");
+      return SpanContext.getInvalid();
     }
     try {
       // TODO(bdrutu): Do we need to verify that version is hex and that for the version

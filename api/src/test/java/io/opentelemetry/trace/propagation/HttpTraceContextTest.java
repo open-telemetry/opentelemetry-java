@@ -304,4 +304,10 @@ public class HttpTraceContextTest {
     assertThat(TRACEPARENT).isEqualTo("traceparent");
     assertThat(TRACESTATE).isEqualTo("tracestate");
   }
+
+  @Test
+  public void extract_emptyCarrier() {
+    Map<String, String> emptyHeaders = new HashMap<>();
+    assertThat(httpTraceContext.extract(emptyHeaders, getter)).isEqualTo(SpanContext.getInvalid());
+  }
 }
