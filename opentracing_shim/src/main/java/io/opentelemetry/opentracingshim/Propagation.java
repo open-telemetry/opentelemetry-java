@@ -17,6 +17,7 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.trace.SpanContext;
 import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
@@ -48,7 +49,9 @@ final class Propagation extends BaseShimObject {
         tracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
     io.opentelemetry.correlationcontext.CorrelationContext distContext =
         contextManager().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
-
+    if (context == SpanContext.getInvalid()) {
+      throw new IllegalArgumentException("Extracted span context invalid");
+    }
     return new SpanContextShim(telemetryInfo, context, distContext);
   }
 
