@@ -11,11 +11,3 @@ dependencies {
 javadoc {
     exclude 'io/opentelemetry/internal/**'
 }
-
-jar {
-    inputs.property("moduleName", moduleName)
-
-    manifest {
-        attributes  'Automatic-Module-Name': moduleName
-    }
-}

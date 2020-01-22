@@ -58,11 +58,3 @@ idea {
         // If you have additional sourceSets and/or codegen plugins, add all of them
     }
 }
-
-jar {
-    inputs.property("moduleName", moduleName)
-
-    manifest {
-        attributes  'Automatic-Module-Name': moduleName
-    }
-}

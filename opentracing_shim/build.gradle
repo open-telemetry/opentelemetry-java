@@ -19,10 +19,3 @@ test {
     dependsOn cleanTest
     testLogging.showStandardStreams = true
 }
-jar {
-    inputs.property("moduleName", moduleName)
-
-    manifest {
-        attributes  'Automatic-Module-Name': moduleName
-    }
-}

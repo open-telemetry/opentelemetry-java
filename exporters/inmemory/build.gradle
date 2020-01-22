@@ -6,11 +6,3 @@ dependencies {
 
     testImplementation "com.google.protobuf:protobuf-java:${protobufVersion}"
 }
-
-jar {
-    inputs.property("moduleName", moduleName)
-
-    manifest {
-        attributes  'Automatic-Module-Name': moduleName
-    }
-}

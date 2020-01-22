@@ -16,11 +16,3 @@ dependencies {
 
     signature "org.codehaus.mojo.signature:java18:1.0@signature"
 }
-
-jar {
-    inputs.property("moduleName", moduleName)
-
-    manifest {
-        attributes  'Automatic-Module-Name': moduleName
-    }
-}

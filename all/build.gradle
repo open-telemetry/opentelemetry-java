@@ -74,11 +74,3 @@ jacocoTestReport {
         fileTree(dir: it)
     })
 }
-
-jar {
-    inputs.property("moduleName", moduleName)
-
-    manifest {
-        attributes  'Automatic-Module-Name': moduleName
-    }
-}
