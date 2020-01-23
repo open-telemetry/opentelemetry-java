@@ -27,12 +27,8 @@ import java.util.Map;
 
 @AutoValue
 abstract class SdkLabelSet implements LabelSet {
-
-  private static final LabelSet EMPTY = create();
-
-  static LabelSet empty() {
-    return EMPTY;
-  }
+  private static final LabelSet EMPTY =
+      new AutoValue_SdkLabelSet(Collections.<String, String>emptyMap());
 
   static LabelSet create(Map<String, String> labels) {
     if (labels == null || labels.isEmpty()) {
