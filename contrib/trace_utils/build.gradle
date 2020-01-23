@@ -1,4 +1,5 @@
 description = 'OpenTelemetry Contrib Trace Utils'
+ext.moduleName = "io.opentelemetry.contrib.trace"
 
 dependencies {
     api project(':opentelemetry-api')

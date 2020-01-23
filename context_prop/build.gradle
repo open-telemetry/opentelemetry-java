@@ -1,4 +1,5 @@
 description = 'OpenTelemetry Context Propagation'
+ext.moduleName = "io.opentelemetry.context.propagation"
 
 dependencies {
     api libraries.grpc_context

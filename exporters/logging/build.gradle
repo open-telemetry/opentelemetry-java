@@ -1,4 +1,5 @@
 description = 'OpenTelemetry - Logging Exporter'
+ext.moduleName = "io.opentelemetry.exporters.logging"
 
 buildscript {
     repositories {

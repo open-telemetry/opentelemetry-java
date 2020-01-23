@@ -1,4 +1,5 @@
 description = "OpenTelemetry All"
+ext.moduleName = "io.opentelemetry.all"
 
 def subprojects = [
         project(':opentelemetry-api'),
