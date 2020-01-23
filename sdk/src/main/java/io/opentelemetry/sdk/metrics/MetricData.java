@@ -43,7 +43,7 @@ public abstract class MetricData {
   public abstract Descriptor getDescriptor();
 
   /**
-   * Returns the data {@link Int64Point}s for this metric, or {@code null} if the {@link
+   * Returns the data {@link LongPoint}s for this metric, or {@code null} if the {@link
    * Descriptor.Type} of the metric does not generate this type of points.
    *
    * <p>Only one type of points are available at any moment for a {@link MetricData}.
@@ -53,7 +53,7 @@ public abstract class MetricData {
    * @since 0.3.0
    */
   @Nullable
-  public abstract Collection<Int64Point> getInt64Points();
+  public abstract Collection<LongPoint> getLongPoints();
 
   /**
    * Returns the data {@link DoublePoint}s for this metric, or {@code null} if the {@link
@@ -68,14 +68,12 @@ public abstract class MetricData {
   @Nullable
   public abstract Collection<DoublePoint> getDoublePoints();
 
-  static MetricData createWithInt64Points(
-      Descriptor descriptor, Collection<Int64Point> int64Points) {
+  static MetricData createWithLongPoints(Descriptor descriptor, Collection<LongPoint> longPoints) {
     Descriptor.Type type = Utils.checkNotNull(descriptor, "descriptor").getType();
     Utils.checkState(
-        type == Descriptor.Type.NON_MONOTONIC_INT64 || type == Descriptor.Type.MONOTONIC_INT64,
+        type == Descriptor.Type.NON_MONOTONIC_LONG || type == Descriptor.Type.MONOTONIC_LONG,
         "Incompatible points type with metric type.");
-    return new AutoValue_MetricData(
-        descriptor, Utils.checkNotNull(int64Points, "longPoints"), null);
+    return new AutoValue_MetricData(descriptor, Utils.checkNotNull(longPoints, "longPoints"), null);
   }
 
   static MetricData createWithDoublePoints(
@@ -112,13 +110,15 @@ public abstract class MetricData {
   }
 
   /**
-   * Int64Point is a single data point in a timeseries that describes the time-varying values of a
+   * LongPoint is a single data point in a timeseries that describes the time-varying values of a
    * int64 metric.
+   *
+   * <p>In the proto definition this is called Int64Point.
    */
   @Immutable
   @AutoValue
-  public abstract static class Int64Point extends Point {
-    Int64Point() {}
+  public abstract static class LongPoint extends Point {
+    LongPoint() {}
 
     /**
      * Returns the value of the data point.
@@ -127,8 +127,8 @@ public abstract class MetricData {
      */
     public abstract long getValue();
 
-    static Int64Point createInternal(long startEpochNanos, long epochNanos, long value) {
-      return new AutoValue_MetricData_Int64Point(startEpochNanos, epochNanos, value);
+    static LongPoint createInternal(long startEpochNanos, long epochNanos, long value) {
+      return new AutoValue_MetricData_LongPoint(startEpochNanos, epochNanos, value);
     }
   }
 
@@ -171,11 +171,11 @@ public abstract class MetricData {
     public enum Type {
 
       /**
-       * An instantaneous measurement of an int64 value.
+       * An instantaneous measurement of a long (int64) value.
        *
        * @since 0.1.0
        */
-      NON_MONOTONIC_INT64,
+      NON_MONOTONIC_LONG,
 
       /**
        * An instantaneous measurement of a double value.
@@ -185,11 +185,11 @@ public abstract class MetricData {
       NON_MONOTONIC_DOUBLE,
 
       /**
-       * An cumulative measurement of an int64 value.
+       * An cumulative measurement of an long (int64) value.
        *
        * @since 0.1.0
        */
-      MONOTONIC_INT64,
+      MONOTONIC_LONG,
 
       /**
        * An cumulative measurement of a double value.
