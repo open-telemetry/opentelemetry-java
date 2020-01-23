@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.metrics.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.MetricData.Int64Point;
+import io.opentelemetry.sdk.metrics.MetricData.LongPoint;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
@@ -34,12 +34,12 @@ import org.junit.runners.JUnit4;
 public class MetricDataTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
-  private static final Descriptor INT64_METRIC_DESCRIPTOR =
+  private static final Descriptor LONG_METRIC_DESCRIPTOR =
       Descriptor.createInternal(
           "metric_name",
           "metric_description",
           "ms",
-          Descriptor.Type.MONOTONIC_INT64,
+          Descriptor.Type.MONOTONIC_LONG,
           Collections.singletonList("key"),
           Collections.singletonMap("key_const", "value_const"));
   private static final Descriptor DOUBLE_METRIC_DESCRIPTOR =
@@ -54,40 +54,40 @@ public class MetricDataTest {
   private static final long EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(2000);
   private static final long LONG_VALUE = 10;
   private static final double DOUBLE_VALUE = 1.234;
-  private static final Int64Point LONG_POINT =
-      Int64Point.createInternal(START_EPOCH_NANOS, EPOCH_NANOS, LONG_VALUE);
+  private static final LongPoint LONG_POINT =
+      MetricData.LongPoint.createInternal(START_EPOCH_NANOS, EPOCH_NANOS, LONG_VALUE);
   private static final DoublePoint DOUBLE_POINT =
       DoublePoint.createInternal(START_EPOCH_NANOS, EPOCH_NANOS, DOUBLE_VALUE);
 
   @Test
-  public void metricData_Int64Points() {
+  public void metricData_LongPoints() {
     MetricData metricData =
-        MetricData.createWithInt64Points(
-            INT64_METRIC_DESCRIPTOR, Collections.singletonList(LONG_POINT));
-    assertThat(metricData.getDescriptor()).isEqualTo(INT64_METRIC_DESCRIPTOR);
-    assertThat(metricData.getInt64Points()).containsExactly(LONG_POINT);
+        MetricData.createWithLongPoints(
+            LONG_METRIC_DESCRIPTOR, Collections.singletonList(LONG_POINT));
+    assertThat(metricData.getDescriptor()).isEqualTo(LONG_METRIC_DESCRIPTOR);
+    assertThat(metricData.getLongPoints()).containsExactly(LONG_POINT);
     assertThat(metricData.getDoublePoints()).isNull();
   }
 
   @Test
-  public void metricData_Int64Points_NullDescriptor() {
+  public void metricData_LongPoints_NullDescriptor() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("descriptor");
-    MetricData.createWithInt64Points(null, Collections.singletonList(LONG_POINT));
+    MetricData.createWithLongPoints(null, Collections.singletonList(LONG_POINT));
   }
 
   @Test
-  public void metricData_Int64Points_NullPoints() {
+  public void metricData_LongPoints_NullPoints() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("longPoints");
-    MetricData.createWithInt64Points(INT64_METRIC_DESCRIPTOR, null);
+    MetricData.createWithLongPoints(LONG_METRIC_DESCRIPTOR, null);
   }
 
   @Test
-  public void metricData_Int64Points_IncompatibleTypes() {
+  public void metricData_LongPoints_IncompatibleTypes() {
     thrown.expect(IllegalStateException.class);
     thrown.expectMessage("Incompatible points type with metric type.");
-    MetricData.createWithInt64Points(
+    MetricData.createWithLongPoints(
         DOUBLE_METRIC_DESCRIPTOR, Collections.singletonList(LONG_POINT));
   }
 
@@ -97,7 +97,7 @@ public class MetricDataTest {
         MetricData.createWithDoublePoints(
             DOUBLE_METRIC_DESCRIPTOR, Collections.singletonList(DOUBLE_POINT));
     assertThat(metricData.getDescriptor()).isEqualTo(DOUBLE_METRIC_DESCRIPTOR);
-    assertThat(metricData.getInt64Points()).isNull();
+    assertThat(metricData.getLongPoints()).isNull();
     assertThat(metricData.getDoublePoints()).containsExactly(DOUBLE_POINT);
   }
 
@@ -120,6 +120,6 @@ public class MetricDataTest {
     thrown.expect(IllegalStateException.class);
     thrown.expectMessage("Incompatible points type with metric type.");
     MetricData.createWithDoublePoints(
-        INT64_METRIC_DESCRIPTOR, Collections.singletonList(DOUBLE_POINT));
+        LONG_METRIC_DESCRIPTOR, Collections.singletonList(DOUBLE_POINT));
   }
 }

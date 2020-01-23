@@ -34,7 +34,7 @@ public class MetricDataDescriptorTest {
   private static final String METRIC_NAME = "metric";
   private static final String DESCRIPTION = "Instrument description.";
   private static final String UNIT = "kb/s";
-  private static final Descriptor.Type TYPE = Descriptor.Type.MONOTONIC_INT64;
+  private static final Descriptor.Type TYPE = Descriptor.Type.MONOTONIC_LONG;
   private static final String KEY_1 = "key1";
   private static final String KEY_2 = "key2";
   private static final String VALUE_2 = "key2";
