@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics.aggregators;
+package io.opentelemetry.sdk.metrics;
 
 import javax.annotation.concurrent.ThreadSafe;
 
 /** BaseAggregator represents the base class for all the available aggregations. */
 @ThreadSafe
-public interface BaseAggregator {
+interface BaseAggregator<T extends BaseAggregator<?>> {
 
   /**
    * Merge aggregated values between the current instance and the given {@code aggregator}.
    *
    * @param aggregator value to merge with.
    */
-  void merge(BaseAggregator aggregator);
+  void merge(T aggregator);
 
   /**
    * BaseLongAggregator represents the base class for all the available aggregations that work with
    * long values.
    */
   @ThreadSafe
-  interface BaseLongAggregator extends BaseAggregator {
+  interface LongBaseAggregator<T extends LongBaseAggregator<?>> extends BaseAggregator<T> {
 
     /**
      * Updates the current aggregator with a newly recorded value.
@@ -49,7 +49,7 @@ public interface BaseAggregator {
    * double values.
    */
   @ThreadSafe
-  interface BaseDoubleAggregator extends BaseAggregator {
+  interface DoubleBaseAggregator<T extends DoubleBaseAggregator<?>> extends BaseAggregator<T> {
     /**
      * Updates the current aggregator with a newly recorded value.
      *
