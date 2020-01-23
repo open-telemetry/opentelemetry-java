@@ -79,5 +79,6 @@ public class Ec2ResourceTest {
     assertThat(resource.getLabels().get(ResourceConstants.HOST_NAME)).isEqualTo(privateIp);
     assertThat(resource.getLabels().get(ResourceConstants.HOST_TYPE)).isEqualTo(instanceType);
     assertThat(resource.getLabels().get(ResourceConstants.HOST_HOSTNAME)).isEqualTo(hostname);
+    assertThat(resource.getLabels().get(ResourceConstants.HOST_IMAGE_ID)).isEqualTo(imageId);
   }
 }
