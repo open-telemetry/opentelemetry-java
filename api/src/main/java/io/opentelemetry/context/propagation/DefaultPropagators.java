@@ -47,24 +47,55 @@ public final class DefaultPropagators implements Propagators {
    * @since 0.3.0
    */
   public static Builder builder() {
-    return new DefaultBuilder();
+    return new Builder();
   }
 
   private DefaultPropagators(HttpTextFormat textFormat) {
     this.textFormat = textFormat;
   }
 
-  private static final class DefaultBuilder implements Builder {
+  /**
+   * {@link Builder} is used to construct a new {@code Propagators} object with the specified
+   * propagators.
+   *
+   * <p>This is a example of a {@code Propagators} object being created:
+   *
+   * <pre>{@code
+   * Propagators propagators = DefaultPropagators.builder()
+   *     .addHttpTextFormat(new HttpTraceContext())
+   *     .addHttpTextFormat(new HttpCorrelationContext())
+   *     .addHttpTextFormat(new MyCustomContextPropagator())
+   *     .build();
+   * }</pre>
+   *
+   * @since 0.3.0
+   */
+  public static final class Builder {
     List<HttpTextFormat> textPropagators = new ArrayList<>();
 
-    @Override
+    /**
+     * Adds a {@link HttpTextFormat} propagator.
+     *
+     * <p>One propagator per concern (traces, correlations, etc) should be added if this format is
+     * supported.
+     *
+     * @param textFormat the propagator to be added.
+     * @return this.
+     * @throws NullPointerException if {@code textFormat} is {@code null}.
+     * @since 0.3.0
+     */
     public Builder addHttpTextFormat(HttpTextFormat textFormat) {
       Utils.checkNotNull(textFormat, "textFormat");
       textPropagators.add(textFormat);
       return this;
     }
 
-    @Override
+    /**
+     * Builds a new {@code Propagators} with the specified propagators.
+     *
+     * @return the newly created {@code Propagators} instance.
+     * @since 0.3.0
+     */
     public Propagators build() {
       if (textPropagators.isEmpty()) {
         return new DefaultPropagators(NoopHttpTextFormat.INSTANCE);

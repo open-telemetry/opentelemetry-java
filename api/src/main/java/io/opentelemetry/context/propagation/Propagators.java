@@ -91,43 +91,4 @@ public interface Propagators {
    * @since 0.3.0
    */
   HttpTextFormat getHttpTextFormat();
-
-  /**
-   * {@link Builder} is used to construct a new {@code Propagators} object with the specified
-   * propagators.
-   *
-   * <p>This is a example of a {@code Propagators} object being created:
-   *
-   * <pre>{@code
-   * Propagators propagators = DefaultPropagators.builder()
-   *     .addHttpTextFormat(new HttpTraceContext())
-   *     .addHttpTextFormat(new HttpCorrelationContext())
-   *     .addHttpTextFormat(new MyCustomContextPropagator())
-   *     .build();
-   * }</pre>
-   *
-   * @since 0.3.0
-   */
-  interface Builder {
-    /**
-     * Adds a {@link HttpTextFormat} propagator.
-     *
-     * <p>One propagator per concern (traces, correlations, etc) should be added if this format is
-     * supported.
-     *
-     * @param textFormat the propagator to be added.
-     * @return this.
-     * @throws NullPointerException if {@code textFormat} is {@code null}.
-     * @since 0.3.0
-     */
-    Builder addHttpTextFormat(HttpTextFormat textFormat);
-
-    /**
-     * Builds a new {@code Propagators} with the specified propagators.
-     *
-     * @return the newly created {@code Propagators} instance.
-     * @since 0.3.0
-     */
-    Propagators build();
-  }
 }
