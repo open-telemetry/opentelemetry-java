@@ -77,6 +77,7 @@ public class MultiSpanExporterBenchmark {
               .setStartEpochNanos(1)
               .setStatus(Status.OK)
               .setEndEpochNanos(2)
+              .setHasEnded(true)
               .build();
     }
     this.spans = Arrays.asList(spans);

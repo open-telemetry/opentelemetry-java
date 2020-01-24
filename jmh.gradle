@@ -1,3 +1,55 @@
+/*
+ * Copyright 2020, OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+/*
+ * This file should be imported in the top-level Gradle project.
+ * To add JMH microbenchmarks to any sub-project simply create 'src/jmh/java' 
+ * and if required 'src/jmh/resource'. This JMH Gradle script will check for 
+ * this sourceset, and will add tasks if it exists, and build any benchmarks.
+ *
+ * Running benchmarks can be done either through gradle using the task runJMH,
+ * or by downloading the created artifact and required dependencies. 
+ *
+ * To use Gradle to download the benchmark for a specific version you can use
+ * a basic Gradle build file like the following.
+ *
+ * apply plugin: 'java'
+ *
+ * repositories {
+ *     ...
+ * }
+ *
+ * dependencies {
+ *     compile(group: 'GROUP', name: 'NAME', version: 'VERSION')
+ *     compile(group: 'GROUP', name: 'NAME', version: 'VERSION', classifier: 'jmh')
+ * }
+ *
+ * task copyDependencies(type: Copy) {
+ *     into 'execute'
+ * }
+ *
+ * task setup {
+ *     dependsOn copyDependencies
+ * }
+ *
+ * $ gradle setup
+ * $ java -jar execute/group-name-version-jmh.jar 
+ */
+
 sourceSets {
     jmh {
 	java.srcDir 'src/jmh/java'
@@ -39,11 +91,11 @@ compileJmhJava {
 
 task jmhRun(type: JavaExec) {
     enabled benchmarksAvailable
-    description 'Run JMH benchmarks. Use property jmhFilter to set benchmark filtering regex.'
+    description 'Run JMH benchmark(s). Use the property jmhFilter to set benchmark filtering regex.'
     group 'Verification'
     classpath = sourceSets.jmh.runtimeClasspath
     main = 'org.openjdk.jmh.Main'
-    // Allows users to filter JMH benchmark using a regex
+    // Allows users to filter JMH benchmarks using a regex
     args project.findProperty("jmhFilter") ?: ''
 }
 
