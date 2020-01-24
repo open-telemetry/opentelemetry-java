@@ -18,8 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import com.google.common.util.concurrent.AtomicDouble;
 
-final class DoubleSumAggregator
-    implements Aggregator.DoubleAggregator<DoubleSumAggregator> {
+final class DoubleSumAggregator implements Aggregator.DoubleAggregator<DoubleSumAggregator> {
   // TODO: Change to use DoubleAdder when changed to java8.
   private final AtomicDouble value;
 
