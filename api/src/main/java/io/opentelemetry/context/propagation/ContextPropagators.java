@@ -33,7 +33,7 @@ import javax.annotation.concurrent.Immutable;
  * private static final Tracer tracer = OpenTelemetry.getTracer();
  * void onSendRequest() {
  *   try (Scope scope = tracer.withSpan(span)) {
- *     Propagators propagators = OpenTelemetry.getPropagators();
+ *     ContextPropagators propagators = OpenTelemetry.getPropagators();
  *     HttpTextFormat textFormat = propagators.getHttpTextFormat();
  *
  *     // Inject the span's SpanContext and other available concerns (such as correlations)
@@ -54,7 +54,7 @@ import javax.annotation.concurrent.Immutable;
  * <pre>{@code
  * private static final Tracer tracer = OpenTelemetry.getTracer();
  * void onRequestReceived() {
- *   Propagators propagators = OpenTelemetry.getPropagators();
+ *   ContextPropagators propagators = OpenTelemetry.getPropagators();
  *   HttpTextFormat textFormat = propagators.getHttpTextFormat();
  *
  *   // Extract and store the propagated span's SpanContext and other available concerns
@@ -78,7 +78,7 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.3.0
  */
 @Immutable
-public interface Propagators {
+public interface ContextPropagators {
 
   /**
    * Returns a {@link HttpTextFormat} propagator.

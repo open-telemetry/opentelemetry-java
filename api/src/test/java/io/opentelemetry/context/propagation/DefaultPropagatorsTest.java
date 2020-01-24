@@ -29,7 +29,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DefaultPropagators}. */
+/** Unit tests for {@link DefaultContextPropagators}. */
 @RunWith(JUnit4.class)
 public class DefaultPropagatorsTest {
 
@@ -38,15 +38,15 @@ public class DefaultPropagatorsTest {
   @Test
   public void addHttpTextFormatNull() {
     thrown.expect(NullPointerException.class);
-    DefaultPropagators.builder().addHttpTextFormat(null);
+    DefaultContextPropagators.builder().addHttpTextFormat(null);
   }
 
   @Test
   public void testInject() {
     CustomHttpTextFormat propagator1 = new CustomHttpTextFormat("prop1");
     CustomHttpTextFormat propagator2 = new CustomHttpTextFormat("prop2");
-    Propagators propagators =
-        DefaultPropagators.builder()
+    ContextPropagators propagators =
+        DefaultContextPropagators.builder()
             .addHttpTextFormat(propagator1)
             .addHttpTextFormat(propagator2)
             .build();
@@ -66,8 +66,8 @@ public class DefaultPropagatorsTest {
     CustomHttpTextFormat propagator1 = new CustomHttpTextFormat("prop1");
     CustomHttpTextFormat propagator2 = new CustomHttpTextFormat("prop2");
     CustomHttpTextFormat propagator3 = new CustomHttpTextFormat("prop3");
-    Propagators propagators =
-        DefaultPropagators.builder()
+    ContextPropagators propagators =
+        DefaultContextPropagators.builder()
             .addHttpTextFormat(propagator1)
             .addHttpTextFormat(propagator2)
             .build();
@@ -86,7 +86,7 @@ public class DefaultPropagatorsTest {
 
   @Test
   public void noopPropagator() {
-    Propagators propagators = DefaultPropagators.builder().build();
+    ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
     Context context = Context.current();
     Map<String, String> map = new HashMap<>();

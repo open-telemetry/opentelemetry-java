@@ -20,8 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.DefaultPropagators;
-import io.opentelemetry.context.propagation.Propagators;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
@@ -92,7 +92,7 @@ public class OpenTelemetryTest {
         .isInstanceOf(DefaultCorrelationContextManager.getInstance().getClass());
     assertThat(OpenTelemetry.getCorrelationContextManager())
         .isEqualTo(OpenTelemetry.getCorrelationContextManager());
-    assertThat(OpenTelemetry.getPropagators()).isInstanceOf(DefaultPropagators.class);
+    assertThat(OpenTelemetry.getPropagators()).isInstanceOf(DefaultContextPropagators.class);
     assertThat(OpenTelemetry.getPropagators()).isEqualTo(OpenTelemetry.getPropagators());
   }
 
@@ -215,7 +215,7 @@ public class OpenTelemetryTest {
 
   @Test
   public void testPropagatorsSet() {
-    Propagators propagators = DefaultPropagators.builder().build();
+    ContextPropagators propagators = DefaultContextPropagators.builder().build();
     OpenTelemetry.setPropagators(propagators);
     assertThat(OpenTelemetry.getPropagators()).isEqualTo(propagators);
   }

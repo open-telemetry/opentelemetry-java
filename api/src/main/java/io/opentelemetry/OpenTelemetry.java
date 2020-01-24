@@ -16,8 +16,8 @@
 
 package io.opentelemetry;
 
-import io.opentelemetry.context.propagation.DefaultPropagators;
-import io.opentelemetry.context.propagation.Propagators;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
@@ -56,8 +56,8 @@ public final class OpenTelemetry {
   private final MeterRegistry meterRegistry;
   private final CorrelationContextManager contextManager;
 
-  private volatile Propagators propagators =
-      DefaultPropagators.builder().addHttpTextFormat(new HttpTraceContext()).build();
+  private volatile ContextPropagators propagators =
+      DefaultContextPropagators.builder().addHttpTextFormat(new HttpTraceContext()).build();
 
   /**
    * Returns a singleton {@link TracerRegistry}.
@@ -97,30 +97,30 @@ public final class OpenTelemetry {
   }
 
   /**
-   * Returns a {@link Propagators} object, which can be used to access the set of registered
+   * Returns a {@link ContextPropagators} object, which can be used to access the set of registered
    * propagators for each supported format.
    *
-   * @return registered propagators container, defaulting to a {@link Propagators} object with
-   *     {@code HttpTraceContext} registered.
+   * @return registered propagators container, defaulting to a {@link ContextPropagators} object
+   *     with {@code HttpTraceContext} registered.
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
    * @since 0.3.0
    */
-  public static Propagators getPropagators() {
+  public static ContextPropagators getPropagators() {
     return getInstance().propagators;
   }
 
   /**
-   * Sets the {@link Propagators} object, which can be used to access the set of registered
+   * Sets the {@link ContextPropagators} object, which can be used to access the set of registered
    * propagators for each supported format.
    *
-   * @param propagators the {@link Propagators} object to be registered.
+   * @param propagators the {@link ContextPropagators} object to be registered.
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
    * @throws NullPointerException if {@code propagators} is {@code null}.
    * @since 0.3.0
    */
-  public static void setPropagators(Propagators propagators) {
+  public static void setPropagators(ContextPropagators propagators) {
     Utils.checkNotNull(propagators, "propagators");
     getInstance().propagators = propagators;
   }

@@ -23,14 +23,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * {@code DefaultPropagators} is the default, built-in implementation of {@link Propagators}.
+ * {@code DefaultContextPropagators} is the default, built-in implementation of {@link
+ * ContextPropagators}.
  *
  * <p>All the registered propagators are stored internally as a simple list, and are invoked
  * synchronically upon injection and extraction.
  *
  * @since 0.3.0
  */
-public final class DefaultPropagators implements Propagators {
+public final class DefaultContextPropagators implements ContextPropagators {
   private final HttpTextFormat textFormat;
 
   @Override
@@ -39,29 +40,28 @@ public final class DefaultPropagators implements Propagators {
   }
 
   /**
-   * Returns a {@link Propagators.Builder} to create a new {@link Propagators} object.
+   * Returns a {@link DefaultContextPropagators.Builder} to create a new {@link ContextPropagators}
+   * object.
    *
-   * <p>See {@link Propagators.Builder}.
-   *
-   * @return a {@link Propagators.Builder}.
+   * @return a {@link DefaultContextPropagators.Builder}.
    * @since 0.3.0
    */
   public static Builder builder() {
     return new Builder();
   }
 
-  private DefaultPropagators(HttpTextFormat textFormat) {
+  private DefaultContextPropagators(HttpTextFormat textFormat) {
     this.textFormat = textFormat;
   }
 
   /**
-   * {@link Builder} is used to construct a new {@code Propagators} object with the specified
+   * {@link Builder} is used to construct a new {@code ContextPropagators} object with the specified
    * propagators.
    *
-   * <p>This is a example of a {@code Propagators} object being created:
+   * <p>This is a example of a {@code ContextPropagators} object being created:
    *
    * <pre>{@code
-   * Propagators propagators = DefaultPropagators.builder()
+   * ContextPropagators propagators = DefaultContextPropagators.builder()
    *     .addHttpTextFormat(new HttpTraceContext())
    *     .addHttpTextFormat(new HttpCorrelationContext())
    *     .addHttpTextFormat(new MyCustomContextPropagator())
@@ -91,17 +91,17 @@ public final class DefaultPropagators implements Propagators {
     }
 
     /**
-     * Builds a new {@code Propagators} with the specified propagators.
+     * Builds a new {@code ContextPropagators} with the specified propagators.
      *
-     * @return the newly created {@code Propagators} instance.
+     * @return the newly created {@code ContextPropagators} instance.
      * @since 0.3.0
      */
-    public Propagators build() {
+    public ContextPropagators build() {
       if (textPropagators.isEmpty()) {
-        return new DefaultPropagators(NoopHttpTextFormat.INSTANCE);
+        return new DefaultContextPropagators(NoopHttpTextFormat.INSTANCE);
       }
 
-      return new DefaultPropagators(new MultiHttpTextFormat(textPropagators));
+      return new DefaultContextPropagators(new MultiHttpTextFormat(textPropagators));
     }
   }
 
