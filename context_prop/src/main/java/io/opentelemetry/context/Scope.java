@@ -26,7 +26,7 @@ import javax.annotation.concurrent.NotThreadSafe;
  * <p>Example of usage:
  *
  * <pre>
- *   try (Scope ctx = tryEnter()) {
+ *   try (Scope ctx = tracer.withSpan(span)) {
  *     ...
  *   }
  * </pre>

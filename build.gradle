@@ -187,6 +187,14 @@ subprojects {
             source = sourceSets*.allJava
             include '**/*.java'
         }
+
+        jar {
+            inputs.property("moduleName", moduleName)
+
+            manifest {
+                attributes('Automatic-Module-Name': moduleName)
+            }
+        }
     }
 
     signing {

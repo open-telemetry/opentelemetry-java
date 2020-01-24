@@ -32,7 +32,7 @@ abstract class AbstractMeasureBuilder<B extends Measure.Builder<B, V>, V>
     return getThis();
   }
 
-  final boolean getAbsolute() {
+  final boolean isAbsolute() {
     return this.absolute;
   }
 }
