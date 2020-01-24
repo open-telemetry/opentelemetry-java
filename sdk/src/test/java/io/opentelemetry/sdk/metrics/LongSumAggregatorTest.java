@@ -16,14 +16,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.sdk.metrics.SumAggregator.LongSumAggregator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link SumAggregator}. */
+/** Unit tests for {@link LongSumAggregator}. */
 @RunWith(JUnit4.class)
-public class SumAggregatorTest {
+public class LongSumAggregatorTest {
   @Test
   public void longSumAggregation() {
     LongSumAggregator longSumAggregator = new LongSumAggregator();
