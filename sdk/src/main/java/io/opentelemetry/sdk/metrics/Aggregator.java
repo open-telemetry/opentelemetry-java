@@ -20,7 +20,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** BaseAggregator represents the base class for all the available aggregations. */
 @ThreadSafe
-interface BaseAggregator<T extends BaseAggregator<?>> {
+interface Aggregator<T extends Aggregator<?>> {
 
   /**
    * Merge aggregated values between the current instance and the given {@code aggregator}.
@@ -34,7 +34,7 @@ interface BaseAggregator<T extends BaseAggregator<?>> {
    * long values.
    */
   @ThreadSafe
-  interface LongBaseAggregator<T extends LongBaseAggregator<?>> extends BaseAggregator<T> {
+  interface LongAggregator<T extends LongAggregator<?>> extends Aggregator<T> {
 
     /**
      * Updates the current aggregator with a newly recorded value.
@@ -49,7 +49,7 @@ interface BaseAggregator<T extends BaseAggregator<?>> {
    * double values.
    */
   @ThreadSafe
-  interface DoubleBaseAggregator<T extends DoubleBaseAggregator<?>> extends BaseAggregator<T> {
+  interface DoubleAggregator<T extends DoubleAggregator<?>> extends Aggregator<T> {
     /**
      * Updates the current aggregator with a newly recorded value.
      *
