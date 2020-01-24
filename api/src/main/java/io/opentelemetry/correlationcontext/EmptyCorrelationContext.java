@@ -26,8 +26,6 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public class EmptyCorrelationContext implements CorrelationContext {
-  private static final Collection<Entry> EMPTY_COLLECTION = Collections.emptyList();
-
   /**
    * Returns the single instance of the {@link EmptyCorrelationContext} class.
    *
@@ -42,7 +40,7 @@ public class EmptyCorrelationContext implements CorrelationContext {
 
   @Override
   public Collection<Entry> getEntries() {
-    return EMPTY_COLLECTION;
+    return Collections.emptyList();
   }
 
   @Nullable
