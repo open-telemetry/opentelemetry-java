@@ -308,6 +308,7 @@ public class HttpTraceContextTest {
   @Test
   public void extract_emptyCarrier() {
     Map<String, String> emptyHeaders = new HashMap<>();
-    assertThat(httpTraceContext.extract(emptyHeaders, getter)).isEqualTo(HttpTraceContext.INVALID_SPAN_CONTEXT);
+    assertThat(httpTraceContext.extract(emptyHeaders, getter))
+        .isEqualTo(HttpTraceContext.INVALID_SPAN_CONTEXT);
   }
 }
