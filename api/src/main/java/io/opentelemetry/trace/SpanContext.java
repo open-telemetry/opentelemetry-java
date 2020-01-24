@@ -44,7 +44,7 @@ public abstract class SpanContext {
    *
    * @return the invalid {@code SpanContext}.
    */
-  public static SpanContext getInvalid() {
+  static SpanContext getInvalid() {
     return INVALID;
   }
 
