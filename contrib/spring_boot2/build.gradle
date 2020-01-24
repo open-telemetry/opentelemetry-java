@@ -1,4 +1,5 @@
-description = 'Spring Boot OpenTelemetry Actuator'
+description = 'Spring Boot OpenTelemetry Autoconfigure and Actuator'
+ext.moduleName = "io.opentelemetry.contrib.spring.bootconfig"
 
 dependencies {
     implementation platform('org.springframework.boot:spring-boot-dependencies:2.2.2.RELEASE')
