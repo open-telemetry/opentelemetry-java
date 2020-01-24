@@ -1,4 +1,5 @@
 description = 'OpenTelemetry Contrib Http Support'
+ext.moduleName = "io.opentelemetry.contrib.http.base"
 
 dependencies {
     api project(':opentelemetry-api')
