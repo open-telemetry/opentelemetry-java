@@ -123,7 +123,7 @@ public class DefaultPropagatorsTest {
     public <C> void inject(Context context, C carrier, Setter<C> setter) {
       Object payload = key.get(context);
       if (payload != null) {
-        setter.put(carrier, name, payload.toString());
+        setter.set(carrier, name, payload.toString());
       }
     }
 
@@ -142,7 +142,7 @@ public class DefaultPropagatorsTest {
     private static final MapSetter INSTANCE = new MapSetter();
 
     @Override
-    public void put(Map<String, String> map, String key, String value) {
+    public void set(Map<String, String> map, String key, String value) {
       map.put(key, value);
     }
 
