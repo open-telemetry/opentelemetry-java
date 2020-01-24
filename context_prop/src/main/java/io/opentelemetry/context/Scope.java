@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.metrics;
+package io.opentelemetry.context;
+
+import java.io.Closeable;
+import javax.annotation.concurrent.NotThreadSafe;
 
 /**
- * Base interface for all the Measure instruments.
+ * A {@link java.io.Closeable} that represents a change to the current context over a scope of code.
+ * {@link Scope#close} cannot throw a checked exception.
  *
- * @param <H> the Bound Instrument type.
+ * <p>Example of usage:
+ *
+ * <pre>
+ *   try (Scope ctx = tracer.withSpan(span)) {
+ *     ...
+ *   }
+ * </pre>
+ *
  * @since 0.1.0
  */
-public interface Measure<H> extends Instrument<H> {
-
-  /** Builder class for {@link Measure}. */
-  interface Builder<B extends Measure.Builder<B, V>, V> extends Instrument.Builder<B, V> {
-    /**
-     * Sets the absolute property for this {@code Builder}. If {@code true} only positive values are
-     * expected.
-     *
-     * <p>Default value is {@code true}
-     *
-     * @param absolute {@code true} only positive values are expected.
-     * @return this.
-     */
-    B setAbsolute(boolean absolute);
-  }
+@NotThreadSafe
+public interface Scope extends Closeable {
+  @Override
+  void close();
 }

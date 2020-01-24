@@ -134,7 +134,6 @@ public final class DefaultTracer implements Tracer {
     @Override
     public NoopSpanBuilder setAttribute(String key, String value) {
       Utils.checkNotNull(key, "key");
-      Utils.checkNotNull(value, "value");
       return this;
     }
 

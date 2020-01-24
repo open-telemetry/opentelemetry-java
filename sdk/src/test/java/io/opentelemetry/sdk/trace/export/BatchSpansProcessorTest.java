@@ -230,7 +230,7 @@ public class BatchSpansProcessorTest {
     assertThat(exported).containsExactly(span2.toSpanData());
   }
 
-  @Test
+  @Test(timeout = 5000)
   public void exporterTimesOut() throws Exception {
     final CountDownLatch interruptMarker = new CountDownLatch(1);
     WaitingSpanExporter waitingSpanExporter =
@@ -262,7 +262,7 @@ public class BatchSpansProcessorTest {
 
     // since the interrupt happens outside the execution of the test method, we'll block to make
     // sure that the thread was actually interrupted due to the timeout.
-    assertThat(interruptMarker.await(exporterTimeoutMillis * 2, TimeUnit.MILLISECONDS)).isTrue();
+    interruptMarker.await();
   }
 
   @Test

@@ -1,4 +1,5 @@
 description = 'OpenTelemetry Protocol Exporter'
+ext.moduleName = "io.opentelemetry.exporters.otprotocol"
 
 dependencies {
     api project(':opentelemetry-proto'),

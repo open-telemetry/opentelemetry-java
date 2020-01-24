@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,17 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.metrics.Counter;
 import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.metrics.Measure;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link AbstractCounterBuilder}. */
+/** Unit tests for {@link AbstractMeasureBuilder}. */
 @RunWith(JUnit4.class)
-public class AbstractCounterBuilderTest {
+public class AbstractMeasureBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -41,21 +41,21 @@ public class AbstractCounterBuilderTest {
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
-    assertThat(testMetricBuilder.isMonotonic()).isTrue();
+    assertThat(testMetricBuilder.isAbsolute()).isTrue();
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   @Test
   public void setAndGetValues() {
     TestInstrumentBuilder testMetricBuilder =
-        TestInstrumentBuilder.newBuilder(NAME).setMonotonic(false);
+        TestInstrumentBuilder.newBuilder(NAME).setAbsolute(false);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
-    assertThat(testMetricBuilder.isMonotonic()).isFalse();
+    assertThat(testMetricBuilder.isAbsolute()).isFalse();
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   private static final class TestInstrumentBuilder
-      extends AbstractCounterBuilder<TestInstrumentBuilder, TestInstrument> {
+      extends AbstractMeasureBuilder<TestInstrumentBuilder, TestInstrument> {
     static TestInstrumentBuilder newBuilder(String name) {
       return new TestInstrumentBuilder(name);
     }
@@ -75,17 +75,17 @@ public class AbstractCounterBuilderTest {
     }
   }
 
-  private static final class TestInstrument implements Counter<TestBound> {
-    private static final TestBound HANDLE = new TestBound();
+  private static final class TestInstrument implements Measure<TestBoundMeasure> {
+    private static final TestBoundMeasure HANDLE = new TestBoundMeasure();
 
     @Override
-    public TestBound bind(LabelSet labelSet) {
+    public TestBoundMeasure bind(LabelSet labelSet) {
       return HANDLE;
     }
 
     @Override
-    public void unbind(TestBound boundInstrument) {}
+    public void unbind(TestBoundMeasure boundInstrument) {}
   }
 
-  private static final class TestBound {}
+  private static final class TestBoundMeasure {}
 }
