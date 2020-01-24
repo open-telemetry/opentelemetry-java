@@ -1,4 +1,5 @@
 description = 'OpenTelemetry OpenTracing Bridge'
+ext.moduleName = "io.opentelemetry.opentracingshim"
 
 def protobufVersion = '3.7.1'
 

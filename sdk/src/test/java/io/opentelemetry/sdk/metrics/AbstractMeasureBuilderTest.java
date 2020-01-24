@@ -41,7 +41,7 @@ public class AbstractMeasureBuilderTest {
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
-    assertThat(testMetricBuilder.getAbsolute()).isTrue();
+    assertThat(testMetricBuilder.isAbsolute()).isTrue();
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
@@ -50,7 +50,7 @@ public class AbstractMeasureBuilderTest {
     TestInstrumentBuilder testMetricBuilder =
         TestInstrumentBuilder.newBuilder(NAME).setAbsolute(false);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
-    assertThat(testMetricBuilder.getAbsolute()).isFalse();
+    assertThat(testMetricBuilder.isAbsolute()).isFalse();
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 

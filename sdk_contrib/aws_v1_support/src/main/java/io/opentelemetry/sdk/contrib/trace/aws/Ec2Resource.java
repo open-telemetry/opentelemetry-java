@@ -55,6 +55,7 @@ public class Ec2Resource {
       labels.put(ResourceConstants.HOST_ID, info.getInstanceId());
       labels.put(ResourceConstants.HOST_NAME, info.getPrivateIp());
       labels.put(ResourceConstants.HOST_TYPE, info.getInstanceType());
+      labels.put(ResourceConstants.HOST_IMAGE_ID, info.getImageId());
     }
     if (!isNullOrEmpty(hostname)) {
       labels.put(ResourceConstants.HOST_HOSTNAME, hostname);

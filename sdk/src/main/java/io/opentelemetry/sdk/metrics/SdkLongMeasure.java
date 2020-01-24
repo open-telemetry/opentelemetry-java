@@ -107,7 +107,7 @@ class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMea
     @Override
     public LongMeasure build() {
       return new SdkLongMeasure(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), getAbsolute());
+          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isAbsolute());
     }
   }
 }

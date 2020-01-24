@@ -75,6 +75,7 @@ public class MeterSdkTest {
     assertThat(testSdk.createLabelSet()).isSameInstanceAs(testSdk.createLabelSet());
     assertThat(testSdk.createLabelSet())
         .isSameInstanceAs(testSdk.createLabelSet(Collections.<String, String>emptyMap()));
+    assertThat(testSdk.createLabelSet()).isNotNull();
 
     assertThat(testSdk.createLabelSet("key", "value"))
         .isEqualTo(testSdk.createLabelSet("key", "value"));
