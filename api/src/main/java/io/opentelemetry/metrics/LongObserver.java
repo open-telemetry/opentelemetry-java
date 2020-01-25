@@ -60,6 +60,6 @@ public interface LongObserver extends Observer<ResultLongObserver> {
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface ResultLongObserver {
-    void put(long value, LabelSet labelSet);
+    void observe(long value, LabelSet labelSet);
   }
 }

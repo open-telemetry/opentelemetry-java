@@ -95,12 +95,12 @@ public final class MemoryPools {
           public void update(ResultLongObserver resultLongObserver) {
             MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
             MemoryUsage nonHeapUsage = memoryBean.getNonHeapMemoryUsage();
-            resultLongObserver.put(heapUsage.getUsed(), usedHeap);
-            resultLongObserver.put(nonHeapUsage.getUsed(), usedNonHeap);
-            resultLongObserver.put(heapUsage.getUsed(), committedHeap);
-            resultLongObserver.put(nonHeapUsage.getUsed(), committedNonHeap);
-            resultLongObserver.put(heapUsage.getUsed(), maxHeap);
-            resultLongObserver.put(nonHeapUsage.getUsed(), maxNonHeap);
+            resultLongObserver.observe(heapUsage.getUsed(), usedHeap);
+            resultLongObserver.observe(nonHeapUsage.getUsed(), usedNonHeap);
+            resultLongObserver.observe(heapUsage.getUsed(), committedHeap);
+            resultLongObserver.observe(nonHeapUsage.getUsed(), committedNonHeap);
+            resultLongObserver.observe(heapUsage.getUsed(), maxHeap);
+            resultLongObserver.observe(nonHeapUsage.getUsed(), maxNonHeap);
           }
         });
   }
@@ -131,11 +131,11 @@ public final class MemoryPools {
           public void update(ResultLongObserver resultLongObserver) {
             for (int i = 0; i < poolBeans.size(); i++) {
               MemoryUsage poolUsage = poolBeans.get(i).getUsage();
-              resultLongObserver.put(poolUsage.getUsed(), usedLabelSets.get(i));
-              resultLongObserver.put(poolUsage.getCommitted(), committedLabelSets.get(i));
+              resultLongObserver.observe(poolUsage.getUsed(), usedLabelSets.get(i));
+              resultLongObserver.observe(poolUsage.getCommitted(), committedLabelSets.get(i));
               // TODO: Decide if max is needed or not. May be derived with some approximation from
               //  max(used).
-              resultLongObserver.put(poolUsage.getMax(), maxLabelSets.get(i));
+              resultLongObserver.observe(poolUsage.getMax(), maxLabelSets.get(i));
             }
           }
         });

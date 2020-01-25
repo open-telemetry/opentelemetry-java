@@ -75,7 +75,7 @@ public final class GarbageCollector {
           @Override
           public void update(ResultLongObserver resultLongObserver) {
             for (int i = 0; i < garbageCollectors.size(); i++) {
-              resultLongObserver.put(
+              resultLongObserver.observe(
                   garbageCollectors.get(i).getCollectionTime(), labelSets.get(i));
             }
           }

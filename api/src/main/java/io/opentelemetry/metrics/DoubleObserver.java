@@ -60,6 +60,6 @@ public interface DoubleObserver extends Observer<ResultDoubleObserver> {
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface ResultDoubleObserver {
-    void put(double value, LabelSet labelSet);
+    void observe(double value, LabelSet labelSet);
   }
 }
