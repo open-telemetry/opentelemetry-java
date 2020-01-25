@@ -22,7 +22,7 @@ package io.opentelemetry.metrics;
  * @param <H> the specific Bound Gauge type.
  * @since 0.1.0
  */
-public interface Gauge<H> extends Instrument<H> {
+public interface Gauge<H> extends InstrumentWithBound<H> {
   /** Builder class for {@link Gauge}. */
   interface Builder<B extends Gauge.Builder<B, V>, V> extends Instrument.Builder<B, V> {
     /**

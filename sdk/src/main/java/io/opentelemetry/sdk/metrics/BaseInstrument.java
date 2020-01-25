@@ -16,12 +16,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.Instrument;
+import io.opentelemetry.metrics.InstrumentWithBound;
 import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-abstract class BaseInstrument<B> implements Instrument<B> {
+// TODO: add a BaseInstrument and a BaseInstrumentWithBounds.
+abstract class BaseInstrument<B> implements InstrumentWithBound<B> {
 
   private final String name;
   private final String description;

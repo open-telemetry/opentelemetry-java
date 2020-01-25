@@ -434,25 +434,8 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleObserver() {}
 
     @Override
-    public NoopBoundDoubleObserver bind(LabelSet labelSet) {
-      Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBoundDoubleObserver.INSTANCE;
-    }
-
-    @Override
-    public void unbind(BoundDoubleObserver boundInstrument) {
-      Utils.checkNotNull(boundInstrument, "boundDoubleObserver");
-    }
-
-    @Override
     public void setCallback(Callback<ResultDoubleObserver> metricUpdater) {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
-    }
-
-    /** No-op implementations of BoundDoubleObserver class. */
-    @Immutable
-    private enum NoopBoundDoubleObserver implements BoundDoubleObserver {
-      INSTANCE
     }
 
     private static final class NoopBuilder
@@ -476,25 +459,8 @@ public final class DefaultMeter implements Meter {
     private NoopLongObserver() {}
 
     @Override
-    public NoopBoundLongObserver bind(LabelSet labelSet) {
-      Utils.checkNotNull(labelSet, "labelSet");
-      return NoopBoundLongObserver.INSTANCE;
-    }
-
-    @Override
-    public void unbind(BoundLongObserver boundInstrument) {
-      Utils.checkNotNull(boundInstrument, "boundLongObserver");
-    }
-
-    @Override
     public void setCallback(Callback<ResultLongObserver> metricUpdater) {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
-    }
-
-    /** No-op implementation of BoundLongObserver interface. */
-    @Immutable
-    private enum NoopBoundLongObserver implements BoundLongObserver {
-      INSTANCE
     }
 
     private static final class NoopBuilder
