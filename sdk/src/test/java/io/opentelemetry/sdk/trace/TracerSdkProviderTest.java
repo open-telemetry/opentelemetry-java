@@ -24,7 +24,7 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class TracerSdkProviderTest {
-  private final TracerSdkRegistryProvider tracerFactoryProvider = new TracerSdkRegistryProvider();
+  private final SdkTraceProvider tracerFactoryProvider = new SdkTraceProvider();
 
   @Test
   public void testDefault() {
