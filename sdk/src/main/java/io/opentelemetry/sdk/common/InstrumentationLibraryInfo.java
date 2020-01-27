@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.common;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import javax.annotation.Nullable;
@@ -41,14 +40,13 @@ public abstract class InstrumentationLibraryInfo {
    * @return the new instance
    */
   public static InstrumentationLibraryInfo create(String name, @Nullable String version) {
-    Utils.checkNotNull(name, "name");
     return new AutoValue_InstrumentationLibraryInfo(name, version);
   }
 
-  public abstract String name();
+  public abstract String getName();
 
   @Nullable
-  public abstract String version();
+  public abstract String getVersion();
 
   // Package protected ctor to avoid others to extend this class.
   InstrumentationLibraryInfo() {}

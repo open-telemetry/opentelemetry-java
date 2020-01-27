@@ -18,12 +18,11 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerRegistry;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,11 +34,9 @@ import java.util.logging.Logger;
  * can create one as needed.
  */
 public class TracerSdkRegistry implements TracerRegistry {
-  private final Object lock = new Object();
   private static final Logger logger = Logger.getLogger(TracerRegistry.class.getName());
-  private final Map<InstrumentationLibraryInfo, TracerSdk> tracerRegistry =
-      new ConcurrentHashMap<>();
   private final TracerSharedState sharedState;
+  private final TracerSdkComponentRegistry tracerSdkComponentRegistry;
 
   /**
    * Returns a new {@link TracerSdkRegistry} with default {@link Clock}, {@link IdsGenerator} and
@@ -57,33 +54,30 @@ public class TracerSdkRegistry implements TracerRegistry {
 
   TracerSdkRegistry(Clock clock, IdsGenerator idsGenerator, Resource resource) {
     this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
+    this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
 
   @Override
   public TracerSdk get(String instrumentationName) {
-    return get(instrumentationName, null);
+    return tracerSdkComponentRegistry.get(instrumentationName);
   }
 
   @Override
   public TracerSdk get(String instrumentationName, String instrumentationVersion) {
-    InstrumentationLibraryInfo instrumentationLibraryInfo =
-        InstrumentationLibraryInfo.create(instrumentationName, instrumentationVersion);
-    TracerSdk tracer = tracerRegistry.get(instrumentationLibraryInfo);
-    if (tracer == null) {
-      synchronized (lock) {
-        // Re-check if the value was added since the previous check, this can happen if multiple
-        // threads try to access the same named tracer during the same time. This way we ensure that
-        // we create only one TracerSdk per name.
-        tracer = tracerRegistry.get(instrumentationLibraryInfo);
-        if (tracer != null) {
-          // A different thread already added the named Tracer, just reuse.
-          return tracer;
-        }
-        tracer = new TracerSdk(sharedState, instrumentationLibraryInfo);
-        tracerRegistry.put(instrumentationLibraryInfo, tracer);
-      }
+    return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
+  }
+
+  private static final class TracerSdkComponentRegistry extends ComponentRegistry<TracerSdk> {
+    private final TracerSharedState sharedState;
+
+    private TracerSdkComponentRegistry(TracerSharedState sharedState) {
+      this.sharedState = sharedState;
     }
-    return tracer;
+
+    @Override
+    public TracerSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      return new TracerSdk(sharedState, instrumentationLibraryInfo);
+    }
   }
 
   /**
