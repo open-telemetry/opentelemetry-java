@@ -22,7 +22,7 @@ package io.opentelemetry.metrics;
  * @param <H> the Bound Counter type.
  * @since 0.1.0
  */
-public interface Counter<H> extends InstrumentWithBound<H> {
+public interface Counter<H> extends InstrumentWithBinding<H> {
 
   /** Builder class for {@link Counter}. */
   interface Builder<B extends Counter.Builder<B, V>, V> extends Instrument.Builder<B, V> {

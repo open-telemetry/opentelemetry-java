@@ -22,7 +22,7 @@ package io.opentelemetry.metrics;
  * @param <B> the specific type of Bound Instrument this instrument can provide.
  * @since 0.1.0
  */
-public interface InstrumentWithBound<B> extends Instrument {
+public interface InstrumentWithBinding<B> extends Instrument {
   /**
    * Returns a {@code Bound Instrument} associated with the specified {@code labelSet}. Multiples
    * requests with the same {@code labelSet} may return the same {@code Bound Instrument} instance.
