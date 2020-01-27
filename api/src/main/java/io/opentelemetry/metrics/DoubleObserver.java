@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.DoubleObserver.BoundDoubleObserver;
 import io.opentelemetry.metrics.DoubleObserver.ResultDoubleObserver;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -52,29 +51,15 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleObserver extends Observer<ResultDoubleObserver, BoundDoubleObserver> {
-  @Override
-  BoundDoubleObserver bind(LabelSet labelSet);
-
-  @Override
-  void unbind(BoundDoubleObserver boundInstrument);
-
+public interface DoubleObserver extends Observer<ResultDoubleObserver> {
   @Override
   void setCallback(Callback<ResultDoubleObserver> metricUpdater);
 
   /** Builder class for {@link DoubleObserver}. */
   interface Builder extends Observer.Builder<DoubleObserver.Builder, DoubleObserver> {}
 
-  /**
-   * A {@code BoundDoubleObserver} for a {@code Observer} for double values.
-   *
-   * @since 0.1.0
-   */
-  @ThreadSafe
-  interface BoundDoubleObserver {}
-
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface ResultDoubleObserver {
-    void put(BoundDoubleObserver boundDoubleObserver, double value);
+    void observe(double value, LabelSet labelSet);
   }
 }
