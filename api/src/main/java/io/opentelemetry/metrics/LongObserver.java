@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.LongObserver.BoundLongObserver;
 import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -52,29 +51,15 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongObserver extends Observer<ResultLongObserver, BoundLongObserver> {
-  @Override
-  BoundLongObserver bind(LabelSet labelSet);
-
-  @Override
-  void unbind(BoundLongObserver boundInstrument);
-
+public interface LongObserver extends Observer<ResultLongObserver> {
   @Override
   void setCallback(Callback<ResultLongObserver> metricUpdater);
 
   /** Builder class for {@link LongObserver}. */
   interface Builder extends Observer.Builder<LongObserver.Builder, LongObserver> {}
 
-  /**
-   * A {@code Bound} for a {@code Observer}.
-   *
-   * @since 0.1.0
-   */
-  @ThreadSafe
-  interface BoundLongObserver {}
-
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface ResultLongObserver {
-    void put(BoundLongObserver bound, long value);
+    void observe(long value, LabelSet labelSet);
   }
 }

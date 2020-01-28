@@ -19,7 +19,6 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.OpenTelemetry;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -30,11 +29,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class DoubleObserverTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
-
-  private static final String NAME = "name";
-  private static final String DESCRIPTION = "description";
-  private static final String UNIT = "1";
-  private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
   private final Meter meter = OpenTelemetry.getMeterRegistry().get("observer_double_test");
 
@@ -90,33 +84,5 @@ public class DoubleObserverTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
     meter.doubleObserverBuilder("metric").setConstantLabels(null).build();
-  }
-
-  @Test
-  public void noopBind_WithNullLabelSet() {
-    DoubleObserver doubleObserver =
-        meter
-            .doubleObserverBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelSet");
-    doubleObserver.bind(null);
-  }
-
-  @Test
-  public void noopUnbind_WithNullBoundInstrument() {
-    DoubleObserver doubleObserver =
-        meter
-            .doubleObserverBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("boundDoubleObserver");
-    doubleObserver.unbind(null);
   }
 }
