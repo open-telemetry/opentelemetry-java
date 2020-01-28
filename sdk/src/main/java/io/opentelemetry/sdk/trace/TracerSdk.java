@@ -29,7 +29,7 @@ import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
-public class TracerSdk implements Tracer {
+final class TracerSdk implements Tracer {
   private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final TracerSharedState sharedState;
@@ -81,7 +81,7 @@ public class TracerSdk implements Tracer {
    *
    * @return an instance of {@link InstrumentationLibraryInfo}
    */
-  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
     return instrumentationLibraryInfo;
   }
 }

@@ -32,7 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class SpanShimTest {
-  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
+  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
       new TelemetryInfo(tracer, new CorrelationContextManagerSdk());

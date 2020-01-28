@@ -53,7 +53,7 @@ public class SpanBuilderSdkTest {
           TraceFlags.builder().setIsSampled(true).build(),
           Tracestate.getDefault());
 
-  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
+  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.builder().build();
   private final TracerSdk tracerSdk = tracerSdkFactory.get("SpanBuilderSdkTest");
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
@@ -225,7 +225,7 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpan span =
         (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     try {
-      assertThat(span.getKind()).isEqualTo(Kind.INTERNAL);
+      assertThat(span.toSpanData().getKind()).isEqualTo(Kind.INTERNAL);
     } finally {
       span.end();
     }
@@ -237,7 +237,7 @@ public class SpanBuilderSdkTest {
         (RecordEventsReadableSpan)
             tracerSdk.spanBuilder(SPAN_NAME).setSpanKind(Kind.CONSUMER).startSpan();
     try {
-      assertThat(span.getKind()).isEqualTo(Kind.CONSUMER);
+      assertThat(span.toSpanData().getKind()).isEqualTo(Kind.CONSUMER);
     } finally {
       span.end();
     }

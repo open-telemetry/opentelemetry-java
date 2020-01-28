@@ -17,13 +17,18 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
@@ -34,12 +39,45 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class TracerSdkRegistryTest {
   @Mock private SpanProcessor spanProcessor;
-  private final TracerSdkRegistry tracerFactory = TracerSdkRegistry.create();
+  @Rule public final ExpectedException thrown = ExpectedException.none();
+  private final TracerSdkRegistry tracerFactory = TracerSdkRegistry.builder().build();
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     tracerFactory.addSpanProcessor(spanProcessor);
+  }
+
+  @Test
+  public void builder_HappyPath() {
+    assertThat(
+            TracerSdkRegistry.builder()
+                .setClock(mock(Clock.class))
+                .setResource(mock(Resource.class))
+                .setIdsGenerator(mock(IdsGenerator.class))
+                .build())
+        .isNotNull();
+  }
+
+  @Test
+  public void builder_NullClock() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("clock");
+    TracerSdkRegistry.builder().setClock(null);
+  }
+
+  @Test
+  public void builder_NullResource() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("resource");
+    TracerSdkRegistry.builder().setResource(null);
+  }
+
+  @Test
+  public void builder_NullIdsGenerator() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("idsGenerator");
+    TracerSdkRegistry.builder().setIdsGenerator(null);
   }
 
   @Test

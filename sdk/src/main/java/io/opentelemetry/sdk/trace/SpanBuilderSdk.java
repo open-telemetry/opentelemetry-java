@@ -43,7 +43,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
-class SpanBuilderSdk implements Span.Builder {
+final class SpanBuilderSdk implements Span.Builder {
   private static final TraceFlags TRACE_OPTIONS_SAMPLED =
       TraceFlags.builder().setIsSampled(true).build();
   private static final TraceFlags TRACE_OPTIONS_NOT_SAMPLED =

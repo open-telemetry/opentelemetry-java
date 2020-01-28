@@ -53,7 +53,7 @@ public final class InMemoryTracing {
    * @since 0.1.0
    */
   public InMemoryTracing() {
-    this(TracerSdkRegistry.create());
+    this(TracerSdkRegistry.builder().build());
   }
 
   /**
