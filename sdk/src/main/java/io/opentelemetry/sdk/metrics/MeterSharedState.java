@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,23 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
+import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.resources.Resource;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+final class MeterSharedState {
+  private final Clock clock;
+  private final Resource resource;
 
-@RunWith(JUnit4.class)
-public class MeterSdkProviderTest {
+  MeterSharedState(Clock clock, Resource resource) {
+    this.clock = clock;
+    this.resource = resource;
+  }
 
-  @Test
-  public void testDefault() {
-    assertThat(new SdkMetricsProvider().create()).isInstanceOf(MeterSdkRegistry.class);
+  Clock getClock() {
+    return clock;
+  }
+
+  Resource getResource() {
+    return resource;
   }
 }

@@ -29,11 +29,11 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link MeterSdk}. */
 @RunWith(JUnit4.class)
 public class MeterSdkTest {
+  private final MeterSdk testSdk =
+      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.MeterSdkTest");
 
   @Test
   public void testLongCounter() {
-    MeterSdk testSdk = new MeterSdk();
-
     LongCounter longCounter =
         testSdk
             .longCounterBuilder("testCounter")
@@ -51,8 +51,6 @@ public class MeterSdkTest {
 
   @Test
   public void testDoubleCounter() {
-    MeterSdk testSdk = new MeterSdk();
-
     DoubleCounter doubleCounter =
         testSdk
             .doubleCounterBuilder("testCounter")
@@ -70,8 +68,6 @@ public class MeterSdkTest {
 
   @Test
   public void testLabelSets() {
-    MeterSdk testSdk = new MeterSdk();
-
     assertThat(testSdk.createLabelSet()).isSameInstanceAs(testSdk.createLabelSet());
     assertThat(testSdk.createLabelSet())
         .isSameInstanceAs(testSdk.createLabelSet(Collections.<String, String>emptyMap()));

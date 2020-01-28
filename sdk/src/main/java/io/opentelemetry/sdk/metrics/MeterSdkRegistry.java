@@ -16,11 +16,15 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.MeterRegistry;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.resources.EnvVarResource;
+import io.opentelemetry.sdk.resources.Resource;
+import javax.annotation.Nonnull;
 
 /**
  * {@code Meter} provider implementation for {@link MeterRegistry}.
@@ -29,24 +33,90 @@ import java.util.Map;
  * io.opentelemetry.OpenTelemetry}.
  */
 public class MeterSdkRegistry implements MeterRegistry {
-  private final Map<String, Meter> metersByKey =
-      Collections.synchronizedMap(new HashMap<String, Meter>());
+  private final MeterSharedState sharedState;
+  private final MeterSdkComponentRegistry registry;
 
-  @Override
-  public Meter get(String instrumentationName) {
-    return get(instrumentationName, null);
+  private MeterSdkRegistry(Clock clock, Resource resource) {
+    this.sharedState = new MeterSharedState(clock, resource);
+    this.registry = new MeterSdkComponentRegistry(sharedState);
   }
 
   @Override
-  public Meter get(String instrumentationName, String instrumentationVersion) {
-    String key = instrumentationName + "/" + instrumentationVersion;
-    Meter meter = metersByKey.get(key);
+  public MeterSdk get(String instrumentationName) {
+    return registry.get(instrumentationName);
+  }
 
-    if (meter == null) {
-      meter = new MeterSdk();
-      metersByKey.put(key, meter);
+  @Override
+  public MeterSdk get(String instrumentationName, String instrumentationVersion) {
+    return registry.get(instrumentationName, instrumentationVersion);
+  }
+
+  /**
+   * Returns a new {@link Builder} for {@link MeterSdkRegistry}.
+   *
+   * @return a new {@link Builder} for {@link MeterSdkRegistry}.
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /**
+   * Builder class for the {@link MeterSdkRegistry}. Has fully functional default implementations of
+   * all three required interfaces.
+   *
+   * @since 0.4.0
+   */
+  public static final class Builder {
+
+    private Clock clock = MillisClock.getInstance();
+    private Resource resource = EnvVarResource.getResource();
+
+    private Builder() {}
+
+    /**
+     * Assign a {@link Clock}.
+     *
+     * @param clock The clock to use for all temporal needs.
+     * @return this
+     */
+    public Builder setClock(@Nonnull Clock clock) {
+      Utils.checkNotNull(clock, "clock");
+      this.clock = clock;
+      return this;
     }
 
-    return meter;
+    /**
+     * Assign a {@link Resource} to be attached to all Spans created by Tracers.
+     *
+     * @param resource A Resource implementation.
+     * @return this
+     */
+    public Builder setResource(@Nonnull Resource resource) {
+      Utils.checkNotNull(resource, "resource");
+      this.resource = resource;
+      return this;
+    }
+
+    /**
+     * Create a new TracerSdkFactory instance.
+     *
+     * @return An initialized TracerSdkFactory.
+     */
+    public MeterSdkRegistry build() {
+      return new MeterSdkRegistry(clock, resource);
+    }
+  }
+
+  private static final class MeterSdkComponentRegistry extends ComponentRegistry<MeterSdk> {
+    private final MeterSharedState sharedState;
+
+    private MeterSdkComponentRegistry(MeterSharedState sharedState) {
+      this.sharedState = sharedState;
+    }
+
+    @Override
+    public MeterSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      return new MeterSdk(sharedState, instrumentationLibraryInfo);
+    }
   }
 }

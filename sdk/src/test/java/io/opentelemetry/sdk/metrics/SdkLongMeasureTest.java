@@ -34,10 +34,11 @@ import org.junit.runners.JUnit4;
 public class SdkLongMeasureTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  private final MeterSdk testSdk =
+      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.SdkLongMeasureTest");
 
   @Test
   public void testLongMeasure() {
-    MeterSdk testSdk = new MeterSdk();
     LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
     LongMeasure longMeasure =
@@ -62,8 +63,6 @@ public class SdkLongMeasureTest {
 
   @Test
   public void testLongMeasure_absolute() {
-    MeterSdk testSdk = new MeterSdk();
-
     LongMeasure longMeasure =
         SdkLongMeasure.Builder.builder("testMeasure").setAbsolute(true).build();
 
@@ -73,8 +72,6 @@ public class SdkLongMeasureTest {
 
   @Test
   public void testBoundLongMeasure_absolute() {
-    MeterSdk testSdk = new MeterSdk();
-
     LongMeasure longMeasure =
         SdkLongMeasure.Builder.builder("testMeasure").setAbsolute(true).build();
 

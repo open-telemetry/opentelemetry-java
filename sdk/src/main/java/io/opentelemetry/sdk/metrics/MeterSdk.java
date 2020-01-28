@@ -27,10 +27,26 @@ import io.opentelemetry.metrics.LongGauge;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
-public class MeterSdk implements Meter {
+final class MeterSdk implements Meter {
+  private final MeterSharedState sharedState;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+
+  MeterSdk(MeterSharedState sharedState, InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    this.sharedState = sharedState;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+  }
+
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return instrumentationLibraryInfo;
+  }
+
+  MeterSharedState getSharedState() {
+    return sharedState;
+  }
 
   @Override
   public LongGauge.Builder longGaugeBuilder(String name) {
