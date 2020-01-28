@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.metrics.Instrument;
-import io.opentelemetry.metrics.LabelSet;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -149,17 +148,5 @@ public class AbstractInstrumentBuilderTest {
     }
   }
 
-  private static final class TestInstrument implements Instrument<TestBound> {
-    private static final TestBound HANDLE = new TestBound();
-
-    @Override
-    public TestBound bind(LabelSet labelSet) {
-      return HANDLE;
-    }
-
-    @Override
-    public void unbind(TestBound boundInstrument) {}
-  }
-
-  private static final class TestBound {}
+  private static final class TestInstrument implements Instrument {}
 }

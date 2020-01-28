@@ -18,9 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Observer;
-import javax.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -76,22 +74,10 @@ public class AbstractObserverBuilderTest {
     }
   }
 
-  private static final class TestInstrument implements Observer<TestResult, TestBound> {
-
-    @Nullable
-    @Override
-    public TestBound bind(LabelSet labelSet) {
-      return null;
-    }
-
-    @Override
-    public void unbind(TestBound boundInstrument) {}
-
+  private static final class TestInstrument implements Observer<TestResult> {
     @Override
     public void setCallback(Callback<TestResult> metricUpdater) {}
   }
-
-  private static final class TestBound {}
 
   private static final class TestResult {}
 }
