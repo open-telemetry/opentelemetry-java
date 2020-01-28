@@ -33,7 +33,7 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link InMemorySpanExporter}. */
 @RunWith(JUnit4.class)
 public class InMemorySpanExporterTest {
-  private final TracerSdkRegistry tracerSdkRegistry = TracerSdkRegistry.create();
+  private final TracerSdkRegistry tracerSdkRegistry = TracerSdkRegistry.builder().build();
   private final Tracer tracer = tracerSdkRegistry.get("InMemorySpanExporterTest");
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
 

@@ -16,9 +16,12 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
+import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
@@ -39,20 +42,15 @@ public class TracerSdkRegistry implements TracerRegistry {
   private final TracerSdkComponentRegistry tracerSdkComponentRegistry;
 
   /**
-   * Returns a new {@link TracerSdkRegistry} with default {@link Clock}, {@link IdsGenerator} and
-   * {@link Resource}.
+   * Returns a new {@link Builder} for {@link TracerSdkRegistry}.
    *
-   * @return a new {@link TracerSdkRegistry} with default configs.
+   * @return a new {@link Builder} for {@link TracerSdkRegistry}.
    */
-  public static TracerSdkRegistry create() {
-    return builder().build();
+  public static Builder builder() {
+    return new Builder();
   }
 
-  public static TracerSdkRegistryBuilder builder() {
-    return new TracerSdkRegistryBuilder();
-  }
-
-  TracerSdkRegistry(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+  private TracerSdkRegistry(Clock clock, IdsGenerator idsGenerator, Resource resource) {
     this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
@@ -65,19 +63,6 @@ public class TracerSdkRegistry implements TracerRegistry {
   @Override
   public TracerSdk get(String instrumentationName, String instrumentationVersion) {
     return tracerSdkComponentRegistry.get(instrumentationName, instrumentationVersion);
-  }
-
-  private static final class TracerSdkComponentRegistry extends ComponentRegistry<TracerSdk> {
-    private final TracerSharedState sharedState;
-
-    private TracerSdkComponentRegistry(TracerSharedState sharedState) {
-      this.sharedState = sharedState;
-    }
-
-    @Override
-    public TracerSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      return new TracerSdk(sharedState, instrumentationLibraryInfo);
-    }
   }
 
   /**
@@ -126,5 +111,79 @@ public class TracerSdkRegistry implements TracerRegistry {
       return;
     }
     sharedState.stop();
+  }
+
+  /**
+   * Builder class for the TracerSdkFactory. Has fully functional default implementations of all
+   * three required interfaces.
+   *
+   * @since 0.4.0
+   */
+  public static class Builder {
+
+    private Clock clock = MillisClock.getInstance();
+    private IdsGenerator idsGenerator = new RandomIdsGenerator();
+    private Resource resource = EnvVarResource.getResource();
+
+    /**
+     * Assign a {@link Clock}.
+     *
+     * @param clock The clock to use for all temporal needs.
+     * @return this
+     */
+    public Builder setClock(Clock clock) {
+      Utils.checkNotNull(clock, "clock");
+      this.clock = clock;
+      return this;
+    }
+
+    /**
+     * Assign an {@link IdsGenerator}.
+     *
+     * @param idsGenerator A generator for trace and span ids. Note: this should be thread-safe and
+     *     as contention free as possible.
+     * @return this
+     */
+    public Builder setIdsGenerator(IdsGenerator idsGenerator) {
+      Utils.checkNotNull(idsGenerator, "idsGenerator");
+      this.idsGenerator = idsGenerator;
+      return this;
+    }
+
+    /**
+     * Assign a {@link Resource} to be attached to all Spans created by Tracers.
+     *
+     * @param resource A Resource implementation.
+     * @return this
+     */
+    public Builder setResource(Resource resource) {
+      Utils.checkNotNull(resource, "resource");
+      this.resource = resource;
+      return this;
+    }
+
+    /**
+     * Create a new TracerSdkFactory instance.
+     *
+     * @return An initialized TracerSdkFactory.
+     */
+    public TracerSdkRegistry build() {
+      return new TracerSdkRegistry(clock, idsGenerator, resource);
+    }
+
+    private Builder() {}
+  }
+
+  private static final class TracerSdkComponentRegistry extends ComponentRegistry<TracerSdk> {
+    private final TracerSharedState sharedState;
+
+    private TracerSdkComponentRegistry(TracerSharedState sharedState) {
+      this.sharedState = sharedState;
+    }
+
+    @Override
+    public TracerSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      return new TracerSdk(sharedState, instrumentationLibraryInfo);
+    }
   }
 }

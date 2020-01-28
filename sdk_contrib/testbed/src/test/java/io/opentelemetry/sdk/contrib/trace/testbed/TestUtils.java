@@ -42,7 +42,7 @@ public final class TestUtils {
    * exporting to the specified {@code InMemorySpanExporter}.
    */
   public static Tracer createTracer(String instrumentationName, InMemorySpanExporter exporter) {
-    TracerSdkRegistry sdk = TracerSdkRegistry.create();
+    TracerSdkRegistry sdk = TracerSdkRegistry.builder().build();
     sdk.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
     return sdk.get(instrumentationName);
   }

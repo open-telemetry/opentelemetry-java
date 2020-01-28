@@ -18,16 +18,17 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.OpenTelemetry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+/** Unit tests for {@link SdkTraceProvider}. */
 @RunWith(JUnit4.class)
-public class TracerSdkProviderTest {
-  private final SdkTraceProvider tracerFactoryProvider = new SdkTraceProvider();
+public class SdkTraceProviderTest {
 
   @Test
   public void testDefault() {
-    assertThat(tracerFactoryProvider.create()).isInstanceOf(TracerSdkRegistry.class);
+    assertThat(OpenTelemetry.getTracerRegistry()).isInstanceOf(TracerSdkRegistry.class);
   }
 }
