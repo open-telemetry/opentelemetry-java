@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.trace;
 
-import io.opentelemetry.trace.TracerRegistry;
-import io.opentelemetry.trace.spi.TracerRegistryProvider;
+import io.opentelemetry.trace.spi.TraceProvider;
 
-/** SDK implementation of the TracerProviderFactory for SPI. */
-public class TracerSdkRegistryProvider implements TracerRegistryProvider {
+public class DefaultTraceProvider implements TraceProvider {
+  private static final TraceProvider instance = new DefaultTraceProvider();
+
+  public static TraceProvider getInstance() {
+    return instance;
+  }
+
   @Override
   public TracerRegistry create() {
-    return TracerSdkRegistry.builder().build();
+    return DefaultTracerRegistry.getInstance();
   }
 }

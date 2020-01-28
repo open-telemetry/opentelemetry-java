@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace;
+package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.trace.spi.TracerRegistryProvider;
+import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.metrics.spi.MetricsProvider;
 
-public class DefaultTracerRegistryProvider implements TracerRegistryProvider {
-  private static final TracerRegistryProvider instance = new DefaultTracerRegistryProvider();
-
-  public static TracerRegistryProvider getInstance() {
-    return instance;
-  }
+/**
+ * {@code MeterRegistry} provider implementation for {@link MetricsProvider}.
+ *
+ * <p>This class is not intended to be used in application code and it is used only by {@link
+ * io.opentelemetry.OpenTelemetry}.
+ */
+public class SdkMetricsProvider implements MetricsProvider {
 
   @Override
-  public TracerRegistry create() {
-    return DefaultTracerRegistry.getInstance();
+  public MeterRegistry create() {
+    return new MeterSdkRegistry();
   }
 }

@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.metrics.spi;
+package io.opentelemetry.trace.spi;
 
-import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.trace.TracerRegistry;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * MeterRegistryProvider is a service provider for {@link MeterRegistry}. Fully qualified class name
- * of the implementation should be registered in {@code
- * META-INF/services/io.opentelemetry.metrics.spi.MeterRegistryProvider}. <br>
+ * TracerRegistryProvider is a service provider for a {@link TracerRegistry}. Fully qualified class
+ * name of the implementation should be registered in {@code
+ * META-INF/services/io.opentelemetry.trace.spi.TracerRegistryProvider}. <br>
  * <br>
  * A specific implementation can be selected by a system property {@code
- * io.opentelemetry.metrics.spi.MeterRegistryProvider} with value of fully qualified class name.
+ * io.opentelemetry.trace.spi.TracerRegistryProvider} with value of fully qualified class name.
  *
  * @see io.opentelemetry.OpenTelemetry
  */
 @ThreadSafe
-public interface MeterRegistryProvider {
+public interface TraceProvider {
 
   /**
-   * Creates a new meter registry instance.
+   * Creates a new TracerRegistry.
    *
-   * @return a meter factory instance.
+   * @return a new TracerRegistry.
    * @since 0.1.0
    */
-  MeterRegistry create();
+  TracerRegistry create();
 }
