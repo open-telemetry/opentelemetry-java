@@ -17,8 +17,8 @@
 package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 
 /**
@@ -27,8 +27,8 @@ import javax.annotation.Nullable;
  * @param <V> the type of the registered value.
  */
 public abstract class ComponentRegistry<V> {
-  private final Object lock = new Object();
-  private final Map<InstrumentationLibraryInfo, V> registry = new ConcurrentHashMap<>();
+
+  private final ConcurrentMap<InstrumentationLibraryInfo, V> registry = new ConcurrentHashMap<>();
 
   /**
    * Returns the registered value associated with this name and {@code null} version if any,
@@ -53,22 +53,14 @@ public abstract class ComponentRegistry<V> {
   public V get(String instrumentationName, @Nullable String instrumentationVersion) {
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         InstrumentationLibraryInfo.create(instrumentationName, instrumentationVersion);
-    V tracer = registry.get(instrumentationLibraryInfo);
-    if (tracer == null) {
-      synchronized (lock) {
-        // Re-check if the value was added since the previous check, this can happen if multiple
-        // threads try to access the same named tracer during the same time. This way we ensure that
-        // we create only one TracerSdk per name.
-        tracer = registry.get(instrumentationLibraryInfo);
-        if (tracer != null) {
-          // A different thread already added the named Tracer, just reuse.
-          return tracer;
-        }
-        tracer = newComponent(instrumentationLibraryInfo);
-        registry.put(instrumentationLibraryInfo, tracer);
-      }
+
+    V component = registry.get(instrumentationLibraryInfo);
+    if (component != null) {
+      return component;
     }
-    return tracer;
+
+    registry.putIfAbsent(instrumentationLibraryInfo, newComponent(instrumentationLibraryInfo));
+    return registry.get(instrumentationLibraryInfo);
   }
 
   public abstract V newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo);
