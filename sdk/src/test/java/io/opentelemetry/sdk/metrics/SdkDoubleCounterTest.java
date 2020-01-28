@@ -34,10 +34,11 @@ import org.junit.runners.JUnit4;
 public class SdkDoubleCounterTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  private final MeterSdk testSdk =
+      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.SdkDoubleCounterTest");
 
   @Test
   public void testDoubleCounter() {
-    MeterSdk testSdk = new MeterSdk();
     LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
     DoubleCounter doubleCounter =
@@ -62,8 +63,6 @@ public class SdkDoubleCounterTest {
 
   @Test
   public void testDoubleCounter_monotonicity() {
-    MeterSdk testSdk = new MeterSdk();
-
     DoubleCounter doubleCounter =
         SdkDoubleCounter.Builder.builder("testCounter").setMonotonic(true).build();
 
@@ -73,8 +72,6 @@ public class SdkDoubleCounterTest {
 
   @Test
   public void testBoundDoubleCounter_monotonicity() {
-    MeterSdk testSdk = new MeterSdk();
-
     DoubleCounter doubleCounter =
         SdkDoubleCounter.Builder.builder("testCounter").setMonotonic(true).build();
 

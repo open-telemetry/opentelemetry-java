@@ -34,10 +34,11 @@ import org.junit.runners.JUnit4;
 public class SdkLongCounterTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  private final MeterSdk testSdk =
+      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.SdkLongCounterTest");
 
   @Test
   public void testLongCounter() {
-    MeterSdk testSdk = new MeterSdk();
     LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
     LongCounter longCounter =
@@ -62,8 +63,6 @@ public class SdkLongCounterTest {
 
   @Test
   public void testLongCounter_monotonicity() {
-    MeterSdk testSdk = new MeterSdk();
-
     LongCounter longCounter =
         SdkLongCounter.Builder.builder("testCounter").setMonotonic(true).build();
 
@@ -73,8 +72,6 @@ public class SdkLongCounterTest {
 
   @Test
   public void testBoundLongCounter_monotonicity() {
-    MeterSdk testSdk = new MeterSdk();
-
     LongCounter longCounter =
         SdkLongCounter.Builder.builder("testCounter").setMonotonic(true).build();
 

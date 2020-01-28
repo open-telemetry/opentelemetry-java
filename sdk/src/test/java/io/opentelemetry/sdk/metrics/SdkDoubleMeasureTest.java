@@ -34,10 +34,11 @@ import org.junit.runners.JUnit4;
 public class SdkDoubleMeasureTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  private final MeterSdk testSdk =
+      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.SdkDoubleMeasureTest");
 
   @Test
   public void testDoubleMeasure() {
-    MeterSdk testSdk = new MeterSdk();
     LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
     DoubleMeasure doubleMeasure =
@@ -62,8 +63,6 @@ public class SdkDoubleMeasureTest {
 
   @Test
   public void testDoubleMeasure_absolute() {
-    MeterSdk testSdk = new MeterSdk();
-
     DoubleMeasure doubleMeasure =
         SdkDoubleMeasure.Builder.builder("testMeasure").setAbsolute(true).build();
 
@@ -73,8 +72,6 @@ public class SdkDoubleMeasureTest {
 
   @Test
   public void testBoundDoubleMeasure_absolute() {
-    MeterSdk testSdk = new MeterSdk();
-
     DoubleMeasure doubleMeasure =
         SdkDoubleMeasure.Builder.builder("testMeasure").setAbsolute(true).build();
 
