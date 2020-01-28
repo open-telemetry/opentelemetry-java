@@ -92,7 +92,7 @@ public class MeterSdkRegistry implements MeterRegistry {
      * @return this
      */
     public Builder setResource(@Nonnull Resource resource) {
-      Utils.checkNotNull(resource, "The Resource must be non-null");
+      Utils.checkNotNull(resource, "resource");
       this.resource = resource;
       return this;
     }

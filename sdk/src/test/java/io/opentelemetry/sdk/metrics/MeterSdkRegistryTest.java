@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 
 import io.opentelemetry.sdk.common.Clock;
@@ -38,23 +37,25 @@ public class MeterSdkRegistryTest {
 
   @Test
   public void builder_HappyPath() {
-    MeterSdkRegistry registry =
-        MeterSdkRegistry.builder()
-            .setClock(mock(Clock.class))
-            .setResource(mock(Resource.class))
-            .build();
-    assertNotNull(registry);
+    assertThat(
+            MeterSdkRegistry.builder()
+                .setClock(mock(Clock.class))
+                .setResource(mock(Resource.class))
+                .build())
+        .isNotNull();
   }
 
   @Test
   public void builder_NullClock() {
     thrown.expect(NullPointerException.class);
+    thrown.expectMessage("clock");
     MeterSdkRegistry.builder().setClock(null);
   }
 
   @Test
   public void builder_NullResource() {
     thrown.expect(NullPointerException.class);
+    thrown.expectMessage("resource");
     MeterSdkRegistry.builder().setResource(null);
   }
 
