@@ -318,7 +318,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
-    if (value.getType() == Type.STRING && StringUtils.isNullOrBlank(value.getStringValue())) {
+    if (value.getType() == Type.STRING && StringUtils.isNullOrEmpty(value.getStringValue())) {
       return;
     }
     synchronized (lock) {
