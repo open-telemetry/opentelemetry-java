@@ -67,6 +67,14 @@ public final class TestUtils {
                 return value.equals(attrValue.getBooleanValue());
               case DOUBLE:
                 return value.equals(attrValue.getDoubleValue());
+              case STRING_ARRAY:
+                return value.equals(attrValue.getStringArrayValue());
+              case LONG_ARRAY:
+                return value.equals(attrValue.getLongArrayValue());
+              case BOOLEAN_ARRAY:
+                return value.equals(attrValue.getBooleanArrayValue());
+              case DOUBLE_ARRAY:
+                return value.equals(attrValue.getDoubleArrayValue());
             }
 
             return false;

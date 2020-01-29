@@ -155,7 +155,30 @@ final class Adapter {
   static Collection<Model.KeyValue> toKeyValues(Map<String, AttributeValue> attributes) {
     ArrayList<Model.KeyValue> tags = new ArrayList<>(attributes.size());
     for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      tags.add(toKeyValue(entry.getKey(), entry.getValue()));
+      switch (entry.getValue().getType()) {
+        case STRING_ARRAY:
+          for (String value : entry.getValue().getStringArrayValue()) {
+            tags.add(toKeyValue(entry.getKey(), AttributeValue.stringAttributeValue(value)));
+          }
+          break;
+        case BOOLEAN_ARRAY:
+          for (boolean value : entry.getValue().getBooleanArrayValue()) {
+            tags.add(toKeyValue(entry.getKey(), AttributeValue.booleanAttributeValue(value)));
+          }
+          break;
+        case LONG_ARRAY:
+          for (long value : entry.getValue().getLongArrayValue()) {
+            tags.add(toKeyValue(entry.getKey(), AttributeValue.doubleAttributeValue(value)));
+          }
+          break;
+        case DOUBLE_ARRAY:
+          for (double value : entry.getValue().getDoubleArrayValue()) {
+            tags.add(toKeyValue(entry.getKey(), AttributeValue.doubleAttributeValue(value)));
+          }
+          break;
+        default:
+          tags.add(toKeyValue(entry.getKey(), entry.getValue()));
+      }
     }
     return tags;
   }
@@ -189,8 +212,9 @@ final class Adapter {
         builder.setVFloat64(value.getDoubleValue());
         builder.setVType(Model.ValueType.FLOAT64);
         break;
+      default:
+        break;
     }
-
     return builder.build();
   }
 
