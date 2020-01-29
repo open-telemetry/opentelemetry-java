@@ -169,7 +169,7 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span.Builder setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
     Utils.checkNotNull(value, "value");
-    if (value.getType() == Type.STRING && StringUtils.isNullOrBlank(value.getStringValue())) {
+    if (value.getType() == Type.STRING && StringUtils.isNullOrEmpty(value.getStringValue())) {
       return this;
     }
     attributes.putAttribute(key, value);
