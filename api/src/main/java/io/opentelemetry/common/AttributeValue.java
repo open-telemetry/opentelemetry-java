@@ -17,6 +17,9 @@
 package io.opentelemetry.common;
 
 import com.google.auto.value.AutoValue;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -39,7 +42,11 @@ public abstract class AttributeValue {
     STRING,
     BOOLEAN,
     LONG,
-    DOUBLE
+    DOUBLE,
+    STRING_ARRAY,
+    BOOLEAN_ARRAY,
+    LONG_ARRAY,
+    DOUBLE_ARRAY
   }
 
   /**
@@ -84,6 +91,50 @@ public abstract class AttributeValue {
    */
   public static AttributeValue doubleAttributeValue(double doubleValue) {
     return AttributeValueDouble.create(doubleValue);
+  }
+
+  /**
+   * Returns an {@code AttributeValue} with a String array value.
+   *
+   * @param stringValues The new values.
+   * @return an {@code AttributeValue} with a String array value.
+   * @since 0.1.0
+   */
+  public static AttributeValue arrayAttributeValue(String... stringValues) {
+    return AttributeValueStringArray.create(stringValues);
+  }
+
+  /**
+   * Returns an {@code AttributeValue} with a boolean array value.
+   *
+   * @param booleanValues The new values.
+   * @return an {@code AttributeValue} with a boolean array value.
+   * @since 0.1.0
+   */
+  public static AttributeValue arrayAttributeValue(boolean... booleanValues) {
+    return AttributeValueBooleanArray.create(booleanValues);
+  }
+
+  /**
+   * Returns an {@code AttributeValue} with a long array value.
+   *
+   * @param longValues The new values.
+   * @return an {@code AttributeValue} with a long array value.
+   * @since 0.1.0
+   */
+  public static AttributeValue arrayAttributeValue(long... longValues) {
+    return AttributeValueLongArray.create(longValues);
+  }
+
+  /**
+   * Returns an {@code AttributeValue} with a double array value.
+   *
+   * @param doubleValues The new values.
+   * @return an {@code AttributeValue} with a double array value.
+   * @since 0.1.0
+   */
+  public static AttributeValue arrayAttributeValue(double... doubleValues) {
+    return AttributeValueDoubleArray.create(doubleValues);
   }
 
   AttributeValue() {}
@@ -132,6 +183,54 @@ public abstract class AttributeValue {
    * @since 0.1.0
    */
   public double getDoubleValue() {
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
+  }
+
+  /**
+   * Returns the String array value of this {@code AttributeValue}. An UnsupportedOperationException
+   * will be thrown if getType() is not {@link Type#STRING_ARRAY}.
+   *
+   * @return the array values of this {@code AttributeValue}.
+   * @since 0.1.0
+   */
+  public List<String> getStringArrayValue() {
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
+  }
+
+  /**
+   * Returns the boolean array value of this {@code AttributeValue}. An
+   * UnsupportedOperationException will be thrown if getType() is not {@link Type#BOOLEAN_ARRAY}.
+   *
+   * @return the array values of this {@code AttributeValue}.
+   * @since 0.1.0
+   */
+  public List<Boolean> getBooleanArrayValue() {
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
+  }
+
+  /**
+   * Returns the long array value of this {@code AttributeValue}. An UnsupportedOperationException
+   * will be thrown if getType() is not {@link Type#LONG_ARRAY}.
+   *
+   * @return the array values of this {@code AttributeValue}.
+   * @since 0.1.0
+   */
+  public List<Long> getLongArrayValue() {
+    throw new UnsupportedOperationException(
+        String.format("This type can only return %s data", getType().name()));
+  }
+
+  /**
+   * Returns the double array value of this {@code AttributeValue}. An UnsupportedOperationException
+   * will be thrown if getType() is not {@link Type#DOUBLE_ARRAY}.
+   *
+   * @return the array values of this {@code AttributeValue}.
+   * @since 0.1.0
+   */
+  public List<Double> getDoubleArrayValue() {
     throw new UnsupportedOperationException(
         String.format("This type can only return %s data", getType().name()));
   }
@@ -219,5 +318,93 @@ public abstract class AttributeValue {
 
     @Override
     public abstract double getDoubleValue();
+  }
+
+  @Immutable
+  @AutoValue
+  abstract static class AttributeValueStringArray extends AttributeValue {
+
+    AttributeValueStringArray() {}
+
+    static AttributeValue create(String... stringValues) {
+      return new AutoValue_AttributeValue_AttributeValueStringArray(Arrays.asList(stringValues));
+    }
+
+    @Override
+    public final Type getType() {
+      return Type.STRING_ARRAY;
+    }
+
+    @Override
+    public abstract List<String> getStringArrayValue();
+  }
+
+  @Immutable
+  @AutoValue
+  abstract static class AttributeValueBooleanArray extends AttributeValue {
+
+    AttributeValueBooleanArray() {}
+
+    static AttributeValue create(boolean... booleanValues) {
+      List<Boolean> values = new ArrayList<>(booleanValues.length);
+      for (boolean value : booleanValues) {
+        values.add(value);
+      }
+      return new AutoValue_AttributeValue_AttributeValueBooleanArray(values);
+    }
+
+    @Override
+    public final Type getType() {
+      return Type.BOOLEAN_ARRAY;
+    }
+
+    @Override
+    public abstract List<Boolean> getBooleanArrayValue();
+  }
+
+  @Immutable
+  @AutoValue
+  abstract static class AttributeValueLongArray extends AttributeValue {
+
+    AttributeValueLongArray() {}
+
+    static AttributeValue create(long... longValues) {
+      List<Long> values = new ArrayList<>(longValues.length);
+      for (long value : longValues) {
+        values.add(value);
+      }
+      return new AutoValue_AttributeValue_AttributeValueLongArray(values);
+    }
+
+    @Override
+    public final Type getType() {
+      return Type.LONG_ARRAY;
+    }
+
+    @Override
+    public abstract List<Long> getLongArrayValue();
+  }
+
+  @Immutable
+  @AutoValue
+  abstract static class AttributeValueDoubleArray extends AttributeValue {
+
+    AttributeValueDoubleArray() {}
+
+    static AttributeValue create(double... doubleValues) {
+      List<Double> values = new ArrayList<>(doubleValues.length);
+      for (double value : doubleValues) {
+        values.add(value);
+      }
+      return new AutoValue_AttributeValue_AttributeValueDoubleArray(values);
+    }
+
+    @Override
+    public final Type getType() {
+      return Type.DOUBLE_ARRAY;
+    }
+
+    @Override
+    public abstract List<Double> getDoubleArrayValue();
   }
 }
