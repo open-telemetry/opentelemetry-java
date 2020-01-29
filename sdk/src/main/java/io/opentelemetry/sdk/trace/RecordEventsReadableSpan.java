@@ -330,6 +330,26 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
+  public void setAttribute(String key, String... values) {
+    setAttribute(key, AttributeValue.arrayAttributeValue(values));
+  }
+
+  @Override
+  public void setAttribute(String key, long... values) {
+    setAttribute(key, AttributeValue.arrayAttributeValue(values));
+  }
+
+  @Override
+  public void setAttribute(String key, double... values) {
+    setAttribute(key, AttributeValue.arrayAttributeValue(values));
+  }
+
+  @Override
+  public void setAttribute(String key, boolean... values) {
+    setAttribute(key, AttributeValue.arrayAttributeValue(values));
+  }
+
+  @Override
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
