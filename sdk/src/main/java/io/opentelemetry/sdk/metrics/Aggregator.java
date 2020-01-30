@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-/** BaseAggregator represents the base class for all the available aggregations. */
+/** Aggregator represents the base class for all the available aggregations. */
 @ThreadSafe
 interface Aggregator<T extends Aggregator<?>> {
 
@@ -30,8 +30,8 @@ interface Aggregator<T extends Aggregator<?>> {
   void merge(T aggregator);
 
   /**
-   * BaseLongAggregator represents the base class for all the available aggregations that work with
-   * long values.
+   * LongAggregator represents the base class for all the available aggregations that work with long
+   * values.
    */
   @ThreadSafe
   interface LongAggregator<T extends LongAggregator<?>> extends Aggregator<T> {
