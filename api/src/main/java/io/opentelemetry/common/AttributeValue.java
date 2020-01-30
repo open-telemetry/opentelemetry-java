@@ -98,7 +98,7 @@ public abstract class AttributeValue {
    *
    * @param stringValues The new values.
    * @return an {@code AttributeValue} with a String array value.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   public static AttributeValue arrayAttributeValue(String... stringValues) {
     return AttributeValueStringArray.create(stringValues);
@@ -109,7 +109,7 @@ public abstract class AttributeValue {
    *
    * @param booleanValues The new values.
    * @return an {@code AttributeValue} with a boolean array value.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   public static AttributeValue arrayAttributeValue(boolean... booleanValues) {
     return AttributeValueBooleanArray.create(booleanValues);
@@ -120,7 +120,7 @@ public abstract class AttributeValue {
    *
    * @param longValues The new values.
    * @return an {@code AttributeValue} with a long array value.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   public static AttributeValue arrayAttributeValue(long... longValues) {
     return AttributeValueLongArray.create(longValues);
@@ -131,7 +131,7 @@ public abstract class AttributeValue {
    *
    * @param doubleValues The new values.
    * @return an {@code AttributeValue} with a double array value.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   public static AttributeValue arrayAttributeValue(double... doubleValues) {
     return AttributeValueDoubleArray.create(doubleValues);
@@ -192,7 +192,7 @@ public abstract class AttributeValue {
    * will be thrown if getType() is not {@link Type#STRING_ARRAY}.
    *
    * @return the array values of this {@code AttributeValue}.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   public List<String> getStringArrayValue() {
     throw new UnsupportedOperationException(
@@ -204,7 +204,7 @@ public abstract class AttributeValue {
    * UnsupportedOperationException will be thrown if getType() is not {@link Type#BOOLEAN_ARRAY}.
    *
    * @return the array values of this {@code AttributeValue}.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   public List<Boolean> getBooleanArrayValue() {
     throw new UnsupportedOperationException(
@@ -216,7 +216,7 @@ public abstract class AttributeValue {
    * will be thrown if getType() is not {@link Type#LONG_ARRAY}.
    *
    * @return the array values of this {@code AttributeValue}.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   public List<Long> getLongArrayValue() {
     throw new UnsupportedOperationException(
@@ -228,7 +228,7 @@ public abstract class AttributeValue {
    * will be thrown if getType() is not {@link Type#DOUBLE_ARRAY}.
    *
    * @return the array values of this {@code AttributeValue}.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   public List<Double> getDoubleArrayValue() {
     throw new UnsupportedOperationException(
