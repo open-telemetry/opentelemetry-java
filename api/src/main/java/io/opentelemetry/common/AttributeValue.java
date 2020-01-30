@@ -19,7 +19,6 @@ package io.opentelemetry.common;
 import com.google.auto.value.AutoValue;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -347,10 +346,6 @@ public abstract class AttributeValue {
     AttributeValueBooleanArray() {}
 
     static AttributeValue create(boolean... booleanValues) {
-      if (booleanValues == null) {
-        return new AutoValue_AttributeValue_AttributeValueBooleanArray(
-            Collections.<Boolean>emptyList());
-      }
       List<Boolean> values = new ArrayList<>(booleanValues.length);
       for (boolean value : booleanValues) {
         values.add(value);
@@ -374,9 +369,6 @@ public abstract class AttributeValue {
     AttributeValueLongArray() {}
 
     static AttributeValue create(long... longValues) {
-      if (longValues == null) {
-        return new AutoValue_AttributeValue_AttributeValueLongArray(Collections.<Long>emptyList());
-      }
       List<Long> values = new ArrayList<>(longValues.length);
       for (long value : longValues) {
         values.add(value);
@@ -400,10 +392,6 @@ public abstract class AttributeValue {
     AttributeValueDoubleArray() {}
 
     static AttributeValue create(double... doubleValues) {
-      if (doubleValues == null) {
-        return new AutoValue_AttributeValue_AttributeValueDoubleArray(
-            Collections.<Double>emptyList());
-      }
       List<Double> values = new ArrayList<>(doubleValues.length);
       for (double value : doubleValues) {
         values.add(value);

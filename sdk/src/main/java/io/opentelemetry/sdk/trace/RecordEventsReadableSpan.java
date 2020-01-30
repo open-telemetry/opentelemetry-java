@@ -331,21 +331,33 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void setAttribute(String key, String... values) {
+    if (values == null) {
+      return;
+    }
     setAttribute(key, AttributeValue.arrayAttributeValue(values));
   }
 
   @Override
   public void setAttribute(String key, long... values) {
+    if (values == null) {
+      return;
+    }
     setAttribute(key, AttributeValue.arrayAttributeValue(values));
   }
 
   @Override
   public void setAttribute(String key, double... values) {
+    if (values == null) {
+      return;
+    }
     setAttribute(key, AttributeValue.arrayAttributeValue(values));
   }
 
   @Override
   public void setAttribute(String key, boolean... values) {
+    if (values == null) {
+      return;
+    }
     setAttribute(key, AttributeValue.arrayAttributeValue(values));
   }
 
