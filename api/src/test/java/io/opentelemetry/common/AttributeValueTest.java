@@ -65,6 +65,15 @@ public class AttributeValueTest {
   }
 
   @Test
+  public void doNotCrashOnNull(){
+    AttributeValue.stringAttributeValue(null);
+    AttributeValue.arrayAttributeValue((String[])null);
+    AttributeValue.arrayAttributeValue((boolean[])null);
+    AttributeValue.arrayAttributeValue((long[])null);
+    AttributeValue.arrayAttributeValue((double[])null);
+  }
+
+  @Test
   public void attributeValue_ToString() {
     AttributeValue attribute = AttributeValue.stringAttributeValue("MyStringAttributeValue");
     assertThat(attribute.toString()).contains("MyStringAttributeValue");
