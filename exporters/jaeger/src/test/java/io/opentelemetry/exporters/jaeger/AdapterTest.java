@@ -167,12 +167,20 @@ public class AdapterTest {
     AttributeValue valueD = AttributeValue.doubleAttributeValue(1.);
     AttributeValue valueI = AttributeValue.longAttributeValue(2);
     AttributeValue valueS = AttributeValue.stringAttributeValue("foobar");
+    AttributeValue valueAB = AttributeValue.arrayAttributeValue(true, false);
+    AttributeValue valueAD = AttributeValue.arrayAttributeValue(1.2345, 6.789);
+    AttributeValue valueAI = AttributeValue.arrayAttributeValue(12345L, 67890L);
+    AttributeValue valueAS = AttributeValue.arrayAttributeValue("foobar", "barfoo");
 
     // test
     Model.KeyValue kvB = Adapter.toKeyValue("valueB", valueB);
     Model.KeyValue kvD = Adapter.toKeyValue("valueD", valueD);
     Model.KeyValue kvI = Adapter.toKeyValue("valueI", valueI);
     Model.KeyValue kvS = Adapter.toKeyValue("valueS", valueS);
+    Model.KeyValue kvAB = Adapter.toKeyValue("valueAB", valueAB);
+    Model.KeyValue kvAD = Adapter.toKeyValue("valueAD", valueAD);
+    Model.KeyValue kvAI = Adapter.toKeyValue("valueAI", valueAI);
+    Model.KeyValue kvAS = Adapter.toKeyValue("valueAS", valueAS);
 
     // verify
     assertTrue(kvB.getVBool());
@@ -184,6 +192,18 @@ public class AdapterTest {
     assertEquals("foobar", kvS.getVStr());
     assertEquals("foobar", kvS.getVStrBytes().toStringUtf8());
     assertEquals(Model.ValueType.STRING, kvS.getVType());
+    assertEquals("[true,false]", kvAB.getVStr());
+    assertEquals("[true,false]", kvAB.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvAB.getVType());
+    assertEquals("[1.2345,6.789]", kvAD.getVStr());
+    assertEquals("[1.2345,6.789]", kvAD.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvAD.getVType());
+    assertEquals("[12345,67890]", kvAI.getVStr());
+    assertEquals("[12345,67890]", kvAI.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvAI.getVType());
+    assertEquals("[\"foobar\",\"barfoo\"]", kvAS.getVStr());
+    assertEquals("[\"foobar\",\"barfoo\"]", kvAS.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvAS.getVType());
   }
 
   @Test

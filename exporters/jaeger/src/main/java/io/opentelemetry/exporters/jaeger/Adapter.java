@@ -17,6 +17,7 @@
 package io.opentelemetry.exporters.jaeger;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.Gson;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.common.AttributeValue;
@@ -155,30 +156,7 @@ final class Adapter {
   static Collection<Model.KeyValue> toKeyValues(Map<String, AttributeValue> attributes) {
     ArrayList<Model.KeyValue> tags = new ArrayList<>(attributes.size());
     for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      switch (entry.getValue().getType()) {
-        case STRING_ARRAY:
-          for (String value : entry.getValue().getStringArrayValue()) {
-            tags.add(toKeyValue(entry.getKey(), AttributeValue.stringAttributeValue(value)));
-          }
-          break;
-        case BOOLEAN_ARRAY:
-          for (boolean value : entry.getValue().getBooleanArrayValue()) {
-            tags.add(toKeyValue(entry.getKey(), AttributeValue.booleanAttributeValue(value)));
-          }
-          break;
-        case LONG_ARRAY:
-          for (long value : entry.getValue().getLongArrayValue()) {
-            tags.add(toKeyValue(entry.getKey(), AttributeValue.doubleAttributeValue(value)));
-          }
-          break;
-        case DOUBLE_ARRAY:
-          for (double value : entry.getValue().getDoubleArrayValue()) {
-            tags.add(toKeyValue(entry.getKey(), AttributeValue.doubleAttributeValue(value)));
-          }
-          break;
-        default:
-          tags.add(toKeyValue(entry.getKey(), entry.getValue()));
-      }
+      tags.add(toKeyValue(entry.getKey(), entry.getValue()));
     }
     return tags;
   }
@@ -212,7 +190,21 @@ final class Adapter {
         builder.setVFloat64(value.getDoubleValue());
         builder.setVType(Model.ValueType.FLOAT64);
         break;
-      default:
+      case STRING_ARRAY:
+        builder.setVStr(new Gson().toJson(value.getStringArrayValue()));
+        builder.setVType(Model.ValueType.STRING);
+        break;
+      case LONG_ARRAY:
+        builder.setVStr(new Gson().toJson(value.getLongArrayValue()));
+        builder.setVType(Model.ValueType.STRING);
+        break;
+      case BOOLEAN_ARRAY:
+        builder.setVStr(new Gson().toJson(value.getBooleanArrayValue()));
+        builder.setVType(Model.ValueType.STRING);
+        break;
+      case DOUBLE_ARRAY:
+        builder.setVStr(new Gson().toJson(value.getDoubleArrayValue()));
+        builder.setVType(Model.ValueType.STRING);
         break;
     }
     return builder.build();
