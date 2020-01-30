@@ -47,7 +47,6 @@ public abstract class AttributeValue {
    *
    * @param stringValue The new value.
    * @return an {@code AttributeValue} with a string value.
-   * @throws NullPointerException if {@code stringValue} is {@code null}.
    * @since 0.1.0
    */
   public static AttributeValue stringAttributeValue(String stringValue) {
