@@ -16,17 +16,17 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.metrics.DoubleMeasure;
+import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import java.util.List;
 import java.util.Map;
 
-class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMeasure {
+class DoubleMeasureSdk extends BaseInstrument<BoundDoubleMeasure> implements DoubleMeasure {
 
   private final boolean absolute;
 
-  private SdkLongMeasure(
+  private DoubleMeasureSdk(
       String name,
       String description,
       Map<String, String> constantLabels,
@@ -37,13 +37,13 @@ class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMea
   }
 
   @Override
-  public void record(long value, LabelSet labelSet) {
+  public void record(double value, LabelSet labelSet) {
     createBoundInstrument(labelSet).record(value);
   }
 
   @Override
-  BoundLongMeasure createBoundInstrument(LabelSet labelSet) {
-    return new SdkBoundLongMeasure(labelSet, this.absolute);
+  BoundDoubleMeasure createBoundInstrument(LabelSet labelSet) {
+    return new Bound(labelSet, this.absolute);
   }
 
   @Override
@@ -51,14 +51,14 @@ class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMea
     if (this == o) {
       return true;
     }
-    if (!(o instanceof SdkLongMeasure)) {
+    if (!(o instanceof DoubleMeasureSdk)) {
       return false;
     }
     if (!super.equals(o)) {
       return false;
     }
 
-    SdkLongMeasure that = (SdkLongMeasure) o;
+    DoubleMeasureSdk that = (DoubleMeasureSdk) o;
 
     return absolute == that.absolute;
   }
@@ -70,17 +70,17 @@ class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMea
     return result;
   }
 
-  private static class SdkBoundLongMeasure extends BaseBoundInstrument implements BoundLongMeasure {
+  private static final class Bound extends BaseBoundInstrument implements BoundDoubleMeasure {
 
     private final boolean absolute;
 
-    SdkBoundLongMeasure(LabelSet labels, boolean absolute) {
+    Bound(LabelSet labels, boolean absolute) {
       super(labels);
       this.absolute = absolute;
     }
 
     @Override
-    public void record(long value) {
+    public void record(double value) {
       if (this.absolute && value < 0) {
         throw new IllegalArgumentException("absolute measure can only record positive values");
       }
@@ -88,14 +88,14 @@ class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMea
     }
   }
 
-  static class Builder extends AbstractMeasureBuilder<LongMeasure.Builder, LongMeasure>
-      implements LongMeasure.Builder {
+  static final class Builder extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
+      implements DoubleMeasure.Builder {
 
     private Builder(String name) {
       super(name);
     }
 
-    static LongMeasure.Builder builder(String name) {
+    static DoubleMeasure.Builder builder(String name) {
       return new Builder(name);
     }
 
@@ -105,8 +105,8 @@ class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMea
     }
 
     @Override
-    public LongMeasure build() {
-      return new SdkLongMeasure(
+    public DoubleMeasure build() {
+      return new DoubleMeasureSdk(
           getName(), getDescription(), getConstantLabels(), getLabelKeys(), isAbsolute());
     }
   }

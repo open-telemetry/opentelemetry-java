@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,33 +17,33 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
+import io.opentelemetry.metrics.LongMeasure;
+import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import java.util.List;
 import java.util.Map;
 
-class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCounter {
+class LongMeasureSdk extends BaseInstrument<BoundLongMeasure> implements LongMeasure {
 
-  private final boolean monotonic;
+  private final boolean absolute;
 
-  private SdkLongCounter(
+  private LongMeasureSdk(
       String name,
       String description,
       Map<String, String> constantLabels,
       List<String> labelKeys,
-      boolean monotonic) {
+      boolean absolute) {
     super(name, description, constantLabels, labelKeys);
-    this.monotonic = monotonic;
+    this.absolute = absolute;
   }
 
   @Override
-  public void add(long delta, LabelSet labelSet) {
-    createBoundInstrument(labelSet).add(delta);
+  public void record(long value, LabelSet labelSet) {
+    createBoundInstrument(labelSet).record(value);
   }
 
   @Override
-  BoundLongCounter createBoundInstrument(LabelSet labelSet) {
-    return new SdkBoundLongCounter(labelSet, monotonic);
+  BoundLongMeasure createBoundInstrument(LabelSet labelSet) {
+    return new Bound(labelSet, this.absolute);
   }
 
   @Override
@@ -51,51 +51,51 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     if (this == o) {
       return true;
     }
-    if (!(o instanceof SdkLongCounter)) {
+    if (!(o instanceof LongMeasureSdk)) {
       return false;
     }
     if (!super.equals(o)) {
       return false;
     }
 
-    SdkLongCounter that = (SdkLongCounter) o;
+    LongMeasureSdk that = (LongMeasureSdk) o;
 
-    return monotonic == that.monotonic;
+    return absolute == that.absolute;
   }
 
   @Override
   public int hashCode() {
     int result = super.hashCode();
-    result = 31 * result + (monotonic ? 1 : 0);
+    result = 31 * result + (absolute ? 1 : 0);
     return result;
   }
 
-  private static class SdkBoundLongCounter extends BaseBoundInstrument implements BoundLongCounter {
+  private static final class Bound extends BaseBoundInstrument implements BoundLongMeasure {
 
-    private final boolean monotonic;
+    private final boolean absolute;
 
-    SdkBoundLongCounter(LabelSet labels, boolean monotonic) {
+    Bound(LabelSet labels, boolean absolute) {
       super(labels);
-      this.monotonic = monotonic;
+      this.absolute = absolute;
     }
 
     @Override
-    public void add(long delta) {
-      if (monotonic && delta < 0) {
-        throw new IllegalArgumentException("monotonic counters can only increase");
+    public void record(long value) {
+      if (this.absolute && value < 0) {
+        throw new IllegalArgumentException("absolute measure can only record positive values");
       }
       // todo: pass through to an aggregator/accumulator
     }
   }
 
-  static class Builder extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
-      implements LongCounter.Builder {
+  static final class Builder extends AbstractMeasureBuilder<LongMeasure.Builder, LongMeasure>
+      implements LongMeasure.Builder {
 
     private Builder(String name) {
       super(name);
     }
 
-    static LongCounter.Builder builder(String name) {
+    static LongMeasure.Builder builder(String name) {
       return new Builder(name);
     }
 
@@ -105,9 +105,9 @@ class SdkLongCounter extends BaseInstrument<BoundLongCounter> implements LongCou
     }
 
     @Override
-    public LongCounter build() {
-      return new SdkLongCounter(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
+    public LongMeasure build() {
+      return new LongMeasureSdk(
+          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isAbsolute());
     }
   }
 }

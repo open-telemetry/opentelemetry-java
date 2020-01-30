@@ -44,7 +44,7 @@ public class MeterSdkTest {
             .setMonotonic(true)
             .build();
     assertThat(longCounter).isNotNull();
-    assertThat(longCounter).isInstanceOf(SdkLongCounter.class);
+    assertThat(longCounter).isInstanceOf(LongCounterSdk.class);
 
     // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
   }
@@ -61,7 +61,7 @@ public class MeterSdkTest {
             .setMonotonic(true)
             .build();
     assertThat(doubleCounter).isNotNull();
-    assertThat(doubleCounter).isInstanceOf(SdkDoubleCounter.class);
+    assertThat(doubleCounter).isInstanceOf(DoubleCounterSdk.class);
 
     // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
   }
