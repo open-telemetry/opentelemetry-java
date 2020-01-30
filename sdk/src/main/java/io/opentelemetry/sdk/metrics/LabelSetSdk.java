@@ -26,15 +26,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 @AutoValue
-abstract class SdkLabelSet implements LabelSet {
+abstract class LabelSetSdk implements LabelSet {
   private static final LabelSet EMPTY =
-      new AutoValue_SdkLabelSet(Collections.<String, String>emptyMap());
+      new AutoValue_LabelSetSdk(Collections.<String, String>emptyMap());
 
   static LabelSet create(Map<String, String> labels) {
     if (labels == null || labels.isEmpty()) {
       return EMPTY;
     }
-    return new AutoValue_SdkLabelSet(unmodifiableMap(labels));
+    return new AutoValue_LabelSetSdk(unmodifiableMap(labels));
   }
 
   static LabelSet create(String... keyValuePairs) {
@@ -49,7 +49,7 @@ abstract class SdkLabelSet implements LabelSet {
       String key = keyValuePairs[i];
       data.put(key, keyValuePairs[++i]);
     }
-    return new AutoValue_SdkLabelSet(Collections.unmodifiableMap(data));
+    return new AutoValue_LabelSetSdk(Collections.unmodifiableMap(data));
   }
 
   abstract Map<String, String> getLabels();
