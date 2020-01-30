@@ -22,7 +22,7 @@ import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-class DoubleCounterSdk extends BaseInstrument<BoundDoubleCounter> implements DoubleCounter {
+final class DoubleCounterSdk extends BaseInstrument<BoundDoubleCounter> implements DoubleCounter {
 
   private final boolean monotonic;
 

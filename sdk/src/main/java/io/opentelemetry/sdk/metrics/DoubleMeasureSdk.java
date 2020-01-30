@@ -22,7 +22,7 @@ import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-class DoubleMeasureSdk extends BaseInstrument<BoundDoubleMeasure> implements DoubleMeasure {
+final class DoubleMeasureSdk extends BaseInstrument<BoundDoubleMeasure> implements DoubleMeasure {
 
   private final boolean absolute;
 
