@@ -1,5 +1,5 @@
 /*
- * Copyright 2020, OpenTelemetry Authors
+ * Copyright 2019, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,34 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.metrics.DoubleCounter;
+import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import java.util.List;
 import java.util.Map;
 
-class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMeasure {
+final class DoubleCounterSdk extends BaseInstrument<BoundDoubleCounter> implements DoubleCounter {
 
-  private final boolean absolute;
+  private final boolean monotonic;
 
-  private SdkLongMeasure(
+  private DoubleCounterSdk(
       String name,
       String description,
       Map<String, String> constantLabels,
       List<String> labelKeys,
-      boolean absolute) {
+      boolean monotonic) {
     super(name, description, constantLabels, labelKeys);
-    this.absolute = absolute;
+    this.monotonic = monotonic;
   }
 
   @Override
-  public void record(long value, LabelSet labelSet) {
-    createBoundInstrument(labelSet).record(value);
+  public void add(double delta, LabelSet labelSet) {
+    createBoundInstrument(labelSet).add(delta);
   }
 
   @Override
-  BoundLongMeasure createBoundInstrument(LabelSet labelSet) {
-    return new SdkBoundLongMeasure(labelSet, this.absolute);
+  BoundDoubleCounter createBoundInstrument(LabelSet labelSet) {
+    return new Bound(labelSet, monotonic);
   }
 
   @Override
@@ -51,51 +51,51 @@ class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMea
     if (this == o) {
       return true;
     }
-    if (!(o instanceof SdkLongMeasure)) {
+    if (!(o instanceof DoubleCounterSdk)) {
       return false;
     }
     if (!super.equals(o)) {
       return false;
     }
 
-    SdkLongMeasure that = (SdkLongMeasure) o;
+    DoubleCounterSdk that = (DoubleCounterSdk) o;
 
-    return absolute == that.absolute;
+    return monotonic == that.monotonic;
   }
 
   @Override
   public int hashCode() {
     int result = super.hashCode();
-    result = 31 * result + (absolute ? 1 : 0);
+    result = 31 * result + (monotonic ? 1 : 0);
     return result;
   }
 
-  private static class SdkBoundLongMeasure extends BaseBoundInstrument implements BoundLongMeasure {
+  private static final class Bound extends BaseBoundInstrument implements BoundDoubleCounter {
 
-    private final boolean absolute;
+    private final boolean monotonic;
 
-    SdkBoundLongMeasure(LabelSet labels, boolean absolute) {
+    Bound(LabelSet labels, boolean monotonic) {
       super(labels);
-      this.absolute = absolute;
+      this.monotonic = monotonic;
     }
 
     @Override
-    public void record(long value) {
-      if (this.absolute && value < 0) {
-        throw new IllegalArgumentException("absolute measure can only record positive values");
+    public void add(double delta) {
+      if (monotonic && delta < 0) {
+        throw new IllegalArgumentException("monotonic counters can only increase");
       }
       // todo: pass through to an aggregator/accumulator
     }
   }
 
-  static class Builder extends AbstractMeasureBuilder<LongMeasure.Builder, LongMeasure>
-      implements LongMeasure.Builder {
+  static final class Builder extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
+      implements DoubleCounter.Builder {
 
     private Builder(String name) {
       super(name);
     }
 
-    static LongMeasure.Builder builder(String name) {
+    static DoubleCounter.Builder builder(String name) {
       return new Builder(name);
     }
 
@@ -105,9 +105,9 @@ class SdkLongMeasure extends BaseInstrument<BoundLongMeasure> implements LongMea
     }
 
     @Override
-    public LongMeasure build() {
-      return new SdkLongMeasure(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isAbsolute());
+    public DoubleCounter build() {
+      return new DoubleCounterSdk(
+          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
     }
   }
 }

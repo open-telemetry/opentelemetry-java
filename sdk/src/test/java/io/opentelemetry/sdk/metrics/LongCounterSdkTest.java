@@ -19,9 +19,9 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
 import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,53 +29,53 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link SdkDoubleMeasure}. */
+/** Unit tests for {@link LongCounterSdk}. */
 @RunWith(JUnit4.class)
-public class SdkDoubleMeasureTest {
+public class LongCounterSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   private final MeterSdk testSdk =
-      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.SdkDoubleMeasureTest");
+      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.LongCounterSdkTest");
 
   @Test
-  public void testDoubleMeasure() {
+  public void testLongCounter() {
     LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
-    DoubleMeasure doubleMeasure =
-        SdkDoubleMeasure.Builder.builder("testMeasure")
+    LongCounter longCounter =
+        LongCounterSdk.Builder.builder("testCounter")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
-            .setDescription("My very own double measure")
+            .setDescription("My very own counter")
             .setUnit("metric tonnes")
-            .setAbsolute(true)
+            .setMonotonic(true)
             .build();
 
-    doubleMeasure.record(45.0001, testSdk.createLabelSet());
+    longCounter.add(45, testSdk.createLabelSet());
 
-    BoundDoubleMeasure boundDoubleMeasure = doubleMeasure.bind(labelSet);
-    boundDoubleMeasure.record(334.999d);
-    BoundDoubleMeasure duplicateBoundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
-    assertThat(duplicateBoundMeasure).isEqualTo(boundDoubleMeasure);
+    BoundLongCounter boundLongCounter = longCounter.bind(labelSet);
+    boundLongCounter.add(334);
+    BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    assertThat(duplicateBoundCounter).isEqualTo(boundLongCounter);
 
     // todo: verify that this has done something, when it has been done.
-    doubleMeasure.unbind(boundDoubleMeasure);
+    longCounter.unbind(boundLongCounter);
   }
 
   @Test
-  public void testDoubleMeasure_absolute() {
-    DoubleMeasure doubleMeasure =
-        SdkDoubleMeasure.Builder.builder("testMeasure").setAbsolute(true).build();
+  public void testLongCounter_monotonicity() {
+    LongCounter longCounter =
+        LongCounterSdk.Builder.builder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    doubleMeasure.record(-45.77d, testSdk.createLabelSet());
+    longCounter.add(-45, testSdk.createLabelSet());
   }
 
   @Test
-  public void testBoundDoubleMeasure_absolute() {
-    DoubleMeasure doubleMeasure =
-        SdkDoubleMeasure.Builder.builder("testMeasure").setAbsolute(true).build();
+  public void testBoundLongCounter_monotonicity() {
+    LongCounter longCounter =
+        LongCounterSdk.Builder.builder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    doubleMeasure.bind(testSdk.createLabelSet()).record(-9.3f);
+    longCounter.bind(testSdk.createLabelSet()).add(-9);
   }
 }

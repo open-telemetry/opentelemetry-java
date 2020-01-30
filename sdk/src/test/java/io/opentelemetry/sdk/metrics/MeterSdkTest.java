@@ -20,7 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.DoubleCounter;
+import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LongMeasure;
 import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +46,24 @@ public class MeterSdkTest {
             .setMonotonic(true)
             .build();
     assertThat(longCounter).isNotNull();
-    assertThat(longCounter).isInstanceOf(SdkLongCounter.class);
+    assertThat(longCounter).isInstanceOf(LongCounterSdk.class);
+
+    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+  }
+
+  @Test
+  public void testLongMeasure() {
+    LongMeasure longMeasure =
+        testSdk
+            .longMeasureBuilder("testCounter")
+            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own counter")
+            .setUnit("metric tonnes")
+            .setAbsolute(true)
+            .build();
+    assertThat(longMeasure).isNotNull();
+    assertThat(longMeasure).isInstanceOf(LongMeasureSdk.class);
 
     // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
   }
@@ -61,7 +80,24 @@ public class MeterSdkTest {
             .setMonotonic(true)
             .build();
     assertThat(doubleCounter).isNotNull();
-    assertThat(doubleCounter).isInstanceOf(SdkDoubleCounter.class);
+    assertThat(doubleCounter).isInstanceOf(DoubleCounterSdk.class);
+
+    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+  }
+
+  @Test
+  public void testDoubleMeasure() {
+    DoubleMeasure doubleMeasure =
+        testSdk
+            .doubleMeasureBuilder("testMeasure")
+            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own Measure")
+            .setUnit("metric tonnes")
+            .setAbsolute(true)
+            .build();
+    assertThat(doubleMeasure).isNotNull();
+    assertThat(doubleMeasure).isInstanceOf(DoubleMeasureSdk.class);
 
     // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
   }

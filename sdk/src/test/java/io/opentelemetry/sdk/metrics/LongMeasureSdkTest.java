@@ -29,20 +29,20 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link SdkLongMeasure}. */
+/** Unit tests for {@link LongMeasureSdk}. */
 @RunWith(JUnit4.class)
-public class SdkLongMeasureTest {
+public class LongMeasureSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   private final MeterSdk testSdk =
-      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.SdkLongMeasureTest");
+      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.LongMeasureSdkTest");
 
   @Test
   public void testLongMeasure() {
     LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
     LongMeasure longMeasure =
-        SdkLongMeasure.Builder.builder("testMeasure")
+        LongMeasureSdk.Builder.builder("testMeasure")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own measure")
@@ -64,7 +64,7 @@ public class SdkLongMeasureTest {
   @Test
   public void testLongMeasure_absolute() {
     LongMeasure longMeasure =
-        SdkLongMeasure.Builder.builder("testMeasure").setAbsolute(true).build();
+        LongMeasureSdk.Builder.builder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     longMeasure.record(-45, testSdk.createLabelSet());
@@ -73,7 +73,7 @@ public class SdkLongMeasureTest {
   @Test
   public void testBoundLongMeasure_absolute() {
     LongMeasure longMeasure =
-        SdkLongMeasure.Builder.builder("testMeasure").setAbsolute(true).build();
+        LongMeasureSdk.Builder.builder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     longMeasure.bind(testSdk.createLabelSet()).record(-9);

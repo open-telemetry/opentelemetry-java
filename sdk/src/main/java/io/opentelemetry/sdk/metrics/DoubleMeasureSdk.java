@@ -22,11 +22,11 @@ import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-class SdkDoubleMeasure extends BaseInstrument<BoundDoubleMeasure> implements DoubleMeasure {
+final class DoubleMeasureSdk extends BaseInstrument<BoundDoubleMeasure> implements DoubleMeasure {
 
   private final boolean absolute;
 
-  private SdkDoubleMeasure(
+  private DoubleMeasureSdk(
       String name,
       String description,
       Map<String, String> constantLabels,
@@ -43,7 +43,7 @@ class SdkDoubleMeasure extends BaseInstrument<BoundDoubleMeasure> implements Dou
 
   @Override
   BoundDoubleMeasure createBoundInstrument(LabelSet labelSet) {
-    return new SdkBoundDoubleMeasure(labelSet, this.absolute);
+    return new Bound(labelSet, this.absolute);
   }
 
   @Override
@@ -51,14 +51,14 @@ class SdkDoubleMeasure extends BaseInstrument<BoundDoubleMeasure> implements Dou
     if (this == o) {
       return true;
     }
-    if (!(o instanceof SdkDoubleMeasure)) {
+    if (!(o instanceof DoubleMeasureSdk)) {
       return false;
     }
     if (!super.equals(o)) {
       return false;
     }
 
-    SdkDoubleMeasure that = (SdkDoubleMeasure) o;
+    DoubleMeasureSdk that = (DoubleMeasureSdk) o;
 
     return absolute == that.absolute;
   }
@@ -70,12 +70,11 @@ class SdkDoubleMeasure extends BaseInstrument<BoundDoubleMeasure> implements Dou
     return result;
   }
 
-  private static class SdkBoundDoubleMeasure extends BaseBoundInstrument
-      implements BoundDoubleMeasure {
+  private static final class Bound extends BaseBoundInstrument implements BoundDoubleMeasure {
 
     private final boolean absolute;
 
-    SdkBoundDoubleMeasure(LabelSet labels, boolean absolute) {
+    Bound(LabelSet labels, boolean absolute) {
       super(labels);
       this.absolute = absolute;
     }
@@ -89,7 +88,7 @@ class SdkDoubleMeasure extends BaseInstrument<BoundDoubleMeasure> implements Dou
     }
   }
 
-  static class Builder extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
+  static final class Builder extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
       implements DoubleMeasure.Builder {
 
     private Builder(String name) {
@@ -107,7 +106,7 @@ class SdkDoubleMeasure extends BaseInstrument<BoundDoubleMeasure> implements Dou
 
     @Override
     public DoubleMeasure build() {
-      return new SdkDoubleMeasure(
+      return new DoubleMeasureSdk(
           getName(), getDescription(), getConstantLabels(), getLabelKeys(), isAbsolute());
     }
   }
