@@ -294,11 +294,23 @@ public class RecordEventsReadableSpanTest {
       span.setAttribute("LongKey", 1000L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);
+      span.setAttribute("ArrayStringKey", "StringVal", null, "", "StringVal2");
+      span.setAttribute("ArrayLongKey", 1L, 2L, 3L, 4L, 5L);
+      span.setAttribute("ArrayDoubleKey", 0.1, 2.3, 4.5, 6.7, 8.9);
+      span.setAttribute("ArrayBooleanKey", true, false, false, true);
     } finally {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertThat(spanData.getAttributes().size()).isEqualTo(4);
+    assertThat(spanData.getAttributes().size()).isEqualTo(8);
+    assertThat(spanData.getAttributes().get("ArrayStringKey").getStringArrayValue().size())
+        .isEqualTo(4);
+    assertThat(spanData.getAttributes().get("ArrayLongKey").getLongArrayValue().size())
+        .isEqualTo(5);
+    assertThat(spanData.getAttributes().get("ArrayDoubleKey").getDoubleArrayValue().size())
+        .isEqualTo(5);
+    assertThat(spanData.getAttributes().get("ArrayBooleanKey").getBooleanArrayValue().size())
+        .isEqualTo(4);
   }
 
   @Test
