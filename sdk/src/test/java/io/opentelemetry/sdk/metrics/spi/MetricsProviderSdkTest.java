@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.spi;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link SdkMetricsProvider}. */
+/** Unit tests for {@link MetricsProviderSdk}. */
 @RunWith(JUnit4.class)
-public class SdkMetricsProviderTest {
+public class MetricsProviderSdkTest {
   @Test
   public void testDefault() {
     assertThat(OpenTelemetry.getMeterRegistry()).isInstanceOf(MeterSdkRegistry.class);

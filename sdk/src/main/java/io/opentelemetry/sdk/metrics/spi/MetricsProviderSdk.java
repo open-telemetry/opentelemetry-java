@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.correlationcontext;
+package io.opentelemetry.sdk.metrics.spi;
 
-import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
+import io.opentelemetry.metrics.spi.MetricsProvider;
+import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
 
 /**
- * {@code CorrelationContextManager} provider implementation for {@link
- * io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider}.
+ * {@code MeterRegistry} provider implementation for {@link MetricsProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
  */
-public class CorrelationContextManagerSdkProvider implements CorrelationContextManagerProvider {
+public final class MetricsProviderSdk implements MetricsProvider {
 
   @Override
-  public CorrelationContextManager create() {
-    return new CorrelationContextManagerSdk();
+  public MeterSdkRegistry create() {
+    return MeterSdkRegistry.builder().build();
   }
 }

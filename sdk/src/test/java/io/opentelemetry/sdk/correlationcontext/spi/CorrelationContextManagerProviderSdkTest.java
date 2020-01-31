@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace;
+package io.opentelemetry.sdk.correlationcontext.spi;
 
-import io.opentelemetry.trace.TracerRegistry;
-import io.opentelemetry.trace.spi.TraceProvider;
+import static com.google.common.truth.Truth.assertThat;
 
-/** SDK implementation of the TracerProviderFactory for SPI. */
-public class SdkTraceProvider implements TraceProvider {
-  @Override
-  public TracerRegistry create() {
-    return TracerSdkRegistry.builder().build();
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+@RunWith(JUnit4.class)
+public class CorrelationContextManagerProviderSdkTest {
+
+  @Test
+  public void testDefault() {
+    assertThat(OpenTelemetry.getCorrelationContextManager())
+        .isInstanceOf(CorrelationContextManagerSdk.class);
   }
 }

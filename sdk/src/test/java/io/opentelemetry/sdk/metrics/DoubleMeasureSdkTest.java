@@ -35,7 +35,7 @@ public class DoubleMeasureSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   private final MeterSdk testSdk =
-      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.DoubleMeasureSdkTest");
+      MeterSdkRegistry.builder().build().get("io.opentelemetry.sdk.metrics.DoubleMeasureSdkTest");
 
   @Test
   public void testDoubleMeasure() {

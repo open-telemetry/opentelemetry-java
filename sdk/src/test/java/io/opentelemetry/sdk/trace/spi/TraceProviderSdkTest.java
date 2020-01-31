@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.trace.spi;
 
-import io.opentelemetry.metrics.spi.MetricsProvider;
+import static com.google.common.truth.Truth.assertThat;
 
-/**
- * {@code MeterRegistry} provider implementation for {@link MetricsProvider}.
- *
- * <p>This class is not intended to be used in application code and it is used only by {@link
- * io.opentelemetry.OpenTelemetry}.
- */
-public class SdkMetricsProvider implements MetricsProvider {
+import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-  @Override
-  public MeterSdkRegistry create() {
-    return MeterSdkRegistry.builder().build();
+/** Unit tests for {@link TraceProviderSdk}. */
+@RunWith(JUnit4.class)
+public class TraceProviderSdkTest {
+
+  @Test
+  public void testDefault() {
+    assertThat(OpenTelemetry.getTracerRegistry()).isInstanceOf(TracerSdkRegistry.class);
   }
 }

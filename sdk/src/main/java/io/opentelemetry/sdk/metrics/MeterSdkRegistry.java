@@ -32,7 +32,7 @@ import javax.annotation.Nonnull;
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
  */
-public class MeterSdkRegistry implements MeterRegistry {
+public final class MeterSdkRegistry implements MeterRegistry {
   private final MeterSharedState sharedState;
   private final MeterSdkComponentRegistry registry;
 
