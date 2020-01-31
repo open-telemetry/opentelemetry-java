@@ -332,7 +332,8 @@ public abstract class AttributeValue {
         return new AutoValue_AttributeValue_AttributeValueStringArray(
             Collections.<String>emptyList());
       }
-      return new AutoValue_AttributeValue_AttributeValueStringArray(Arrays.asList(stringValues));
+      return new AutoValue_AttributeValue_AttributeValueStringArray(
+          Collections.unmodifiableList(Arrays.asList(stringValues)));
     }
 
     @Override
