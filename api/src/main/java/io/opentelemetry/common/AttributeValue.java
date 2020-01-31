@@ -360,7 +360,8 @@ public abstract class AttributeValue {
       for (boolean value : booleanValues) {
         values.add(value);
       }
-      return new AutoValue_AttributeValue_AttributeValueBooleanArray(Collections.unmodifiableList(values));
+      return new AutoValue_AttributeValue_AttributeValueBooleanArray(
+          Collections.unmodifiableList(values));
     }
 
     @Override
@@ -386,7 +387,8 @@ public abstract class AttributeValue {
       for (long value : longValues) {
         values.add(value);
       }
-      return new AutoValue_AttributeValue_AttributeValueLongArray(Collections.unmodifiableList(values));
+      return new AutoValue_AttributeValue_AttributeValueLongArray(
+          Collections.unmodifiableList(values));
     }
 
     @Override
@@ -413,7 +415,8 @@ public abstract class AttributeValue {
       for (double value : doubleValues) {
         values.add(value);
       }
-      return new AutoValue_AttributeValue_AttributeValueDoubleArray(Collections.unmodifiableList(values));
+      return new AutoValue_AttributeValue_AttributeValueDoubleArray(
+          Collections.unmodifiableList(values));
     }
 
     @Override
