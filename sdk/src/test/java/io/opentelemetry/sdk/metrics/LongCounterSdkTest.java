@@ -35,7 +35,7 @@ public class LongCounterSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   private final MeterSdk testSdk =
-      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.LongCounterSdkTest");
+      MeterSdkRegistry.builder().build().get("io.opentelemetry.sdk.metrics.LongCounterSdkTest");
 
   @Test
   public void testLongCounter() {

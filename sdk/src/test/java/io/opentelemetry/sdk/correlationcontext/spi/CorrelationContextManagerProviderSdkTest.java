@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.correlationcontext.spi;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link SdkMetricsProvider}. */
 @RunWith(JUnit4.class)
-public class SdkMetricsProviderTest {
+public class CorrelationContextManagerProviderSdkTest {
+
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getMeterRegistry()).isInstanceOf(MeterSdkRegistry.class);
+    assertThat(OpenTelemetry.getCorrelationContextManager())
+        .isInstanceOf(CorrelationContextManagerSdk.class);
   }
 }

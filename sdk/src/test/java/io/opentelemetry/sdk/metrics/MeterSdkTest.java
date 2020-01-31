@@ -32,7 +32,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class MeterSdkTest {
   private final MeterSdk testSdk =
-      new SdkMetricsProvider().create().get("io.opentelemetry.sdk.metrics.MeterSdkTest");
+      MeterSdkRegistry.builder().build().get("io.opentelemetry.sdk.metrics.MeterSdkTest");
 
   @Test
   public void testLongCounter() {
