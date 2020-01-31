@@ -93,26 +93,6 @@ public final class DefaultSpan implements Span {
   }
 
   @Override
-  public void setAttribute(String key, String... values) {
-    Utils.checkNotNull(key, "key");
-  }
-
-  @Override
-  public void setAttribute(String key, long... values) {
-    Utils.checkNotNull(key, "key");
-  }
-
-  @Override
-  public void setAttribute(String key, double... values) {
-    Utils.checkNotNull(key, "key");
-  }
-
-  @Override
-  public void setAttribute(String key, boolean... values) {
-    Utils.checkNotNull(key, "key");
-  }
-
-  @Override
   public void setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
     Utils.checkNotNull(value, "value");

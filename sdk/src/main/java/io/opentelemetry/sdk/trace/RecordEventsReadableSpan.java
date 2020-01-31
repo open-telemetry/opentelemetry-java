@@ -330,43 +330,37 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
-  public void setAttribute(String key, String... values) {
-    if (values == null) {
-      return;
-    }
-    setAttribute(key, AttributeValue.arrayAttributeValue(values));
-  }
-
-  @Override
-  public void setAttribute(String key, long... values) {
-    if (values == null) {
-      return;
-    }
-    setAttribute(key, AttributeValue.arrayAttributeValue(values));
-  }
-
-  @Override
-  public void setAttribute(String key, double... values) {
-    if (values == null) {
-      return;
-    }
-    setAttribute(key, AttributeValue.arrayAttributeValue(values));
-  }
-
-  @Override
-  public void setAttribute(String key, boolean... values) {
-    if (values == null) {
-      return;
-    }
-    setAttribute(key, AttributeValue.arrayAttributeValue(values));
-  }
-
-  @Override
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
-    if (value.getType() == Type.STRING && StringUtils.isNullOrEmpty(value.getStringValue())) {
-      return;
+    switch (value.getType()) {
+      case STRING:
+        if (StringUtils.isNullOrEmpty(value.getStringValue())) {
+          return;
+        }
+        break;
+      case STRING_ARRAY:
+        if (value.getStringArrayValue().size() == 0) {
+          return;
+        }
+        break;
+      case BOOLEAN_ARRAY:
+        if (value.getBooleanArrayValue().size() == 0) {
+          return;
+        }
+        break;
+      case LONG_ARRAY:
+        if (value.getLongArrayValue().size() == 0) {
+          return;
+        }
+        break;
+      case DOUBLE_ARRAY:
+        if (value.getDoubleArrayValue().size() == 0) {
+          return;
+        }
+        break;
+      default:
+        break;
     }
     synchronized (lock) {
       if (hasEnded) {

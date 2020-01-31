@@ -65,12 +65,12 @@ public class AttributeValueTest {
   }
 
   @Test
-  public void doNotCrashOnNull(){
+  public void doNotCrashOnNull() {
     AttributeValue.stringAttributeValue(null);
-    AttributeValue.arrayAttributeValue((String[])null);
-    AttributeValue.arrayAttributeValue((boolean[])null);
-    AttributeValue.arrayAttributeValue((long[])null);
-    AttributeValue.arrayAttributeValue((double[])null);
+    AttributeValue.arrayAttributeValue((String[]) null);
+    AttributeValue.arrayAttributeValue((boolean[]) null);
+    AttributeValue.arrayAttributeValue((long[]) null);
+    AttributeValue.arrayAttributeValue((double[]) null);
   }
 
   @Test

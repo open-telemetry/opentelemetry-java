@@ -294,14 +294,19 @@ public class RecordEventsReadableSpanTest {
       span.setAttribute("LongKey", 1000L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);
-      span.setAttribute("ArrayStringKey", "StringVal", null, "", "StringVal2");
-      span.setAttribute("ArrayLongKey", 1L, 2L, 3L, 4L, 5L);
-      span.setAttribute("ArrayDoubleKey", 0.1, 2.3, 4.5, 6.7, 8.9);
-      span.setAttribute("ArrayBooleanKey", true, false, false, true);
-      span.setAttribute("NullArrayStringKey", (String[]) null);
-      span.setAttribute("NullArrayLongKey", (long[]) null);
-      span.setAttribute("NullArrayDoubleKey", (double[]) null);
-      span.setAttribute("NullArrayBooleanKey", (boolean[]) null);
+      span.setAttribute(
+          "ArrayStringKey",
+          AttributeValue.arrayAttributeValue("StringVal", null, "", "StringVal2"));
+      span.setAttribute("ArrayLongKey", AttributeValue.arrayAttributeValue(1L, 2L, 3L, 4L, 5L));
+      span.setAttribute(
+          "ArrayDoubleKey", AttributeValue.arrayAttributeValue(0.1, 2.3, 4.5, 6.7, 8.9));
+      span.setAttribute(
+          "ArrayBooleanKey", AttributeValue.arrayAttributeValue(true, false, false, true));
+      span.setAttribute("NullArrayStringKey", AttributeValue.arrayAttributeValue((String[]) null));
+      span.setAttribute("NullArrayLongKey", AttributeValue.arrayAttributeValue((long[]) null));
+      span.setAttribute("NullArrayDoubleKey", AttributeValue.arrayAttributeValue((double[]) null));
+      span.setAttribute(
+          "NullArrayBooleanKey", AttributeValue.arrayAttributeValue((boolean[]) null));
     } finally {
       span.end();
     }
