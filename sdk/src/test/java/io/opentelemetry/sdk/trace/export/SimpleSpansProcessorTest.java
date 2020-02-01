@@ -50,7 +50,7 @@ public class SimpleSpansProcessorTest {
   private static final String SPAN_NAME = "MySpanName";
   @Mock private ReadableSpan readableSpan;
   @Mock private SpanExporter spanExporter;
-  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
+  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SimpleSpansProcessor");
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(

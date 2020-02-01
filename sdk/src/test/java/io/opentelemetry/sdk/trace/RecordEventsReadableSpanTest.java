@@ -217,7 +217,7 @@ public class RecordEventsReadableSpanTest {
   public void getSpanKind() {
     RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
     try {
-      assertThat(span.getKind()).isEqualTo(Kind.SERVER);
+      assertThat(span.toSpanData().getKind()).isEqualTo(Kind.SERVER);
     } finally {
       span.end();
     }

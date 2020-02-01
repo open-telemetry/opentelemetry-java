@@ -44,7 +44,7 @@ public class TraceShimTest {
 
   @Test
   public void createTracerShim() {
-    TracerSdkRegistry sdk = TracerSdkRegistry.create();
+    TracerSdkRegistry sdk = TracerSdkRegistry.builder().build();
     CorrelationContextManagerSdk contextManager = new CorrelationContextManagerSdk();
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim(sdk, contextManager);
     assertEquals(sdk.get("opentracingshim"), tracerShim.tracer());

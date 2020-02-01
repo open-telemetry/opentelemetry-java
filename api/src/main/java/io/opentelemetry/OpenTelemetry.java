@@ -20,15 +20,15 @@ import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
 import io.opentelemetry.metrics.DefaultMeterRegistry;
-import io.opentelemetry.metrics.DefaultMeterRegistryProvider;
+import io.opentelemetry.metrics.DefaultMetricsProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterRegistry;
-import io.opentelemetry.metrics.spi.MeterRegistryProvider;
+import io.opentelemetry.metrics.spi.MetricsProvider;
+import io.opentelemetry.trace.DefaultTraceProvider;
 import io.opentelemetry.trace.DefaultTracerRegistry;
-import io.opentelemetry.trace.DefaultTracerRegistryProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerRegistry;
-import io.opentelemetry.trace.spi.TracerRegistryProvider;
+import io.opentelemetry.trace.spi.TraceProvider;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -40,7 +40,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
  * @see TracerRegistry
- * @see MeterRegistryProvider
+ * @see MetricsProvider
  * @see CorrelationContextManagerProvider
  */
 @ThreadSafe
@@ -102,17 +102,17 @@ public final class OpenTelemetry {
   }
 
   private OpenTelemetry() {
-    TracerRegistryProvider tracerRegistryProvider = loadSpi(TracerRegistryProvider.class);
+    TraceProvider traceProvider = loadSpi(TraceProvider.class);
     this.tracerRegistry =
-        tracerRegistryProvider != null
-            ? tracerRegistryProvider.create()
-            : DefaultTracerRegistryProvider.getInstance().create();
+        traceProvider != null
+            ? traceProvider.create()
+            : DefaultTraceProvider.getInstance().create();
 
-    MeterRegistryProvider meterRegistryProvider = loadSpi(MeterRegistryProvider.class);
+    MetricsProvider metricsProvider = loadSpi(MetricsProvider.class);
     meterRegistry =
-        meterRegistryProvider != null
-            ? meterRegistryProvider.create()
-            : DefaultMeterRegistryProvider.getInstance().create();
+        metricsProvider != null
+            ? metricsProvider.create()
+            : DefaultMetricsProvider.getInstance().create();
     CorrelationContextManagerProvider contextManagerProvider =
         loadSpi(CorrelationContextManagerProvider.class);
     contextManager =

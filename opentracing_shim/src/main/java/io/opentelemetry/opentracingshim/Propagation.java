@@ -23,6 +23,7 @@ import io.opentracing.propagation.TextMapInject;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 final class Propagation extends BaseShimObject {
   Propagation(TelemetryInfo telemetryInfo) {
@@ -38,6 +39,7 @@ final class Propagation extends BaseShimObject {
         .inject(contextShim.getCorrelationContext(), carrier, TextMapSetter.INSTANCE);
   }
 
+  @Nullable
   public SpanContextShim extractTextFormat(TextMapExtract carrier) {
     Map<String, String> carrierMap = new HashMap<String, String>();
     for (Map.Entry<String, String> entry : carrier) {
@@ -48,7 +50,9 @@ final class Propagation extends BaseShimObject {
         tracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
     io.opentelemetry.correlationcontext.CorrelationContext distContext =
         contextManager().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
-
+    if (!context.isValid()) {
+      return null;
+    }
     return new SpanContextShim(telemetryInfo, context, distContext);
   }
 
