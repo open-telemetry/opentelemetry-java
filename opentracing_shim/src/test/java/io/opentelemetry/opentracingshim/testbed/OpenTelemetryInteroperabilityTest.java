@@ -34,7 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class OpenTelemetryInteroperabilityTest {
-  private final TracerSdkRegistry sdk = TracerSdkRegistry.create();
+  private final TracerSdkRegistry sdk = TracerSdkRegistry.builder().build();
   private final io.opentelemetry.trace.Tracer tracer = sdk.get("opentracingshim");
   private final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
   private final Tracer otTracer =

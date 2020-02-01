@@ -45,7 +45,7 @@ public final class TestUtils {
    * exporting to the specified {@code InMemorySpanExporter}.
    */
   public static Tracer createTracerShim(InMemorySpanExporter exporter) {
-    TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
+    TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.builder().build();
     tracerSdkFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
     return TraceShim.createTracerShim(tracerSdkFactory, new CorrelationContextManagerSdk());
   }

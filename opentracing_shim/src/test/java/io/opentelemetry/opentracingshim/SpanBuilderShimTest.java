@@ -26,7 +26,7 @@ import io.opentelemetry.trace.Tracer;
 import org.junit.Test;
 
 public class SpanBuilderShimTest {
-  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
+  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
       new TelemetryInfo(tracer, new CorrelationContextManagerSdk());
