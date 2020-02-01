@@ -19,6 +19,7 @@ package io.opentelemetry.contrib.spring.boot;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,8 +34,15 @@ public class MeterSdkRegistryBeanTest {
     OpenTelemetryProperties properties = new OpenTelemetryProperties();
     MeterSdkRegistryBean factoryBean = new MeterSdkRegistryBean();
     factoryBean.setProperties(properties);
+    addDependencies(factoryBean);
     factoryBean.afterPropertiesSet();
     MeterRegistry meterRegistry = factoryBean.getObject();
     assertThat(meterRegistry).isInstanceOf(MeterSdkRegistry.class);
+  }
+
+  private static void addDependencies(MeterSdkRegistryBean factoryBean) {
+    factoryBean.setOtelClock(MillisClock.getInstance());
+    ServiceResourceFactory serviceResourceFactory = new ServiceResourceFactory("junit", null, null);
+    factoryBean.setOtelResource(serviceResourceFactory.getObject());
   }
 }

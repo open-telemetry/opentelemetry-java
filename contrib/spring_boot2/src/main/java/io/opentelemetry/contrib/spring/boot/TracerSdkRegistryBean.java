@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
-import io.opentelemetry.sdk.trace.TracerSdkRegistryBuilder;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.MultiSpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
@@ -158,7 +157,7 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
 
   private TracerRegistry initializeTracerRegistry() {
     TracerSdkRegistry registry =
-        new TracerSdkRegistryBuilder()
+        TracerSdkRegistry.builder()
             .setClock(otelClock)
             .setIdsGenerator(otelIdsGenerator)
             .setResource(otelResource)

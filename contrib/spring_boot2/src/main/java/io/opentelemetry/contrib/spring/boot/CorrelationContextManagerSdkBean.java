@@ -18,7 +18,6 @@ package io.opentelemetry.contrib.spring.boot;
 
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
-import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdkProvider;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,8 +60,7 @@ public class CorrelationContextManagerSdkBean
   }
 
   private CorrelationContextManager initializeCorrelationContextManager() {
-    CorrelationContextManagerSdkProvider provider = new CorrelationContextManagerSdkProvider();
-    CorrelationContextManagerSdk manager = (CorrelationContextManagerSdk) provider.create();
+    CorrelationContextManagerSdk manager = new CorrelationContextManagerSdk();
     if (properties.isEnabled()) {
       manager.getHttpTextFormat();
     }

@@ -149,8 +149,8 @@ public class OpenTelemetryAutoConfiguration {
       OpenTelemetryProperties properties, Clock clock, Resource resource) {
     MeterSdkRegistryBean factory = new MeterSdkRegistryBean();
     factory.setProperties(properties);
-    factory.setClock(clock);
-    factory.setResource(resource);
+    factory.setOtelClock(clock);
+    factory.setOtelResource(resource);
     factory.afterPropertiesSet();
     return factory.getObject();
   }

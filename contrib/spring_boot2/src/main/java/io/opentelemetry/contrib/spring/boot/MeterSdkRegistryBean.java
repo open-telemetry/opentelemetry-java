@@ -18,23 +18,19 @@ package io.opentelemetry.contrib.spring.boot;
 
 import io.opentelemetry.metrics.MeterRegistry;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
-import io.opentelemetry.sdk.metrics.MeterSdkRegistryProvider;
-import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.HashMap;
-import java.util.Map;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /** Creates an OpenTelemetry {@link MeterRegistry} from the default SDK the Spring way. */
 public class MeterSdkRegistryBean implements FactoryBean<MeterRegistry>, InitializingBean {
 
   private OpenTelemetryProperties properties;
-  private Clock clock;
-  private Resource resource;
+  private Clock otelClock;
+  private Resource otelResource;
   private MeterRegistry meterRegistry;
 
   /**
@@ -50,22 +46,23 @@ public class MeterSdkRegistryBean implements FactoryBean<MeterRegistry>, Initial
   /**
    * Sets the Spring-managed OpenTelemetry clock implementation for generating span timestamps.
    *
-   * @param clock the clock
+   * @param otelClock the clock
    */
-  @Autowired(required = false)
-  public void setClock(Clock clock) {
-    this.clock = clock;
+  @Autowired
+  public void setOtelClock(Clock otelClock) {
+    this.otelClock = otelClock;
   }
 
   /**
    * Sets the Spring-managed implementation of OpenTelemetry {@link Resource} which populates global
    * application attributes.
    *
-   * @param resource the resource populator
+   * @param otelResource the resource populator
    */
-  @Autowired(required = false)
-  public void setResource(Resource resource) {
-    this.resource = resource;
+  @Autowired
+  @Qualifier("otelResource")
+  public void setOtelResource(Resource otelResource) {
+    this.otelResource = otelResource;
   }
 
   @Override
@@ -87,32 +84,11 @@ public class MeterSdkRegistryBean implements FactoryBean<MeterRegistry>, Initial
   }
 
   private MeterRegistry initializeMeterRegistry() {
-    MeterSdkRegistryProvider provider = new MeterSdkRegistryProvider();
-    MeterSdkRegistry registry = (MeterSdkRegistry) provider.create();
+    MeterSdkRegistry registry =
+        MeterSdkRegistry.builder().setClock(otelClock).setResource(otelResource).build();
     if (properties.getMeter().isExport()) {
-      constructMeterSharedState();
+      registry.get("io.opentelemetry.contrib.spring.boot", "1.0");
     }
     return registry;
-  }
-
-  private Object constructMeterSharedState() {
-    Map<String, Object> state = new HashMap<>();
-    state.put("clock", prepareClock());
-    state.put("resource", prepareResource());
-    return state;
-  }
-
-  private Clock prepareClock() {
-    if (clock != null) {
-      return clock;
-    }
-    return MillisClock.getInstance();
-  }
-
-  private Resource prepareResource() {
-    if (resource != null) {
-      return resource;
-    }
-    return EnvVarResource.getResource();
   }
 }
