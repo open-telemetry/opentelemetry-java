@@ -34,6 +34,7 @@ subprojects {
     apply plugin: 'com.github.sherter.google-java-format'
     apply plugin: 'net.ltgt.errorprone'
     apply plugin: 'com.jfrog.artifactory'
+    apply from: "$rootDir/jmh.gradle"
 
     group = "io.opentelemetry"
     version = "0.3.0-SNAPSHOT" // CURRENT_VERSION
@@ -185,6 +186,14 @@ subprojects {
         tasks.verifyGoogleJavaFormat {
             source = sourceSets*.allJava
             include '**/*.java'
+        }
+
+        jar {
+            inputs.property("moduleName", moduleName)
+
+            manifest {
+                attributes('Automatic-Module-Name': moduleName)
+            }
         }
     }
 

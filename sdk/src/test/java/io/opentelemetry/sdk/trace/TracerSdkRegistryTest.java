@@ -17,13 +17,18 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
@@ -34,7 +39,8 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 public class TracerSdkRegistryTest {
   @Mock private SpanProcessor spanProcessor;
-  private final TracerSdkRegistry tracerFactory = TracerSdkRegistry.create();
+  @Rule public final ExpectedException thrown = ExpectedException.none();
+  private final TracerSdkRegistry tracerFactory = TracerSdkRegistry.builder().build();
 
   @Before
   public void setUp() {
@@ -43,18 +49,40 @@ public class TracerSdkRegistryTest {
   }
 
   @Test
-  public void defaultGet() {
-    assertThat(tracerFactory.get("test")).isInstanceOf(TracerSdk.class);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void libraryName_MustNotBeNull() {
-    tracerFactory.get(null);
+  public void builder_HappyPath() {
+    assertThat(
+            TracerSdkRegistry.builder()
+                .setClock(mock(Clock.class))
+                .setResource(mock(Resource.class))
+                .setIdsGenerator(mock(IdsGenerator.class))
+                .build())
+        .isNotNull();
   }
 
   @Test
-  public void libraryVersion_AllowsNull() {
-    assertThat(tracerFactory.get("name", null)).isNotNull();
+  public void builder_NullClock() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("clock");
+    TracerSdkRegistry.builder().setClock(null);
+  }
+
+  @Test
+  public void builder_NullResource() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("resource");
+    TracerSdkRegistry.builder().setResource(null);
+  }
+
+  @Test
+  public void builder_NullIdsGenerator() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("idsGenerator");
+    TracerSdkRegistry.builder().setIdsGenerator(null);
+  }
+
+  @Test
+  public void defaultGet() {
+    assertThat(tracerFactory.get("test")).isInstanceOf(TracerSdk.class);
   }
 
   @Test
@@ -70,22 +98,10 @@ public class TracerSdkRegistryTest {
   }
 
   @Test
-  public void getDifferentInstancesForDifferentNames() {
-    assertThat(tracerFactory.get("test1", null))
-        .isNotSameInstanceAs(tracerFactory.get("test2", null));
-  }
-
-  @Test
-  public void getDifferentInstancesForDifferentVersions() {
-    assertThat(tracerFactory.get("test", "version1"))
-        .isNotSameInstanceAs(tracerFactory.get("test", "version2"));
-  }
-
-  @Test
   public void propagatesInstrumentationLibraryInfoToTracer() {
     InstrumentationLibraryInfo expected =
         InstrumentationLibraryInfo.create("theName", "theVersion");
-    TracerSdk tracer = tracerFactory.get(expected.name(), expected.version());
+    TracerSdk tracer = tracerFactory.get(expected.getName(), expected.getVersion());
     assertThat(tracer.getInstrumentationLibraryInfo()).isEqualTo(expected);
   }
 

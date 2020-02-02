@@ -1,4 +1,5 @@
 description = 'OpenTelemetry Proto'
+ext.moduleName = 'io.opentelemetry.proto'
 
 apply plugin: 'com.google.protobuf'
 

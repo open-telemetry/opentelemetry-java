@@ -43,7 +43,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
-class SpanBuilderSdk implements Span.Builder {
+final class SpanBuilderSdk implements Span.Builder {
   private static final TraceFlags TRACE_OPTIONS_SAMPLED =
       TraceFlags.builder().setIsSampled(true).build();
   private static final TraceFlags TRACE_OPTIONS_NOT_SAMPLED =
@@ -169,7 +169,7 @@ class SpanBuilderSdk implements Span.Builder {
   public Span.Builder setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
     Utils.checkNotNull(value, "value");
-    if (value.getType() == Type.STRING && StringUtils.isNullOrBlank(value.getStringValue())) {
+    if (value.getType() == Type.STRING && StringUtils.isNullOrEmpty(value.getStringValue())) {
       return this;
     }
     attributes.putAttribute(key, value);

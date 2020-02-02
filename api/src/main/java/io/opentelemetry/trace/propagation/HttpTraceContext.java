@@ -62,6 +62,12 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   private static final char TRACESTATE_ENTRY_DELIMITER = ',';
   private static final Pattern TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN =
       Pattern.compile("[ \t]*" + TRACESTATE_ENTRY_DELIMITER + "[ \t]*");
+  static final SpanContext INVALID_SPAN_CONTEXT =
+      SpanContext.create(
+          TraceId.getInvalid(),
+          SpanId.getInvalid(),
+          TraceFlags.getDefault(),
+          Tracestate.getDefault());
 
   @Override
   public List<String> fields() {
@@ -110,7 +116,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
     TraceFlags traceFlags;
     String traceparent = getter.get(carrier, TRACEPARENT);
     if (traceparent == null) {
-      throw new IllegalArgumentException("Traceparent not present");
+      return INVALID_SPAN_CONTEXT;
     }
     try {
       // TODO(bdrutu): Do we need to verify that version is hex and that for the version

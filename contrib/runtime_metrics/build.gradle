@@ -1,4 +1,5 @@
 description = 'OpenTelemetry Contrib Runtime Metrics'
+ext.moduleName = "io.opentelemetry.contrib.metrics.runtime"
 
 dependencies {
     implementation project(':opentelemetry-api')

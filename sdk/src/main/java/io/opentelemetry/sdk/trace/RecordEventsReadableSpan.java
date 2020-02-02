@@ -286,15 +286,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns the kind of this {@code Span}.
-   *
-   * @return the kind of this {@code Span}.
-   */
-  public Kind getKind() {
-    return kind;
-  }
-
-  /**
    * Returns the {@code Clock} used by this {@code Span}.
    *
    * @return the {@code Clock} used by this {@code Span}.
@@ -327,7 +318,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
-    if (value.getType() == Type.STRING && StringUtils.isNullOrBlank(value.getStringValue())) {
+    if (value.getType() == Type.STRING && StringUtils.isNullOrEmpty(value.getStringValue())) {
       return;
     }
     synchronized (lock) {

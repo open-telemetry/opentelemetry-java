@@ -1,4 +1,5 @@
 description = 'OpenTelemetry API'
+ext.moduleName = "io.opentelemetry.api"
 
 dependencies {
     api project(':opentelemetry-context-prop')

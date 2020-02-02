@@ -1,4 +1,5 @@
 description = 'OpenTelemetry SDK'
+ext.moduleName = "io.opentelemetry.sdk"
 
 dependencies {
     api project(':opentelemetry-api')
