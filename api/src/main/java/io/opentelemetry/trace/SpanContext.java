@@ -54,13 +54,13 @@ public abstract class SpanContext {
    * @param traceId the trace identifier of the span context.
    * @param spanId the span identifier of the span context.
    * @param traceFlags the trace options for the span context.
-   * @param tracestate the trace state for the span context.
+   * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    * @since 0.1.0
    */
   public static SpanContext create(
-      TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState tracestate) {
-    return new AutoValue_SpanContext(traceId, spanId, traceFlags, tracestate, /* remote=*/ false);
+      TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState traceState) {
+    return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ false);
   }
 
   /**
@@ -70,13 +70,13 @@ public abstract class SpanContext {
    * @param traceId the trace identifier of the span context.
    * @param spanId the span identifier of the span context.
    * @param traceFlags the trace options for the span context.
-   * @param tracestate the trace state for the span context.
+   * @param traceState the trace state for the span context.
    * @return a new {@code SpanContext} with the given identifiers and options.
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState tracestate) {
-    return new AutoValue_SpanContext(traceId, spanId, traceFlags, tracestate, /* remote=*/ true);
+      TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState traceState) {
+    return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ true);
   }
 
   /**

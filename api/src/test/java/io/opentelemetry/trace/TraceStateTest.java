@@ -237,7 +237,7 @@ public class TraceStateTest {
   }
 
   @Test
-  public void tracestate_EqualsAndHashCode() {
+  public void traceState_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(EMPTY, EMPTY);
     tester.addEqualityGroup(firstTraceState, EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).build());
@@ -247,7 +247,7 @@ public class TraceStateTest {
   }
 
   @Test
-  public void tracestate_ToString() {
+  public void traceState_ToString() {
     assertThat(EMPTY.toString()).isEqualTo("TraceState{entries=[]}");
   }
 }

@@ -142,7 +142,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
       if (traceState == null || traceState.isEmpty()) {
         return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
       }
-      TraceState.Builder tracestateBuilder = TraceState.builder();
+      TraceState.Builder traceStateBuilder = TraceState.builder();
       String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(traceState);
       checkArgument(
           listMembers.length <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");
@@ -152,10 +152,10 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
         String listMember = listMembers[i];
         int index = listMember.indexOf(TRACESTATE_KEY_VALUE_DELIMITER);
         checkArgument(index != -1, "Invalid TraceState list-member format.");
-        tracestateBuilder.set(listMember.substring(0, index), listMember.substring(index + 1));
+        traceStateBuilder.set(listMember.substring(0, index), listMember.substring(index + 1));
       }
       return SpanContext.createFromRemoteParent(
-          traceId, spanId, traceFlags, tracestateBuilder.build());
+          traceId, spanId, traceFlags, traceStateBuilder.build());
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid tracestate: " + traceState, e);
     }

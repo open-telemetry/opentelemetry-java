@@ -104,7 +104,7 @@ public class SpanContextTest {
   }
 
   @Test
-  public void getTracestate() {
+  public void getTraceState() {
     assertThat(first.getTraceState()).isEqualTo(FIRST_TRACE_STATE);
     assertThat(second.getTraceState()).isEqualTo(SECOND_TRACE_STATE);
   }
