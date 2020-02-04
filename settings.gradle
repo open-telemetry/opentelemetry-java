@@ -7,6 +7,7 @@ include ":opentelemetry-all",
         ":opentelemetry-contrib-trace-utils",
         ":opentelemetry-exporters-inmemory",
         ":opentelemetry-exporters-jaeger",
+        ":opentelemetry-exporters-lightstep",
         ":opentelemetry-exporters-logging",
         ":opentelemetry-exporters-otprotocol",
         ":opentelemetry-opentracing-shim",
@@ -27,6 +28,8 @@ project(':opentelemetry-exporters-inmemory').projectDir =
         "$rootDir/exporters/inmemory" as File
 project(':opentelemetry-exporters-jaeger').projectDir =
         "$rootDir/exporters/jaeger" as File
+project(':opentelemetry-exporters-lightstep').projectDir =
+        "$rootDir/exporters/lightstep" as File
 project(':opentelemetry-exporters-logging').projectDir =
         "$rootDir/exporters/logging" as File
 project(':opentelemetry-exporters-otprotocol').projectDir =
