@@ -64,9 +64,7 @@ public class HttpTraceContextInjectBenchmark {
     this.carrier = new LinkedHashMap<>();
   }
 
-  /**
-   * Benchmark for measuring inject with default trace state and sampled trace options.
-   */
+  /** Benchmark for measuring inject with default trace state and sampled trace options. */
   @Benchmark
   @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
   @Fork(1)
