@@ -40,19 +40,19 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class Tracestate {
+public abstract class TraceState {
   private static final int KEY_MAX_SIZE = 256;
   private static final int VALUE_MAX_SIZE = 256;
   private static final int MAX_KEY_VALUE_PAIRS = 32;
-  private static final Tracestate DEFAULT = Tracestate.builder().build();
+  private static final TraceState DEFAULT = TraceState.builder().build();
 
   /**
-   * Returns the default {@code Tracestate} with no entries.
+   * Returns the default {@code TraceState} with no entries.
    *
-   * @return the default {@code Tracestate}.
+   * @return the default {@code TraceState}.
    * @since 0.1.0
    */
-  public static Tracestate getDefault() {
+  public static TraceState getDefault() {
     return DEFAULT;
   }
 
@@ -84,9 +84,9 @@ public abstract class Tracestate {
   public abstract List<Entry> getEntries();
 
   /**
-   * Returns a {@code Builder} based on an empty {@code Tracestate}.
+   * Returns a {@code Builder} based on an empty {@code TraceState}.
    *
-   * @return a {@code Builder} based on an empty {@code Tracestate}.
+   * @return a {@code Builder} based on an empty {@code TraceState}.
    * @since 0.1.0
    */
   public static Builder builder() {
@@ -94,9 +94,9 @@ public abstract class Tracestate {
   }
 
   /**
-   * Returns a {@code Builder} based on this {@code Tracestate}.
+   * Returns a {@code Builder} based on this {@code TraceState}.
    *
-   * @return a {@code Builder} based on this {@code Tracestate}.
+   * @return a {@code Builder} based on this {@code TraceState}.
    * @since 0.1.0
    */
   public Builder toBuilder() {
@@ -104,19 +104,19 @@ public abstract class Tracestate {
   }
 
   /**
-   * Builder class for {@link Tracestate}.
+   * Builder class for {@link TraceState}.
    *
    * @since 0.1.0
    */
   public static final class Builder {
-    private final Tracestate parent;
+    private final TraceState parent;
     @javax.annotation.Nullable private ArrayList<Entry> entries;
 
     // Needs to be in this class to avoid initialization deadlock because super class depends on
     // subclass (the auto-value generate class).
-    private static final Tracestate EMPTY = create(Collections.<Entry>emptyList());
+    private static final TraceState EMPTY = create(Collections.<Entry>emptyList());
 
-    private Builder(Tracestate parent) {
+    private Builder(TraceState parent) {
       Utils.checkNotNull(parent, "parent");
       this.parent = parent;
       this.entries = null;
@@ -180,16 +180,16 @@ public abstract class Tracestate {
      * @return a TraceState with the new entries.
      * @since 0.1.0
      */
-    public Tracestate build() {
+    public TraceState build() {
       if (entries == null) {
         return parent;
       }
-      return Tracestate.create(entries);
+      return TraceState.create(entries);
     }
   }
 
   /**
-   * Immutable key-value pair for {@code Tracestate}.
+   * Immutable key-value pair for {@code TraceState}.
    *
    * @since 0.1.0
    */
@@ -197,7 +197,7 @@ public abstract class Tracestate {
   @AutoValue
   public abstract static class Entry {
     /**
-     * Creates a new {@code Entry} for the {@code Tracestate}.
+     * Creates a new {@code Entry} for the {@code TraceState}.
      *
      * @param key the Entry's key.
      * @param value the Entry's value.
@@ -209,7 +209,7 @@ public abstract class Tracestate {
       Utils.checkNotNull(value, "value");
       Utils.checkArgument(validateKey(key), "Invalid key %s", key);
       Utils.checkArgument(validateValue(value), "Invalid value %s", value);
-      return new AutoValue_Tracestate_Entry(key, value);
+      return new AutoValue_TraceState_Entry(key, value);
     }
 
     /**
@@ -272,10 +272,10 @@ public abstract class Tracestate {
     return true;
   }
 
-  private static Tracestate create(List<Entry> entries) {
+  private static TraceState create(List<Entry> entries) {
     Utils.checkState(entries.size() <= MAX_KEY_VALUE_PAIRS, "Invalid size");
-    return new AutoValue_Tracestate(Collections.unmodifiableList(entries));
+    return new AutoValue_TraceState(Collections.unmodifiableList(entries));
   }
 
-  Tracestate() {}
+  TraceState() {}
 }

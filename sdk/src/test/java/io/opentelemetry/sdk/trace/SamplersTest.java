@@ -25,7 +25,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -43,12 +43,12 @@ public class SamplersTest {
   private final TraceId traceId = idsGenerator.generateTraceId();
   private final SpanId spanId = idsGenerator.generateSpanId();
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
-  private final Tracestate tracestate = Tracestate.builder().build();
+  private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
       SpanContext.create(
-          traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), tracestate);
+          traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), traceState);
   private final SpanContext notSampledSpanContext =
-      SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), tracestate);
+      SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
   private final Link sampledParentLink = SpanData.Link.create(sampledSpanContext);
 
   @Rule public final ExpectedException thrown = ExpectedException.none();

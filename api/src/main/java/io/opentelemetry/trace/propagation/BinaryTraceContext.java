@@ -22,7 +22,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -62,7 +62,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class BinaryTraceContext implements BinaryFormat<SpanContext> {
 
-  private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
+  private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
   private static final byte VERSION_ID = 0;
   private static final int VERSION_ID_OFFSET = 0;
   // The version_id/field_id size in bytes.
@@ -146,6 +146,6 @@ public final class BinaryTraceContext implements BinaryFormat<SpanContext> {
       }
       traceFlags = TraceFlags.fromByte(bytes[pos + ID_SIZE]);
     }
-    return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACESTATE_DEFAULT);
+    return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
   }
 }

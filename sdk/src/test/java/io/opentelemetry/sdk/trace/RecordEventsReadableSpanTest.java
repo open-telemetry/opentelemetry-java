@@ -33,7 +33,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,7 +68,7 @@ public class RecordEventsReadableSpanTest {
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
   private final boolean expectedHasRemoteParent = true;
   private final SpanContext spanContext =
-      SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
+      SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final long startEpochNanos = 1000_123_789_654L;
   private final TestClock testClock = TestClock.create(startEpochNanos);
   private final Resource resource = Resource.getEmpty();
@@ -527,7 +527,7 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
     assertThat(spanData.getHasRemoteParent()).isEqualTo(expectedHasRemoteParent);
-    assertThat(spanData.getTracestate()).isEqualTo(Tracestate.getDefault());
+    assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     assertThat(spanData.getName()).isEqualTo(spanName);
@@ -559,7 +559,7 @@ public class RecordEventsReadableSpanTest {
     Map<String, AttributeValue> event1Attributes = TestUtils.generateRandomAttributes();
     Map<String, AttributeValue> event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
-        SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
+        SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
     Link link1 = SpanData.Link.create(context, TestUtils.generateRandomAttributes());
     List<Link> links = Collections.singletonList(link1);
 

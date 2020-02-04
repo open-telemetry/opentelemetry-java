@@ -29,7 +29,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -101,7 +101,7 @@ public class SpanDataTest {
             TraceId.getInvalid(),
             SpanId.getInvalid(),
             TraceFlags.getDefault(),
-            Tracestate.getDefault()));
+            TraceState.getDefault()));
   }
 
   private static SpanData.Builder createBasicSpanBuilder() {
