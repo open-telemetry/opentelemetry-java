@@ -18,7 +18,7 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
-public class HtpTraceContextExtractBenchmark {
+public class HttpTraceContextExtractBenchmark {
 
   private String traceIdBase16 = "ff000000000000000000000000000041";
   private String spanIdBase16 = "ff00000000000041";
