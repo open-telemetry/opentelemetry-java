@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
  * A class that represents a span context. A span context contains the state that must propagate to
  * child {@link Span}s and across process boundaries. It contains the identifiers (a {@link TraceId
  * trace_id} and {@link SpanId span_id}) associated with the {@link Span} and a set of {@link
- * TraceFlags options}, as well as the {@link Tracestate tracestate} and the {@link boolean remote}
+ * TraceFlags options}, as well as the {@link TraceState traceState} and the {@link boolean remote}
  * flag.
  *
  * @since 0.1.0
@@ -37,7 +37,7 @@ public abstract class SpanContext {
           TraceId.getInvalid(),
           SpanId.getInvalid(),
           TraceFlags.getDefault(),
-          Tracestate.getDefault());
+          TraceState.getDefault());
 
   /**
    * Returns the invalid {@code SpanContext} that can be used for no-op operations.
@@ -59,7 +59,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext create(
-      TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
+      TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState tracestate) {
     return new AutoValue_SpanContext(traceId, spanId, traceFlags, tracestate, /* remote=*/ false);
   }
 
@@ -75,7 +75,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      TraceId traceId, SpanId spanId, TraceFlags traceFlags, Tracestate tracestate) {
+      TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState tracestate) {
     return new AutoValue_SpanContext(traceId, spanId, traceFlags, tracestate, /* remote=*/ true);
   }
 
@@ -104,12 +104,12 @@ public abstract class SpanContext {
   public abstract TraceFlags getTraceFlags();
 
   /**
-   * Returns the {@code Tracestate} associated with this {@code SpanContext}.
+   * Returns the {@code TraceState} associated with this {@code SpanContext}.
    *
-   * @return the {@code Tracestate} associated with this {@code SpanContext}.
+   * @return the {@code TraceState} associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public abstract Tracestate getTracestate();
+  public abstract TraceState getTraceState();
 
   /**
    * Returns {@code true} if this {@code SpanContext} is valid.

@@ -169,7 +169,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             .setLinks(getLinks())
             .setTotalRecordedLinks(totalRecordedLinks)
             .setKind(kind)
-            .setTracestate(spanContext.getTracestate())
+            .setTraceState(spanContext.getTraceState())
             .setParentSpanId(parentSpanId)
             .setHasRemoteParent(hasRemoteParent)
             .setResource(resource)
