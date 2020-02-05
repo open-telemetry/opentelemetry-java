@@ -47,10 +47,10 @@ import okhttp3.ResponseBody;
 public class LightStepSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(LightStepSpanExporter.class.getName());
 
-  @Nullable
-  private static final MediaType protoMediaType = MediaType.parse("application/octet-stream");
+  static final String MEDIA_TYPE_STRING = "application/octet-stream";
+  @Nullable private static final MediaType MEDIA_TYPE = MediaType.parse(MEDIA_TYPE_STRING);
 
-  private static final String LS_ACCESS_TOKEN = "Lightstep-Access-Token";
+  static final String LS_ACCESS_TOKEN = "Lightstep-Access-Token";
   static final String DEFAULT_HOST = "collector-grpc.lightstep.com";
   static final String PATH = "/api/v2/reports";
 
@@ -175,19 +175,24 @@ public class LightStepSpanExporter implements SpanExporter {
             .addAllSpans(Adapter.toLightStepSpans(spans))
             .build();
 
-    try {
-      final Response response = client.newCall(toRequest(request)).execute();
+    try (final Response response = client.newCall(toRequest(request)).execute()) {
       if (!response.isSuccessful()) {
+        logger.log(Level.WARNING, "Failed to post spans to collector. " + response.toString());
         return ResultCode.FAILED_NOT_RETRYABLE;
       }
 
       final ResponseBody body = response.body();
       if (body == null) {
+        logger.log(Level.WARNING, "Response body is null");
         return ResultCode.FAILED_NOT_RETRYABLE;
       }
 
       final ReportResponse reportResponse = ReportResponse.parseFrom(body.byteStream());
       if (!reportResponse.getErrorsList().isEmpty()) {
+        List<String> errs = reportResponse.getErrorsList();
+        for (String err : errs) {
+          logger.log(Level.WARNING, "Collector response contained error: " + err);
+        }
         return ResultCode.FAILED_NOT_RETRYABLE;
       }
 
@@ -201,7 +206,7 @@ public class LightStepSpanExporter implements SpanExporter {
   private Request toRequest(ReportRequest request) {
     return new Request.Builder()
         .url(this.collectorUrl)
-        .post(RequestBody.create(protoMediaType, request.toByteArray()))
+        .post(RequestBody.create(MEDIA_TYPE, request.toByteArray()))
         .addHeader(LS_ACCESS_TOKEN, request.getAuth().getAccessToken())
         .build();
   }
