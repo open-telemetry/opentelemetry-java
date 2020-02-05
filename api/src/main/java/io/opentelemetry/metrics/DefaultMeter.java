@@ -120,7 +120,7 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public BatchRecorder newMeasureBatchRecorder() {
+  public BatchRecorder newBatchRecorder() {
     return new NoopBatchRecorder();
   }
 
