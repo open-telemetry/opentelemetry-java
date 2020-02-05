@@ -88,15 +88,16 @@ final class DoubleMeasureSdk extends BaseInstrument<BoundDoubleMeasure> implemen
     }
   }
 
-  static final class Builder extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
+  static DoubleMeasure.Builder builder(String name) {
+    return new Builder(name);
+  }
+
+  private static final class Builder
+      extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
       implements DoubleMeasure.Builder {
 
     private Builder(String name) {
       super(name);
-    }
-
-    static DoubleMeasure.Builder builder(String name) {
-      return new Builder(name);
     }
 
     @Override
