@@ -75,6 +75,7 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
    *
    * @since 0.1.0
    */
+  @ThreadSafe
   interface BoundDoubleCounter {
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
