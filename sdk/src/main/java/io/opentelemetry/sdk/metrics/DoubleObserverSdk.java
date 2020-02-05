@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleObserver;
-import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
