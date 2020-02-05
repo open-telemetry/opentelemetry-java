@@ -80,12 +80,12 @@ final class MeterSdk implements Meter {
 
   @Override
   public DoubleObserver.Builder doubleObserverBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return DoubleObserverSdk.builder(name);
   }
 
   @Override
   public LongObserver.Builder longObserverBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return LongObserverSdk.builder(name);
   }
 
   @Override

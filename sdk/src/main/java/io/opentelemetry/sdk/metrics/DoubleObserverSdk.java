@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,15 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
+import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleCounterSdk extends BaseInstrumentWithBinding<BoundDoubleCounter>
-    implements DoubleCounter {
-
+final class DoubleObserverSdk extends BaseInstrument implements DoubleObserver {
   private final boolean monotonic;
 
-  private DoubleCounterSdk(
+  DoubleObserverSdk(
       String name,
       String description,
       Map<String, String> constantLabels,
@@ -38,13 +35,8 @@ final class DoubleCounterSdk extends BaseInstrumentWithBinding<BoundDoubleCounte
   }
 
   @Override
-  public void add(double delta, LabelSet labelSet) {
-    createBoundInstrument(labelSet).add(delta);
-  }
-
-  @Override
-  BoundDoubleCounter createBoundInstrument(LabelSet labelSet) {
-    return new Bound(labelSet, monotonic);
+  public void setCallback(Callback<DoubleObserver.ResultDoubleObserver> metricUpdater) {
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
@@ -52,14 +44,14 @@ final class DoubleCounterSdk extends BaseInstrumentWithBinding<BoundDoubleCounte
     if (this == o) {
       return true;
     }
-    if (!(o instanceof DoubleCounterSdk)) {
+    if (!(o instanceof DoubleObserverSdk)) {
       return false;
     }
     if (!super.equals(o)) {
       return false;
     }
 
-    DoubleCounterSdk that = (DoubleCounterSdk) o;
+    DoubleObserverSdk that = (DoubleObserverSdk) o;
 
     return monotonic == that.monotonic;
   }
@@ -71,33 +63,16 @@ final class DoubleCounterSdk extends BaseInstrumentWithBinding<BoundDoubleCounte
     return result;
   }
 
-  private static final class Bound extends BaseBoundInstrument implements BoundDoubleCounter {
-
-    private final boolean monotonic;
-
-    Bound(LabelSet labels, boolean monotonic) {
-      super(labels);
-      this.monotonic = monotonic;
-    }
-
-    @Override
-    public void add(double delta) {
-      if (monotonic && delta < 0) {
-        throw new IllegalArgumentException("monotonic counters can only increase");
-      }
-      // todo: pass through to an aggregator/accumulator
-    }
+  static DoubleObserver.Builder builder(String name) {
+    return new Builder(name);
   }
 
-  static final class Builder extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
-      implements DoubleCounter.Builder {
+  private static final class Builder
+      extends AbstractObserverBuilder<DoubleObserver.Builder, DoubleObserver>
+      implements DoubleObserver.Builder {
 
     private Builder(String name) {
       super(name);
-    }
-
-    static DoubleCounter.Builder builder(String name) {
-      return new Builder(name);
     }
 
     @Override
@@ -106,8 +81,8 @@ final class DoubleCounterSdk extends BaseInstrumentWithBinding<BoundDoubleCounte
     }
 
     @Override
-    public DoubleCounter build() {
-      return new DoubleCounterSdk(
+    public DoubleObserver build() {
+      return new DoubleObserverSdk(
           getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
     }
   }

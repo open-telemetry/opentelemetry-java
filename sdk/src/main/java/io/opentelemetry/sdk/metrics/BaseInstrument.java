@@ -16,13 +16,11 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.InstrumentWithBinding;
-import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.metrics.Instrument;
 import java.util.List;
 import java.util.Map;
 
-// TODO: add a BaseInstrument and a BaseInstrumentWithBounds.
-abstract class BaseInstrument<B> implements InstrumentWithBinding<B> {
+abstract class BaseInstrument implements Instrument {
 
   private final String name;
   private final String description;
@@ -37,19 +35,6 @@ abstract class BaseInstrument<B> implements InstrumentWithBinding<B> {
     this.labelKeys = labelKeys;
   }
 
-  abstract B createBoundInstrument(LabelSet labelSet);
-
-  @Override
-  public B bind(LabelSet labelSet) {
-    return createBoundInstrument(labelSet);
-    // todo: associate with an aggregator/accumulator
-  }
-
-  @Override
-  public void unbind(B boundInstrument) {
-    // todo: pass through to an aggregator/accumulator
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -59,7 +44,7 @@ abstract class BaseInstrument<B> implements InstrumentWithBinding<B> {
       return false;
     }
 
-    BaseInstrument<?> that = (BaseInstrument<?>) o;
+    BaseInstrument that = (BaseInstrument) o;
 
     if (name != null ? !name.equals(that.name) : that.name != null) {
       return false;

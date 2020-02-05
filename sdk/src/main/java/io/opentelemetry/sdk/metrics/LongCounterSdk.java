@@ -22,7 +22,8 @@ import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import java.util.List;
 import java.util.Map;
 
-final class LongCounterSdk extends BaseInstrument<BoundLongCounter> implements LongCounter {
+final class LongCounterSdk extends BaseInstrumentWithBinding<BoundLongCounter>
+    implements LongCounter {
 
   private final boolean monotonic;
 
