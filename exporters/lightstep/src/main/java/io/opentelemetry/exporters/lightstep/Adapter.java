@@ -39,8 +39,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.annotation.concurrent.ThreadSafe;
 
-public class Adapter {
+/** Adapts OpenTelemetry objects to LightStep objects. */
+@ThreadSafe
+final class Adapter {
   static final String KEY_LOG_MESSAGE = "message";
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
@@ -48,14 +51,27 @@ public class Adapter {
 
   private Adapter() {}
 
-  static List<Span> toLightStepSpans(List<SpanData> spanDatas) {
-    List<Span> spans = new ArrayList<>();
-    for (SpanData spanData : spanDatas) {
-      spans.add(toLightStepSpan(spanData));
+  /**
+   * Converts a list of {@link SpanData} into a collection of LightStep's {@link Span}.
+   *
+   * @param spans the list of spans to be converted
+   * @return the collection of LightStep spans
+   * @see #toLightStepSpan(SpanData)
+   */
+  static List<Span> toLightStepSpans(List<SpanData> spans) {
+    List<Span> converted = new ArrayList<>();
+    for (SpanData span : spans) {
+      converted.add(toLightStepSpan(span));
     }
-    return spans;
+    return converted;
   }
 
+  /**
+   * Converts a single {@link SpanData} into a LightStep's {@link Span}.
+   *
+   * @param spanData the spanData to be converted
+   * @return the LightStep span
+   */
   static Span toLightStepSpan(SpanData spanData) {
     final Span.Builder builder = Span.newBuilder();
     builder.setOperationName(spanData.getName());
@@ -75,7 +91,7 @@ public class Adapter {
 
     builder.addAllTags(toKeyValues(spanData.getAttributes()));
 
-    builder.addAllLogs(toLogs(spanData.getTimedEvents()));
+    builder.addAllLogs(toLightStepLogs(spanData.getTimedEvents()));
 
     builder.addAllReferences(toReferences(spanData.getLinks()));
 
@@ -114,6 +130,12 @@ public class Adapter {
     return builder.build();
   }
 
+  /**
+   * Converts {@link Link}s into a collection of LightStep's {@link Reference}.
+   *
+   * @param links the span's links property to be converted
+   * @return a collection of LightStep span references
+   */
   @VisibleForTesting
   static List<Reference> toReferences(List<Link> links) {
     final List<Reference> references = new ArrayList<>();
@@ -123,6 +145,12 @@ public class Adapter {
     return references;
   }
 
+  /**
+   * Converts a single {@link Link} into a LightStep's {@link Reference}.
+   *
+   * @param link the OpenTelemetry link to be converted
+   * @return the LightStep span reference
+   */
   @VisibleForTesting
   static Reference toReference(Link link) {
     final Reference.Builder builder = Reference.newBuilder();
@@ -134,26 +162,46 @@ public class Adapter {
     return builder.build();
   }
 
+  /**
+   * Converts {@link SpanData.TimedEvent}s into a collection of LightStep's {@link Log}.
+   *
+   * @param timeEvents the timed events to be converted
+   * @return a collection of LightStep logs
+   * @see #toLightStepLog(TimedEvent)
+   */
   @VisibleForTesting
-  static List<Log> toLogs(List<TimedEvent> events) {
+  static List<Log> toLightStepLogs(List<TimedEvent> timeEvents) {
     final List<Log> logs = new ArrayList<>();
-    for (TimedEvent event : events) {
-      logs.add(toLog(event));
+    for (TimedEvent timedEvent : timeEvents) {
+      logs.add(toLightStepLog(timedEvent));
     }
     return logs;
   }
 
+  /**
+   * Converts a {@link SpanData.TimedEvent} into LightStep's {@link Log}.
+   *
+   * @param timedEvent the timed event to be converted
+   * @return a LightStep log
+   */
   @VisibleForTesting
-  static Log toLog(TimedEvent event) {
+  static Log toLightStepLog(TimedEvent timedEvent) {
     final Log.Builder builder = Log.newBuilder();
-    builder.setTimestamp(Timestamps.fromNanos(event.getEpochNanos()));
+    builder.setTimestamp(Timestamps.fromNanos(timedEvent.getEpochNanos()));
     builder.addFields(
-        KeyValue.newBuilder().setKey(KEY_LOG_MESSAGE).setStringValue(event.getName()).build());
-    builder.addAllFields(toKeyValues(event.getAttributes()));
+        KeyValue.newBuilder().setKey(KEY_LOG_MESSAGE).setStringValue(timedEvent.getName()).build());
+    builder.addAllFields(toKeyValues(timedEvent.getAttributes()));
 
     return builder.build();
   }
 
+  /**
+   * Converts a map of attributes into a collection of LightStep's {@link KeyValue}.
+   *
+   * @param attributes the span attributes
+   * @return a collection of LightStep key values
+   * @see #toKeyValue(String, AttributeValue)
+   */
   @VisibleForTesting
   static List<KeyValue> toKeyValues(Map<String, AttributeValue> attributes) {
     final List<KeyValue> keyValues = new ArrayList<>();
@@ -164,6 +212,13 @@ public class Adapter {
     return keyValues;
   }
 
+  /**
+   * Converts the given key and {@link AttributeValue} into LightStep's {@link KeyValue}.
+   *
+   * @param key the entry key as string
+   * @param value the entry value
+   * @return a LightStep key value
+   */
   @VisibleForTesting
   static KeyValue toKeyValue(String key, AttributeValue value) {
     final KeyValue.Builder builder = KeyValue.newBuilder().setKey(key);
@@ -186,11 +241,14 @@ public class Adapter {
     return builder.build();
   }
 
-  private static long fromByteArray(byte[] bytes) {
-    return ByteBuffer.wrap(bytes).getLong();
-  }
-
-  private static long traceIdToLong(final TraceId traceId) {
+  /**
+   * Convert {@link TraceId} to long value
+   *
+   * @param traceId trace id
+   * @return long value of trace id
+   */
+  @VisibleForTesting
+  static long traceIdToLong(final TraceId traceId) {
     if (traceId == null) {
       return 0L;
     }
@@ -198,11 +256,22 @@ public class Adapter {
     return fromByteArray(protoTraceId.toByteArray());
   }
 
-  private static long spanIdToLong(final SpanId spanId) {
+  /**
+   * Convert {@link SpanId} to long value
+   *
+   * @param spanId span id
+   * @return long value of span id
+   */
+  @VisibleForTesting
+  static long spanIdToLong(final SpanId spanId) {
     if (spanId == null) {
       return 0L;
     }
     final ByteString protoSpanId = TraceProtoUtils.toProtoSpanId(spanId);
     return fromByteArray(protoSpanId.toByteArray());
+  }
+
+  private static long fromByteArray(byte[] bytes) {
+    return ByteBuffer.wrap(bytes).getLong();
   }
 }

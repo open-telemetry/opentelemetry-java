@@ -120,7 +120,7 @@ public class AdapterTest {
     SpanData.TimedEvent timedEvents = getTimedEvent();
 
     // test
-    List<Log> logs = Adapter.toLogs(Collections.singletonList(timedEvents));
+    List<Log> logs = Adapter.toLightStepLogs(Collections.singletonList(timedEvents));
 
     // verify
     assertEquals(1, logs.size());
@@ -132,7 +132,7 @@ public class AdapterTest {
     SpanData.TimedEvent timedEvent = getTimedEvent();
 
     // test
-    Log log = Adapter.toLog(timedEvent);
+    Log log = Adapter.toLightStepLog(timedEvent);
 
     // verify
     assertEquals(2, log.getFieldsCount());
@@ -184,8 +184,7 @@ public class AdapterTest {
   @Test
   public void testSpanRefs() {
     // prepare
-    Link link =
-        SpanData.Link.create(createSpanContext(TRACE_ID, SPAN_ID));
+    Link link = SpanData.Link.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Collection<Reference> spanRefs = Adapter.toReferences(Collections.singletonList(link));
@@ -228,6 +227,20 @@ public class AdapterTest {
             .build();
 
     assertNotNull(Adapter.toLightStepSpan(span));
+  }
+
+  @Test
+  public void testTraceIdToLong() {
+    final TraceId traceId = TraceId.fromLowerBase16(TRACE_ID, 0);
+    final long traceIdLong = Adapter.traceIdToLong(traceId);
+    assertEquals(4126161779880129985L, traceIdLong);
+  }
+
+  @Test
+  public void testSpanIdToLong() {
+    final SpanId spanId = SpanId.fromLowerBase16(SPAN_ID, 0);
+    final long spanIdLong = Adapter.spanIdToLong(spanId);
+    assertEquals(14611542L, spanIdLong);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {

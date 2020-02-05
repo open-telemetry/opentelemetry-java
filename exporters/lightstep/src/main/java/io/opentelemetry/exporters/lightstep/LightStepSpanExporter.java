@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 import okhttp3.Dns;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -41,6 +42,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+/** Exports spans to LightStep via OkHttp, using LightStep's protobuf model. */
+@ThreadSafe
 public class LightStepSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(LightStepSpanExporter.class.getName());
 
@@ -81,28 +84,34 @@ public class LightStepSpanExporter implements SpanExporter {
   private final Auth.Builder auth;
   private final String componentName;
 
+  /**
+   * Creates a new LightStep OkHttp Span Reporter.
+   *
+   * @param collectorUrl collector url.
+   * @param deadlineMillis The maximum amount of time the tracer should wait for a response from the
+   *     collector when sending a report.
+   * @param accessToken Your specific token for LightStep access.
+   * @param okHttpDns DNS service used to lookup IP addresses for hostnames
+   * @param componentName The component name attribute. If not set, will default to the Java runtime
+   *     command.
+   */
   private LightStepSpanExporter(
       URL collectorUrl,
       long deadlineMillis,
       String accessToken,
-      OkHttpDns dns,
+      OkHttpDns okHttpDns,
       String componentName) {
     this.collectorUrl = collectorUrl;
     this.componentName = componentName;
     OkHttpClient.Builder builder =
         new OkHttpClient.Builder().connectTimeout(deadlineMillis, TimeUnit.MILLISECONDS);
 
-    if (dns != null) {
-      builder.dns(new CustomDns(dns));
+    if (okHttpDns != null) {
+      builder.dns(new CustomDns(okHttpDns));
     }
 
     this.client = builder.build();
     this.auth = Auth.newBuilder().setAccessToken(accessToken);
-  }
-
-  public static long generateRandomGUID() {
-    // Note that ThreadLocalRandom is a singleton, thread safe Random Generator
-    return random.get().nextLong();
   }
 
   /**
@@ -125,6 +134,17 @@ public class LightStepSpanExporter implements SpanExporter {
         }
       };
 
+  private static long generateRandomGUID() {
+    // Note that ThreadLocalRandom is a singleton, thread safe Random Generator
+    return random.get().nextLong();
+  }
+
+  /**
+   * Submits all the given spans in a single batch to the LightStep collector.
+   *
+   * @param spans the list of sampled Spans to be exported.
+   * @return the result of the operation
+   */
   @Override
   public ResultCode export(List<SpanData> spans) {
     final long guid = generateRandomGUID();
@@ -186,6 +206,10 @@ public class LightStepSpanExporter implements SpanExporter {
         .build();
   }
 
+  /**
+   * Initiates an orderly shutdown in which preexisting calls continue but new calls are immediately
+   * cancelled.
+   */
   @Override
   public void shutdown() {
     client.dispatcher().executorService().shutdown();
@@ -217,6 +241,7 @@ public class LightStepSpanExporter implements SpanExporter {
     }
   }
 
+  /** Builder utility for this exporter. */
   public static class Builder {
     private int collectorPort = -1;
     private String collectorProtocol = PROTOCOL_HTTPS;
@@ -299,8 +324,6 @@ public class LightStepSpanExporter implements SpanExporter {
      * Sets the DNS service used to lookup IP addresses for hostnames when using the OkHttp
      * transport. If not set, the default DNS service used by OkHttp will be used.
      *
-     * <p>This has no effect when using gRPC as transport system.
-     *
      * @param okHttpDns the Dns service object.
      * @return this builder's instance
      */
@@ -324,6 +347,7 @@ public class LightStepSpanExporter implements SpanExporter {
       return this;
     }
 
+    /** If not set, provides a default value for the component name. */
     private void defaultComponentName() {
       if (componentName == null) {
         String componentNameSystemProperty = System.getProperty(COMPONENT_NAME_SYSTEM_PROPERTY_KEY);
@@ -358,6 +382,11 @@ public class LightStepSpanExporter implements SpanExporter {
       return new URL(collectorProtocol, collectorHost, port, PATH);
     }
 
+    /**
+     * Constructs a new instance of the exporter based on the builder's values.
+     *
+     * @return a new exporter's instance
+     */
     public LightStepSpanExporter build() throws MalformedURLException {
       defaultDeadlineMillis();
       defaultComponentName();
