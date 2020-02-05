@@ -88,15 +88,16 @@ final class DoubleCounterSdk extends BaseInstrument<BoundDoubleCounter> implemen
     }
   }
 
-  static final class Builder extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
+  static DoubleCounter.Builder builder(String name) {
+    return new Builder(name);
+  }
+
+  private static final class Builder
+      extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
       implements DoubleCounter.Builder {
 
     private Builder(String name) {
       super(name);
-    }
-
-    static DoubleCounter.Builder builder(String name) {
-      return new Builder(name);
     }
 
     @Override

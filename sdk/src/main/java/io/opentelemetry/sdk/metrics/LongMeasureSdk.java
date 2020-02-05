@@ -88,15 +88,16 @@ final class LongMeasureSdk extends BaseInstrument<BoundLongMeasure> implements L
     }
   }
 
-  static final class Builder extends AbstractMeasureBuilder<LongMeasure.Builder, LongMeasure>
+  static LongMeasure.Builder builder(String name) {
+    return new Builder(name);
+  }
+
+  private static final class Builder
+      extends AbstractMeasureBuilder<LongMeasure.Builder, LongMeasure>
       implements LongMeasure.Builder {
 
     private Builder(String name) {
       super(name);
-    }
-
-    static LongMeasure.Builder builder(String name) {
-      return new Builder(name);
     }
 
     @Override
