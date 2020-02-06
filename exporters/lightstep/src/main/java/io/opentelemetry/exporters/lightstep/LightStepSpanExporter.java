@@ -134,7 +134,7 @@ public class LightStepSpanExporter implements SpanExporter {
         }
       };
 
-  private static long generateRandomGUID() {
+  private static long generateRandomGuid() {
     // Note that ThreadLocalRandom is a singleton, thread safe Random Generator
     return random.get().nextLong();
   }
@@ -147,7 +147,7 @@ public class LightStepSpanExporter implements SpanExporter {
    */
   @Override
   public ResultCode export(List<SpanData> spans) {
-    final long guid = generateRandomGUID();
+    final long guid = generateRandomGuid();
 
     ReportRequest request =
         ReportRequest.newBuilder()
@@ -175,7 +175,9 @@ public class LightStepSpanExporter implements SpanExporter {
             .addAllSpans(Adapter.toLightStepSpans(spans))
             .build();
 
-    try (final Response response = client.newCall(toRequest(request)).execute()) {
+    Response response = null;
+    try {
+      response = client.newCall(toRequest(request)).execute();
       if (!response.isSuccessful()) {
         logger.log(Level.WARNING, "Failed to post spans to collector. " + response.toString());
         return ResultCode.FAILED_NOT_RETRYABLE;
@@ -200,6 +202,10 @@ public class LightStepSpanExporter implements SpanExporter {
     } catch (Throwable e) {
       logger.log(Level.WARNING, "Failed to post spans", e);
       return ResultCode.FAILED_NOT_RETRYABLE;
+    } finally {
+      if (response != null) {
+        response.close();
+      }
     }
   }
 
@@ -307,6 +313,8 @@ public class LightStepSpanExporter implements SpanExporter {
     /**
      * Overrides the default deadlineMillis with the provided value.
      *
+     * @param deadlineMillis The maximum amount of time the tracer should wait for a response from
+     *     the collector when sending a report.
      * @return this builder's instance
      */
     public Builder withDeadlineMillis(long deadlineMillis) {
@@ -391,6 +399,7 @@ public class LightStepSpanExporter implements SpanExporter {
      * Constructs a new instance of the exporter based on the builder's values.
      *
      * @return a new exporter's instance
+     * @throws MalformedURLException if an unknown protocol or the port is a negative number
      */
     public LightStepSpanExporter build() throws MalformedURLException {
       defaultDeadlineMillis();

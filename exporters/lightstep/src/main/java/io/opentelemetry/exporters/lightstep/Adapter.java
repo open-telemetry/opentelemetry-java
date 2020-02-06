@@ -242,7 +242,7 @@ final class Adapter {
   }
 
   /**
-   * Convert {@link TraceId} to long value
+   * Convert {@link TraceId} to long value.
    *
    * @param traceId trace id
    * @return long value of trace id
@@ -257,7 +257,7 @@ final class Adapter {
   }
 
   /**
-   * Convert {@link SpanId} to long value
+   * Convert {@link SpanId} to long value.
    *
    * @param spanId span id
    * @return long value of span id

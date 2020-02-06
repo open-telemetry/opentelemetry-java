@@ -38,7 +38,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -274,7 +274,7 @@ public class AdapterTest {
         TraceId.fromLowerBase16(traceId, 0),
         SpanId.fromLowerBase16(spanId, 0),
         TraceFlags.builder().build(),
-        Tracestate.builder().build());
+        TraceState.builder().build());
   }
 
   private static TimedEvent getTimedEvent() {
