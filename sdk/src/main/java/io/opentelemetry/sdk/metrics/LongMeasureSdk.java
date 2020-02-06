@@ -22,8 +22,7 @@ import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import java.util.List;
 import java.util.Map;
 
-final class LongMeasureSdk extends BaseInstrumentWithBinding<BoundLongMeasure>
-    implements LongMeasure {
+final class LongMeasureSdk extends BaseInstrument implements LongMeasure {
 
   private final boolean absolute;
 
@@ -39,12 +38,17 @@ final class LongMeasureSdk extends BaseInstrumentWithBinding<BoundLongMeasure>
 
   @Override
   public void record(long value, LabelSet labelSet) {
-    createBoundInstrument(labelSet).record(value);
+    bind(labelSet).record(value);
   }
 
   @Override
-  BoundLongMeasure createBoundInstrument(LabelSet labelSet) {
+  public BoundLongMeasure bind(LabelSet labelSet) {
     return new Bound(labelSet, this.absolute);
+  }
+
+  @Override
+  public void unbind(BoundLongMeasure boundInstrument) {
+    // TODO: Implement this.
   }
 
   @Override

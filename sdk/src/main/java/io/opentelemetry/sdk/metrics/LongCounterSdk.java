@@ -22,8 +22,7 @@ import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import java.util.List;
 import java.util.Map;
 
-final class LongCounterSdk extends BaseInstrumentWithBinding<BoundLongCounter>
-    implements LongCounter {
+final class LongCounterSdk extends BaseInstrument implements LongCounter {
 
   private final boolean monotonic;
 
@@ -39,12 +38,17 @@ final class LongCounterSdk extends BaseInstrumentWithBinding<BoundLongCounter>
 
   @Override
   public void add(long delta, LabelSet labelSet) {
-    createBoundInstrument(labelSet).add(delta);
+    bind(labelSet).add(delta);
   }
 
   @Override
-  BoundLongCounter createBoundInstrument(LabelSet labelSet) {
+  public BoundLongCounter bind(LabelSet labelSet) {
     return new Bound(labelSet, monotonic);
+  }
+
+  @Override
+  public void unbind(BoundLongCounter boundInstrument) {
+    // TODO: Implement this.
   }
 
   @Override
