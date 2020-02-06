@@ -29,10 +29,11 @@ final class DoubleCounterSdk extends BaseInstrument implements DoubleCounter {
   private DoubleCounterSdk(
       String name,
       String description,
+      String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
       boolean monotonic) {
-    super(name, description, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys);
     this.monotonic = monotonic;
   }
 
@@ -113,7 +114,12 @@ final class DoubleCounterSdk extends BaseInstrument implements DoubleCounter {
     @Override
     public DoubleCounter build() {
       return new DoubleCounterSdk(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
+          getName(),
+          getDescription(),
+          getUnit(),
+          getConstantLabels(),
+          getLabelKeys(),
+          isMonotonic());
     }
   }
 }

@@ -29,10 +29,11 @@ final class LongMeasureSdk extends BaseInstrument implements LongMeasure {
   private LongMeasureSdk(
       String name,
       String description,
+      String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
       boolean absolute) {
-    super(name, description, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys);
     this.absolute = absolute;
   }
 
@@ -113,7 +114,12 @@ final class LongMeasureSdk extends BaseInstrument implements LongMeasure {
     @Override
     public LongMeasure build() {
       return new LongMeasureSdk(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isAbsolute());
+          getName(),
+          getDescription(),
+          getUnit(),
+          getConstantLabels(),
+          getLabelKeys(),
+          isAbsolute());
     }
   }
 }
