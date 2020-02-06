@@ -59,8 +59,9 @@ public abstract class ComponentRegistry<V> {
       return component;
     }
 
-    registry.putIfAbsent(instrumentationLibraryInfo, newComponent(instrumentationLibraryInfo));
-    return registry.get(instrumentationLibraryInfo);
+    V newComponent = newComponent(instrumentationLibraryInfo);
+    V oldComponent = registry.putIfAbsent(instrumentationLibraryInfo, newComponent);
+    return oldComponent != null ? oldComponent : newComponent;
   }
 
   public abstract V newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo);
