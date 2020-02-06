@@ -60,22 +60,22 @@ final class MeterSdk implements Meter {
 
   @Override
   public DoubleCounter.Builder doubleCounterBuilder(String name) {
-    return DoubleCounterSdk.Builder.builder(name);
+    return DoubleCounterSdk.builder(name);
   }
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
-    return LongCounterSdk.Builder.builder(name);
+    return LongCounterSdk.builder(name);
   }
 
   @Override
   public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
-    return DoubleMeasureSdk.Builder.builder(name);
+    return DoubleMeasureSdk.builder(name);
   }
 
   @Override
   public LongMeasure.Builder longMeasureBuilder(String name) {
-    return LongMeasureSdk.Builder.builder(name);
+    return LongMeasureSdk.builder(name);
   }
 
   @Override
@@ -89,7 +89,7 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public BatchRecorder newMeasureBatchRecorder() {
+  public BatchRecorder newBatchRecorder() {
     throw new UnsupportedOperationException("to be implemented");
   }
 

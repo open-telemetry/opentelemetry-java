@@ -88,15 +88,16 @@ final class LongCounterSdk extends BaseInstrument<BoundLongCounter> implements L
     }
   }
 
-  static final class Builder extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
+  static LongCounter.Builder builder(String name) {
+    return new Builder(name);
+  }
+
+  private static final class Builder
+      extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
       implements LongCounter.Builder {
 
     private Builder(String name) {
       super(name);
-    }
-
-    static LongCounter.Builder builder(String name) {
-      return new Builder(name);
     }
 
     @Override

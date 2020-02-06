@@ -24,7 +24,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -67,13 +67,13 @@ public class BinaryTraceContextTest {
             TRACE_ID,
             SPAN_ID,
             TraceFlags.builder().setIsSampled(true).build(),
-            Tracestate.getDefault()));
+            TraceState.getDefault()));
   }
 
   @Test
   public void propagate_SpanContextNoTracing() {
     testSpanContextConversion(
-        SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), Tracestate.getDefault()));
+        SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()));
   }
 
   @Test(expected = NullPointerException.class)
@@ -95,7 +95,7 @@ public class BinaryTraceContextTest {
     assertThat(binaryFormat.fromByteArray(EXAMPLE_BYTES))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TRACE_OPTIONS, Tracestate.getDefault()));
+                TRACE_ID, SPAN_ID, TRACE_OPTIONS, TraceState.getDefault()));
   }
 
   @Test(expected = NullPointerException.class)

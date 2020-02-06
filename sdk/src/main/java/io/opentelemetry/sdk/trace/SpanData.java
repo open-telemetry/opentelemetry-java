@@ -28,7 +28,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,11 +68,11 @@ public abstract class SpanData {
   public abstract TraceFlags getTraceFlags();
 
   /**
-   * Gets the Tracestate for this span.
+   * Gets the {@code TraceState} for this span.
    *
-   * @return the Tracestate for this span.
+   * @return the {@code TraceState} for this span.
    */
-  public abstract Tracestate getTracestate();
+  public abstract TraceState getTraceState();
 
   /**
    * Returns the parent {@code SpanId}. If the {@code Span} is a root {@code Span}, the SpanId
@@ -299,7 +299,7 @@ public abstract class SpanData {
         .setTimedEvents(Collections.<TimedEvent>emptyList())
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
-        .setTracestate(Tracestate.getDefault())
+        .setTraceState(TraceState.getDefault())
         .setTraceFlags(TraceFlags.getDefault())
         .setNumberOfChildren(0)
         .setHasRemoteParent(false);
@@ -352,37 +352,35 @@ public abstract class SpanData {
     public abstract Builder setSpanId(SpanId spanId);
 
     /**
-     * Set the trace flags on this builder.
+     * Set the {@link TraceFlags} on this builder.
      *
      * @param traceFlags the trace flags.
-     * @return this builder (for chaining).
+     * @return this.
      */
     public abstract Builder setTraceFlags(TraceFlags traceFlags);
 
     /**
-     * Set the tracestate for this builder.
+     * Set the {@link TraceState} on this builder.
      *
-     * @param tracestate the tracestate
-     * @return this builder (for chaining).
+     * @param traceState the {@code TraceState}.
+     * @return this.
      */
-    public abstract Builder setTracestate(Tracestate tracestate);
+    public abstract Builder setTraceState(TraceState traceState);
 
     /**
      * The parent span id associated for this span, which may be null.
      *
      * @param parentSpanId the SpanId of the parent
-     * @return this
-     * @see SpanId
+     * @return this.
      * @since 0.1.0
      */
     public abstract Builder setParentSpanId(SpanId parentSpanId);
 
     /**
-     * Set the resource associated with this span. Must not be null.
+     * Set the {@link Resource} associated with this span. Must not be null.
      *
      * @param resource the Resource that generated this span.
      * @return this
-     * @see Resource
      * @since 0.1.0
      */
     public abstract Builder setResource(Resource resource);
@@ -393,7 +391,6 @@ public abstract class SpanData {
      * @param instrumentationLibraryInfo the instrumentation library of the tracer which created
      *     this span.
      * @return this
-     * @see InstrumentationLibraryInfo
      * @since 0.2.0
      */
     public abstract Builder setInstrumentationLibraryInfo(

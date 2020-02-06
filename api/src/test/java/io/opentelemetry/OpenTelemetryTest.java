@@ -361,7 +361,7 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public BatchRecorder newMeasureBatchRecorder() {
+    public BatchRecorder newBatchRecorder() {
       return null;
     }
 

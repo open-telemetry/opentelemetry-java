@@ -31,27 +31,29 @@ public class SpanContextTest {
       new byte[] {0, 0, 0, 0, 0, 0, 0, '0', 0, 0, 0, 0, 0, 0, 0, 0};
   private static final byte[] firstSpanIdBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final byte[] secondSpanIdBytes = new byte[] {'0', 0, 0, 0, 0, 0, 0, 0};
-  private static final Tracestate firstTracestate = Tracestate.builder().set("foo", "bar").build();
-  private static final Tracestate secondTracestate = Tracestate.builder().set("foo", "baz").build();
-  private static final Tracestate emptyTracestate = Tracestate.builder().build();
+  private static final TraceState FIRST_TRACE_STATE =
+      TraceState.builder().set("foo", "bar").build();
+  private static final TraceState SECOND_TRACE_STATE =
+      TraceState.builder().set("foo", "baz").build();
+  private static final TraceState EMPTY_TRACE_STATE = TraceState.builder().build();
   private static final SpanContext first =
       SpanContext.create(
           TraceId.fromBytes(firstTraceIdBytes, 0),
           SpanId.fromBytes(firstSpanIdBytes, 0),
           TraceFlags.getDefault(),
-          firstTracestate);
+          FIRST_TRACE_STATE);
   private static final SpanContext second =
       SpanContext.create(
           TraceId.fromBytes(secondTraceIdBytes, 0),
           SpanId.fromBytes(secondSpanIdBytes, 0),
           TraceFlags.builder().setIsSampled(true).build(),
-          secondTracestate);
+          SECOND_TRACE_STATE);
   private static final SpanContext remote =
       SpanContext.createFromRemoteParent(
           TraceId.fromBytes(secondTraceIdBytes, 0),
           SpanId.fromBytes(secondSpanIdBytes, 0),
           TraceFlags.builder().setIsSampled(true).build(),
-          emptyTracestate);
+          EMPTY_TRACE_STATE);
 
   @Test
   public void invalidSpanContext() {
@@ -68,7 +70,7 @@ public class SpanContextTest {
                     TraceId.fromBytes(firstTraceIdBytes, 0),
                     SpanId.getInvalid(),
                     TraceFlags.getDefault(),
-                    emptyTracestate)
+                    EMPTY_TRACE_STATE)
                 .isValid())
         .isFalse();
     assertThat(
@@ -76,7 +78,7 @@ public class SpanContextTest {
                     TraceId.getInvalid(),
                     SpanId.fromBytes(firstSpanIdBytes, 0),
                     TraceFlags.getDefault(),
-                    emptyTracestate)
+                    EMPTY_TRACE_STATE)
                 .isValid())
         .isFalse();
     assertThat(first.isValid()).isTrue();
@@ -102,9 +104,9 @@ public class SpanContextTest {
   }
 
   @Test
-  public void getTracestate() {
-    assertThat(first.getTracestate()).isEqualTo(firstTracestate);
-    assertThat(second.getTracestate()).isEqualTo(secondTracestate);
+  public void getTraceState() {
+    assertThat(first.getTraceState()).isEqualTo(FIRST_TRACE_STATE);
+    assertThat(second.getTraceState()).isEqualTo(SECOND_TRACE_STATE);
   }
 
   @Test
