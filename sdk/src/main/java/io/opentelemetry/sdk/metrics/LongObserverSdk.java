@@ -26,10 +26,11 @@ final class LongObserverSdk extends BaseInstrument implements LongObserver {
   LongObserverSdk(
       String name,
       String description,
+      String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
       boolean monotonic) {
-    super(name, description, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys);
     this.monotonic = monotonic;
   }
 
@@ -82,7 +83,12 @@ final class LongObserverSdk extends BaseInstrument implements LongObserver {
     @Override
     public LongObserver build() {
       return new LongObserverSdk(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
+          getName(),
+          getDescription(),
+          getUnit(),
+          getConstantLabels(),
+          getLabelKeys(),
+          isMonotonic());
     }
   }
 }

@@ -24,13 +24,20 @@ abstract class BaseInstrument implements Instrument {
 
   private final String name;
   private final String description;
+  private final String unit;
   private final Map<String, String> constantLabels;
   private final List<String> labelKeys;
 
+  // All arguments cannot be null because they are checked in the abstract builder classes.
   BaseInstrument(
-      String name, String description, Map<String, String> constantLabels, List<String> labelKeys) {
+      String name,
+      String description,
+      String unit,
+      Map<String, String> constantLabels,
+      List<String> labelKeys) {
     this.name = name;
     this.description = description;
+    this.unit = unit;
     this.constantLabels = constantLabels;
     this.labelKeys = labelKeys;
   }
@@ -46,26 +53,20 @@ abstract class BaseInstrument implements Instrument {
 
     BaseInstrument that = (BaseInstrument) o;
 
-    if (name != null ? !name.equals(that.name) : that.name != null) {
-      return false;
-    }
-    if (description != null ? !description.equals(that.description) : that.description != null) {
-      return false;
-    }
-    if (constantLabels != null
-        ? !constantLabels.equals(that.constantLabels)
-        : that.constantLabels != null) {
-      return false;
-    }
-    return labelKeys != null ? labelKeys.equals(that.labelKeys) : that.labelKeys == null;
+    return name.equals(that.name)
+        && description.equals(that.description)
+        && unit.equals(that.unit)
+        && constantLabels.equals(that.constantLabels)
+        && labelKeys.equals(that.labelKeys);
   }
 
   @Override
   public int hashCode() {
-    int result = name != null ? name.hashCode() : 0;
-    result = 31 * result + (description != null ? description.hashCode() : 0);
-    result = 31 * result + (constantLabels != null ? constantLabels.hashCode() : 0);
-    result = 31 * result + (labelKeys != null ? labelKeys.hashCode() : 0);
+    int result = name.hashCode();
+    result = 31 * result + description.hashCode();
+    result = 31 * result + unit.hashCode();
+    result = 31 * result + constantLabels.hashCode();
+    result = 31 * result + labelKeys.hashCode();
     return result;
   }
 }

@@ -29,10 +29,11 @@ final class LongCounterSdk extends BaseInstrument implements LongCounter {
   private LongCounterSdk(
       String name,
       String description,
+      String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
       boolean monotonic) {
-    super(name, description, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys);
     this.monotonic = monotonic;
   }
 
@@ -113,7 +114,12 @@ final class LongCounterSdk extends BaseInstrument implements LongCounter {
     @Override
     public LongCounter build() {
       return new LongCounterSdk(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
+          getName(),
+          getDescription(),
+          getUnit(),
+          getConstantLabels(),
+          getLabelKeys(),
+          isMonotonic());
     }
   }
 }
