@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
+import io.opentelemetry.metrics.DoubleObserver;
 import java.util.List;
 import java.util.Map;
 
-final class LongCounterSdk extends BaseInstrumentWithBinding<BoundLongCounter>
-    implements LongCounter {
-
+final class DoubleObserverSdk extends BaseInstrument implements DoubleObserver {
   private final boolean monotonic;
 
-  private LongCounterSdk(
+  DoubleObserverSdk(
       String name,
       String description,
       Map<String, String> constantLabels,
@@ -38,13 +34,8 @@ final class LongCounterSdk extends BaseInstrumentWithBinding<BoundLongCounter>
   }
 
   @Override
-  public void add(long delta, LabelSet labelSet) {
-    createBoundInstrument(labelSet).add(delta);
-  }
-
-  @Override
-  BoundLongCounter createBoundInstrument(LabelSet labelSet) {
-    return new Bound(labelSet, monotonic);
+  public void setCallback(Callback<DoubleObserver.ResultDoubleObserver> metricUpdater) {
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
@@ -52,14 +43,14 @@ final class LongCounterSdk extends BaseInstrumentWithBinding<BoundLongCounter>
     if (this == o) {
       return true;
     }
-    if (!(o instanceof LongCounterSdk)) {
+    if (!(o instanceof DoubleObserverSdk)) {
       return false;
     }
     if (!super.equals(o)) {
       return false;
     }
 
-    LongCounterSdk that = (LongCounterSdk) o;
+    DoubleObserverSdk that = (DoubleObserverSdk) o;
 
     return monotonic == that.monotonic;
   }
@@ -71,31 +62,13 @@ final class LongCounterSdk extends BaseInstrumentWithBinding<BoundLongCounter>
     return result;
   }
 
-  private static final class Bound extends BaseBoundInstrument implements BoundLongCounter {
-
-    private final boolean monotonic;
-
-    Bound(LabelSet labels, boolean monotonic) {
-      super(labels);
-      this.monotonic = monotonic;
-    }
-
-    @Override
-    public void add(long delta) {
-      if (monotonic && delta < 0) {
-        throw new IllegalArgumentException("monotonic counters can only increase");
-      }
-      // todo: pass through to an aggregator/accumulator
-    }
-  }
-
-  static LongCounter.Builder builder(String name) {
+  static DoubleObserver.Builder builder(String name) {
     return new Builder(name);
   }
 
   private static final class Builder
-      extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
-      implements LongCounter.Builder {
+      extends AbstractObserverBuilder<DoubleObserver.Builder, DoubleObserver>
+      implements DoubleObserver.Builder {
 
     private Builder(String name) {
       super(name);
@@ -107,8 +80,8 @@ final class LongCounterSdk extends BaseInstrumentWithBinding<BoundLongCounter>
     }
 
     @Override
-    public LongCounter build() {
-      return new LongCounterSdk(
+    public DoubleObserver build() {
+      return new DoubleObserverSdk(
           getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
     }
   }

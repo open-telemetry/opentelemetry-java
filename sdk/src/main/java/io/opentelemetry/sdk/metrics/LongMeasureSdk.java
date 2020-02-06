@@ -22,7 +22,8 @@ import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import java.util.List;
 import java.util.Map;
 
-final class LongMeasureSdk extends BaseInstrument<BoundLongMeasure> implements LongMeasure {
+final class LongMeasureSdk extends BaseInstrumentWithBinding<BoundLongMeasure>
+    implements LongMeasure {
 
   private final boolean absolute;
 
