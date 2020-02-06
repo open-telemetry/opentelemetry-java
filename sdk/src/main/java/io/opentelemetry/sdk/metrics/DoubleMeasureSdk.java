@@ -22,8 +22,7 @@ import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleMeasureSdk extends BaseInstrumentWithBinding<BoundDoubleMeasure>
-    implements DoubleMeasure {
+final class DoubleMeasureSdk extends BaseInstrument implements DoubleMeasure {
 
   private final boolean absolute;
 
@@ -39,12 +38,17 @@ final class DoubleMeasureSdk extends BaseInstrumentWithBinding<BoundDoubleMeasur
 
   @Override
   public void record(double value, LabelSet labelSet) {
-    createBoundInstrument(labelSet).record(value);
+    bind(labelSet).record(value);
   }
 
   @Override
-  BoundDoubleMeasure createBoundInstrument(LabelSet labelSet) {
+  public BoundDoubleMeasure bind(LabelSet labelSet) {
     return new Bound(labelSet, this.absolute);
+  }
+
+  @Override
+  public void unbind(BoundDoubleMeasure boundInstrument) {
+    // TODO: Implement this.
   }
 
   @Override

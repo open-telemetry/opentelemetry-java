@@ -22,8 +22,7 @@ import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleCounterSdk extends BaseInstrumentWithBinding<BoundDoubleCounter>
-    implements DoubleCounter {
+final class DoubleCounterSdk extends BaseInstrument implements DoubleCounter {
 
   private final boolean monotonic;
 
@@ -39,12 +38,17 @@ final class DoubleCounterSdk extends BaseInstrumentWithBinding<BoundDoubleCounte
 
   @Override
   public void add(double delta, LabelSet labelSet) {
-    createBoundInstrument(labelSet).add(delta);
+    bind(labelSet).add(delta);
   }
 
   @Override
-  BoundDoubleCounter createBoundInstrument(LabelSet labelSet) {
+  public BoundDoubleCounter bind(LabelSet labelSet) {
     return new Bound(labelSet, monotonic);
+  }
+
+  @Override
+  public void unbind(BoundDoubleCounter boundInstrument) {
+    // TODO: Implement this.
   }
 
   @Override
