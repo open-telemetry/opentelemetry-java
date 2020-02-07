@@ -58,7 +58,7 @@ public class DoubleCounterSdkTest {
     assertThat(duplicateBoundCounter).isEqualTo(boundDoubleCounter);
 
     // todo: verify that this has done something, when it has been done.
-    doubleCounter.unbind(boundDoubleCounter);
+    boundDoubleCounter.unbind();
   }
 
   @Test

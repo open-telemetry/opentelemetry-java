@@ -43,12 +43,7 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
 
   @Override
   public BoundDoubleCounter bind(LabelSet labelSet) {
-    return new Bound(labelSet, monotonic);
-  }
-
-  @Override
-  public void unbind(BoundDoubleCounter boundInstrument) {
-    // TODO: Implement this.
+    return new BoundInstrument(labelSet, monotonic);
   }
 
   @Override
@@ -75,11 +70,12 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
     return result;
   }
 
-  private static final class Bound extends AbstractBoundInstrument implements BoundDoubleCounter {
+  private static final class BoundInstrument extends AbstractBoundInstrument
+      implements BoundDoubleCounter {
 
     private final boolean monotonic;
 
-    Bound(LabelSet labels, boolean monotonic) {
+    BoundInstrument(LabelSet labels, boolean monotonic) {
       super(labels);
       this.monotonic = monotonic;
     }

@@ -58,7 +58,7 @@ public class LongCounterSdkTest {
     assertThat(duplicateBoundCounter).isEqualTo(boundLongCounter);
 
     // todo: verify that this has done something, when it has been done.
-    longCounter.unbind(boundLongCounter);
+    boundLongCounter.unbind();
   }
 
   @Test
