@@ -18,6 +18,7 @@ package io.opentelemetry.trace.propagation;
 
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.trace.SpanContext;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -37,24 +38,6 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 public class HttpTraceContextExtractBenchmark {
 
-  @Param({
-    "905734c59b913b4a905734c59b913b4a",
-    "21196a77f299580e21196a77f299580e",
-    "2e7d0ad2390617702e7d0ad239061770",
-    "905734c59b913b4a905734c59b913b4a",
-    "68ec932c33b3f2ee68ec932c33b3f2ee"
-  })
-  public static String traceIdBase16;
-
-  @Param({
-    "9909983295041501",
-    "993a97ee3691eb26",
-    "d49582a2de984b86",
-    "776ff807b787538a",
-    "68ec932c33b3f2ee"
-  })
-  public static String spanIdBase16;
-
   private String traceparent = "traceparent";
   private HttpTraceContext httpTraceContext;
   private Map<String, String> carrier;
@@ -68,6 +51,24 @@ public class HttpTraceContextExtractBenchmark {
 
   @State(Scope.Thread)
   public static class HttpTraceContextExtractState {
+
+    @Param({
+        "905734c59b913b4a905734c59b913b4a",
+        "21196a77f299580e21196a77f299580e",
+        "2e7d0ad2390617702e7d0ad239061770",
+        "905734c59b913b4a905734c59b913b4a",
+        "68ec932c33b3f2ee68ec932c33b3f2ee"
+    })
+    public String traceIdBase16;
+
+    @Param({
+        "9909983295041501",
+        "993a97ee3691eb26",
+        "d49582a2de984b86",
+        "776ff807b787538a",
+        "68ec932c33b3f2ee"
+    })
+    public String spanIdBase16;
 
     public String traceparentHeaderSampled;
 
@@ -95,7 +96,7 @@ public class HttpTraceContextExtractBenchmark {
 
   @TearDown(Level.Iteration)
   public void refreshCarrier(HttpTraceContextExtractState state) {
-    this.carrier = new LinkedHashMap<>();
+    this.carrier = new HashMap<>();
     this.carrier.put(traceparent, state.traceparentHeaderSampled);
   }
 }

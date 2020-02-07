@@ -22,6 +22,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -41,24 +42,6 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 public class HttpTraceContextInjectBenchmark {
 
-  @Param({
-    "905734c59b913b4a905734c59b913b4a",
-    "21196a77f299580e21196a77f299580e",
-    "2e7d0ad2390617702e7d0ad239061770",
-    "905734c59b913b4a905734c59b913b4a",
-    "68ec932c33b3f2ee68ec932c33b3f2ee"
-  })
-  public static String traceIdBase16;
-
-  @Param({
-    "9909983295041501",
-    "993a97ee3691eb26",
-    "d49582a2de984b86",
-    "776ff807b787538a",
-    "68ec932c33b3f2ee"
-  })
-  public static String spanIdBase16;
-
   private byte sampledTraceOptionsBytes = 1;
   private TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
   private TraceState traceStateDefault = TraceState.builder().build();
@@ -75,6 +58,24 @@ public class HttpTraceContextInjectBenchmark {
 
   @State(Scope.Thread)
   public static class HttpTraceContextInjectState {
+
+    @Param({
+        "905734c59b913b4a905734c59b913b4a",
+        "21196a77f299580e21196a77f299580e",
+        "2e7d0ad2390617702e7d0ad239061770",
+        "905734c59b913b4a905734c59b913b4a",
+        "68ec932c33b3f2ee68ec932c33b3f2ee"
+    })
+    public String traceIdBase16;
+
+    @Param({
+        "9909983295041501",
+        "993a97ee3691eb26",
+        "d49582a2de984b86",
+        "776ff807b787538a",
+        "68ec932c33b3f2ee"
+    })
+    public String spanIdBase16;
 
     public TraceId traceId;
     public SpanId spanId;
@@ -108,6 +109,6 @@ public class HttpTraceContextInjectBenchmark {
 
   @TearDown(Level.Iteration)
   public void refreshCarrier() {
-    this.carrier = new LinkedHashMap<>();
+    this.carrier = new HashMap<>();
   }
 }
