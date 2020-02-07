@@ -30,7 +30,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,7 +51,7 @@ public class SpanBuilderSdkTest {
           new TraceId(1000, 1000),
           new SpanId(3000),
           TraceFlags.builder().setIsSampled(true).build(),
-          Tracestate.getDefault());
+          TraceState.getDefault());
 
   private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.builder().build();
   private final TracerSdk tracerSdk = tracerSdkFactory.get("SpanBuilderSdkTest");

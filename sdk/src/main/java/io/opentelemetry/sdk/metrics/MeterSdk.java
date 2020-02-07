@@ -18,12 +18,10 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleGauge;
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongGauge;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
@@ -49,47 +47,37 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public LongGauge.Builder longGaugeBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public DoubleGauge.Builder doubleGaugeBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
   public DoubleCounter.Builder doubleCounterBuilder(String name) {
-    return DoubleCounterSdk.Builder.builder(name);
+    return DoubleCounterSdk.builder(name);
   }
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
-    return LongCounterSdk.Builder.builder(name);
+    return LongCounterSdk.builder(name);
   }
 
   @Override
   public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
-    return DoubleMeasureSdk.Builder.builder(name);
+    return DoubleMeasureSdk.builder(name);
   }
 
   @Override
   public LongMeasure.Builder longMeasureBuilder(String name) {
-    return LongMeasureSdk.Builder.builder(name);
+    return LongMeasureSdk.builder(name);
   }
 
   @Override
   public DoubleObserver.Builder doubleObserverBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return DoubleObserverSdk.builder(name);
   }
 
   @Override
   public LongObserver.Builder longObserverBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return LongObserverSdk.builder(name);
   }
 
   @Override
-  public BatchRecorder newMeasureBatchRecorder() {
+  public BatchRecorder newBatchRecorder() {
     throw new UnsupportedOperationException("to be implemented");
   }
 

@@ -34,14 +34,15 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
+ *   private static final LabelSet labelSet = meter.createLabelSet("my_label");
  *
  *   void init() {
  *     observer.setCallback(
- *         new DoubleObserver.Callback<DoubleObserver.Result>() {
+ *         new DoubleObserver.Callback<DoubleObserver.ResultDoubleObserver>() {
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(Result result) {
- *             result.put(observer.bind(labelSet), 0.8 * count.addAndGet(1));
+ *             result.observe(0.8 * count.addAndGet(1), labelSet);
  *           }
  *         });
  *   }

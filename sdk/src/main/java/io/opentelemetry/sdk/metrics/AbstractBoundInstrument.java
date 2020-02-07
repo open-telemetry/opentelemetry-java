@@ -16,23 +16,32 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.Gauge;
+import io.opentelemetry.metrics.LabelSet;
 
-abstract class AbstractGaugeBuilder<B extends Gauge.Builder<B, V>, V>
-    extends AbstractInstrumentBuilder<B, V> implements Gauge.Builder<B, V> {
-  private boolean monotonic = false;
+class AbstractBoundInstrument {
+  private final LabelSet labels;
 
-  protected AbstractGaugeBuilder(String name) {
-    super(name);
+  AbstractBoundInstrument(LabelSet labels) {
+    this.labels = labels;
+    // todo: associate with an aggregator/accumulator
   }
 
   @Override
-  public final B setMonotonic(boolean monotonic) {
-    this.monotonic = monotonic;
-    return getThis();
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof AbstractBoundInstrument)) {
+      return false;
+    }
+
+    AbstractBoundInstrument that = (AbstractBoundInstrument) o;
+
+    return labels.equals(that.labels);
   }
 
-  final boolean isMonotonic() {
-    return this.monotonic;
+  @Override
+  public int hashCode() {
+    return labels.hashCode();
   }
 }

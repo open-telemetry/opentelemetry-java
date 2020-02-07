@@ -29,12 +29,10 @@ import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DefaultMeterRegistry;
 import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleGauge;
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongGauge;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
@@ -313,18 +311,6 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public LongGauge.Builder longGaugeBuilder(String name) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public DoubleGauge.Builder doubleGaugeBuilder(String name) {
-      return null;
-    }
-
-    @Nullable
-    @Override
     public DoubleCounter.Builder doubleCounterBuilder(String name) {
       return null;
     }
@@ -361,7 +347,7 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public BatchRecorder newMeasureBatchRecorder() {
+    public BatchRecorder newBatchRecorder() {
       return null;
     }
 

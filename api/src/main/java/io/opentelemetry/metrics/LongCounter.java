@@ -75,6 +75,7 @@ public interface LongCounter extends Counter<BoundLongCounter> {
    *
    * @since 0.1.0
    */
+  @ThreadSafe
   interface BoundLongCounter {
 
     /**
