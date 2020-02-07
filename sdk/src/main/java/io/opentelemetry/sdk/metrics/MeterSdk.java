@@ -18,12 +18,10 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleGauge;
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongGauge;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
@@ -46,16 +44,6 @@ final class MeterSdk implements Meter {
 
   MeterSharedState getSharedState() {
     return sharedState;
-  }
-
-  @Override
-  public LongGauge.Builder longGaugeBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public DoubleGauge.Builder doubleGaugeBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
