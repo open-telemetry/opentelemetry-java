@@ -17,12 +17,11 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
 import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleMeasureSdk extends BaseInstrument implements DoubleMeasure {
+final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure {
 
   private final boolean absolute;
 
@@ -76,7 +75,7 @@ final class DoubleMeasureSdk extends BaseInstrument implements DoubleMeasure {
     return result;
   }
 
-  private static final class Bound extends BaseBoundInstrument implements BoundDoubleMeasure {
+  private static final class Bound extends AbstractBoundInstrument implements BoundDoubleMeasure {
 
     private final boolean absolute;
 

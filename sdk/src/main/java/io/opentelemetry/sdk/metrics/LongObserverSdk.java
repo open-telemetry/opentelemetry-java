@@ -20,7 +20,7 @@ import io.opentelemetry.metrics.LongObserver;
 import java.util.List;
 import java.util.Map;
 
-final class LongObserverSdk extends BaseInstrument implements LongObserver {
+final class LongObserverSdk extends AbstractInstrument implements LongObserver {
   private final boolean monotonic;
 
   LongObserverSdk(

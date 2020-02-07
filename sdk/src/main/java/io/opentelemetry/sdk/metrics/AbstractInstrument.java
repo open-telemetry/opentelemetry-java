@@ -20,7 +20,7 @@ import io.opentelemetry.metrics.Instrument;
 import java.util.List;
 import java.util.Map;
 
-abstract class BaseInstrument implements Instrument {
+abstract class AbstractInstrument implements Instrument {
 
   private final String name;
   private final String description;
@@ -29,7 +29,7 @@ abstract class BaseInstrument implements Instrument {
   private final List<String> labelKeys;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
-  BaseInstrument(
+  AbstractInstrument(
       String name,
       String description,
       String unit,
@@ -47,11 +47,11 @@ abstract class BaseInstrument implements Instrument {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof BaseInstrument)) {
+    if (!(o instanceof AbstractInstrument)) {
       return false;
     }
 
-    BaseInstrument that = (BaseInstrument) o;
+    AbstractInstrument that = (AbstractInstrument) o;
 
     return name.equals(that.name)
         && description.equals(that.description)

@@ -17,12 +17,11 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleCounterSdk extends BaseInstrument implements DoubleCounter {
+final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter {
 
   private final boolean monotonic;
 
@@ -76,7 +75,7 @@ final class DoubleCounterSdk extends BaseInstrument implements DoubleCounter {
     return result;
   }
 
-  private static final class Bound extends BaseBoundInstrument implements BoundDoubleCounter {
+  private static final class Bound extends AbstractBoundInstrument implements BoundDoubleCounter {
 
     private final boolean monotonic;
 
