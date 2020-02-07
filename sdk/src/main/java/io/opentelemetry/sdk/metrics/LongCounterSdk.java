@@ -38,7 +38,9 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
 
   @Override
   public void add(long delta, LabelSet labelSet) {
-    bind(labelSet).add(delta);
+    BoundLongCounter boundLongCounter = bind(labelSet);
+    boundLongCounter.add(delta);
+    boundLongCounter.unbind();
   }
 
   @Override

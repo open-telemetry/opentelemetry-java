@@ -38,7 +38,9 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
 
   @Override
   public void record(long value, LabelSet labelSet) {
-    bind(labelSet).record(value);
+    BoundLongMeasure boundLongMeasure = bind(labelSet);
+    boundLongMeasure.record(value);
+    boundLongMeasure.unbind();
   }
 
   @Override

@@ -38,7 +38,9 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
 
   @Override
   public void record(double value, LabelSet labelSet) {
-    bind(labelSet).record(value);
+    BoundDoubleMeasure boundDoubleMeasure = bind(labelSet);
+    boundDoubleMeasure.record(value);
+    boundDoubleMeasure.unbind();
   }
 
   @Override
