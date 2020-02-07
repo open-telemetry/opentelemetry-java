@@ -20,7 +20,7 @@ import io.opentelemetry.metrics.DoubleObserver;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleObserverSdk extends BaseInstrument implements DoubleObserver {
+final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserver {
   private final boolean monotonic;
 
   DoubleObserverSdk(

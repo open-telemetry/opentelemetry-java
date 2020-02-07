@@ -18,11 +18,10 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import java.util.List;
 import java.util.Map;
 
-final class LongMeasureSdk extends BaseInstrument implements LongMeasure {
+final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
 
   private final boolean absolute;
 
@@ -76,7 +75,7 @@ final class LongMeasureSdk extends BaseInstrument implements LongMeasure {
     return result;
   }
 
-  private static final class Bound extends BaseBoundInstrument implements BoundLongMeasure {
+  private static final class Bound extends AbstractBoundInstrument implements BoundLongMeasure {
 
     private final boolean absolute;
 

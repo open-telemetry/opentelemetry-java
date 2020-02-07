@@ -18,10 +18,10 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 
-class BaseBoundInstrument {
+class AbstractBoundInstrument {
   private final LabelSet labels;
 
-  BaseBoundInstrument(LabelSet labels) {
+  AbstractBoundInstrument(LabelSet labels) {
     this.labels = labels;
     // todo: associate with an aggregator/accumulator
   }
@@ -31,11 +31,11 @@ class BaseBoundInstrument {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof BaseBoundInstrument)) {
+    if (!(o instanceof AbstractBoundInstrument)) {
       return false;
     }
 
-    BaseBoundInstrument that = (BaseBoundInstrument) o;
+    AbstractBoundInstrument that = (AbstractBoundInstrument) o;
 
     return labels.equals(that.labels);
   }

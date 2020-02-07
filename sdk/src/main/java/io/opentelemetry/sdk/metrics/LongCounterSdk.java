@@ -18,11 +18,10 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import java.util.List;
 import java.util.Map;
 
-final class LongCounterSdk extends BaseInstrument implements LongCounter {
+final class LongCounterSdk extends AbstractInstrument implements LongCounter {
 
   private final boolean monotonic;
 
@@ -76,7 +75,7 @@ final class LongCounterSdk extends BaseInstrument implements LongCounter {
     return result;
   }
 
-  private static final class Bound extends BaseBoundInstrument implements BoundLongCounter {
+  private static final class Bound extends AbstractBoundInstrument implements BoundLongCounter {
 
     private final boolean monotonic;
 
