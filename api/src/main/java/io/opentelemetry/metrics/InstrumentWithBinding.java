@@ -16,13 +16,15 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+
 /**
  * Base interface for all metrics with bounds defined in this package.
  *
  * @param <B> the specific type of Bound Instrument this instrument can provide.
  * @since 0.3.0
  */
-public interface InstrumentWithBind<B extends InstrumentWithBind.Bound> extends Instrument {
+public interface InstrumentWithBinding<B extends BoundInstrument> extends Instrument {
   /**
    * Returns a {@code Bound Instrument} associated with the specified {@code labelSet}. Multiples
    * requests with the same {@code labelSet} may return the same {@code Bound Instrument} instance.
@@ -37,7 +39,7 @@ public interface InstrumentWithBind<B extends InstrumentWithBind.Bound> extends 
    */
   B bind(LabelSet labelSet);
 
-  interface Bound {
+  interface BoundInstrument {
     /**
      * Unbinds the current {@code Bound} from the Instrument.
      *

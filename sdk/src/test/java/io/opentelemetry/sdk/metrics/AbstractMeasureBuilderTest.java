@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Measure;
 import org.junit.Rule;
@@ -84,7 +85,7 @@ public class AbstractMeasureBuilderTest {
     }
   }
 
-  private static final class TestBoundMeasure implements Measure.Bound {
+  private static final class TestBoundMeasure implements BoundInstrument {
     @Override
     public void unbind() {}
   }

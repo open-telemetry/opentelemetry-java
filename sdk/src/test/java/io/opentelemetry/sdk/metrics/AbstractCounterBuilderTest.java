@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.metrics.Counter;
+import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
 import io.opentelemetry.metrics.LabelSet;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,16 +76,16 @@ public class AbstractCounterBuilderTest {
     }
   }
 
-  private static final class TestInstrument implements Counter<TestBound> {
-    private static final TestBound HANDLE = new TestBound();
+  private static final class TestInstrument implements Counter<TestBoundInstrument> {
+    private static final TestBoundInstrument HANDLE = new TestBoundInstrument();
 
     @Override
-    public TestBound bind(LabelSet labelSet) {
+    public TestBoundInstrument bind(LabelSet labelSet) {
       return HANDLE;
     }
   }
 
-  private static final class TestBound implements Counter.Bound {
+  private static final class TestBoundInstrument implements BoundInstrument {
     @Override
     public void unbind() {}
   }

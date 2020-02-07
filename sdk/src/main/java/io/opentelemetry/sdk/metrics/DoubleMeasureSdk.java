@@ -43,7 +43,7 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
 
   @Override
   public BoundDoubleMeasure bind(LabelSet labelSet) {
-    return new Bound(labelSet, this.absolute);
+    return new BoundInstrument(labelSet, this.absolute);
   }
 
   @Override
@@ -70,11 +70,12 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
     return result;
   }
 
-  private static final class Bound extends AbstractBoundInstrument implements BoundDoubleMeasure {
+  private static final class BoundInstrument extends AbstractBoundInstrument
+      implements BoundDoubleMeasure {
 
     private final boolean absolute;
 
-    Bound(LabelSet labels, boolean absolute) {
+    BoundInstrument(LabelSet labels, boolean absolute) {
       super(labels);
       this.absolute = absolute;
     }

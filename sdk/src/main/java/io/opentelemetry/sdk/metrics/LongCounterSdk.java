@@ -43,7 +43,7 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
 
   @Override
   public BoundLongCounter bind(LabelSet labelSet) {
-    return new Bound(labelSet, monotonic);
+    return new BoundInstrument(labelSet, monotonic);
   }
 
   @Override
@@ -70,11 +70,12 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
     return result;
   }
 
-  private static final class Bound extends AbstractBoundInstrument implements BoundLongCounter {
+  private static final class BoundInstrument extends AbstractBoundInstrument
+      implements BoundLongCounter {
 
     private final boolean monotonic;
 
-    Bound(LabelSet labels, boolean monotonic) {
+    BoundInstrument(LabelSet labels, boolean monotonic) {
       super(labels);
       this.monotonic = monotonic;
     }

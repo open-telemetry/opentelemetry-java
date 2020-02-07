@@ -16,13 +16,15 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+
 /**
  * Base interface for all the Counter metrics.
  *
  * @param <H> the Bound Counter type.
  * @since 0.1.0
  */
-public interface Counter<H extends InstrumentWithBind.Bound> extends InstrumentWithBind<H> {
+public interface Counter<H extends BoundInstrument> extends InstrumentWithBinding<H> {
 
   /** Builder class for {@link Counter}. */
   interface Builder<B extends Counter.Builder<B, V>, V> extends Instrument.Builder<B, V> {

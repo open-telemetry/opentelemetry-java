@@ -16,10 +16,10 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.InstrumentWithBind.Bound;
+import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
 import io.opentelemetry.metrics.LabelSet;
 
-abstract class AbstractBoundInstrument implements Bound {
+abstract class AbstractBoundInstrument implements BoundInstrument {
   private final LabelSet labels;
 
   AbstractBoundInstrument(LabelSet labels) {

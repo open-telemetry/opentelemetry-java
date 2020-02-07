@@ -16,13 +16,15 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+
 /**
  * Base interface for all the Measure instruments.
  *
  * @param <H> the Bound Instrument type.
  * @since 0.1.0
  */
-public interface Measure<H extends InstrumentWithBind.Bound> extends InstrumentWithBind<H> {
+public interface Measure<H extends BoundInstrument> extends InstrumentWithBinding<H> {
 
   /** Builder class for {@link Measure}. */
   interface Builder<B extends Measure.Builder<B, V>, V> extends Instrument.Builder<B, V> {
