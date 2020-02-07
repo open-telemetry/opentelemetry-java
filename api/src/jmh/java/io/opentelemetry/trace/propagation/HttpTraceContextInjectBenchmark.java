@@ -21,7 +21,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +61,7 @@ public class HttpTraceContextInjectBenchmark {
 
   private byte sampledTraceOptionsBytes = 1;
   private TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
-  private Tracestate traceStateDefault = Tracestate.builder().build();
+  private TraceState traceStateDefault = TraceState.builder().build();
 
   private HttpTraceContext httpTraceContext;
   private Map<String, String> carrier;
