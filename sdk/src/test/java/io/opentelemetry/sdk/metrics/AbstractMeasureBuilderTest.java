@@ -82,10 +82,10 @@ public class AbstractMeasureBuilderTest {
     public TestBoundMeasure bind(LabelSet labelSet) {
       return HANDLE;
     }
-
-    @Override
-    public void unbind(TestBoundMeasure boundInstrument) {}
   }
 
-  private static final class TestBoundMeasure {}
+  private static final class TestBoundMeasure implements Measure.Bound {
+    @Override
+    public void unbind() {}
+  }
 }

@@ -58,7 +58,7 @@ public class DoubleMeasureSdkTest {
     assertThat(duplicateBoundMeasure).isEqualTo(boundDoubleMeasure);
 
     // todo: verify that this has done something, when it has been done.
-    doubleMeasure.unbind(boundDoubleMeasure);
+    boundDoubleMeasure.unbind();
   }
 
   @Test

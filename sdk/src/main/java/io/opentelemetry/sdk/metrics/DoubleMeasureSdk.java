@@ -47,11 +47,6 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
   }
 
   @Override
-  public void unbind(BoundDoubleMeasure boundInstrument) {
-    // TODO: Implement this.
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;

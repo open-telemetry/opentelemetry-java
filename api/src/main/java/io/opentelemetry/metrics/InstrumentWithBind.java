@@ -20,9 +20,9 @@ package io.opentelemetry.metrics;
  * Base interface for all metrics with bounds defined in this package.
  *
  * @param <B> the specific type of Bound Instrument this instrument can provide.
- * @since 0.1.0
+ * @since 0.3.0
  */
-public interface InstrumentWithBinding<B> extends Instrument {
+public interface InstrumentWithBind<B extends InstrumentWithBind.Bound> extends Instrument {
   /**
    * Returns a {@code Bound Instrument} associated with the specified {@code labelSet}. Multiples
    * requests with the same {@code labelSet} may return the same {@code Bound Instrument} instance.
@@ -37,12 +37,15 @@ public interface InstrumentWithBinding<B> extends Instrument {
    */
   B bind(LabelSet labelSet);
 
-  /**
-   * Removes the {@code Bound Instrument} from the Instrument. i.e. references to previous {@code
-   * Bound Instrument} are invalid (not being managed by the instrument).
-   *
-   * @param boundInstrument the {@code Bound Instrument} to be removed.
-   * @since 0.1.0
-   */
-  void unbind(B boundInstrument);
+  interface Bound {
+    /**
+     * Unbinds the current {@code Bound} from the Instrument.
+     *
+     * <p>After this method returns the current instance {@code Bound} is considered invalid (not
+     * being managed by the instrument).
+     *
+     * @since 0.3.0
+     */
+    void unbind();
+  }
 }

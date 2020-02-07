@@ -47,11 +47,6 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
   }
 
   @Override
-  public void unbind(BoundLongCounter boundInstrument) {
-    // TODO: Implement this.
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;

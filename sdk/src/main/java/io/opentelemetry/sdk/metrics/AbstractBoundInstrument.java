@@ -16,15 +16,19 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.metrics.InstrumentWithBind.Bound;
 import io.opentelemetry.metrics.LabelSet;
 
-class AbstractBoundInstrument {
+abstract class AbstractBoundInstrument implements Bound {
   private final LabelSet labels;
 
   AbstractBoundInstrument(LabelSet labels) {
     this.labels = labels;
     // todo: associate with an aggregator/accumulator
   }
+
+  @Override
+  public void unbind() {}
 
   @Override
   public boolean equals(Object o) {

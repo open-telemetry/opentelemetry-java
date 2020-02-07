@@ -47,11 +47,6 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
   }
 
   @Override
-  public void unbind(BoundLongMeasure boundInstrument) {
-    // TODO: Implement this.
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;

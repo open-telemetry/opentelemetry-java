@@ -67,16 +67,13 @@ public interface LongCounter extends Counter<BoundLongCounter> {
   @Override
   BoundLongCounter bind(LabelSet labelSet);
 
-  @Override
-  void unbind(BoundLongCounter boundInstrument);
-
   /**
    * A {@code Bound Instrument} for a {@code LongCounter}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundLongCounter {
+  interface BoundLongCounter extends Counter.Bound {
 
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
@@ -88,6 +85,9 @@ public interface LongCounter extends Counter<BoundLongCounter> {
      * @since 0.1.0
      */
     void add(long delta);
+
+    @Override
+    void unbind();
   }
 
   /** Builder class for {@link LongCounter}. */

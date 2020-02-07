@@ -108,20 +108,6 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void noopUnbind_WithNullInstrument() {
-    DoubleCounter doubleCounter =
-        meter
-            .doubleCounterBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("boundDoubleCounter");
-    doubleCounter.unbind(null);
-  }
-
-  @Test
   public void doesNotThrow() {
     DoubleCounter doubleCounter =
         meter

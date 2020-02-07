@@ -58,7 +58,7 @@ public class LongMeasureSdkTest {
     assertThat(duplicateBoundMeasure).isEqualTo(boundLongMeasure);
 
     // todo: verify that this has done something, when it has been done.
-    longMeasure.unbind(boundLongMeasure);
+    boundLongMeasure.unbind();
   }
 
   @Test

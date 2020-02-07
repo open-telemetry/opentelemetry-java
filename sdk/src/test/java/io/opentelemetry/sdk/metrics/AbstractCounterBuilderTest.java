@@ -82,10 +82,10 @@ public class AbstractCounterBuilderTest {
     public TestBound bind(LabelSet labelSet) {
       return HANDLE;
     }
-
-    @Override
-    public void unbind(TestBound boundInstrument) {}
   }
 
-  private static final class TestBound {}
+  private static final class TestBound implements Counter.Bound {
+    @Override
+    public void unbind() {}
+  }
 }

@@ -63,16 +63,13 @@ public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
   @Override
   BoundDoubleMeasure bind(LabelSet labelSet);
 
-  @Override
-  void unbind(BoundDoubleMeasure boundInstrument);
-
   /**
    * A {@code Bound Instrument} for a {@code LongMeasure}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundDoubleMeasure {
+  interface BoundDoubleMeasure extends Measure.Bound {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *
@@ -81,6 +78,9 @@ public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
      * @since 0.1.0
      */
     void record(double value);
+
+    @Override
+    void unbind();
   }
 
   /** Builder class for {@link DoubleMeasure}. */

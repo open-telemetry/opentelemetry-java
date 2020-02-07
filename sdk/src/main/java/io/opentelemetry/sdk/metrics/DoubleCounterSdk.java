@@ -47,11 +47,6 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
   }
 
   @Override
-  public void unbind(BoundDoubleCounter boundInstrument) {
-    // TODO: Implement this.
-  }
-
-  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
