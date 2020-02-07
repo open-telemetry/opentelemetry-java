@@ -53,20 +53,20 @@ public class HttpTraceContextExtractBenchmark {
   public static class HttpTraceContextExtractState {
 
     @Param({
-        "905734c59b913b4a905734c59b913b4a",
-        "21196a77f299580e21196a77f299580e",
-        "2e7d0ad2390617702e7d0ad239061770",
-        "905734c59b913b4a905734c59b913b4a",
-        "68ec932c33b3f2ee68ec932c33b3f2ee"
+      "905734c59b913b4a905734c59b913b4a",
+      "21196a77f299580e21196a77f299580e",
+      "2e7d0ad2390617702e7d0ad239061770",
+      "905734c59b913b4a905734c59b913b4a",
+      "68ec932c33b3f2ee68ec932c33b3f2ee"
     })
     public String traceIdBase16;
 
     @Param({
-        "9909983295041501",
-        "993a97ee3691eb26",
-        "d49582a2de984b86",
-        "776ff807b787538a",
-        "68ec932c33b3f2ee"
+      "9909983295041501",
+      "993a97ee3691eb26",
+      "d49582a2de984b86",
+      "776ff807b787538a",
+      "68ec932c33b3f2ee"
     })
     public String spanIdBase16;
 
@@ -89,7 +89,7 @@ public class HttpTraceContextExtractBenchmark {
   @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
-  @Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+  @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.MILLISECONDS)
   public SpanContext measureExtract() {
     return httpTraceContext.extract(carrier, getter);
   }
