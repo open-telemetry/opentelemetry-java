@@ -75,6 +75,7 @@ public interface LongGauge extends Gauge<BoundLongGauge> {
    *
    * @since 0.1.0
    */
+  @ThreadSafe
   interface BoundLongGauge {
 
     /**

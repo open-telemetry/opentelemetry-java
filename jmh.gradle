@@ -52,10 +52,10 @@
 
 sourceSets {
     jmh {
-	java.srcDir 'src/jmh/java'
-	resources.srcDir 'src/jmh/resources'
-	compileClasspath += main.output
-	runtimeClasspath += main.output
+        java.srcDir 'src/jmh/java'
+        resources.srcDir 'src/jmh/resources'
+        compileClasspath += main.output
+        runtimeClasspath += main.output
     }
 }
 
@@ -68,17 +68,17 @@ dependencies {
 
 configurations {
     jmhCompile {
-	extendsFrom compile
+        extendsFrom compile
     }
 
     jmhImplementation {
-	extendsFrom implementation
-	extendsFrom jmhCompile
+        extendsFrom implementation
+        extendsFrom jmhCompile
     }
 
     jmh {
-	extendsFrom runtime
-	extendsFrom jmhCompile
+        extendsFrom runtime
+        extendsFrom jmhCompile
     }
 }
 
@@ -107,36 +107,36 @@ task jmhJar(type: Jar) {
     group 'Build'
     classifier "jmh"
     doFirst {
-	manifest {
-	    attributes('Main-Class': 'org.openjdk.jmh.Main', 'Class-Path': ([jar.archiveName] + configurations.runtimeClasspath.files.collect { it.getName() }).join(' '))
-	}
+        manifest {
+            attributes('Main-Class': 'org.openjdk.jmh.Main', 'Class-Path': ([jar.archiveFileName] + configurations.runtimeClasspath.files.collect { it.getName() }).join(' '))
+        }
     }
     from {
-	// Only include JMH benchmarks and JMH in Jar file
-	(configurations.jmhRuntimeClasspath.files - configurations.runtimeClasspath.files).collect { it.isDirectory() ? it : zipTree(it) }
+        // Only include JMH benchmarks and JMH in Jar file
+        (configurations.jmhRuntimeClasspath.files - configurations.runtimeClasspath.files).collect { it.isDirectory() ? it : zipTree(it) }
     } {
-	exclude 'META-INF/*.SF'
-	exclude 'META-INF/*.DSA'
-	exclude 'META-INF/*.RSA'
-	exclude 'log4j.properties'
+        exclude 'META-INF/*.SF'
+        exclude 'META-INF/*.DSA'
+        exclude 'META-INF/*.RSA'
+        exclude 'log4j.properties'
     }
     from sourceSets.jmh.output
 }
 
 artifacts {
     if (benchmarksAvailable) {
-	archives jmhJar
+        archives jmhJar
     }
 }
 
 publishing {
     publications {
-	mavenJava(MavenPublication) {
-	    if (benchmarksAvailable) {
-		artifact jmhJar {
-		    classifier "jmh"
-		}
-	    }
-	}
+        mavenJava(MavenPublication) {
+            if (benchmarksAvailable) {
+                artifact jmhJar {
+                    classifier "jmh"
+                }
+            }
+        }
     }
 }

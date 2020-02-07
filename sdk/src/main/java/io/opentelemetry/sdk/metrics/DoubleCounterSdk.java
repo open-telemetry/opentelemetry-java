@@ -17,33 +17,38 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleCounterSdk extends BaseInstrument<BoundDoubleCounter> implements DoubleCounter {
+final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter {
 
   private final boolean monotonic;
 
   private DoubleCounterSdk(
       String name,
       String description,
+      String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
       boolean monotonic) {
-    super(name, description, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys);
     this.monotonic = monotonic;
   }
 
   @Override
   public void add(double delta, LabelSet labelSet) {
-    createBoundInstrument(labelSet).add(delta);
+    bind(labelSet).add(delta);
   }
 
   @Override
-  BoundDoubleCounter createBoundInstrument(LabelSet labelSet) {
+  public BoundDoubleCounter bind(LabelSet labelSet) {
     return new Bound(labelSet, monotonic);
+  }
+
+  @Override
+  public void unbind(BoundDoubleCounter boundInstrument) {
+    // TODO: Implement this.
   }
 
   @Override
@@ -70,7 +75,7 @@ final class DoubleCounterSdk extends BaseInstrument<BoundDoubleCounter> implemen
     return result;
   }
 
-  private static final class Bound extends BaseBoundInstrument implements BoundDoubleCounter {
+  private static final class Bound extends AbstractBoundInstrument implements BoundDoubleCounter {
 
     private final boolean monotonic;
 
@@ -88,15 +93,16 @@ final class DoubleCounterSdk extends BaseInstrument<BoundDoubleCounter> implemen
     }
   }
 
-  static final class Builder extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
+  static DoubleCounter.Builder builder(String name) {
+    return new Builder(name);
+  }
+
+  private static final class Builder
+      extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
       implements DoubleCounter.Builder {
 
     private Builder(String name) {
       super(name);
-    }
-
-    static DoubleCounter.Builder builder(String name) {
-      return new Builder(name);
     }
 
     @Override
@@ -107,7 +113,12 @@ final class DoubleCounterSdk extends BaseInstrument<BoundDoubleCounter> implemen
     @Override
     public DoubleCounter build() {
       return new DoubleCounterSdk(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
+          getName(),
+          getDescription(),
+          getUnit(),
+          getConstantLabels(),
+          getLabelKeys(),
+          isMonotonic());
     }
   }
 }

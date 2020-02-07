@@ -36,32 +36,32 @@ public class BatchRecorderTest {
   public void preventNull_MeasureLong() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("measure");
-    meter.newMeasureBatchRecorder().put((LongMeasure) null, 5L).record();
+    meter.newBatchRecorder().put((LongMeasure) null, 5L).record();
   }
 
   @Test
   public void preventNegativeValues_MeasureLong() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    meter.newMeasureBatchRecorder().put(LONG_MEASURE, -5L).record();
+    meter.newBatchRecorder().put(LONG_MEASURE, -5L).record();
   }
 
   @Test
   public void preventNull_MeasureDouble() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("measure");
-    meter.newMeasureBatchRecorder().put((DoubleMeasure) null, 5L).record();
+    meter.newBatchRecorder().put((DoubleMeasure) null, 5L).record();
   }
 
   @Test
   public void preventNegativeValues_MeasureDouble() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    meter.newMeasureBatchRecorder().put(DOUBLE_MEASURE, -5.0).record();
+    meter.newBatchRecorder().put(DOUBLE_MEASURE, -5.0).record();
   }
 
   @Test
   public void doesNotThrow() {
-    meter.newMeasureBatchRecorder().put(LONG_MEASURE, 5).put(DOUBLE_MEASURE, 3.5).record();
+    meter.newBatchRecorder().put(LONG_MEASURE, 5).put(DOUBLE_MEASURE, 3.5).record();
   }
 }
