@@ -26,6 +26,6 @@ public class LongSumAggregatorTest {
   @Test
   public void longSumAggregation() {
     LongSumAggregator longSumAggregator = new LongSumAggregator();
-    longSumAggregator.update(12);
+    longSumAggregator.recordLong(12);
   }
 }

@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Aggregator represents the base class for all the available aggregations. */
+/** Aggregator represents the interface for all the available aggregations. */
 @ThreadSafe
 interface Aggregator<T extends Aggregator<?>> {
 
@@ -30,31 +30,16 @@ interface Aggregator<T extends Aggregator<?>> {
   void merge(T aggregator);
 
   /**
-   * LongAggregator represents the base class for all the available aggregations that work with long
-   * values.
+   * Updates the current aggregator with a newly recorded {@code long} value.
+   *
+   * @param value the new {@code long} value to be added.
    */
-  @ThreadSafe
-  interface LongAggregator<T extends LongAggregator<?>> extends Aggregator<T> {
-
-    /**
-     * Updates the current aggregator with a newly recorded value.
-     *
-     * @param value the new {@code long} value to be added.
-     */
-    void update(long value);
-  }
+  void recordLong(long value);
 
   /**
-   * DoubleAggregator represents the base class for all the available aggregations that work with
-   * double values.
+   * Updates the current aggregator with a newly recorded {@code double} value.
+   *
+   * @param value the new {@code double} value to be added.
    */
-  @ThreadSafe
-  interface DoubleAggregator<T extends DoubleAggregator<?>> extends Aggregator<T> {
-    /**
-     * Updates the current aggregator with a newly recorded value.
-     *
-     * @param value the new {@code double} value to be added.
-     */
-    void update(double value);
-  }
+  void recordDouble(double value);
 }
