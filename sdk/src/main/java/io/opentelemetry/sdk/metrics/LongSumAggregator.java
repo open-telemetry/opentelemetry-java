@@ -23,12 +23,12 @@ final class LongSumAggregator implements Aggregator<LongSumAggregator> {
   private final AtomicLong current;
 
   LongSumAggregator() {
-    this.current = new AtomicLong(0L);
+    current = new AtomicLong(0L);
   }
 
   @Override
   public void merge(LongSumAggregator other) {
-    current.getAndAdd(other.current.get());
+    this.current.getAndAdd(other.current.get());
   }
 
   @Override

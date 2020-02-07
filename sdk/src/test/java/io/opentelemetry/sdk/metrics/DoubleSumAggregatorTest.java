@@ -16,28 +16,16 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import com.google.common.util.concurrent.AtomicDouble;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-final class DoubleSumAggregator implements Aggregator<DoubleSumAggregator> {
-  // TODO: Change to use DoubleAdder when changed to java8.
-  private final AtomicDouble current;
-
-  DoubleSumAggregator() {
-    current = new AtomicDouble(0.0);
-  }
-
-  @Override
-  public void merge(DoubleSumAggregator other) {
-    this.current.getAndAdd(other.current.get());
-  }
-
-  @Override
-  public void recordLong(long value) {
-    throw new UnsupportedOperationException("This Aggregator does not support long values");
-  }
-
-  @Override
-  public void recordDouble(double value) {
-    current.getAndAdd(value);
+/** Unit tests for {@link DoubleSumAggregator}. */
+@RunWith(JUnit4.class)
+public class DoubleSumAggregatorTest {
+  @Test
+  public void longSumAggregation() {
+    DoubleSumAggregator doubleSumAggregator = new DoubleSumAggregator();
+    doubleSumAggregator.recordDouble(12);
   }
 }
