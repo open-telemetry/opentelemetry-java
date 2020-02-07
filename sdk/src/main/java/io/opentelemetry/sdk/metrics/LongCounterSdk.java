@@ -18,32 +18,37 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import java.util.List;
 import java.util.Map;
 
-final class LongCounterSdk extends BaseInstrument<BoundLongCounter> implements LongCounter {
+final class LongCounterSdk extends AbstractInstrument implements LongCounter {
 
   private final boolean monotonic;
 
   private LongCounterSdk(
       String name,
       String description,
+      String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
       boolean monotonic) {
-    super(name, description, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys);
     this.monotonic = monotonic;
   }
 
   @Override
   public void add(long delta, LabelSet labelSet) {
-    createBoundInstrument(labelSet).add(delta);
+    bind(labelSet).add(delta);
   }
 
   @Override
-  BoundLongCounter createBoundInstrument(LabelSet labelSet) {
+  public BoundLongCounter bind(LabelSet labelSet) {
     return new Bound(labelSet, monotonic);
+  }
+
+  @Override
+  public void unbind(BoundLongCounter boundInstrument) {
+    // TODO: Implement this.
   }
 
   @Override
@@ -70,7 +75,7 @@ final class LongCounterSdk extends BaseInstrument<BoundLongCounter> implements L
     return result;
   }
 
-  private static final class Bound extends BaseBoundInstrument implements BoundLongCounter {
+  private static final class Bound extends AbstractBoundInstrument implements BoundLongCounter {
 
     private final boolean monotonic;
 
@@ -88,15 +93,16 @@ final class LongCounterSdk extends BaseInstrument<BoundLongCounter> implements L
     }
   }
 
-  static final class Builder extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
+  static LongCounter.Builder builder(String name) {
+    return new Builder(name);
+  }
+
+  private static final class Builder
+      extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
       implements LongCounter.Builder {
 
     private Builder(String name) {
       super(name);
-    }
-
-    static LongCounter.Builder builder(String name) {
-      return new Builder(name);
     }
 
     @Override
@@ -107,7 +113,12 @@ final class LongCounterSdk extends BaseInstrument<BoundLongCounter> implements L
     @Override
     public LongCounter build() {
       return new LongCounterSdk(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isMonotonic());
+          getName(),
+          getDescription(),
+          getUnit(),
+          getConstantLabels(),
+          getLabelKeys(),
+          isMonotonic());
     }
   }
 }

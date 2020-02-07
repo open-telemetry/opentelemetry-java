@@ -29,20 +29,6 @@ public final class DefaultMeterTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void noopAddLongGauge_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    defaultMeter.longGaugeBuilder(null);
-  }
-
-  @Test
-  public void noopAddDoubleGauge_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    defaultMeter.doubleGaugeBuilder(null);
-  }
-
-  @Test
   public void noopAddDoubleCumulative_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");

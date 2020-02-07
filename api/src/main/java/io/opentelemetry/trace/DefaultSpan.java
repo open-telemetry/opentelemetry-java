@@ -62,7 +62,7 @@ public final class DefaultSpan implements Span {
             TraceId.generateRandomId(random),
             SpanId.generateRandomId(random),
             TraceFlags.getDefault(),
-            Tracestate.getDefault()));
+            TraceState.getDefault()));
   }
 
   private final SpanContext spanContext;

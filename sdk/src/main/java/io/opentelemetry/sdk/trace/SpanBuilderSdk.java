@@ -34,7 +34,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -188,7 +188,7 @@ final class SpanBuilderSdk implements Span.Builder {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
     TraceId traceId;
     SpanId spanId = idsGenerator.generateSpanId();
-    Tracestate tracestate = Tracestate.getDefault();
+    TraceState traceState = TraceState.getDefault();
     if (parentContext == null || !parentContext.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
@@ -197,7 +197,7 @@ final class SpanBuilderSdk implements Span.Builder {
     } else {
       // New child span.
       traceId = parentContext.getTraceId();
-      tracestate = parentContext.getTracestate();
+      traceState = parentContext.getTraceState();
     }
     Decision samplingDecision =
         traceConfig.getSampler().shouldSample(parentContext, traceId, spanId, spanName, links);
@@ -207,7 +207,7 @@ final class SpanBuilderSdk implements Span.Builder {
             traceId,
             spanId,
             samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
-            tracestate);
+            traceState);
 
     if (!samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);

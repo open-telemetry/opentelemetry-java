@@ -19,7 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import io.opentelemetry.trace.Tracestate.Entry;
+import io.opentelemetry.trace.TraceState.Entry;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,9 +27,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link Tracestate}. */
+/** Unit tests for {@link TraceState}. */
 @RunWith(JUnit4.class)
-public class TracestateTest {
+public class TraceStateTest {
   private static final String FIRST_KEY = "key_1";
   private static final String SECOND_KEY = "key_2";
   private static final String FIRST_VALUE = "value.1";
@@ -37,27 +37,27 @@ public class TracestateTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
-  private static final Tracestate EMPTY = Tracestate.builder().build();
-  private final Tracestate firstTracestate = EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).build();
-  private final Tracestate secondTracestate =
+  private static final TraceState EMPTY = TraceState.builder().build();
+  private final TraceState firstTraceState = EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).build();
+  private final TraceState secondTraceState =
       EMPTY.toBuilder().set(SECOND_KEY, SECOND_VALUE).build();
-  private final Tracestate multiValueTracestate =
+  private final TraceState multiValueTraceState =
       EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).set(SECOND_KEY, SECOND_VALUE).build();
 
   @Test
   public void get() {
-    assertThat(firstTracestate.get(FIRST_KEY)).isEqualTo(FIRST_VALUE);
-    assertThat(secondTracestate.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
-    assertThat(multiValueTracestate.get(FIRST_KEY)).isEqualTo(FIRST_VALUE);
-    assertThat(multiValueTracestate.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
+    assertThat(firstTraceState.get(FIRST_KEY)).isEqualTo(FIRST_VALUE);
+    assertThat(secondTraceState.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
+    assertThat(multiValueTraceState.get(FIRST_KEY)).isEqualTo(FIRST_VALUE);
+    assertThat(multiValueTraceState.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
   }
 
   @Test
   public void getEntries() {
-    assertThat(firstTracestate.getEntries()).containsExactly(Entry.create(FIRST_KEY, FIRST_VALUE));
-    assertThat(secondTracestate.getEntries())
+    assertThat(firstTraceState.getEntries()).containsExactly(Entry.create(FIRST_KEY, FIRST_VALUE));
+    assertThat(secondTraceState.getEntries())
         .containsExactly(Entry.create(SECOND_KEY, SECOND_VALUE));
-    assertThat(multiValueTracestate.getEntries())
+    assertThat(multiValueTraceState.getEntries())
         .containsExactly(
             Entry.create(FIRST_KEY, FIRST_VALUE), Entry.create(SECOND_KEY, SECOND_VALUE));
   }
@@ -76,7 +76,7 @@ public class TracestateTest {
 
   @Test
   public void firstKeyCharacterDigitIsAllowed() {
-    Tracestate result = EMPTY.toBuilder().set("1_key", FIRST_VALUE).build();
+    TraceState result = EMPTY.toBuilder().set("1_key", FIRST_VALUE).build();
     assertThat(result.get("1_key")).isEqualTo(FIRST_VALUE);
   }
 
@@ -88,7 +88,7 @@ public class TracestateTest {
 
   @Test
   public void testValidAtSignVendorNamePrefix() {
-    Tracestate result = EMPTY.toBuilder().set("1@nr", FIRST_VALUE).build();
+    TraceState result = EMPTY.toBuilder().set("1@nr", FIRST_VALUE).build();
     assertThat(result.get("1@nr")).isEqualTo(FIRST_VALUE);
   }
 
@@ -174,24 +174,24 @@ public class TracestateTest {
 
   @Test
   public void addEntry() {
-    assertThat(firstTracestate.toBuilder().set(SECOND_KEY, SECOND_VALUE).build())
-        .isEqualTo(multiValueTracestate);
+    assertThat(firstTraceState.toBuilder().set(SECOND_KEY, SECOND_VALUE).build())
+        .isEqualTo(multiValueTraceState);
   }
 
   @Test
   public void updateEntry() {
-    assertThat(firstTracestate.toBuilder().set(FIRST_KEY, SECOND_VALUE).build().get(FIRST_KEY))
+    assertThat(firstTraceState.toBuilder().set(FIRST_KEY, SECOND_VALUE).build().get(FIRST_KEY))
         .isEqualTo(SECOND_VALUE);
-    Tracestate updatedMultiValueTracestate =
-        multiValueTracestate.toBuilder().set(FIRST_KEY, SECOND_VALUE).build();
-    assertThat(updatedMultiValueTracestate.get(FIRST_KEY)).isEqualTo(SECOND_VALUE);
-    assertThat(updatedMultiValueTracestate.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
+    TraceState updatedMultiValueTraceState =
+        multiValueTraceState.toBuilder().set(FIRST_KEY, SECOND_VALUE).build();
+    assertThat(updatedMultiValueTraceState.get(FIRST_KEY)).isEqualTo(SECOND_VALUE);
+    assertThat(updatedMultiValueTraceState.get(SECOND_KEY)).isEqualTo(SECOND_VALUE);
   }
 
   @Test
   public void addAndUpdateEntry() {
     assertThat(
-            firstTracestate
+            firstTraceState
                 .toBuilder()
                 .set(FIRST_KEY, SECOND_VALUE) // update the existing entry
                 .set(SECOND_KEY, FIRST_VALUE) // add a new entry
@@ -215,8 +215,8 @@ public class TracestateTest {
 
   @Test
   public void remove() {
-    assertThat(multiValueTracestate.toBuilder().remove(SECOND_KEY).build())
-        .isEqualTo(firstTracestate);
+    assertThat(multiValueTraceState.toBuilder().remove(SECOND_KEY).build())
+        .isEqualTo(firstTraceState);
   }
 
   @Test
@@ -233,21 +233,21 @@ public class TracestateTest {
   @Test
   public void remove_NullNotAllowed() {
     thrown.expect(NullPointerException.class);
-    multiValueTracestate.toBuilder().remove(null).build();
+    multiValueTraceState.toBuilder().remove(null).build();
   }
 
   @Test
-  public void tracestate_EqualsAndHashCode() {
+  public void traceState_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(EMPTY, EMPTY);
-    tester.addEqualityGroup(firstTracestate, EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).build());
+    tester.addEqualityGroup(firstTraceState, EMPTY.toBuilder().set(FIRST_KEY, FIRST_VALUE).build());
     tester.addEqualityGroup(
-        secondTracestate, EMPTY.toBuilder().set(SECOND_KEY, SECOND_VALUE).build());
+        secondTraceState, EMPTY.toBuilder().set(SECOND_KEY, SECOND_VALUE).build());
     tester.testEquals();
   }
 
   @Test
-  public void tracestate_ToString() {
-    assertThat(EMPTY.toString()).isEqualTo("Tracestate{entries=[]}");
+  public void traceState_ToString() {
+    assertThat(EMPTY.toString()).isEqualTo("TraceState{entries=[]}");
   }
 }

@@ -16,39 +16,27 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.LongMeasure;
+import io.opentelemetry.metrics.LongObserver;
 import java.util.List;
 import java.util.Map;
 
-final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
+final class LongObserverSdk extends AbstractInstrument implements LongObserver {
+  private final boolean monotonic;
 
-  private final boolean absolute;
-
-  private LongMeasureSdk(
+  LongObserverSdk(
       String name,
       String description,
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
-      boolean absolute) {
+      boolean monotonic) {
     super(name, description, unit, constantLabels, labelKeys);
-    this.absolute = absolute;
+    this.monotonic = monotonic;
   }
 
   @Override
-  public void record(long value, LabelSet labelSet) {
-    bind(labelSet).record(value);
-  }
-
-  @Override
-  public BoundLongMeasure bind(LabelSet labelSet) {
-    return new Bound(labelSet, this.absolute);
-  }
-
-  @Override
-  public void unbind(BoundLongMeasure boundInstrument) {
-    // TODO: Implement this.
+  public void setCallback(Callback<LongObserver.ResultLongObserver> metricUpdater) {
+    throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
@@ -56,50 +44,32 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof LongMeasureSdk)) {
+    if (!(o instanceof LongObserverSdk)) {
       return false;
     }
     if (!super.equals(o)) {
       return false;
     }
 
-    LongMeasureSdk that = (LongMeasureSdk) o;
+    LongObserverSdk that = (LongObserverSdk) o;
 
-    return absolute == that.absolute;
+    return monotonic == that.monotonic;
   }
 
   @Override
   public int hashCode() {
     int result = super.hashCode();
-    result = 31 * result + (absolute ? 1 : 0);
+    result = 31 * result + (monotonic ? 1 : 0);
     return result;
   }
 
-  private static final class Bound extends AbstractBoundInstrument implements BoundLongMeasure {
-
-    private final boolean absolute;
-
-    Bound(LabelSet labels, boolean absolute) {
-      super(labels);
-      this.absolute = absolute;
-    }
-
-    @Override
-    public void record(long value) {
-      if (this.absolute && value < 0) {
-        throw new IllegalArgumentException("absolute measure can only record positive values");
-      }
-      // todo: pass through to an aggregator/accumulator
-    }
-  }
-
-  static LongMeasure.Builder builder(String name) {
+  static LongObserver.Builder builder(String name) {
     return new Builder(name);
   }
 
   private static final class Builder
-      extends AbstractMeasureBuilder<LongMeasure.Builder, LongMeasure>
-      implements LongMeasure.Builder {
+      extends AbstractObserverBuilder<LongObserver.Builder, LongObserver>
+      implements LongObserver.Builder {
 
     private Builder(String name) {
       super(name);
@@ -111,14 +81,14 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
     }
 
     @Override
-    public LongMeasure build() {
-      return new LongMeasureSdk(
+    public LongObserver build() {
+      return new LongObserverSdk(
           getName(),
           getDescription(),
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
-          isAbsolute());
+          isMonotonic());
     }
   }
 }

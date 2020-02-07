@@ -17,33 +17,38 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
 import io.opentelemetry.metrics.LabelSet;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleMeasureSdk extends BaseInstrument<BoundDoubleMeasure> implements DoubleMeasure {
+final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure {
 
   private final boolean absolute;
 
   private DoubleMeasureSdk(
       String name,
       String description,
+      String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
       boolean absolute) {
-    super(name, description, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys);
     this.absolute = absolute;
   }
 
   @Override
   public void record(double value, LabelSet labelSet) {
-    createBoundInstrument(labelSet).record(value);
+    bind(labelSet).record(value);
   }
 
   @Override
-  BoundDoubleMeasure createBoundInstrument(LabelSet labelSet) {
+  public BoundDoubleMeasure bind(LabelSet labelSet) {
     return new Bound(labelSet, this.absolute);
+  }
+
+  @Override
+  public void unbind(BoundDoubleMeasure boundInstrument) {
+    // TODO: Implement this.
   }
 
   @Override
@@ -70,7 +75,7 @@ final class DoubleMeasureSdk extends BaseInstrument<BoundDoubleMeasure> implemen
     return result;
   }
 
-  private static final class Bound extends BaseBoundInstrument implements BoundDoubleMeasure {
+  private static final class Bound extends AbstractBoundInstrument implements BoundDoubleMeasure {
 
     private final boolean absolute;
 
@@ -88,15 +93,16 @@ final class DoubleMeasureSdk extends BaseInstrument<BoundDoubleMeasure> implemen
     }
   }
 
-  static final class Builder extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
+  static DoubleMeasure.Builder builder(String name) {
+    return new Builder(name);
+  }
+
+  private static final class Builder
+      extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
       implements DoubleMeasure.Builder {
 
     private Builder(String name) {
       super(name);
-    }
-
-    static DoubleMeasure.Builder builder(String name) {
-      return new Builder(name);
     }
 
     @Override
@@ -107,7 +113,12 @@ final class DoubleMeasureSdk extends BaseInstrument<BoundDoubleMeasure> implemen
     @Override
     public DoubleMeasure build() {
       return new DoubleMeasureSdk(
-          getName(), getDescription(), getConstantLabels(), getLabelKeys(), isAbsolute());
+          getName(),
+          getDescription(),
+          getUnit(),
+          getConstantLabels(),
+          getLabelKeys(),
+          isAbsolute());
     }
   }
 }
