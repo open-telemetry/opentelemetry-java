@@ -369,14 +369,24 @@ public final class DefaultMeter implements Meter {
     @Override
     public BatchRecorder put(LongMeasure measure, long value) {
       Utils.checkNotNull(measure, "measure");
-      Utils.checkArgument(value >= 0, "Unsupported negative values.");
       return this;
     }
 
     @Override
     public BatchRecorder put(DoubleMeasure measure, double value) {
       Utils.checkNotNull(measure, "measure");
-      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+      return this;
+    }
+
+    @Override
+    public BatchRecorder put(LongCounter counter, long value) {
+      Utils.checkNotNull(counter, "counter");
+      return this;
+    }
+
+    @Override
+    public BatchRecorder put(DoubleCounter counter, double value) {
+      Utils.checkNotNull(counter, "counter");
       return this;
     }
 

@@ -51,6 +51,30 @@ public interface BatchRecorder {
   BatchRecorder put(DoubleMeasure measure, double value);
 
   /**
+   * Associates the {@link LongCounter} with the given value. Subsequent updates to the same {@link
+   * LongCounter} will overwrite the previous value.
+   *
+   * @param counter the {@link LongCounter}.
+   * @param value the value to be associated with {@code counter}.
+   * @return this.
+   * @throws IllegalArgumentException if value is negative.
+   * @since 0.1.0
+   */
+  BatchRecorder put(LongCounter counter, long value);
+
+  /**
+   * Associates the {@link DoubleCounter} with the given value. Subsequent updates to the same
+   * {@link DoubleCounter} will overwrite the previous value.
+   *
+   * @param counter the {@link DoubleCounter}.
+   * @param value the value to be associated with {@code counter}.
+   * @return this.
+   * @throws IllegalArgumentException if value is negative.
+   * @since 0.1.0
+   */
+  BatchRecorder put(DoubleCounter counter, double value);
+
+  /**
    * Records all of the measures at the same time.
    *
    * <p>This method records all of the measurements every time it is called, so make sure it is not
