@@ -42,10 +42,6 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 public class HttpTraceContextInjectBenchmark {
 
-  private byte sampledTraceOptionsBytes = 1;
-  private TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
-  private TraceState traceStateDefault = TraceState.builder().build();
-
   private HttpTraceContext httpTraceContext;
   private Map<String, String> carrier;
   private Setter<Map<String, String>> setter =
@@ -77,13 +73,19 @@ public class HttpTraceContextInjectBenchmark {
     })
     public String spanIdBase16;
 
-    public TraceId traceId;
-    public SpanId spanId;
+    public SpanContext spanContext;
+    private byte sampledTraceOptionsBytes = 1;
+    private TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
+    private TraceState traceStateDefault = TraceState.builder().build();
 
     @Setup
     public void setup() {
-      this.traceId = TraceId.fromLowerBase16(traceIdBase16, 0);
-      this.spanId = SpanId.fromLowerBase16(spanIdBase16, 0);
+      this.spanContext =
+          SpanContext.create(
+              TraceId.fromLowerBase16(traceIdBase16, 0),
+              SpanId.fromLowerBase16(spanIdBase16, 0),
+              sampledTraceOptions,
+              traceStateDefault);
     }
   }
 
@@ -100,10 +102,7 @@ public class HttpTraceContextInjectBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.MILLISECONDS)
   public Map<String, String> measureInject(HttpTraceContextInjectState state) {
-    httpTraceContext.inject(
-        SpanContext.create(state.traceId, state.spanId, sampledTraceOptions, traceStateDefault),
-        carrier,
-        setter);
+    httpTraceContext.inject(state.spanContext, carrier, setter);
     return carrier;
   }
 
