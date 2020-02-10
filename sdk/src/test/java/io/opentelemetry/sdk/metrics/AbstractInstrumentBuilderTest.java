@@ -102,29 +102,29 @@ public class AbstractInstrumentBuilderTest {
 
   @Test
   public void defaultValue() {
-    TestInstrumentBuilder testMetricBuilder = TestInstrumentBuilder.newBuilder(NAME);
-    assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
-    assertThat(testMetricBuilder.getDescription()).isEmpty();
-    assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
-    assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
-    assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
+    TestInstrumentBuilder testInstrumentBuilder = TestInstrumentBuilder.newBuilder(NAME);
+    assertThat(testInstrumentBuilder.getName()).isEqualTo(NAME);
+    assertThat(testInstrumentBuilder.getDescription()).isEmpty();
+    assertThat(testInstrumentBuilder.getUnit()).isEqualTo("1");
+    assertThat(testInstrumentBuilder.getLabelKeys()).isEmpty();
+    assertThat(testInstrumentBuilder.getConstantLabels()).isEmpty();
+    assertThat(testInstrumentBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   @Test
   public void setAndGetValues() {
-    TestInstrumentBuilder testMetricBuilder =
+    TestInstrumentBuilder testInstrumentBuilder =
         TestInstrumentBuilder.newBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setUnit(UNIT)
             .setLabelKeys(LABEL_KEY)
             .setConstantLabels(CONSTANT_LABELS);
-    assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
-    assertThat(testMetricBuilder.getDescription()).isEqualTo(DESCRIPTION);
-    assertThat(testMetricBuilder.getUnit()).isEqualTo(UNIT);
-    assertThat(testMetricBuilder.getLabelKeys()).isEqualTo(LABEL_KEY);
-    assertThat(testMetricBuilder.getConstantLabels()).isEqualTo(CONSTANT_LABELS);
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
+    assertThat(testInstrumentBuilder.getName()).isEqualTo(NAME);
+    assertThat(testInstrumentBuilder.getDescription()).isEqualTo(DESCRIPTION);
+    assertThat(testInstrumentBuilder.getUnit()).isEqualTo(UNIT);
+    assertThat(testInstrumentBuilder.getLabelKeys()).isEqualTo(LABEL_KEY);
+    assertThat(testInstrumentBuilder.getConstantLabels()).isEqualTo(CONSTANT_LABELS);
+    assertThat(testInstrumentBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   private static final class TestInstrumentBuilder

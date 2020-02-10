@@ -42,6 +42,26 @@ abstract class AbstractInstrument implements Instrument {
     this.labelKeys = labelKeys;
   }
 
+  final String getName() {
+    return name;
+  }
+
+  final String getDescription() {
+    return description;
+  }
+
+  final String getUnit() {
+    return unit;
+  }
+
+  final Map<String, String> getConstantLabels() {
+    return constantLabels;
+  }
+
+  final List<String> getLabelKeys() {
+    return labelKeys;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
