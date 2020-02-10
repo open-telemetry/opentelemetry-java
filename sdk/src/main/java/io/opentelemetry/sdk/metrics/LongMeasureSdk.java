@@ -46,7 +46,7 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return new BoundInstrument(labelSet, this.absolute);
+    return new BoundInstrument(this.absolute);
   }
 
   @Override
@@ -73,13 +73,12 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
     return result;
   }
 
-  private static final class BoundInstrument extends AbstractBoundInstrument
-      implements BoundLongMeasure {
+  static final class BoundInstrument extends AbstractBoundInstrument implements BoundLongMeasure {
 
     private final boolean absolute;
 
-    BoundInstrument(LabelSet labelSet, boolean absolute) {
-      super(labelSet);
+    BoundInstrument(boolean absolute) {
+      super(null);
       this.absolute = absolute;
     }
 
