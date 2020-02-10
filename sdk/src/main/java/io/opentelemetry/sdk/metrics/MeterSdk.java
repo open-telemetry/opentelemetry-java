@@ -77,7 +77,7 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public BatchRecorder newBatchRecorder() {
+  public BatchRecorder newBatchRecorder(LabelSet labelSet) {
     throw new UnsupportedOperationException("to be implemented");
   }
 

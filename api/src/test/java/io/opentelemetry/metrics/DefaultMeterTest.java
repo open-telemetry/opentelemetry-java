@@ -69,4 +69,11 @@ public final class DefaultMeterTest {
     thrown.expectMessage("null");
     defaultMeter.createLabelSet(null, "value");
   }
+
+  @Test
+  public void testNewBatchRecorder_NullLabelSet() throws Exception {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelSet");
+    defaultMeter.newBatchRecorder(null);
+  }
 }

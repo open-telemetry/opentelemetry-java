@@ -33,19 +33,19 @@ public class BatchRecorderTest {
   public void preventNull_MeasureLong() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("measure");
-    meter.newBatchRecorder().put((LongMeasure) null, 5L).record();
+    meter.newBatchRecorder(meter.createLabelSet()).put((LongMeasure) null, 5L).record();
   }
 
   @Test
   public void preventNull_MeasureDouble() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("measure");
-    meter.newBatchRecorder().put((DoubleMeasure) null, 5L).record();
+    meter.newBatchRecorder(meter.createLabelSet()).put((DoubleMeasure) null, 5L).record();
   }
 
   @Test
   public void doesNotThrow() {
-    BatchRecorder batchRecorder = meter.newBatchRecorder();
+    BatchRecorder batchRecorder = meter.newBatchRecorder(meter.createLabelSet());
     batchRecorder.put(meter.longMeasureBuilder("longMeasure").build(), 44L);
     batchRecorder.put(meter.longMeasureBuilder("negativeLongMeasure").build(), -44L);
     batchRecorder.put(meter.doubleMeasureBuilder("doubleMeasure").build(), 77.556d);
