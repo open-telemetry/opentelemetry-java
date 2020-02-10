@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
-import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**

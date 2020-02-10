@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -91,6 +90,10 @@ public interface LongCounter extends Counter<BoundLongCounter> {
     void unbind();
   }
 
-  /** Builder class for {@link LongCounter}. */
-  interface Builder extends Counter.Builder<Builder, LongCounter> {}
+  /**
+   * Builder class for {@link LongCounter}.
+   */
+  interface Builder extends Counter.Builder<Builder, LongCounter> {
+
+  }
 }

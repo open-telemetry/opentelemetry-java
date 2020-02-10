@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
 import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import javax.annotation.concurrent.ThreadSafe;
 
