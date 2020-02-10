@@ -55,7 +55,7 @@ public interface BatchRecorder {
    * @param counter the {@link LongCounter}.
    * @param value the value to be associated with {@code counter}.
    * @return this.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   BatchRecorder put(LongCounter counter, long value);
 
@@ -66,7 +66,7 @@ public interface BatchRecorder {
    * @param counter the {@link DoubleCounter}.
    * @param value the value to be associated with {@code counter}.
    * @return this.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   BatchRecorder put(DoubleCounter counter, double value);
 
