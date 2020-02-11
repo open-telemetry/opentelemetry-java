@@ -119,7 +119,7 @@ public interface Meter {
    * Utility method that allows users to atomically record measurements to a set of Measures with a
    * common LabelSet.
    *
-   * @param labelSet The labels to associate with this recorder.
+   * @param labelSet The labels to associate with this recorder and all it's recordings.
    * @return a {@code MeasureBatchRecorder} that can be use to atomically record a set of
    *     measurements associated with different Measures.
    * @since 0.1.0
