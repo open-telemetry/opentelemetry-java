@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.DefaultSpan;

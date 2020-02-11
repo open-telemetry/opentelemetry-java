@@ -24,8 +24,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Scope;
 import io.opentracing.Span;

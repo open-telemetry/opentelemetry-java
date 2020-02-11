@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
