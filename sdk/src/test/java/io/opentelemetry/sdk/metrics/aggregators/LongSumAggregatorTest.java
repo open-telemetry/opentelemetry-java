@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link io.opentelemetry.sdk.metrics.aggregators.LongSumAggregator}. */
+/** Unit tests for {@link LongSumAggregator}. */
 @RunWith(JUnit4.class)
 public class LongSumAggregatorTest {
   @Test

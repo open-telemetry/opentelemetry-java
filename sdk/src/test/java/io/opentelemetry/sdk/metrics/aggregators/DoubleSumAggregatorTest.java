@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link io.opentelemetry.sdk.metrics.aggregators.DoubleSumAggregator}. */
+/** Unit tests for {@link DoubleSumAggregator}. */
 @RunWith(JUnit4.class)
 public class DoubleSumAggregatorTest {
   @Test
