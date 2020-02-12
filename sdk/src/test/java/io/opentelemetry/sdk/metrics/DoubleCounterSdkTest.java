@@ -42,7 +42,8 @@ public class DoubleCounterSdkTest {
     LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
     DoubleCounter doubleCounter =
-        DoubleCounterSdk.builder("testCounter")
+        testSdk
+            .doubleCounterBuilder("testCounter")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
@@ -64,7 +65,7 @@ public class DoubleCounterSdkTest {
   @Test
   public void testDoubleCounter_monotonicity() {
     DoubleCounter doubleCounter =
-        DoubleCounterSdk.builder("testCounter").setMonotonic(true).build();
+        testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     doubleCounter.add(-45.77d, testSdk.createLabelSet());
@@ -73,7 +74,7 @@ public class DoubleCounterSdkTest {
   @Test
   public void testBoundDoubleCounter_monotonicity() {
     DoubleCounter doubleCounter =
-        DoubleCounterSdk.builder("testCounter").setMonotonic(true).build();
+        testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     doubleCounter.bind(testSdk.createLabelSet()).add(-9.3);

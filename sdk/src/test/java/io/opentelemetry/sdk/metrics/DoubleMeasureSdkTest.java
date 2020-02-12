@@ -42,7 +42,8 @@ public class DoubleMeasureSdkTest {
     LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
     DoubleMeasure doubleMeasure =
-        DoubleMeasureSdk.builder("testMeasure")
+        testSdk
+            .doubleMeasureBuilder("testMeasure")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own double measure")
@@ -63,7 +64,8 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void testDoubleMeasure_absolute() {
-    DoubleMeasure doubleMeasure = DoubleMeasureSdk.builder("testMeasure").setAbsolute(true).build();
+    DoubleMeasure doubleMeasure =
+        testSdk.doubleMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     doubleMeasure.record(-45.77d, testSdk.createLabelSet());
@@ -71,7 +73,8 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void testBoundDoubleMeasure_absolute() {
-    DoubleMeasure doubleMeasure = DoubleMeasureSdk.builder("testMeasure").setAbsolute(true).build();
+    DoubleMeasure doubleMeasure =
+        testSdk.doubleMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     doubleMeasure.bind(testSdk.createLabelSet()).record(-9.3f);

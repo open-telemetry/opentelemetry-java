@@ -31,20 +31,21 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
+      MeterSharedState sharedState,
       boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys, sharedState);
     this.monotonic = monotonic;
   }
 
   @Override
   public void add(double delta, LabelSet labelSet) {
-    BoundDoubleCounter boundDoubleCounter = bind(labelSet);
-    boundDoubleCounter.add(delta);
-    boundDoubleCounter.unbind();
+    BoundInstrument boundInstrument = bind(labelSet);
+    boundInstrument.add(delta);
+    boundInstrument.unbind();
   }
 
   @Override
-  public BoundDoubleCounter bind(LabelSet labelSet) {
+  public BoundInstrument bind(LabelSet labelSet) {
     return new BoundInstrument(labelSet, monotonic);
   }
 
@@ -77,8 +78,8 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
 
     private final boolean monotonic;
 
-    BoundInstrument(LabelSet labels, boolean monotonic) {
-      super(labels);
+    BoundInstrument(LabelSet labelSet, boolean monotonic) {
+      super(labelSet);
       this.monotonic = monotonic;
     }
 
@@ -87,20 +88,20 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
       if (monotonic && delta < 0) {
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
-      // todo: pass through to an aggregator/accumulator
+      // TODO: pass through to an aggregator/accumulator
     }
   }
 
-  static DoubleCounter.Builder builder(String name) {
-    return new Builder(name);
+  static DoubleCounter.Builder builder(String name, MeterSharedState sharedState) {
+    return new Builder(name, sharedState);
   }
 
   private static final class Builder
       extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
       implements DoubleCounter.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(String name, MeterSharedState sharedState) {
+      super(name, sharedState);
     }
 
     @Override
@@ -116,6 +117,7 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
+          getMeterSharedState(),
           isMonotonic());
     }
   }

@@ -31,20 +31,21 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
+      MeterSharedState sharedState,
       boolean absolute) {
-    super(name, description, unit, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys, sharedState);
     this.absolute = absolute;
   }
 
   @Override
   public void record(double value, LabelSet labelSet) {
-    BoundDoubleMeasure boundDoubleMeasure = bind(labelSet);
-    boundDoubleMeasure.record(value);
-    boundDoubleMeasure.unbind();
+    BoundInstrument boundInstrument = bind(labelSet);
+    boundInstrument.record(value);
+    boundInstrument.unbind();
   }
 
   @Override
-  public BoundDoubleMeasure bind(LabelSet labelSet) {
+  public BoundInstrument bind(LabelSet labelSet) {
     return new BoundInstrument(labelSet, this.absolute);
   }
 
@@ -77,8 +78,8 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
 
     private final boolean absolute;
 
-    BoundInstrument(LabelSet labels, boolean absolute) {
-      super(labels);
+    BoundInstrument(LabelSet labelSet, boolean absolute) {
+      super(labelSet);
       this.absolute = absolute;
     }
 
@@ -87,20 +88,20 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
       if (this.absolute && value < 0) {
         throw new IllegalArgumentException("absolute measure can only record positive values");
       }
-      // todo: pass through to an aggregator/accumulator
+      // TODO: pass through to an aggregator/accumulator
     }
   }
 
-  static DoubleMeasure.Builder builder(String name) {
-    return new Builder(name);
+  static DoubleMeasure.Builder builder(String name, MeterSharedState sharedState) {
+    return new Builder(name, sharedState);
   }
 
   private static final class Builder
       extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
       implements DoubleMeasure.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(String name, MeterSharedState sharedState) {
+      super(name, sharedState);
     }
 
     @Override
@@ -116,6 +117,7 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
+          getMeterSharedState(),
           isAbsolute());
     }
   }

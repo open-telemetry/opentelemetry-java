@@ -31,20 +31,21 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
+      MeterSharedState sharedState,
       boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys, sharedState);
     this.monotonic = monotonic;
   }
 
   @Override
   public void add(long delta, LabelSet labelSet) {
-    BoundLongCounter boundLongCounter = bind(labelSet);
-    boundLongCounter.add(delta);
-    boundLongCounter.unbind();
+    BoundInstrument boundInstrument = bind(labelSet);
+    boundInstrument.add(delta);
+    boundInstrument.unbind();
   }
 
   @Override
-  public BoundLongCounter bind(LabelSet labelSet) {
+  public BoundInstrument bind(LabelSet labelSet) {
     return new BoundInstrument(labelSet, monotonic);
   }
 
@@ -77,8 +78,8 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
 
     private final boolean monotonic;
 
-    BoundInstrument(LabelSet labels, boolean monotonic) {
-      super(labels);
+    BoundInstrument(LabelSet labelSet, boolean monotonic) {
+      super(labelSet);
       this.monotonic = monotonic;
     }
 
@@ -87,20 +88,20 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
       if (monotonic && delta < 0) {
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
-      // todo: pass through to an aggregator/accumulator
+      // TODO: pass through to an aggregator/accumulator
     }
   }
 
-  static LongCounter.Builder builder(String name) {
-    return new Builder(name);
+  static LongCounter.Builder builder(String name, MeterSharedState sharedState) {
+    return new Builder(name, sharedState);
   }
 
   private static final class Builder
       extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
       implements LongCounter.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(String name, MeterSharedState sharedState) {
+      super(name, sharedState);
     }
 
     @Override
@@ -116,6 +117,7 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
+          getMeterSharedState(),
           isMonotonic());
     }
   }

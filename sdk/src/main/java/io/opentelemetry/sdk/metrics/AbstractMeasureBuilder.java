@@ -22,8 +22,8 @@ abstract class AbstractMeasureBuilder<B extends Measure.Builder<B, V>, V>
     extends AbstractInstrumentBuilder<B, V> implements Measure.Builder<B, V> {
   private boolean absolute = true;
 
-  protected AbstractMeasureBuilder(String name) {
-    super(name);
+  AbstractMeasureBuilder(String name, MeterSharedState sharedState) {
+    super(name, sharedState);
   }
 
   @Override

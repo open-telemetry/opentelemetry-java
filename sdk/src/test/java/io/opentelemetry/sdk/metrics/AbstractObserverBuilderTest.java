@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.metrics.Observer;
+import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.resources.Resource;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,10 +33,12 @@ public class AbstractObserverBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
+  private static final MeterSharedState METER_SHARED_STATE =
+      MeterSharedState.create(TestClock.create(), Resource.getEmpty());
 
   @Test
   public void defaultValue() {
-    TestInstrumentBuilder testMetricBuilder = TestInstrumentBuilder.newBuilder(NAME);
+    TestInstrumentBuilder testMetricBuilder = new TestInstrumentBuilder(NAME, METER_SHARED_STATE);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getDescription()).isEmpty();
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
@@ -47,7 +51,7 @@ public class AbstractObserverBuilderTest {
   @Test
   public void setAndGetValues() {
     TestInstrumentBuilder testMetricBuilder =
-        TestInstrumentBuilder.newBuilder(NAME).setMonotonic(true);
+        new TestInstrumentBuilder(NAME, METER_SHARED_STATE).setMonotonic(true);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.isMonotonic()).isTrue();
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
@@ -55,12 +59,8 @@ public class AbstractObserverBuilderTest {
 
   private static final class TestInstrumentBuilder
       extends AbstractObserverBuilder<TestInstrumentBuilder, TestInstrument> {
-    static TestInstrumentBuilder newBuilder(String name) {
-      return new TestInstrumentBuilder(name);
-    }
-
-    TestInstrumentBuilder(String name) {
-      super(name);
+    TestInstrumentBuilder(String name, MeterSharedState sharedState) {
+      super(name, sharedState);
     }
 
     @Override

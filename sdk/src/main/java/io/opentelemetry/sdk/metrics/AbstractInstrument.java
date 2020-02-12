@@ -27,6 +27,7 @@ abstract class AbstractInstrument implements Instrument {
   private final String unit;
   private final Map<String, String> constantLabels;
   private final List<String> labelKeys;
+  private final MeterSharedState meterSharedState;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
   AbstractInstrument(
@@ -34,12 +35,14 @@ abstract class AbstractInstrument implements Instrument {
       String description,
       String unit,
       Map<String, String> constantLabels,
-      List<String> labelKeys) {
+      List<String> labelKeys,
+      MeterSharedState meterSharedState) {
     this.name = name;
     this.description = description;
     this.unit = unit;
     this.constantLabels = constantLabels;
     this.labelKeys = labelKeys;
+    this.meterSharedState = meterSharedState;
   }
 
   final String getName() {
@@ -60,6 +63,10 @@ abstract class AbstractInstrument implements Instrument {
 
   final List<String> getLabelKeys() {
     return labelKeys;
+  }
+
+  final MeterSharedState getMeterSharedState() {
+    return meterSharedState;
   }
 
   @Override

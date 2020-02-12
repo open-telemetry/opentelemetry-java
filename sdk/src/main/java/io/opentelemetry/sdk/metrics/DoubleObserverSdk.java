@@ -29,8 +29,9 @@ final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserv
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
+      MeterSharedState sharedState,
       boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys, sharedState);
     this.monotonic = monotonic;
   }
 
@@ -63,16 +64,16 @@ final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserv
     return result;
   }
 
-  static DoubleObserver.Builder builder(String name) {
-    return new Builder(name);
+  static DoubleObserver.Builder builder(String name, MeterSharedState sharedState) {
+    return new Builder(name, sharedState);
   }
 
   private static final class Builder
       extends AbstractObserverBuilder<DoubleObserver.Builder, DoubleObserver>
       implements DoubleObserver.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(String name, MeterSharedState sharedState) {
+      super(name, sharedState);
     }
 
     @Override
@@ -88,6 +89,7 @@ final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserv
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
+          getMeterSharedState(),
           isMonotonic());
     }
   }

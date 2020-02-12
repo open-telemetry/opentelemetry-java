@@ -31,20 +31,21 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
+      MeterSharedState sharedState,
       boolean absolute) {
-    super(name, description, unit, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys, sharedState);
     this.absolute = absolute;
   }
 
   @Override
   public void record(long value, LabelSet labelSet) {
-    BoundLongMeasure boundLongMeasure = bind(labelSet);
-    boundLongMeasure.record(value);
-    boundLongMeasure.unbind();
+    BoundInstrument boundInstrument = bind(labelSet);
+    boundInstrument.record(value);
+    boundInstrument.unbind();
   }
 
   @Override
-  public BoundLongMeasure bind(LabelSet labelSet) {
+  public BoundInstrument bind(LabelSet labelSet) {
     return new BoundInstrument(labelSet, this.absolute);
   }
 
@@ -77,8 +78,8 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
 
     private final boolean absolute;
 
-    BoundInstrument(LabelSet labels, boolean absolute) {
-      super(labels);
+    BoundInstrument(LabelSet labelSet, boolean absolute) {
+      super(labelSet);
       this.absolute = absolute;
     }
 
@@ -87,20 +88,20 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
       if (this.absolute && value < 0) {
         throw new IllegalArgumentException("absolute measure can only record positive values");
       }
-      // todo: pass through to an aggregator/accumulator
+      // TODO: pass through to an aggregator/accumulator
     }
   }
 
-  static LongMeasure.Builder builder(String name) {
-    return new Builder(name);
+  static LongMeasure.Builder builder(String name, MeterSharedState sharedState) {
+    return new Builder(name, sharedState);
   }
 
   private static final class Builder
       extends AbstractMeasureBuilder<LongMeasure.Builder, LongMeasure>
       implements LongMeasure.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(String name, MeterSharedState sharedState) {
+      super(name, sharedState);
     }
 
     @Override
@@ -116,6 +117,7 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
+          getMeterSharedState(),
           isAbsolute());
     }
   }

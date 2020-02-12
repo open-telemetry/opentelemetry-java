@@ -37,8 +37,7 @@ public final class MeterSdkRegistry implements MeterRegistry {
   private final MeterSdkComponentRegistry registry;
 
   private MeterSdkRegistry(Clock clock, Resource resource) {
-    MeterSharedState sharedState = new MeterSharedState(clock, resource);
-    this.registry = new MeterSdkComponentRegistry(sharedState);
+    this.registry = new MeterSdkComponentRegistry(MeterSharedState.create(clock, resource));
   }
 
   @Override
