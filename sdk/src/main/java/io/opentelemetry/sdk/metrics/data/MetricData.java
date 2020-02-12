@@ -63,8 +63,7 @@ public abstract class MetricData {
    * <p>Only one type of points are available at any moment for a {@link MetricData}, and the type
    * is determined by the {@link Descriptor.Type}.
    *
-   * @return the data {@link Point}s for this metric, or {@code null} if this type of points are not
-   *     accepted.
+   * @return the data {@link Point}s for this metric, or empty {@code Collection} if no points.
    * @since 0.3.0
    */
   public abstract Collection<Point> getPoints();

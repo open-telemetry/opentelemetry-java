@@ -105,6 +105,11 @@ public class Aggregations {
     }
 
     @Override
+    public String getUnit(String initialUnit) {
+      return initialUnit;
+    }
+
+    @Override
     public boolean availableForInstrument(InstrumentType instrumentType) {
       // Available for all instruments.
       return true;
@@ -125,6 +130,11 @@ public class Aggregations {
     public Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       return Type.MONOTONIC_LONG;
+    }
+
+    @Override
+    public String getUnit(String initialUnit) {
+      return "1";
     }
 
     @Override
@@ -155,6 +165,11 @@ public class Aggregations {
     }
 
     @Override
+    public String getUnit(String initialUnit) {
+      return initialUnit;
+    }
+
+    @Override
     public boolean availableForInstrument(InstrumentType instrumentType) {
       throw new UnsupportedOperationException("Implement this");
     }
@@ -174,6 +189,11 @@ public class Aggregations {
     public Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       throw new UnsupportedOperationException("Implement this");
+    }
+
+    @Override
+    public String getUnit(String initialUnit) {
+      return initialUnit;
     }
 
     @Override
