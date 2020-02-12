@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics.aggregators;
+package io.opentelemetry.sdk.metrics.aggregator;
 
 import javax.annotation.concurrent.ThreadSafe;
 
