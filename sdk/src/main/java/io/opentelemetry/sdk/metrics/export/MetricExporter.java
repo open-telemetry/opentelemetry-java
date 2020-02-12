@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics.export;
 
-import io.opentelemetry.sdk.metrics.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
 
 /**
