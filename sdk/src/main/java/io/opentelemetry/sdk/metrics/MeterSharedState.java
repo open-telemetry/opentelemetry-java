@@ -16,23 +16,17 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.resources.Resource;
 
-final class MeterSharedState {
-  private final Clock clock;
-  private final Resource resource;
-
-  MeterSharedState(Clock clock, Resource resource) {
-    this.clock = clock;
-    this.resource = resource;
+@AutoValue
+abstract class MeterSharedState {
+  static MeterSharedState create(Clock clock, Resource resource) {
+    return new AutoValue_MeterSharedState(clock, resource);
   }
 
-  Clock getClock() {
-    return clock;
-  }
+  abstract Clock getClock();
 
-  Resource getResource() {
-    return resource;
-  }
+  abstract Resource getResource();
 }

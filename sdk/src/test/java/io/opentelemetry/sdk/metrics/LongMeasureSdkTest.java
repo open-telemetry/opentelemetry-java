@@ -42,7 +42,8 @@ public class LongMeasureSdkTest {
     LabelSet labelSet = testSdk.createLabelSet("K", "v");
 
     LongMeasure longMeasure =
-        LongMeasureSdk.builder("testMeasure")
+        testSdk
+            .longMeasureBuilder("testMeasure")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own measure")
@@ -63,7 +64,7 @@ public class LongMeasureSdkTest {
 
   @Test
   public void testLongMeasure_absolute() {
-    LongMeasure longMeasure = LongMeasureSdk.builder("testMeasure").setAbsolute(true).build();
+    LongMeasure longMeasure = testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     longMeasure.record(-45, testSdk.createLabelSet());
@@ -71,7 +72,7 @@ public class LongMeasureSdkTest {
 
   @Test
   public void testBoundLongMeasure_absolute() {
-    LongMeasure longMeasure = LongMeasureSdk.builder("testMeasure").setAbsolute(true).build();
+    LongMeasure longMeasure = testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     longMeasure.bind(testSdk.createLabelSet()).record(-9);

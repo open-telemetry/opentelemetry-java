@@ -22,8 +22,8 @@ abstract class AbstractObserverBuilder<B extends Observer.Builder<B, V>, V>
     extends AbstractInstrumentBuilder<B, V> implements Observer.Builder<B, V> {
   private boolean monotonic = false;
 
-  protected AbstractObserverBuilder(String name) {
-    super(name);
+  AbstractObserverBuilder(String name, MeterSharedState sharedState) {
+    super(name, sharedState);
   }
 
   @Override

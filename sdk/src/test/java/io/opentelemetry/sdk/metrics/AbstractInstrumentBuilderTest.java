@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.metrics.Instrument;
+import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -40,18 +42,20 @@ public class AbstractInstrumentBuilderTest {
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
   private static final Map<String, String> CONSTANT_LABELS =
       Collections.singletonMap("key_2", "value_2");
+  private static final MeterSharedState METER_SHARED_STATE =
+      MeterSharedState.create(TestClock.create(), Resource.getEmpty());
 
   @Test
   public void preventNull_Name() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    TestInstrumentBuilder.newBuilder(null);
+    new TestInstrumentBuilder(null, METER_SHARED_STATE);
   }
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    TestInstrumentBuilder.newBuilder("\2");
+    new TestInstrumentBuilder("\2", METER_SHARED_STATE);
   }
 
   @Test
@@ -61,35 +65,35 @@ public class AbstractInstrumentBuilderTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(AbstractInstrumentBuilder.ERROR_MESSAGE_INVALID_NAME);
-    TestInstrumentBuilder.newBuilder(longName);
+    new TestInstrumentBuilder(longName, METER_SHARED_STATE);
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    TestInstrumentBuilder.newBuilder("metric").setDescription(null);
+    new TestInstrumentBuilder(NAME, METER_SHARED_STATE).setDescription(null);
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    TestInstrumentBuilder.newBuilder("metric").setUnit(null);
+    new TestInstrumentBuilder(NAME, METER_SHARED_STATE).setUnit(null);
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    TestInstrumentBuilder.newBuilder("metric").setLabelKeys(null);
+    new TestInstrumentBuilder(NAME, METER_SHARED_STATE).setLabelKeys(null);
   }
 
   @Test
   public void preventNull_LabelKey() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
-    TestInstrumentBuilder.newBuilder("metric")
+    new TestInstrumentBuilder(NAME, METER_SHARED_STATE)
         .setLabelKeys(Collections.<String>singletonList(null));
   }
 
@@ -97,12 +101,13 @@ public class AbstractInstrumentBuilderTest {
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    TestInstrumentBuilder.newBuilder("metric").setConstantLabels(null);
+    new TestInstrumentBuilder(NAME, METER_SHARED_STATE).setConstantLabels(null);
   }
 
   @Test
   public void defaultValue() {
-    TestInstrumentBuilder testInstrumentBuilder = TestInstrumentBuilder.newBuilder(NAME);
+    TestInstrumentBuilder testInstrumentBuilder =
+        new TestInstrumentBuilder(NAME, METER_SHARED_STATE);
     assertThat(testInstrumentBuilder.getName()).isEqualTo(NAME);
     assertThat(testInstrumentBuilder.getDescription()).isEmpty();
     assertThat(testInstrumentBuilder.getUnit()).isEqualTo("1");
@@ -114,7 +119,7 @@ public class AbstractInstrumentBuilderTest {
   @Test
   public void setAndGetValues() {
     TestInstrumentBuilder testInstrumentBuilder =
-        TestInstrumentBuilder.newBuilder(NAME)
+        new TestInstrumentBuilder(NAME, METER_SHARED_STATE)
             .setDescription(DESCRIPTION)
             .setUnit(UNIT)
             .setLabelKeys(LABEL_KEY)
@@ -129,12 +134,8 @@ public class AbstractInstrumentBuilderTest {
 
   private static final class TestInstrumentBuilder
       extends AbstractInstrumentBuilder<TestInstrumentBuilder, TestInstrument> {
-    static TestInstrumentBuilder newBuilder(String name) {
-      return new TestInstrumentBuilder(name);
-    }
-
-    TestInstrumentBuilder(String name) {
-      super(name);
+    TestInstrumentBuilder(String name, MeterSharedState sharedState) {
+      super(name, sharedState);
     }
 
     @Override

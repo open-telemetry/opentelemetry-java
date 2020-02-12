@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,16 +36,19 @@ public class AbstractInstrumentTest {
   private static final Map<String, String> CONSTANT_LABELS =
       Collections.singletonMap("key_2", "value_2");
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
+  private static final MeterSharedState METER_SHARED_STATE =
+      MeterSharedState.create(TestClock.create(), Resource.getEmpty());
 
   @Test
   public void getValues() {
     TestInstrument testInstrument =
-        new TestInstrument(NAME, DESCRIPTION, UNIT, CONSTANT_LABELS, LABEL_KEY);
+        new TestInstrument(NAME, DESCRIPTION, UNIT, CONSTANT_LABELS, LABEL_KEY, METER_SHARED_STATE);
     assertThat(testInstrument.getName()).isEqualTo(NAME);
     assertThat(testInstrument.getDescription()).isEqualTo(DESCRIPTION);
     assertThat(testInstrument.getUnit()).isEqualTo(UNIT);
     assertThat(testInstrument.getConstantLabels()).isEqualTo(CONSTANT_LABELS);
     assertThat(testInstrument.getLabelKeys()).isEqualTo(LABEL_KEY);
+    assertThat(testInstrument.getMeterSharedState()).isEqualTo(METER_SHARED_STATE);
   }
 
   private static final class TestInstrument extends AbstractInstrument {
@@ -52,8 +57,9 @@ public class AbstractInstrumentTest {
         String description,
         String unit,
         Map<String, String> constantLabels,
-        List<String> labelKeys) {
-      super(name, description, unit, constantLabels, labelKeys);
+        List<String> labelKeys,
+        MeterSharedState meterSharedState) {
+      super(name, description, unit, constantLabels, labelKeys, meterSharedState);
     }
   }
 }

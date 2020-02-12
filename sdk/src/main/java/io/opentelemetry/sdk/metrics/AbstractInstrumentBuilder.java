@@ -34,17 +34,19 @@ abstract class AbstractInstrumentBuilder<B extends Instrument.Builder<B, V>, V>
           + " characters.";
 
   private final String name;
+  private final MeterSharedState meterSharedState;
   private String description = "";
   private String unit = "1";
   private List<String> labelKeys = Collections.emptyList();
   private Map<String, String> constantLabels = Collections.emptyMap();
 
-  AbstractInstrumentBuilder(String name) {
+  AbstractInstrumentBuilder(String name, MeterSharedState meterSharedState) {
     Utils.checkNotNull(name, "name");
     Utils.checkArgument(
         StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
         ERROR_MESSAGE_INVALID_NAME);
     this.name = name;
+    this.meterSharedState = meterSharedState;
   }
 
   @Override
@@ -76,6 +78,10 @@ abstract class AbstractInstrumentBuilder<B extends Instrument.Builder<B, V>, V>
 
   final String getName() {
     return name;
+  }
+
+  final MeterSharedState getMeterSharedState() {
+    return meterSharedState;
   }
 
   final String getDescription() {
