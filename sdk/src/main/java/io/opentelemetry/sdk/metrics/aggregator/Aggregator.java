@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.aggregator;
 
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Aggregator represents the interface for all the available aggregations. */
 @ThreadSafe
-interface Aggregator<T extends Aggregator<?>> {
+public interface Aggregator {
 
   /**
-   * Merge aggregated values between the current instance and the given {@code aggregator}.
+   * Merges the current value into the given {@code aggregator} and resets the current value in this
+   * {@code Aggregator}.
    *
-   * @param aggregator value to merge with.
+   * @param aggregator value to merge into.
    */
-  void merge(T aggregator);
+  void mergeAndReset(Aggregator aggregator);
 
   /**
    * Updates the current aggregator with a newly recorded {@code long} value.

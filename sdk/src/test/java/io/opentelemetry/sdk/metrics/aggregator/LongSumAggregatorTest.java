@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.aggregator;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DoubleSumAggregator}. */
+/** Unit tests for {@link LongSumAggregator}. */
 @RunWith(JUnit4.class)
-public class DoubleSumAggregatorTest {
+public class LongSumAggregatorTest {
   @Test
   public void longSumAggregation() {
-    DoubleSumAggregator doubleSumAggregator = new DoubleSumAggregator();
-    doubleSumAggregator.recordDouble(12);
+    LongSumAggregator longSumAggregator = new LongSumAggregator();
+    longSumAggregator.recordLong(12);
   }
 }
