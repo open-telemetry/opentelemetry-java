@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.createTracer;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import org.junit.Before;

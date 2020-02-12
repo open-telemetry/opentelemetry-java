@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.truth.Truth;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
