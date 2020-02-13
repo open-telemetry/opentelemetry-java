@@ -16,6 +16,9 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import java.util.Map;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /** Aggregator represents the interface for all the available aggregations. */
@@ -28,7 +31,18 @@ public interface Aggregator {
    *
    * @param aggregator value to merge into.
    */
-  void mergeAndReset(Aggregator aggregator);
+  void mergeToAndReset(Aggregator aggregator);
+
+  /**
+   * Returns the {@code Point} with the given properties and the value from this Aggregation.
+   *
+   * @param startEpochNanos the startEpochNanos for the {@code Point}.
+   * @param epochNanos the epochNanos for the {@code Point}.
+   * @param labels the labels for the {@code Point}.
+   * @return the {@code Point} with the value from this Aggregation.
+   */
+  @Nullable
+  Point toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels);
 
   /**
    * Updates the current aggregator with a newly recorded {@code long} value.
