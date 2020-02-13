@@ -17,6 +17,8 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
@@ -40,6 +42,22 @@ public abstract class MetricData {
   public abstract Descriptor getDescriptor();
 
   /**
+   * Returns the resource of this {@code MetricData}.
+   *
+   * @return the resource of this {@code MetricData}.
+   * @since 0.1.0
+   */
+  public abstract Resource getResource();
+
+  /**
+   * Returns the instrumentation library specified when creating the {@code Meter} which created the
+   * {@code Instrument} that produces {@code MetricData}.
+   *
+   * @return an instance of {@link InstrumentationLibraryInfo}
+   */
+  public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+
+  /**
    * Returns the data {@link Point}s for this metric.
    *
    * <p>Only one type of points are available at any moment for a {@link MetricData}, and the type
@@ -51,8 +69,12 @@ public abstract class MetricData {
    */
   public abstract Collection<Point> getPoints();
 
-  public static MetricData create(Descriptor descriptor, Collection<Point> points) {
-    return new AutoValue_MetricData(descriptor, points);
+  public static MetricData create(
+      Descriptor descriptor,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      Collection<Point> points) {
+    return new AutoValue_MetricData(descriptor, resource, instrumentationLibraryInfo, points);
   }
 
   @Immutable
