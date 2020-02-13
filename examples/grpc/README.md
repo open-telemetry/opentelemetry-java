@@ -1,6 +1,6 @@
 # gRPC Example
 
-This is a simple example that demonstrates how to use the OpenTelemetry SDK 
+This is an example that demonstrates how to use the OpenTelemetry SDK 
 to instrument normal and streamed gRPC calls. 
 The example creates the **Root Span** on the client and sends the distributed context
 over the gRPC request. On the server side, the example shows how to extract the context
@@ -21,7 +21,12 @@ gradlew fatJar
 java -cp .\build\libs\opentelemetry-example-grpc-all-0.2.0.jar io.opentelemetry.example.HelloWorldServer
 ```
  
-## 3 - Start the Client
+## 3 - Start the normal Client
 ```bash
 java -cp .\build\libs\opentelemetry-example-grpc-all-0.2.0.jar io.opentelemetry.example.HelloWorldClient
+```
+
+## 4 - Start the streamed Client
+```bash
+java -cp .\build\libs\opentelemetry-example-grpc-all-0.2.0.jar io.opentelemetry.example.HelloWorldClientStream
 ```
