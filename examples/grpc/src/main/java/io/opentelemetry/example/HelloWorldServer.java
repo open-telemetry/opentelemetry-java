@@ -121,12 +121,37 @@ public class HelloWorldServer {
 
   class GreeterImpl extends GreeterGrpc.GreeterImplBase {
 
+    // We serve a normal gRPC call
     @Override
     public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
       // Serve the request
       HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + req.getName()).build();
       responseObserver.onNext(reply);
       responseObserver.onCompleted();
+    }
+
+    // We serve a stream gRPC call
+    @Override
+    public StreamObserver<HelloRequest> sayHelloStream(final StreamObserver<HelloReply> responseObserver) {
+      return new StreamObserver<HelloRequest>() {
+        @Override
+        public void onNext(HelloRequest value) {
+          responseObserver.onNext(
+                  HelloReply.newBuilder().setMessage("Hello " + value.getName()).build()
+          );
+        }
+
+        @Override
+        public void onError(Throwable t) {
+          logger.info("[Error] " + t.getMessage());
+          responseObserver.onError(t);
+        }
+
+        @Override
+        public void onCompleted() {
+          responseObserver.onCompleted();
+        }
+      };
     }
   }
 
