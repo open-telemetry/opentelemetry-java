@@ -17,13 +17,17 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Measure;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 
 abstract class AbstractMeasureBuilder<B extends Measure.Builder<B, V>, V>
     extends AbstractInstrumentBuilder<B, V> implements Measure.Builder<B, V> {
   private boolean absolute = true;
 
-  AbstractMeasureBuilder(String name, MeterSharedState sharedState) {
-    super(name, sharedState);
+  AbstractMeasureBuilder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    super(name, sharedState, instrumentationLibraryInfo);
   }
 
   @Override

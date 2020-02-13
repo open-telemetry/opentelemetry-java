@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongMeasure;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +34,18 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
       Map<String, String> constantLabels,
       List<String> labelKeys,
       MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean absolute) {
-    super(name, description, unit, constantLabels, labelKeys, sharedState);
+    super(
+        name,
+        description,
+        unit,
+        constantLabels,
+        labelKeys,
+        getMeasureInstrumentType(absolute),
+        InstrumentValueType.LONG,
+        sharedState,
+        instrumentationLibraryInfo);
     this.absolute = absolute;
   }
 
@@ -91,16 +103,22 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
     }
   }
 
-  static LongMeasure.Builder builder(String name, MeterSharedState sharedState) {
-    return new Builder(name, sharedState);
+  static LongMeasure.Builder builder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new Builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
       extends AbstractMeasureBuilder<LongMeasure.Builder, LongMeasure>
       implements LongMeasure.Builder {
 
-    private Builder(String name, MeterSharedState sharedState) {
-      super(name, sharedState);
+    private Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -117,6 +135,7 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
           getConstantLabels(),
           getLabelKeys(),
           getMeterSharedState(),
+          getInstrumentationLibraryInfo(),
           isAbsolute());
     }
   }

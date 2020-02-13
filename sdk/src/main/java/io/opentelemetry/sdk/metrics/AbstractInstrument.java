@@ -17,6 +17,9 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Instrument;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +31,7 @@ abstract class AbstractInstrument implements Instrument {
   private final Map<String, String> constantLabels;
   private final List<String> labelKeys;
   private final MeterSharedState meterSharedState;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
   AbstractInstrument(
@@ -36,13 +40,17 @@ abstract class AbstractInstrument implements Instrument {
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
-      MeterSharedState meterSharedState) {
+      InstrumentType instrumentType,
+      InstrumentValueType instrumentValueType,
+      MeterSharedState meterSharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.name = name;
     this.description = description;
     this.unit = unit;
     this.constantLabels = constantLabels;
     this.labelKeys = labelKeys;
     this.meterSharedState = meterSharedState;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
   }
 
   final String getName() {
@@ -67,6 +75,10 @@ abstract class AbstractInstrument implements Instrument {
 
   final MeterSharedState getMeterSharedState() {
     return meterSharedState;
+  }
+
+  final InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return instrumentationLibraryInfo;
   }
 
   @Override
@@ -95,5 +107,17 @@ abstract class AbstractInstrument implements Instrument {
     result = 31 * result + constantLabels.hashCode();
     result = 31 * result + labelKeys.hashCode();
     return result;
+  }
+
+  static InstrumentType getCounterInstrumentType(boolean monotonic) {
+    return monotonic ? InstrumentType.COUNTER_MONOTONIC : InstrumentType.COUNTER_NON_MONOTONIC;
+  }
+
+  static InstrumentType getMeasureInstrumentType(boolean absolute) {
+    return absolute ? InstrumentType.MEASURE_ABSOLUTE : InstrumentType.MEASURE_NON_ABSOLUTE;
+  }
+
+  static InstrumentType getObserverInstrumentType(boolean monotonic) {
+    return monotonic ? InstrumentType.OBSERVER_MONOTONIC : InstrumentType.OBSERVER_NON_MONOTONIC;
   }
 }

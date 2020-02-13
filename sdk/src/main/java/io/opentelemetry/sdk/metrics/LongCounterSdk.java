@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +34,18 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
       Map<String, String> constantLabels,
       List<String> labelKeys,
       MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys, sharedState);
+    super(
+        name,
+        description,
+        unit,
+        constantLabels,
+        labelKeys,
+        getCounterInstrumentType(monotonic),
+        InstrumentValueType.LONG,
+        sharedState,
+        instrumentationLibraryInfo);
     this.monotonic = monotonic;
   }
 
@@ -91,16 +103,22 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
     }
   }
 
-  static LongCounter.Builder builder(String name, MeterSharedState sharedState) {
-    return new Builder(name, sharedState);
+  static LongCounter.Builder builder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new Builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
       extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
       implements LongCounter.Builder {
 
-    private Builder(String name, MeterSharedState sharedState) {
-      super(name, sharedState);
+    private Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -117,6 +135,7 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
           getConstantLabels(),
           getLabelKeys(),
           getMeterSharedState(),
+          getInstrumentationLibraryInfo(),
           isMonotonic());
     }
   }

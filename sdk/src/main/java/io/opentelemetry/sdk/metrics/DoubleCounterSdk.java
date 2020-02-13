@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
@@ -31,9 +33,19 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
+      boolean monotonic,
       MeterSharedState sharedState,
-      boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys, sharedState);
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    super(
+        name,
+        description,
+        unit,
+        constantLabels,
+        labelKeys,
+        getCounterInstrumentType(monotonic),
+        InstrumentValueType.DOUBLE,
+        sharedState,
+        instrumentationLibraryInfo);
     this.monotonic = monotonic;
   }
 
@@ -91,16 +103,22 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
     }
   }
 
-  static DoubleCounter.Builder builder(String name, MeterSharedState sharedState) {
-    return new Builder(name, sharedState);
+  static DoubleCounter.Builder builder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new Builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
       extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
       implements DoubleCounter.Builder {
 
-    private Builder(String name, MeterSharedState sharedState) {
-      super(name, sharedState);
+    private Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -116,8 +134,9 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
+          isMonotonic(),
           getMeterSharedState(),
-          isMonotonic());
+          getInstrumentationLibraryInfo());
     }
   }
 }
