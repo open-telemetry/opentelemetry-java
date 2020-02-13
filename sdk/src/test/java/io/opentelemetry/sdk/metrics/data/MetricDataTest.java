@@ -18,10 +18,12 @@ package io.opentelemetry.sdk.metrics.data;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
@@ -64,14 +66,56 @@ public class MetricDataTest {
   public void metricData_NullDescriptor() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("descriptor");
-    MetricData.create(null, Collections.<Point>singletonList(DOUBLE_POINT));
+    MetricData.create(
+        null,
+        Resource.getEmpty(),
+        InstrumentationLibraryInfo.EMPTY,
+        Collections.<Point>singletonList(DOUBLE_POINT));
+  }
+
+  @Test
+  public void metricData_NullResource() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("resource");
+    MetricData.create(
+        LONG_METRIC_DESCRIPTOR,
+        null,
+        InstrumentationLibraryInfo.EMPTY,
+        Collections.<Point>singletonList(DOUBLE_POINT));
+  }
+
+  @Test
+  public void metricData_NullInstrumentationLibraryInfo() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("instrumentationLibraryInfo");
+    MetricData.create(
+        LONG_METRIC_DESCRIPTOR,
+        Resource.getEmpty(),
+        null,
+        Collections.<Point>singletonList(DOUBLE_POINT));
   }
 
   @Test
   public void metricData_NullPoints() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("points");
-    MetricData.create(LONG_METRIC_DESCRIPTOR, null);
+    MetricData.create(
+        LONG_METRIC_DESCRIPTOR, Resource.getEmpty(), InstrumentationLibraryInfo.EMPTY, null);
+  }
+
+  @Test
+  public void metricData_Getters() {
+    MetricData metricData =
+        MetricData.create(
+            LONG_METRIC_DESCRIPTOR,
+            Resource.getEmpty(),
+            InstrumentationLibraryInfo.EMPTY,
+            Collections.<Point>emptyList());
+    assertThat(metricData.getDescriptor()).isEqualTo(LONG_METRIC_DESCRIPTOR);
+    assertThat(metricData.getResource()).isEqualTo(Resource.getEmpty());
+    assertThat(metricData.getInstrumentationLibraryInfo())
+        .isEqualTo(InstrumentationLibraryInfo.EMPTY);
+    assertThat(metricData.getPoints()).isEmpty();
   }
 
   @Test
@@ -81,8 +125,11 @@ public class MetricDataTest {
     assertThat(LONG_POINT.getLabels()).containsExactly("key", "value");
     assertThat(LONG_POINT.getValue()).isEqualTo(LONG_VALUE);
     MetricData metricData =
-        MetricData.create(LONG_METRIC_DESCRIPTOR, Collections.<Point>singletonList(LONG_POINT));
-    assertThat(metricData.getDescriptor()).isEqualTo(LONG_METRIC_DESCRIPTOR);
+        MetricData.create(
+            LONG_METRIC_DESCRIPTOR,
+            Resource.getEmpty(),
+            InstrumentationLibraryInfo.EMPTY,
+            Collections.<Point>singletonList(LONG_POINT));
     assertThat(metricData.getPoints()).containsExactly(LONG_POINT);
   }
 
@@ -93,8 +140,11 @@ public class MetricDataTest {
     assertThat(DOUBLE_POINT.getLabels()).containsExactly("key", "value");
     assertThat(DOUBLE_POINT.getValue()).isEqualTo(DOUBLE_VALUE);
     MetricData metricData =
-        MetricData.create(DOUBLE_METRIC_DESCRIPTOR, Collections.<Point>singletonList(DOUBLE_POINT));
-    assertThat(metricData.getDescriptor()).isEqualTo(DOUBLE_METRIC_DESCRIPTOR);
+        MetricData.create(
+            DOUBLE_METRIC_DESCRIPTOR,
+            Resource.getEmpty(),
+            InstrumentationLibraryInfo.EMPTY,
+            Collections.<Point>singletonList(DOUBLE_POINT));
     assertThat(metricData.getPoints()).containsExactly(DOUBLE_POINT);
   }
 }
