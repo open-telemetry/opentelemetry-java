@@ -17,7 +17,7 @@ jobs:
   build:
     environment:
       # Configure the JVM and Gradle to avoid OOM errors
-      _JAVA_OPTIONS: "-Xmx2g"
+      _JAVA_OPTIONS: "-Xmx1g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     docker:
       - image: circleci/openjdk:8-jdk
