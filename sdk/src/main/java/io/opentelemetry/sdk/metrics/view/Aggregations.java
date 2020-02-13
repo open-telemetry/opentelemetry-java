@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics.view;
 
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
@@ -98,7 +97,7 @@ public class Aggregations {
               ? Type.NON_MONOTONIC_LONG
               : Type.NON_MONOTONIC_DOUBLE;
       }
-      throw new IllegalArgumentException("This should not happen");
+      throw new IllegalArgumentException("Unsupported instrument/value types");
     }
 
     @Override
@@ -126,9 +125,8 @@ public class Aggregations {
 
     @Override
     public boolean availableForInstrument(InstrumentType instrumentType) {
-      // It is not available for Observer instruments.
-      return instrumentType != InstrumentType.OBSERVER_MONOTONIC
-          && instrumentType != InstrumentType.OBSERVER_NON_MONOTONIC;
+      // Available for all instruments.
+      return true;
     }
   }
 
@@ -137,7 +135,6 @@ public class Aggregations {
     private final AggregatorFactory factory;
 
     Distribution(Double... bucketBoundaries) {
-      Utils.checkNotNull(bucketBoundaries, "bucketBoundaries");
       // TODO: Implement distribution aggregator and use it here.
       this.factory = NoopAggregator.getFactory();
     }

@@ -43,7 +43,6 @@ public class SumAggregationTest {
 
   @Test
   public void getDescriptorType() {
-
     Aggregation sum = Aggregations.sum();
     for (InstrumentType type : MONOTONIC_INSTRUMENTS) {
       assertThat(sum.getDescriptorType(type, InstrumentValueType.DOUBLE))
