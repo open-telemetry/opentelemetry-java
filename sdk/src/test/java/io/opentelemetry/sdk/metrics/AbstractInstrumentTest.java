@@ -18,7 +18,10 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -38,17 +41,28 @@ public class AbstractInstrumentTest {
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
   private static final MeterSharedState METER_SHARED_STATE =
       MeterSharedState.create(TestClock.create(), Resource.getEmpty());
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.create("test_abstract_instrument", "");
 
   @Test
   public void getValues() {
     TestInstrument testInstrument =
-        new TestInstrument(NAME, DESCRIPTION, UNIT, CONSTANT_LABELS, LABEL_KEY, METER_SHARED_STATE);
+        new TestInstrument(
+            NAME,
+            DESCRIPTION,
+            UNIT,
+            CONSTANT_LABELS,
+            LABEL_KEY,
+            METER_SHARED_STATE,
+            INSTRUMENTATION_LIBRARY_INFO);
     assertThat(testInstrument.getName()).isEqualTo(NAME);
     assertThat(testInstrument.getDescription()).isEqualTo(DESCRIPTION);
     assertThat(testInstrument.getUnit()).isEqualTo(UNIT);
     assertThat(testInstrument.getConstantLabels()).isEqualTo(CONSTANT_LABELS);
     assertThat(testInstrument.getLabelKeys()).isEqualTo(LABEL_KEY);
     assertThat(testInstrument.getMeterSharedState()).isEqualTo(METER_SHARED_STATE);
+    assertThat(testInstrument.getInstrumentationLibraryInfo())
+        .isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
   }
 
   private static final class TestInstrument extends AbstractInstrument {
@@ -58,8 +72,18 @@ public class AbstractInstrumentTest {
         String unit,
         Map<String, String> constantLabels,
         List<String> labelKeys,
-        MeterSharedState meterSharedState) {
-      super(name, description, unit, constantLabels, labelKeys, meterSharedState);
+        MeterSharedState meterSharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(
+          name,
+          description,
+          unit,
+          constantLabels,
+          labelKeys,
+          InstrumentType.COUNTER_MONOTONIC,
+          InstrumentValueType.LONG,
+          meterSharedState,
+          instrumentationLibraryInfo);
     }
   }
 }

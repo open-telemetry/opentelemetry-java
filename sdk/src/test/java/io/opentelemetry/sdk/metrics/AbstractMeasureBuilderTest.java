@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Measure;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.Rule;
@@ -37,23 +38,30 @@ public class AbstractMeasureBuilderTest {
   private static final String NAME = "name";
   private static final MeterSharedState METER_SHARED_STATE =
       MeterSharedState.create(TestClock.create(), Resource.getEmpty());
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.EMPTY;
 
   @Test
   public void defaultValue() {
-    TestInstrumentBuilder testMetricBuilder = new TestInstrumentBuilder(NAME, METER_SHARED_STATE);
+    TestInstrumentBuilder testMetricBuilder =
+        new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.getDescription()).isEmpty();
     assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
     assertThat(testMetricBuilder.isAbsolute()).isTrue();
+    assertThat(testMetricBuilder.getMeterSharedState()).isEqualTo(METER_SHARED_STATE);
+    assertThat(testMetricBuilder.getInstrumentationLibraryInfo())
+        .isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   @Test
   public void setAndGetValues() {
     TestInstrumentBuilder testMetricBuilder =
-        new TestInstrumentBuilder(NAME, METER_SHARED_STATE).setAbsolute(false);
+        new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO)
+            .setAbsolute(false);
     assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
     assertThat(testMetricBuilder.isAbsolute()).isFalse();
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
@@ -61,8 +69,11 @@ public class AbstractMeasureBuilderTest {
 
   private static final class TestInstrumentBuilder
       extends AbstractMeasureBuilder<TestInstrumentBuilder, TestInstrument> {
-    TestInstrumentBuilder(String name, MeterSharedState sharedState) {
-      super(name, sharedState);
+    TestInstrumentBuilder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override

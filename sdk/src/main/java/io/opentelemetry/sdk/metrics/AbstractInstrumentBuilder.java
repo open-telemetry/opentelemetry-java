@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.Instrument;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,18 +36,23 @@ abstract class AbstractInstrumentBuilder<B extends Instrument.Builder<B, V>, V>
 
   private final String name;
   private final MeterSharedState meterSharedState;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private String description = "";
   private String unit = "1";
   private List<String> labelKeys = Collections.emptyList();
   private Map<String, String> constantLabels = Collections.emptyMap();
 
-  AbstractInstrumentBuilder(String name, MeterSharedState meterSharedState) {
+  AbstractInstrumentBuilder(
+      String name,
+      MeterSharedState meterSharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
     Utils.checkNotNull(name, "name");
     Utils.checkArgument(
         StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
         ERROR_MESSAGE_INVALID_NAME);
     this.name = name;
     this.meterSharedState = meterSharedState;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
   }
 
   @Override
@@ -82,6 +88,10 @@ abstract class AbstractInstrumentBuilder<B extends Instrument.Builder<B, V>, V>
 
   final MeterSharedState getMeterSharedState() {
     return meterSharedState;
+  }
+
+  final InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return instrumentationLibraryInfo;
   }
 
   final String getDescription() {

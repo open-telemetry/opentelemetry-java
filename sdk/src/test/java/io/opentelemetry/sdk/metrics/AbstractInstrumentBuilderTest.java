@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.metrics.Instrument;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -44,18 +45,20 @@ public class AbstractInstrumentBuilderTest {
       Collections.singletonMap("key_2", "value_2");
   private static final MeterSharedState METER_SHARED_STATE =
       MeterSharedState.create(TestClock.create(), Resource.getEmpty());
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.EMPTY;
 
   @Test
   public void preventNull_Name() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    new TestInstrumentBuilder(null, METER_SHARED_STATE);
+    new TestInstrumentBuilder(null, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
   }
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    new TestInstrumentBuilder("\2", METER_SHARED_STATE);
+    new TestInstrumentBuilder("\2", METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
   }
 
   @Test
@@ -65,35 +68,37 @@ public class AbstractInstrumentBuilderTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(AbstractInstrumentBuilder.ERROR_MESSAGE_INVALID_NAME);
-    new TestInstrumentBuilder(longName, METER_SHARED_STATE);
+    new TestInstrumentBuilder(longName, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    new TestInstrumentBuilder(NAME, METER_SHARED_STATE).setDescription(null);
+    new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO)
+        .setDescription(null);
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    new TestInstrumentBuilder(NAME, METER_SHARED_STATE).setUnit(null);
+    new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO).setUnit(null);
   }
 
   @Test
   public void preventNull_LabelKeys() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKeys");
-    new TestInstrumentBuilder(NAME, METER_SHARED_STATE).setLabelKeys(null);
+    new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO)
+        .setLabelKeys(null);
   }
 
   @Test
   public void preventNull_LabelKey() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labelKey");
-    new TestInstrumentBuilder(NAME, METER_SHARED_STATE)
+    new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO)
         .setLabelKeys(Collections.<String>singletonList(null));
   }
 
@@ -101,13 +106,14 @@ public class AbstractInstrumentBuilderTest {
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    new TestInstrumentBuilder(NAME, METER_SHARED_STATE).setConstantLabels(null);
+    new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO)
+        .setConstantLabels(null);
   }
 
   @Test
   public void defaultValue() {
     TestInstrumentBuilder testInstrumentBuilder =
-        new TestInstrumentBuilder(NAME, METER_SHARED_STATE);
+        new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
     assertThat(testInstrumentBuilder.getName()).isEqualTo(NAME);
     assertThat(testInstrumentBuilder.getDescription()).isEmpty();
     assertThat(testInstrumentBuilder.getUnit()).isEqualTo("1");
@@ -119,7 +125,7 @@ public class AbstractInstrumentBuilderTest {
   @Test
   public void setAndGetValues() {
     TestInstrumentBuilder testInstrumentBuilder =
-        new TestInstrumentBuilder(NAME, METER_SHARED_STATE)
+        new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO)
             .setDescription(DESCRIPTION)
             .setUnit(UNIT)
             .setLabelKeys(LABEL_KEY)
@@ -129,13 +135,19 @@ public class AbstractInstrumentBuilderTest {
     assertThat(testInstrumentBuilder.getUnit()).isEqualTo(UNIT);
     assertThat(testInstrumentBuilder.getLabelKeys()).isEqualTo(LABEL_KEY);
     assertThat(testInstrumentBuilder.getConstantLabels()).isEqualTo(CONSTANT_LABELS);
+    assertThat(testInstrumentBuilder.getMeterSharedState()).isEqualTo(METER_SHARED_STATE);
+    assertThat(testInstrumentBuilder.getInstrumentationLibraryInfo())
+        .isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(testInstrumentBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   private static final class TestInstrumentBuilder
       extends AbstractInstrumentBuilder<TestInstrumentBuilder, TestInstrument> {
-    TestInstrumentBuilder(String name, MeterSharedState sharedState) {
-      super(name, sharedState);
+    TestInstrumentBuilder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override
