@@ -16,24 +16,40 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public final class LongSumAggregator implements Aggregator {
-  // TODO: Change to use LongAdder when changed to java8.
-  private final AtomicLong current;
+  private static final AggregatorFactory AGGREGATOR_FACTORY =
+      new AggregatorFactory() {
+        @Override
+        public Aggregator getAggregator() {
+          return new LongSumAggregator();
+        }
+      };
 
-  public LongSumAggregator() {
-    current = new AtomicLong(0L);
+  // TODO: Change to use LongAdder when changed to java8.
+  private final AtomicLong current = new AtomicLong(0L);
+
+  public static AggregatorFactory getFactory() {
+    return AGGREGATOR_FACTORY;
   }
 
   @Override
-  public void mergeAndReset(Aggregator aggregator) {
+  public void mergeToAndReset(Aggregator aggregator) {
     if (!(aggregator instanceof LongSumAggregator)) {
       return;
     }
 
     LongSumAggregator other = (LongSumAggregator) aggregator;
     other.current.getAndAdd(this.current.getAndSet(0));
+  }
+
+  @Override
+  public Point toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
+    return LongPoint.create(startEpochNanos, epochNanos, labels, current.get());
   }
 
   @Override
@@ -45,4 +61,6 @@ public final class LongSumAggregator implements Aggregator {
   public void recordLong(long value) {
     current.getAndAdd(value);
   }
+
+  LongSumAggregator() {}
 }

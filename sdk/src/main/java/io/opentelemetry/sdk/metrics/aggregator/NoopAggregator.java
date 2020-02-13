@@ -16,22 +16,19 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import com.google.common.util.concurrent.AtomicDouble;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import java.util.Map;
+import javax.annotation.Nullable;
 
-public final class DoubleSumAggregator implements Aggregator {
+public final class NoopAggregator implements Aggregator {
+  private static final Aggregator NOOP_AGGREGATOR = new NoopAggregator();
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
         public Aggregator getAggregator() {
-          return new DoubleSumAggregator();
+          return NOOP_AGGREGATOR;
         }
       };
-
-  // TODO: Change to use DoubleAdder when changed to java8.
-  private final AtomicDouble current = new AtomicDouble(0.0);
 
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;
@@ -39,28 +36,24 @@ public final class DoubleSumAggregator implements Aggregator {
 
   @Override
   public void mergeToAndReset(Aggregator aggregator) {
-    if (!(aggregator instanceof DoubleSumAggregator)) {
-      return;
-    }
-
-    DoubleSumAggregator other = (DoubleSumAggregator) aggregator;
-    other.current.getAndAdd(this.current.getAndSet(0));
+    // Noop
   }
 
+  @Nullable
   @Override
   public Point toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
-    return DoublePoint.create(startEpochNanos, epochNanos, labels, current.get());
+    return null;
   }
 
   @Override
   public void recordLong(long value) {
-    throw new UnsupportedOperationException("This is a DoubleSumAggregator");
+    // Noop
   }
 
   @Override
   public void recordDouble(double value) {
-    current.getAndAdd(value);
+    // Noop
   }
 
-  DoubleSumAggregator() {}
+  private NoopAggregator() {}
 }
