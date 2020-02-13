@@ -55,7 +55,9 @@ public final class PushExporter {
 
 ```java
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.metrics.export.MetricProducer;import java.util.ArrayList;import java.util.Collections;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Simple implementation of the MetricExporter that stores data in memory and makes them available
