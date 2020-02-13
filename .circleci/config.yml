@@ -15,6 +15,10 @@ publish_snapshots_task: &publish_snapshots_task
 
 jobs:
   build:
+    environment:
+      # Configure the JVM and Gradle to avoid OOM errors
+      _JAVA_OPTIONS: "-Xmx3g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -42,6 +46,10 @@ jobs:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}
   java9:
+    environment:
+      # Configure the JVM and Gradle to avoid OOM errors
+      _JAVA_OPTIONS: "-Xmx3g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     docker:
       - image: circleci/openjdk:9-jdk
     steps:

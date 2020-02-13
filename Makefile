@@ -2,7 +2,7 @@
 
 .PHONY: test
 test:
-	./gradlew clean assemble check --stacktrace --no-daemon
+	./gradlew clean assemble check --stacktrace
 
 .PHONY: init-git-submodules
 init-git-submodules:
