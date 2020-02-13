@@ -20,7 +20,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collection;
 
 /**
- * Base interface that represents a metric exporter.
+ * {@code MetricExporter} is the interface that all "push based" metric libraries should use to
+ * export metrics to the OpenTelemetry exporters.
+ *
+ * <p>All OpenTelemetry exporters should allow access to a {@code MetricExporter} instance.
  *
  * @since 0.1.0
  */
