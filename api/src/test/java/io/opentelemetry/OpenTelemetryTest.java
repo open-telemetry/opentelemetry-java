@@ -347,7 +347,7 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public BatchRecorder newBatchRecorder() {
+    public BatchRecorder newBatchRecorder(LabelSet labelSet) {
       return null;
     }
 

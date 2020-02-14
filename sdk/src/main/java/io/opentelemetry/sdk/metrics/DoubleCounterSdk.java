@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
@@ -31,24 +33,32 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
-      boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys);
+      boolean monotonic,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    super(
+        name,
+        description,
+        unit,
+        constantLabels,
+        labelKeys,
+        getCounterInstrumentType(monotonic),
+        InstrumentValueType.DOUBLE,
+        sharedState,
+        instrumentationLibraryInfo);
     this.monotonic = monotonic;
   }
 
   @Override
   public void add(double delta, LabelSet labelSet) {
-    bind(labelSet).add(delta);
+    BoundInstrument boundInstrument = bind(labelSet);
+    boundInstrument.add(delta);
+    boundInstrument.unbind();
   }
 
   @Override
-  public BoundDoubleCounter bind(LabelSet labelSet) {
-    return new Bound(labelSet, monotonic);
-  }
-
-  @Override
-  public void unbind(BoundDoubleCounter boundInstrument) {
-    // TODO: Implement this.
+  public BoundInstrument bind(LabelSet labelSet) {
+    return new BoundInstrument(monotonic);
   }
 
   @Override
@@ -75,12 +85,12 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
     return result;
   }
 
-  private static final class Bound extends AbstractBoundInstrument implements BoundDoubleCounter {
+  static final class BoundInstrument extends AbstractBoundInstrument implements BoundDoubleCounter {
 
     private final boolean monotonic;
 
-    Bound(LabelSet labels, boolean monotonic) {
-      super(labels);
+    BoundInstrument(boolean monotonic) {
+      super(null);
       this.monotonic = monotonic;
     }
 
@@ -89,20 +99,26 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
       if (monotonic && delta < 0) {
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
-      // todo: pass through to an aggregator/accumulator
+      // TODO: pass through to an aggregator/accumulator
     }
   }
 
-  static DoubleCounter.Builder builder(String name) {
-    return new Builder(name);
+  static DoubleCounter.Builder builder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new Builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
       extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
       implements DoubleCounter.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -118,7 +134,9 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
-          isMonotonic());
+          isMonotonic(),
+          getMeterSharedState(),
+          getInstrumentationLibraryInfo());
     }
   }
 }

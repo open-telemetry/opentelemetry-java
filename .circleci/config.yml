@@ -15,6 +15,10 @@ publish_snapshots_task: &publish_snapshots_task
 
 jobs:
   build:
+    environment:
+      # Configure the JVM and Gradle to avoid OOM errors
+      _JAVA_OPTIONS: "-Xmx1g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -41,14 +45,18 @@ jobs:
           paths:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}
-  java9:
+  java11:
+    environment:
+      # Configure the JVM and Gradle to avoid OOM errors
+      _JAVA_OPTIONS: "-Xmx3g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     docker:
-      - image: circleci/openjdk:9-jdk
+      - image: circleci/openjdk:11.0.6-jdk-buster
     steps:
       - checkout
       - restore_cache:
           keys:
-            - java9-gradle-{{ checksum "build.gradle" }}
+            - java11-gradle-{{ checksum "build.gradle" }}
 #     make in missing in openjdk:9-jdk image
       - run: sudo apt-get update && sudo apt-get install -y make
       - run:
@@ -60,11 +68,11 @@ jobs:
       - save_cache:
           paths:
             - ~/.gradle
-          key: java9-gradle-{{ checksum "build.gradle" }}
+          key: java11-gradle-{{ checksum "build.gradle" }}
 
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
-      - java9
+      - java11

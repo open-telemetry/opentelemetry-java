@@ -42,42 +42,38 @@ final class MeterSdk implements Meter {
     return instrumentationLibraryInfo;
   }
 
-  MeterSharedState getSharedState() {
-    return sharedState;
-  }
-
   @Override
   public DoubleCounter.Builder doubleCounterBuilder(String name) {
-    return DoubleCounterSdk.builder(name);
+    return DoubleCounterSdk.builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
-    return LongCounterSdk.builder(name);
+    return LongCounterSdk.builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   @Override
   public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
-    return DoubleMeasureSdk.builder(name);
+    return DoubleMeasureSdk.builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   @Override
   public LongMeasure.Builder longMeasureBuilder(String name) {
-    return LongMeasureSdk.builder(name);
+    return LongMeasureSdk.builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   @Override
   public DoubleObserver.Builder doubleObserverBuilder(String name) {
-    return DoubleObserverSdk.builder(name);
+    return DoubleObserverSdk.builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   @Override
   public LongObserver.Builder longObserverBuilder(String name) {
-    return LongObserverSdk.builder(name);
+    return LongObserverSdk.builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   @Override
-  public BatchRecorder newBatchRecorder() {
+  public BatchRecorder newBatchRecorder(LabelSet labelSet) {
     throw new UnsupportedOperationException("to be implemented");
   }
 

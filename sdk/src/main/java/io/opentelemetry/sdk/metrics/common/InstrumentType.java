@@ -14,25 +14,14 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.common;
 
-import java.util.concurrent.atomic.AtomicLong;
-
-final class LongSumAggregator implements Aggregator.LongAggregator<LongSumAggregator> {
-  // TODO: Change to use LongAdder when changed to java8.
-  private final AtomicLong value;
-
-  LongSumAggregator() {
-    this.value = new AtomicLong();
-  }
-
-  @Override
-  public void merge(LongSumAggregator other) {
-    this.value.addAndGet(other.value.get());
-  }
-
-  @Override
-  public void update(long value) {
-    this.value.addAndGet(value);
-  }
+/** All instrument types available in the metric package. */
+public enum InstrumentType {
+  COUNTER_MONOTONIC,
+  COUNTER_NON_MONOTONIC,
+  MEASURE_ABSOLUTE,
+  MEASURE_NON_ABSOLUTE,
+  OBSERVER_MONOTONIC,
+  OBSERVER_NON_MONOTONIC,
 }

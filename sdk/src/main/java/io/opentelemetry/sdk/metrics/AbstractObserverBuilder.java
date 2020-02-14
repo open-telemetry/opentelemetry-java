@@ -17,13 +17,17 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Observer;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 
 abstract class AbstractObserverBuilder<B extends Observer.Builder<B, V>, V>
     extends AbstractInstrumentBuilder<B, V> implements Observer.Builder<B, V> {
   private boolean monotonic = false;
 
-  protected AbstractObserverBuilder(String name) {
-    super(name);
+  AbstractObserverBuilder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    super(name, sharedState, instrumentationLibraryInfo);
   }
 
   @Override

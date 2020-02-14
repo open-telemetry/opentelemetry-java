@@ -14,25 +14,10 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.common;
 
-import com.google.common.util.concurrent.AtomicDouble;
-
-final class DoubleSumAggregator implements Aggregator.DoubleAggregator<DoubleSumAggregator> {
-  // TODO: Change to use DoubleAdder when changed to java8.
-  private final AtomicDouble value;
-
-  DoubleSumAggregator() {
-    this.value = new AtomicDouble();
-  }
-
-  @Override
-  public void merge(DoubleSumAggregator other) {
-    this.value.addAndGet(other.value.get());
-  }
-
-  @Override
-  public void update(double value) {
-    this.value.addAndGet(value);
-  }
+/** All possible types for the values recorded via the instruments. */
+public enum InstrumentValueType {
+  LONG,
+  DOUBLE,
 }

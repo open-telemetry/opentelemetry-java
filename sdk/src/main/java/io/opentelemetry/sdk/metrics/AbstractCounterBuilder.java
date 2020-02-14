@@ -17,13 +17,17 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Counter;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 
 abstract class AbstractCounterBuilder<B extends Counter.Builder<B, V>, V>
     extends AbstractInstrumentBuilder<B, V> implements Counter.Builder<B, V> {
   private boolean monotonic = true;
 
-  protected AbstractCounterBuilder(String name) {
-    super(name);
+  AbstractCounterBuilder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    super(name, sharedState, instrumentationLibraryInfo);
   }
 
   @Override

@@ -102,7 +102,8 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public BatchRecorder newBatchRecorder() {
+  public BatchRecorder newBatchRecorder(LabelSet labelSet) {
+    Utils.checkNotNull(labelSet, "labelSet");
     return new NoopBatchRecorder();
   }
 
@@ -141,11 +142,6 @@ public final class DefaultMeter implements Meter {
       return NoopBoundDoubleCounter.INSTANCE;
     }
 
-    @Override
-    public void unbind(BoundDoubleCounter boundInstrument) {
-      Utils.checkNotNull(boundInstrument, "boundDoubleCounter");
-    }
-
     /** No-op implementation of BoundDoubleCounter interface. */
     @Immutable
     private enum NoopBoundDoubleCounter implements BoundDoubleCounter {
@@ -153,6 +149,9 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void add(double delta) {}
+
+      @Override
+      public void unbind() {}
     }
 
     private static final class NoopBuilder
@@ -186,11 +185,6 @@ public final class DefaultMeter implements Meter {
       return NoopBoundLongCounter.INSTANCE;
     }
 
-    @Override
-    public void unbind(BoundLongCounter boundInstrument) {
-      Utils.checkNotNull(boundInstrument, "boundLongCounter");
-    }
-
     /** No-op implementation of BoundLongCounter interface. */
     @Immutable
     private enum NoopBoundLongCounter implements BoundLongCounter {
@@ -198,6 +192,9 @@ public final class DefaultMeter implements Meter {
 
       @Override
       public void add(long delta) {}
+
+      @Override
+      public void unbind() {}
     }
 
     private static final class NoopBuilder extends NoopAbstractCounterBuilder<Builder, LongCounter>
@@ -232,11 +229,6 @@ public final class DefaultMeter implements Meter {
       return NoopBoundDoubleMeasure.INSTANCE;
     }
 
-    @Override
-    public void unbind(BoundDoubleMeasure boundInstrument) {
-      Utils.checkNotNull(boundInstrument, "boundDoubleMeasure");
-    }
-
     /** No-op implementation of BoundDoubleMeasure interface. */
     @Immutable
     private enum NoopBoundDoubleMeasure implements BoundDoubleMeasure {
@@ -246,6 +238,9 @@ public final class DefaultMeter implements Meter {
       public void record(double value) {
         Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
       }
+
+      @Override
+      public void unbind() {}
     }
 
     private static final class NoopBuilder
@@ -284,11 +279,6 @@ public final class DefaultMeter implements Meter {
       return NoopBoundLongMeasure.INSTANCE;
     }
 
-    @Override
-    public void unbind(BoundLongMeasure boundInstrument) {
-      Utils.checkNotNull(boundInstrument, "boundLongMeasure");
-    }
-
     /** No-op implementations of BoundLongMeasure interface. */
     @Immutable
     private enum NoopBoundLongMeasure implements BoundLongMeasure {
@@ -298,6 +288,9 @@ public final class DefaultMeter implements Meter {
       public void record(long value) {
         Utils.checkArgument(value >= 0, "Unsupported negative values.");
       }
+
+      @Override
+      public void unbind() {}
     }
 
     private static final class NoopBuilder
@@ -377,14 +370,24 @@ public final class DefaultMeter implements Meter {
     @Override
     public BatchRecorder put(LongMeasure measure, long value) {
       Utils.checkNotNull(measure, "measure");
-      Utils.checkArgument(value >= 0, "Unsupported negative values.");
       return this;
     }
 
     @Override
     public BatchRecorder put(DoubleMeasure measure, double value) {
       Utils.checkNotNull(measure, "measure");
-      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+      return this;
+    }
+
+    @Override
+    public BatchRecorder put(LongCounter counter, long value) {
+      Utils.checkNotNull(counter, "counter");
+      return this;
+    }
+
+    @Override
+    public BatchRecorder put(DoubleCounter counter, double value) {
+      Utils.checkNotNull(counter, "counter");
       return this;
     }
 
