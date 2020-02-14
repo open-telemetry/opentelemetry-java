@@ -26,7 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentracing.Scope;
 import io.opentracing.Span;

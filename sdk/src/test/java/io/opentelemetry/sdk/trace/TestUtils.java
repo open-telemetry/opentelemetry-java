@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;

@@ -108,19 +108,18 @@ task jmhJar(type: Jar) {
     classifier "jmh"
     doFirst {
         manifest {
-            attributes('Main-Class': 'org.openjdk.jmh.Main', 'Class-Path': ([jar.archiveFileName] + configurations.runtimeClasspath.files.collect { it.getName() }).join(' '))
+            attributes('Main-Class': 'org.openjdk.jmh.Main', 'Class-Path': ([jar.archiveFileName.get()] + configurations.runtimeClasspath.files.collect { it.getName() }).join(' '))
         }
     }
     from {
-        // Only include JMH benchmarks and JMH in Jar file
-        (configurations.jmhRuntimeClasspath.files - configurations.runtimeClasspath.files).collect { it.isDirectory() ? it : zipTree(it) }
+        (configurations.jmhRuntimeClasspath.files + configurations.runtimeClasspath.files).collect { it.isDirectory() ? it : zipTree(it) }
     } {
         exclude 'META-INF/*.SF'
         exclude 'META-INF/*.DSA'
         exclude 'META-INF/*.RSA'
         exclude 'log4j.properties'
     }
-    from sourceSets.jmh.output
+    from (sourceSets.jmh.output + sourceSets.main.output)
 }
 
 artifacts {

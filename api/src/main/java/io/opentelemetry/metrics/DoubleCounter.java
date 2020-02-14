@@ -67,16 +67,13 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
   @Override
   BoundDoubleCounter bind(LabelSet labelSet);
 
-  @Override
-  void unbind(BoundDoubleCounter boundInstrument);
-
   /**
    * A {@code Bound Instrument} for a {@code CounterDouble}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundDoubleCounter {
+  interface BoundDoubleCounter extends InstrumentWithBinding.BoundInstrument {
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
      * was set to {@code false}.
@@ -87,6 +84,9 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
      * @since 0.1.0
      */
     void add(double delta);
+
+    @Override
+    void unbind();
   }
 
   /** Builder class for {@link DoubleCounter}. */

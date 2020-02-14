@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 
 /**

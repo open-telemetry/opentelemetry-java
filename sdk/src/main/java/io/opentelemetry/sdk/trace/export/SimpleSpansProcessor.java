@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;

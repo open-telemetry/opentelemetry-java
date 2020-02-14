@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
@@ -31,24 +33,32 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean absolute) {
-    super(name, description, unit, constantLabels, labelKeys);
+    super(
+        name,
+        description,
+        unit,
+        constantLabels,
+        labelKeys,
+        getMeasureInstrumentType(absolute),
+        InstrumentValueType.DOUBLE,
+        sharedState,
+        instrumentationLibraryInfo);
     this.absolute = absolute;
   }
 
   @Override
   public void record(double value, LabelSet labelSet) {
-    bind(labelSet).record(value);
+    BoundInstrument boundInstrument = bind(labelSet);
+    boundInstrument.record(value);
+    boundInstrument.unbind();
   }
 
   @Override
-  public BoundDoubleMeasure bind(LabelSet labelSet) {
-    return new Bound(labelSet, this.absolute);
-  }
-
-  @Override
-  public void unbind(BoundDoubleMeasure boundInstrument) {
-    // TODO: Implement this.
+  public BoundInstrument bind(LabelSet labelSet) {
+    return new BoundInstrument(this.absolute);
   }
 
   @Override
@@ -75,12 +85,12 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
     return result;
   }
 
-  private static final class Bound extends AbstractBoundInstrument implements BoundDoubleMeasure {
+  static final class BoundInstrument extends AbstractBoundInstrument implements BoundDoubleMeasure {
 
     private final boolean absolute;
 
-    Bound(LabelSet labels, boolean absolute) {
-      super(labels);
+    BoundInstrument(boolean absolute) {
+      super(null);
       this.absolute = absolute;
     }
 
@@ -89,20 +99,26 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
       if (this.absolute && value < 0) {
         throw new IllegalArgumentException("absolute measure can only record positive values");
       }
-      // todo: pass through to an aggregator/accumulator
+      // TODO: pass through to an aggregator/accumulator
     }
   }
 
-  static DoubleMeasure.Builder builder(String name) {
-    return new Builder(name);
+  static DoubleMeasure.Builder builder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new Builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
       extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
       implements DoubleMeasure.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -118,6 +134,8 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
+          getMeterSharedState(),
+          getInstrumentationLibraryInfo(),
           isAbsolute());
     }
   }

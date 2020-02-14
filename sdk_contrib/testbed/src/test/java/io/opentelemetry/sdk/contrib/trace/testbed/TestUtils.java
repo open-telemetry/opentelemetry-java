@@ -19,8 +19,8 @@ package io.opentelemetry.sdk.contrib.trace.testbed;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
