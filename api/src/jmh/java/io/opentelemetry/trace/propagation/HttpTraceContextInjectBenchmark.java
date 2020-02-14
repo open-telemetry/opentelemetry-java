@@ -22,8 +22,9 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -32,7 +33,6 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -51,43 +51,15 @@ public class HttpTraceContextInjectBenchmark {
           carrier.put(key, value);
         }
       };
-
-  @State(Scope.Thread)
-  public static class HttpTraceContextInjectState {
-
-    @Param({
-      "905734c59b913b4a905734c59b913b4a",
-      "21196a77f299580e21196a77f299580e",
-      "2e7d0ad2390617702e7d0ad239061770",
-      "905734c59b913b4a905734c59b913b4a",
-      "68ec932c33b3f2ee68ec932c33b3f2ee"
-    })
-    public String traceIdBase16;
-
-    @Param({
-      "9909983295041501",
-      "993a97ee3691eb26",
-      "d49582a2de984b86",
-      "776ff807b787538a",
-      "68ec932c33b3f2ee"
-    })
-    public String spanIdBase16;
-
-    public SpanContext spanContext;
-    private byte sampledTraceOptionsBytes = 1;
-    private TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
-    private TraceState traceStateDefault = TraceState.builder().build();
-
-    @Setup
-    public void setup() {
-      this.spanContext =
-          SpanContext.create(
-              TraceId.fromLowerBase16(traceIdBase16, 0),
-              SpanId.fromLowerBase16(spanIdBase16, 0),
-              sampledTraceOptions,
-              traceStateDefault);
-    }
-  }
+  private List<SpanContext> spanContexts =
+      Arrays.asList(
+          createTestSpanContext("905734c59b913b4a905734c59b913b4a", "9909983295041501"),
+          createTestSpanContext("21196a77f299580e21196a77f299580e", "993a97ee3691eb26"),
+          createTestSpanContext("2e7d0ad2390617702e7d0ad239061770", "d49582a2de984b86"),
+          createTestSpanContext("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
+          createTestSpanContext("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
+  private Integer iteration = 0;
+  private SpanContext contextToTest = spanContexts.get(iteration);
 
   @Setup
   public void setup() {
@@ -101,13 +73,24 @@ public class HttpTraceContextInjectBenchmark {
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 50_000, time = 1, timeUnit = TimeUnit.MILLISECONDS)
-  public Map<String, String> measureInject(HttpTraceContextInjectState state) {
-    httpTraceContext.inject(state.spanContext, carrier, setter);
+  public Map<String, String> measureInject() {
+    httpTraceContext.inject(contextToTest, carrier, setter);
     return carrier;
   }
 
   @TearDown(Level.Iteration)
-  public void refreshCarrier() {
-    this.carrier = new HashMap<>();
+  public void tearDown() {
+    this.contextToTest = spanContexts.get(++iteration % spanContexts.size());
+  }
+
+  private SpanContext createTestSpanContext(String traceId, String spanId) {
+    byte sampledTraceOptionsBytes = 1;
+    TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
+    TraceState traceStateDefault = TraceState.builder().build();
+    return SpanContext.create(
+        TraceId.fromLowerBase16(traceId, 0),
+        SpanId.fromLowerBase16(spanId, 0),
+        sampledTraceOptions,
+        traceStateDefault);
   }
 }
