@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
@@ -324,8 +325,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void noParent() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Scope scope = tracerSdk.withSpan(parent);
-    try {
+    try (Scope scope = tracerSdk.withSpan(parent)) {
       Span span = tracerSdk.spanBuilder(SPAN_NAME).setNoParent().startSpan();
       try {
         assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
@@ -346,7 +346,6 @@ public class SpanBuilderSdkTest {
         span.end();
       }
     } finally {
-      scope.close();
       parent.end();
     }
   }
@@ -408,8 +407,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentCurrentSpan() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Scope scope = tracerSdk.withSpan(parent);
-    try {
+    try (Scope scope = tracerSdk.withSpan(parent)) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
       try {
@@ -419,7 +417,6 @@ public class SpanBuilderSdkTest {
         span.end();
       }
     } finally {
-      scope.close();
       parent.end();
     }
   }

@@ -24,9 +24,9 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpansProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;

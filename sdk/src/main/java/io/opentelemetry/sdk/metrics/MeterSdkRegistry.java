@@ -33,12 +33,11 @@ import javax.annotation.Nonnull;
  * io.opentelemetry.OpenTelemetry}.
  */
 public final class MeterSdkRegistry implements MeterRegistry {
-  private final MeterSharedState sharedState;
+
   private final MeterSdkComponentRegistry registry;
 
   private MeterSdkRegistry(Clock clock, Resource resource) {
-    this.sharedState = new MeterSharedState(clock, resource);
-    this.registry = new MeterSdkComponentRegistry(sharedState);
+    this.registry = new MeterSdkComponentRegistry(MeterSharedState.create(clock, resource));
   }
 
   @Override

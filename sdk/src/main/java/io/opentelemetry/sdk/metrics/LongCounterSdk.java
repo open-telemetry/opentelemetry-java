@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
@@ -31,24 +33,32 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys);
+    super(
+        name,
+        description,
+        unit,
+        constantLabels,
+        labelKeys,
+        getCounterInstrumentType(monotonic),
+        InstrumentValueType.LONG,
+        sharedState,
+        instrumentationLibraryInfo);
     this.monotonic = monotonic;
   }
 
   @Override
   public void add(long delta, LabelSet labelSet) {
-    bind(labelSet).add(delta);
+    BoundInstrument boundInstrument = bind(labelSet);
+    boundInstrument.add(delta);
+    boundInstrument.unbind();
   }
 
   @Override
-  public BoundLongCounter bind(LabelSet labelSet) {
-    return new Bound(labelSet, monotonic);
-  }
-
-  @Override
-  public void unbind(BoundLongCounter boundInstrument) {
-    // TODO: Implement this.
+  public BoundInstrument bind(LabelSet labelSet) {
+    return new BoundInstrument(monotonic);
   }
 
   @Override
@@ -75,12 +85,12 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
     return result;
   }
 
-  private static final class Bound extends AbstractBoundInstrument implements BoundLongCounter {
+  static final class BoundInstrument extends AbstractBoundInstrument implements BoundLongCounter {
 
     private final boolean monotonic;
 
-    Bound(LabelSet labels, boolean monotonic) {
-      super(labels);
+    BoundInstrument(boolean monotonic) {
+      super(null);
       this.monotonic = monotonic;
     }
 
@@ -89,20 +99,26 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
       if (monotonic && delta < 0) {
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
-      // todo: pass through to an aggregator/accumulator
+      // TODO: pass through to an aggregator/accumulator
     }
   }
 
-  static LongCounter.Builder builder(String name) {
-    return new Builder(name);
+  static LongCounter.Builder builder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new Builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
       extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
       implements LongCounter.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -118,6 +134,8 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
+          getMeterSharedState(),
+          getInstrumentationLibraryInfo(),
           isMonotonic());
     }
   }

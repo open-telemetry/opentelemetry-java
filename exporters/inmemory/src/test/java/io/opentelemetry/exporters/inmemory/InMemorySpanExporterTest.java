@@ -18,8 +18,8 @@ package io.opentelemetry.exporters.inmemory;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Tracer;

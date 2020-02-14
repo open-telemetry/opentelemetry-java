@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.internal.Utils;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -43,51 +42,43 @@ public abstract class MetricData {
   public abstract Descriptor getDescriptor();
 
   /**
-   * Returns the data {@link LongPoint}s for this metric, or {@code null} if the {@link
-   * Descriptor.Type} of the metric does not generate this type of points.
+   * Returns the resource of this {@code MetricData}.
    *
-   * <p>Only one type of points are available at any moment for a {@link MetricData}.
-   *
-   * @return the data {@link Point}s for this metric, or {@code null} if this type of points are not
-   *     accepted.
-   * @since 0.3.0
+   * @return the resource of this {@code MetricData}.
+   * @since 0.1.0
    */
-  @Nullable
-  public abstract Collection<LongPoint> getLongPoints();
+  public abstract Resource getResource();
 
   /**
-   * Returns the data {@link DoublePoint}s for this metric, or {@code null} if the {@link
-   * Descriptor.Type} of the metric does not generate this type of points.
+   * Returns the instrumentation library specified when creating the {@code Meter} which created the
+   * {@code Instrument} that produces {@code MetricData}.
    *
-   * <p>Only one type of points are available at any moment for a {@link MetricData}.
+   * @return an instance of {@link InstrumentationLibraryInfo}
+   */
+  public abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+
+  /**
+   * Returns the data {@link Point}s for this metric.
+   *
+   * <p>Only one type of points are available at any moment for a {@link MetricData}, and the type
+   * is determined by the {@link Descriptor.Type}.
    *
    * @return the data {@link Point}s for this metric, or {@code null} if this type of points are not
    *     accepted.
    * @since 0.3.0
    */
-  @Nullable
-  public abstract Collection<DoublePoint> getDoublePoints();
+  public abstract Collection<Point> getPoints();
 
-  static MetricData createWithLongPoints(Descriptor descriptor, Collection<LongPoint> longPoints) {
-    Descriptor.Type type = Utils.checkNotNull(descriptor, "descriptor").getType();
-    Utils.checkState(
-        type == Descriptor.Type.NON_MONOTONIC_LONG || type == Descriptor.Type.MONOTONIC_LONG,
-        "Incompatible points type with metric type.");
-    return new AutoValue_MetricData(descriptor, Utils.checkNotNull(longPoints, "longPoints"), null);
-  }
-
-  static MetricData createWithDoublePoints(
-      Descriptor descriptor, Collection<DoublePoint> doublePoints) {
-    Descriptor.Type type = Utils.checkNotNull(descriptor, "descriptor").getType();
-    Utils.checkState(
-        type == Descriptor.Type.NON_MONOTONIC_DOUBLE || type == Descriptor.Type.MONOTONIC_DOUBLE,
-        "Incompatible points type with metric type.");
-    return new AutoValue_MetricData(
-        descriptor, null, Utils.checkNotNull(doublePoints, "doublePoints"));
+  public static MetricData create(
+      Descriptor descriptor,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      Collection<Point> points) {
+    return new AutoValue_MetricData(descriptor, resource, instrumentationLibraryInfo, points);
   }
 
   @Immutable
-  abstract static class Point {
+  public abstract static class Point {
     Point() {}
 
     /**
@@ -100,13 +91,20 @@ public abstract class MetricData {
     public abstract long getStartEpochNanos();
 
     /**
-     * Returns the the epoch timestamp in nanos when data were collected, usually it represents the
+     * Returns the epoch timestamp in nanos when data were collected, usually it represents the
      * moment when {@code Instrument.getData()} was called.
      *
      * @return the epoch timestamp in nanos.
      * @since 0.3.0
      */
     public abstract long getEpochNanos();
+
+    /**
+     * Returns the labels associated with this {@code Point}.
+     *
+     * @return the labels associated with this {@code Point}.
+     */
+    public abstract Map<String, String> getLabels();
   }
 
   /**
@@ -127,8 +125,9 @@ public abstract class MetricData {
      */
     public abstract long getValue();
 
-    static LongPoint createInternal(long startEpochNanos, long epochNanos, long value) {
-      return new AutoValue_MetricData_LongPoint(startEpochNanos, epochNanos, value);
+    public static LongPoint create(
+        long startEpochNanos, long epochNanos, Map<String, String> labels, long value) {
+      return new AutoValue_MetricData_LongPoint(startEpochNanos, epochNanos, labels, value);
     }
   }
 
@@ -148,8 +147,9 @@ public abstract class MetricData {
      */
     public abstract double getValue();
 
-    static DoublePoint createInternal(long startEpochNanos, long epochNanos, double value) {
-      return new AutoValue_MetricData_DoublePoint(startEpochNanos, epochNanos, value);
+    public static DoublePoint create(
+        long startEpochNanos, long epochNanos, Map<String, String> labels, double value) {
+      return new AutoValue_MetricData_DoublePoint(startEpochNanos, epochNanos, labels, value);
     }
   }
 
@@ -171,28 +171,28 @@ public abstract class MetricData {
     public enum Type {
 
       /**
-       * An instantaneous measurement of a long (int64) value.
+       * An instantaneous measurement of a long (int64) value. Reports {@link LongPoint} points.
        *
        * @since 0.1.0
        */
       NON_MONOTONIC_LONG,
 
       /**
-       * An instantaneous measurement of a double value.
+       * An instantaneous measurement of a double value. Reports {@link DoublePoint} points.
        *
        * @since 0.1.0
        */
       NON_MONOTONIC_DOUBLE,
 
       /**
-       * An cumulative measurement of an long (int64) value.
+       * An cumulative measurement of an long (int64) value. Reports {@link LongPoint} points.
        *
        * @since 0.1.0
        */
       MONOTONIC_LONG,
 
       /**
-       * An cumulative measurement of a double value.
+       * An cumulative measurement of a double value. Reports {@link DoublePoint} points.
        *
        * @since 0.1.0
        */
@@ -232,14 +232,6 @@ public abstract class MetricData {
     public abstract Type getType();
 
     /**
-     * Returns the label keys associated with this metric descriptor.
-     *
-     * @return the label keys associated with this metric descriptor.
-     * @since 0.1.0
-     */
-    public abstract List<String> getLabelKeys();
-
-    /**
      * Returns the constant labels associated with this metric descriptor.
      *
      * @return the constant labels associated with this metric descriptor.
@@ -247,15 +239,13 @@ public abstract class MetricData {
      */
     public abstract Map<String, String> getConstantLabels();
 
-    static Descriptor createInternal(
+    public static Descriptor create(
         String name,
         String description,
         String unit,
         Type type,
-        List<String> labelKeys,
         Map<String, String> constantLabels) {
-      return new AutoValue_MetricData_Descriptor(
-          name, description, unit, type, labelKeys, constantLabels);
+      return new AutoValue_MetricData_Descriptor(name, description, unit, type, constantLabels);
     }
   }
 }

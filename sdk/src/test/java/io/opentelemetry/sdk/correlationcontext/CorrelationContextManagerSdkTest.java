@@ -66,11 +66,8 @@ public class CorrelationContextManagerSdkTest {
   public void testWithCorrelationContext() {
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    Scope wtm = contextManager.withContext(distContext);
-    try {
+    try (Scope wtm = contextManager.withContext(distContext)) {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
-    } finally {
-      wtm.close();
     }
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
@@ -79,8 +76,7 @@ public class CorrelationContextManagerSdkTest {
   @Test
   public void testWithCorrelationContextUsingWrap() {
     Runnable runnable;
-    Scope wtm = contextManager.withContext(distContext);
-    try {
+    try (Scope wtm = contextManager.withContext(distContext)) {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
       runnable =
           Context.current()
@@ -91,8 +87,6 @@ public class CorrelationContextManagerSdkTest {
                       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
                     }
                   });
-    } finally {
-      wtm.close();
     }
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());

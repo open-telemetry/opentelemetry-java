@@ -17,8 +17,8 @@
 package io.opentelemetry.exporters.inmemory;
 
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import java.util.List;
 
@@ -35,7 +35,7 @@ import java.util.List;
  *     Tracer tracer = tracing.getTracer();
  *     tracer.spanBuilder("span").startSpan().end();
  *
- *     List&lt;io.opentelemetry.sdk.trace.SpanData&gt; spans = tracing.getFinishedSpanItems();
+ *     List&lt;io.opentelemetry.sdk.trace.data.SpanData&gt; spans = tracing.getFinishedSpanItems();
  *     assertThat(spans.size()).isEqualTo(1);
  *     assertThat(spans.get(0).getName()).isEqualTo("span");
  *   }
@@ -93,7 +93,7 @@ public final class InMemoryTracing {
 
   /**
    * Returns a copy {@code List} of the finished {@code Span}s, represented by {@code
-   * io.opentelemetry.sdk.trace.SpanData}.
+   * io.opentelemetry.sdk.trace.data.SpanData}.
    *
    * @return a {@code List} of the finished {@code Span}s.
    * @since 0.1.0
