@@ -100,7 +100,7 @@ public class HttpTraceContextInjectBenchmark {
   @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
-  @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.MILLISECONDS)
+  @Measurement(iterations = 50_000, time = 1, timeUnit = TimeUnit.MILLISECONDS)
   public Map<String, String> measureInject(HttpTraceContextInjectState state) {
     httpTraceContext.inject(state.spanContext, carrier, setter);
     return carrier;
