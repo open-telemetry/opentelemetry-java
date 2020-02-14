@@ -75,6 +75,7 @@ public class HttpTraceContextExtractBenchmark {
   @TearDown(Level.Iteration)
   public void tearDown() {
     this.carrier = new HashMap<>();
-    this.carrier.put(traceparent, traceparentsHeaders.get(++iteration % traceparentsHeaders.size()));
+    this.carrier.put(
+        traceparent, traceparentsHeaders.get(++iteration % traceparentsHeaders.size()));
   }
 }
