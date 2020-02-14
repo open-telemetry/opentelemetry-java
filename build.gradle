@@ -49,7 +49,7 @@ subprojects {
         mavenLocal()
     }
 
-    [compileJava, compileTestJava].each() {
+    [compileJava, compileTestJava, compileJmhJava].each() {
         // We suppress the "try" warning because it disallows managing an auto-closeable with
         // try-with-resources without referencing the auto-closeable within the try block.
         // We suppress the "processing" warning as suggested in
