@@ -19,13 +19,12 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter {
-
-  private final boolean monotonic;
+final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements DoubleCounter {
 
   private DoubleCounterSdk(
       String name,
@@ -42,11 +41,10 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
         unit,
         constantLabels,
         labelKeys,
-        getCounterInstrumentType(monotonic),
         InstrumentValueType.DOUBLE,
         sharedState,
-        instrumentationLibraryInfo);
-    this.monotonic = monotonic;
+        instrumentationLibraryInfo,
+        monotonic);
   }
 
   @Override
@@ -58,31 +56,7 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return new BoundInstrument(monotonic);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof DoubleCounterSdk)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    DoubleCounterSdk that = (DoubleCounterSdk) o;
-
-    return monotonic == that.monotonic;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (monotonic ? 1 : 0);
-    return result;
+    return new BoundInstrument(isMonotonic());
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument implements BoundDoubleCounter {

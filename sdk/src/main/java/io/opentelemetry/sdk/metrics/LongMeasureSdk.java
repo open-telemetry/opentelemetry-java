@@ -19,13 +19,12 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.LongMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
-
-  private final boolean absolute;
+final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements LongMeasure {
 
   private LongMeasureSdk(
       String name,
@@ -42,11 +41,10 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
         unit,
         constantLabels,
         labelKeys,
-        getMeasureInstrumentType(absolute),
         InstrumentValueType.LONG,
         sharedState,
-        instrumentationLibraryInfo);
-    this.absolute = absolute;
+        instrumentationLibraryInfo,
+        absolute);
   }
 
   @Override
@@ -58,31 +56,7 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return new BoundInstrument(this.absolute);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof LongMeasureSdk)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    LongMeasureSdk that = (LongMeasureSdk) o;
-
-    return absolute == that.absolute;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (absolute ? 1 : 0);
-    return result;
+    return new BoundInstrument(isAbsolute());
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument implements BoundLongMeasure {

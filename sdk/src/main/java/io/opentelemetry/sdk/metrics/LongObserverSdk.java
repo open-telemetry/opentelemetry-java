@@ -22,9 +22,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class LongObserverSdk extends AbstractInstrument implements LongObserver {
-  private final boolean monotonic;
-
+final class LongObserverSdk extends AbstractObserver implements LongObserver {
   LongObserverSdk(
       String name,
       String description,
@@ -40,40 +38,15 @@ final class LongObserverSdk extends AbstractInstrument implements LongObserver {
         unit,
         constantLabels,
         labelKeys,
-        getObserverInstrumentType(monotonic),
         InstrumentValueType.LONG,
         sharedState,
-        instrumentationLibraryInfo);
-    this.monotonic = monotonic;
+        instrumentationLibraryInfo,
+        monotonic);
   }
 
   @Override
   public void setCallback(Callback<LongObserver.ResultLongObserver> metricUpdater) {
     throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof LongObserverSdk)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    LongObserverSdk that = (LongObserverSdk) o;
-
-    return monotonic == that.monotonic;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (monotonic ? 1 : 0);
-    return result;
   }
 
   static LongObserver.Builder builder(
