@@ -18,11 +18,13 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,28 +45,29 @@ public class AbstractMeasureBuilderTest {
 
   @Test
   public void defaultValue() {
-    TestInstrumentBuilder testMetricBuilder =
+    TestInstrumentBuilder testInstrumentBuilder =
         new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
-    assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
-    assertThat(testMetricBuilder.getDescription()).isEmpty();
-    assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
-    assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
-    assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
-    assertThat(testMetricBuilder.isAbsolute()).isTrue();
-    assertThat(testMetricBuilder.getMeterProviderSharedState()).isEqualTo(METER_SHARED_STATE);
-    assertThat(testMetricBuilder.getInstrumentationLibraryInfo())
+    assertThat(testInstrumentBuilder.isAbsolute()).isTrue();
+    assertThat(testInstrumentBuilder.getMeterProviderSharedState()).isEqualTo(METER_SHARED_STATE);
+    assertThat(testInstrumentBuilder.getInstrumentationLibraryInfo())
         .isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
+
+    TestInstrument testInstrument = testInstrumentBuilder.build();
+    assertThat(testInstrument).isInstanceOf(TestInstrument.class);
+    assertThat(testInstrument.getDescriptor().getName()).isEqualTo(NAME);
+    assertThat(testInstrument.getDescriptor().getDescription()).isEmpty();
+    assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo("1");
+    assertThat(testInstrument.getDescriptor().getLabelKeys()).isEmpty();
+    assertThat(testInstrument.getDescriptor().getConstantLabels()).isEmpty();
   }
 
   @Test
   public void setAndGetValues() {
-    TestInstrumentBuilder testMetricBuilder =
+    TestInstrumentBuilder testInstrumentBuilder =
         new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO)
             .setAbsolute(false);
-    assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
-    assertThat(testMetricBuilder.isAbsolute()).isFalse();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
+    assertThat(testInstrumentBuilder.isAbsolute()).isFalse();
+    assertThat(testInstrumentBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   private static final class TestInstrumentBuilder
@@ -83,21 +86,44 @@ public class AbstractMeasureBuilderTest {
 
     @Override
     public TestInstrument build() {
-      return new TestInstrument();
+      return new TestInstrument(
+          getInstrumentDescriptor(),
+          getMeterProviderSharedState(),
+          getInstrumentationLibraryInfo(),
+          isAbsolute());
     }
   }
 
-  private static final class TestInstrument implements Measure<TestBoundMeasure> {
-    private static final TestBoundMeasure HANDLE = new TestBoundMeasure();
+  private static final class TestInstrument extends AbstractMeasure<TestBoundMeasure>
+      implements Measure<TestBoundMeasure> {
+
+    TestInstrument(
+        InstrumentDescriptor descriptor,
+        MeterProviderSharedState meterSharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo,
+        boolean absolute) {
+      super(
+          descriptor,
+          InstrumentValueType.LONG,
+          meterSharedState,
+          instrumentationLibraryInfo,
+          absolute);
+    }
+
+    @Override
+    TestBoundMeasure newBinding(Batcher batcher) {
+      return new TestBoundMeasure(NoopAggregator.getFactory().getAggregator());
+    }
 
     @Override
     public TestBoundMeasure bind(LabelSet labelSet) {
-      return HANDLE;
+      return bindInternal(labelSet);
     }
   }
 
-  private static final class TestBoundMeasure implements BoundInstrument {
-    @Override
-    public void unbind() {}
+  private static final class TestBoundMeasure extends AbstractBoundInstrument {
+    private TestBoundMeasure(Aggregator aggregator) {
+      super(aggregator);
+    }
   }
 }

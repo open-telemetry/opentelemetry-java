@@ -19,26 +19,16 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.List;
-import java.util.Map;
 
 final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver {
   DoubleObserverSdk(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
+      InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
     super(
-        name,
-        description,
-        unit,
-        constantLabels,
-        labelKeys,
-        InstrumentValueType.DOUBLE,
+        descriptor,
+        InstrumentValueType.LONG,
         meterProviderSharedState,
         instrumentationLibraryInfo,
         monotonic);
@@ -75,11 +65,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     @Override
     public DoubleObserver build() {
       return new DoubleObserverSdk(
-          getName(),
-          getDescription(),
-          getUnit(),
-          getConstantLabels(),
-          getLabelKeys(),
+          getInstrumentDescriptor(),
           getMeterProviderSharedState(),
           getInstrumentationLibraryInfo(),
           isMonotonic());

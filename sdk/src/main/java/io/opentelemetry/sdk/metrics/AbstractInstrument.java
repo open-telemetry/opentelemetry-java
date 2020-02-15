@@ -29,48 +29,33 @@ import java.util.Map;
 
 abstract class AbstractInstrument implements Instrument {
 
-  private final String name;
-  private final String description;
-  private final String unit;
-  private final Map<String, String> constantLabels;
-  private final List<String> labelKeys;
+  private final InstrumentDescriptor descriptor;
+  private final MeterProviderSharedState meterProviderSharedState;
+  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final ActiveBatcher activeBatcher;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
   AbstractInstrument(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
+      InstrumentDescriptor descriptor,
+      MeterProviderSharedState meterProviderSharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       ActiveBatcher activeBatcher) {
-    this.name = name;
-    this.description = description;
-    this.unit = unit;
-    this.constantLabels = constantLabels;
-    this.labelKeys = labelKeys;
-    // TODO: Allow to install views from config instead of always installing the default View.
+    this.descriptor = descriptor;
+    this.meterProviderSharedState = meterProviderSharedState;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.activeBatcher = activeBatcher;
   }
 
-  final String getName() {
-    return name;
+  final InstrumentDescriptor getDescriptor() {
+    return descriptor;
   }
 
-  final String getDescription() {
-    return description;
+  final MeterProviderSharedState getMeterProviderSharedState() {
+    return meterProviderSharedState;
   }
 
-  final String getUnit() {
-    return unit;
-  }
-
-  final Map<String, String> getConstantLabels() {
-    return constantLabels;
-  }
-
-  final List<String> getLabelKeys() {
-    return labelKeys;
+  final InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return instrumentationLibraryInfo;
   }
 
   final ActiveBatcher getActiveBatcher() {
@@ -90,21 +75,12 @@ abstract class AbstractInstrument implements Instrument {
 
     AbstractInstrument that = (AbstractInstrument) o;
 
-    return name.equals(that.name)
-        && description.equals(that.description)
-        && unit.equals(that.unit)
-        && constantLabels.equals(that.constantLabels)
-        && labelKeys.equals(that.labelKeys);
+    return descriptor.equals(that.descriptor);
   }
 
   @Override
   public int hashCode() {
-    int result = name.hashCode();
-    result = 31 * result + description.hashCode();
-    result = 31 * result + unit.hashCode();
-    result = 31 * result + constantLabels.hashCode();
-    result = 31 * result + labelKeys.hashCode();
-    return result;
+    return descriptor.hashCode();
   }
 
   abstract static class Builder<B extends Instrument.Builder<B, V>, V>
@@ -163,10 +139,6 @@ abstract class AbstractInstrument implements Instrument {
       return getThis();
     }
 
-    final String getName() {
-      return name;
-    }
-
     final MeterProviderSharedState getMeterProviderSharedState() {
       return meterProviderSharedState;
     }
@@ -175,20 +147,8 @@ abstract class AbstractInstrument implements Instrument {
       return instrumentationLibraryInfo;
     }
 
-    final String getDescription() {
-      return description;
-    }
-
-    final String getUnit() {
-      return unit;
-    }
-
-    final List<String> getLabelKeys() {
-      return labelKeys;
-    }
-
-    final Map<String, String> getConstantLabels() {
-      return constantLabels;
+    final InstrumentDescriptor getInstrumentDescriptor() {
+      return InstrumentDescriptor.create(name, description, unit, constantLabels, labelKeys);
     }
 
     abstract B getThis();
