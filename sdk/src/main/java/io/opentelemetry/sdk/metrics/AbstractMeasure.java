@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-abstract class AbstractMeasure<B extends AbstractBoundInstrument> extends AbstractInstrument {
+abstract class AbstractMeasure extends AbstractInstrument {
   private final boolean absolute;
   private final InstrumentValueType instrumentValueType;
 
@@ -56,7 +56,7 @@ abstract class AbstractMeasure<B extends AbstractBoundInstrument> extends Abstra
       return false;
     }
 
-    AbstractMeasure<?> that = (AbstractMeasure<?>) o;
+    AbstractMeasure that = (AbstractMeasure) o;
 
     return absolute == that.absolute && instrumentValueType == that.instrumentValueType;
   }

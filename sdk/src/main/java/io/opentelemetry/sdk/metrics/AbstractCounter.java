@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-abstract class AbstractCounter<B extends AbstractBoundInstrument> extends AbstractInstrument {
+abstract class AbstractCounter extends AbstractInstrument {
   private final boolean monotonic;
   private final InstrumentValueType instrumentValueType;
 
@@ -56,7 +56,7 @@ abstract class AbstractCounter<B extends AbstractBoundInstrument> extends Abstra
       return false;
     }
 
-    AbstractCounter<?> that = (AbstractCounter<?>) o;
+    AbstractCounter that = (AbstractCounter) o;
 
     return monotonic == that.monotonic && instrumentValueType == that.instrumentValueType;
   }
@@ -65,6 +65,7 @@ abstract class AbstractCounter<B extends AbstractBoundInstrument> extends Abstra
   public int hashCode() {
     int result = super.hashCode();
     result = 31 * result + (monotonic ? 1 : 0);
+    result = 31 * result + instrumentValueType.hashCode();
     return result;
   }
 }

@@ -19,12 +19,11 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements LongCounter {
+final class LongCounterSdk extends AbstractCounter implements LongCounter {
 
   private LongCounterSdk(
       String name,

@@ -19,12 +19,11 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.LongMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements LongMeasure {
+final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
 
   private LongMeasureSdk(
       String name,

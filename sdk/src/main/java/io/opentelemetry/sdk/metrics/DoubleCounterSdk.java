@@ -19,12 +19,11 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements DoubleCounter {
+final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
 
   private DoubleCounterSdk(
       String name,

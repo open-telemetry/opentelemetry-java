@@ -19,12 +19,11 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.DoubleMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements DoubleMeasure {
+final class DoubleMeasureSdk extends AbstractMeasure implements DoubleMeasure {
 
   private DoubleMeasureSdk(
       String name,

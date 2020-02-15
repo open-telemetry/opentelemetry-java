@@ -40,6 +40,10 @@ public class AbstractObserver extends AbstractInstrument {
     this.instrumentValueType = instrumentValueType;
   }
 
+  final boolean isMonotonic() {
+    return monotonic;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
