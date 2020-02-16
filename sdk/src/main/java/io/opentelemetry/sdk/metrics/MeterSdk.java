@@ -78,12 +78,12 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public LabelSet createLabelSet(String... keyValuePairs) {
+  public LabelSetSdk createLabelSet(String... keyValuePairs) {
     return LabelSetSdk.create(keyValuePairs);
   }
 
   @Override
-  public LabelSet createLabelSet(Map<String, String> labels) {
+  public LabelSetSdk createLabelSet(Map<String, String> labels) {
     return LabelSetSdk.create(labels);
   }
 }
