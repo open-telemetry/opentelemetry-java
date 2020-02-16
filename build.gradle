@@ -81,7 +81,7 @@ subprojects {
         it.options.errorprone.excludedPaths = ".*generated.*" // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
 
         // Enforce errorprone warnings to be errors.
-        if (!JavaVersion.current().isJava9() && !JavaVersion.current().isJava10() && !JavaVersion.current().isJava11()) {
+        if (!JavaVersion.current().isJava9() && !JavaVersion.current().isJava10() && !JavaVersion.current().isJava11() && it != compileJmhJava) {
             // TODO: Enable -Werror for Java 9+
             it.options.compilerArgs += ["-Werror"]
         }
