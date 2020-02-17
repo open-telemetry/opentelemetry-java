@@ -8,7 +8,7 @@ build_task: &build_task
   command: make test
 compile_benchmark_task: &compile_benchmark_task
   name: Compile JMH
-  command: make becnhmark
+  command: make benchmark
 verify_task: &verify_task
   name: Verify Google Java Format
   command: make verify-format

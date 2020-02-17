@@ -4,8 +4,8 @@
 test:
 	./gradlew clean assemble check --stacktrace
 
-.PHONY: becnhmark
-becnhmark:
+.PHONY: benchmark
+benchmark:
 	./gradlew compileJmhJava
 
 .PHONY: init-git-submodules
