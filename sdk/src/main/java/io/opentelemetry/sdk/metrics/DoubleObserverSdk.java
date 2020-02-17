@@ -22,9 +22,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserver {
-  private final boolean monotonic;
-
+final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver {
   DoubleObserverSdk(
       String name,
       String description,
@@ -40,40 +38,15 @@ final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserv
         unit,
         constantLabels,
         labelKeys,
-        getObserverInstrumentType(monotonic),
-        InstrumentValueType.LONG,
+        InstrumentValueType.DOUBLE,
         sharedState,
-        instrumentationLibraryInfo);
-    this.monotonic = monotonic;
+        instrumentationLibraryInfo,
+        monotonic);
   }
 
   @Override
   public void setCallback(Callback<DoubleObserver.ResultDoubleObserver> metricUpdater) {
     throw new UnsupportedOperationException("to be implemented");
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof DoubleObserverSdk)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    DoubleObserverSdk that = (DoubleObserverSdk) o;
-
-    return monotonic == that.monotonic;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (monotonic ? 1 : 0);
-    return result;
   }
 
   static DoubleObserver.Builder builder(
