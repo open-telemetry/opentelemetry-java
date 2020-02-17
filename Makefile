@@ -3,6 +3,9 @@
 .PHONY: test
 test:
 	./gradlew clean assemble check --stacktrace
+
+.PHONY: becnhmark
+becnhmark:
 	./gradlew compileJmhJava
 
 .PHONY: init-git-submodules
