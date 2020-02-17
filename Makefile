@@ -3,6 +3,7 @@
 .PHONY: test
 test:
 	./gradlew clean assemble check --stacktrace
+  ./gradlew jmhCompile
 
 .PHONY: init-git-submodules
 init-git-submodules:
