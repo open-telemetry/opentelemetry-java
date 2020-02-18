@@ -35,7 +35,7 @@ implementation only if the user application is instrumented. For more details, c
 
 [Library Guidelines]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/library-guidelines.md
 
-Configuration is performed only by user applications which should configure the exporter and may tune the OpenTelemetry behavior.
+The configuration should set up the exporter and may tune the OpenTelemetry behavior.
 
 For example, a basic configuration instantiates the SDK tracer registry and sets to export the traces to a logging stream.
 
@@ -169,7 +169,7 @@ void b(Span parentSpan) {
   childSpan.end();
 }
 ```
-Since it is not always possible to change method signatures or rely on global variables, the OpenTelemetry API
+Since it is not always possible to change a method signature or rely on global variables, the OpenTelemetry API
 offers an automated way to propagate the `parentSpan`:
 ```java
 void a() {

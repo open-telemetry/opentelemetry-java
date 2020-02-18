@@ -27,6 +27,10 @@ We would love to hear from the larger community: please provide feedback proacti
 Please refer to the [contribution guide](https://github.com/open-telemetry/opentelemetry-java/blob/master/CONTRIBUTING.md)
 on how to setup and contribute!
 
+## Quick Start
+Please refer to the [quick start guide](https://github.com/open-telemetry/opentelemetry-java/blob/master/QUICKSTART.md) on how use the OpenTelemetry API.
+
+
 ## Snapshots
 
 Snapshots based out the `master` branch are available for `opentelemetry-api`, `opentelemetry-sdk` and the rest of the artifacts:
