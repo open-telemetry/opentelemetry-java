@@ -57,6 +57,11 @@ public final class DefaultMeterTest {
   }
 
   @Test
+  public void noopAddMeasureLong_EmptyName() {
+    defaultMeter.longMeasureBuilder("");
+  }
+
+  @Test
   public void testVarargsLabelSetValidation_UnmatchedKeysAndValues() throws Exception {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("even");

@@ -18,13 +18,13 @@ package io.opentelemetry.sdk;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
-import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
+import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * This class provides a static global accessor for SDK telemetry objects {@link TracerSdkRegistry},
- * {@link MeterSdkRegistry} and {@link CorrelationContextManagerSdk}.
+ * {@link MeterSdkProvider} and {@link CorrelationContextManagerSdk}.
  *
  * <p>This is a convenience class getting and casting the telemetry objects from {@link
  * OpenTelemetry}.
@@ -44,13 +44,13 @@ public final class OpenTelemetrySdk {
   }
 
   /**
-   * Returns a {@link MeterSdkRegistry}.
+   * Returns a {@link MeterSdkProvider}.
    *
-   * @return MeterRegistry returned by {@link OpenTelemetry#getMeterRegistry()}.
+   * @return MeterProvider returned by {@link OpenTelemetry#getMeterRegistry()}.
    * @since 0.1.0
    */
-  public static MeterSdkRegistry getMeterRegistry() {
-    return (MeterSdkRegistry) OpenTelemetry.getMeterRegistry();
+  public static MeterSdkProvider getMeterRegistry() {
+    return (MeterSdkProvider) OpenTelemetry.getMeterRegistry();
   }
 
   /**

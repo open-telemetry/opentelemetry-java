@@ -26,7 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface MeterRegistry {
+public interface MeterProvider {
 
   /**
    * Gets or creates a named meter instance.

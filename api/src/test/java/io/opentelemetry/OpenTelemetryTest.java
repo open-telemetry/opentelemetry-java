@@ -27,7 +27,7 @@ import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
 import io.opentelemetry.metrics.BatchRecorder;
-import io.opentelemetry.metrics.DefaultMeterRegistry;
+import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleObserver;
@@ -36,7 +36,7 @@ import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
@@ -85,7 +85,7 @@ public class OpenTelemetryTest {
     assertThat(OpenTelemetry.getTracerRegistry().get("testTracer"))
         .isEqualTo(OpenTelemetry.getTracerRegistry().get("testTracer"));
     assertThat(OpenTelemetry.getMeterRegistry())
-        .isInstanceOf(DefaultMeterRegistry.getInstance().getClass());
+        .isInstanceOf(DefaultMeterProvider.getInstance().getClass());
     assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
     assertThat(OpenTelemetry.getCorrelationContextManager())
         .isInstanceOf(DefaultCorrelationContextManager.getInstance().getClass());
@@ -298,14 +298,14 @@ public class OpenTelemetryTest {
     }
 
     @Override
-    public MeterRegistry create() {
+    public MeterProvider create() {
       return new SecondMetricsProvider();
     }
   }
 
-  public static class FirstMetricsProvider implements Meter, MetricsProvider, MeterRegistry {
+  public static class FirstMetricsProvider implements Meter, MetricsProvider, MeterProvider {
     @Override
-    public MeterRegistry create() {
+    public MeterProvider create() {
       return new FirstMetricsProvider();
     }
 

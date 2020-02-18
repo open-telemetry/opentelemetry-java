@@ -19,10 +19,10 @@ package io.opentelemetry;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
-import io.opentelemetry.metrics.DefaultMeterRegistry;
+import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DefaultMetricsProvider;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
 import io.opentelemetry.trace.DefaultTraceProvider;
 import io.opentelemetry.trace.DefaultTracerRegistry;
@@ -49,7 +49,7 @@ public final class OpenTelemetry {
   @Nullable private static volatile OpenTelemetry instance;
 
   private final TracerRegistry tracerRegistry;
-  private final MeterRegistry meterRegistry;
+  private final MeterProvider meterProvider;
   private final CorrelationContextManager contextManager;
 
   /**
@@ -65,15 +65,15 @@ public final class OpenTelemetry {
   }
 
   /**
-   * Returns a singleton {@link MeterRegistry}.
+   * Returns a singleton {@link MeterProvider}.
    *
-   * @return registered MeterRegistry or default via {@link DefaultMeterRegistry#getInstance()}.
-   * @throws IllegalStateException if a specified MeterRegistry (via system properties) could not be
+   * @return registered MeterProvider or default via {@link DefaultMeterProvider#getInstance()}.
+   * @throws IllegalStateException if a specified MeterProvider (via system properties) could not be
    *     found.
    * @since 0.1.0
    */
-  public static MeterRegistry getMeterRegistry() {
-    return getInstance().meterRegistry;
+  public static MeterProvider getMeterRegistry() {
+    return getInstance().meterProvider;
   }
 
   /**
@@ -109,7 +109,7 @@ public final class OpenTelemetry {
             : DefaultTraceProvider.getInstance().create();
 
     MetricsProvider metricsProvider = loadSpi(MetricsProvider.class);
-    meterRegistry =
+    meterProvider =
         metricsProvider != null
             ? metricsProvider.create()
             : DefaultMetricsProvider.getInstance().create();
