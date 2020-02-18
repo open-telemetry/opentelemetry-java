@@ -20,7 +20,7 @@
 <!-- tocstop -->
 
 OpenTelemetry can be used to instrument code for collecting distributed traces and recording metrics.
-For more details, check out the [Overview].
+For more details, check out the [Specification Overview].
 
 In the following examples, we demonstrate how to configure the OpenTelemetry SDK, create spans and record metrics through the OpenTelemetry API.
 
