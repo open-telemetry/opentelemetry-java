@@ -13,9 +13,9 @@
   * [Create nested Spans](#create-nested-spans)
   * [Span Attributes](#span-attributes)
   * [Create Spans with events](#create-spans-with-events)
-  * [Span with links](#span-with-links)
+  * [Create Spans with links](#create-spans-with-links)
   * [Context Propagation](#context-propagation)
-- [Metric](#metric)
+- [Metrics](#metrics)
 
 <!-- tocstop -->
 
@@ -24,12 +24,12 @@ For more details, check out the [Specification Overview].
 
 In the following examples, we demonstrate how to configure the OpenTelemetry SDK, create spans and record metrics through the OpenTelemetry API.
 
-[Overview]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/overview.md
+[Specification Overview]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/overview.md
 
 # Configuration
 
 **Libraries** that want to export distributed tracing using OpenTelemetry must only take dependency on the `opentelemetry-api` package
-and should never configure OpenTelemetry. The configuration must be provided by **Applications** which should also depend on the 
+and should never configure OpenTelemetry themselves. The configuration must be provided by **Applications** which should also depend on the 
 `opentelemetry-sdk` package, or any other implementation of the OpenTelemetry API. This way, libraries will obtain a real tracer
 implementation only if the user application is instrumented. For more details, check out the [Library Guidelines].
 
@@ -37,7 +37,7 @@ implementation only if the user application is instrumented. For more details, c
 
 Configuration is performed only by user applications which should configure the exporter and may tune the OpenTelemetry behavior.
 
-For example, a basic configuration instantiates the SDK tracer registry and sets to export the traces to a logging stream.  
+For example, a basic configuration instantiates the SDK tracer registry and sets to export the traces to a logging stream.
 
 ```java
 // Get the tracer
@@ -50,17 +50,17 @@ tracerRegistry.addSpanProcessor(SimpleSpansProcessor.newBuilder(new LoggingExpor
 ### Sampler
 
 It is not always feasible to trace and export every user request in an application.
-In order to strike a balance between observability and expenses, traces are sampled. 
+In order to strike a balance between observability and expenses, traces can be sampled. 
 
 The OpenTelemetry SDK offers three samplers out of the box:
  - Always sample
  - Never sample
- - Sampling based on probability 
+ - Sampling based on probability
 
-Additional sampler can be provided implementing the [io.opentelemetry.sdk.trace.Sampler] interface.
+Additional samplers can be provided implementing the [`io.opentelemetry.sdk.trace.Sampler`] interface.
 
 ```java
-TraceConfig AlwaysON = TraceConfig.getDefault().toBuilder().setSampler(
+TraceConfig AlwaysOn = TraceConfig.getDefault().toBuilder().setSampler(
         Samplers.alwaysOn()
 ).build();
 TraceConfig AlwaysOff = TraceConfig.getDefault().toBuilder().setSampler(
@@ -75,13 +75,13 @@ tracerRegistry.updateActiveTraceConfig(
 );
 ```
 
-[io.opentelemetry.sdk.trace.Sampler]: https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Sampler.java
+[`io.opentelemetry.sdk.trace.Sampler`]: https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Sampler.java
 
 ### Span Processor
 
 Different Span processors are offered by OpenTelemetry. 
-The `SimpleSpanProcessor` immediately forwards ended spans to the exporter, while the `BatchSpansProcessor` batches them and send them in bulk. 
-Multiple Span processors can be configured to be active at the same time using `MultiSpanProcessor`.
+The `SimpleSpanProcessor` immediately forwards ended spans to the exporter, while the `BatchSpansProcessor` batches them and sends them in bulk.
+Multiple Span processors can be configured to be active at the same time using the `MultiSpanProcessor`.
 
 ```java
 tracerRegistry.addSpanProcessor(
@@ -100,7 +100,7 @@ tracerRegistry.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
 
 Span Processor are initialized with an exporter which is responsible to send the telemetry data to your backend of choice.
 OpenTelemetry offers four exporters out of the box:
-- In Memory Exporter: keeps the data in memory, useful for debug.
+- In-Memory Exporter: keeps the data in memory, useful for debugging.
 - Jaeger Exporter: prepare and send the collected telemetry data to a Jaeger backend via gRPC.
 - Logging Exporter: saves the telemetry data into log streams.
 - OpenTelemetry Exporter: sends the data to the [OpenTelemetry Collector] (not yet implemented).
@@ -129,9 +129,10 @@ tracerRegistry.addSpanProcessor(BatchSpansProcessor.newBuilder(
 In the following, we present how to trace code using the OpenTelemetry API.
 **Note:** Methods of the OpenTelemetry SDK should never be called.
  
-First, the code must acquire a `tracer` which is responsible of create spans and interact with the in-process W3C trace-context.
-A tracer is acquired using the OpenTelemetry API specifying name and version parameters. 
-More information are available in [Obtaining a Tracer].
+First, a `Tracer` must be acquired, which is responsible for creating spans and interacting with the [Context](#context-propagation).
+A tracer is acquired by using the OpenTelemetry API specifying the name and version of the library 
+instrumenting the instrumented library or application to be monitored. 
+More information is available in the specification chapter [Obtaining a Tracer].
 
 ```java
 Tracer tracer = OpenTelemetry.getTracerRegistry().get("instrumentation-library-name","semver:1.0.0");
@@ -140,8 +141,8 @@ Tracer tracer = OpenTelemetry.getTracerRegistry().get("instrumentation-library-n
 [Obtaining a Tracer]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/api-tracing.md#obtaining-a-tracer
 
 ## Create basic Span
-To create a basic span, you only need to specify the name of the span. 
-Starting/Ending time and tracing-context are provided automatically by the OpenTelemetry API.
+To create a basic span, you only need to specify the name of the span.
+The start and end time of the span is automatically set by the OpenTelemetry SDK.
 ```java
 Span span = tracer.spanBuilder("SpanName").startSpan();
 // your use case
@@ -151,18 +152,50 @@ span.end();
 
 ## Create nested Spans
 
-Most of the time, we want to correlate spans for nested operations. 
-OpenTelemetry supports distributed tracing within process and remote processes.
+Most of the time, we want to correlate spans for nested operations.
+OpenTelemetry supports tracing within processes and across remote processes.
 For more details how to share context between remote processes, see [Context Propagation](#context-propagation).
 
+For a method `A` calling a method `B`, the spans could be manually linked in the following way:
 ```java
-Span childLocalParent = tracer.spanBuilder("Child").setParent(parentSpan).startSpan();
+void a() {
+  Span parentSpan = tracer.spanBuilder("a").startSpan();
+  b(parentSpan);
+  parentSpan.end();
+}
+void b(Span parentSpan) {
+  Span childSpan = tracer.spanBuilder("b").setParent(parentSpan).startSpan();
+  // do stuff
+  childSpan.end();
+}
+```
+Since it is not always possible to change method signatures or rely on global variables, the OpenTelemetry API
+offers an automated way to propagate the `parentSpan`:
+```java
+void a() {
+  Span parentSpan = tracer.spanBuilder("a").startSpan();
+  try(Scope scope = tracer.withSpan(parentSpan)){
+    b();
+  } finally {
+    parentSpan.end();
+  }
+}
+void b() {
+  Span parentSpan = tracer.getCurrentSpan();
+  Span childSpan = tracer.spanBuilder("b").setParent(parentSpan).startSpan();
+  // do stuff
+  childSpan.end();
+}
+``` 
+
+To link spans from remote processes, it is sufficient to set the [Remote Context](#context-propagation) as parent. 
+```java
 Span childRemoteParent = tracer.spanBuilder("Child").setParent(remoteContext).startSpan();
 ```
 
 ## Span Attributes
 In OpenTelemetry spans can be created freely and it’s up to the implementor to annotate them with attributes specific to the represented operation. 
-Attributes provide additional context on span to the specific operation it tracks, such as results or operation properties.
+Attributes provide additional context on a span to the specific operation it tracks, such as results or operation properties.
 ```java
 Span span = tracer.spanBuilder("/resource/path").setSpanKind(Span.Kind.CLIENT).startSpan();
 span.setAttribute("http.method", "GET");
@@ -170,9 +203,9 @@ span.setAttribute("http.url", url.toString());
 ```
 
 Some of these operations represent calls that use well-known protocols like HTTP or database calls. 
-For these, OpenTelemetry requires specific attributes to be set. To see more, please refer to the [Semantic Convention].
+For these, OpenTelemetry requires specific attributes to be set. The full attribute list is available in the [Semantic Conventions] in the cross-language specification.
 
-[Semantic Convention]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md
+[Semantic Conventions]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md
 
 ## Create Spans with events
 
@@ -192,8 +225,8 @@ eventAttributes.put("result", AttributeValue.longAttributeValue(0L));
 span.addEvent("End Computation", eventAttributes);
 ```
 
-## Span with links
-A Span may be linked to zero or more other Spans that are causally related. 
+## Create Spans with links
+A Span may be linked to zero or more other Spans that are causally related.
 Links can be used to represent batched operations where a Span was initiated by multiple initiating Spans, each representing a single incoming item being processed in the batch.
 
 ```java
@@ -211,7 +244,7 @@ For more details how to read context from remote processes, see [Context Propaga
 
 ## Context Propagation
 
-OpenTelemetry provides a text based approach to propagate the W3C trace-context with remote processes by instrumenting the transport-layer operation.
+OpenTelemetry provides a text-based approach to propagate context to remote services using the [W3C Trace Context](https://www.w3.org/TR/trace-context/) HTTP headers.
 The following presents an example of an outgoing HTTP request using `HttpURLConnection`.
  
 ```java
@@ -220,7 +253,7 @@ HttpTextFormat.Setter<HttpURLConnection> setter =
   new HttpTextFormat.Setter<HttpURLConnection>() {
     @Override
     public void put(HttpURLConnection carrier, String key, String value) {
-        //Insert the context as Header
+        // Insert the context as Header
         carrier.setRequestProperty(key, value);
     }
 };
@@ -237,7 +270,7 @@ tracer.getHttpTextFormat().inject(outGoing.getContext(), transportLayer, setter)
 ...
 ```
 
-Similarly, the text based approach can be used to read the W3C trace-context from incoming requests.
+Similarly, the text-based approach can be used to read the W3C Trace Context from incoming requests.
 The following presents an example of processing an incoming HTTP request using `HttpExchange`.
 ```java
 HttpTextFormat.Getter<HttpExchange> getter =
@@ -247,7 +280,7 @@ HttpTextFormat.Getter<HttpExchange> getter =
       if (carrier.getRequestHeaders().containsKey(key)) {
         return carrier.getRequestHeaders().get(key).get(0);
       }
-      return "";
+      return null;
     }
 };
 ...
@@ -257,7 +290,7 @@ public void handle(HttpExchange he) {
     Span serverSpan = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.SERVER)
         .setParent(ctx)
         .startSpan();
-    // Semantic Convention
+    // Add the attributes defined in the Semantic Conventions
     serverSpan.setAttribute("http.method", "GET");
     serverSpan.setAttribute("http.scheme", "http");
     serverSpan.setAttribute("http.host", "localhost:8080");
@@ -268,6 +301,6 @@ public void handle(HttpExchange he) {
 }
 ```
 
-# Metric
+# Metrics
 
 TODO
