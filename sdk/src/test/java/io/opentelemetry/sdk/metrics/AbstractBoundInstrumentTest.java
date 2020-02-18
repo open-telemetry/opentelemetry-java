@@ -56,6 +56,9 @@ public class AbstractBoundInstrumentTest {
     assertThat(testBoundInstrument.bind()).isTrue();
     assertThat(testBoundInstrument.tryUnmap()).isFalse();
     testBoundInstrument.unbind();
+    // The binding is by default bound, so need an extra unbind.
+    assertThat(testBoundInstrument.tryUnmap()).isFalse();
+    testBoundInstrument.unbind();
     assertThat(testBoundInstrument.tryUnmap()).isTrue();
   }
 
@@ -74,13 +77,15 @@ public class AbstractBoundInstrumentTest {
     testBoundInstrument.unbind();
     assertThat(testBoundInstrument.tryUnmap()).isFalse();
     testBoundInstrument.unbind();
+    // The binding is by default bound, so need an extra unbind.
+    assertThat(testBoundInstrument.tryUnmap()).isFalse();
+    testBoundInstrument.unbind();
     assertThat(testBoundInstrument.tryUnmap()).isTrue();
   }
 
   @Test
   public void bind_ThenUnmap_ThenTryToBind() {
     TestBoundInstrument testBoundInstrument = new TestBoundInstrument(aggregator);
-    assertThat(testBoundInstrument.bind()).isTrue();
     testBoundInstrument.unbind();
     assertThat(testBoundInstrument.tryUnmap()).isTrue();
     assertThat(testBoundInstrument.bind()).isFalse();
