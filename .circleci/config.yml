@@ -6,6 +6,9 @@ init_task: &init_task
 build_task: &build_task
   name: Build
   command: make test
+compile_benchmark_task: &compile_benchmark_task
+  name: Compile JMH
+  command: make benchmark
 verify_task: &verify_task
   name: Verify Google Java Format
   command: make verify-format
@@ -32,6 +35,8 @@ jobs:
           <<: *verify_task
       - run:
           <<: *build_task
+      - run:
+          <<: *compile_benchmark_task
       - run:
           name: Cover
           command: ./gradlew check :opentelemetry-all:jacocoTestReport
@@ -65,6 +70,8 @@ jobs:
           <<: *verify_task
       - run:
           <<: *build_task
+      - run:
+          <<: *compile_benchmark_task
       - save_cache:
           paths:
             - ~/.gradle
