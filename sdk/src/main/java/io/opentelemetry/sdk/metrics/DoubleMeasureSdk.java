@@ -84,7 +84,7 @@ final class DoubleMeasureSdk extends AbstractMeasure implements DoubleMeasure {
   }
 
   private static final class Builder
-      extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
+      extends AbstractMeasure.Builder<DoubleMeasure.Builder, DoubleMeasure>
       implements DoubleMeasure.Builder {
 
     private Builder(

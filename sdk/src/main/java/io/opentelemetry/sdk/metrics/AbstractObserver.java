@@ -16,12 +16,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.metrics.Observer;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-public class AbstractObserver extends AbstractInstrument {
+class AbstractObserver extends AbstractInstrument {
   private final boolean monotonic;
   private final InstrumentValueType instrumentValueType;
 
@@ -67,5 +68,27 @@ public class AbstractObserver extends AbstractInstrument {
     result = 31 * result + (monotonic ? 1 : 0);
     result = 31 * result + instrumentValueType.hashCode();
     return result;
+  }
+
+  abstract static class Builder<B extends Observer.Builder<B, V>, V>
+      extends AbstractInstrumentBuilder<B, V> implements Observer.Builder<B, V> {
+    private boolean monotonic = false;
+
+    Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
+    }
+
+    @Override
+    public final B setMonotonic(boolean monotonic) {
+      this.monotonic = monotonic;
+      return getThis();
+    }
+
+    final boolean isMonotonic() {
+      return this.monotonic;
+    }
   }
 }

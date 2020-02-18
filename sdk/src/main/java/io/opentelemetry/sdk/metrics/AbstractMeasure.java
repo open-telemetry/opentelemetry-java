@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
@@ -67,5 +68,27 @@ abstract class AbstractMeasure extends AbstractInstrument {
     result = 31 * result + (absolute ? 1 : 0);
     result = 31 * result + instrumentValueType.hashCode();
     return result;
+  }
+
+  abstract static class Builder<B extends Measure.Builder<B, V>, V>
+      extends AbstractInstrumentBuilder<B, V> implements Measure.Builder<B, V> {
+    private boolean absolute = true;
+
+    Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
+    }
+
+    @Override
+    public final B setAbsolute(boolean absolute) {
+      this.absolute = absolute;
+      return getThis();
+    }
+
+    final boolean isAbsolute() {
+      return this.absolute;
+    }
   }
 }
