@@ -20,6 +20,7 @@ import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.Instrument;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ abstract class AbstractInstrument implements Instrument {
   private final String unit;
   private final Map<String, String> constantLabels;
   private final List<String> labelKeys;
+  private final ActiveBatcher activeBatcher;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
   AbstractInstrument(
@@ -40,12 +42,15 @@ abstract class AbstractInstrument implements Instrument {
       String description,
       String unit,
       Map<String, String> constantLabels,
-      List<String> labelKeys) {
+      List<String> labelKeys,
+      ActiveBatcher activeBatcher) {
     this.name = name;
     this.description = description;
     this.unit = unit;
     this.constantLabels = constantLabels;
     this.labelKeys = labelKeys;
+    // TODO: Allow to install views from config instead of always installing the default View.
+    this.activeBatcher = activeBatcher;
   }
 
   final String getName() {
@@ -67,6 +72,12 @@ abstract class AbstractInstrument implements Instrument {
   final List<String> getLabelKeys() {
     return labelKeys;
   }
+
+  final ActiveBatcher getActiveBatcher() {
+    return activeBatcher;
+  }
+
+  abstract List<MetricData> collect();
 
   @Override
   public boolean equals(Object o) {

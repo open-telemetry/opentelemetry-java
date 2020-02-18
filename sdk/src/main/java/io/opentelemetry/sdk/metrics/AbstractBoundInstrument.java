@@ -79,4 +79,8 @@ abstract class AbstractBoundInstrument implements BoundInstrument {
   final void recordDouble(double value) {
     aggregator.recordDouble(value);
   }
+
+  final Aggregator getAggregator() {
+    return aggregator;
+  }
 }

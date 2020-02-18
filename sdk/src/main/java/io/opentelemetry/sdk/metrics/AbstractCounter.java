@@ -22,7 +22,8 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-abstract class AbstractCounter extends AbstractInstrument {
+abstract class AbstractCounter<B extends AbstractBoundInstrument>
+    extends AbstractInstrumentWithBinding<B> {
   private final boolean monotonic;
   private final InstrumentValueType instrumentValueType;
 
@@ -36,7 +37,8 @@ abstract class AbstractCounter extends AbstractInstrument {
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys);
+    super(
+        name, description, unit, constantLabels, labelKeys, new ActiveBatcher(Batchers.getNoop()));
     this.monotonic = monotonic;
     this.instrumentValueType = instrumentValueType;
   }
@@ -50,14 +52,14 @@ abstract class AbstractCounter extends AbstractInstrument {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof AbstractCounter)) {
+    if (!(o instanceof AbstractCounter<?>)) {
       return false;
     }
     if (!super.equals(o)) {
       return false;
     }
 
-    AbstractCounter that = (AbstractCounter) o;
+    AbstractCounter<?> that = (AbstractCounter<?>) o;
 
     return monotonic == that.monotonic && instrumentValueType == that.instrumentValueType;
   }

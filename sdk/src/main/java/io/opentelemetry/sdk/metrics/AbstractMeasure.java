@@ -22,7 +22,8 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-abstract class AbstractMeasure extends AbstractInstrument {
+abstract class AbstractMeasure<B extends AbstractBoundInstrument>
+    extends AbstractInstrumentWithBinding<B> {
   private final boolean absolute;
   private final InstrumentValueType instrumentValueType;
 
@@ -36,7 +37,8 @@ abstract class AbstractMeasure extends AbstractInstrument {
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean absolute) {
-    super(name, description, unit, constantLabels, labelKeys);
+    super(
+        name, description, unit, constantLabels, labelKeys, new ActiveBatcher(Batchers.getNoop()));
     this.absolute = absolute;
     this.instrumentValueType = instrumentValueType;
   }
@@ -57,7 +59,7 @@ abstract class AbstractMeasure extends AbstractInstrument {
       return false;
     }
 
-    AbstractMeasure that = (AbstractMeasure) o;
+    AbstractMeasure<?> that = (AbstractMeasure<?>) o;
 
     return absolute == that.absolute && instrumentValueType == that.instrumentValueType;
   }

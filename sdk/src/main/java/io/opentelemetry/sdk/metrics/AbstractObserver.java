@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.Observer;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -36,13 +38,19 @@ class AbstractObserver extends AbstractInstrument {
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys);
+    super(name, description, unit, constantLabels, labelKeys, null);
     this.monotonic = monotonic;
     this.instrumentValueType = instrumentValueType;
   }
 
   final boolean isMonotonic() {
     return monotonic;
+  }
+
+  @Override
+  List<MetricData> collect() {
+    // TODO: Implement this.
+    return Collections.emptyList();
   }
 
   @Override
