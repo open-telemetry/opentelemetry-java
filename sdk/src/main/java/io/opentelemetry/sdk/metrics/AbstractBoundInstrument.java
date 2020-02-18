@@ -35,8 +35,9 @@ abstract class AbstractBoundInstrument implements BoundInstrument {
   private final Aggregator aggregator;
 
   AbstractBoundInstrument(Aggregator aggregator) {
+    // Start with this binding already bound.
+    this.refCountMapped = new AtomicLong(2);
     this.aggregator = aggregator;
-    this.refCountMapped = new AtomicLong(0);
   }
 
   /**

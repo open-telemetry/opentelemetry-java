@@ -26,7 +26,7 @@ public class DefaultMetricsProvider implements MetricsProvider {
   }
 
   @Override
-  public MeterRegistry create() {
-    return DefaultMeterRegistry.getInstance();
+  public MeterProvider create() {
+    return DefaultMeterProvider.getInstance();
   }
 }
