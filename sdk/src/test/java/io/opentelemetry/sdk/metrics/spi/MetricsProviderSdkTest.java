@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.metrics.spi;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
+import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -29,6 +29,6 @@ import org.junit.runners.JUnit4;
 public class MetricsProviderSdkTest {
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getMeterRegistry()).isInstanceOf(MeterSdkRegistry.class);
+    assertThat(OpenTelemetry.getMeterRegistry()).isInstanceOf(MeterSdkProvider.class);
   }
 }

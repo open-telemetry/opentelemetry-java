@@ -16,11 +16,11 @@
 
 package io.opentelemetry.metrics;
 
-public class DefaultMeterRegistry implements MeterRegistry {
+public class DefaultMeterProvider implements MeterProvider {
 
-  private static final MeterRegistry instance = new DefaultMeterRegistry();
+  private static final MeterProvider instance = new DefaultMeterProvider();
 
-  public static MeterRegistry getInstance() {
+  public static MeterProvider getInstance() {
     return instance;
   }
 

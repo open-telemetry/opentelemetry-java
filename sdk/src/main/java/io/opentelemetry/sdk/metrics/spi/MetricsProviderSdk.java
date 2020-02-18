@@ -17,10 +17,10 @@
 package io.opentelemetry.sdk.metrics.spi;
 
 import io.opentelemetry.metrics.spi.MetricsProvider;
-import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
+import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 
 /**
- * {@code MeterRegistry} provider implementation for {@link MetricsProvider}.
+ * {@code MeterProvider} provider implementation for {@link MetricsProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
@@ -28,7 +28,7 @@ import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
 public final class MetricsProviderSdk implements MetricsProvider {
 
   @Override
-  public MeterSdkRegistry create() {
-    return MeterSdkRegistry.builder().build();
+  public MeterSdkProvider create() {
+    return MeterSdkProvider.builder().build();
   }
 }
