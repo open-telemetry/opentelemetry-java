@@ -19,7 +19,8 @@ package io.opentelemetry.metrics;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * A registry for creating named {@link Meter}s.
+ * A registry for creating named {@link Meter}s. The name <i>Provider</i> is for consistency with
+ * other languages and it is <b>NOT</b> loaded using reflection.
  *
  * @see io.opentelemetry.OpenTelemetry
  * @see io.opentelemetry.metrics.Meter
