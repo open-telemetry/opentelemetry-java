@@ -22,9 +22,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link BatchRecorder}. */
+/** Tests for {@link RecordBatch}. */
 @RunWith(JUnit4.class)
-public class BatchRecorderTest {
+public class RecordBatchTest {
   private static final Meter meter = DefaultMeter.getInstance();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();

@@ -25,7 +25,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * advantage that all these operations are recorded atomically and it is more efficient.
  */
 @ThreadSafe
-public interface BatchRecorder {
+public interface RecordBatch {
   /**
    * Associates the {@link LongMeasure} with the given value. Subsequent updates to the same {@link
    * LongMeasure} will overwrite the previous value.
@@ -35,7 +35,7 @@ public interface BatchRecorder {
    * @return this.
    * @since 0.1.0
    */
-  BatchRecorder put(LongMeasure measure, long value);
+  RecordBatch put(LongMeasure measure, long value);
 
   /**
    * Associates the {@link DoubleMeasure} with the given value. Subsequent updates to the same
@@ -46,7 +46,7 @@ public interface BatchRecorder {
    * @return this.
    * @since 0.1.0
    */
-  BatchRecorder put(DoubleMeasure measure, double value);
+  RecordBatch put(DoubleMeasure measure, double value);
 
   /**
    * Associates the {@link LongCounter} with the given value. Subsequent updates to the same {@link
@@ -57,7 +57,7 @@ public interface BatchRecorder {
    * @return this.
    * @since 0.3.0
    */
-  BatchRecorder put(LongCounter counter, long value);
+  RecordBatch put(LongCounter counter, long value);
 
   /**
    * Associates the {@link DoubleCounter} with the given value. Subsequent updates to the same
@@ -68,7 +68,7 @@ public interface BatchRecorder {
    * @return this.
    * @since 0.3.0
    */
-  BatchRecorder put(DoubleCounter counter, double value);
+  RecordBatch put(DoubleCounter counter, double value);
 
   /**
    * Records all of the measures at the same time.

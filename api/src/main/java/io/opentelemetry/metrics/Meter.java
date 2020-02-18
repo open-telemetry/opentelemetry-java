@@ -124,7 +124,7 @@ public interface Meter {
    *     measurements associated with different Measures.
    * @since 0.1.0
    */
-  BatchRecorder newBatchRecorder(LabelSet labelSet);
+  RecordBatch newRecordBatch(LabelSet labelSet);
 
   /**
    * Returns a new {@link LabelSet} with the given labels.

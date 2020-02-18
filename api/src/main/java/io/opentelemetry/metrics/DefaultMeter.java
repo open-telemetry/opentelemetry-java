@@ -102,9 +102,9 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public BatchRecorder newBatchRecorder(LabelSet labelSet) {
+  public RecordBatch newRecordBatch(LabelSet labelSet) {
     Utils.checkNotNull(labelSet, "labelSet");
-    return new NoopBatchRecorder();
+    return new NoopRecordBatch();
   }
 
   @Override
@@ -363,30 +363,30 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  private static final class NoopBatchRecorder implements BatchRecorder {
+  private static final class NoopRecordBatch implements RecordBatch {
 
-    private NoopBatchRecorder() {}
+    private NoopRecordBatch() {}
 
     @Override
-    public BatchRecorder put(LongMeasure measure, long value) {
+    public RecordBatch put(LongMeasure measure, long value) {
       Utils.checkNotNull(measure, "measure");
       return this;
     }
 
     @Override
-    public BatchRecorder put(DoubleMeasure measure, double value) {
+    public RecordBatch put(DoubleMeasure measure, double value) {
       Utils.checkNotNull(measure, "measure");
       return this;
     }
 
     @Override
-    public BatchRecorder put(LongCounter counter, long value) {
+    public RecordBatch put(LongCounter counter, long value) {
       Utils.checkNotNull(counter, "counter");
       return this;
     }
 
     @Override
-    public BatchRecorder put(DoubleCounter counter, double value) {
+    public RecordBatch put(DoubleCounter counter, double value) {
       Utils.checkNotNull(counter, "counter");
       return this;
     }

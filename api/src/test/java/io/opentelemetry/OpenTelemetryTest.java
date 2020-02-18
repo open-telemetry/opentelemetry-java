@@ -26,7 +26,6 @@ import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
-import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DefaultMeterRegistry;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleMeasure;
@@ -37,6 +36,7 @@ import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.metrics.RecordBatch;
 import io.opentelemetry.metrics.spi.MetricsProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
@@ -347,7 +347,7 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public BatchRecorder newBatchRecorder(LabelSet labelSet) {
+    public RecordBatch newRecordBatch(LabelSet labelSet) {
       return null;
     }
 
