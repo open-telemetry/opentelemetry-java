@@ -28,8 +28,9 @@ import javax.annotation.concurrent.Immutable;
 public class Aggregations {
 
   /**
-   * Aggregation that calculates sum of recorded measurements.
+   * Returns an {@code Aggregation} that calculates sum of recorded measurements.
    *
+   * @return an {@code Aggregation} that calculates sum of recorded measurements.
    * @since 0.1.0
    */
   public static Aggregation sum() {
@@ -37,9 +38,11 @@ public class Aggregations {
   }
 
   /**
-   * Aggregation that calculates count of recorded measurements (the number of recorded
-   * measurements).
+   * Returns an {@code Aggregation} that calculates count of recorded measurements (the number of
+   * recorded measurements).
    *
+   * @return an {@code Aggregation} that calculates count of recorded measurements (the number of
+   *     recorded * measurements).
    * @since 0.1.0
    */
   public static Aggregation count() {
@@ -47,13 +50,13 @@ public class Aggregations {
   }
 
   /**
-   * Aggregation that calculates distribution stats on recorded measurements. Distribution includes
-   * sum, count, histogram, and sum of squared deviations.
+   * Returns an {@code Aggregation} that calculates distribution stats on recorded measurements.
+   * Distribution includes sum, count, histogram, and sum of squared deviations.
    *
    * <p>The boundaries for the buckets in the underlying histogram needs to be sorted.
    *
    * @param bucketBoundaries bucket boundaries to use for distribution.
-   * @return a new {@code Distribution}.
+   * @return an {@code Aggregation} that calculates distribution stats on recorded measurements.
    * @since 0.1.0
    */
   public static Aggregation distributionWithExplicitBounds(Double... bucketBoundaries) {
@@ -61,8 +64,9 @@ public class Aggregations {
   }
 
   /**
-   * Aggregation that calculates the last value of all recorded measurements.
+   * Returns an {@code Aggregation} that calculates the last value of all recorded measurements.
    *
+   * @return an {@code Aggregation} that calculates the last value of all recorded measurements.
    * @since 0.1.0
    */
   public static Aggregation lastValue() {
