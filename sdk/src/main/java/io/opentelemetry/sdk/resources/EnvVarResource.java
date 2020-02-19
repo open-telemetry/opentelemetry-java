@@ -58,11 +58,11 @@ public final class EnvVarResource {
    * quoted or unquoted in general. If a value contains whitespaces, =, or " characters, it must
    * always be quoted.
    */
-  private static Map<String, String> parseResourceLabels(@Nullable String rawEnvLabels) {
+  private static Map<String, ResourceValue> parseResourceLabels(@Nullable String rawEnvLabels) {
     if (rawEnvLabels == null) {
       return Collections.emptyMap();
     } else {
-      Map<String, String> labels = new HashMap<>();
+      Map<String, ResourceValue> labels = new HashMap<>();
       String[] rawLabels = rawEnvLabels.split(LABEL_LIST_SPLITTER, -1);
       for (String rawLabel : rawLabels) {
         String[] keyValuePair = rawLabel.split(LABEL_KEY_VALUE_SPLITTER, -1);
@@ -70,7 +70,8 @@ public final class EnvVarResource {
           continue;
         }
         String key = keyValuePair[0].trim();
-        String value = keyValuePair[1].trim().replaceAll("^\"|\"$", "");
+        ResourceValue value =
+            ResourceValue.create(keyValuePair[1].trim().replaceAll("^\"|\"$", ""));
         labels.put(key, value);
       }
       return Collections.unmodifiableMap(labels);

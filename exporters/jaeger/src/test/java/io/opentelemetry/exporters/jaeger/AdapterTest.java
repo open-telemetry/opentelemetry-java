@@ -26,6 +26,7 @@ import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.exporters.otprotocol.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceValue;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import io.opentelemetry.trace.AttributeValue;
@@ -261,7 +262,7 @@ public class AdapterTest {
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
-        .setResource(Resource.create(Collections.<String, String>emptyMap()))
+        .setResource(Resource.create(Collections.<String, ResourceValue>emptyMap()))
         .setStatus(Status.OK)
         .setNumberOfChildren(0)
         .build();

@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceValue;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
@@ -551,8 +552,8 @@ public class RecordEventsReadableSpanTest {
     TraceConfig traceConfig = TraceConfig.getDefault();
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();
-    Map<String, String> labels = new HashMap<>();
-    labels.put("foo", "bar");
+    Map<String, ResourceValue> labels = new HashMap<>();
+    labels.put("foo", ResourceValue.create("bar"));
     Resource resource = Resource.create(labels);
     Map<String, AttributeValue> attributes = TestUtils.generateRandomAttributes();
     AttributesWithCapacity attributesWithCapacity = new AttributesWithCapacity(32);
