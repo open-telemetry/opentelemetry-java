@@ -53,6 +53,7 @@ public interface MetricExporter {
    * Exports the collection of given {@link MetricData}.
    *
    * @param metrics the collection of {@link MetricData} to be exported.
+   * @return the result of the export.
    * @since 0.1.0
    */
   ResultCode export(Collection<MetricData> metrics);
