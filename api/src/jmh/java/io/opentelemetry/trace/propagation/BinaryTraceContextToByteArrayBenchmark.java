@@ -21,72 +21,56 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
 public class BinaryTraceContextToByteArrayBenchmark {
 
-  private BinaryTraceContext binaryTraceContext;
-
-  @State(Scope.Thread)
-  public static class BinaryTraceContextToByteArrayState {
-
-    @Param({
-      "905734c59b913b4a905734c59b913b4a",
-      "21196a77f299580e21196a77f299580e",
-      "2e7d0ad2390617702e7d0ad239061770",
-      "905734c59b913b4a905734c59b913b4a",
-      "68ec932c33b3f2ee68ec932c33b3f2ee"
-    })
-    public String traceIdBase16;
-
-    @Param({
-      "9909983295041501",
-      "993a97ee3691eb26",
-      "d49582a2de984b86",
-      "776ff807b787538a",
-      "68ec932c33b3f2ee"
-    })
-    public String spanIdBase16;
-
-    public SpanContext spanContext;
-
-    private byte sampledTraceOptionsBytes = 1;
-    private TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
-    private TraceState traceStateDefault = TraceState.builder().build();
-
-    @Setup
-    public void setup() {
-      this.spanContext =
-          SpanContext.create(
-              TraceId.fromLowerBase16(traceIdBase16, 0),
-              SpanId.fromLowerBase16(spanIdBase16, 0),
-              sampledTraceOptions,
-              traceStateDefault);
-    }
-  }
-
-  @Setup
-  public void setup() {
-    this.binaryTraceContext = new BinaryTraceContext();
-  }
+  private BinaryTraceContext binaryTraceContext = new BinaryTraceContext();
+  private byte sampledTraceOptionsBytes = 1;
+  private TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
+  private TraceState traceStateDefault = TraceState.builder().build();
+  private List<SpanContext> spanContextList =
+      Arrays.asList(
+          createSpanContext("905734c59b913b4a905734c59b913b4a", "9909983295041501"),
+          createSpanContext("21196a77f299580e21196a77f299580e", "993a97ee3691eb26"),
+          createSpanContext("2e7d0ad2390617702e7d0ad239061770", "d49582a2de984b86"),
+          createSpanContext("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
+          createSpanContext("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
+  private SpanContext spanContext = spanContextList.get(0);
+  private Integer iteration = 0;
 
   @Benchmark
   @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
-  @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.MILLISECONDS)
-  public byte[] measureToByteArray(BinaryTraceContextToByteArrayState state) {
-    return binaryTraceContext.toByteArray(state.spanContext);
+  @Measurement(iterations = 50_000, time = 1, timeUnit = TimeUnit.MILLISECONDS)
+  public byte[] measureToByteArray() {
+    return binaryTraceContext.toByteArray(spanContext);
+  }
+
+  @TearDown(Level.Iteration)
+  public void tearDown() {
+    this.spanContext = spanContextList.get(++iteration % spanContextList.size());
+  }
+
+  private SpanContext createSpanContext(String traceIdBase16, String spanIdBase16) {
+    return SpanContext.create(
+        TraceId.fromLowerBase16(traceIdBase16, 0),
+        SpanId.fromLowerBase16(spanIdBase16, 0),
+        this.sampledTraceOptions,
+        this.traceStateDefault);
   }
 }
