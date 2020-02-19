@@ -26,7 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface TracerRegistry {
+public interface TracerProvider {
 
   /**
    * Gets or creates a named tracer instance.

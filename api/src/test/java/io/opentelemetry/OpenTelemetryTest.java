@@ -42,7 +42,7 @@ import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerRegistry;
+import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.spi.TraceProvider;
 import java.io.File;
 import java.io.FileWriter;
@@ -234,12 +234,12 @@ public class OpenTelemetryTest {
     }
 
     @Override
-    public TracerRegistry create() {
+    public TracerProvider create() {
       return new SecondTraceProvider();
     }
   }
 
-  public static class FirstTraceProvider implements Tracer, TracerRegistry, TraceProvider {
+  public static class FirstTraceProvider implements Tracer, TracerProvider, TraceProvider {
     @Override
     public Tracer get(String instrumentationName) {
       return new FirstTraceProvider();
@@ -281,7 +281,7 @@ public class OpenTelemetryTest {
     }
 
     @Override
-    public TracerRegistry create() {
+    public TracerProvider create() {
       return new FirstTraceProvider();
     }
   }

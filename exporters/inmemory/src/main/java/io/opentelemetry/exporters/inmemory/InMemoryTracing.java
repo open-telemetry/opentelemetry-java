@@ -17,7 +17,7 @@
 package io.opentelemetry.exporters.inmemory;
 
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import java.util.List;
@@ -44,7 +44,7 @@ import java.util.List;
  * @since 0.1.0
  */
 public final class InMemoryTracing {
-  private final TracerSdkRegistry tracerSdkRegistry;
+  private final TracerSdkProvider tracerSdkProvider;
   private final InMemorySpanExporter exporter;
 
   /**
@@ -53,22 +53,22 @@ public final class InMemoryTracing {
    * @since 0.1.0
    */
   public InMemoryTracing() {
-    this(TracerSdkRegistry.builder().build());
+    this(TracerSdkProvider.builder().build());
   }
 
   /**
    * Creates a new {@code InMemoryTracing} with the specified {@code TracerSdk}.
    *
-   * @param tracerSdkRegistry the {@code TracerSdkRegistry} to be used.
+   * @param tracerSdkProvider the {@code TracerSdkProvider} to be used.
    * @throws NullPointerException if {@code tracer} is {@code null}.
    * @since 0.1.0
    */
-  public InMemoryTracing(TracerSdkRegistry tracerSdkRegistry) {
-    Utils.checkNotNull(tracerSdkRegistry, "tracerSdkFactory");
+  public InMemoryTracing(TracerSdkProvider tracerSdkProvider) {
+    Utils.checkNotNull(tracerSdkProvider, "tracerSdkFactory");
 
-    this.tracerSdkRegistry = tracerSdkRegistry;
+    this.tracerSdkProvider = tracerSdkProvider;
     this.exporter = InMemorySpanExporter.create();
-    tracerSdkRegistry.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    tracerSdkProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
   }
 
   /**
@@ -78,8 +78,8 @@ public final class InMemoryTracing {
    * @return the {@code Tracer} to be used to create {@code Span}s.
    * @since 0.1.0
    */
-  public TracerSdkRegistry getTracerRegistry() {
-    return tracerSdkRegistry;
+  public TracerSdkProvider getTracerRegistry() {
+    return tracerSdkProvider;
   }
 
   /**
@@ -108,6 +108,6 @@ public final class InMemoryTracing {
    * @since 0.1.0
    */
   public void shutdown() {
-    tracerSdkRegistry.shutdown();
+    tracerSdkProvider.shutdown();
   }
 }
