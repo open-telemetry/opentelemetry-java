@@ -19,11 +19,12 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class LongCounterSdk extends AbstractCounter implements LongCounter {
+final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements LongCounter {
 
   private LongCounterSdk(
       String name,
@@ -55,15 +56,20 @@ final class LongCounterSdk extends AbstractCounter implements LongCounter {
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return new BoundInstrument(isMonotonic());
+    return bindInternal(labelSet);
+  }
+
+  @Override
+  BoundInstrument newBinding(Batcher batcher) {
+    return new BoundInstrument(isMonotonic(), batcher);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument implements BoundLongCounter {
 
     private final boolean monotonic;
 
-    BoundInstrument(boolean monotonic) {
-      super(null);
+    BoundInstrument(boolean monotonic, Batcher batcher) {
+      super(batcher.getAggregator());
       this.monotonic = monotonic;
     }
 
@@ -72,7 +78,7 @@ final class LongCounterSdk extends AbstractCounter implements LongCounter {
       if (monotonic && delta < 0) {
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
-      // TODO: pass through to an aggregator/accumulator
+      recordLong(delta);
     }
   }
 

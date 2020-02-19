@@ -16,10 +16,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.metrics.LabelSet;
+import static com.google.common.truth.Truth.assertThat;
+
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,37 +35,50 @@ import org.junit.runners.JUnit4;
 public class LongCounterSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  private static final Resource RESOURCE =
+      Resource.create(Collections.singletonMap("resource_key", "resource_value"));
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.LongCounterSdkTest", null);
+  private final TestClock testClock = TestClock.create();
+  private final MeterProviderSharedState meterProviderSharedState =
+      MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      MeterSdkProvider.builder().build().get("io.opentelemetry.sdk.metrics.LongCounterSdkTest");
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
-  public void testLongCounter() {
-    LabelSet labelSet = testSdk.createLabelSet("K", "v");
+  public void sameBound_ForSameLabelSet() {
+    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").build();
 
-    LongCounter longCounter =
-        testSdk
-            .longCounterBuilder("testCounter")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
-            .setDescription("My very own counter")
-            .setUnit("metric tonnes")
-            .setMonotonic(true)
-            .build();
-
-    longCounter.add(45, testSdk.createLabelSet());
-
-    BoundLongCounter boundLongCounter = longCounter.bind(labelSet);
-    boundLongCounter.add(334);
-    // TODO: Uncomment.
-    // BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
-    // assertThat(duplicateBoundCounter).isEqualTo(boundLongCounter);
-
-    // todo: verify that this has done something, when it has been done.
-    boundLongCounter.unbind();
+    BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    try {
+      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
+    } finally {
+      boundCounter.unbind();
+      duplicateBoundCounter.unbind();
+    }
   }
 
   @Test
-  public void testLongCounter_monotonicity() {
+  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
+    LongCounterSdk longCounter = (LongCounterSdk) testSdk.longCounterBuilder("testCounter").build();
+
+    BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    try {
+      assertThat(longCounter.collect()).isEmpty();
+      BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+      try {
+        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
+      } finally {
+        duplicateBoundCounter.unbind();
+      }
+    } finally {
+      boundCounter.unbind();
+    }
+  }
+
+  @Test
+  public void longCounterAdd_MonotonicityCheck() {
     LongCounter longCounter = testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
@@ -70,7 +86,7 @@ public class LongCounterSdkTest {
   }
 
   @Test
-  public void testBoundLongCounter_monotonicity() {
+  public void boundLongCounterAdd_MonotonicityCheck() {
     LongCounter longCounter = testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);

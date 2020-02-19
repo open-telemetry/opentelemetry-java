@@ -19,11 +19,12 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
+final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements DoubleCounter {
 
   private DoubleCounterSdk(
       String name,
@@ -55,15 +56,20 @@ final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return new BoundInstrument(isMonotonic());
+    return bindInternal(labelSet);
+  }
+
+  @Override
+  BoundInstrument newBinding(Batcher batcher) {
+    return new BoundInstrument(isMonotonic(), batcher);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument implements BoundDoubleCounter {
 
     private final boolean monotonic;
 
-    BoundInstrument(boolean monotonic) {
-      super(null);
+    BoundInstrument(boolean monotonic, Batcher batcher) {
+      super(batcher.getAggregator());
       this.monotonic = monotonic;
     }
 
@@ -72,7 +78,7 @@ final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
       if (monotonic && delta < 0) {
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
-      // TODO: pass through to an aggregator/accumulator
+      recordDouble(delta);
     }
   }
 

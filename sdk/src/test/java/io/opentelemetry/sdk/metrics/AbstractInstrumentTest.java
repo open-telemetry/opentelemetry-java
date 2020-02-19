@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,12 @@ public class AbstractInstrumentTest {
         String unit,
         Map<String, String> constantLabels,
         List<String> labelKeys) {
-      super(name, description, unit, constantLabels, labelKeys);
+      super(name, description, unit, constantLabels, labelKeys, null);
+    }
+
+    @Override
+    List<MetricData> collect() {
+      return Collections.emptyList();
     }
   }
 }

@@ -16,10 +16,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import com.google.common.collect.ImmutableMap;
+import static com.google.common.truth.Truth.assertThat;
+
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
-import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,38 +35,52 @@ import org.junit.runners.JUnit4;
 public class DoubleCounterSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  private static final Resource RESOURCE =
+      Resource.create(Collections.singletonMap("resource_key", "resource_value"));
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.DoubleCounterSdkTest", null);
+  private final TestClock testClock = TestClock.create();
+  private final MeterProviderSharedState meterProviderSharedState =
+      MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      MeterSdkProvider.builder().build().get("io.opentelemetry.sdk.metrics.DoubleCounterSdkTest");
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
-  public void testDoubleCounter() {
-    LabelSet labelSet = testSdk.createLabelSet("K", "v");
+  public void sameBound_ForSameLabelSet() {
+    DoubleCounter doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 
-    DoubleCounter doubleCounter =
-        testSdk
-            .doubleCounterBuilder("testCounter")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
-            .setDescription("My very own counter")
-            .setUnit("metric tonnes")
-            .setMonotonic(true)
-            .build();
-
-    doubleCounter.add(45.0001, testSdk.createLabelSet());
-
-    BoundDoubleCounter boundDoubleCounter = doubleCounter.bind(labelSet);
-    boundDoubleCounter.add(334.999d);
-    // TODO: Uncomment.
-    // BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind(testSdk.createLabelSet("K",
-    // "v"));
-    // assertThat(duplicateBoundCounter).isEqualTo(boundDoubleCounter);
-
-    // todo: verify that this has done something, when it has been done.
-    boundDoubleCounter.unbind();
+    BoundDoubleCounter boundCounter = doubleCounter.bind(testSdk.createLabelSet("K", "v"));
+    BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind(testSdk.createLabelSet("K", "v"));
+    try {
+      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
+    } finally {
+      boundCounter.unbind();
+      duplicateBoundCounter.unbind();
+    }
   }
 
   @Test
-  public void testDoubleCounter_monotonicity() {
+  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
+    DoubleCounterSdk doubleCounter =
+        (DoubleCounterSdk) testSdk.doubleCounterBuilder("testCounter").build();
+
+    BoundDoubleCounter boundCounter = doubleCounter.bind(testSdk.createLabelSet("K", "v"));
+    try {
+      assertThat(doubleCounter.collect()).isEmpty();
+      BoundDoubleCounter duplicateBoundCounter =
+          doubleCounter.bind(testSdk.createLabelSet("K", "v"));
+      try {
+        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
+      } finally {
+        duplicateBoundCounter.unbind();
+      }
+    } finally {
+      boundCounter.unbind();
+    }
+  }
+
+  @Test
+  public void doubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter =
         testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
 
@@ -72,7 +89,7 @@ public class DoubleCounterSdkTest {
   }
 
   @Test
-  public void testBoundDoubleCounter_monotonicity() {
+  public void boundDoubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter =
         testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
 
