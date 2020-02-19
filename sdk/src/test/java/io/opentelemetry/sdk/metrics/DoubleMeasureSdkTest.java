@@ -16,10 +16,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import com.google.common.collect.ImmutableMap;
+import static com.google.common.truth.Truth.assertThat;
+
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
-import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,38 +35,52 @@ import org.junit.runners.JUnit4;
 public class DoubleMeasureSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  private static final Resource RESOURCE =
+      Resource.create(Collections.singletonMap("resource_key", "resource_value"));
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.DoubleMeasureSdkTest", null);
+  private final TestClock testClock = TestClock.create();
+  private final MeterProviderSharedState meterProviderSharedState =
+      MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      MeterSdkProvider.builder().build().get("io.opentelemetry.sdk.metrics.DoubleMeasureSdkTest");
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
-  public void testDoubleMeasure() {
-    LabelSet labelSet = testSdk.createLabelSet("K", "v");
+  public void sameBound_ForSameLabelSet() {
+    DoubleMeasure doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
 
-    DoubleMeasure doubleMeasure =
-        testSdk
-            .doubleMeasureBuilder("testMeasure")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
-            .setDescription("My very own double measure")
-            .setUnit("metric tonnes")
-            .setAbsolute(true)
-            .build();
-
-    doubleMeasure.record(45.0001, testSdk.createLabelSet());
-
-    BoundDoubleMeasure boundDoubleMeasure = doubleMeasure.bind(labelSet);
-    boundDoubleMeasure.record(334.999d);
-    // TODO: Uncomment.
-    // BoundDoubleMeasure duplicateBoundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K",
-    // "v"));
-    // assertThat(duplicateBoundMeasure).isEqualTo(boundDoubleMeasure);
-
-    // todo: verify that this has done something, when it has been done.
-    boundDoubleMeasure.unbind();
+    BoundDoubleMeasure boundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
+    BoundDoubleMeasure duplicateBoundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
+    try {
+      assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
+    } finally {
+      boundMeasure.unbind();
+      duplicateBoundMeasure.unbind();
+    }
   }
 
   @Test
-  public void testDoubleMeasure_absolute() {
+  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
+    DoubleMeasureSdk doubleMeasure =
+        (DoubleMeasureSdk) testSdk.doubleMeasureBuilder("testMeasure").build();
+
+    BoundDoubleMeasure boundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
+    try {
+      assertThat(doubleMeasure.collect()).isEmpty();
+      BoundDoubleMeasure duplicateBoundMeasure =
+          doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
+      try {
+        assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
+      } finally {
+        duplicateBoundMeasure.unbind();
+      }
+    } finally {
+      boundMeasure.unbind();
+    }
+  }
+
+  @Test
+  public void doubleMeasureRecord_Absolute() {
     DoubleMeasure doubleMeasure =
         testSdk.doubleMeasureBuilder("testMeasure").setAbsolute(true).build();
 
@@ -72,7 +89,7 @@ public class DoubleMeasureSdkTest {
   }
 
   @Test
-  public void testBoundDoubleMeasure_absolute() {
+  public void boundDoubleMeasureRecord_Absolute() {
     DoubleMeasure doubleMeasure =
         testSdk.doubleMeasureBuilder("testMeasure").setAbsolute(true).build();
 

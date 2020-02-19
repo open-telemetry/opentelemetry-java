@@ -16,10 +16,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.metrics.LabelSet;
+import static com.google.common.truth.Truth.assertThat;
+
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,37 +35,50 @@ import org.junit.runners.JUnit4;
 public class LongMeasureSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  private static final Resource RESOURCE =
+      Resource.create(Collections.singletonMap("resource_key", "resource_value"));
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.LongMeasureSdkTest", null);
+  private final TestClock testClock = TestClock.create();
+  private final MeterProviderSharedState meterProviderSharedState =
+      MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      MeterSdkProvider.builder().build().get("io.opentelemetry.sdk.metrics.LongMeasureSdkTest");
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
-  public void testLongMeasure() {
-    LabelSet labelSet = testSdk.createLabelSet("K", "v");
+  public void sameBound_ForSameLabelSet() {
+    LongMeasure longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
 
-    LongMeasure longMeasure =
-        testSdk
-            .longMeasureBuilder("testMeasure")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
-            .setDescription("My very own measure")
-            .setUnit("metric tonnes")
-            .setAbsolute(true)
-            .build();
-
-    longMeasure.record(45, testSdk.createLabelSet());
-
-    BoundLongMeasure boundLongMeasure = longMeasure.bind(labelSet);
-    boundLongMeasure.record(334);
-    // TODO: Uncomment.
-    // BoundLongMeasure duplicateBoundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
-    // assertThat(duplicateBoundMeasure).isEqualTo(boundLongMeasure);
-
-    // todo: verify that this has done something, when it has been done.
-    boundLongMeasure.unbind();
+    BoundLongMeasure boundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
+    BoundLongMeasure duplicateBoundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
+    try {
+      assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
+    } finally {
+      boundMeasure.unbind();
+      duplicateBoundMeasure.unbind();
+    }
   }
 
   @Test
-  public void testLongMeasure_absolute() {
+  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
+    LongMeasureSdk longMeasure = (LongMeasureSdk) testSdk.longMeasureBuilder("testMeasure").build();
+
+    BoundLongMeasure boundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
+    try {
+      assertThat(longMeasure.collect()).isEmpty();
+      BoundLongMeasure duplicateBoundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
+      try {
+        assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
+      } finally {
+        duplicateBoundMeasure.unbind();
+      }
+    } finally {
+      boundMeasure.unbind();
+    }
+  }
+
+  @Test
+  public void longMeasureRecord_Absolute() {
     LongMeasure longMeasure = testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
@@ -70,7 +86,7 @@ public class LongMeasureSdkTest {
   }
 
   @Test
-  public void testBoundLongMeasure_absolute() {
+  public void boundLongMeasure_Absolute() {
     LongMeasure longMeasure = testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);

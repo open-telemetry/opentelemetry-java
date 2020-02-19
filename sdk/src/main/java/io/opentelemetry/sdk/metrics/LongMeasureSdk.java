@@ -19,11 +19,12 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.LongMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
+final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements LongMeasure {
 
   private LongMeasureSdk(
       String name,
@@ -55,15 +56,21 @@ final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return new BoundInstrument(isAbsolute());
+
+    return bindInternal(labelSet);
+  }
+
+  @Override
+  BoundInstrument newBinding(Batcher batcher) {
+    return new BoundInstrument(isAbsolute(), batcher);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument implements BoundLongMeasure {
 
     private final boolean absolute;
 
-    BoundInstrument(boolean absolute) {
-      super(null);
+    BoundInstrument(boolean absolute, Batcher batcher) {
+      super(batcher.getAggregator());
       this.absolute = absolute;
     }
 
@@ -72,7 +79,7 @@ final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
       if (this.absolute && value < 0) {
         throw new IllegalArgumentException("absolute measure can only record positive values");
       }
-      // TODO: pass through to an aggregator/accumulator
+      recordLong(value);
     }
   }
 

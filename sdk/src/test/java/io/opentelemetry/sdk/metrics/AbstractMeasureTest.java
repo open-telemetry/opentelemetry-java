@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -57,7 +58,7 @@ public class AbstractMeasureTest {
     tester.testEquals();
   }
 
-  private static final class TestMeasureInstrument extends AbstractMeasure {
+  private static final class TestMeasureInstrument extends AbstractMeasure<TestBoundMeasure> {
     private static final String NAME = "name";
     private static final String DESCRIPTION = "description";
     private static final String UNIT = "1";
@@ -80,6 +81,18 @@ public class AbstractMeasureTest {
           METER_SHARED_STATE,
           INSTRUMENTATION_LIBRARY_INFO,
           absolute);
+    }
+
+    @Override
+    TestBoundMeasure newBinding(Batcher batcher) {
+      return new TestBoundMeasure();
+    }
+  }
+
+  private static final class TestBoundMeasure extends AbstractBoundInstrument {
+
+    TestBoundMeasure() {
+      super(NoopAggregator.getFactory().getAggregator());
     }
   }
 }
