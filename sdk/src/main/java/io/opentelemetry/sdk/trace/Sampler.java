@@ -22,6 +22,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -52,6 +53,8 @@ public interface Sampler {
       TraceId traceId,
       SpanId spanId,
       String name,
+      Span.Kind spanKind,
+      Collection<AttributeValue> attributes,
       List<Link> parentLinks);
 
   /**
@@ -67,7 +70,7 @@ public interface Sampler {
 
   /**
    * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, TraceId, SpanId, String,
-   * List)}.
+   * Span.Kind, Collection, List)}.
    *
    * @since 0.1.0
    */

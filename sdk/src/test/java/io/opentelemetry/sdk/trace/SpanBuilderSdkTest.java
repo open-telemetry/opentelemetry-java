@@ -32,6 +32,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -272,6 +273,8 @@ public class SpanBuilderSdkTest {
                           TraceId traceId,
                           SpanId spanId,
                           String name,
+                          Span.Kind spanKind,
+                          Collection<AttributeValue> attributes,
                           List<Link> parentLinks) {
                         return new Decision() {
                           @Override
