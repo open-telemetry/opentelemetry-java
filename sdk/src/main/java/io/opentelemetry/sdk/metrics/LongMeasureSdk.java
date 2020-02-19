@@ -31,7 +31,7 @@ final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
-      MeterSharedState sharedState,
+      MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean absolute) {
     super(
@@ -41,7 +41,7 @@ final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
         constantLabels,
         labelKeys,
         InstrumentValueType.LONG,
-        sharedState,
+        meterProviderSharedState,
         instrumentationLibraryInfo,
         absolute);
   }
@@ -78,9 +78,9 @@ final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
 
   static LongMeasure.Builder builder(
       String name,
-      MeterSharedState sharedState,
+      MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, sharedState, instrumentationLibraryInfo);
+    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
@@ -89,9 +89,9 @@ final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
 
     private Builder(
         String name,
-        MeterSharedState sharedState,
+        MeterProviderSharedState meterProviderSharedState,
         InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, sharedState, instrumentationLibraryInfo);
+      super(name, meterProviderSharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -107,7 +107,7 @@ final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
-          getMeterSharedState(),
+          getMeterProviderSharedState(),
           getInstrumentationLibraryInfo(),
           isAbsolute());
     }

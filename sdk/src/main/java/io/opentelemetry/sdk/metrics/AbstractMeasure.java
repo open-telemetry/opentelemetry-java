@@ -33,7 +33,7 @@ abstract class AbstractMeasure extends AbstractInstrument {
       Map<String, String> constantLabels,
       List<String> labelKeys,
       InstrumentValueType instrumentValueType,
-      MeterSharedState meterSharedState,
+      MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean absolute) {
     super(name, description, unit, constantLabels, labelKeys);
@@ -76,9 +76,9 @@ abstract class AbstractMeasure extends AbstractInstrument {
 
     Builder(
         String name,
-        MeterSharedState sharedState,
+        MeterProviderSharedState meterProviderSharedState,
         InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, sharedState, instrumentationLibraryInfo);
+      super(name, meterProviderSharedState, instrumentationLibraryInfo);
     }
 
     @Override

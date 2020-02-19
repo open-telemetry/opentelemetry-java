@@ -32,7 +32,7 @@ final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
       Map<String, String> constantLabels,
       List<String> labelKeys,
       boolean monotonic,
-      MeterSharedState sharedState,
+      MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
     super(
         name,
@@ -41,7 +41,7 @@ final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
         constantLabels,
         labelKeys,
         InstrumentValueType.DOUBLE,
-        sharedState,
+        meterProviderSharedState,
         instrumentationLibraryInfo,
         monotonic);
   }
@@ -78,9 +78,9 @@ final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
 
   static DoubleCounter.Builder builder(
       String name,
-      MeterSharedState sharedState,
+      MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, sharedState, instrumentationLibraryInfo);
+    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
@@ -89,9 +89,9 @@ final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
 
     private Builder(
         String name,
-        MeterSharedState sharedState,
+        MeterProviderSharedState meterProviderSharedState,
         InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, sharedState, instrumentationLibraryInfo);
+      super(name, meterProviderSharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -108,7 +108,7 @@ final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
           getConstantLabels(),
           getLabelKeys(),
           isMonotonic(),
-          getMeterSharedState(),
+          getMeterProviderSharedState(),
           getInstrumentationLibraryInfo());
     }
   }

@@ -36,8 +36,8 @@ public class AbstractCounterBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
-  private static final MeterSharedState METER_SHARED_STATE =
-      MeterSharedState.create(TestClock.create(), Resource.getEmpty());
+  private static final MeterProviderSharedState METER_SHARED_STATE =
+      MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.EMPTY;
 
@@ -51,7 +51,7 @@ public class AbstractCounterBuilderTest {
     assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
     assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
     assertThat(testMetricBuilder.isMonotonic()).isTrue();
-    assertThat(testMetricBuilder.getMeterSharedState()).isEqualTo(METER_SHARED_STATE);
+    assertThat(testMetricBuilder.getMeterProviderSharedState()).isEqualTo(METER_SHARED_STATE);
     assertThat(testMetricBuilder.getInstrumentationLibraryInfo())
         .isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
@@ -71,7 +71,7 @@ public class AbstractCounterBuilderTest {
       extends AbstractCounter.Builder<TestInstrumentBuilder, TestInstrument> {
     TestInstrumentBuilder(
         String name,
-        MeterSharedState sharedState,
+        MeterProviderSharedState sharedState,
         InstrumentationLibraryInfo instrumentationLibraryInfo) {
       super(name, sharedState, instrumentationLibraryInfo);
     }
