@@ -182,7 +182,8 @@ void a() {
 }
 void b() {
   Span childSpan = tracer.spanBuilder("b")
-        // NOTE: setParent(parentSpan) is not required anymore
+     // NOTE: setParent(parentSpan) is not required anymore, 
+     // `tracer.getCurrentSpan()` is automatically added as parent
     .startSpan();
   ...
   childSpan.end();
