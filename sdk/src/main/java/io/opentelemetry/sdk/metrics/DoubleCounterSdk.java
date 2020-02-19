@@ -84,7 +84,7 @@ final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
   }
 
   private static final class Builder
-      extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
+      extends AbstractCounter.Builder<DoubleCounter.Builder, DoubleCounter>
       implements DoubleCounter.Builder {
 
     private Builder(

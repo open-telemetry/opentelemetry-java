@@ -84,7 +84,7 @@ final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
   }
 
   private static final class Builder
-      extends AbstractMeasureBuilder<LongMeasure.Builder, LongMeasure>
+      extends AbstractMeasure.Builder<LongMeasure.Builder, LongMeasure>
       implements LongMeasure.Builder {
 
     private Builder(

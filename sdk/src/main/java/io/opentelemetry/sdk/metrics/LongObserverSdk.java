@@ -57,7 +57,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
   }
 
   private static final class Builder
-      extends AbstractObserverBuilder<LongObserver.Builder, LongObserver>
+      extends AbstractObserver.Builder<LongObserver.Builder, LongObserver>
       implements LongObserver.Builder {
 
     private Builder(

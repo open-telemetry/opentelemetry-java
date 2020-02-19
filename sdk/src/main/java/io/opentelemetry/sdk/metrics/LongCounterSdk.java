@@ -84,7 +84,7 @@ final class LongCounterSdk extends AbstractCounter implements LongCounter {
   }
 
   private static final class Builder
-      extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
+      extends AbstractCounter.Builder<LongCounter.Builder, LongCounter>
       implements LongCounter.Builder {
 
     private Builder(

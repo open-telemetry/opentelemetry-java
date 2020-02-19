@@ -28,7 +28,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link AbstractObserverBuilder}. */
+/** Unit tests for {@link AbstractObserver.Builder}. */
 @RunWith(JUnit4.class)
 public class AbstractObserverBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
@@ -66,7 +66,7 @@ public class AbstractObserverBuilderTest {
   }
 
   private static final class TestInstrumentBuilder
-      extends AbstractObserverBuilder<TestInstrumentBuilder, TestInstrument> {
+      extends AbstractObserver.Builder<TestInstrumentBuilder, TestInstrument> {
     TestInstrumentBuilder(
         String name,
         MeterSharedState sharedState,

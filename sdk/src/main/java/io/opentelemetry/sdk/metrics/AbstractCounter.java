@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.metrics.Counter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
@@ -67,5 +68,27 @@ abstract class AbstractCounter extends AbstractInstrument {
     result = 31 * result + (monotonic ? 1 : 0);
     result = 31 * result + instrumentValueType.hashCode();
     return result;
+  }
+
+  abstract static class Builder<B extends Counter.Builder<B, V>, V>
+      extends AbstractInstrumentBuilder<B, V> implements Counter.Builder<B, V> {
+    private boolean monotonic = true;
+
+    Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
+    }
+
+    @Override
+    public final B setMonotonic(boolean monotonic) {
+      this.monotonic = monotonic;
+      return getThis();
+    }
+
+    final boolean isMonotonic() {
+      return this.monotonic;
+    }
   }
 }

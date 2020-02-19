@@ -57,7 +57,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
   }
 
   private static final class Builder
-      extends AbstractObserverBuilder<DoubleObserver.Builder, DoubleObserver>
+      extends AbstractObserver.Builder<DoubleObserver.Builder, DoubleObserver>
       implements DoubleObserver.Builder {
 
     private Builder(
