@@ -21,26 +21,16 @@ import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.DoubleMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.List;
-import java.util.Map;
 
 final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements DoubleMeasure {
 
   private DoubleMeasureSdk(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
+      InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean absolute) {
     super(
-        name,
-        description,
-        unit,
-        constantLabels,
-        labelKeys,
+        descriptor,
         InstrumentValueType.DOUBLE,
         meterProviderSharedState,
         instrumentationLibraryInfo,
@@ -108,11 +98,7 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     @Override
     public DoubleMeasure build() {
       return new DoubleMeasureSdk(
-          getName(),
-          getDescription(),
-          getUnit(),
-          getConstantLabels(),
-          getLabelKeys(),
+          getInstrumentDescriptor(),
           getMeterProviderSharedState(),
           getInstrumentationLibraryInfo(),
           isAbsolute());

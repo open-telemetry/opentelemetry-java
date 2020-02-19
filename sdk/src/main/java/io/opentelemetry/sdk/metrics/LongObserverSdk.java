@@ -19,25 +19,15 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.List;
-import java.util.Map;
 
 final class LongObserverSdk extends AbstractObserver implements LongObserver {
   LongObserverSdk(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
+      InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
     super(
-        name,
-        description,
-        unit,
-        constantLabels,
-        labelKeys,
+        descriptor,
         InstrumentValueType.LONG,
         meterProviderSharedState,
         instrumentationLibraryInfo,
@@ -75,11 +65,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     @Override
     public LongObserver build() {
       return new LongObserverSdk(
-          getName(),
-          getDescription(),
-          getUnit(),
-          getConstantLabels(),
-          getLabelKeys(),
+          getInstrumentDescriptor(),
           getMeterProviderSharedState(),
           getInstrumentationLibraryInfo(),
           isMonotonic());

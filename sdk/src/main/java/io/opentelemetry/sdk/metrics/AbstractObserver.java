@@ -22,23 +22,22 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 class AbstractObserver extends AbstractInstrument {
   private final boolean monotonic;
   private final InstrumentValueType instrumentValueType;
 
   AbstractObserver(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
+      InstrumentDescriptor descriptor,
       InstrumentValueType instrumentValueType,
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys, null);
+    super(
+        descriptor,
+        meterProviderSharedState,
+        instrumentationLibraryInfo,
+        new ActiveBatcher(Batchers.getNoop()));
     this.monotonic = monotonic;
     this.instrumentValueType = instrumentValueType;
   }

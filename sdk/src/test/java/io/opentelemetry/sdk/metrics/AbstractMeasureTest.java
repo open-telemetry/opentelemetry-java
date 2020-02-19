@@ -25,8 +25,6 @@ import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import org.junit.Test;
 
 public class AbstractMeasureTest {
@@ -59,12 +57,13 @@ public class AbstractMeasureTest {
   }
 
   private static final class TestMeasureInstrument extends AbstractMeasure<TestBoundMeasure> {
-    private static final String NAME = "name";
-    private static final String DESCRIPTION = "description";
-    private static final String UNIT = "1";
-    private static final Map<String, String> CONSTANT_LABELS =
-        Collections.singletonMap("key_2", "value_2");
-    private static final List<String> LABEL_KEY = Collections.singletonList("key");
+    private static final InstrumentDescriptor INSTRUMENT_DESCRIPTOR =
+        InstrumentDescriptor.create(
+            "name",
+            "description",
+            "1",
+            Collections.singletonMap("key_2", "value_2"),
+            Collections.singletonList("key"));
     private static final MeterProviderSharedState METER_SHARED_STATE =
         MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
     private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
@@ -72,11 +71,7 @@ public class AbstractMeasureTest {
 
     TestMeasureInstrument(InstrumentValueType instrumentValueType, boolean absolute) {
       super(
-          NAME,
-          DESCRIPTION,
-          UNIT,
-          CONSTANT_LABELS,
-          LABEL_KEY,
+          INSTRUMENT_DESCRIPTOR,
           instrumentValueType,
           METER_SHARED_STATE,
           INSTRUMENTATION_LIBRARY_INFO,

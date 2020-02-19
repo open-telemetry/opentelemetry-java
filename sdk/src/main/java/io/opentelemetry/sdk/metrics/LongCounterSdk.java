@@ -21,26 +21,16 @@ import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.List;
-import java.util.Map;
 
 final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements LongCounter {
 
   private LongCounterSdk(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
+      InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
     super(
-        name,
-        description,
-        unit,
-        constantLabels,
-        labelKeys,
+        descriptor,
         InstrumentValueType.LONG,
         meterProviderSharedState,
         instrumentationLibraryInfo,
@@ -108,11 +98,7 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
     @Override
     public LongCounter build() {
       return new LongCounterSdk(
-          getName(),
-          getDescription(),
-          getUnit(),
-          getConstantLabels(),
-          getLabelKeys(),
+          getInstrumentDescriptor(),
           getMeterProviderSharedState(),
           getInstrumentationLibraryInfo(),
           isMonotonic());

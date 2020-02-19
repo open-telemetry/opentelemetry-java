@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.metrics.Observer;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,28 +42,29 @@ public class AbstractObserverBuilderTest {
 
   @Test
   public void defaultValue() {
-    TestInstrumentBuilder testMetricBuilder =
+    TestInstrumentBuilder testInstrumentBuilder =
         new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
-    assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
-    assertThat(testMetricBuilder.getDescription()).isEmpty();
-    assertThat(testMetricBuilder.getUnit()).isEqualTo("1");
-    assertThat(testMetricBuilder.getLabelKeys()).isEmpty();
-    assertThat(testMetricBuilder.getConstantLabels()).isEmpty();
-    assertThat(testMetricBuilder.isMonotonic()).isFalse();
-    assertThat(testMetricBuilder.getMeterProviderSharedState()).isEqualTo(METER_SHARED_STATE);
-    assertThat(testMetricBuilder.getInstrumentationLibraryInfo())
+    assertThat(testInstrumentBuilder.isMonotonic()).isFalse();
+    assertThat(testInstrumentBuilder.getMeterProviderSharedState()).isEqualTo(METER_SHARED_STATE);
+    assertThat(testInstrumentBuilder.getInstrumentationLibraryInfo())
         .isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
+
+    TestInstrument testInstrument = testInstrumentBuilder.build();
+    assertThat(testInstrument).isInstanceOf(TestInstrument.class);
+    assertThat(testInstrument.getDescriptor().getName()).isEqualTo(NAME);
+    assertThat(testInstrument.getDescriptor().getDescription()).isEmpty();
+    assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo("1");
+    assertThat(testInstrument.getDescriptor().getLabelKeys()).isEmpty();
+    assertThat(testInstrument.getDescriptor().getConstantLabels()).isEmpty();
   }
 
   @Test
   public void setAndGetValues() {
-    TestInstrumentBuilder testMetricBuilder =
+    TestInstrumentBuilder testInstrumentBuilder =
         new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO)
             .setMonotonic(true);
-    assertThat(testMetricBuilder.getName()).isEqualTo(NAME);
-    assertThat(testMetricBuilder.isMonotonic()).isTrue();
-    assertThat(testMetricBuilder.build()).isInstanceOf(TestInstrument.class);
+    assertThat(testInstrumentBuilder.isMonotonic()).isTrue();
+    assertThat(testInstrumentBuilder.build()).isInstanceOf(TestInstrument.class);
   }
 
   private static final class TestInstrumentBuilder
@@ -81,11 +83,30 @@ public class AbstractObserverBuilderTest {
 
     @Override
     public TestInstrument build() {
-      return new TestInstrument();
+      return new TestInstrument(
+          getInstrumentDescriptor(),
+          getMeterProviderSharedState(),
+          getInstrumentationLibraryInfo(),
+          isMonotonic());
     }
   }
 
-  private static final class TestInstrument implements Observer<TestResult> {
+  private static final class TestInstrument extends AbstractObserver
+      implements Observer<TestResult> {
+
+    TestInstrument(
+        InstrumentDescriptor descriptor,
+        MeterProviderSharedState meterSharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo,
+        boolean monotonic) {
+      super(
+          descriptor,
+          InstrumentValueType.LONG,
+          meterSharedState,
+          instrumentationLibraryInfo,
+          monotonic);
+    }
+
     @Override
     public void setCallback(Callback<TestResult> metricUpdater) {}
   }

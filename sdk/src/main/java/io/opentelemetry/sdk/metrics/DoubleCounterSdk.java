@@ -21,26 +21,16 @@ import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.List;
-import java.util.Map;
 
 final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements DoubleCounter {
 
   private DoubleCounterSdk(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
+      InstrumentDescriptor descriptor,
       boolean monotonic,
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
     super(
-        name,
-        description,
-        unit,
-        constantLabels,
-        labelKeys,
+        descriptor,
         InstrumentValueType.DOUBLE,
         meterProviderSharedState,
         instrumentationLibraryInfo,
@@ -108,11 +98,7 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     @Override
     public DoubleCounter build() {
       return new DoubleCounterSdk(
-          getName(),
-          getDescription(),
-          getUnit(),
-          getConstantLabels(),
-          getLabelKeys(),
+          getInstrumentDescriptor(),
           isMonotonic(),
           getMeterProviderSharedState(),
           getInstrumentationLibraryInfo());
