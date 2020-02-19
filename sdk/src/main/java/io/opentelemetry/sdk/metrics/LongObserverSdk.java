@@ -29,7 +29,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
-      MeterSharedState sharedState,
+      MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
     super(
@@ -39,7 +39,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
         constantLabels,
         labelKeys,
         InstrumentValueType.LONG,
-        sharedState,
+        meterProviderSharedState,
         instrumentationLibraryInfo,
         monotonic);
   }
@@ -51,9 +51,9 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
 
   static LongObserver.Builder builder(
       String name,
-      MeterSharedState sharedState,
+      MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, sharedState, instrumentationLibraryInfo);
+    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
@@ -62,9 +62,9 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
 
     private Builder(
         String name,
-        MeterSharedState sharedState,
+        MeterProviderSharedState meterProviderSharedState,
         InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, sharedState, instrumentationLibraryInfo);
+      super(name, meterProviderSharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -80,7 +80,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
-          getMeterSharedState(),
+          getMeterProviderSharedState(),
           getInstrumentationLibraryInfo(),
           isMonotonic());
     }

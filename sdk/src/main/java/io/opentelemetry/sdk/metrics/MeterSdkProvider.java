@@ -37,7 +37,7 @@ public final class MeterSdkProvider implements MeterProvider {
   private final MeterSdkComponentRegistry registry;
 
   private MeterSdkProvider(Clock clock, Resource resource) {
-    this.registry = new MeterSdkComponentRegistry(MeterSharedState.create(clock, resource));
+    this.registry = new MeterSdkComponentRegistry(MeterProviderSharedState.create(clock, resource));
   }
 
   @Override
@@ -107,15 +107,15 @@ public final class MeterSdkProvider implements MeterProvider {
   }
 
   private static final class MeterSdkComponentRegistry extends ComponentRegistry<MeterSdk> {
-    private final MeterSharedState sharedState;
+    private final MeterProviderSharedState meterProviderSharedState;
 
-    private MeterSdkComponentRegistry(MeterSharedState sharedState) {
-      this.sharedState = sharedState;
+    private MeterSdkComponentRegistry(MeterProviderSharedState meterProviderSharedState) {
+      this.meterProviderSharedState = meterProviderSharedState;
     }
 
     @Override
     public MeterSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      return new MeterSdk(sharedState, instrumentationLibraryInfo);
+      return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo);
     }
   }
 }
