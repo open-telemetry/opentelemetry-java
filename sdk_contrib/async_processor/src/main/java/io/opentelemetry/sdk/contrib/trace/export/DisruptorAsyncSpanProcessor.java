@@ -59,6 +59,11 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
     disruptorEventQueue.shutdown();
   }
 
+  @Override
+  public void forceFlush() {
+    disruptorEventQueue.forceFlush();
+  }
+
   /**
    * Returns a new Builder for {@link DisruptorAsyncSpanProcessor}.
    *

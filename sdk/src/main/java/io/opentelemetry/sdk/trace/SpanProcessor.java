@@ -48,4 +48,12 @@ public interface SpanProcessor {
 
   /** Called when {@link TracerSdkRegistry#shutdown()} is called. */
   void shutdown();
+
+  /**
+   * Exports all ended spans that have not yet been exported.
+   *
+   * <p>This method is called synchronously on the execution thread, should not throw or block the
+   * execution thread.
+   */
+  void forceFlush();
 }

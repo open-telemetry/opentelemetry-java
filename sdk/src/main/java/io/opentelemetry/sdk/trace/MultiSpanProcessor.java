@@ -62,6 +62,13 @@ public final class MultiSpanProcessor implements SpanProcessor {
     }
   }
 
+  @Override
+  public void forceFlush() {
+    for (SpanProcessor spanProcessor : spanProcessors) {
+      spanProcessor.forceFlush();
+    }
+  }
+
   private MultiSpanProcessor(List<SpanProcessor> spanProcessors) {
     this.spanProcessors = spanProcessors;
   }
