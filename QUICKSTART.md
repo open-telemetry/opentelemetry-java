@@ -28,14 +28,14 @@ In the following examples, we demonstrate how to configure the OpenTelemetry SDK
 
 # Configuration
 
-**Libraries** that want to export distributed tracing using OpenTelemetry must only take dependency on the `opentelemetry-api` package
+**Libraries** that want to export distributed tracing using OpenTelemetry only need a dependency on the `opentelemetry-api` package
 and should never configure OpenTelemetry themselves. The configuration must be provided by **Applications** which should also depend on the 
 `opentelemetry-sdk` package, or any other implementation of the OpenTelemetry API. This way, libraries will obtain a real tracer
-implementation only if the user application is instrumented. For more details, check out the [Library Guidelines].
+implementation only if the user application is configured for it. For more details, check out the [Library Guidelines].
 
 [Library Guidelines]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/library-guidelines.md
 
-The configuration should set up the exporter and may tune the OpenTelemetry behavior.
+The configuration install a span processor with an exporter and may customize the behavior of the OpenTelemetry SDK.
 
 For example, a basic configuration instantiates the SDK tracer registry and sets to export the traces to a logging stream.
 
@@ -60,10 +60,10 @@ The OpenTelemetry SDK offers three samplers out of the box:
 Additional samplers can be provided implementing the [`io.opentelemetry.sdk.trace.Sampler`] interface.
 
 ```java
-TraceConfig AlwaysOn = TraceConfig.getDefault().toBuilder().setSampler(
+TraceConfig alwaysOn = TraceConfig.getDefault().toBuilder().setSampler(
         Samplers.alwaysOn()
 ).build();
-TraceConfig AlwaysOff = TraceConfig.getDefault().toBuilder().setSampler(
+TraceConfig alwaysOff = TraceConfig.getDefault().toBuilder().setSampler(
         Samplers.alwaysOff()
 ).build();
 TraceConfig half = TraceConfig.getDefault().toBuilder().setSampler(
