@@ -56,6 +56,25 @@ public class AbstractInstrumentBuilderTest {
   }
 
   @Test
+  public void preventEmpty_Name() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Name");
+    new TestInstrumentBuilder("", METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
+  }
+
+  @Test
+  public void checkCorrect_Name() {
+    new TestInstrumentBuilder("a", METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
+    new TestInstrumentBuilder("METRIC_name", METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
+    new TestInstrumentBuilder("metric.name_01", METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
+    new TestInstrumentBuilder("metric_name.01", METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Name");
+    new TestInstrumentBuilder(
+        "01.metric_name_01", METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
+  }
+
+  @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
     new TestInstrumentBuilder("\2", METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);

@@ -45,5 +45,19 @@ public final class StringUtils {
     return value == null || value.length() == 0;
   }
 
+  /**
+   * Determines whether the metric name contains a valid metric name.
+   *
+   * @param metricName the metric name to be validated.
+   * @return whether the metricName contains a valid name.
+   */
+  public static boolean isValidMetricName(String metricName) {
+    if (metricName.isEmpty()) {
+      return false;
+    }
+    String pattern = "[aA-zZ][aA-zZ0-9_\\-.]*";
+    return metricName.matches(pattern);
+  }
+
   private StringUtils() {}
 }
