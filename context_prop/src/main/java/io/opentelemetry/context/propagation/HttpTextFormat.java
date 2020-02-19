@@ -82,7 +82,7 @@ public interface HttpTextFormat<V> {
      * @param value the value of the field.
      * @since 0.1.0
      */
-    void set(C carrier, String key, String value);
+    void put(C carrier, String key, String value);
   }
 
   /**

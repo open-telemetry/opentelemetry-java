@@ -58,7 +58,7 @@ public class HttpTraceContextTest {
   private static final Setter<Map<String, String>> setter =
       new Setter<Map<String, String>>() {
         @Override
-        public void set(Map<String, String> carrier, String key, String value) {
+        public void put(Map<String, String> carrier, String key, String value) {
           carrier.put(key, value);
         }
       };
