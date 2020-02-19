@@ -21,26 +21,16 @@ import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.LongMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.List;
-import java.util.Map;
 
 final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements LongMeasure {
 
   private LongMeasureSdk(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
+      InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean absolute) {
     super(
-        name,
-        description,
-        unit,
-        constantLabels,
-        labelKeys,
+        descriptor,
         InstrumentValueType.LONG,
         meterProviderSharedState,
         instrumentationLibraryInfo,
@@ -109,11 +99,7 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     @Override
     public LongMeasure build() {
       return new LongMeasureSdk(
-          getName(),
-          getDescription(),
-          getUnit(),
-          getConstantLabels(),
-          getLabelKeys(),
+          getInstrumentDescriptor(),
           getMeterProviderSharedState(),
           getInstrumentationLibraryInfo(),
           isAbsolute());
