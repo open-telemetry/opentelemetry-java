@@ -71,7 +71,7 @@ abstract class AbstractMeasure extends AbstractInstrument {
   }
 
   abstract static class Builder<B extends Measure.Builder<B, V>, V>
-      extends AbstractInstrumentBuilder<B, V> implements Measure.Builder<B, V> {
+      extends AbstractInstrument.Builder<B, V> implements Measure.Builder<B, V> {
     private boolean absolute = true;
 
     Builder(

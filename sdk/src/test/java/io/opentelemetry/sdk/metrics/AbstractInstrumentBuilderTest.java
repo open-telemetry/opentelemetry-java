@@ -32,7 +32,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link AbstractInstrumentBuilder}. */
+/** Unit tests for {@link AbstractInstrument.Builder}. */
 @RunWith(JUnit4.class)
 public class AbstractInstrumentBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
@@ -82,11 +82,11 @@ public class AbstractInstrumentBuilderTest {
 
   @Test
   public void preventTooLongName() {
-    char[] chars = new char[AbstractInstrumentBuilder.NAME_MAX_LENGTH + 1];
+    char[] chars = new char[AbstractInstrument.Builder.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(AbstractInstrumentBuilder.ERROR_MESSAGE_INVALID_NAME);
+    thrown.expectMessage(AbstractInstrument.Builder.ERROR_MESSAGE_INVALID_NAME);
     new TestInstrumentBuilder(longName, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
   }
 
@@ -161,7 +161,7 @@ public class AbstractInstrumentBuilderTest {
   }
 
   private static final class TestInstrumentBuilder
-      extends AbstractInstrumentBuilder<TestInstrumentBuilder, TestInstrument> {
+      extends AbstractInstrument.Builder<TestInstrumentBuilder, TestInstrument> {
     TestInstrumentBuilder(
         String name,
         MeterSharedState sharedState,
