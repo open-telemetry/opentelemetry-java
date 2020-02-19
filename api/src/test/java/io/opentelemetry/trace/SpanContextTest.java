@@ -31,10 +31,8 @@ public class SpanContextTest {
       new byte[] {0, 0, 0, 0, 0, 0, 0, '0', 0, 0, 0, 0, 0, 0, 0, 0};
   private static final byte[] firstSpanIdBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final byte[] secondSpanIdBytes = new byte[] {'0', 0, 0, 0, 0, 0, 0, 0};
-  private static final TraceState FIRST_TRACE_STATE =
-      TraceState.builder().set("foo", "bar").build();
-  private static final TraceState SECOND_TRACE_STATE =
-      TraceState.builder().set("foo", "baz").build();
+  private static final TraceState FIRST_TRACE_STATE = TraceState.builder().add("foo=bar").build();
+  private static final TraceState SECOND_TRACE_STATE = TraceState.builder().add("foo=baz").build();
   private static final TraceState EMPTY_TRACE_STATE = TraceState.builder().build();
   private static final SpanContext first =
       SpanContext.create(

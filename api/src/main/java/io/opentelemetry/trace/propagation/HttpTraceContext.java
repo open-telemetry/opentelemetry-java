@@ -37,6 +37,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public class HttpTraceContext implements HttpTextFormat<SpanContext> {
+
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
   static final String TRACE_PARENT = "traceparent";
   static final String TRACE_STATE = "tracestate";
@@ -57,11 +58,8 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
       SPAN_ID_OFFSET + SPAN_ID_HEX_SIZE + TRACEPARENT_DELIMITER_SIZE;
   private static final int TRACEPARENT_HEADER_SIZE = TRACE_OPTION_OFFSET + TRACE_OPTION_HEX_SIZE;
   private static final int TRACESTATE_MAX_SIZE = 512;
-  private static final int TRACESTATE_MAX_MEMBERS = 32;
-  private static final char TRACESTATE_KEY_VALUE_DELIMITER = '=';
-  private static final char TRACESTATE_ENTRY_DELIMITER = ',';
-  private static final Pattern TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN =
-      Pattern.compile("[ \t]*" + TRACESTATE_ENTRY_DELIMITER + "[ \t]*");
+  private static final String TRACESTATE_ENTRY_DELIMITER = ",";
+  private static final Pattern ENTRY_PATTERN = Pattern.compile(",");
   static final SpanContext INVALID_SPAN_CONTEXT =
       SpanContext.create(
           TraceId.getInvalid(),
@@ -89,20 +87,17 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars));
-    List<TraceState.Entry> entries = spanContext.getTraceState().getEntries();
+    List<String> entries = spanContext.getTraceState().getEntries();
     if (entries.isEmpty()) {
       // No need to add an empty "tracestate" header.
       return;
     }
     StringBuilder stringBuilder = new StringBuilder(TRACESTATE_MAX_SIZE);
-    for (TraceState.Entry entry : entries) {
+    for (String entry : entries) {
       if (stringBuilder.length() != 0) {
         stringBuilder.append(TRACESTATE_ENTRY_DELIMITER);
       }
-      stringBuilder
-          .append(entry.getKey())
-          .append(TRACESTATE_KEY_VALUE_DELIMITER)
-          .append(entry.getValue());
+      stringBuilder.append(entry);
     }
     setter.set(carrier, TRACE_STATE, stringBuilder.toString());
   }
@@ -138,26 +133,18 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
     }
 
     String traceState = getter.get(carrier, TRACE_STATE);
-    try {
-      if (traceState == null || traceState.isEmpty()) {
-        return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
-      }
-      TraceState.Builder traceStateBuilder = TraceState.builder();
-      String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(traceState);
-      checkArgument(
-          listMembers.length <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");
-      // Iterate in reverse order because when call builder set the elements is added in the
-      // front of the list.
-      for (int i = listMembers.length - 1; i >= 0; i--) {
-        String listMember = listMembers[i];
-        int index = listMember.indexOf(TRACESTATE_KEY_VALUE_DELIMITER);
-        checkArgument(index != -1, "Invalid TraceState list-member format.");
-        traceStateBuilder.set(listMember.substring(0, index), listMember.substring(index + 1));
-      }
-      return SpanContext.createFromRemoteParent(
-          traceId, spanId, traceFlags, traceStateBuilder.build());
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid tracestate: " + traceState, e);
+    if (traceState == null || traceState.isEmpty()) {
+      return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
     }
+    TraceState.Builder traceStateBuilder = TraceState.builder();
+    String[] listMembers = ENTRY_PATTERN.split(traceState);
+    // Iterate in reverse order because when call builder set the elements is added in the
+    // front of the list.
+    for (int i = listMembers.length - 1; i >= 0; i--) {
+      String listMember = listMembers[i];
+      traceStateBuilder.add(listMember);
+    }
+    return SpanContext.createFromRemoteParent(
+        traceId, spanId, traceFlags, traceStateBuilder.build());
   }
 }
