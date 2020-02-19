@@ -48,7 +48,7 @@ abstract class AbstractInstrumentBuilder<B extends Instrument.Builder<B, V>, V>
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
     Utils.checkNotNull(name, "name");
     Utils.checkArgument(
-        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
+        StringUtils.isValidMetricName(name) && name.length() <= NAME_MAX_LENGTH,
         ERROR_MESSAGE_INVALID_NAME);
     this.name = name;
     this.meterSharedState = meterSharedState;
