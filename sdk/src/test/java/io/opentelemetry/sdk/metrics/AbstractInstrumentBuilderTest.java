@@ -43,8 +43,8 @@ public class AbstractInstrumentBuilderTest {
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
   private static final Map<String, String> CONSTANT_LABELS =
       Collections.singletonMap("key_2", "value_2");
-  private static final MeterSharedState METER_SHARED_STATE =
-      MeterSharedState.create(TestClock.create(), Resource.getEmpty());
+  private static final MeterProviderSharedState METER_SHARED_STATE =
+      MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.EMPTY;
 
@@ -154,7 +154,7 @@ public class AbstractInstrumentBuilderTest {
     assertThat(testInstrumentBuilder.getUnit()).isEqualTo(UNIT);
     assertThat(testInstrumentBuilder.getLabelKeys()).isEqualTo(LABEL_KEY);
     assertThat(testInstrumentBuilder.getConstantLabels()).isEqualTo(CONSTANT_LABELS);
-    assertThat(testInstrumentBuilder.getMeterSharedState()).isEqualTo(METER_SHARED_STATE);
+    assertThat(testInstrumentBuilder.getMeterProviderSharedState()).isEqualTo(METER_SHARED_STATE);
     assertThat(testInstrumentBuilder.getInstrumentationLibraryInfo())
         .isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(testInstrumentBuilder.build()).isInstanceOf(TestInstrument.class);
@@ -164,7 +164,7 @@ public class AbstractInstrumentBuilderTest {
       extends AbstractInstrument.Builder<TestInstrumentBuilder, TestInstrument> {
     TestInstrumentBuilder(
         String name,
-        MeterSharedState sharedState,
+        MeterProviderSharedState sharedState,
         InstrumentationLibraryInfo instrumentationLibraryInfo) {
       super(name, sharedState, instrumentationLibraryInfo);
     }

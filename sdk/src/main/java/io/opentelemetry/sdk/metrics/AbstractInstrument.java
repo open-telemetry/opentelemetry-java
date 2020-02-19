@@ -105,7 +105,7 @@ abstract class AbstractInstrument implements Instrument {
             + " characters.";
 
     private final String name;
-    private final MeterSharedState meterSharedState;
+    private final MeterProviderSharedState meterProviderSharedState;
     private final InstrumentationLibraryInfo instrumentationLibraryInfo;
     private String description = "";
     private String unit = "1";
@@ -114,14 +114,14 @@ abstract class AbstractInstrument implements Instrument {
 
     Builder(
         String name,
-        MeterSharedState meterSharedState,
+        MeterProviderSharedState meterProviderSharedState,
         InstrumentationLibraryInfo instrumentationLibraryInfo) {
       Utils.checkNotNull(name, "name");
       Utils.checkArgument(
           StringUtils.isValidMetricName(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
       this.name = name;
-      this.meterSharedState = meterSharedState;
+      this.meterProviderSharedState = meterProviderSharedState;
       this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     }
 
@@ -156,8 +156,8 @@ abstract class AbstractInstrument implements Instrument {
       return name;
     }
 
-    final MeterSharedState getMeterSharedState() {
-      return meterSharedState;
+    final MeterProviderSharedState getMeterProviderSharedState() {
+      return meterProviderSharedState;
     }
 
     final InstrumentationLibraryInfo getInstrumentationLibraryInfo() {

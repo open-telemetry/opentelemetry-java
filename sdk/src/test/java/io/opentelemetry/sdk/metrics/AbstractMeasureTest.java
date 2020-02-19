@@ -64,8 +64,8 @@ public class AbstractMeasureTest {
     private static final Map<String, String> CONSTANT_LABELS =
         Collections.singletonMap("key_2", "value_2");
     private static final List<String> LABEL_KEY = Collections.singletonList("key");
-    private static final MeterSharedState METER_SHARED_STATE =
-        MeterSharedState.create(TestClock.create(), Resource.getEmpty());
+    private static final MeterProviderSharedState METER_SHARED_STATE =
+        MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
     private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
         InstrumentationLibraryInfo.create("test_abstract_instrument", "");
 

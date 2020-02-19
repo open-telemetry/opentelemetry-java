@@ -31,7 +31,7 @@ final class LongCounterSdk extends AbstractCounter implements LongCounter {
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
-      MeterSharedState sharedState,
+      MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
     super(
@@ -41,7 +41,7 @@ final class LongCounterSdk extends AbstractCounter implements LongCounter {
         constantLabels,
         labelKeys,
         InstrumentValueType.LONG,
-        sharedState,
+        meterProviderSharedState,
         instrumentationLibraryInfo,
         monotonic);
   }
@@ -78,9 +78,9 @@ final class LongCounterSdk extends AbstractCounter implements LongCounter {
 
   static LongCounter.Builder builder(
       String name,
-      MeterSharedState sharedState,
+      MeterProviderSharedState meterProviderSharedState,
       InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, sharedState, instrumentationLibraryInfo);
+    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
@@ -89,9 +89,9 @@ final class LongCounterSdk extends AbstractCounter implements LongCounter {
 
     private Builder(
         String name,
-        MeterSharedState sharedState,
+        MeterProviderSharedState meterProviderSharedState,
         InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, sharedState, instrumentationLibraryInfo);
+      super(name, meterProviderSharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -107,7 +107,7 @@ final class LongCounterSdk extends AbstractCounter implements LongCounter {
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
-          getMeterSharedState(),
+          getMeterProviderSharedState(),
           getInstrumentationLibraryInfo(),
           isMonotonic());
     }
