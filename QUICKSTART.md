@@ -35,7 +35,7 @@ implementation only if the user application is configured for it. For more detai
 
 [Library Guidelines]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/library-guidelines.md
 
-The configuration install a span processor with an exporter and may customize the behavior of the OpenTelemetry SDK.
+The application has to install a span processor with an exporter and may customize the behavior of the OpenTelemetry SDK.
 
 For example, a basic configuration instantiates the SDK tracer registry and sets to export the traces to a logging stream.
 
@@ -181,9 +181,10 @@ void a() {
   }
 }
 void b() {
-  Span parentSpan = tracer.getCurrentSpan();
-  Span childSpan = tracer.spanBuilder("b").setParent(parentSpan).startSpan();
-  // do stuff
+  Span childSpan = tracer.spanBuilder("b")
+        // NOTE: setParent(parentSpan) is not required anymore
+    .startSpan();
+  ...
   childSpan.end();
 }
 ``` 
