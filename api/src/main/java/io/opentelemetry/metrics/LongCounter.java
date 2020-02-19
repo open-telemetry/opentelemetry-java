@@ -73,7 +73,7 @@ public interface LongCounter extends Counter<BoundLongCounter> {
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundLongCounter extends BoundInstrument {
+  interface BoundLongCounter extends InstrumentWithBinding.BoundInstrument {
 
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic

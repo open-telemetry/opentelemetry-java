@@ -18,12 +18,12 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongMeasure;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
-
-  private final boolean absolute;
+final class LongMeasureSdk extends AbstractMeasure implements LongMeasure {
 
   private LongMeasureSdk(
       String name,
@@ -31,54 +31,39 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean absolute) {
-    super(name, description, unit, constantLabels, labelKeys);
-    this.absolute = absolute;
+    super(
+        name,
+        description,
+        unit,
+        constantLabels,
+        labelKeys,
+        InstrumentValueType.LONG,
+        sharedState,
+        instrumentationLibraryInfo,
+        absolute);
   }
 
   @Override
   public void record(long value, LabelSet labelSet) {
-    BoundLongMeasure boundLongMeasure = bind(labelSet);
-    boundLongMeasure.record(value);
-    boundLongMeasure.unbind();
+    BoundInstrument boundInstrument = bind(labelSet);
+    boundInstrument.record(value);
+    boundInstrument.unbind();
   }
 
   @Override
-  public BoundLongMeasure bind(LabelSet labelSet) {
-    return new BoundInstrument(labelSet, this.absolute);
+  public BoundInstrument bind(LabelSet labelSet) {
+    return new BoundInstrument(isAbsolute());
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof LongMeasureSdk)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    LongMeasureSdk that = (LongMeasureSdk) o;
-
-    return absolute == that.absolute;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (absolute ? 1 : 0);
-    return result;
-  }
-
-  private static final class BoundInstrument extends AbstractBoundInstrument
-      implements BoundLongMeasure {
+  static final class BoundInstrument extends AbstractBoundInstrument implements BoundLongMeasure {
 
     private final boolean absolute;
 
-    BoundInstrument(LabelSet labels, boolean absolute) {
-      super(labels);
+    BoundInstrument(boolean absolute) {
+      super(null);
       this.absolute = absolute;
     }
 
@@ -87,20 +72,26 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
       if (this.absolute && value < 0) {
         throw new IllegalArgumentException("absolute measure can only record positive values");
       }
-      // todo: pass through to an aggregator/accumulator
+      // TODO: pass through to an aggregator/accumulator
     }
   }
 
-  static LongMeasure.Builder builder(String name) {
-    return new Builder(name);
+  static LongMeasure.Builder builder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new Builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
-      extends AbstractMeasureBuilder<LongMeasure.Builder, LongMeasure>
+      extends AbstractMeasure.Builder<LongMeasure.Builder, LongMeasure>
       implements LongMeasure.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -116,6 +107,8 @@ final class LongMeasureSdk extends AbstractInstrument implements LongMeasure {
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
+          getMeterSharedState(),
+          getInstrumentationLibraryInfo(),
           isAbsolute());
     }
   }

@@ -57,6 +57,48 @@ public final class DefaultMeterTest {
   }
 
   @Test
+  public void noopAddDoubleCumulative_EmptyName() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Name");
+    defaultMeter.doubleCounterBuilder("");
+  }
+
+  @Test
+  public void noopAddLongCumulative_EmptyName() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Name");
+    defaultMeter.longCounterBuilder("");
+  }
+
+  @Test
+  public void noopAddMeasureDouble_EmptyName() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Name");
+    defaultMeter.doubleMeasureBuilder("");
+  }
+
+  @Test
+  public void noopAddMeasureLong_EmptyName() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Name");
+    defaultMeter.longMeasureBuilder("");
+  }
+
+  @Test
+  public void noopAddObserverDouble_EmptyName() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Name");
+    defaultMeter.doubleObserverBuilder("");
+  }
+
+  @Test
+  public void noopAddObserverLong_EmptyName() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Name");
+    defaultMeter.longObserverBuilder("");
+  }
+
+  @Test
   public void testVarargsLabelSetValidation_UnmatchedKeysAndValues() throws Exception {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("even");
@@ -68,5 +110,12 @@ public final class DefaultMeterTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("null");
     defaultMeter.createLabelSet(null, "value");
+  }
+
+  @Test
+  public void testNewBatchRecorder_NullLabelSet() throws Exception {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelSet");
+    defaultMeter.newBatchRecorder(null);
   }
 }

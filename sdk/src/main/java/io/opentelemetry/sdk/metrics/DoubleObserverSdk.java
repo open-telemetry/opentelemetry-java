@@ -17,21 +17,31 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleObserver;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserver {
-  private final boolean monotonic;
-
+final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver {
   DoubleObserverSdk(
       String name,
       String description,
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
       boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys);
-    this.monotonic = monotonic;
+    super(
+        name,
+        description,
+        unit,
+        constantLabels,
+        labelKeys,
+        InstrumentValueType.DOUBLE,
+        sharedState,
+        instrumentationLibraryInfo,
+        monotonic);
   }
 
   @Override
@@ -39,40 +49,22 @@ final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserv
     throw new UnsupportedOperationException("to be implemented");
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof DoubleObserverSdk)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    DoubleObserverSdk that = (DoubleObserverSdk) o;
-
-    return monotonic == that.monotonic;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (monotonic ? 1 : 0);
-    return result;
-  }
-
-  static DoubleObserver.Builder builder(String name) {
-    return new Builder(name);
+  static DoubleObserver.Builder builder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new Builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
-      extends AbstractObserverBuilder<DoubleObserver.Builder, DoubleObserver>
+      extends AbstractObserver.Builder<DoubleObserver.Builder, DoubleObserver>
       implements DoubleObserver.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -88,6 +80,8 @@ final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserv
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
+          getMeterSharedState(),
+          getInstrumentationLibraryInfo(),
           isMonotonic());
     }
   }

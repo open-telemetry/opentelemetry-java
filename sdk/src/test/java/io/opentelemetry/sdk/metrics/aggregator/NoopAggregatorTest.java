@@ -14,18 +14,30 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.aggregator;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link LongSumAggregator}. */
+/** Unit tests for {@link NoopAggregator}. */
 @RunWith(JUnit4.class)
-public class LongSumAggregatorTest {
+public class NoopAggregatorTest {
   @Test
-  public void longSumAggregation() {
-    LongSumAggregator longSumAggregator = new LongSumAggregator();
-    longSumAggregator.recordLong(12);
+  public void factoryAggregation() {
+    AggregatorFactory factory = NoopAggregator.getFactory();
+    assertThat(factory.getAggregator()).isInstanceOf(NoopAggregator.class);
+  }
+
+  @Test
+  public void noopOperations() {
+    Aggregator aggregator = NoopAggregator.getFactory().getAggregator();
+    aggregator.recordLong(12);
+    aggregator.recordDouble(12.1);
+    aggregator.mergeToAndReset(aggregator);
+    assertThat(aggregator.toPoint(1, 2, Collections.<String, String>emptyMap())).isNull();
   }
 }

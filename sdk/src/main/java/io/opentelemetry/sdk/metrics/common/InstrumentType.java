@@ -14,25 +14,14 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.sdk.metrics.common;
 
-import io.opentelemetry.metrics.Measure;
-
-abstract class AbstractMeasureBuilder<B extends Measure.Builder<B, V>, V>
-    extends AbstractInstrumentBuilder<B, V> implements Measure.Builder<B, V> {
-  private boolean absolute = true;
-
-  protected AbstractMeasureBuilder(String name) {
-    super(name);
-  }
-
-  @Override
-  public final B setAbsolute(boolean absolute) {
-    this.absolute = absolute;
-    return getThis();
-  }
-
-  final boolean isAbsolute() {
-    return this.absolute;
-  }
+/** All instrument types available in the metric package. */
+public enum InstrumentType {
+  COUNTER_MONOTONIC,
+  COUNTER_NON_MONOTONIC,
+  MEASURE_ABSOLUTE,
+  MEASURE_NON_ABSOLUTE,
+  OBSERVER_MONOTONIC,
+  OBSERVER_NON_MONOTONIC,
 }

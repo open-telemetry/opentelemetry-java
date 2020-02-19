@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.EndSpanOptions;

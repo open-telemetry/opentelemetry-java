@@ -18,12 +18,12 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.List;
 import java.util.Map;
 
-final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter {
-
-  private final boolean monotonic;
+final class DoubleCounterSdk extends AbstractCounter implements DoubleCounter {
 
   private DoubleCounterSdk(
       String name,
@@ -31,54 +31,39 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
       String unit,
       Map<String, String> constantLabels,
       List<String> labelKeys,
-      boolean monotonic) {
-    super(name, description, unit, constantLabels, labelKeys);
-    this.monotonic = monotonic;
+      boolean monotonic,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    super(
+        name,
+        description,
+        unit,
+        constantLabels,
+        labelKeys,
+        InstrumentValueType.DOUBLE,
+        sharedState,
+        instrumentationLibraryInfo,
+        monotonic);
   }
 
   @Override
   public void add(double delta, LabelSet labelSet) {
-    BoundDoubleCounter boundDoubleCounter = bind(labelSet);
-    boundDoubleCounter.add(delta);
-    boundDoubleCounter.unbind();
+    BoundInstrument boundInstrument = bind(labelSet);
+    boundInstrument.add(delta);
+    boundInstrument.unbind();
   }
 
   @Override
-  public BoundDoubleCounter bind(LabelSet labelSet) {
-    return new BoundInstrument(labelSet, monotonic);
+  public BoundInstrument bind(LabelSet labelSet) {
+    return new BoundInstrument(isMonotonic());
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof DoubleCounterSdk)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    DoubleCounterSdk that = (DoubleCounterSdk) o;
-
-    return monotonic == that.monotonic;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (monotonic ? 1 : 0);
-    return result;
-  }
-
-  private static final class BoundInstrument extends AbstractBoundInstrument
-      implements BoundDoubleCounter {
+  static final class BoundInstrument extends AbstractBoundInstrument implements BoundDoubleCounter {
 
     private final boolean monotonic;
 
-    BoundInstrument(LabelSet labels, boolean monotonic) {
-      super(labels);
+    BoundInstrument(boolean monotonic) {
+      super(null);
       this.monotonic = monotonic;
     }
 
@@ -87,20 +72,26 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
       if (monotonic && delta < 0) {
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
-      // todo: pass through to an aggregator/accumulator
+      // TODO: pass through to an aggregator/accumulator
     }
   }
 
-  static DoubleCounter.Builder builder(String name) {
-    return new Builder(name);
+  static DoubleCounter.Builder builder(
+      String name,
+      MeterSharedState sharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new Builder(name, sharedState, instrumentationLibraryInfo);
   }
 
   private static final class Builder
-      extends AbstractCounterBuilder<DoubleCounter.Builder, DoubleCounter>
+      extends AbstractCounter.Builder<DoubleCounter.Builder, DoubleCounter>
       implements DoubleCounter.Builder {
 
-    private Builder(String name) {
-      super(name);
+    private Builder(
+        String name,
+        MeterSharedState sharedState,
+        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      super(name, sharedState, instrumentationLibraryInfo);
     }
 
     @Override
@@ -116,7 +107,9 @@ final class DoubleCounterSdk extends AbstractInstrument implements DoubleCounter
           getUnit(),
           getConstantLabels(),
           getLabelKeys(),
-          isMonotonic());
+          isMonotonic(),
+          getMeterSharedState(),
+          getInstrumentationLibraryInfo());
     }
   }
 }

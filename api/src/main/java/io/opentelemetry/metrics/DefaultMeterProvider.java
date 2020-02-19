@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics;
+package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.Observer;
+public class DefaultMeterProvider implements MeterProvider {
 
-abstract class AbstractObserverBuilder<B extends Observer.Builder<B, V>, V>
-    extends AbstractInstrumentBuilder<B, V> implements Observer.Builder<B, V> {
-  private boolean monotonic = false;
+  private static final MeterProvider instance = new DefaultMeterProvider();
 
-  protected AbstractObserverBuilder(String name) {
-    super(name);
+  public static MeterProvider getInstance() {
+    return instance;
   }
 
   @Override
-  public final B setMonotonic(boolean monotonic) {
-    this.monotonic = monotonic;
-    return getThis();
+  public Meter get(String instrumentationName) {
+    return get(instrumentationName, null);
   }
 
-  final boolean isMonotonic() {
-    return this.monotonic;
+  @Override
+  public Meter get(String instrumentationName, String instrumentationVersion) {
+    return DefaultMeter.getInstance();
   }
 }

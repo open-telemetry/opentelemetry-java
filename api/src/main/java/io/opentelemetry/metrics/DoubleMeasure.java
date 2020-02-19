@@ -69,7 +69,7 @@ public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundDoubleMeasure extends BoundInstrument {
+  interface BoundDoubleMeasure extends InstrumentWithBinding.BoundInstrument {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *

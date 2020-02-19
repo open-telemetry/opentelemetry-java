@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.metrics;
+package io.opentelemetry.sdk.metrics.aggregator;
 
-public class DefaultMeterRegistry implements MeterRegistry {
+/** Factory class for {@link Aggregator}. */
+public interface AggregatorFactory {
 
-  private static final MeterRegistry instance = new DefaultMeterRegistry();
-
-  public static MeterRegistry getInstance() {
-    return instance;
-  }
-
-  @Override
-  public Meter get(String instrumentationName) {
-    return get(instrumentationName, null);
-  }
-
-  @Override
-  public Meter get(String instrumentationName, String instrumentationVersion) {
-    return DefaultMeter.getInstance();
-  }
+  /**
+   * Returns a new {@link Aggregator}.
+   *
+   * @return a new {@link Aggregator}.
+   */
+  Aggregator getAggregator();
 }

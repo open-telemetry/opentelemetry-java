@@ -20,7 +20,7 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShi
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;
