@@ -18,7 +18,11 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Counter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 abstract class AbstractCounter<B extends AbstractBoundInstrument>
     extends AbstractInstrumentWithBinding<B> {
@@ -35,7 +39,13 @@ abstract class AbstractCounter<B extends AbstractBoundInstrument>
         descriptor,
         meterProviderSharedState,
         instrumentationLibraryInfo,
-        new ActiveBatcher(Batchers.getNoop()));
+        new ActiveBatcher(
+            getDefaultBatcher(
+                descriptor,
+                getCounterInstrumentType(monotonic),
+                instrumentValueType,
+                meterProviderSharedState,
+                instrumentationLibraryInfo)));
     this.monotonic = monotonic;
     this.instrumentValueType = instrumentValueType;
   }
@@ -89,5 +99,38 @@ abstract class AbstractCounter<B extends AbstractBoundInstrument>
     final boolean isMonotonic() {
       return this.monotonic;
     }
+  }
+
+  private static InstrumentType getCounterInstrumentType(boolean monotonic) {
+    return monotonic ? InstrumentType.COUNTER_MONOTONIC : InstrumentType.COUNTER_NON_MONOTONIC;
+  }
+
+  private static Batcher getDefaultBatcher(
+      InstrumentDescriptor descriptor,
+      InstrumentType instrumentType,
+      InstrumentValueType instrumentValueType,
+      MeterProviderSharedState meterProviderSharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    Aggregation defaultAggregation = Aggregations.sum();
+    return Batchers.getCumulativeAllLabels(
+        getDefaultMetricDescriptor(
+            descriptor, instrumentType, instrumentValueType, defaultAggregation),
+        meterProviderSharedState.getResource(),
+        instrumentationLibraryInfo,
+        defaultAggregation.getAggregatorFactory(instrumentValueType),
+        meterProviderSharedState.getClock());
+  }
+
+  private static Descriptor getDefaultMetricDescriptor(
+      InstrumentDescriptor descriptor,
+      InstrumentType instrumentType,
+      InstrumentValueType instrumentValueType,
+      Aggregation aggregation) {
+    return Descriptor.create(
+        descriptor.getName(),
+        descriptor.getDescription(),
+        aggregation.getUnit(descriptor.getUnit()),
+        aggregation.getDescriptorType(instrumentType, instrumentValueType),
+        descriptor.getConstantLabels());
   }
 }

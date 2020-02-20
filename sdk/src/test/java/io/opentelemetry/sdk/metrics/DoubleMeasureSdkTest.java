@@ -48,7 +48,6 @@ public class DoubleMeasureSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     DoubleMeasure doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
-
     BoundDoubleMeasure boundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
     BoundDoubleMeasure duplicateBoundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
     try {
@@ -63,10 +62,9 @@ public class DoubleMeasureSdkTest {
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     DoubleMeasureSdk doubleMeasure =
         (DoubleMeasureSdk) testSdk.doubleMeasureBuilder("testMeasure").build();
-
     BoundDoubleMeasure boundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
     try {
-      assertThat(doubleMeasure.collect()).isEmpty();
+      doubleMeasure.collect();
       BoundDoubleMeasure duplicateBoundMeasure =
           doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
       try {

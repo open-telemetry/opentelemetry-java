@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Observer;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
@@ -97,5 +98,10 @@ class AbstractObserver extends AbstractInstrument {
     final boolean isMonotonic() {
       return this.monotonic;
     }
+  }
+
+  // TODO: make this private
+  static InstrumentType getInstrumentType(boolean monotonic) {
+    return monotonic ? InstrumentType.OBSERVER_MONOTONIC : InstrumentType.OBSERVER_NON_MONOTONIC;
   }
 }

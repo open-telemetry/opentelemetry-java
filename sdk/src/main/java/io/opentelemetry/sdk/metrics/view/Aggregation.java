@@ -52,6 +52,14 @@ public interface Aggregation {
       InstrumentType instrumentType, InstrumentValueType instrumentValueType);
 
   /**
+   * Returns the unit that this {@code Aggregation} will produce.
+   *
+   * @param initialUnit the initial unit for the {@code Instrument}'s measurements.
+   * @return the unit that this {@code Aggregation} will produce.
+   */
+  String getUnit(String initialUnit);
+
+  /**
    * Returns {@code true} if this {@code Aggregation} can be applied to the given {@code
    * InstrumentType}.
    *

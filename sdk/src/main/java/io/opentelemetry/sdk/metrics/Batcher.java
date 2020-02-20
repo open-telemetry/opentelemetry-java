@@ -25,6 +25,10 @@ import java.util.List;
  * A {@code Batcher} represents an internal representation of an {code Instrument} aggregation
  * process. It records individual measurements (via the {@code Aggregator}). It batches together
  * {@code Aggregator}s for the similar {@code LabelSet}.
+ *
+ * <p>The only thread safe method in this class is {@link #getAggregator()}. An entire collection
+ * cycle must be protected by a lock. A collection cycle is defined by multiple calls to {@link
+ * #batch(LabelSet, Aggregator, boolean)} followed by one {@link #completeCollectionCycle()};
  */
 interface Batcher {
 
