@@ -44,6 +44,8 @@ public interface Sampler {
    * @param spanId the {@link SpanId} for the new {@code Span}.
    * @param name the name of the new {@code Span}.
    * @param parentLinks the parentLinks associated with the new {@code Span}.
+   * @param spanKind the {@link Span.Kind} of the {@code Span}.
+   * @param attributes list of {@link AttributeValue} with their keys.
    * @return sampling decision whether span should be sampled or not.
    * @since 0.1.0
    */
@@ -52,6 +54,8 @@ public interface Sampler {
       TraceId traceId,
       SpanId spanId,
       String name,
+      Span.Kind spanKind,
+      Map<String, AttributeValue> attributes,
       List<Link> parentLinks);
 
   /**
@@ -67,7 +71,7 @@ public interface Sampler {
 
   /**
    * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, TraceId, SpanId, String,
-   * List)}.
+   * Span.Kind, Map, List)}.
    *
    * @since 0.1.0
    */
