@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class LongSumAggregator implements Aggregator {
+public final class LongSumAggregator extends AbstractAggregator {
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
@@ -38,11 +38,7 @@ public final class LongSumAggregator implements Aggregator {
   }
 
   @Override
-  public void mergeToAndReset(Aggregator aggregator) {
-    if (!(aggregator instanceof LongSumAggregator)) {
-      return;
-    }
-
+  public void doMergeAndReset(Aggregator aggregator) {
     LongSumAggregator other = (LongSumAggregator) aggregator;
     other.current.getAndAdd(this.current.getAndSet(0));
   }
@@ -53,14 +49,7 @@ public final class LongSumAggregator implements Aggregator {
   }
 
   @Override
-  public void recordDouble(double value) {
-    throw new UnsupportedOperationException("This Aggregator does not support double values");
-  }
-
-  @Override
   public void recordLong(long value) {
     current.getAndAdd(value);
   }
-
-  LongSumAggregator() {}
 }
