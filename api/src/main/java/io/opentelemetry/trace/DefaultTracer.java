@@ -17,10 +17,8 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.Map;
@@ -34,7 +32,6 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class DefaultTracer implements Tracer {
   private static final DefaultTracer INSTANCE = new DefaultTracer();
-  private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
   private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
 
   /**
@@ -60,11 +57,6 @@ public final class DefaultTracer implements Tracer {
   @Override
   public Span.Builder spanBuilder(String spanName) {
     return NoopSpanBuilder.create(this, spanName);
-  }
-
-  @Override
-  public BinaryFormat<SpanContext> getBinaryFormat() {
-    return BINARY_FORMAT;
   }
 
   @Override

@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
@@ -270,12 +269,6 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public BinaryFormat<SpanContext> getBinaryFormat() {
-      return null;
-    }
-
-    @Nullable
-    @Override
     public HttpTextFormat<SpanContext> getHttpTextFormat() {
       return null;
     }
@@ -403,12 +396,6 @@ public class OpenTelemetryTest {
     @Nullable
     @Override
     public Scope withContext(CorrelationContext distContext) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public BinaryFormat<CorrelationContext> getBinaryFormat() {
       return null;
     }
 

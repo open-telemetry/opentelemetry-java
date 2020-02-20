@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.correlationcontext;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
@@ -42,12 +41,6 @@ public class CorrelationContextManagerSdk implements CorrelationContextManager {
   @Override
   public Scope withContext(CorrelationContext distContext) {
     return ContextUtils.withCorrelationContext(distContext);
-  }
-
-  @Override
-  public BinaryFormat<CorrelationContext> getBinaryFormat() {
-    // TODO: Implement this.
-    return DefaultCorrelationContextManager.getInstance().getBinaryFormat();
   }
 
   @Override
