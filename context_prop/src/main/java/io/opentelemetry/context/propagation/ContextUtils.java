@@ -39,6 +39,10 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static Scope withScopedContext(Context context) {
+    if (context == null) {
+      throw new NullPointerException("context");
+    }
+
     return new ContextInScope(context);
   }
 
