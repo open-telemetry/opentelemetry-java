@@ -25,8 +25,8 @@
  * <p>One environment variables is used to populate resource information:
  *
  * <ul>
- *   <li>OC_RESOURCE_LABELS: A comma-separated list of labels describing the source in more detail,
- *       e.g. “key1=val1,key2=val2”. The allowed character set is appropriately constrained.
+ *   <li>OTEL_RESOURCE_LABELS: A comma-separated list of labels describing the source in more
+ *       detail, e.g. “key1=val1,key2=val2”. The allowed character set is appropriately constrained.
  * </ul>
  *
  * <p>Label keys, and label values MUST contain only printable ASCII (codes between 32 and 126,
