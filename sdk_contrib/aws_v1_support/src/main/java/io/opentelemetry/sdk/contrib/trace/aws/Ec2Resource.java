@@ -22,7 +22,7 @@ import com.amazonaws.util.EC2MetadataUtils;
 import com.amazonaws.util.EC2MetadataUtils.InstanceInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
-import io.opentelemetry.sdk.resources.ResourceValue;
+import io.opentelemetry.trace.AttributeValue;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -47,19 +47,29 @@ public class Ec2Resource {
   // This can be tested now with a fake info and host.
   static Resource getResourceFromInfoAndHost(
       @Nullable InstanceInfo info, @Nullable String hostname) {
-    Map<String, ResourceValue> labels = new HashMap<>();
-    labels.put(ResourceConstants.CLOUD_PROVIDER, ResourceValue.create(CLOUD_PROVIDER_AWS));
+    Map<String, AttributeValue> labels = new HashMap<>();
+    labels.put(
+        ResourceConstants.CLOUD_PROVIDER, AttributeValue.stringAttributeValue(CLOUD_PROVIDER_AWS));
     if (info != null) {
-      labels.put(ResourceConstants.CLOUD_ACCOUNT, ResourceValue.create(info.getAccountId()));
-      labels.put(ResourceConstants.CLOUD_REGION, ResourceValue.create(info.getRegion()));
-      labels.put(ResourceConstants.CLOUD_ZONE, ResourceValue.create(info.getAvailabilityZone()));
-      labels.put(ResourceConstants.HOST_ID, ResourceValue.create(info.getInstanceId()));
-      labels.put(ResourceConstants.HOST_NAME, ResourceValue.create(info.getPrivateIp()));
-      labels.put(ResourceConstants.HOST_TYPE, ResourceValue.create(info.getInstanceType()));
-      labels.put(ResourceConstants.HOST_IMAGE_ID, ResourceValue.create(info.getImageId()));
+      labels.put(
+          ResourceConstants.CLOUD_ACCOUNT,
+          AttributeValue.stringAttributeValue(info.getAccountId()));
+      labels.put(
+          ResourceConstants.CLOUD_REGION, AttributeValue.stringAttributeValue(info.getRegion()));
+      labels.put(
+          ResourceConstants.CLOUD_ZONE,
+          AttributeValue.stringAttributeValue(info.getAvailabilityZone()));
+      labels.put(
+          ResourceConstants.HOST_ID, AttributeValue.stringAttributeValue(info.getInstanceId()));
+      labels.put(
+          ResourceConstants.HOST_NAME, AttributeValue.stringAttributeValue(info.getPrivateIp()));
+      labels.put(
+          ResourceConstants.HOST_TYPE, AttributeValue.stringAttributeValue(info.getInstanceType()));
+      labels.put(
+          ResourceConstants.HOST_IMAGE_ID, AttributeValue.stringAttributeValue(info.getImageId()));
     }
     if (!isNullOrEmpty(hostname)) {
-      labels.put(ResourceConstants.HOST_HOSTNAME, ResourceValue.create(hostname));
+      labels.put(ResourceConstants.HOST_HOSTNAME, AttributeValue.stringAttributeValue(hostname));
     }
     return Resource.create(labels);
   }
