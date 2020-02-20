@@ -38,7 +38,7 @@ public class AbstractObserverBuilderTest {
   private static final MeterProviderSharedState METER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.EMPTY;
+      InstrumentationLibraryInfo.getEmpty();
 
   @Test
   public void defaultValue() {

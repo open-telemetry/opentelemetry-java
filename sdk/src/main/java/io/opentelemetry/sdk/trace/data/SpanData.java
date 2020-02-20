@@ -292,7 +292,7 @@ public abstract class SpanData {
   public static Builder newBuilder() {
     return new AutoValue_SpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
-        .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.EMPTY)
+        .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.<io.opentelemetry.trace.Link>emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Collections.<String, AttributeValue>emptyMap())

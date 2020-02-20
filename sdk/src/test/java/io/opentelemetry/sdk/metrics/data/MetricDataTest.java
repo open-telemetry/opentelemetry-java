@@ -69,7 +69,7 @@ public class MetricDataTest {
     MetricData.create(
         null,
         Resource.getEmpty(),
-        InstrumentationLibraryInfo.EMPTY,
+        InstrumentationLibraryInfo.getEmpty(),
         Collections.<Point>singletonList(DOUBLE_POINT));
   }
 
@@ -80,7 +80,7 @@ public class MetricDataTest {
     MetricData.create(
         LONG_METRIC_DESCRIPTOR,
         null,
-        InstrumentationLibraryInfo.EMPTY,
+        InstrumentationLibraryInfo.getEmpty(),
         Collections.<Point>singletonList(DOUBLE_POINT));
   }
 
@@ -100,7 +100,7 @@ public class MetricDataTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("points");
     MetricData.create(
-        LONG_METRIC_DESCRIPTOR, Resource.getEmpty(), InstrumentationLibraryInfo.EMPTY, null);
+        LONG_METRIC_DESCRIPTOR, Resource.getEmpty(), InstrumentationLibraryInfo.getEmpty(), null);
   }
 
   @Test
@@ -109,12 +109,12 @@ public class MetricDataTest {
         MetricData.create(
             LONG_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
-            InstrumentationLibraryInfo.EMPTY,
+            InstrumentationLibraryInfo.getEmpty(),
             Collections.<Point>emptyList());
     assertThat(metricData.getDescriptor()).isEqualTo(LONG_METRIC_DESCRIPTOR);
     assertThat(metricData.getResource()).isEqualTo(Resource.getEmpty());
     assertThat(metricData.getInstrumentationLibraryInfo())
-        .isEqualTo(InstrumentationLibraryInfo.EMPTY);
+        .isEqualTo(InstrumentationLibraryInfo.getEmpty());
     assertThat(metricData.getPoints()).isEmpty();
   }
 
@@ -128,7 +128,7 @@ public class MetricDataTest {
         MetricData.create(
             LONG_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
-            InstrumentationLibraryInfo.EMPTY,
+            InstrumentationLibraryInfo.getEmpty(),
             Collections.<Point>singletonList(LONG_POINT));
     assertThat(metricData.getPoints()).containsExactly(LONG_POINT);
   }
@@ -143,7 +143,7 @@ public class MetricDataTest {
         MetricData.create(
             DOUBLE_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
-            InstrumentationLibraryInfo.EMPTY,
+            InstrumentationLibraryInfo.getEmpty(),
             Collections.<Point>singletonList(DOUBLE_POINT));
     assertThat(metricData.getPoints()).containsExactly(DOUBLE_POINT);
   }
