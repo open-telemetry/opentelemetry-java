@@ -21,7 +21,9 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.common.truth.Truth;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -39,6 +41,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class SamplersTest {
   private static final String SPAN_NAME = "MySpanName";
+  private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private static final int NUM_SAMPLE_TRIES = 1000;
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
   private final TraceId traceId = idsGenerator.generateTraceId();
@@ -60,7 +63,13 @@ public class SamplersTest {
     Truth.assertThat(
             Samplers.alwaysOn()
                 .shouldSample(
-                    sampledSpanContext, traceId, spanId, SPAN_NAME, Collections.<Link>emptyList())
+                    sampledSpanContext,
+                    traceId,
+                    spanId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Collections.<String, AttributeValue>emptyMap(),
+                    Collections.<Link>emptyList())
                 .isSampled())
         .isTrue();
     // Not sampled parent.
@@ -71,6 +80,8 @@ public class SamplersTest {
                     traceId,
                     spanId,
                     SPAN_NAME,
+                    SPAN_KIND,
+                    Collections.<String, AttributeValue>emptyMap(),
                     Collections.<Link>emptyList())
                 .isSampled())
         .isTrue();
@@ -87,7 +98,13 @@ public class SamplersTest {
     Truth.assertThat(
             Samplers.alwaysOff()
                 .shouldSample(
-                    sampledSpanContext, traceId, spanId, SPAN_NAME, Collections.<Link>emptyList())
+                    sampledSpanContext,
+                    traceId,
+                    spanId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Collections.<String, AttributeValue>emptyMap(),
+                    Collections.<Link>emptyList())
                 .isSampled())
         .isFalse();
     // Not sampled parent.
@@ -98,6 +115,8 @@ public class SamplersTest {
                     traceId,
                     spanId,
                     SPAN_NAME,
+                    SPAN_KIND,
+                    Collections.<String, AttributeValue>emptyMap(),
                     Collections.<Link>emptyList())
                 .isSampled())
         .isFalse();
@@ -154,6 +173,8 @@ public class SamplersTest {
               idsGenerator.generateTraceId(),
               idsGenerator.generateSpanId(),
               SPAN_NAME,
+              SPAN_KIND,
+              Collections.<String, AttributeValue>emptyMap(),
               parentLinks)
           .isSampled()) {
         count++;
@@ -242,6 +263,8 @@ public class SamplersTest {
             notSampledtraceId,
             idsGenerator.generateSpanId(),
             SPAN_NAME,
+            SPAN_KIND,
+            Collections.<String, AttributeValue>emptyMap(),
             Collections.<Link>emptyList());
     assertThat(decision1.isSampled()).isFalse();
     assertThat(decision1.attributes()).isEmpty();
@@ -274,6 +297,8 @@ public class SamplersTest {
             sampledtraceId,
             idsGenerator.generateSpanId(),
             SPAN_NAME,
+            SPAN_KIND,
+            Collections.<String, AttributeValue>emptyMap(),
             Collections.<Link>emptyList());
     assertThat(decision2.isSampled()).isTrue();
     assertThat(decision2.attributes()).isEmpty();
