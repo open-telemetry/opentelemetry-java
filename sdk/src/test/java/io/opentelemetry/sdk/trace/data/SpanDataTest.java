@@ -27,9 +27,7 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.TraceState;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -96,12 +94,7 @@ public class SpanDataTest {
   }
 
   private static Link emptyLink() {
-    return SpanData.Link.create(
-        SpanContext.create(
-            TraceId.getInvalid(),
-            SpanId.getInvalid(),
-            TraceFlags.getDefault(),
-            TraceState.getDefault()));
+    return SpanData.Link.create(SpanContext.getInvalid());
   }
 
   private static SpanData.Builder createBasicSpanBuilder() {
