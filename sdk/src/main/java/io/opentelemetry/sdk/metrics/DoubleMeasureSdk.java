@@ -54,7 +54,8 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     return new BoundInstrument(isAbsolute(), batcher);
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument implements BoundDoubleMeasure {
+  static final class BoundInstrument extends AbstractBoundInstrument
+      implements DoubleMeasure.BoundDoubleMeasure {
 
     private final boolean absolute;
 
