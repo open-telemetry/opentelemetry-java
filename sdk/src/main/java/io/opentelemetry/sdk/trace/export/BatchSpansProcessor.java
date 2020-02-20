@@ -93,7 +93,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
   @Override
   public void shutdown() {
     workerThread.interrupt();
-    worker.flush();
+    worker.shutdown();
   }
 
   @Override
@@ -319,7 +319,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
       }
     }
 
-    private void flush() {
+    private void shutdown() {
       forceFlush();
       executorService.shutdown();
     }

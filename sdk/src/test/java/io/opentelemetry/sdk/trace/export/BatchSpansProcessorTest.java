@@ -129,6 +129,28 @@ public class BatchSpansProcessorTest {
   }
 
   @Test
+  public void forceExport() {
+    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1, 1);
+    BatchSpansProcessor batchSpansProcessor =
+        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+            .setMaxQueueSize(10_000)
+            .setMaxExportBatchSize(2_000)
+            .setScheduleDelayMillis(10_000) // 10s
+            .build();
+    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
+    for (int i = 0; i < 100; i++) {
+      createSampledEndedSpan("notExported");
+    }
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(0);
+    batchSpansProcessor.forceFlush();
+    exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(100);
+  }
+
+  @Test
   public void exportSpansToMultipleServices() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
     WaitingSpanExporter waitingSpanExporter2 = new WaitingSpanExporter(2);
@@ -395,10 +417,16 @@ public class BatchSpansProcessorTest {
     private final List<SpanData> spanDataList = new ArrayList<>();
     private final int numberToWaitFor;
     private CountDownLatch countDownLatch;
+    private int timeout = 10;
 
     WaitingSpanExporter(int numberToWaitFor) {
       countDownLatch = new CountDownLatch(numberToWaitFor);
       this.numberToWaitFor = numberToWaitFor;
+    }
+
+    WaitingSpanExporter(int numberToWaitFor, int timeout) {
+      this(numberToWaitFor);
+      this.timeout = timeout;
     }
 
     /**
@@ -411,7 +439,7 @@ public class BatchSpansProcessorTest {
     @Nullable
     List<SpanData> waitForExport() {
       try {
-        countDownLatch.await(10, TimeUnit.SECONDS);
+        countDownLatch.await(timeout, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
         // Preserve the interruption status as per guidance.
         Thread.currentThread().interrupt();
