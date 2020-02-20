@@ -26,7 +26,7 @@ public class DefaultTraceProvider implements TraceProvider {
   }
 
   @Override
-  public TracerRegistry create() {
-    return DefaultTracerRegistry.getInstance();
+  public TracerProvider create() {
+    return DefaultTracerProvider.getInstance();
   }
 }

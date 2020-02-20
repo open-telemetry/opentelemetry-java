@@ -18,13 +18,13 @@ package io.opentelemetry.sdk.common;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.trace.TracerSdk;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * Holds information about the instrumentation library specified when creating an instance of {@link
- * TracerSdk} using {@link TracerSdkRegistry}.
+ * TracerSdk} using {@link TracerSdkProvider}.
  */
 @AutoValue
 @Immutable

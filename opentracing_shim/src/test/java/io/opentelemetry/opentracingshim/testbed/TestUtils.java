@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.AttributeValue;
@@ -45,7 +45,7 @@ public final class TestUtils {
    * exporting to the specified {@code InMemorySpanExporter}.
    */
   public static Tracer createTracerShim(InMemorySpanExporter exporter) {
-    TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.builder().build();
+    TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
     tracerSdkFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
     return TraceShim.createTracerShim(tracerSdkFactory, new CorrelationContextManagerSdk());
   }
