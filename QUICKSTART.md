@@ -19,7 +19,7 @@
 
 <!-- tocstop -->
 
-OpenTelemetry can be used to instrument code for collecting distributed traces and recording metrics.
+OpenTelemetry can be used to instrument code for collecting telemetry data.
 For more details, check out the [Specification Overview].
 
 In the following examples, we demonstrate how to configure the OpenTelemetry SDK, create spans and record metrics through the OpenTelemetry API.
@@ -28,10 +28,12 @@ In the following examples, we demonstrate how to configure the OpenTelemetry SDK
 
 # Configuration
 
-**Libraries** that want to export distributed tracing using OpenTelemetry only need a dependency on the `opentelemetry-api` package
+**Libraries** that want to export telemetry data using OpenTelemetry only need a dependency on the `opentelemetry-api` package
 and should never configure OpenTelemetry themselves. The configuration must be provided by **Applications** which should also depend on the 
 `opentelemetry-sdk` package, or any other implementation of the OpenTelemetry API. This way, libraries will obtain a real tracer
 implementation only if the user application is configured for it. For more details, check out the [Library Guidelines].
+The configuration examples reported in this document only apply to the SDK provided by `opentelemetry-sdk`. 
+Other implementation of the API might provide different configuration mechanisms.
 
 [Library Guidelines]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/library-guidelines.md
 
@@ -44,7 +46,10 @@ For example, a basic configuration instantiates the SDK tracer registry and sets
 TracerSdkRegistry tracerRegistry = OpenTelemetrySdk.getTracerRegistry();
 
 // Set to export the traces to a logging stream
-tracerRegistry.addSpanProcessor(SimpleSpansProcessor.newBuilder(new LoggingExporter()).build());
+tracerRegistry.addSpanProcessor(
+    SimpleSpansProcessor.newBuilder(
+        new LoggingExporter()
+    ).build());
 ```
 
 ### Sampler
@@ -53,11 +58,15 @@ It is not always feasible to trace and export every user request in an applicati
 In order to strike a balance between observability and expenses, traces can be sampled. 
 
 The OpenTelemetry SDK offers three samplers out of the box:
- - Always sample
- - Never sample
- - Sampling based on probability
+ - [AlwaysOnSampler] which samples every trace regardless of upstream sampling decisions.
+ - [AlwaysOffSampler] which doesn't sample any trace, regardless of upstream sampling decisions.
+ - [Probability] which samples a configurable percentage of traces, and additionally samples any trace that was sampled upstream.
 
-Additional samplers can be provided implementing the [`io.opentelemetry.sdk.trace.Sampler`] interface.
+[AlwaysOnSampler]: https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Samplers.java#L82--L105
+[AlwaysOffSampler]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Samplers.java#L108--L131
+[Probability]:https://github.com/open-telemetry/opentelemetry-java/blob/master/sdk/src/main/java/io/opentelemetry/sdk/trace/Samplers.java#L142--L203
+
+Additional samplers can be provided by implementing the [`io.opentelemetry.sdk.trace.Sampler`] interface.
 
 ```java
 TraceConfig alwaysOn = TraceConfig.getDefault().toBuilder().setSampler(
@@ -98,14 +107,17 @@ tracerRegistry.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
 
 ### Exporter
 
-Span Processor are initialized with an exporter which is responsible to send the telemetry data to your backend of choice.
+Span processors are initialized with an exporter which is responsible for sending the telemetry data a particular backend.
 OpenTelemetry offers four exporters out of the box:
 - In-Memory Exporter: keeps the data in memory, useful for debugging.
-- Jaeger Exporter: prepare and send the collected telemetry data to a Jaeger backend via gRPC.
+- Jaeger Exporter: prepares and sends the collected telemetry data to a Jaeger backend via gRPC.
 - Logging Exporter: saves the telemetry data into log streams.
 - OpenTelemetry Exporter: sends the data to the [OpenTelemetry Collector] (not yet implemented).
 
+Other exporters can be found in the [OpenTelemetry Registry].
+
 [OpenTelemetry Collector]: https://github.com/open-telemetry/opentelemetry-collector
+[OpenTelemetry Registry]: https://opentelemetry.io/registry/?s=exporter
 
 ```java
 tracerRegistry.addSpanProcessor(SimpleSpansProcessor.newBuilder(
@@ -156,21 +168,23 @@ Most of the time, we want to correlate spans for nested operations.
 OpenTelemetry supports tracing within processes and across remote processes.
 For more details how to share context between remote processes, see [Context Propagation](#context-propagation).
 
-For a method `A` calling a method `B`, the spans could be manually linked in the following way:
+For a method `a` calling a method `b`, the spans could be manually linked in the following way:
 ```java
 void a() {
-  Span parentSpan = tracer.spanBuilder("a").startSpan();
+  Span parentSpan = tracer.spanBuilder("a")
+        .startSpan();
   b(parentSpan);
   parentSpan.end();
 }
 void b(Span parentSpan) {
-  Span childSpan = tracer.spanBuilder("b").setParent(parentSpan).startSpan();
+  Span childSpan = tracer.spanBuilder("b")
+        .setParent(parentSpan)
+        .startSpan();
   // do stuff
   childSpan.end();
 }
 ```
-Since it is not always possible to change a method signature or rely on global variables, the OpenTelemetry API
-offers an automated way to propagate the `parentSpan`:
+The OpenTelemetry API offers also an automated way to propagate the `parentSpan`:
 ```java
 void a() {
   Span parentSpan = tracer.spanBuilder("a").startSpan();
@@ -185,7 +199,7 @@ void b() {
      // NOTE: setParent(parentSpan) is not required anymore, 
      // `tracer.getCurrentSpan()` is automatically added as parent
     .startSpan();
-  ...
+  // do stuff
   childSpan.end();
 }
 ``` 
@@ -196,8 +210,8 @@ Span childRemoteParent = tracer.spanBuilder("Child").setParent(remoteContext).st
 ```
 
 ## Span Attributes
-In OpenTelemetry spans can be created freely and it’s up to the implementor to annotate them with attributes specific to the represented operation. 
-Attributes provide additional context on a span to the specific operation it tracks, such as results or operation properties.
+In OpenTelemetry spans can be created freely and it's up to the implementor to annotate them with attributes specific to the represented operation. 
+Attributes provide additional context on a span about the specific operation it tracks, such as results or operation properties.
 ```java
 Span span = tracer.spanBuilder("/resource/path").setSpanKind(Span.Kind.CLIENT).startSpan();
 span.setAttribute("http.method", "GET");
@@ -305,4 +319,3 @@ public void handle(HttpExchange he) {
 
 # Metrics
 
-TODO
