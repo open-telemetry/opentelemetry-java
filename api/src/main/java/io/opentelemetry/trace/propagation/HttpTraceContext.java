@@ -118,25 +118,24 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
     if (traceparent == null) {
       return INVALID_SPAN_CONTEXT;
     }
-    SpanContext contextFromParentHeader;
-    try {
-      contextFromParentHeader = extractContextFromTraceParent(traceparent);
-    } catch (IllegalArgumentException e) {
-      logger.info("Unparseable traceparent header. Returning INVALID span context.");
-      return INVALID_SPAN_CONTEXT;
+
+    SpanContext contextFromParentHeader = extractContextFromTraceParent(traceparent);
+    if (!contextFromParentHeader.isValid()) {
+      return contextFromParentHeader;
     }
 
     String traceStateHeader = getter.get(carrier, TRACE_STATE);
+    if (traceStateHeader == null || traceStateHeader.isEmpty()) {
+      return contextFromParentHeader;
+    }
+
     try {
-      if (traceStateHeader == null || traceStateHeader.isEmpty()) {
-        return contextFromParentHeader;
-      }
-      TraceState state = extractTraceState(traceStateHeader);
+      TraceState traceState = extractTraceState(traceStateHeader);
       return SpanContext.createFromRemoteParent(
           contextFromParentHeader.getTraceId(),
           contextFromParentHeader.getSpanId(),
           contextFromParentHeader.getTraceFlags(),
-          state);
+          traceState);
     } catch (IllegalArgumentException e) {
       logger.info("Unparseable tracestate header. Returning span context without state.");
       return contextFromParentHeader;
@@ -146,19 +145,27 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   private static SpanContext extractContextFromTraceParent(String traceparent) {
     // TODO(bdrutu): Do we need to verify that version is hex and that
     // for the version the length is the expected one?
-    checkArgument(
+    boolean isValid =
         traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER
             && (traceparent.length() == TRACEPARENT_HEADER_SIZE
                 || (traceparent.length() > TRACEPARENT_HEADER_SIZE
                     && traceparent.charAt(TRACEPARENT_HEADER_SIZE) == TRACEPARENT_DELIMITER))
             && traceparent.charAt(SPAN_ID_OFFSET - 1) == TRACEPARENT_DELIMITER
-            && traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER,
-        "Missing or malformed TRACEPARENT.");
+            && traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER;
+    if (!isValid) {
+      logger.info("Unparseable traceparent header. Returning INVALID span context.");
+      return INVALID_SPAN_CONTEXT;
+    }
 
-    TraceId traceId = TraceId.fromLowerBase16(traceparent, TRACE_ID_OFFSET);
-    SpanId spanId = SpanId.fromLowerBase16(traceparent, SPAN_ID_OFFSET);
-    TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
-    return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+    try {
+      TraceId traceId = TraceId.fromLowerBase16(traceparent, TRACE_ID_OFFSET);
+      SpanId spanId = SpanId.fromLowerBase16(traceparent, SPAN_ID_OFFSET);
+      TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
+      return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+    } catch (IllegalArgumentException e) {
+      logger.info("Unparseable traceparent header. Returning INVALID span context.");
+      return INVALID_SPAN_CONTEXT;
+    }
   }
 
   private static TraceState extractTraceState(String traceStateHeader) {
