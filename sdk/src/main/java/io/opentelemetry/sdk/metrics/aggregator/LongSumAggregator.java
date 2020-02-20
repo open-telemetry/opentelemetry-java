@@ -38,7 +38,7 @@ public final class LongSumAggregator extends AbstractAggregator {
   }
 
   @Override
-  public void doMergeAndReset(Aggregator aggregator) {
+  void doMergeAndReset(Aggregator aggregator) {
     LongSumAggregator other = (LongSumAggregator) aggregator;
     other.current.getAndAdd(this.current.getAndSet(0));
   }

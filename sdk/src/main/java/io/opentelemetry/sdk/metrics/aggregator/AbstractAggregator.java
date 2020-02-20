@@ -16,11 +16,11 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-public abstract class AbstractAggregator implements Aggregator {
+abstract class AbstractAggregator implements Aggregator {
 
   @Override
   public void mergeToAndReset(Aggregator other) {
-    if (!other.getClass().isAssignableFrom(this.getClass())) {
+    if (!this.getClass().isAssignableFrom(other.getClass())) {
       return;
     }
     doMergeAndReset(other);
@@ -35,7 +35,7 @@ public abstract class AbstractAggregator implements Aggregator {
    *
    * @param aggregator The aggregator to merge with.
    */
-  public abstract void doMergeAndReset(Aggregator aggregator);
+  abstract void doMergeAndReset(Aggregator aggregator);
 
   @Override
   public void recordLong(long value) {

@@ -39,7 +39,7 @@ public final class DoubleSumAggregator extends AbstractAggregator {
   }
 
   @Override
-  public void doMergeAndReset(Aggregator aggregator) {
+  void doMergeAndReset(Aggregator aggregator) {
     DoubleSumAggregator other = (DoubleSumAggregator) aggregator;
     other.current.getAndAdd(this.current.getAndSet(0));
   }
