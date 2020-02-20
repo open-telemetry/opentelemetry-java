@@ -238,7 +238,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
   private static final class Worker implements Runnable {
 
     static {
-      Meter meter = OpenTelemetry.getMeterRegistry().get("opentelemetry");
+      Meter meter = OpenTelemetry.getMeterRegistry().get("io.opentelemetry.sdk.trace");
       LongCounter droppedSpansCounter =
           meter
               .longCounterBuilder("droppedSpans")
