@@ -20,6 +20,8 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A registry for creating named {@link Tracer}s.
+ * Although the class is provided at runtime via {@link io.opentelemetry.trace.spi.TraceProvider},
+ * the name <i>Provider</i> is for consistency with other languages.
  *
  * @see io.opentelemetry.OpenTelemetry
  * @see io.opentelemetry.trace.Tracer
