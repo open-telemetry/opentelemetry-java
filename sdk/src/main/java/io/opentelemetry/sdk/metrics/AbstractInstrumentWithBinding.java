@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +31,9 @@ abstract class AbstractInstrumentWithBinding<B extends AbstractBoundInstrument>
   AbstractInstrumentWithBinding(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       ActiveBatcher activeBatcher) {
-    super(descriptor, meterProviderSharedState, instrumentationLibraryInfo, activeBatcher);
+    super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
     boundLabels = new ConcurrentHashMap<>();
     collectLock = new ReentrantLock();
   }

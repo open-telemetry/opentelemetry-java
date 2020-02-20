@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.DoubleMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -27,13 +26,13 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
   private DoubleMeasureSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       boolean absolute) {
     super(
         descriptor,
         InstrumentValueType.DOUBLE,
         meterProviderSharedState,
-        instrumentationLibraryInfo,
+        meterSharedState,
         absolute);
   }
 
@@ -76,8 +75,8 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
   static DoubleMeasure.Builder builder(
       String name,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
+      MeterSharedState meterSharedState) {
+    return new Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   private static final class Builder
@@ -87,8 +86,8 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     private Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -101,7 +100,7 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
       return new DoubleMeasureSdk(
           getInstrumentDescriptor(),
           getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo(),
+          getMeterSharedState(),
           isAbsolute());
     }
   }

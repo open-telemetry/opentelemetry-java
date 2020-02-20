@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 
 /**
- * Base class for all the registry classes (Tracer, Meter, etc.).
+ * Base class for all the provider classes (TracerProvider, MeterProvider, etc.).
  *
  * @param <V> the type of the registered value.
  */

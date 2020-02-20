@@ -17,20 +17,19 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LongObserver;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
 final class LongObserverSdk extends AbstractObserver implements LongObserver {
   LongObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       boolean monotonic) {
     super(
         descriptor,
         InstrumentValueType.LONG,
         meterProviderSharedState,
-        instrumentationLibraryInfo,
+        meterSharedState,
         monotonic);
   }
 
@@ -42,8 +41,8 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
   static LongObserver.Builder builder(
       String name,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
+      MeterSharedState meterSharedState) {
+    return new Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   private static final class Builder
@@ -53,8 +52,8 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     private Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -67,7 +66,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
       return new LongObserverSdk(
           getInstrumentDescriptor(),
           getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo(),
+          getMeterSharedState(),
           isMonotonic());
     }
   }

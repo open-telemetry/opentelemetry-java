@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -28,12 +27,12 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
       InstrumentDescriptor descriptor,
       boolean monotonic,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      MeterSharedState meterSharedState) {
     super(
         descriptor,
         InstrumentValueType.DOUBLE,
         meterProviderSharedState,
-        instrumentationLibraryInfo,
+        meterSharedState,
         monotonic);
   }
 
@@ -76,8 +75,8 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
   static DoubleCounter.Builder builder(
       String name,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
+      MeterSharedState meterSharedState) {
+    return new Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   private static final class Builder
@@ -87,8 +86,8 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     private Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -102,7 +101,7 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
           getInstrumentDescriptor(),
           isMonotonic(),
           getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo());
+          getMeterSharedState());
     }
   }
 }
