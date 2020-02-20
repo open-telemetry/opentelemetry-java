@@ -96,12 +96,7 @@ public class SpanDataTest {
   }
 
   private static Link emptyLink() {
-    return SpanData.Link.create(
-        SpanContext.create(
-            TraceId.getInvalid(),
-            SpanId.getInvalid(),
-            TraceFlags.getDefault(),
-            TraceState.getDefault()));
+    return SpanData.Link.create(SpanContext.getInvalid());
   }
 
   private static SpanData.Builder createBasicSpanBuilder() {
