@@ -54,7 +54,8 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     return new BoundInstrument(isMonotonic(), batcher);
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument implements BoundDoubleCounter {
+  static final class BoundInstrument extends AbstractBoundInstrument
+      implements DoubleCounter.BoundDoubleCounter {
 
     private final boolean monotonic;
 
