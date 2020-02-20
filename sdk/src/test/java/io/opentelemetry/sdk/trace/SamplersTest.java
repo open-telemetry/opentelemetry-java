@@ -68,7 +68,7 @@ public class SamplersTest {
                     spanId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<AttributeValue>emptyList(),
+                    Collections.<String, AttributeValue>emptyMap(),
                     Collections.<Link>emptyList())
                 .isSampled())
         .isTrue();
@@ -81,7 +81,7 @@ public class SamplersTest {
                     spanId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<AttributeValue>emptyList(),
+                    Collections.<String, AttributeValue>emptyMap(),
                     Collections.<Link>emptyList())
                 .isSampled())
         .isTrue();
@@ -103,7 +103,7 @@ public class SamplersTest {
                     spanId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<AttributeValue>emptyList(),
+                    Collections.<String, AttributeValue>emptyMap(),
                     Collections.<Link>emptyList())
                 .isSampled())
         .isFalse();
@@ -116,7 +116,7 @@ public class SamplersTest {
                     spanId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<AttributeValue>emptyList(),
+                    Collections.<String, AttributeValue>emptyMap(),
                     Collections.<Link>emptyList())
                 .isSampled())
         .isFalse();
@@ -174,7 +174,7 @@ public class SamplersTest {
               idsGenerator.generateSpanId(),
               SPAN_NAME,
               SPAN_KIND,
-              Collections.<AttributeValue>emptyList(),
+              Collections.<String, AttributeValue>emptyMap(),
               parentLinks)
           .isSampled()) {
         count++;
@@ -264,7 +264,7 @@ public class SamplersTest {
             idsGenerator.generateSpanId(),
             SPAN_NAME,
             SPAN_KIND,
-            Collections.<AttributeValue>emptyList(),
+            Collections.<String, AttributeValue>emptyMap(),
             Collections.<Link>emptyList());
     assertThat(decision1.isSampled()).isFalse();
     assertThat(decision1.attributes()).isEmpty();
@@ -298,7 +298,7 @@ public class SamplersTest {
             idsGenerator.generateSpanId(),
             SPAN_NAME,
             SPAN_KIND,
-            Collections.<AttributeValue>emptyList(),
+            Collections.<String, AttributeValue>emptyMap(),
             Collections.<Link>emptyList());
     assertThat(decision2.isSampled()).isTrue();
     assertThat(decision2.attributes()).isEmpty();

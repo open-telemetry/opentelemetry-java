@@ -25,7 +25,6 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +90,7 @@ public final class Samplers {
         SpanId spanId,
         String name,
         Span.Kind spanKind,
-        Collection<AttributeValue> attributes,
+        Map<String, AttributeValue> attributes,
         List<Link> parentLinks) {
       return ALWAYS_ON_DECISION;
     }
@@ -119,7 +118,7 @@ public final class Samplers {
         SpanId spanId,
         String name,
         Span.Kind spanKind,
-        Collection<AttributeValue> attributes,
+        Map<String, AttributeValue> attributes,
         List<Link> parentLinks) {
       return ALWAYS_OFF_DECISION;
     }
@@ -177,7 +176,7 @@ public final class Samplers {
         SpanId spanId,
         String name,
         Span.Kind spanKind,
-        Collection<AttributeValue> attributes,
+        Map<String, AttributeValue> attributes,
         @Nullable List<Link> parentLinks) {
       // If the parent is sampled keep the sampling decision.
       if (parentContext != null && parentContext.getTraceFlags().isSampled()) {

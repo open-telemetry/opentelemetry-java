@@ -22,7 +22,6 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -45,6 +44,8 @@ public interface Sampler {
    * @param spanId the {@link SpanId} for the new {@code Span}.
    * @param name the name of the new {@code Span}.
    * @param parentLinks the parentLinks associated with the new {@code Span}.
+   * @param spanKind the {@link Span.Kind} of the {@code Span}.
+   * @param attributes list of {@link AttributeValue} with their keys.
    * @return sampling decision whether span should be sampled or not.
    * @since 0.1.0
    */
@@ -54,7 +55,7 @@ public interface Sampler {
       SpanId spanId,
       String name,
       Span.Kind spanKind,
-      Collection<AttributeValue> attributes,
+      Map<String, AttributeValue> attributes,
       List<Link> parentLinks);
 
   /**
@@ -70,7 +71,7 @@ public interface Sampler {
 
   /**
    * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, TraceId, SpanId, String,
-   * Span.Kind, Collection, List)}.
+   * Span.Kind, Map, List)}.
    *
    * @since 0.1.0
    */

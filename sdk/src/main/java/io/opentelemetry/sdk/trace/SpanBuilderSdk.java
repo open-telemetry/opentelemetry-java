@@ -203,8 +203,7 @@ final class SpanBuilderSdk implements Span.Builder {
     Decision samplingDecision =
         traceConfig
             .getSampler()
-            .shouldSample(
-                parentContext, traceId, spanId, spanName, spanKind, attributes.values(), links);
+            .shouldSample(parentContext, traceId, spanId, spanName, spanKind, attributes, links);
 
     SpanContext spanContext =
         SpanContext.create(
