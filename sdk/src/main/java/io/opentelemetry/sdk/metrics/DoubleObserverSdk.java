@@ -17,20 +17,19 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleObserver;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
 final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver {
   DoubleObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       boolean monotonic) {
     super(
         descriptor,
         InstrumentValueType.LONG,
         meterProviderSharedState,
-        instrumentationLibraryInfo,
+        meterSharedState,
         monotonic);
   }
 
@@ -42,8 +41,8 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
   static DoubleObserver.Builder builder(
       String name,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
+      MeterSharedState meterSharedState) {
+    return new Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   private static final class Builder
@@ -53,8 +52,8 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     private Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -67,7 +66,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
       return new DoubleObserverSdk(
           getInstrumentDescriptor(),
           getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo(),
+          getMeterSharedState(),
           isMonotonic());
     }
   }

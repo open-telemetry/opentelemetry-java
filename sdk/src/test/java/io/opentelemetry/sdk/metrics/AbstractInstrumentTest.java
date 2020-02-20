@@ -38,34 +38,33 @@ public class AbstractInstrumentTest {
           "1",
           Collections.singletonMap("key_2", "value_2"),
           Collections.singletonList("key"));
-  private static final MeterProviderSharedState METER_SHARED_STATE =
+  private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("test_abstract_instrument", "");
+  private static final MeterSharedState METER_SHARED_STATE =
+      MeterSharedState.create(INSTRUMENTATION_LIBRARY_INFO);
   private static final ActiveBatcher ACTIVE_BATCHER = new ActiveBatcher(Batchers.getNoop());
 
   @Test
   public void getValues() {
     TestInstrument testInstrument =
         new TestInstrument(
-            INSTRUMENT_DESCRIPTOR,
-            METER_SHARED_STATE,
-            INSTRUMENTATION_LIBRARY_INFO,
-            ACTIVE_BATCHER);
+            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE, ACTIVE_BATCHER);
     assertThat(testInstrument.getDescriptor()).isSameInstanceAs(INSTRUMENT_DESCRIPTOR);
-    assertThat(testInstrument.getMeterProviderSharedState()).isSameInstanceAs(METER_SHARED_STATE);
-    assertThat(testInstrument.getInstrumentationLibraryInfo())
-        .isSameInstanceAs(INSTRUMENTATION_LIBRARY_INFO);
+    assertThat(testInstrument.getMeterProviderSharedState())
+        .isSameInstanceAs(METER_PROVIDER_SHARED_STATE);
+    assertThat(testInstrument.getMeterSharedState()).isSameInstanceAs(METER_SHARED_STATE);
     assertThat(testInstrument.getActiveBatcher()).isSameInstanceAs(ACTIVE_BATCHER);
   }
 
   private static final class TestInstrument extends AbstractInstrument {
     TestInstrument(
         InstrumentDescriptor descriptor,
-        MeterProviderSharedState meterSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo,
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState,
         ActiveBatcher activeBatcher) {
-      super(descriptor, meterSharedState, instrumentationLibraryInfo, activeBatcher);
+      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
     }
 
     @Override
