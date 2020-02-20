@@ -237,6 +237,23 @@ public final class BatchSpansProcessor implements SpanProcessor {
   // concurrency.
   private static final class Worker implements Runnable {
 
+    static {
+      Meter meter = OpenTelemetry.getMeterRegistry().get("opentelemetry");
+      LongCounter droppedSpansCounter =
+          meter
+              .longCounterBuilder("droppedSpans")
+              .setMonotonic(true)
+              .setUnit("1")
+              .setDescription(
+                  "The number of spans dropped by the BatchSpansProcessor due to high throughput.")
+              .build();
+      droppedSpans =
+          droppedSpansCounter.bind(
+              meter.createLabelSet("spanProcessorType", BatchSpansProcessor.class.getSimpleName()));
+    }
+
+    private static final BoundLongCounter droppedSpans;
+
     private final ExecutorService executorService =
         Executors.newSingleThreadExecutor(
             new ThreadFactory() {
@@ -254,7 +271,6 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private final int halfMaxQueueSize;
     private final Object monitor = new Object();
     private final int exporterTimeoutMillis;
-    private final BoundLongCounter droppedSpans;
 
     @GuardedBy("monitor")
     private final List<ReadableSpan> spansList;
@@ -272,19 +288,6 @@ public final class BatchSpansProcessor implements SpanProcessor {
       this.maxExportBatchSize = maxExportBatchSize;
       this.spansList = new ArrayList<>(maxQueueSize);
       this.exporterTimeoutMillis = exporterTimeoutMillis;
-
-      Meter meter = OpenTelemetry.getMeterRegistry().get("opentelemetry");
-      LongCounter droppedSpansCounter =
-          meter
-              .longCounterBuilder("droppedSpans")
-              .setMonotonic(true)
-              .setUnit("1")
-              .setDescription(
-                  "The number of spans dropped by the BatchSpansProcessor due to high throughput.")
-              .build();
-      this.droppedSpans =
-          droppedSpansCounter.bind(
-              meter.createLabelSet("spanProcessorType", BatchSpansProcessor.class.getSimpleName()));
     }
 
     private void addSpan(ReadableSpan span) {
