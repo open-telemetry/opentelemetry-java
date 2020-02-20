@@ -48,7 +48,6 @@ public class LongMeasureSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     LongMeasure longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
-
     BoundLongMeasure boundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
     BoundLongMeasure duplicateBoundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
     try {
@@ -62,10 +61,9 @@ public class LongMeasureSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     LongMeasureSdk longMeasure = (LongMeasureSdk) testSdk.longMeasureBuilder("testMeasure").build();
-
     BoundLongMeasure boundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
     try {
-      assertThat(longMeasure.collect()).isEmpty();
+      longMeasure.collect();
       BoundLongMeasure duplicateBoundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
       try {
         assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
