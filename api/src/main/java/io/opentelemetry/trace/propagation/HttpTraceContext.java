@@ -149,8 +149,8 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
     checkArgument(
         traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER
             && (traceparent.length() == TRACEPARENT_HEADER_SIZE
-            || (traceparent.length() > TRACEPARENT_HEADER_SIZE
-            && traceparent.charAt(TRACEPARENT_HEADER_SIZE) == TRACEPARENT_DELIMITER))
+                || (traceparent.length() > TRACEPARENT_HEADER_SIZE
+                    && traceparent.charAt(TRACEPARENT_HEADER_SIZE) == TRACEPARENT_DELIMITER))
             && traceparent.charAt(SPAN_ID_OFFSET - 1) == TRACEPARENT_DELIMITER
             && traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER,
         "Missing or malformed TRACEPARENT.");
