@@ -23,6 +23,7 @@ import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
@@ -189,6 +190,87 @@ public class DoubleCounterSdkTest {
   }
 
   @Test
+  public void stressTest() {
+    final DoubleCounterSdk doubleCounter =
+        (DoubleCounterSdk) testSdk.doubleCounterBuilder("testCounter").build();
+
+    StressTestRunner.Builder stressTestBuilder =
+        StressTestRunner.builder().setInstrument(doubleCounter).setCollectionIntervalMs(100);
+
+    for (int i = 0; i < 4; i++) {
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(
+              1_000, 2, new OperationUpdaterDirectCall(testSdk, doubleCounter, "K", "V")));
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(
+              1_000,
+              2,
+              new OperationUpdaterWithBinding(
+                  doubleCounter.bind(testSdk.createLabelSet("K", "V")))));
+    }
+
+    stressTestBuilder.build().run();
+    List<MetricData> metricDataList = doubleCounter.collect();
+    assertThat(metricDataList).hasSize(1);
+    assertThat(metricDataList.get(0).getPoints())
+        .containsExactly(
+            DoublePoint.create(
+                testClock.now(), testClock.now(), Collections.singletonMap("K", "V"), 80_000));
+  }
+
+  @Test
+  public void stressTest_WithDifferentLabelSet() {
+    final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
+    final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
+    final DoubleCounterSdk doubleCounter =
+        (DoubleCounterSdk) testSdk.doubleCounterBuilder("testCounter").build();
+
+    StressTestRunner.Builder stressTestBuilder =
+        StressTestRunner.builder().setInstrument(doubleCounter).setCollectionIntervalMs(100);
+
+    for (int i = 0; i < 4; i++) {
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(
+              2_000,
+              1,
+              new OperationUpdaterDirectCall(testSdk, doubleCounter, keys[i], values[i])));
+
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(
+              2_000,
+              1,
+              new OperationUpdaterWithBinding(
+                  doubleCounter.bind(testSdk.createLabelSet(keys[i], values[i])))));
+    }
+
+    stressTestBuilder.build().run();
+    List<MetricData> metricDataList = doubleCounter.collect();
+    assertThat(metricDataList).hasSize(1);
+    assertThat(metricDataList.get(0).getPoints())
+        .containsExactly(
+            DoublePoint.create(
+                testClock.now(),
+                testClock.now(),
+                Collections.singletonMap(keys[0], values[0]),
+                40_000),
+            DoublePoint.create(
+                testClock.now(),
+                testClock.now(),
+                Collections.singletonMap(keys[1], values[1]),
+                40_000),
+            DoublePoint.create(
+                testClock.now(),
+                testClock.now(),
+                Collections.singletonMap(keys[2], values[2]),
+                40_000),
+            DoublePoint.create(
+                testClock.now(),
+                testClock.now(),
+                Collections.singletonMap(keys[3], values[3]),
+                40_000));
+  }
+
+  @Test
   public void doubleCounterAdd_Monotonicity() {
     DoubleCounter doubleCounter =
         testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
@@ -204,5 +286,46 @@ public class DoubleCounterSdkTest {
 
     thrown.expect(IllegalArgumentException.class);
     doubleCounter.bind(testSdk.createLabelSet()).add(-9.3);
+  }
+
+  private static class OperationUpdaterWithBinding extends OperationUpdater {
+    private final DoubleCounter.BoundDoubleCounter boundDoubleCounter;
+
+    private OperationUpdaterWithBinding(BoundDoubleCounter boundDoubleCounter) {
+      this.boundDoubleCounter = boundDoubleCounter;
+    }
+
+    @Override
+    void update() {
+      boundDoubleCounter.add(10);
+    }
+
+    @Override
+    void cleanup() {
+      boundDoubleCounter.unbind();
+    }
+  }
+
+  private static class OperationUpdaterDirectCall extends OperationUpdater {
+    private final MeterSdk meterSdk;
+    private final DoubleCounter doubleCounter;
+    private final String key;
+    private final String value;
+
+    private OperationUpdaterDirectCall(
+        MeterSdk meterSdk, DoubleCounter doubleCounter, String key, String value) {
+      this.meterSdk = meterSdk;
+      this.doubleCounter = doubleCounter;
+      this.key = key;
+      this.value = value;
+    }
+
+    @Override
+    void update() {
+      doubleCounter.add(10.0, meterSdk.createLabelSet(key, value));
+    }
+
+    @Override
+    void cleanup() {}
   }
 }
