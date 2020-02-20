@@ -35,12 +35,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link TracerSdkRegistry}. */
+/** Unit tests for {@link TracerSdkProvider}. */
 @RunWith(JUnit4.class)
-public class TracerSdkRegistryTest {
+public class TracerSdkProviderTest {
   @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
-  private final TracerSdkRegistry tracerFactory = TracerSdkRegistry.builder().build();
+  private final TracerSdkProvider tracerFactory = TracerSdkProvider.builder().build();
 
   @Before
   public void setUp() {
@@ -51,7 +51,7 @@ public class TracerSdkRegistryTest {
   @Test
   public void builder_HappyPath() {
     assertThat(
-            TracerSdkRegistry.builder()
+            TracerSdkProvider.builder()
                 .setClock(mock(Clock.class))
                 .setResource(mock(Resource.class))
                 .setIdsGenerator(mock(IdsGenerator.class))
@@ -63,21 +63,21 @@ public class TracerSdkRegistryTest {
   public void builder_NullClock() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("clock");
-    TracerSdkRegistry.builder().setClock(null);
+    TracerSdkProvider.builder().setClock(null);
   }
 
   @Test
   public void builder_NullResource() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("resource");
-    TracerSdkRegistry.builder().setResource(null);
+    TracerSdkProvider.builder().setResource(null);
   }
 
   @Test
   public void builder_NullIdsGenerator() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("idsGenerator");
-    TracerSdkRegistry.builder().setIdsGenerator(null);
+    TracerSdkProvider.builder().setIdsGenerator(null);
   }
 
   @Test
