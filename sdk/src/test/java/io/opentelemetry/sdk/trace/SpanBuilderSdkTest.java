@@ -272,6 +272,8 @@ public class SpanBuilderSdkTest {
                           TraceId traceId,
                           SpanId spanId,
                           String name,
+                          Span.Kind spanKind,
+                          Map<String, AttributeValue> attributes,
                           List<Link> parentLinks) {
                         return new Decision() {
                           @Override
