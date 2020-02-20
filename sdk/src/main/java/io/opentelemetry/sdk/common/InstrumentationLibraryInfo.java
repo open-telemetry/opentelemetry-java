@@ -29,7 +29,7 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class InstrumentationLibraryInfo {
-  public static final InstrumentationLibraryInfo EMPTY = create("", null);
+  private static final InstrumentationLibraryInfo EMPTY = create("", null);
 
   /**
    * Creates a new instance of {@link InstrumentationLibraryInfo}.
@@ -43,8 +43,27 @@ public abstract class InstrumentationLibraryInfo {
     return new AutoValue_InstrumentationLibraryInfo(name, version);
   }
 
+  /**
+   * Returns an "empty" {@code InstrumentationLibraryInfo}.
+   *
+   * @return an "empty" {@code InstrumentationLibraryInfo}.
+   */
+  public static InstrumentationLibraryInfo getEmpty() {
+    return EMPTY;
+  }
+
+  /**
+   * Returns the name of the instrumentation library.
+   *
+   * @return the name of the instrumentation library.
+   */
   public abstract String getName();
 
+  /**
+   * Returns the version of the instrumentation library, or {@code null} if not available.
+   *
+   * @return the version of the instrumentation library, or {@code null} if not available.
+   */
   @Nullable
   public abstract String getVersion();
 

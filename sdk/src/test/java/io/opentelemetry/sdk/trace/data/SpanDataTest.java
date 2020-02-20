@@ -57,7 +57,7 @@ public class SpanDataTest {
     assertThat(spanData.getTimedEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
     assertThat(spanData.getInstrumentationLibraryInfo())
-        .isSameInstanceAs(InstrumentationLibraryInfo.EMPTY);
+        .isSameInstanceAs(InstrumentationLibraryInfo.getEmpty());
     assertThat(spanData.getHasRemoteParent()).isFalse();
   }
 
