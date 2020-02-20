@@ -17,7 +17,6 @@
 package io.opentelemetry.context.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.internal.Utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -85,7 +84,10 @@ public final class DefaultContextPropagators implements ContextPropagators {
      * @since 0.3.0
      */
     public Builder addHttpTextFormat(HttpTextFormat textFormat) {
-      Utils.checkNotNull(textFormat, "textFormat");
+      if (textFormat == null) {
+        throw new NullPointerException("textFormat");
+      }
+
       textPropagators.add(textFormat);
       return this;
     }
