@@ -54,7 +54,8 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
     return new BoundInstrument(isMonotonic(), batcher);
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument implements BoundLongCounter {
+  static final class BoundInstrument extends AbstractBoundInstrument
+      implements LongCounter.BoundLongCounter {
 
     private final boolean monotonic;
 

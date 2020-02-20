@@ -55,7 +55,8 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     return new BoundInstrument(isAbsolute(), batcher);
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument implements BoundLongMeasure {
+  static final class BoundInstrument extends AbstractBoundInstrument
+      implements LongMeasure.BoundLongMeasure {
 
     private final boolean absolute;
 
