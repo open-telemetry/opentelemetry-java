@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.LongMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -27,14 +26,10 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
   private LongMeasureSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       boolean absolute) {
     super(
-        descriptor,
-        InstrumentValueType.LONG,
-        meterProviderSharedState,
-        instrumentationLibraryInfo,
-        absolute);
+        descriptor, InstrumentValueType.LONG, meterProviderSharedState, meterSharedState, absolute);
   }
 
   @Override
@@ -76,8 +71,8 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
   static LongMeasure.Builder builder(
       String name,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
+      MeterSharedState meterSharedState) {
+    return new Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   private static final class Builder
@@ -87,8 +82,8 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     private Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -101,7 +96,7 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
       return new LongMeasureSdk(
           getInstrumentDescriptor(),
           getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo(),
+          getMeterSharedState(),
           isAbsolute());
     }
   }

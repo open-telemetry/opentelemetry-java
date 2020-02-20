@@ -77,7 +77,7 @@ public class MeterSdkRegistryTest {
   }
 
   @Test
-  public void propagatesInstrumentationLibraryInfoToTracer() {
+  public void propagatesInstrumentationLibraryInfoToMeter() {
     InstrumentationLibraryInfo expected =
         InstrumentationLibraryInfo.create("theName", "theVersion");
     MeterSdk meter = meterRegistry.get(expected.getName(), expected.getVersion());

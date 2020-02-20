@@ -64,17 +64,17 @@ public class AbstractObserverTest {
             "1",
             Collections.singletonMap("key_2", "value_2"),
             Collections.singletonList("key"));
-    private static final MeterProviderSharedState METER_SHARED_STATE =
+    private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
         MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
-    private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-        InstrumentationLibraryInfo.create("test_abstract_instrument", "");
+    private static final MeterSharedState METER_SHARED_STATE =
+        MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
 
     TestObserverInstrument(InstrumentValueType instrumentValueType, boolean monotonic) {
       super(
           INSTRUMENT_DESCRIPTOR,
           instrumentValueType,
+          METER_PROVIDER_SHARED_STATE,
           METER_SHARED_STATE,
-          INSTRUMENTATION_LIBRARY_INFO,
           monotonic);
     }
   }

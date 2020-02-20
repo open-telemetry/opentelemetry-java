@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Counter;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
@@ -33,19 +32,19 @@ abstract class AbstractCounter<B extends AbstractBoundInstrument>
       InstrumentDescriptor descriptor,
       InstrumentValueType instrumentValueType,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       boolean monotonic) {
     super(
         descriptor,
         meterProviderSharedState,
-        instrumentationLibraryInfo,
+        meterSharedState,
         new ActiveBatcher(
             getDefaultBatcher(
                 descriptor,
                 getCounterInstrumentType(monotonic),
                 instrumentValueType,
                 meterProviderSharedState,
-                instrumentationLibraryInfo)));
+                meterSharedState)));
     this.monotonic = monotonic;
     this.instrumentValueType = instrumentValueType;
   }
@@ -86,8 +85,8 @@ abstract class AbstractCounter<B extends AbstractBoundInstrument>
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -110,13 +109,13 @@ abstract class AbstractCounter<B extends AbstractBoundInstrument>
       InstrumentType instrumentType,
       InstrumentValueType instrumentValueType,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      MeterSharedState meterSharedState) {
     Aggregation defaultAggregation = Aggregations.sum();
     return Batchers.getCumulativeAllLabels(
         getDefaultMetricDescriptor(
             descriptor, instrumentType, instrumentValueType, defaultAggregation),
         meterProviderSharedState.getResource(),
-        instrumentationLibraryInfo,
+        meterSharedState.getInstrumentationLibraryInfo(),
         defaultAggregation.getAggregatorFactory(instrumentValueType),
         meterProviderSharedState.getClock());
   }
