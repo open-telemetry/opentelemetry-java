@@ -70,19 +70,21 @@ public class LongSummaryAggregator extends AbstractAggregator {
     @GuardedBy("lock")
     private long count = 0;
 
+    @Nullable
     @GuardedBy("lock")
-    private long min = 0;
+    private Long min = null;
 
+    @Nullable
     @GuardedBy("lock")
-    private long max = 0;
+    private Long max = null;
 
-    private void update(long count, long sum, long min, long max) {
+    private void update(long count, long sum, Long min, Long max) {
       lock.writeLock().lock();
       try {
         this.count += count;
         this.sum += sum;
-        this.min = Math.min(min, this.min);
-        this.max = Math.max(max, this.max);
+        this.min = this.min == null ? min : Math.min(min, this.min);
+        this.max = this.max == null ? max : Math.max(max, this.max);
       } finally {
         lock.writeLock().unlock();
       }
@@ -93,8 +95,8 @@ public class LongSummaryAggregator extends AbstractAggregator {
       try {
         count++;
         sum += value;
-        max = Math.max(value, max);
-        min = Math.min(value, min);
+        min = this.min == null ? value : Math.min(value, min);
+        max = this.max == null ? value : Math.max(value, max);
       } finally {
         lock.writeLock().unlock();
       }
@@ -110,8 +112,8 @@ public class LongSummaryAggregator extends AbstractAggregator {
         copy.max = max;
         count = 0;
         sum = 0;
-        min = 0;
-        max = 0;
+        min = null;
+        max = null;
       } finally {
         lock.writeLock().unlock();
       }

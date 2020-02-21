@@ -21,6 +21,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.Map;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -166,9 +167,11 @@ public abstract class MetricData {
 
     public abstract long getSum();
 
-    public abstract long getMin();
+    @Nullable
+    public abstract Long getMin();
 
-    public abstract long getMax();
+    @Nullable
+    public abstract Long getMax();
 
     public static LongSummaryPoint create(
         long startEpochNanos,
@@ -176,8 +179,8 @@ public abstract class MetricData {
         Map<String, String> labels,
         long count,
         long sum,
-        long min,
-        long max) {
+        Long min,
+        Long max) {
       return new AutoValue_MetricData_LongSummaryPoint(
           startEpochNanos, epochNanos, labels, count, sum, min, max);
     }
