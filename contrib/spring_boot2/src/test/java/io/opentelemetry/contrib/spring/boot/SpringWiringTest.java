@@ -19,12 +19,12 @@ package io.opentelemetry.contrib.spring.boot;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
-import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.TracerRegistry;
+import io.opentelemetry.trace.TracerProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,14 +38,14 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @TestPropertySource(locations = {"classpath:application.properties"})
 public class SpringWiringTest {
 
-  @Autowired private TracerRegistry tracerRegistry;
-  @Autowired private MeterRegistry meterRegistry;
-  @Autowired private CorrelationContextManager distributedContextManager;
+  @Autowired private TracerProvider tracerProvider;
+  @Autowired private MeterProvider meterProvider;
+  @Autowired private CorrelationContextManager correlationContextManager;
 
   @Test
   public void shouldConstructFullyConfiguredTracerRegistry() {
-    assertThat(tracerRegistry).isInstanceOf(TracerSdkRegistry.class);
-    TracerSdkRegistry tracerSdkFactory = (TracerSdkRegistry) tracerRegistry;
+    assertThat(tracerProvider).isInstanceOf(TracerSdkProvider.class);
+    TracerSdkProvider tracerSdkFactory = (TracerSdkProvider) tracerProvider;
     TraceConfig traceConfig = tracerSdkFactory.getActiveTraceConfig();
     assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(16);
     assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(32);
@@ -53,11 +53,11 @@ public class SpringWiringTest {
 
   @Test
   public void shouldConstructFullyConfiguredMeterRegistry() {
-    assertThat(meterRegistry).isInstanceOf(MeterSdkRegistry.class);
+    assertThat(meterProvider).isInstanceOf(MeterSdkProvider.class);
   }
 
   @Test
   public void shouldConstructFullyConfiguredCorrelationContextManager() {
-    assertThat(distributedContextManager).isInstanceOf(CorrelationContextManagerSdk.class);
+    assertThat(correlationContextManager).isInstanceOf(CorrelationContextManagerSdk.class);
   }
 }

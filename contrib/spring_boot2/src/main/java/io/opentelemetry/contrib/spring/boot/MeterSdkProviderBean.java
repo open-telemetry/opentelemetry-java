@@ -16,22 +16,22 @@
 
 package io.opentelemetry.contrib.spring.boot;
 
-import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.metrics.MeterSdkRegistry;
+import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.resources.Resource;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-/** Creates an OpenTelemetry {@link MeterRegistry} from the default SDK the Spring way. */
-public class MeterSdkRegistryBean implements FactoryBean<MeterRegistry>, InitializingBean {
+/** Creates an OpenTelemetry {@link MeterProvider} from the default SDK the Spring way. */
+public class MeterSdkProviderBean implements FactoryBean<MeterProvider>, InitializingBean {
 
   private OpenTelemetryProperties properties;
   private Clock otelClock;
   private Resource otelResource;
-  private MeterRegistry meterRegistry;
+  private MeterProvider meterProvider;
 
   /**
    * Sets the Spring application properties used to configure the OpenTelemetry SDK.
@@ -67,25 +67,25 @@ public class MeterSdkRegistryBean implements FactoryBean<MeterRegistry>, Initial
 
   @Override
   public void afterPropertiesSet() {
-    meterRegistry = initializeMeterRegistry();
+    meterProvider = initializeMeterRegistry();
   }
 
   @Override
-  public MeterRegistry getObject() {
-    if (meterRegistry == null) {
-      meterRegistry = initializeMeterRegistry();
+  public MeterProvider getObject() {
+    if (meterProvider == null) {
+      meterProvider = initializeMeterRegistry();
     }
-    return meterRegistry;
+    return meterProvider;
   }
 
   @Override
   public Class<?> getObjectType() {
-    return MeterRegistry.class;
+    return MeterProvider.class;
   }
 
-  private MeterRegistry initializeMeterRegistry() {
-    MeterSdkRegistry registry =
-        MeterSdkRegistry.builder().setClock(otelClock).setResource(otelResource).build();
+  private MeterProvider initializeMeterRegistry() {
+    MeterSdkProvider registry =
+        MeterSdkProvider.builder().setClock(otelClock).setResource(otelResource).build();
     if (properties.getMeter().isExport()) {
       registry.get("io.opentelemetry.contrib.spring.boot", "1.0");
     }

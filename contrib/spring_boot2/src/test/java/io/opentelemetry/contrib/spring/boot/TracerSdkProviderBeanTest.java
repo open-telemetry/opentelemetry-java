@@ -20,15 +20,15 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.contrib.spring.boot.OpenTelemetryProperties.SamplerName;
 import io.opentelemetry.sdk.internal.MillisClock;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link TracerSdkRegistryBean}. */
+/** Unit tests for {@link TracerSdkProviderBean}. */
 @RunWith(JUnit4.class)
-public class TracerSdkRegistryBeanTest {
+public class TracerSdkProviderBeanTest {
 
   @Test
   public void shouldConstructCustomSamplerIfConfigured() {
@@ -41,12 +41,12 @@ public class TracerSdkRegistryBeanTest {
     properties.getTracer().getSampler().getProperties().put("reservoir", "10");
     properties.getTracer().getSampler().getProperties().put("rate", "2.5");
     properties.getTracer().getSampler().getProperties().put("enabled", "true");
-    TracerSdkRegistryBean factoryBean = new TracerSdkRegistryBean();
+    TracerSdkProviderBean factoryBean = new TracerSdkProviderBean();
     addDependencies(factoryBean);
     factoryBean.setProperties(properties);
     factoryBean.afterPropertiesSet();
-    TracerSdkRegistry tracerSdkRegistry = (TracerSdkRegistry) factoryBean.getObject();
-    TraceConfig traceConfig = tracerSdkRegistry.getActiveTraceConfig();
+    TracerSdkProvider tracerSdkProvider = (TracerSdkProvider) factoryBean.getObject();
+    TraceConfig traceConfig = tracerSdkProvider.getActiveTraceConfig();
     assertThat(traceConfig.getSampler()).isInstanceOf(TestOnlySampler.class);
   }
 
@@ -54,17 +54,17 @@ public class TracerSdkRegistryBeanTest {
   public void shouldUseInjectedSamplerIfPresent() {
     TestOnlySampler sampler = new TestOnlySampler();
     OpenTelemetryProperties properties = new OpenTelemetryProperties();
-    TracerSdkRegistryBean factoryBean = new TracerSdkRegistryBean();
+    TracerSdkProviderBean factoryBean = new TracerSdkProviderBean();
     addDependencies(factoryBean);
     factoryBean.setProperties(properties);
     factoryBean.setSampler(sampler);
     factoryBean.afterPropertiesSet();
-    TracerSdkRegistry tracerSdkRegistry = (TracerSdkRegistry) factoryBean.getObject();
-    TraceConfig traceConfig = tracerSdkRegistry.getActiveTraceConfig();
+    TracerSdkProvider tracerSdkProvider = (TracerSdkProvider) factoryBean.getObject();
+    TraceConfig traceConfig = tracerSdkProvider.getActiveTraceConfig();
     assertThat(traceConfig.getSampler()).isSameInstanceAs(sampler);
   }
 
-  private static void addDependencies(TracerSdkRegistryBean factoryBean) {
+  private static void addDependencies(TracerSdkProviderBean factoryBean) {
     factoryBean.setOtelClock(MillisClock.getInstance());
     factoryBean.setOtelIdsGenerator(new SpringManagedRandomIdsGenerator());
     ServiceResourceFactory serviceResourceFactory = new ServiceResourceFactory("junit", null, null);

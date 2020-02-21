@@ -18,14 +18,14 @@ package io.opentelemetry.contrib.spring.boot;
 
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.exporters.logging.LoggingExporter;
-import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdsGenerator;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.TracerRegistry;
+import io.opentelemetry.trace.TracerProvider;
 import java.util.List;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,7 +103,7 @@ public class OpenTelemetryAutoConfiguration {
   }
 
   /**
-   * Returns a {@link TracerRegistry} from the OpenTelemetry SDK configured with the components
+   * Returns a {@link TracerProvider} from the OpenTelemetry SDK configured with the components
    * supplied as parameters. Only executes if another tracer registry bean has not been defined.
    *
    * @param properties the configuration properties from Spring property sources
@@ -116,14 +116,14 @@ public class OpenTelemetryAutoConfiguration {
    */
   @ConditionalOnMissingBean
   @Bean
-  public TracerRegistry tracerRegistry(
+  public TracerProvider tracerRegistry(
       OpenTelemetryProperties properties,
       Clock clock,
       IdsGenerator idsGenerator,
       Resource resource,
       List<SpanProcessor> spanProcessors,
       List<SpanExporter> spanExporters) {
-    TracerSdkRegistryBean factory = new TracerSdkRegistryBean();
+    TracerSdkProviderBean factory = new TracerSdkProviderBean();
     factory.setProperties(properties);
     factory.setOtelClock(clock);
     factory.setOtelIdsGenerator(idsGenerator);
@@ -135,7 +135,7 @@ public class OpenTelemetryAutoConfiguration {
   }
 
   /**
-   * Returns a {@link MeterRegistry} from the OpenTelemetry SDK configured with the components
+   * Returns a {@link MeterProvider} from the OpenTelemetry SDK configured with the components
    * supplied as parameters. Only executes if another meter registry bean has not been defined.
    *
    * @param properties the configuration properties from Spring property sources
@@ -145,9 +145,9 @@ public class OpenTelemetryAutoConfiguration {
    */
   @ConditionalOnMissingBean
   @Bean
-  public MeterRegistry meterRegistry(
+  public MeterProvider meterProvider(
       OpenTelemetryProperties properties, Clock clock, Resource resource) {
-    MeterSdkRegistryBean factory = new MeterSdkRegistryBean();
+    MeterSdkProviderBean factory = new MeterSdkProviderBean();
     factory.setProperties(properties);
     factory.setOtelClock(clock);
     factory.setOtelResource(resource);

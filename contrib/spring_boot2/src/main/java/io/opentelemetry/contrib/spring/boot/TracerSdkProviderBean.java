@@ -27,12 +27,12 @@ import io.opentelemetry.sdk.trace.IdsGenerator;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.export.MultiSpanExporter;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.TracerRegistry;
+import io.opentelemetry.trace.TracerProvider;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -45,8 +45,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-/** Creates an OpenTelemetry {@link TracerRegistry} from the default SDK the Spring way. */
-public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, InitializingBean {
+/** Creates an OpenTelemetry {@link TracerProvider} from the default SDK the Spring way. */
+public class TracerSdkProviderBean implements FactoryBean<TracerProvider>, InitializingBean {
 
   private static final String KEY_PROBABIITY = "probability";
 
@@ -55,7 +55,7 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
   private Clock otelClock;
   private IdsGenerator otelIdsGenerator;
   private Resource otelResource;
-  private TracerRegistry tracerRegistry;
+  private TracerProvider tracerProvider;
   private final List<SpanProcessor> spanProcessors = new ArrayList<>();
   private final List<SpanExporter> spanExporters = new ArrayList<>();
 
@@ -139,25 +139,25 @@ public class TracerSdkRegistryBean implements FactoryBean<TracerRegistry>, Initi
 
   @Override
   public void afterPropertiesSet() {
-    tracerRegistry = initializeTracerRegistry();
+    tracerProvider = initializeTracerRegistry();
   }
 
   @Override
-  public TracerRegistry getObject() {
-    if (tracerRegistry == null) {
-      tracerRegistry = initializeTracerRegistry();
+  public TracerProvider getObject() {
+    if (tracerProvider == null) {
+      tracerProvider = initializeTracerRegistry();
     }
-    return tracerRegistry;
+    return tracerProvider;
   }
 
   @Override
   public Class<?> getObjectType() {
-    return TracerRegistry.class;
+    return TracerProvider.class;
   }
 
-  private TracerRegistry initializeTracerRegistry() {
-    TracerSdkRegistry registry =
-        TracerSdkRegistry.builder()
+  private TracerProvider initializeTracerRegistry() {
+    TracerSdkProvider registry =
+        TracerSdkProvider.builder()
             .setClock(otelClock)
             .setIdsGenerator(otelIdsGenerator)
             .setResource(otelResource)
