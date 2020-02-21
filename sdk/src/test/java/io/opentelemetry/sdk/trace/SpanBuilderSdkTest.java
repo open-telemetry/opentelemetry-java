@@ -32,7 +32,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
-import io.opentelemetry.trace.propagation.ContextUtils;
+import io.opentelemetry.trace.propagation.TracingContextUtils;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -410,7 +410,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentExplicitContext_withSpan() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Context context = ContextUtils.withSpan(parent);
+    Context context = TracingContextUtils.withSpan(parent);
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
@@ -429,7 +429,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentExplicitContext_withSpanContext() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Context context = ContextUtils.withSpanContext(parent.getContext());
+    Context context = TracingContextUtils.withSpanContext(parent.getContext());
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
@@ -449,7 +449,8 @@ public class SpanBuilderSdkTest {
   public void parentExplicitContext_withValues() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     Context context =
-        ContextUtils.withSpanContext(sampledSpanContext, ContextUtils.withSpan(parent));
+        TracingContextUtils.withSpanContext(
+            sampledSpanContext, TracingContextUtils.withSpan(parent));
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
@@ -507,7 +508,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentCurrentSpanContext() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Context context = ContextUtils.withSpanContext(parent.getContext());
+    Context context = TracingContextUtils.withSpanContext(parent.getContext());
     Scope scope = io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
     try {
       RecordEventsReadableSpan span =
@@ -528,7 +529,8 @@ public class SpanBuilderSdkTest {
   public void parentCurrentContextValues() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     Context context =
-        ContextUtils.withSpanContext(sampledSpanContext, ContextUtils.withSpan(parent));
+        TracingContextUtils.withSpanContext(
+            sampledSpanContext, TracingContextUtils.withSpan(parent));
     Scope scope = io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
     try {
       RecordEventsReadableSpan span =

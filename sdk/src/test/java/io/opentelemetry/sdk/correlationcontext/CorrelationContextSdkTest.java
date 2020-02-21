@@ -27,7 +27,7 @@ import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
 import io.opentelemetry.correlationcontext.EntryValue;
-import io.opentelemetry.correlationcontext.propagation.ContextUtils;
+import io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -143,7 +143,7 @@ public class CorrelationContextSdkTest {
 
   @Test
   public void setParent_fromContext() {
-    Context context = ContextUtils.withCorrelationContext(listToCorrelationContext(T1));
+    Context context = CorrelationsContextUtils.withCorrelationContext(listToCorrelationContext(T1));
     CorrelationContext corrContext = contextManager.contextBuilder().setParent(context).build();
     assertThat(corrContext.getEntries()).containsExactly(T1);
   }

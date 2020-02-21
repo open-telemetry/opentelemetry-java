@@ -91,7 +91,7 @@ public class HttpTraceContextTest {
   public void inject_SampledContext() {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     Context context =
-        ContextUtils.withSpanContext(
+        TracingContextUtils.withSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_DEFAULT));
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier).containsExactly(TRACEPARENT, TRACEPARENT_HEADER_SAMPLED);
@@ -101,7 +101,7 @@ public class HttpTraceContextTest {
   public void inject_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     Context context =
-        ContextUtils.withSpanContext(
+        TracingContextUtils.withSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier).containsExactly(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
@@ -111,7 +111,7 @@ public class HttpTraceContextTest {
   public void inject_SampledContext_WithTraceState() {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     Context context =
-        ContextUtils.withSpanContext(
+        TracingContextUtils.withSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_NOT_DEFAULT));
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier)
@@ -123,7 +123,7 @@ public class HttpTraceContextTest {
   public void inject_NotSampledContext_WithTraceState() {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     Context context =
-        ContextUtils.withSpanContext(
+        TracingContextUtils.withSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier)
@@ -146,7 +146,7 @@ public class HttpTraceContextTest {
                 SpanContext.create(
                     TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_NOT_DEFAULT))
             .startSpan();
-    Context context = ContextUtils.withSpan(span);
+    Context context = TracingContextUtils.withSpan(span);
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier)
         .containsExactly(
@@ -167,7 +167,8 @@ public class HttpTraceContextTest {
             .startSpan();
     SpanContext spanContext =
         SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT);
-    Context context = ContextUtils.withSpanContext(spanContext, ContextUtils.withSpan(span));
+    Context context =
+        TracingContextUtils.withSpanContext(spanContext, TracingContextUtils.withSpan(span));
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier)
         .containsExactly(
@@ -179,7 +180,7 @@ public class HttpTraceContextTest {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_SAMPLED);
     Context context = httpTraceContext.extract(Context.current(), carrier, getter);
-    assertThat(ContextUtils.getSpanContext(context))
+    assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_DEFAULT));
@@ -190,7 +191,7 @@ public class HttpTraceContextTest {
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     Context context = httpTraceContext.extract(Context.current(), carrier, getter);
-    assertThat(ContextUtils.getSpanContext(context))
+    assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
@@ -202,7 +203,7 @@ public class HttpTraceContextTest {
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_SAMPLED);
     carrier.put(TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING);
     Context context = httpTraceContext.extract(Context.current(), carrier, getter);
-    assertThat(ContextUtils.getSpanContext(context))
+    assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_NOT_DEFAULT));
@@ -214,7 +215,7 @@ public class HttpTraceContextTest {
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     carrier.put(TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING);
     Context context = httpTraceContext.extract(Context.current(), carrier, getter);
-    assertThat(ContextUtils.getSpanContext(context))
+    assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
@@ -225,7 +226,7 @@ public class HttpTraceContextTest {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACEPARENT, "01-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00-02");
     Context context = httpTraceContext.extract(Context.current(), carrier, getter);
-    assertThat(ContextUtils.getSpanContext(context))
+    assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
@@ -237,7 +238,7 @@ public class HttpTraceContextTest {
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     carrier.put(TRACESTATE, "");
     Context context = httpTraceContext.extract(Context.current(), carrier, getter);
-    assertThat(ContextUtils.getSpanContext(context))
+    assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
@@ -249,7 +250,7 @@ public class HttpTraceContextTest {
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     carrier.put(TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING_WITH_SPACES);
     Context context = httpTraceContext.extract(Context.current(), carrier, getter);
-    assertThat(ContextUtils.getSpanContext(context))
+    assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));

@@ -18,7 +18,7 @@ package io.opentelemetry.correlationcontext;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.correlationcontext.propagation.ContextUtils;
+import io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -47,7 +47,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return ContextUtils.getCorrelationContextWithDefault(Context.current());
+    return CorrelationsContextUtils.getCorrelationContextWithDefault(Context.current());
   }
 
   @Override
@@ -57,7 +57,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public Scope withContext(CorrelationContext distContext) {
-    return ContextUtils.withScopedCorrelationContext(distContext);
+    return CorrelationsContextUtils.withScopedCorrelationContext(distContext);
   }
 
   @Immutable

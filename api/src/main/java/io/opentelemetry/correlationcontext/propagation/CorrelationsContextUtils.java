@@ -18,6 +18,7 @@ package io.opentelemetry.correlationcontext.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextUtils;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
 import javax.annotation.concurrent.Immutable;
@@ -32,7 +33,7 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 @Immutable
-public final class ContextUtils {
+public final class CorrelationsContextUtils {
   private static final Context.Key<CorrelationContext> DIST_CONTEXT_KEY =
       Context.key("opentelemetry-dist-context-key");
   private static final CorrelationContext DEFAULT_VALUE = EmptyCorrelationContext.getInstance();
@@ -104,8 +105,8 @@ public final class ContextUtils {
    */
   public static Scope withScopedCorrelationContext(CorrelationContext distContext) {
     Context context = withCorrelationContext(distContext);
-    return io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
+    return ContextUtils.withScopedContext(context);
   }
 
-  private ContextUtils() {}
+  private CorrelationsContextUtils() {}
 }

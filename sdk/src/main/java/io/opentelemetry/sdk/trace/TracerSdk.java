@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.propagation.ContextUtils;
+import io.opentelemetry.trace.propagation.TracingContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public class TracerSdk implements Tracer {
@@ -36,12 +36,12 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return ContextUtils.getSpanWithDefault(Context.current());
+    return TracingContextUtils.getSpanWithDefault(Context.current());
   }
 
   @Override
   public Scope withSpan(Span span) {
-    return ContextUtils.withScopedSpan(span);
+    return TracingContextUtils.withScopedSpan(span);
   }
 
   @Override

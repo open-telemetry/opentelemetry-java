@@ -25,7 +25,7 @@ import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
 import io.opentelemetry.correlationcontext.EntryValue;
-import io.opentelemetry.correlationcontext.propagation.ContextUtils;
+import io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Collection;
 import java.util.Collections;
@@ -132,7 +132,7 @@ class CorrelationContextSdk implements CorrelationContext {
     @Override
     public CorrelationContext.Builder setParent(Context context) {
       Utils.checkNotNull(context, "context");
-      CorrelationContext corrContext = ContextUtils.getCorrelationContext(context);
+      CorrelationContext corrContext = CorrelationsContextUtils.getCorrelationContext(context);
       if (corrContext != null) {
         setParent(corrContext);
       } else {

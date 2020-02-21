@@ -16,10 +16,9 @@
 
 package io.opentelemetry.trace.propagation;
 
-import static io.opentelemetry.context.propagation.ContextUtils.withScopedContext;
-
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -35,7 +34,7 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 @Immutable
-public final class ContextUtils {
+public final class TracingContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
       Context.<Span>key("opentelemetry-trace-span-key");
   private static final Context.Key<SpanContext> CONTEXT_SPANCONTEXT_KEY =
@@ -144,23 +143,23 @@ public final class ContextUtils {
   }
 
   /**
-   * Returns any {@link SpanContext} from the specified {@code Context}.
+   * Returns the effective {@link SpanContext} from the specified {@code Context}.
    *
-   * <p>This method tries to get any non-null {@link SpanContext} in {@code Context}, giving higher
-   * priority to {@code Span#getContext()} and then falling back to {@code SpanContext}. If none is
-   * found, this method returns {@code null}.
+   * <p>This method tries to get any effective non-null {@link SpanContext} in {@code Context},
+   * giving higher priority to {@code Span#getContext()} and then falling back to {@code
+   * SpanContext}. If none is found, this method returns {@code null}.
    *
    * @param context the specified {@code Context}.
    * @return the value from the specified {@code Context}.
    * @since 0.3.0
    */
-  public static SpanContext getAnySpanContext(Context context) {
-    Span span = ContextUtils.getSpan(context);
+  public static SpanContext getEffectiveSpanContext(Context context) {
+    Span span = getSpan(context);
     if (span != null) {
       return span.getContext();
     }
 
-    return ContextUtils.getSpanContext(context);
+    return getSpanContext(context);
   }
 
   /**
@@ -172,8 +171,8 @@ public final class ContextUtils {
    * @since 0.1.0
    */
   public static Scope withScopedSpan(Span span) {
-    return withScopedContext(withSpan(span));
+    return ContextUtils.withScopedContext(withSpan(span));
   }
 
-  private ContextUtils() {}
+  private TracingContextUtils() {}
 }

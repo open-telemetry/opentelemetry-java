@@ -22,7 +22,7 @@ import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
-import io.opentelemetry.correlationcontext.propagation.ContextUtils;
+import io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +52,7 @@ public class CorrelationContextManagerSdkTest {
 
   @Test
   public void testGetCurrentContext_ContextSetToNull() {
-    Context orig = ContextUtils.withCorrelationContext(null).attach();
+    Context orig = CorrelationsContextUtils.withCorrelationContext(null).attach();
     try {
       CorrelationContext distContext = contextManager.getCurrentContext();
       assertThat(distContext).isNotNull();

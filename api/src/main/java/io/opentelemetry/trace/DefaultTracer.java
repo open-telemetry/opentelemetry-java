@@ -19,7 +19,7 @@ package io.opentelemetry.trace;
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.trace.propagation.ContextUtils;
+import io.opentelemetry.trace.propagation.TracingContextUtils;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -44,12 +44,12 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return ContextUtils.getSpanWithDefault(Context.current());
+    return TracingContextUtils.getSpanWithDefault(Context.current());
   }
 
   @Override
   public Scope withSpan(Span span) {
-    return ContextUtils.withScopedSpan(span);
+    return TracingContextUtils.withScopedSpan(span);
   }
 
   @Override
@@ -71,7 +71,7 @@ public final class DefaultTracer implements Tracer {
     @Override
     public Span startSpan() {
       if (spanContext == null && !isRootSpan) {
-        spanContext = ContextUtils.getAnySpanContext(Context.current());
+        spanContext = TracingContextUtils.getEffectiveSpanContext(Context.current());
       }
 
       return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
@@ -96,7 +96,7 @@ public final class DefaultTracer implements Tracer {
     @Override
     public NoopSpanBuilder setParent(Context context) {
       Utils.checkNotNull(context, "context");
-      spanContext = ContextUtils.getAnySpanContext(context);
+      spanContext = TracingContextUtils.getEffectiveSpanContext(context);
       if (spanContext == null) {
         isRootSpan = true;
       }

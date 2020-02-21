@@ -36,7 +36,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracestate;
-import io.opentelemetry.trace.propagation.ContextUtils;
+import io.opentelemetry.trace.propagation.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -106,8 +106,8 @@ class SpanBuilderSdk implements Span.Builder {
   public Span.Builder setParent(Context context) {
     Utils.checkNotNull(context, "context");
 
-    Span span = ContextUtils.getSpan(context);
-    SpanContext spanContext = ContextUtils.getSpanContext(context);
+    Span span = TracingContextUtils.getSpan(context);
+    SpanContext spanContext = TracingContextUtils.getSpanContext(context);
     if (span != null) {
       setParent(span);
     } else if (spanContext != null) {
@@ -266,7 +266,7 @@ class SpanBuilderSdk implements Span.Builder {
       case NO_PARENT:
         return null;
       case CURRENT_CONTEXT:
-        return ContextUtils.getAnySpanContext(Context.current());
+        return TracingContextUtils.getEffectiveSpanContext(Context.current());
       case EXPLICIT_PARENT:
         return explicitParent.getContext();
       case EXPLICIT_REMOTE_PARENT:
@@ -279,7 +279,7 @@ class SpanBuilderSdk implements Span.Builder {
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
       case CURRENT_CONTEXT:
-        Span span = ContextUtils.getSpan();
+        Span span = TracingContextUtils.getSpan();
         return DefaultSpan.getInvalid().equals(span) ? null : span;
       case EXPLICIT_PARENT:
         return explicitParent;
