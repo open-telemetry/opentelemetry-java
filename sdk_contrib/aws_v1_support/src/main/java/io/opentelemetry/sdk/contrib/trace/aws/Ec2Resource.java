@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 public class Ec2Resource {
 
   /** OpenTelemetry semantic convention identifier for AWS cloud. */
-  static final String CLOUD_PROVIDER_AWS = "aws";
+  static final AttributeValue CLOUD_PROVIDER_AWS = AttributeValue.stringAttributeValue("aws");
 
   /**
    * Returns a resource with all host and cloud labels populated with the information obtained from
@@ -49,7 +49,7 @@ public class Ec2Resource {
       @Nullable InstanceInfo info, @Nullable String hostname) {
     Map<String, AttributeValue> labels = new HashMap<>();
     labels.put(
-        ResourceConstants.CLOUD_PROVIDER, AttributeValue.stringAttributeValue(CLOUD_PROVIDER_AWS));
+        ResourceConstants.CLOUD_PROVIDER, CLOUD_PROVIDER_AWS);
     if (info != null) {
       labels.put(
           ResourceConstants.CLOUD_ACCOUNT,
