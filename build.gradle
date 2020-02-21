@@ -14,7 +14,7 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'signing'
-    apply plugin: "jacoco"
+    apply plugin: 'jacoco'
     apply plugin: 'maven-publish'
 
     apply plugin: 'com.github.sherter.google-java-format'
