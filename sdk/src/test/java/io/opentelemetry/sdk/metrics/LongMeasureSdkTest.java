@@ -63,7 +63,7 @@ public class LongMeasureSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongMeasureSdk longMeasure = (LongMeasureSdk) testSdk.longMeasureBuilder("testMeasure").build();
+    LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
     BoundLongMeasure boundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
     try {
       longMeasure.collect();
