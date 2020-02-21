@@ -30,13 +30,15 @@ public class SummaryAggregationTest {
   public void getDescriptorType() {
     Aggregation summary = Aggregations.summary();
     assertThat(
-        summary.getDescriptorType(InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE))
+            summary.getDescriptorType(
+                InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE))
         .isEqualTo(Type.NON_MONOTONIC_DOUBLE);
     assertThat(
-        summary.getDescriptorType(InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.LONG))
+            summary.getDescriptorType(
+                InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.LONG))
         .isEqualTo(Type.NON_MONOTONIC_LONG);
     assertThat(
-        summary.getDescriptorType(InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.DOUBLE))
+            summary.getDescriptorType(InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.DOUBLE))
         .isEqualTo(Type.MONOTONIC_DOUBLE);
     assertThat(summary.getDescriptorType(InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.LONG))
         .isEqualTo(Type.MONOTONIC_LONG);
@@ -47,9 +49,9 @@ public class SummaryAggregationTest {
     Aggregation summary = Aggregations.summary();
     assertThat(summary.getAggregatorFactory(InstrumentValueType.LONG))
         .isInstanceOf(LongSummaryAggregator.getFactory().getClass());
-    //todo
-//    assertThat(summary.getAggregatorFactory(InstrumentValueType.DOUBLE))
-//        .isInstanceOf(DoubleSumAggregator.getFactory().getClass());
+    // todo
+    //    assertThat(summary.getAggregatorFactory(InstrumentValueType.DOUBLE))
+    //        .isInstanceOf(DoubleSumAggregator.getFactory().getClass());
   }
 
   @Test
@@ -63,6 +65,4 @@ public class SummaryAggregationTest {
       }
     }
   }
-
-
 }

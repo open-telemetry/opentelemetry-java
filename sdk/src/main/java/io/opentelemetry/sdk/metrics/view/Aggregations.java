@@ -43,7 +43,7 @@ public class Aggregations {
    * recorded measurements).
    *
    * @return an {@code Aggregation} that calculates count of recorded measurements (the number of
-   * recorded * measurements).
+   *     recorded * measurements).
    * @since 0.1.0
    */
   public static Aggregation count() {
@@ -255,6 +255,5 @@ public class Aggregations {
     }
   }
 
-  private Aggregations() {
-  }
+  private Aggregations() {}
 }
