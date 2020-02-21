@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -41,7 +42,9 @@ public class DoubleCounterSdkTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
-      Resource.create(Collections.singletonMap("resource_key", "resource_value"));
+      Resource.create(
+          Collections.singletonMap(
+              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.DoubleCounterSdkTest", null);
   private final TestClock testClock = TestClock.create();
