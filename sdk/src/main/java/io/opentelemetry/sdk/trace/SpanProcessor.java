@@ -52,8 +52,8 @@ public interface SpanProcessor {
   /**
    * Exports all ended spans that have not yet been exported.
    *
-   * <p>This method is called synchronously on the execution thread, and should not throw exceptions
-   * or block the execution thread. execution thread.
+   * <p>This method is called synchronously on the execution thread, and should not throw
+   * exceptions.
    */
   void forceFlush();
 }
