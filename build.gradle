@@ -14,11 +14,9 @@ subprojects {
     apply plugin: 'idea'
     apply plugin: 'signing'
     apply plugin: 'jacoco'
-    apply plugin: 'maven-publish'
 
     apply plugin: 'com.github.sherter.google-java-format'
     apply plugin: 'net.ltgt.errorprone'
-    apply plugin: "com.jfrog.artifactory"
 
     group = "io.opentelemetry"
     version = "0.3.0-SNAPSHOT" // CURRENT_VERSION
@@ -230,7 +228,7 @@ subprojects {
 
     plugins.withId("me.champeau.gradle.jmh") {
         // Always include the jmhreport plugin and run it after jmh task.
-        pluginManager.apply("io.morethan.jmhreport")
+        pluginManager.apply "io.morethan.jmhreport"
         dependencies {
             jmh 'org.openjdk.jmh:jmh-core:1.19',
                     'org.openjdk.jmh:jmh-generator-bytecode:1.19'
@@ -264,7 +262,75 @@ subprojects {
         tasks.jmh.finalizedBy tasks.jmhReport
     }
 
-    apply from: "${rootProject.projectDir}/gradle/publish.gradle"
+    plugins.withId("maven-publish") {
+        // Always include the artifactory plugin to do the deployment.
+        pluginManager.apply "com.jfrog.artifactory"
+
+        publishing {
+            publications {
+                mavenPublication(MavenPublication) {
+                    version version
+                    groupId group
+
+                    from components.java
+                    artifact sourcesJar
+                    artifact javadocJar
+
+                    pom {
+                        name = 'OpenTelemetry Java'
+                        packaging = 'jar'
+                        url = 'https://github.com/open-telemetry/opentelemetry-java'
+
+                        licenses {
+                            license {
+                                name = 'The Apache License, Version 2.0'
+                                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id = 'opentelemetry'
+                                name = 'OpenTelemetry Gitter'
+                                url = 'https://gitter.im/open-telemetry/community'
+                            }
+                        }
+
+                        scm {
+                            connection = 'scm:git:git@github.com:open-telemetry/opentelemetry-java.git'
+                            developerConnection = 'scm:git:git@github.com:open-telemetry/opentelemetry-java.git'
+                            url = 'git@github.com:open-telemetry/opentelemetry-java.git'
+                        }
+
+                        afterEvaluate {
+                            // description is not available until evaluated.
+                            description = project.description
+                        }
+                    }
+                }
+            }
+        }
+
+        // Snapshot publishing.
+        artifactory {
+            contextUrl = 'https://oss.jfrog.org'
+            publish {
+                repository {
+                    repoKey = 'oss-snapshot-local'
+                    username = System.getenv("BINTRAY_USER")
+                    password = System.getenv("BINTRAY_KEY")
+                }
+                defaults {
+                    publications('mavenPublication')
+                    publishArtifacts = true
+                    publishPom = true
+                }
+            }
+            resolve {
+                repoKey = 'libs-release'
+            }
+        }
+    }
 }
 
 wrapper {
