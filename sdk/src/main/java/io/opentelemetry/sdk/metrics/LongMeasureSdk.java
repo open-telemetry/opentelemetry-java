@@ -69,18 +69,10 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     }
   }
 
-  static LongMeasure.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    return new Builder(name, meterProviderSharedState, meterSharedState);
-  }
-
-  private static final class Builder
-      extends AbstractMeasure.Builder<LongMeasure.Builder, LongMeasure>
+  static final class Builder extends AbstractMeasure.Builder<LongMeasure.Builder, LongMeasure>
       implements LongMeasure.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
@@ -93,7 +85,7 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     }
 
     @Override
-    public LongMeasure build() {
+    public LongMeasureSdk build() {
       return new LongMeasureSdk(
           getInstrumentDescriptor(),
           getMeterProviderSharedState(),

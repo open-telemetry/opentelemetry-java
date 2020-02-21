@@ -18,13 +18,14 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.AttributeValue;
@@ -60,16 +61,24 @@ public class LongCounterSdkTest {
     LongCounter longCounter =
         testSdk
             .longCounterBuilder("testCounter")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
-            .setUnit("metric tonnes")
+            .setUnit("ms")
             .setMonotonic(true)
             .build();
     assertThat(longCounter).isInstanceOf(LongCounterSdk.class);
     List<MetricData> metricDataList = ((LongCounterSdk) longCounter).collect();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
+    assertThat(metricData.getDescriptor())
+        .isEqualTo(
+            Descriptor.create(
+                "testCounter",
+                "My very own counter",
+                "ms",
+                Type.MONOTONIC_LONG,
+                Collections.singletonMap("sk1", "sv1")));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -77,16 +86,7 @@ public class LongCounterSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    LongCounterSdk longCounter =
-        (LongCounterSdk)
-            testSdk
-                .longCounterBuilder("testCounter")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-                .setLabelKeys(Collections.singletonList("sk1"))
-                .setDescription("My very own counter")
-                .setUnit("metric tonnes")
-                .setMonotonic(true)
-                .build();
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
     longCounter.add(12, testSdk.createLabelSet());
     List<MetricData> metricDataList = longCounter.collect();
@@ -111,16 +111,7 @@ public class LongCounterSdkTest {
     LabelSetSdk labelSet = testSdk.createLabelSet("K", "V");
     LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
     long startTime = testClock.now();
-    LongCounterSdk longCounter =
-        (LongCounterSdk)
-            testSdk
-                .longCounterBuilder("testCounter")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-                .setLabelKeys(Collections.singletonList("sk1"))
-                .setDescription("My very own counter")
-                .setUnit("metric tonnes")
-                .setMonotonic(true)
-                .build();
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     BoundLongCounter boundCounter = longCounter.bind(labelSet);
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -163,8 +154,7 @@ public class LongCounterSdkTest {
 
   @Test
   public void stressTest() {
-    final LongCounterSdk longCounter =
-        (LongCounterSdk) testSdk.longCounterBuilder("testCounter").build();
+    final LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longCounter).setCollectionIntervalMs(100);
@@ -193,8 +183,7 @@ public class LongCounterSdkTest {
   public void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final LongCounterSdk longCounter =
-        (LongCounterSdk) testSdk.longCounterBuilder("testCounter").build();
+    final LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longCounter).setCollectionIntervalMs(100);
@@ -254,7 +243,7 @@ public class LongCounterSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongCounterSdk longCounter = (LongCounterSdk) testSdk.longCounterBuilder("testCounter").build();
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
     try {
       longCounter.collect();
