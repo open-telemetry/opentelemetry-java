@@ -48,8 +48,7 @@ public class Ec2Resource {
   static Resource getResourceFromInfoAndHost(
       @Nullable InstanceInfo info, @Nullable String hostname) {
     Map<String, AttributeValue> labels = new HashMap<>();
-    labels.put(
-        ResourceConstants.CLOUD_PROVIDER, CLOUD_PROVIDER_AWS);
+    labels.put(ResourceConstants.CLOUD_PROVIDER, CLOUD_PROVIDER_AWS);
     if (info != null) {
       labels.put(
           ResourceConstants.CLOUD_ACCOUNT,
