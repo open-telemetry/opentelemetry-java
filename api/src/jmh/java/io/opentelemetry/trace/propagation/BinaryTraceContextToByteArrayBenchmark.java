@@ -38,11 +38,11 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 public class BinaryTraceContextToByteArrayBenchmark {
 
-  private BinaryTraceContext binaryTraceContext = new BinaryTraceContext();
-  private byte sampledTraceOptionsBytes = 1;
-  private TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
-  private TraceState traceStateDefault = TraceState.builder().build();
-  private List<SpanContext> spanContextList =
+  private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
+  private final BinaryTraceContext binaryTraceContext = new BinaryTraceContext();
+  private final TraceFlags sampledTraceOptions = TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
+  private final TraceState traceStateDefault = TraceState.builder().build();
+  private final List<SpanContext> spanContextList =
       Arrays.asList(
           createSpanContext("905734c59b913b4a905734c59b913b4a", "9909983295041501"),
           createSpanContext("21196a77f299580e21196a77f299580e", "993a97ee3691eb26"),

@@ -38,12 +38,11 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 public class BinaryTraceContextFromByteArrayBenchmark {
 
-  private BinaryTraceContext binaryTraceContext = new BinaryTraceContext();
-  private Integer iteration = 0;
-  private byte sampledTraceOptionsBytes = 1;
-  private TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
-  private TraceState traceStateDefault = TraceState.builder().build();
-  private List<byte[]> byteArrays =
+  private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
+  private final BinaryTraceContext binaryTraceContext = new BinaryTraceContext();
+  private final TraceFlags sampledTraceOptions = TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
+  private final TraceState traceStateDefault = TraceState.builder().build();
+  private final List<byte[]> byteArrays =
       Arrays.asList(
           createByteArray("905734c59b913b4a905734c59b913b4a", "9909983295041501"),
           createByteArray("21196a77f299580e21196a77f299580e", "993a97ee3691eb26"),
@@ -51,6 +50,7 @@ public class BinaryTraceContextFromByteArrayBenchmark {
           createByteArray("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
           createByteArray("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
   private byte[] byteArray = byteArrays.get(0);
+  private Integer iteration = 0;
 
   @Benchmark
   @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
@@ -67,7 +67,7 @@ public class BinaryTraceContextFromByteArrayBenchmark {
   }
 
   private byte[] createByteArray(String traceIdBase16, String spanIdBase16) {
-    return this.binaryTraceContext.toByteArray(
+    return binaryTraceContext.toByteArray(
         SpanContext.create(
             TraceId.fromLowerBase16(traceIdBase16, 0),
             SpanId.fromLowerBase16(spanIdBase16, 0),
