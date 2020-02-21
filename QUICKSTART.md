@@ -20,11 +20,11 @@
 <!-- tocstop -->
 
 OpenTelemetry can be used to instrument code for collecting telemetry data.
-For more details, check out the [Specification Overview].
+For more details, check out the [OpenTelemetry Website].
 
 In the following examples, we demonstrate how to configure the OpenTelemetry SDK, create spans and record metrics through the OpenTelemetry API.
 
-[Specification Overview]: https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/overview.md
+[OpenTelemetry Website]: https://opentelemetry.io/
 
 # Configuration
 
