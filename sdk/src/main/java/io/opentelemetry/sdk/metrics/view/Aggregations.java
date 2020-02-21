@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics.view;
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.LongSummaryAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -42,7 +43,7 @@ public class Aggregations {
    * recorded measurements).
    *
    * @return an {@code Aggregation} that calculates count of recorded measurements (the number of
-   *     recorded * measurements).
+   * recorded * measurements).
    * @since 0.1.0
    */
   public static Aggregation count() {
@@ -73,6 +74,14 @@ public class Aggregations {
     return LastValue.INSTANCE;
   }
 
+  /**
+   * Returns an {@code Aggregation} that calculates a simple summary of all recorded measurements.
+   * The summary consists of the count of measurements, the sum of all measurements, the maximum
+   * value recorded and the minimum value recorded.
+   *
+   * @return an {@code Aggregation} that calculates a simple summary of all recorded measurements.
+   * @since 0.3.0
+   */
   public static Aggregation summary() {
     return Summary.INSTANCE;
   }
@@ -83,14 +92,25 @@ public class Aggregations {
     @Override
     public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
       // todo handle doubles as well
-      return LongSumAggregator.getFactory();
+      return LongSummaryAggregator.getFactory();
     }
 
     @Override
     public Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      // todo: implement correctly
-      return Type.MONOTONIC_LONG;
+      switch (instrumentType) {
+        case MEASURE_ABSOLUTE:
+          return instrumentValueType == InstrumentValueType.LONG
+              ? Type.MONOTONIC_LONG
+              : Type.MONOTONIC_DOUBLE;
+        case MEASURE_NON_ABSOLUTE:
+          return instrumentValueType == InstrumentValueType.LONG
+              ? Type.NON_MONOTONIC_LONG
+              : Type.NON_MONOTONIC_DOUBLE;
+        default:
+          throw new IllegalArgumentException(
+              "Unsupported instrument/value types : " + instrumentType + "/" + instrumentValueType);
+      }
     }
 
     @Override
@@ -235,5 +255,6 @@ public class Aggregations {
     }
   }
 
-  private Aggregations() {}
+  private Aggregations() {
+  }
 }
