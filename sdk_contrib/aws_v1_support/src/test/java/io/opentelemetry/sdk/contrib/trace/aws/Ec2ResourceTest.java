@@ -33,7 +33,7 @@ public class Ec2ResourceTest {
   public void shouldReturnResourceWithOnlyCloudProviderLabelIfNotRunningOnEc2() {
     Resource resource = Ec2Resource.getResourceFromInfoAndHost(null, null);
     assertThat(resource.getLabels().get(ResourceConstants.CLOUD_PROVIDER).getStringValue())
-        .isEqualTo(Ec2Resource.CLOUD_PROVIDER_AWS);
+        .isEqualTo(Ec2Resource.CLOUD_PROVIDER_AWS.getStringValue());
   }
 
   @Test
@@ -71,7 +71,7 @@ public class Ec2ResourceTest {
     String hostname = "ip-172-31-30-166.ec2.internal";
     Resource resource = Ec2Resource.getResourceFromInfoAndHost(instanceInfo, hostname);
     assertThat(resource.getLabels().get(ResourceConstants.CLOUD_PROVIDER).getStringValue())
-        .isEqualTo(Ec2Resource.CLOUD_PROVIDER_AWS);
+        .isEqualTo(Ec2Resource.CLOUD_PROVIDER_AWS.getStringValue());
     assertThat(resource.getLabels().get(ResourceConstants.CLOUD_ACCOUNT).getStringValue())
         .isEqualTo(accountId);
     assertThat(resource.getLabels().get(ResourceConstants.CLOUD_REGION).getStringValue())
