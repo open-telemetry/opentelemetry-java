@@ -31,6 +31,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class MetricData {
+
   MetricData() {}
 
   /**
@@ -78,6 +79,7 @@ public abstract class MetricData {
 
   @Immutable
   public abstract static class Point {
+
     Point() {}
 
     /**
@@ -115,6 +117,7 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class LongPoint extends Point {
+
     LongPoint() {}
 
     /**
@@ -137,6 +140,7 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class DoublePoint extends Point {
+
     DoublePoint() {}
 
     /**
@@ -152,6 +156,33 @@ public abstract class MetricData {
     }
   }
 
+  @Immutable
+  @AutoValue
+  public abstract static class LongSummaryPoint extends Point {
+
+    LongSummaryPoint() {}
+
+    public abstract long getCount();
+
+    public abstract long getSum();
+
+    public abstract long getMin();
+
+    public abstract long getMax();
+
+    public static LongSummaryPoint create(
+        long startEpochNanos,
+        long epochNanos,
+        Map<String, String> labels,
+        long count,
+        long sum,
+        long min,
+        long max) {
+      return new AutoValue_MetricData_LongSummaryPoint(
+          startEpochNanos, epochNanos, labels, count, sum, min, max);
+    }
+  }
+
   /**
    * {@link Descriptor} defines metadata about the {@code MetricData} type and its schema.
    *
@@ -160,6 +191,7 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class Descriptor {
+
     Descriptor() {}
 
     /**

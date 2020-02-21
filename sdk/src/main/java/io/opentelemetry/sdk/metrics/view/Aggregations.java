@@ -73,6 +73,38 @@ public class Aggregations {
     return LastValue.INSTANCE;
   }
 
+  public static Aggregation summary() {
+    return Summary.INSTANCE;
+  }
+
+  private enum Summary implements Aggregation {
+    INSTANCE;
+
+    @Override
+    public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
+      // todo handle doubles as well
+      return LongSumAggregator.getFactory();
+    }
+
+    @Override
+    public Type getDescriptorType(
+        InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
+      // todo: implement correctly
+      return Type.MONOTONIC_LONG;
+    }
+
+    @Override
+    public String getUnit(String initialUnit) {
+      return initialUnit;
+    }
+
+    @Override
+    public boolean availableForInstrument(InstrumentType instrumentType) {
+      return instrumentType == InstrumentType.MEASURE_ABSOLUTE
+          || instrumentType == InstrumentType.MEASURE_NON_ABSOLUTE;
+    }
+  }
+
   @Immutable
   private enum Sum implements Aggregation {
     INSTANCE;
@@ -146,6 +178,7 @@ public class Aggregations {
 
   @Immutable
   private static final class Distribution implements Aggregation {
+
     private final AggregatorFactory factory;
 
     Distribution(Double... bucketBoundaries) {
