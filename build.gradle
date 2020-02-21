@@ -87,11 +87,6 @@ subprojects {
                 'Target-Compatibility': targetCompatibility)
     }
 
-    javadoc.options {
-        encoding = 'UTF-8'
-        links 'https://docs.oracle.com/javase/8/docs/api/'
-    }
-
     ext {
         autoValueVersion = '1.6.6'
         errorProneVersion = '2.3.3'
@@ -108,11 +103,14 @@ subprojects {
                 auto_value_annotation: "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
                 disruptor            : 'com.lmax:disruptor:3.4.2',
                 errorprone_annotation: "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
+                errorprone_core      : "com.google.errorprone:error_prone_core:${errorProneVersion}",
+                errorprone_javac     : "com.google.errorprone:javac:${errorProneJavacVersion}",
                 grpc_api             : "io.grpc:grpc-api:${grpcVersion}",
                 grpc_context         : "io.grpc:grpc-context:${grpcVersion}",
                 grpc_protobuf        : "io.grpc:grpc-protobuf:${grpcVersion}",
                 grpc_stub            : "io.grpc:grpc-stub:${grpcVersion}",
                 guava                : "com.google.guava:guava:${guavaVersion}",
+                javax_annotations    : "javax.annotation:javax.annotation-api:1.3.2",
                 jsr305               : "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
                 protobuf             : "com.google.protobuf:protobuf-java:${protobufVersion}",
                 protobuf_util        : "com.google.protobuf:protobuf-java-util:${protobufVersion}",
@@ -128,6 +126,19 @@ subprojects {
                 slf4jsimple          : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
                 awaitility           : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
         ]
+    }
+
+    checkstyle {
+        configFile = file("$rootDir/buildscripts/checkstyle.xml")
+        toolVersion = "8.12"
+        ignoreFailures = false
+        configProperties["rootDir"] = rootDir
+    }
+
+    jacoco { toolVersion = "0.8.2" }
+
+    googleJavaFormat {
+        toolVersion = '1.7'
     }
 
     configurations {
@@ -151,8 +162,8 @@ subprojects {
 
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check
-        errorprone "com.google.errorprone:error_prone_core:${errorProneVersion}"
-        errorproneJavac "com.google.errorprone:javac:${errorProneJavacVersion}"
+        errorprone libraries.errorprone_core
+        errorproneJavac libraries.errorprone_javac
 
         if (JavaVersion.current().isJava9() || JavaVersion.current().isJava10() || JavaVersion.current().isJava11()) {
             // Workaround for @javax.annotation.Generated
@@ -161,17 +172,10 @@ subprojects {
         }
     }
 
-    checkstyle {
-        configFile = file("$rootDir/buildscripts/checkstyle.xml")
-        toolVersion = "8.12"
-        ignoreFailures = false
-        configProperties["rootDir"] = rootDir
-    }
-
-    jacoco { toolVersion = "0.8.2" }
-
-    googleJavaFormat {
-        toolVersion = '1.7'
+    javadoc.options {
+        source = "8"
+        encoding = "UTF-8"
+        links 'https://docs.oracle.com/javase/8/docs/api/'
     }
 
     afterEvaluate {  // Allow subproject to add more source sets.
@@ -218,9 +222,9 @@ subprojects {
     test {
         testLogging {
             exceptionFormat = 'full'
-            showExceptions true
-            showCauses true
-            showStackTraces true
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
         }
         maxHeapSize = '1500m'
     }
@@ -250,21 +254,29 @@ subprojects {
             }
         }
 
+        // Need to have this condition in both jmh and jmhReport to avoid relying on the
+        // applying ordering.
+        if (plugins.hasPlugin("io.morethan.jmhreport")) {
+            // If also the jmhReport plugin is installed then always run jmhReport after jmh task.
+            tasks.jmh.finalizedBy tasks.jmhReport
+        }
+    }
+
+    plugins.withId("io.morethan.jmhreport") {
         jmhReport {
             jmhResultPath = project.file("${project.buildDir}/reports/jmh/results.json")
             jmhReportOutput = project.file("${project.buildDir}/reports/jmh")
         }
 
-        tasks.jmh.finalizedBy tasks.jmhReport
+        // Need to have this condition in both jmh and jmhReport to avoid relying on the
+        // applying ordering.
+        if (plugins.hasPlugin("me.champeau.gradle.jmh")) {
+            // If also the jmh plugin is installed then always run jmhReport after jmh task.
+            tasks.jmh.finalizedBy tasks.jmhReport
+        }
     }
 
     apply from: "${rootProject.projectDir}/gradle/publish.gradle"
-
-    javadoc {
-        options {
-            source "1.8"
-        }
-    }
 }
 
 wrapper {
