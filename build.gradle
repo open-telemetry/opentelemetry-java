@@ -1,25 +1,11 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-        mavenLocal()
-    }
-    dependencies {
-        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.5.0'
-        classpath 'net.ltgt.gradle:gradle-errorprone-plugin:1.1.1'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.20.0'
-        classpath "gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.8"
-        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.9.8'
-        classpath "gradle.plugin.io.morethan.jmhreport:gradle-jmh-report:0.9.0"
-    }
+plugins {
+    id "com.github.sherter.google-java-format" apply false
+    id "com.jfrog.artifactory" apply false
+    id "me.champeau.gradle.jmh" apply false
+    id "net.ltgt.errorprone" apply false
+    id "ru.vyarus.animalsniffer" apply false
+    id "io.morethan.jmhreport" apply false
 }
-
-// Display the version report using: ./gradlew dependencyUpdates
-// Also see https://github.com/ben-manes/gradle-versions-plugin.
-apply plugin: 'com.github.ben-manes.versions'
 
 subprojects {
     apply plugin: 'checkstyle'
@@ -28,28 +14,26 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'idea'
     apply plugin: 'signing'
-    apply plugin: 'jacoco'
+    apply plugin: "jacoco"
     apply plugin: 'maven-publish'
-    // The plugin only has an effect if a signature is specified
-    apply plugin: 'ru.vyarus.animalsniffer'
+
     apply plugin: 'com.github.sherter.google-java-format'
     apply plugin: 'net.ltgt.errorprone'
-    apply plugin: 'com.jfrog.artifactory'
-    apply plugin: 'io.morethan.jmhreport'
-    apply from: "$rootDir/jmh.gradle"
+    apply plugin: "com.jfrog.artifactory"
 
     group = "io.opentelemetry"
     version = "0.3.0-SNAPSHOT" // CURRENT_VERSION
 
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-
     repositories {
         mavenCentral()
+        jcenter()
         mavenLocal()
     }
 
-    [compileJava, compileTestJava, compileJmhJava].each() {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+
+    tasks.withType(JavaCompile) {
         // We suppress the "try" warning because it disallows managing an auto-closeable with
         // try-with-resources without referencing the auto-closeable within the try block.
         // We suppress the "processing" warning as suggested in
@@ -184,8 +168,10 @@ subprojects {
         configProperties["rootDir"] = rootDir
     }
 
+    jacoco { toolVersion = "0.8.2" }
+
     googleJavaFormat {
-        toolVersion '1.7'
+        toolVersion = '1.7'
     }
 
     afterEvaluate {  // Allow subproject to add more source sets.
@@ -239,12 +225,36 @@ subprojects {
         maxHeapSize = '1500m'
     }
 
-    jmhReport {
-        jmhResultPath = project.file("${project.buildDir}/results/results.json")
-        jmhReportOutput = project.file("${project.buildDir}/results")
-    }
+    plugins.withId("me.champeau.gradle.jmh") {
+        dependencies {
+            jmh 'org.openjdk.jmh:jmh-core:1.19',
+                    'org.openjdk.jmh:jmh-generator-bytecode:1.19'
+        }
 
-    tasks.jmhRun.finalizedBy tasks.jmhReport
+        // invoke jmh on a single benchmark class like so:
+        //   ./gradlew -PjmhIncludeSingleClass=StatsTraceContextBenchmark clean :grpc-core:jmh
+        jmh {
+            warmupIterations = 10
+            iterations = 10
+            fork = 1
+            // None of our benchmarks need the tests, and we have pseudo-circular
+            // dependencies that break when including them. (context's testCompile
+            // depends on core; core's testCompile depends on testing)
+            includeTests = false
+            if (project.hasProperty('jmhIncludeSingleClass')) {
+                include = [
+                        project.property('jmhIncludeSingleClass')
+                ]
+            }
+        }
+
+        jmhReport {
+            jmhResultPath = project.file("${project.buildDir}/results/results.json")
+            jmhReportOutput = project.file("${project.buildDir}/results")
+        }
+
+        tasks.jmh.finalizedBy tasks.jmhReport
+    }
 
     apply from: "${rootProject.projectDir}/gradle/publish.gradle"
 
