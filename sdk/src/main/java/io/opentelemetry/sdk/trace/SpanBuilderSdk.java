@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.grpc.Context;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
@@ -36,7 +37,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.propagation.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -248,7 +249,7 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static SpanContext parent(
       ParentType parentType, Span explicitParent, SpanContext remoteParent) {
-    Span currentSpan = ContextUtils.getValue();
+    Span currentSpan = TracingContextUtils.getSpanWithDefault(Context.current());
     switch (parentType) {
       case NO_PARENT:
         return null;
@@ -266,7 +267,7 @@ final class SpanBuilderSdk implements Span.Builder {
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
       case CURRENT_SPAN:
-        return ContextUtils.getValue();
+        return TracingContextUtils.getSpanWithDefault(Context.current());
       case EXPLICIT_PARENT:
         return explicitParent;
       default:

@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.correlationcontext.unsafe;
+package io.opentelemetry.correlationcontext.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextUtils;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
 import javax.annotation.concurrent.Immutable;
@@ -32,10 +33,10 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.1.0
  */
 @Immutable
-public final class ContextUtils {
+public final class CorrelationsContextUtils {
   private static final Context.Key<CorrelationContext> DIST_CONTEXT_KEY =
-      Context.keyWithDefault(
-          "opentelemetry-dist-context-key", EmptyCorrelationContext.getInstance());
+      Context.key("opentelemetry-dist-context-key");
+  private static final CorrelationContext DEFAULT_VALUE = EmptyCorrelationContext.getInstance();
 
   /**
    * Creates a new {@code Context} with the given value set.
@@ -44,7 +45,7 @@ public final class ContextUtils {
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(CorrelationContext distContext) {
+  public static Context withCorrelationContext(CorrelationContext distContext) {
     return Context.current().withValue(DIST_CONTEXT_KEY, distContext);
   }
 
@@ -56,7 +57,7 @@ public final class ContextUtils {
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withValue(CorrelationContext distContext, Context context) {
+  public static Context withCorrelationContext(CorrelationContext distContext, Context context) {
     return context.withValue(DIST_CONTEXT_KEY, distContext);
   }
 
@@ -66,7 +67,7 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static CorrelationContext getValue() {
+  public static CorrelationContext getCorrelationContext() {
     return DIST_CONTEXT_KEY.get();
   }
 
@@ -77,8 +78,21 @@ public final class ContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.1.0
    */
-  public static CorrelationContext getValue(Context context) {
+  public static CorrelationContext getCorrelationContext(Context context) {
     return DIST_CONTEXT_KEY.get(context);
+  }
+
+  /**
+   * Returns the value from the specified {@code Context}, falling back to a default, no-op {@link
+   * CorrelationContext}.
+   *
+   * @param context the specified {@code Context}.
+   * @return the value from the specified {@code Context}.
+   * @since 0.1.0
+   */
+  public static CorrelationContext getCorrelationContextWithDefault(Context context) {
+    CorrelationContext corrContext = DIST_CONTEXT_KEY.get(context);
+    return corrContext == null ? DEFAULT_VALUE : corrContext;
   }
 
   /**
@@ -89,9 +103,10 @@ public final class ContextUtils {
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */
-  public static Scope withCorrelationContext(CorrelationContext distContext) {
-    return CorrelationContextInScope.create(distContext);
+  public static Scope withScopedCorrelationContext(CorrelationContext distContext) {
+    Context context = withCorrelationContext(distContext);
+    return ContextUtils.withScopedContext(context);
   }
 
-  private ContextUtils() {}
+  private CorrelationsContextUtils() {}
 }

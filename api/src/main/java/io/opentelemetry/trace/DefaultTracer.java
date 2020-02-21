@@ -16,13 +16,14 @@
 
 package io.opentelemetry.trace;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
-import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.propagation.TracingContextUtils;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -49,12 +50,12 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return ContextUtils.getValue();
+    return TracingContextUtils.getSpanWithDefault(Context.current());
   }
 
   @Override
   public Scope withSpan(Span span) {
-    return ContextUtils.withSpan(span);
+    return TracingContextUtils.withScopedSpan(span);
   }
 
   @Override

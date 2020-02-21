@@ -16,13 +16,14 @@
 
 package io.opentelemetry.sdk.correlationcontext;
 
+import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
-import io.opentelemetry.correlationcontext.unsafe.ContextUtils;
+import io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils;
 
 /**
  * {@link CorrelationContextManagerSdk} is SDK implementation of {@link CorrelationContextManager}.
@@ -31,7 +32,7 @@ public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return ContextUtils.getValue();
+    return CorrelationsContextUtils.getCorrelationContextWithDefault(Context.current());
   }
 
   @Override
@@ -41,7 +42,7 @@ public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
   @Override
   public Scope withContext(CorrelationContext distContext) {
-    return ContextUtils.withCorrelationContext(distContext);
+    return CorrelationsContextUtils.withScopedCorrelationContext(distContext);
   }
 
   @Override
