@@ -64,6 +64,11 @@ public final class SimpleSpansProcessor implements SpanProcessor {
     spanExporter.shutdown();
   }
 
+  @Override
+  public void forceFlush() {
+    // Do nothing.
+  }
+
   /**
    * Returns a new Builder for {@link SimpleSpansProcessor}.
    *

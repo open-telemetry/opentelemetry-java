@@ -32,5 +32,8 @@ final class NoopSpanProcessor implements SpanProcessor {
   @Override
   public void shutdown() {}
 
+  @Override
+  public void forceFlush() {}
+
   private NoopSpanProcessor() {}
 }
