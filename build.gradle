@@ -1,7 +1,6 @@
 plugins {
     id "com.github.sherter.google-java-format" apply false
     id "com.jfrog.artifactory" apply false
-    id "me.champeau.gradle.jmh" apply false
     id "net.ltgt.errorprone" apply false
     id "ru.vyarus.animalsniffer" apply false
     id "io.morethan.jmhreport" apply false
@@ -230,6 +229,8 @@ subprojects {
     }
 
     plugins.withId("me.champeau.gradle.jmh") {
+        // Always include the jmhreport plugin and run it after jmh task.
+        pluginManager.apply("io.morethan.jmhreport")
         dependencies {
             jmh 'org.openjdk.jmh:jmh-core:1.19',
                     'org.openjdk.jmh:jmh-generator-bytecode:1.19'
@@ -254,26 +255,13 @@ subprojects {
             }
         }
 
-        // Need to have this condition in both jmh and jmhReport to avoid relying on the
-        // applying ordering.
-        if (plugins.hasPlugin("io.morethan.jmhreport")) {
-            // If also the jmhReport plugin is installed then always run jmhReport after jmh task.
-            tasks.jmh.finalizedBy tasks.jmhReport
-        }
-    }
-
-    plugins.withId("io.morethan.jmhreport") {
         jmhReport {
             jmhResultPath = project.file("${project.buildDir}/reports/jmh/results.json")
             jmhReportOutput = project.file("${project.buildDir}/reports/jmh")
         }
 
-        // Need to have this condition in both jmh and jmhReport to avoid relying on the
-        // applying ordering.
-        if (plugins.hasPlugin("me.champeau.gradle.jmh")) {
-            // If also the jmh plugin is installed then always run jmhReport after jmh task.
-            tasks.jmh.finalizedBy tasks.jmhReport
-        }
+        // Always run jmhReport after jmh task.
+        tasks.jmh.finalizedBy tasks.jmhReport
     }
 
     apply from: "${rootProject.projectDir}/gradle/publish.gradle"
