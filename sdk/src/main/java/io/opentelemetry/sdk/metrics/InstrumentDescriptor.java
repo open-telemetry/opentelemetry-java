@@ -16,27 +16,30 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.Measure;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import com.google.auto.value.AutoValue;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.concurrent.Immutable;
 
-abstract class AbstractMeasureBuilder<B extends Measure.Builder<B, V>, V>
-    extends AbstractInstrumentBuilder<B, V> implements Measure.Builder<B, V> {
-  private boolean absolute = true;
-
-  AbstractMeasureBuilder(
+@AutoValue
+@Immutable
+abstract class InstrumentDescriptor {
+  static InstrumentDescriptor create(
       String name,
-      MeterSharedState sharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    super(name, sharedState, instrumentationLibraryInfo);
+      String description,
+      String unit,
+      Map<String, String> constantLabels,
+      List<String> labelKeys) {
+    return new AutoValue_InstrumentDescriptor(name, description, unit, constantLabels, labelKeys);
   }
 
-  @Override
-  public final B setAbsolute(boolean absolute) {
-    this.absolute = absolute;
-    return getThis();
-  }
+  abstract String getName();
 
-  final boolean isAbsolute() {
-    return this.absolute;
-  }
+  abstract String getDescription();
+
+  abstract String getUnit();
+
+  abstract Map<String, String> getConstantLabels();
+
+  abstract List<String> getLabelKeys();
 }

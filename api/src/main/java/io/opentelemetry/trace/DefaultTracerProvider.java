@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.metrics;
+package io.opentelemetry.trace;
 
-public class DefaultMeterRegistry implements MeterRegistry {
+public class DefaultTracerProvider implements TracerProvider {
 
-  private static final MeterRegistry instance = new DefaultMeterRegistry();
+  private static final TracerProvider instance = new DefaultTracerProvider();
 
-  public static MeterRegistry getInstance() {
+  public static TracerProvider getInstance() {
     return instance;
   }
 
   @Override
-  public Meter get(String instrumentationName) {
+  public Tracer get(String instrumentationName) {
     return get(instrumentationName, null);
   }
 
   @Override
-  public Meter get(String instrumentationName, String instrumentationVersion) {
-    return DefaultMeter.getInstance();
+  public Tracer get(String instrumentationName, String instrumentationVersion) {
+    return DefaultTracer.getInstance();
   }
 }

@@ -17,34 +17,20 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleObserver;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.List;
-import java.util.Map;
 
-final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserver {
-  private final boolean monotonic;
-
+final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver {
   DoubleObserverSdk(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
-      MeterSharedState sharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor,
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
       boolean monotonic) {
     super(
-        name,
-        description,
-        unit,
-        constantLabels,
-        labelKeys,
-        getObserverInstrumentType(monotonic),
+        descriptor,
         InstrumentValueType.LONG,
-        sharedState,
-        instrumentationLibraryInfo);
-    this.monotonic = monotonic;
+        meterProviderSharedState,
+        meterSharedState,
+        monotonic);
   }
 
   @Override
@@ -52,46 +38,22 @@ final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserv
     throw new UnsupportedOperationException("to be implemented");
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof DoubleObserverSdk)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    DoubleObserverSdk that = (DoubleObserverSdk) o;
-
-    return monotonic == that.monotonic;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (monotonic ? 1 : 0);
-    return result;
-  }
-
   static DoubleObserver.Builder builder(
       String name,
-      MeterSharedState sharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, sharedState, instrumentationLibraryInfo);
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState) {
+    return new Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   private static final class Builder
-      extends AbstractObserverBuilder<DoubleObserver.Builder, DoubleObserver>
+      extends AbstractObserver.Builder<DoubleObserver.Builder, DoubleObserver>
       implements DoubleObserver.Builder {
 
     private Builder(
         String name,
-        MeterSharedState sharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, sharedState, instrumentationLibraryInfo);
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -102,13 +64,9 @@ final class DoubleObserverSdk extends AbstractInstrument implements DoubleObserv
     @Override
     public DoubleObserver build() {
       return new DoubleObserverSdk(
-          getName(),
-          getDescription(),
-          getUnit(),
-          getConstantLabels(),
-          getLabelKeys(),
+          getInstrumentDescriptor(),
+          getMeterProviderSharedState(),
           getMeterSharedState(),
-          getInstrumentationLibraryInfo(),
           isMonotonic());
     }
   }

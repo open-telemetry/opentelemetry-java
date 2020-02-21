@@ -18,35 +18,22 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.List;
-import java.util.Map;
 
-final class LongCounterSdk extends AbstractInstrument implements LongCounter {
-
-  private final boolean monotonic;
+final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements LongCounter {
 
   private LongCounterSdk(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
-      MeterSharedState sharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor,
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
       boolean monotonic) {
     super(
-        name,
-        description,
-        unit,
-        constantLabels,
-        labelKeys,
-        getCounterInstrumentType(monotonic),
+        descriptor,
         InstrumentValueType.LONG,
-        sharedState,
-        instrumentationLibraryInfo);
-    this.monotonic = monotonic;
+        meterProviderSharedState,
+        meterSharedState,
+        monotonic);
   }
 
   @Override
@@ -58,39 +45,21 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return new BoundInstrument(monotonic);
+    return bindInternal(labelSet);
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof LongCounterSdk)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    LongCounterSdk that = (LongCounterSdk) o;
-
-    return monotonic == that.monotonic;
+  BoundInstrument newBinding(Batcher batcher) {
+    return new BoundInstrument(isMonotonic(), batcher);
   }
 
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (monotonic ? 1 : 0);
-    return result;
-  }
-
-  static final class BoundInstrument extends AbstractBoundInstrument implements BoundLongCounter {
+  static final class BoundInstrument extends AbstractBoundInstrument
+      implements LongCounter.BoundLongCounter {
 
     private final boolean monotonic;
 
-    BoundInstrument(boolean monotonic) {
-      super(null);
+    BoundInstrument(boolean monotonic, Batcher batcher) {
+      super(batcher.getAggregator());
       this.monotonic = monotonic;
     }
 
@@ -99,26 +68,26 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
       if (monotonic && delta < 0) {
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
-      // TODO: pass through to an aggregator/accumulator
+      recordLong(delta);
     }
   }
 
   static LongCounter.Builder builder(
       String name,
-      MeterSharedState sharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, sharedState, instrumentationLibraryInfo);
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState) {
+    return new Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   private static final class Builder
-      extends AbstractCounterBuilder<LongCounter.Builder, LongCounter>
+      extends AbstractCounter.Builder<LongCounter.Builder, LongCounter>
       implements LongCounter.Builder {
 
     private Builder(
         String name,
-        MeterSharedState sharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, sharedState, instrumentationLibraryInfo);
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -129,13 +98,9 @@ final class LongCounterSdk extends AbstractInstrument implements LongCounter {
     @Override
     public LongCounter build() {
       return new LongCounterSdk(
-          getName(),
-          getDescription(),
-          getUnit(),
-          getConstantLabels(),
-          getLabelKeys(),
+          getInstrumentDescriptor(),
+          getMeterProviderSharedState(),
           getMeterSharedState(),
-          getInstrumentationLibraryInfo(),
           isMonotonic());
     }
   }

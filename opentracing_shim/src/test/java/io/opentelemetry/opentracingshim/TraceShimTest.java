@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import org.junit.Test;
 
 public class TraceShimTest {
@@ -44,7 +44,7 @@ public class TraceShimTest {
 
   @Test
   public void createTracerShim() {
-    TracerSdkRegistry sdk = TracerSdkRegistry.builder().build();
+    TracerSdkProvider sdk = TracerSdkProvider.builder().build();
     CorrelationContextManagerSdk contextManager = new CorrelationContextManagerSdk();
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim(sdk, contextManager);
     assertEquals(sdk.get("opentracingshim"), tracerShim.tracer());

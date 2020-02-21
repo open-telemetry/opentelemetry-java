@@ -17,18 +17,15 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.sdk.common.Clock;
-import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import javax.annotation.concurrent.Immutable;
 
 @AutoValue
 @Immutable
 abstract class MeterSharedState {
-  static MeterSharedState create(Clock clock, Resource resource) {
-    return new AutoValue_MeterSharedState(clock, resource);
+  static MeterSharedState create(InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return new AutoValue_MeterSharedState(instrumentationLibraryInfo);
   }
 
-  abstract Clock getClock();
-
-  abstract Resource getResource();
+  abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
 }

@@ -21,7 +21,8 @@ import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import java.util.Map;
 
-public final class DoubleSumAggregator implements Aggregator {
+public final class DoubleSumAggregator extends AbstractAggregator {
+
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
@@ -38,11 +39,7 @@ public final class DoubleSumAggregator implements Aggregator {
   }
 
   @Override
-  public void mergeToAndReset(Aggregator aggregator) {
-    if (!(aggregator instanceof DoubleSumAggregator)) {
-      return;
-    }
-
+  void doMergeAndReset(Aggregator aggregator) {
     DoubleSumAggregator other = (DoubleSumAggregator) aggregator;
     other.current.getAndAdd(this.current.getAndSet(0));
   }
@@ -53,14 +50,7 @@ public final class DoubleSumAggregator implements Aggregator {
   }
 
   @Override
-  public void recordLong(long value) {
-    throw new UnsupportedOperationException("This is a DoubleSumAggregator");
-  }
-
-  @Override
   public void recordDouble(double value) {
     current.getAndAdd(value);
   }
-
-  DoubleSumAggregator() {}
 }

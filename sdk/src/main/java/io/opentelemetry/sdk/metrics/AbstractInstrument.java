@@ -16,70 +16,52 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.Instrument;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 abstract class AbstractInstrument implements Instrument {
 
-  private final String name;
-  private final String description;
-  private final String unit;
-  private final Map<String, String> constantLabels;
-  private final List<String> labelKeys;
+  private final InstrumentDescriptor descriptor;
+  private final MeterProviderSharedState meterProviderSharedState;
   private final MeterSharedState meterSharedState;
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final ActiveBatcher activeBatcher;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
   AbstractInstrument(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
-      InstrumentType instrumentType,
-      InstrumentValueType instrumentValueType,
+      InstrumentDescriptor descriptor,
+      MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    this.name = name;
-    this.description = description;
-    this.unit = unit;
-    this.constantLabels = constantLabels;
-    this.labelKeys = labelKeys;
+      ActiveBatcher activeBatcher) {
+    this.descriptor = descriptor;
+    this.meterProviderSharedState = meterProviderSharedState;
     this.meterSharedState = meterSharedState;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.activeBatcher = activeBatcher;
   }
 
-  final String getName() {
-    return name;
+  final InstrumentDescriptor getDescriptor() {
+    return descriptor;
   }
 
-  final String getDescription() {
-    return description;
-  }
-
-  final String getUnit() {
-    return unit;
-  }
-
-  final Map<String, String> getConstantLabels() {
-    return constantLabels;
-  }
-
-  final List<String> getLabelKeys() {
-    return labelKeys;
+  final MeterProviderSharedState getMeterProviderSharedState() {
+    return meterProviderSharedState;
   }
 
   final MeterSharedState getMeterSharedState() {
     return meterSharedState;
   }
 
-  final InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return instrumentationLibraryInfo;
+  final ActiveBatcher getActiveBatcher() {
+    return activeBatcher;
   }
+
+  abstract List<MetricData> collect();
 
   @Override
   public boolean equals(Object o) {
@@ -92,32 +74,82 @@ abstract class AbstractInstrument implements Instrument {
 
     AbstractInstrument that = (AbstractInstrument) o;
 
-    return name.equals(that.name)
-        && description.equals(that.description)
-        && unit.equals(that.unit)
-        && constantLabels.equals(that.constantLabels)
-        && labelKeys.equals(that.labelKeys);
+    return descriptor.equals(that.descriptor);
   }
 
   @Override
   public int hashCode() {
-    int result = name.hashCode();
-    result = 31 * result + description.hashCode();
-    result = 31 * result + unit.hashCode();
-    result = 31 * result + constantLabels.hashCode();
-    result = 31 * result + labelKeys.hashCode();
-    return result;
+    return descriptor.hashCode();
   }
 
-  static InstrumentType getCounterInstrumentType(boolean monotonic) {
-    return monotonic ? InstrumentType.COUNTER_MONOTONIC : InstrumentType.COUNTER_NON_MONOTONIC;
-  }
+  abstract static class Builder<B extends Instrument.Builder<B, V>, V>
+      implements Instrument.Builder<B, V> {
+    /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
+    /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
+        "Name should be a ASCII string with a length no greater than "
+            + NAME_MAX_LENGTH
+            + " characters.";
 
-  static InstrumentType getMeasureInstrumentType(boolean absolute) {
-    return absolute ? InstrumentType.MEASURE_ABSOLUTE : InstrumentType.MEASURE_NON_ABSOLUTE;
-  }
+    private final String name;
+    private final MeterProviderSharedState meterProviderSharedState;
+    private final MeterSharedState meterSharedState;
+    private String description = "";
+    private String unit = "1";
+    private List<String> labelKeys = Collections.emptyList();
+    private Map<String, String> constantLabels = Collections.emptyMap();
 
-  static InstrumentType getObserverInstrumentType(boolean monotonic) {
-    return monotonic ? InstrumentType.OBSERVER_MONOTONIC : InstrumentType.OBSERVER_NON_MONOTONIC;
+    Builder(
+        String name,
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState) {
+      Utils.checkNotNull(name, "name");
+      Utils.checkArgument(
+          StringUtils.isValidMetricName(name) && name.length() <= NAME_MAX_LENGTH,
+          ERROR_MESSAGE_INVALID_NAME);
+      this.name = name;
+      this.meterProviderSharedState = meterProviderSharedState;
+      this.meterSharedState = meterSharedState;
+    }
+
+    @Override
+    public final B setDescription(String description) {
+      this.description = Utils.checkNotNull(description, "description");
+      return getThis();
+    }
+
+    @Override
+    public final B setUnit(String unit) {
+      this.unit = Utils.checkNotNull(unit, "unit");
+      return getThis();
+    }
+
+    @Override
+    public final B setLabelKeys(List<String> labelKeys) {
+      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
+      this.labelKeys = Collections.unmodifiableList(new ArrayList<>(labelKeys));
+      return getThis();
+    }
+
+    @Override
+    public final B setConstantLabels(Map<String, String> constantLabels) {
+      Utils.checkMapKeysNotNull(
+          Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      this.constantLabels = Collections.unmodifiableMap(new HashMap<>(constantLabels));
+      return getThis();
+    }
+
+    final MeterProviderSharedState getMeterProviderSharedState() {
+      return meterProviderSharedState;
+    }
+
+    final MeterSharedState getMeterSharedState() {
+      return meterSharedState;
+    }
+
+    final InstrumentDescriptor getInstrumentDescriptor() {
+      return InstrumentDescriptor.create(name, description, unit, constantLabels, labelKeys);
+    }
+
+    abstract B getThis();
   }
 }

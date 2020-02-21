@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.metrics.MeterRegistry;
+import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -27,17 +27,17 @@ import io.opentelemetry.sdk.resources.Resource;
 import javax.annotation.Nonnull;
 
 /**
- * {@code Meter} provider implementation for {@link MeterRegistry}.
+ * {@code Meter} provider implementation for {@link MeterProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}.
  */
-public final class MeterSdkRegistry implements MeterRegistry {
+public final class MeterSdkProvider implements MeterProvider {
 
   private final MeterSdkComponentRegistry registry;
 
-  private MeterSdkRegistry(Clock clock, Resource resource) {
-    this.registry = new MeterSdkComponentRegistry(MeterSharedState.create(clock, resource));
+  private MeterSdkProvider(Clock clock, Resource resource) {
+    this.registry = new MeterSdkComponentRegistry(MeterProviderSharedState.create(clock, resource));
   }
 
   @Override
@@ -51,16 +51,16 @@ public final class MeterSdkRegistry implements MeterRegistry {
   }
 
   /**
-   * Returns a new {@link Builder} for {@link MeterSdkRegistry}.
+   * Returns a new {@link Builder} for {@link MeterSdkProvider}.
    *
-   * @return a new {@link Builder} for {@link MeterSdkRegistry}.
+   * @return a new {@link Builder} for {@link MeterSdkProvider}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
   /**
-   * Builder class for the {@link MeterSdkRegistry}. Has fully functional default implementations of
+   * Builder class for the {@link MeterSdkProvider}. Has fully functional default implementations of
    * all three required interfaces.
    *
    * @since 0.4.0
@@ -101,21 +101,21 @@ public final class MeterSdkRegistry implements MeterRegistry {
      *
      * @return An initialized TracerSdkFactory.
      */
-    public MeterSdkRegistry build() {
-      return new MeterSdkRegistry(clock, resource);
+    public MeterSdkProvider build() {
+      return new MeterSdkProvider(clock, resource);
     }
   }
 
   private static final class MeterSdkComponentRegistry extends ComponentRegistry<MeterSdk> {
-    private final MeterSharedState sharedState;
+    private final MeterProviderSharedState meterProviderSharedState;
 
-    private MeterSdkComponentRegistry(MeterSharedState sharedState) {
-      this.sharedState = sharedState;
+    private MeterSdkComponentRegistry(MeterProviderSharedState meterProviderSharedState) {
+      this.meterProviderSharedState = meterProviderSharedState;
     }
 
     @Override
     public MeterSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      return new MeterSdk(sharedState, instrumentationLibraryInfo);
+      return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo);
     }
   }
 }

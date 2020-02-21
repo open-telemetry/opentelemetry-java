@@ -28,17 +28,17 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link MeterSdkRegistry}. */
+/** Unit tests for {@link MeterSdkProvider}. */
 @RunWith(JUnit4.class)
 public class MeterSdkRegistryTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
-  private final MeterSdkRegistry meterRegistry = MeterSdkRegistry.builder().build();
+  private final MeterSdkProvider meterRegistry = MeterSdkProvider.builder().build();
 
   @Test
   public void builder_HappyPath() {
     assertThat(
-            MeterSdkRegistry.builder()
+            MeterSdkProvider.builder()
                 .setClock(mock(Clock.class))
                 .setResource(mock(Resource.class))
                 .build())
@@ -49,14 +49,14 @@ public class MeterSdkRegistryTest {
   public void builder_NullClock() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("clock");
-    MeterSdkRegistry.builder().setClock(null);
+    MeterSdkProvider.builder().setClock(null);
   }
 
   @Test
   public void builder_NullResource() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("resource");
-    MeterSdkRegistry.builder().setResource(null);
+    MeterSdkProvider.builder().setResource(null);
   }
 
   @Test
@@ -77,7 +77,7 @@ public class MeterSdkRegistryTest {
   }
 
   @Test
-  public void propagatesInstrumentationLibraryInfoToTracer() {
+  public void propagatesInstrumentationLibraryInfoToMeter() {
     InstrumentationLibraryInfo expected =
         InstrumentationLibraryInfo.create("theName", "theVersion");
     MeterSdk meter = meterRegistry.get(expected.getName(), expected.getVersion());

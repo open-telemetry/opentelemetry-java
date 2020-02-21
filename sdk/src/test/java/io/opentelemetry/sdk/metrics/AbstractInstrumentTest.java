@@ -20,12 +20,10 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -33,57 +31,45 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link AbstractInstrument}. */
 @RunWith(JUnit4.class)
 public class AbstractInstrumentTest {
-  private static final String NAME = "name";
-  private static final String DESCRIPTION = "description";
-  private static final String UNIT = "1";
-  private static final Map<String, String> CONSTANT_LABELS =
-      Collections.singletonMap("key_2", "value_2");
-  private static final List<String> LABEL_KEY = Collections.singletonList("key");
-  private static final MeterSharedState METER_SHARED_STATE =
-      MeterSharedState.create(TestClock.create(), Resource.getEmpty());
+  private static final InstrumentDescriptor INSTRUMENT_DESCRIPTOR =
+      InstrumentDescriptor.create(
+          "name",
+          "description",
+          "1",
+          Collections.singletonMap("key_2", "value_2"),
+          Collections.singletonList("key"));
+  private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
+      MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("test_abstract_instrument", "");
+  private static final MeterSharedState METER_SHARED_STATE =
+      MeterSharedState.create(INSTRUMENTATION_LIBRARY_INFO);
+  private static final ActiveBatcher ACTIVE_BATCHER = new ActiveBatcher(Batchers.getNoop());
 
   @Test
   public void getValues() {
     TestInstrument testInstrument =
         new TestInstrument(
-            NAME,
-            DESCRIPTION,
-            UNIT,
-            CONSTANT_LABELS,
-            LABEL_KEY,
-            METER_SHARED_STATE,
-            INSTRUMENTATION_LIBRARY_INFO);
-    assertThat(testInstrument.getName()).isEqualTo(NAME);
-    assertThat(testInstrument.getDescription()).isEqualTo(DESCRIPTION);
-    assertThat(testInstrument.getUnit()).isEqualTo(UNIT);
-    assertThat(testInstrument.getConstantLabels()).isEqualTo(CONSTANT_LABELS);
-    assertThat(testInstrument.getLabelKeys()).isEqualTo(LABEL_KEY);
-    assertThat(testInstrument.getMeterSharedState()).isEqualTo(METER_SHARED_STATE);
-    assertThat(testInstrument.getInstrumentationLibraryInfo())
-        .isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
+            INSTRUMENT_DESCRIPTOR, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE, ACTIVE_BATCHER);
+    assertThat(testInstrument.getDescriptor()).isSameInstanceAs(INSTRUMENT_DESCRIPTOR);
+    assertThat(testInstrument.getMeterProviderSharedState())
+        .isSameInstanceAs(METER_PROVIDER_SHARED_STATE);
+    assertThat(testInstrument.getMeterSharedState()).isSameInstanceAs(METER_SHARED_STATE);
+    assertThat(testInstrument.getActiveBatcher()).isSameInstanceAs(ACTIVE_BATCHER);
   }
 
   private static final class TestInstrument extends AbstractInstrument {
     TestInstrument(
-        String name,
-        String description,
-        String unit,
-        Map<String, String> constantLabels,
-        List<String> labelKeys,
+        InstrumentDescriptor descriptor,
+        MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(
-          name,
-          description,
-          unit,
-          constantLabels,
-          labelKeys,
-          InstrumentType.COUNTER_MONOTONIC,
-          InstrumentValueType.LONG,
-          meterSharedState,
-          instrumentationLibraryInfo);
+        ActiveBatcher activeBatcher) {
+      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+    }
+
+    @Override
+    List<MetricData> collect() {
+      return Collections.emptyList();
     }
   }
 }

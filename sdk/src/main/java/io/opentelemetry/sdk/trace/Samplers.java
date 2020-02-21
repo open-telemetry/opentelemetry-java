@@ -89,6 +89,8 @@ public final class Samplers {
         TraceId traceId,
         SpanId spanId,
         String name,
+        Span.Kind spanKind,
+        Map<String, AttributeValue> attributes,
         List<Link> parentLinks) {
       return ALWAYS_ON_DECISION;
     }
@@ -115,6 +117,8 @@ public final class Samplers {
         TraceId traceId,
         SpanId spanId,
         String name,
+        Span.Kind spanKind,
+        Map<String, AttributeValue> attributes,
         List<Link> parentLinks) {
       return ALWAYS_OFF_DECISION;
     }
@@ -171,6 +175,8 @@ public final class Samplers {
         TraceId traceId,
         SpanId spanId,
         String name,
+        Span.Kind spanKind,
+        Map<String, AttributeValue> attributes,
         @Nullable List<Link> parentLinks) {
       // If the parent is sampled keep the sampling decision.
       if (parentContext != null && parentContext.getTraceFlags().isSampled()) {

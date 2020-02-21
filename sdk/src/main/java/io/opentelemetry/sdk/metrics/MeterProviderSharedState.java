@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace;
+package io.opentelemetry.sdk.metrics;
 
-public class DefaultTracerRegistry implements TracerRegistry {
+import com.google.auto.value.AutoValue;
+import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.resources.Resource;
+import javax.annotation.concurrent.Immutable;
 
-  private static final TracerRegistry instance = new DefaultTracerRegistry();
-
-  public static TracerRegistry getInstance() {
-    return instance;
+@AutoValue
+@Immutable
+abstract class MeterProviderSharedState {
+  static MeterProviderSharedState create(Clock clock, Resource resource) {
+    return new AutoValue_MeterProviderSharedState(clock, resource);
   }
 
-  @Override
-  public Tracer get(String instrumentationName) {
-    return get(instrumentationName, null);
-  }
+  abstract Clock getClock();
 
-  @Override
-  public Tracer get(String instrumentationName, String instrumentationVersion) {
-    return DefaultTracer.getInstance();
-  }
+  abstract Resource getResource();
 }

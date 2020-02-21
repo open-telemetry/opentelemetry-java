@@ -27,17 +27,17 @@ import java.util.Map;
 
 @AutoValue
 abstract class LabelSetSdk implements LabelSet {
-  private static final LabelSet EMPTY =
+  private static final LabelSetSdk EMPTY =
       new AutoValue_LabelSetSdk(Collections.<String, String>emptyMap());
 
-  static LabelSet create(Map<String, String> labels) {
+  static LabelSetSdk create(Map<String, String> labels) {
     if (labels == null || labels.isEmpty()) {
       return EMPTY;
     }
     return new AutoValue_LabelSetSdk(unmodifiableMap(labels));
   }
 
-  static LabelSet create(String... keyValuePairs) {
+  static LabelSetSdk create(String... keyValuePairs) {
     if (keyValuePairs.length == 0) {
       return EMPTY;
     }

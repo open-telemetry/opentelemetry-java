@@ -31,10 +31,9 @@ public final class DefaultMeter implements Meter {
 
   private static final DefaultMeter INSTANCE = new DefaultMeter();
 
-  /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
   /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
       "Name should be a ASCII string with a length no greater than "
-          + NAME_MAX_LENGTH
+          + StringUtils.NAME_MAX_LENGTH
           + " characters.";
 
   /**
@@ -50,54 +49,42 @@ public final class DefaultMeter implements Meter {
   @Override
   public DoubleCounter.Builder doubleCounterBuilder(String name) {
     Utils.checkNotNull(name, "name");
-    Utils.checkArgument(
-        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
-        ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleCounter.NoopBuilder();
   }
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
     Utils.checkNotNull(name, "name");
-    Utils.checkArgument(
-        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
-        ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongCounter.NoopBuilder();
   }
 
   @Override
   public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
     Utils.checkNotNull(name, "name");
-    Utils.checkArgument(
-        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
-        ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleMeasure.NoopBuilder();
   }
 
   @Override
   public LongMeasure.Builder longMeasureBuilder(String name) {
     Utils.checkNotNull(name, "name");
-    Utils.checkArgument(
-        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
-        ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongMeasure.NoopBuilder();
   }
 
   @Override
   public DoubleObserver.Builder doubleObserverBuilder(String name) {
     Utils.checkNotNull(name, "name");
-    Utils.checkArgument(
-        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
-        ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleObserver.NoopBuilder();
   }
 
   @Override
   public LongObserver.Builder longObserverBuilder(String name) {
     Utils.checkNotNull(name, "name");
-    Utils.checkArgument(
-        StringUtils.isPrintableString(name) && name.length() <= NAME_MAX_LENGTH,
-        ERROR_MESSAGE_INVALID_NAME);
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongObserver.NoopBuilder();
   }
 

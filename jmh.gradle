@@ -17,12 +17,12 @@
 
 /*
  * This file should be imported in the top-level Gradle project.
- * To add JMH microbenchmarks to any sub-project simply create 'src/jmh/java' 
- * and if required 'src/jmh/resource'. This JMH Gradle script will check for 
+ * To add JMH microbenchmarks to any sub-project simply create 'src/jmh/java'
+ * and if required 'src/jmh/resource'. This JMH Gradle script will check for
  * this sourceset, and will add tasks if it exists, and build any benchmarks.
  *
  * Running benchmarks can be done either through gradle using the task runJMH,
- * or by downloading the created artifact and required dependencies. 
+ * or by downloading the created artifact and required dependencies.
  *
  * To use Gradle to download the benchmark for a specific version you can use
  * a basic Gradle build file like the following.
@@ -47,7 +47,7 @@
  * }
  *
  * $ gradle setup
- * $ java -jar execute/group-name-version-jmh.jar 
+ * $ java -jar execute/group-name-version-jmh.jar
  */
 
 sourceSets {
@@ -96,6 +96,8 @@ task jmhRun(type: JavaExec) {
     classpath = sourceSets.jmh.runtimeClasspath
     main = 'org.openjdk.jmh.Main'
     // Allows users to filter JMH benchmarks using a regex
+    mkdir("${project.buildDir}/results")
+    args "--rf", "json", "--rff", "${project.buildDir}/results/results.json"
     args project.findProperty("jmhFilter") ?: ''
 }
 

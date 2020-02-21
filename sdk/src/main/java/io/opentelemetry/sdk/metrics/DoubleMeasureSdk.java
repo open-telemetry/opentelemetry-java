@@ -18,35 +18,22 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.DoubleMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import java.util.List;
-import java.util.Map;
 
-final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure {
-
-  private final boolean absolute;
+final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements DoubleMeasure {
 
   private DoubleMeasureSdk(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys,
-      MeterSharedState sharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      InstrumentDescriptor descriptor,
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
       boolean absolute) {
     super(
-        name,
-        description,
-        unit,
-        constantLabels,
-        labelKeys,
-        getMeasureInstrumentType(absolute),
+        descriptor,
         InstrumentValueType.DOUBLE,
-        sharedState,
-        instrumentationLibraryInfo);
-    this.absolute = absolute;
+        meterProviderSharedState,
+        meterSharedState,
+        absolute);
   }
 
   @Override
@@ -58,39 +45,21 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return new BoundInstrument(this.absolute);
+    return bindInternal(labelSet);
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof DoubleMeasureSdk)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    DoubleMeasureSdk that = (DoubleMeasureSdk) o;
-
-    return absolute == that.absolute;
+  BoundInstrument newBinding(Batcher batcher) {
+    return new BoundInstrument(isAbsolute(), batcher);
   }
 
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (absolute ? 1 : 0);
-    return result;
-  }
-
-  static final class BoundInstrument extends AbstractBoundInstrument implements BoundDoubleMeasure {
+  static final class BoundInstrument extends AbstractBoundInstrument
+      implements DoubleMeasure.BoundDoubleMeasure {
 
     private final boolean absolute;
 
-    BoundInstrument(boolean absolute) {
-      super(null);
+    BoundInstrument(boolean absolute, Batcher batcher) {
+      super(batcher.getAggregator());
       this.absolute = absolute;
     }
 
@@ -99,26 +68,26 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
       if (this.absolute && value < 0) {
         throw new IllegalArgumentException("absolute measure can only record positive values");
       }
-      // TODO: pass through to an aggregator/accumulator
+      recordDouble(value);
     }
   }
 
   static DoubleMeasure.Builder builder(
       String name,
-      MeterSharedState sharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, sharedState, instrumentationLibraryInfo);
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState) {
+    return new Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   private static final class Builder
-      extends AbstractMeasureBuilder<DoubleMeasure.Builder, DoubleMeasure>
+      extends AbstractMeasure.Builder<DoubleMeasure.Builder, DoubleMeasure>
       implements DoubleMeasure.Builder {
 
     private Builder(
         String name,
-        MeterSharedState sharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, sharedState, instrumentationLibraryInfo);
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -129,13 +98,9 @@ final class DoubleMeasureSdk extends AbstractInstrument implements DoubleMeasure
     @Override
     public DoubleMeasure build() {
       return new DoubleMeasureSdk(
-          getName(),
-          getDescription(),
-          getUnit(),
-          getConstantLabels(),
-          getLabelKeys(),
+          getInstrumentDescriptor(),
+          getMeterProviderSharedState(),
           getMeterSharedState(),
-          getInstrumentationLibraryInfo(),
           isAbsolute());
     }
   }

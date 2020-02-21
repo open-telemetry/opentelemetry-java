@@ -20,7 +20,7 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerRegistry;
+import io.opentelemetry.trace.TracerProvider;
 
 public final class TraceShim {
   private TraceShim() {}
@@ -43,19 +43,19 @@ public final class TraceShim {
    * Creates a {@code io.opentracing.Tracer} shim out the specified {@code Tracer} and {@code
    * CorrelationContextManager}.
    *
-   * @param tracerRegistry the {@code TracerRegistry} used by this shim.
+   * @param tracerProvider the {@code TracerProvider} used by this shim.
    * @param contextManager the {@code CorrelationContextManager} used by this shim.
    * @return a {@code io.opentracing.Tracer}.
    * @since 0.1.0
    */
   public static io.opentracing.Tracer createTracerShim(
-      TracerRegistry tracerRegistry, CorrelationContextManager contextManager) {
-    Utils.checkNotNull(tracerRegistry, "tracerRegistry");
+      TracerProvider tracerProvider, CorrelationContextManager contextManager) {
+    Utils.checkNotNull(tracerProvider, "tracerProvider");
     Utils.checkNotNull(contextManager, "contextManager");
-    return new TracerShim(new TelemetryInfo(getTracer(tracerRegistry), contextManager));
+    return new TracerShim(new TelemetryInfo(getTracer(tracerProvider), contextManager));
   }
 
-  private static Tracer getTracer(TracerRegistry tracerRegistry) {
-    return tracerRegistry.get("opentracingshim");
+  private static Tracer getTracer(TracerProvider tracerProvider) {
+    return tracerProvider.get("opentracingshim");
   }
 }
