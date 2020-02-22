@@ -20,6 +20,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.trace.AttributeValue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -54,7 +55,7 @@ class ServiceResourceFactory implements FactoryBean<Resource> {
 
   @Override
   public Resource getObject() {
-    Map<String, String> labels = new HashMap<>();
+    Map<String, AttributeValue> labels = new HashMap<>();
     populateLabelsFromPropertySourcesIfAvailable(labels);
     populateLabelsWithBuildInfoIfAvailable(labels);
     populateLabelsWithGitInfoIfAvailable(labels);
@@ -66,36 +67,47 @@ class ServiceResourceFactory implements FactoryBean<Resource> {
     return Resource.class;
   }
 
-  private void populateLabelsFromPropertySourcesIfAvailable(Map<String, String> labels) {
+  private void populateLabelsFromPropertySourcesIfAvailable(Map<String, AttributeValue> labels) {
     if (!isNullOrEmpty(applicationName)) {
-      labels.put(ResourceConstants.SERVICE_NAME, applicationName);
+      labels.put(
+          ResourceConstants.SERVICE_NAME, AttributeValue.stringAttributeValue(applicationName));
     }
   }
 
-  private void populateLabelsWithBuildInfoIfAvailable(Map<String, String> labels) {
+  private void populateLabelsWithBuildInfoIfAvailable(Map<String, AttributeValue> labels) {
     if (buildProperties != null) {
       if (!isNullOrEmpty(buildProperties.getGroup())) {
-        labels.put(ResourceConstants.SERVICE_NAMESPACE, buildProperties.getGroup());
+        labels.put(
+            ResourceConstants.SERVICE_NAMESPACE,
+            AttributeValue.stringAttributeValue(buildProperties.getGroup()));
       }
       if (!isNullOrEmpty(buildProperties.getArtifact())) {
-        labels.put(ResourceConstants.SERVICE_NAME, buildProperties.getArtifact());
+        labels.put(
+            ResourceConstants.SERVICE_NAME,
+            AttributeValue.stringAttributeValue(buildProperties.getArtifact()));
       }
       String version = buildProperties.getVersion();
       if (!isNullOrEmpty(version)) {
         Matcher matcher = SEMVER_PATTERN.matcher(version);
         if (matcher.find()) {
-          labels.put(ResourceConstants.SERVICE_VERSION, SEMVER + buildProperties.getVersion());
+          labels.put(
+              ResourceConstants.SERVICE_VERSION,
+              AttributeValue.stringAttributeValue(SEMVER + buildProperties.getVersion()));
         } else {
-          labels.put(ResourceConstants.SERVICE_VERSION, buildProperties.getVersion());
+          labels.put(
+              ResourceConstants.SERVICE_VERSION,
+              AttributeValue.stringAttributeValue(buildProperties.getVersion()));
         }
       }
     }
   }
 
-  private void populateLabelsWithGitInfoIfAvailable(Map<String, String> labels) {
+  private void populateLabelsWithGitInfoIfAvailable(Map<String, AttributeValue> labels) {
     if (gitProperties != null) {
       if (!isNullOrEmpty(gitProperties.getShortCommitId())) {
-        labels.put(ResourceConstants.SERVICE_VERSION, GIT + gitProperties.getShortCommitId());
+        labels.put(
+            ResourceConstants.SERVICE_VERSION,
+            AttributeValue.stringAttributeValue(GIT + gitProperties.getShortCommitId()));
       }
     }
   }

@@ -1,3 +1,10 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
 description = 'Spring Boot OpenTelemetry Autoconfigure and Actuator'
 ext.moduleName = "io.opentelemetry.contrib.spring.bootconfig"
 
@@ -22,9 +29,6 @@ dependencies {
     testImplementation 'org.springframework:spring-test'
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
-    // Runtime metrics are not android compatible, because we have only one artifact for contrib,
-    // disable the android requirement for the moment.
-    // signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
 }
 
 test {
