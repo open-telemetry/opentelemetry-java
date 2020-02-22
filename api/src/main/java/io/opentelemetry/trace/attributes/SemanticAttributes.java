@@ -40,11 +40,21 @@ public final class SemanticAttributes {
   public static final Attribute<Integer> NET_HOST_PORT = new IntOrStringAttribute("net.host.port");
   /** Local hostname or similar. */
   public static final Attribute<String> NET_HOST_NAME = new StringAttribute("net.host.name");
-  /** Username or client_id extracted from the access token or Authorization header. */
+  /**
+   * Username or client_id extracted from the access token or Authorization header in the inbound
+   * request from outside the system.
+   */
   public static final Attribute<String> ENDUSER_ID = new StringAttribute("enduser.id");
-  /** Actual/assumed role the client is making the request under. */
+  /**
+   * Actual/assumed role the client is making the request under extracted from token or application
+   * security context.
+   */
   public static final Attribute<String> ENDUSER_ROLE = new StringAttribute("enduser.role");
-  /** Scopes or granted authorities the client currently possesses. */
+  /**
+   * Scopes or granted authorities the client currently possesses extracted from token or
+   * application security context. The value would come from the scope associated with an OAuth 2.0
+   * Access Token or an attribute value in a SAML 2.0 Assertion.
+   */
   public static final Attribute<String> ENDUSER_SCOPE = new StringAttribute("enduser.scope");
   /** HTTP request method. E.g. "GET". */
   public static final Attribute<String> HTTP_METHOD = new StringAttribute("http.method");
