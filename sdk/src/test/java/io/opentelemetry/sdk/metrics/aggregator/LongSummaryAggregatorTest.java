@@ -19,7 +19,11 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.metrics.data.MetricData.LongSummaryPoint;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Test;
 
 public class LongSummaryAggregatorTest {
@@ -69,5 +73,54 @@ public class LongSummaryAggregatorTest {
         .isEqualTo(
             LongSummaryPoint.create(
                 0, 100, Collections.<String, String>emptyMap(), 0, 0, null, null));
+  }
+
+  @Test
+  public void testMultithreadedUpdates() throws Exception {
+    final LongSummaryAggregator aggregator = new LongSummaryAggregator();
+    final LongSummaryAggregator summarizer = new LongSummaryAggregator();
+    int numberOfThreads = 10;
+    final long[] updates = new long[]{1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
+    final int numberOfUpdates = 100;
+    final CountDownLatch startingGun = new CountDownLatch(numberOfThreads);
+    List<Thread> workers = new ArrayList<>();
+    for (int i = 0; i < numberOfThreads; i++) {
+      final int index = i;
+      Thread t = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          long update = updates[index];
+          try {
+            startingGun.await();
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+          for (int j = 0; j < numberOfUpdates; j++) {
+            aggregator.recordLong(update);
+            if (ThreadLocalRandom.current().nextInt(10) == 0) {
+              aggregator.mergeToAndReset(summarizer);
+            }
+          }
+
+        }
+      });
+      workers.add(t);
+      t.start();
+    }
+    for (int i = 0; i <= numberOfThreads; i++) {
+      startingGun.countDown();
+    }
+
+    for (Thread worker : workers) {
+      worker.join();
+    }
+    //make sure everything gets merged when all the aggregation is done.
+    aggregator.mergeToAndReset(summarizer);
+
+    assertThat(summarizer.toPoint(0, 100, Collections.<String, String>emptyMap()))
+        .isEqualTo(
+            LongSummaryPoint.create(
+                0, 100, Collections.<String, String>emptyMap(), numberOfThreads * numberOfUpdates, 10100, 1L, 23L));
+
   }
 }

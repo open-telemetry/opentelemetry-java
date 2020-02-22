@@ -83,8 +83,20 @@ public class LongSummaryAggregator extends AbstractAggregator {
       try {
         this.count += count;
         this.sum += sum;
-        this.min = this.min == null ? min : Math.min(min, this.min);
-        this.max = this.max == null ? max : Math.max(max, this.max);
+        if (this.min == null) {
+          this.min = min;
+        } else {
+          if (min != null) {
+            this.min = Math.min(min, this.min);
+          }
+        }
+        if (this.max == null) {
+          this.max = max;
+        } else {
+          if (max != null) {
+            this.max = Math.max(max, this.max);
+          }
+        }
       } finally {
         lock.writeLock().unlock();
       }
