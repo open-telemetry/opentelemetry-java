@@ -22,7 +22,6 @@ include ":opentelemetry-all",
         ":opentelemetry-api",
         ":opentelemetry-context-prop",
         ":opentelemetry-contrib-runtime-metrics",
-        ":opentelemetry-contrib-spring-boot2",
         ":opentelemetry-contrib-trace-utils",
         ":opentelemetry-exporters-inmemory",
         ":opentelemetry-exporters-jaeger",
@@ -33,6 +32,7 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk",
         ":opentelemetry-sdk-contrib-async-processor",
         ":opentelemetry-sdk-contrib-aws-v1-support",
+        ":opentelemetry-sdk-contrib-spring-boot2",
         ":opentelemetry-sdk-contrib-testbed",
         ":opentelemetry-sdk-contrib-auto-config"
 
@@ -41,8 +41,6 @@ project(':opentelemetry-api').projectDir = "$rootDir/api" as File
 project(':opentelemetry-context-prop').projectDir = "$rootDir/context_prop" as File
 project(':opentelemetry-contrib-runtime-metrics').projectDir =
         "$rootDir/contrib/runtime_metrics" as File
-project(':opentelemetry-contrib-spring-boot2').projectDir =
-        "$rootDir/contrib/spring_boot2" as File
 project(':opentelemetry-contrib-trace-utils').projectDir =
         "$rootDir/contrib/trace_utils" as File
 project(':opentelemetry-exporters-inmemory').projectDir =
@@ -61,6 +59,8 @@ project(':opentelemetry-sdk-contrib-async-processor').projectDir =
         "$rootDir/sdk_contrib/async_processor" as File
 project(':opentelemetry-sdk-contrib-aws-v1-support').projectDir =
         "$rootDir/sdk_contrib/aws_v1_support" as File
+project(':opentelemetry-sdk-contrib-spring-boot2').projectDir =
+        "$rootDir/sdk_contrib/spring_boot2" as File
 project(':opentelemetry-sdk-contrib-testbed').projectDir =
         "$rootDir/sdk_contrib/testbed" as File
 project(':opentelemetry-sdk-contrib-auto-config').projectDir =
