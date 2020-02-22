@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -33,7 +34,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,7 +69,7 @@ public class RecordEventsReadableSpanTest {
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
   private final boolean expectedHasRemoteParent = true;
   private final SpanContext spanContext =
-      SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
+      SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final long startEpochNanos = 1000_123_789_654L;
   private final TestClock testClock = TestClock.create(startEpochNanos);
   private final Resource resource = Resource.getEmpty();
@@ -204,20 +205,20 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CONSUMER);
     try {
       testClock.advanceMillis(MILLIS_PER_SECOND);
-      assertThat(span.getStatus()).isEqualTo(Status.OK);
+      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.OK);
       span.setStatus(Status.CANCELLED);
-      assertThat(span.getStatus()).isEqualTo(Status.CANCELLED);
+      assertThat(span.toSpanData().getStatus()).isEqualTo(Status.CANCELLED);
     } finally {
       span.end();
     }
-    assertThat(span.getStatus()).isEqualTo(Status.CANCELLED);
+    assertThat(span.toSpanData().getStatus()).isEqualTo(Status.CANCELLED);
   }
 
   @Test
   public void getSpanKind() {
     RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
     try {
-      assertThat(span.getKind()).isEqualTo(Kind.SERVER);
+      assertThat(span.toSpanData().getKind()).isEqualTo(Kind.SERVER);
     } finally {
       span.end();
     }
@@ -286,6 +287,10 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
       span.setAttribute("StringKey", "StringVal");
+      span.setAttribute("NullStringKey", (String) null);
+      span.setAttribute("EmptyStringKey", "");
+      span.setAttribute("NullStringAttributeValue", AttributeValue.stringAttributeValue(null));
+      span.setAttribute("EmptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
       span.setAttribute("LongKey", 1000L);
       span.setAttribute("DoubleKey", 10.0);
       span.setAttribute("BooleanKey", false);
@@ -420,6 +425,7 @@ public class RecordEventsReadableSpanTest {
                 "event2",
                 Collections.<String, AttributeValue>emptyMap());
         assertThat(spanData.getTimedEvents().get(i)).isEqualTo(expectedEvent);
+        assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
       }
     } finally {
       span.end();
@@ -522,7 +528,7 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
     assertThat(spanData.getHasRemoteParent()).isEqualTo(expectedHasRemoteParent);
-    assertThat(spanData.getTracestate()).isEqualTo(Tracestate.getDefault());
+    assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     assertThat(spanData.getName()).isEqualTo(spanName);
@@ -554,7 +560,7 @@ public class RecordEventsReadableSpanTest {
     Map<String, AttributeValue> event1Attributes = TestUtils.generateRandomAttributes();
     Map<String, AttributeValue> event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
-        SpanContext.create(traceId, spanId, TraceFlags.getDefault(), Tracestate.getDefault());
+        SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
     Link link1 = SpanData.Link.create(context, TestUtils.generateRandomAttributes());
     List<Link> links = Collections.singletonList(link1);
 
@@ -599,13 +605,16 @@ public class RecordEventsReadableSpanTest {
                 Arrays.asList(
                     SpanData.TimedEvent.create(firstEventEpochNanos, "event1", event1Attributes),
                     SpanData.TimedEvent.create(secondEventTimeNanos, "event2", event2Attributes)))
+            .setTotalRecordedEvents(2)
             .setResource(resource)
             .setParentSpanId(parentSpanId)
             .setLinks(links)
+            .setTotalRecordedLinks(links.size())
             .setTraceId(traceId)
             .setSpanId(spanId)
             .setAttributes(attributes)
             .setHasRemoteParent(false)
+            .setNumberOfChildren(0)
             .build();
 
     SpanData result = readableSpan.toSpanData();

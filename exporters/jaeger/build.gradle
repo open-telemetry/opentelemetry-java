@@ -1,7 +1,7 @@
 description = 'OpenTelemetry - Jaeger Exporter'
+ext.moduleName = "io.opentelemetry.exporters.jaeger"
 
 apply plugin: 'com.google.protobuf'
-
 
 buildscript {
     repositories {
@@ -27,7 +27,7 @@ dependencies {
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
 
 animalsniffer {

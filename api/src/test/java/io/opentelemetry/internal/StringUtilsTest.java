@@ -16,8 +16,7 @@
 
 package io.opentelemetry.internal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +28,15 @@ public final class StringUtilsTest {
 
   @Test
   public void isPrintableString() {
-    assertTrue(StringUtils.isPrintableString("abcd"));
-    assertFalse(StringUtils.isPrintableString("\2ab\3cd"));
+    assertThat(StringUtils.isPrintableString("abcd")).isTrue();
+    assertThat(StringUtils.isPrintableString("\2ab\3cd")).isFalse();
+  }
+
+  @Test
+  public void isNullOrEmpty() throws Exception {
+    assertThat(StringUtils.isNullOrEmpty("")).isTrue();
+    assertThat(StringUtils.isNullOrEmpty(null)).isTrue();
+    assertThat(StringUtils.isNullOrEmpty("hello")).isFalse();
+    assertThat(StringUtils.isNullOrEmpty(" ")).isFalse();
   }
 }

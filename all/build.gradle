@@ -1,7 +1,9 @@
 description = "OpenTelemetry All"
+ext.moduleName = "io.opentelemetry.all"
 
 def subprojects = [
         project(':opentelemetry-api'),
+        project(':opentelemetry-context-prop'),
         project(':opentelemetry-contrib-runtime-metrics'),
         project(':opentelemetry-contrib-trace-utils'),
         project(':opentelemetry-exporters-inmemory'),
@@ -10,11 +12,13 @@ def subprojects = [
         project(':opentelemetry-sdk'),
         project(':opentelemetry-sdk-contrib-async-processor'),
         project(':opentelemetry-sdk-contrib-testbed'),
+        project(':opentelemetry-sdk-contrib-auto-config'),
 ]
 
 // A subset of subprojects for which we want to publish javadoc.
 def subprojects_javadoc = [
         project(':opentelemetry-api'),
+        project(':opentelemetry-context-prop'),
         project(':opentelemetry-contrib-runtime-metrics'),
         project(':opentelemetry-contrib-trace-utils'),
         project(':opentelemetry-exporters-inmemory'),
@@ -23,6 +27,7 @@ def subprojects_javadoc = [
         project(':opentelemetry-sdk'),
         project(':opentelemetry-sdk-contrib-async-processor'),
         project(':opentelemetry-sdk-contrib-testbed'),
+        project(':opentelemetry-sdk-contrib-auto-config'),
 ]
 
 for (subproject in rootProject.subprojects) {

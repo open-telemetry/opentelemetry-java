@@ -16,98 +16,76 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static java.util.Collections.singletonMap;
-
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleGauge;
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongGauge;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
-public class MeterSdk implements Meter {
+final class MeterSdk implements Meter {
+  private final MeterProviderSharedState meterProviderSharedState;
+  private final MeterSharedState meterSharedState;
 
-  @Override
-  public LongGauge.Builder longGaugeBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+  MeterSdk(
+      MeterProviderSharedState meterProviderSharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    this.meterProviderSharedState = meterProviderSharedState;
+    this.meterSharedState = MeterSharedState.create(instrumentationLibraryInfo);
   }
 
-  @Override
-  public DoubleGauge.Builder doubleGaugeBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return meterSharedState.getInstrumentationLibraryInfo();
   }
 
   @Override
   public DoubleCounter.Builder doubleCounterBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return DoubleCounterSdk.builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
-    return SdkLongCounter.SdkLongCounterBuilder.builder(name);
+    return LongCounterSdk.builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return DoubleMeasureSdk.builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public LongMeasure.Builder longMeasureBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return LongMeasureSdk.builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public DoubleObserver.Builder doubleObserverBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+    return DoubleObserverSdk.builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   public LongObserver.Builder longObserverBuilder(String name) {
+    return LongObserverSdk.builder(name, meterProviderSharedState, meterSharedState);
+  }
+
+  @Override
+  public BatchRecorder newBatchRecorder(LabelSet labelSet) {
     throw new UnsupportedOperationException("to be implemented");
   }
 
   @Override
-  public BatchRecorder newMeasureBatchRecorder() {
-    throw new UnsupportedOperationException("to be implemented");
+  public LabelSetSdk createLabelSet(String... keyValuePairs) {
+    return LabelSetSdk.create(keyValuePairs);
   }
 
   @Override
-  public LabelSet createLabelSet(String k1, String v1) {
-    return SdkLabelSet.create(singletonMap(k1, v1));
-  }
-
-  @Override
-  public LabelSet createLabelSet(String k1, String v1, String k2, String v2) {
-    return SdkLabelSet.create(ImmutableMap.of(k1, v1, k2, v2));
-  }
-
-  @Override
-  public LabelSet createLabelSet(String k1, String v1, String k2, String v2, String k3, String v3) {
-    return SdkLabelSet.create(ImmutableMap.of(k1, v1, k2, v2, k3, v3));
-  }
-
-  @Override
-  public LabelSet createLabelSet(
-      String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
-    return SdkLabelSet.create(ImmutableMap.of(k1, v1, k2, v2, k3, v3, k4, v4));
-  }
-
-  @Override
-  public LabelSet createLabelSet(Map<String, String> labels) {
-    return SdkLabelSet.create(labels);
-  }
-
-  @Override
-  public LabelSet emptyLabelSet() {
-    return SdkLabelSet.empty();
+  public LabelSetSdk createLabelSet(Map<String, String> labels) {
+    return LabelSetSdk.create(labels);
   }
 }

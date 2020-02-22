@@ -17,6 +17,7 @@
 package io.opentelemetry.trace;
 
 import java.util.Map;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -30,6 +31,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public interface Span {
+
   /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a
    * parent/child relationship.
@@ -81,11 +83,14 @@ public interface Span {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
+   * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
+   * dropped. Note: this behavior could change in the future.
+   *
    * @param key the key for this attribute.
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  void setAttribute(String key, String value);
+  void setAttribute(String key, @Nullable String value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -354,6 +359,7 @@ public interface Span {
    * @since 0.1.0
    */
   interface Builder {
+
     /**
      * Sets the parent {@code Span} to use. If not set, the value of {@code Tracer.getCurrentSpan()}
      * at {@link #startSpan()} time will be used as parent.
@@ -452,14 +458,16 @@ public interface Span {
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
      *
+     * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
+     * dropped. Note: this behavior could change in the future.
+     *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
      * @return this.
      * @throws NullPointerException if {@code key} is {@code null}.
-     * @throws NullPointerException if {@code value} is {@code null}.
      * @since 0.3.0
      */
-    Builder setAttribute(String key, String value);
+    Builder setAttribute(String key, @Nullable String value);
 
     /**
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously

@@ -22,30 +22,28 @@ import static org.junit.Assert.assertTrue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.distributedcontext.DefaultDistributedContextManager;
-import io.opentelemetry.distributedcontext.DistributedContext;
-import io.opentelemetry.distributedcontext.DistributedContextManager;
-import io.opentelemetry.distributedcontext.spi.DistributedContextManagerProvider;
+import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
+import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
 import io.opentelemetry.metrics.BatchRecorder;
-import io.opentelemetry.metrics.DefaultMeterRegistry;
+import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleGauge;
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongGauge;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.MeterRegistry;
-import io.opentelemetry.metrics.spi.MeterRegistryProvider;
+import io.opentelemetry.metrics.MeterProvider;
+import io.opentelemetry.metrics.spi.MetricsProvider;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerRegistry;
-import io.opentelemetry.trace.spi.TracerRegistryProvider;
+import io.opentelemetry.trace.TracerProvider;
+import io.opentelemetry.trace.spi.TraceProvider;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -75,9 +73,9 @@ public class OpenTelemetryTest {
   @After
   public void after() {
     OpenTelemetry.reset();
-    System.clearProperty(TracerRegistryProvider.class.getName());
-    System.clearProperty(MeterRegistryProvider.class.getName());
-    System.clearProperty(DistributedContextManagerProvider.class.getName());
+    System.clearProperty(TraceProvider.class.getName());
+    System.clearProperty(MetricsProvider.class.getName());
+    System.clearProperty(CorrelationContextManagerProvider.class.getName());
   }
 
   @Test
@@ -87,23 +85,22 @@ public class OpenTelemetryTest {
     assertThat(OpenTelemetry.getTracerRegistry().get("testTracer"))
         .isEqualTo(OpenTelemetry.getTracerRegistry().get("testTracer"));
     assertThat(OpenTelemetry.getMeterRegistry())
-        .isInstanceOf(DefaultMeterRegistry.getInstance().getClass());
+        .isInstanceOf(DefaultMeterProvider.getInstance().getClass());
     assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
-    assertThat(OpenTelemetry.getDistributedContextManager())
-        .isInstanceOf(DefaultDistributedContextManager.getInstance().getClass());
-    assertThat(OpenTelemetry.getDistributedContextManager())
-        .isEqualTo(OpenTelemetry.getDistributedContextManager());
+    assertThat(OpenTelemetry.getCorrelationContextManager())
+        .isInstanceOf(DefaultCorrelationContextManager.getInstance().getClass());
+    assertThat(OpenTelemetry.getCorrelationContextManager())
+        .isEqualTo(OpenTelemetry.getCorrelationContextManager());
   }
 
   @Test
   public void testTracerLoadArbitrary() throws IOException {
     File serviceFile =
-        createService(
-            TracerRegistryProvider.class, FirstTracerRegistry.class, SecondTracerRegistry.class);
+        createService(TraceProvider.class, FirstTraceProvider.class, SecondTraceProvider.class);
     try {
       assertTrue(
-          (OpenTelemetry.getTracerRegistry() instanceof FirstTracerRegistry)
-              || (OpenTelemetry.getTracerRegistry() instanceof SecondTracerRegistry));
+          (OpenTelemetry.getTracerRegistry() instanceof FirstTraceProvider)
+              || (OpenTelemetry.getTracerRegistry() instanceof SecondTraceProvider));
     } finally {
       serviceFile.delete();
     }
@@ -112,12 +109,10 @@ public class OpenTelemetryTest {
   @Test
   public void testTracerSystemProperty() throws IOException {
     File serviceFile =
-        createService(
-            TracerRegistryProvider.class, FirstTracerRegistry.class, SecondTracerRegistry.class);
-    System.setProperty(
-        TracerRegistryProvider.class.getName(), SecondTracerRegistry.class.getName());
+        createService(TraceProvider.class, FirstTraceProvider.class, SecondTraceProvider.class);
+    System.setProperty(TraceProvider.class.getName(), SecondTraceProvider.class.getName());
     try {
-      assertThat(OpenTelemetry.getTracerRegistry()).isInstanceOf(SecondTracerRegistry.class);
+      assertThat(OpenTelemetry.getTracerRegistry()).isInstanceOf(SecondTraceProvider.class);
     } finally {
       serviceFile.delete();
     }
@@ -125,7 +120,7 @@ public class OpenTelemetryTest {
 
   @Test
   public void testTracerNotFound() {
-    System.setProperty(TracerRegistryProvider.class.getName(), "io.does.not.exists");
+    System.setProperty(TraceProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
     OpenTelemetry.getTracerRegistry().get("testTracer");
   }
@@ -134,11 +129,11 @@ public class OpenTelemetryTest {
   public void testMeterLoadArbitrary() throws IOException {
     File serviceFile =
         createService(
-            MeterRegistryProvider.class, FirstMeterRegistry.class, SecondMeterRegistry.class);
+            MetricsProvider.class, FirstMetricsProvider.class, SecondMetricsProvider.class);
     try {
       assertTrue(
-          (OpenTelemetry.getMeterRegistry() instanceof FirstMeterRegistry)
-              || (OpenTelemetry.getMeterRegistry() instanceof SecondMeterRegistry));
+          (OpenTelemetry.getMeterRegistry() instanceof FirstMetricsProvider)
+              || (OpenTelemetry.getMeterRegistry() instanceof SecondMetricsProvider));
       assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
     } finally {
       serviceFile.delete();
@@ -149,10 +144,10 @@ public class OpenTelemetryTest {
   public void testMeterSystemProperty() throws IOException {
     File serviceFile =
         createService(
-            MeterRegistryProvider.class, FirstMeterRegistry.class, SecondMeterRegistry.class);
-    System.setProperty(MeterRegistryProvider.class.getName(), SecondMeterRegistry.class.getName());
+            MetricsProvider.class, FirstMetricsProvider.class, SecondMetricsProvider.class);
+    System.setProperty(MetricsProvider.class.getName(), SecondMetricsProvider.class.getName());
     try {
-      assertThat(OpenTelemetry.getMeterRegistry()).isInstanceOf(SecondMeterRegistry.class);
+      assertThat(OpenTelemetry.getMeterRegistry()).isInstanceOf(SecondMetricsProvider.class);
       assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
     } finally {
       serviceFile.delete();
@@ -161,55 +156,55 @@ public class OpenTelemetryTest {
 
   @Test
   public void testMeterNotFound() {
-    System.setProperty(MeterRegistryProvider.class.getName(), "io.does.not.exists");
+    System.setProperty(MetricsProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
     OpenTelemetry.getMeterRegistry();
   }
 
   @Test
-  public void testDistributedContextManagerLoadArbitrary() throws IOException {
+  public void testCorrelationContextManagerLoadArbitrary() throws IOException {
     File serviceFile =
         createService(
-            DistributedContextManagerProvider.class,
-            FirstDistributedContextManager.class,
-            SecondDistributedContextManager.class);
+            CorrelationContextManagerProvider.class,
+            FirstCorrelationContextManager.class,
+            SecondCorrelationContextManager.class);
     try {
       assertTrue(
-          (OpenTelemetry.getDistributedContextManager() instanceof FirstDistributedContextManager)
-              || (OpenTelemetry.getDistributedContextManager()
-                  instanceof SecondDistributedContextManager));
-      assertThat(OpenTelemetry.getDistributedContextManager())
-          .isEqualTo(OpenTelemetry.getDistributedContextManager());
+          (OpenTelemetry.getCorrelationContextManager() instanceof FirstCorrelationContextManager)
+              || (OpenTelemetry.getCorrelationContextManager()
+                  instanceof SecondCorrelationContextManager));
+      assertThat(OpenTelemetry.getCorrelationContextManager())
+          .isEqualTo(OpenTelemetry.getCorrelationContextManager());
     } finally {
       serviceFile.delete();
     }
   }
 
   @Test
-  public void testDistributedContextManagerSystemProperty() throws IOException {
+  public void testCorrelationContextManagerSystemProperty() throws IOException {
     File serviceFile =
         createService(
-            DistributedContextManagerProvider.class,
-            FirstDistributedContextManager.class,
-            SecondDistributedContextManager.class);
+            CorrelationContextManagerProvider.class,
+            FirstCorrelationContextManager.class,
+            SecondCorrelationContextManager.class);
     System.setProperty(
-        DistributedContextManagerProvider.class.getName(),
-        SecondDistributedContextManager.class.getName());
+        CorrelationContextManagerProvider.class.getName(),
+        SecondCorrelationContextManager.class.getName());
     try {
-      assertThat(OpenTelemetry.getDistributedContextManager())
-          .isInstanceOf(SecondDistributedContextManager.class);
-      assertThat(OpenTelemetry.getDistributedContextManager())
-          .isEqualTo(OpenTelemetry.getDistributedContextManager());
+      assertThat(OpenTelemetry.getCorrelationContextManager())
+          .isInstanceOf(SecondCorrelationContextManager.class);
+      assertThat(OpenTelemetry.getCorrelationContextManager())
+          .isEqualTo(OpenTelemetry.getCorrelationContextManager());
     } finally {
       serviceFile.delete();
     }
   }
 
   @Test
-  public void testDistributedContextManagerNotFound() {
-    System.setProperty(DistributedContextManagerProvider.class.getName(), "io.does.not.exists");
+  public void testCorrelationContextManagerNotFound() {
+    System.setProperty(CorrelationContextManagerProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getDistributedContextManager();
+    OpenTelemetry.getCorrelationContextManager();
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {
@@ -227,10 +222,10 @@ public class OpenTelemetryTest {
     return file;
   }
 
-  public static class SecondTracerRegistry extends FirstTracerRegistry {
+  public static class SecondTraceProvider extends FirstTraceProvider {
     @Override
     public Tracer get(String instrumentationName) {
-      return new SecondTracerRegistry();
+      return new SecondTraceProvider();
     }
 
     @Override
@@ -239,16 +234,15 @@ public class OpenTelemetryTest {
     }
 
     @Override
-    public TracerRegistry create() {
-      return new SecondTracerRegistry();
+    public TracerProvider create() {
+      return new SecondTraceProvider();
     }
   }
 
-  public static class FirstTracerRegistry
-      implements Tracer, TracerRegistry, TracerRegistryProvider {
+  public static class FirstTraceProvider implements Tracer, TracerProvider, TraceProvider {
     @Override
     public Tracer get(String instrumentationName) {
-      return new FirstTracerRegistry();
+      return new FirstTraceProvider();
     }
 
     @Override
@@ -287,15 +281,15 @@ public class OpenTelemetryTest {
     }
 
     @Override
-    public TracerRegistry create() {
-      return new FirstTracerRegistry();
+    public TracerProvider create() {
+      return new FirstTraceProvider();
     }
   }
 
-  public static class SecondMeterRegistry extends FirstMeterRegistry {
+  public static class SecondMetricsProvider extends FirstMetricsProvider {
     @Override
     public Meter get(String instrumentationName) {
-      return new SecondMeterRegistry();
+      return new SecondMetricsProvider();
     }
 
     @Override
@@ -304,27 +298,15 @@ public class OpenTelemetryTest {
     }
 
     @Override
-    public MeterRegistry create() {
-      return new SecondMeterRegistry();
+    public MeterProvider create() {
+      return new SecondMetricsProvider();
     }
   }
 
-  public static class FirstMeterRegistry implements Meter, MeterRegistryProvider, MeterRegistry {
+  public static class FirstMetricsProvider implements Meter, MetricsProvider, MeterProvider {
     @Override
-    public MeterRegistry create() {
-      return new FirstMeterRegistry();
-    }
-
-    @Nullable
-    @Override
-    public LongGauge.Builder longGaugeBuilder(String name) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public DoubleGauge.Builder doubleGaugeBuilder(String name) {
-      return null;
+    public MeterProvider create() {
+      return new FirstMetricsProvider();
     }
 
     @Nullable
@@ -365,33 +347,13 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public BatchRecorder newMeasureBatchRecorder() {
+    public BatchRecorder newBatchRecorder(LabelSet labelSet) {
       return null;
     }
 
     @Nullable
     @Override
-    public LabelSet createLabelSet(String k1, String v1) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public LabelSet createLabelSet(String k1, String v1, String k2, String v2) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public LabelSet createLabelSet(
-        String k1, String v1, String k2, String v2, String k3, String v3) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public LabelSet createLabelSet(
-        String k1, String v1, String k2, String v2, String k3, String v3, String k4, String v4) {
+    public LabelSet createLabelSet(String... keyValuePairs) {
       return null;
     }
 
@@ -401,15 +363,9 @@ public class OpenTelemetryTest {
       return null;
     }
 
-    @Nullable
-    @Override
-    public LabelSet emptyLabelSet() {
-      return null;
-    }
-
     @Override
     public Meter get(String instrumentationName) {
-      return new FirstMeterRegistry();
+      return new FirstMetricsProvider();
     }
 
     @Override
@@ -418,47 +374,47 @@ public class OpenTelemetryTest {
     }
   }
 
-  public static class SecondDistributedContextManager extends FirstDistributedContextManager {
+  public static class SecondCorrelationContextManager extends FirstCorrelationContextManager {
     @Override
-    public DistributedContextManager create() {
-      return new SecondDistributedContextManager();
+    public CorrelationContextManager create() {
+      return new SecondCorrelationContextManager();
     }
   }
 
-  public static class FirstDistributedContextManager
-      implements DistributedContextManager, DistributedContextManagerProvider {
+  public static class FirstCorrelationContextManager
+      implements CorrelationContextManager, CorrelationContextManagerProvider {
     @Override
-    public DistributedContextManager create() {
-      return new FirstDistributedContextManager();
+    public CorrelationContextManager create() {
+      return new FirstCorrelationContextManager();
     }
 
     @Nullable
     @Override
-    public DistributedContext getCurrentContext() {
+    public CorrelationContext getCurrentContext() {
       return null;
     }
 
     @Nullable
     @Override
-    public DistributedContext.Builder contextBuilder() {
+    public CorrelationContext.Builder contextBuilder() {
       return null;
     }
 
     @Nullable
     @Override
-    public Scope withContext(DistributedContext distContext) {
+    public Scope withContext(CorrelationContext distContext) {
       return null;
     }
 
     @Nullable
     @Override
-    public BinaryFormat<DistributedContext> getBinaryFormat() {
+    public BinaryFormat<CorrelationContext> getBinaryFormat() {
       return null;
     }
 
     @Nullable
     @Override
-    public HttpTextFormat<DistributedContext> getHttpTextFormat() {
+    public HttpTextFormat<CorrelationContext> getHttpTextFormat() {
       return null;
     }
   }

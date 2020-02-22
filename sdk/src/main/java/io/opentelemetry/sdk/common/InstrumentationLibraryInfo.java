@@ -17,20 +17,19 @@
 package io.opentelemetry.sdk.common;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.TracerSdk;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * Holds information about the instrumentation library specified when creating an instance of {@link
- * TracerSdk} using {@link TracerSdkRegistry}.
+ * TracerSdk} using {@link TracerSdkProvider}.
  */
 @AutoValue
 @Immutable
 public abstract class InstrumentationLibraryInfo {
-  public static final InstrumentationLibraryInfo EMPTY = create("", null);
+  private static final InstrumentationLibraryInfo EMPTY = create("", null);
 
   /**
    * Creates a new instance of {@link InstrumentationLibraryInfo}.
@@ -41,14 +40,32 @@ public abstract class InstrumentationLibraryInfo {
    * @return the new instance
    */
   public static InstrumentationLibraryInfo create(String name, @Nullable String version) {
-    Utils.checkNotNull(name, "name");
     return new AutoValue_InstrumentationLibraryInfo(name, version);
   }
 
-  public abstract String name();
+  /**
+   * Returns an "empty" {@code InstrumentationLibraryInfo}.
+   *
+   * @return an "empty" {@code InstrumentationLibraryInfo}.
+   */
+  public static InstrumentationLibraryInfo getEmpty() {
+    return EMPTY;
+  }
 
+  /**
+   * Returns the name of the instrumentation library.
+   *
+   * @return the name of the instrumentation library.
+   */
+  public abstract String getName();
+
+  /**
+   * Returns the version of the instrumentation library, or {@code null} if not available.
+   *
+   * @return the version of the instrumentation library, or {@code null} if not available.
+   */
   @Nullable
-  public abstract String version();
+  public abstract String getVersion();
 
   // Package protected ctor to avoid others to extend this class.
   InstrumentationLibraryInfo() {}

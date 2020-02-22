@@ -22,6 +22,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class StringUtils {
 
+  public static final int NAME_MAX_LENGTH = 255;
+
   /**
    * Determines whether the {@code String} contains only printable characters.
    *
@@ -39,6 +41,24 @@ public final class StringUtils {
 
   private static boolean isPrintableChar(char ch) {
     return ch >= ' ' && ch <= '~';
+  }
+
+  public static boolean isNullOrEmpty(String value) {
+    return value == null || value.length() == 0;
+  }
+
+  /**
+   * Determines whether the metric name contains a valid metric name.
+   *
+   * @param metricName the metric name to be validated.
+   * @return whether the metricName contains a valid name.
+   */
+  public static boolean isValidMetricName(String metricName) {
+    if (metricName.isEmpty() || metricName.length() > NAME_MAX_LENGTH) {
+      return false;
+    }
+    String pattern = "[aA-zZ][aA-zZ0-9_\\-.]*";
+    return metricName.matches(pattern);
   }
 
   private StringUtils() {}

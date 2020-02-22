@@ -26,9 +26,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class BatchRecorderTest {
   private static final Meter meter = DefaultMeter.getInstance();
-  private static final LongMeasure LONG_MEASURE = meter.longMeasureBuilder("measure_long").build();
-  private static final DoubleMeasure DOUBLE_MEASURE =
-      meter.doubleMeasureBuilder("measure_double").build();
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -36,32 +33,26 @@ public class BatchRecorderTest {
   public void preventNull_MeasureLong() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("measure");
-    meter.newMeasureBatchRecorder().put((LongMeasure) null, 5L).record();
-  }
-
-  @Test
-  public void preventNegativeValues_MeasureLong() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Unsupported negative values");
-    meter.newMeasureBatchRecorder().put(LONG_MEASURE, -5L).record();
+    meter.newBatchRecorder(meter.createLabelSet()).put((LongMeasure) null, 5L).record();
   }
 
   @Test
   public void preventNull_MeasureDouble() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("measure");
-    meter.newMeasureBatchRecorder().put((DoubleMeasure) null, 5L).record();
-  }
-
-  @Test
-  public void preventNegativeValues_MeasureDouble() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Unsupported negative values");
-    meter.newMeasureBatchRecorder().put(DOUBLE_MEASURE, -5.0).record();
+    meter.newBatchRecorder(meter.createLabelSet()).put((DoubleMeasure) null, 5L).record();
   }
 
   @Test
   public void doesNotThrow() {
-    meter.newMeasureBatchRecorder().put(LONG_MEASURE, 5).put(DOUBLE_MEASURE, 3.5).record();
+    BatchRecorder batchRecorder = meter.newBatchRecorder(meter.createLabelSet());
+    batchRecorder.put(meter.longMeasureBuilder("longMeasure").build(), 44L);
+    batchRecorder.put(meter.longMeasureBuilder("negativeLongMeasure").build(), -44L);
+    batchRecorder.put(meter.doubleMeasureBuilder("doubleMeasure").build(), 77.556d);
+    batchRecorder.put(meter.doubleMeasureBuilder("negativeDoubleMeasure").build(), -8787.774744d);
+    batchRecorder.put(meter.longCounterBuilder("longCounter").build(), 44L);
+    batchRecorder.put(meter.longCounterBuilder("negativeLongCounter").build(), -44L);
+    batchRecorder.put(meter.doubleCounterBuilder("doubleCounter").build(), 77.556d);
+    batchRecorder.put(meter.doubleCounterBuilder("negativeDoubleCounter").build(), -8787.774744d);
   }
 }

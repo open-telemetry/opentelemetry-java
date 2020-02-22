@@ -1,4 +1,5 @@
 description = 'OpenTelemetry SDK Testbed'
+ext.moduleName = 'io.opentelemetry.sdk.contrib.trace.testbed'
 
 dependencies {
     api project(':opentelemetry-api')

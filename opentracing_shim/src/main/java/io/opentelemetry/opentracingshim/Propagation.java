@@ -23,6 +23,7 @@ import io.opentracing.propagation.TextMapInject;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 final class Propagation extends BaseShimObject {
   Propagation(TelemetryInfo telemetryInfo) {
@@ -35,9 +36,10 @@ final class Propagation extends BaseShimObject {
         .inject(contextShim.getSpanContext(), carrier, TextMapSetter.INSTANCE);
     contextManager()
         .getHttpTextFormat()
-        .inject(contextShim.getDistributedContext(), carrier, TextMapSetter.INSTANCE);
+        .inject(contextShim.getCorrelationContext(), carrier, TextMapSetter.INSTANCE);
   }
 
+  @Nullable
   public SpanContextShim extractTextFormat(TextMapExtract carrier) {
     Map<String, String> carrierMap = new HashMap<String, String>();
     for (Map.Entry<String, String> entry : carrier) {
@@ -46,9 +48,11 @@ final class Propagation extends BaseShimObject {
 
     io.opentelemetry.trace.SpanContext context =
         tracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
-    io.opentelemetry.distributedcontext.DistributedContext distContext =
+    io.opentelemetry.correlationcontext.CorrelationContext distContext =
         contextManager().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
-
+    if (!context.isValid()) {
+      return null;
+    }
     return new SpanContextShim(telemetryInfo, context, distContext);
   }
 
@@ -58,7 +62,7 @@ final class Propagation extends BaseShimObject {
     public static final TextMapSetter INSTANCE = new TextMapSetter();
 
     @Override
-    public void put(TextMapInject carrier, String key, String value) {
+    public void set(TextMapInject carrier, String key, String value) {
       carrier.put(key, value);
     }
   }

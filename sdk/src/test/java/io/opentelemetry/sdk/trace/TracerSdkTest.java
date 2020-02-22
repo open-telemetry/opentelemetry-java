@@ -48,7 +48,9 @@ public class TracerSdkTest {
           INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
   @Mock private Span span;
   private final TracerSdk tracer =
-      TracerSdkRegistry.create().get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+      TracerSdkProvider.builder()
+          .build()
+          .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
   @Before
   public void setUp() {
@@ -91,11 +93,8 @@ public class TracerSdkTest {
   @Test
   public void withSpan_NullSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Scope ws = tracer.withSpan(null);
-    try {
+    try (Scope ws = tracer.withSpan(null)) {
       assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    } finally {
-      ws.close();
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -103,11 +102,8 @@ public class TracerSdkTest {
   @Test
   public void getCurrentSpan_WithSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Scope ws = tracer.withSpan(span);
-    try {
+    try (Scope ws = tracer.withSpan(span)) {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
-    } finally {
-      ws.close();
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }

@@ -33,7 +33,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.exporters.otprotocol.TraceProtoUtils;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -88,6 +88,9 @@ public class JaegerGrpcSpanExporterTest {
             .setStatus(Status.OK)
             .setKind(Kind.CONSUMER)
             .setLinks(Collections.<Link>emptyList())
+            .setTotalRecordedLinks(0)
+            .setTotalRecordedEvents(0)
+            .setNumberOfChildren(0)
             .build();
 
     // test

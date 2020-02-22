@@ -20,7 +20,6 @@ gradlew fatJar
 ```bash
 docker run --rm -it --name jaeger\
   -p 16686:16686 \
-  -p 14268:14268 \
   -p 14250:14250 \
   jaegertracing/all-in-one:1.16
 ```
@@ -28,7 +27,7 @@ docker run --rm -it --name jaeger\
 
 ## 3 - Start the Application
 ```bash
-java -cp build/libs/opentelemetry-example-jaeger-all-0.2.0.jar io.opentelemetry.example.Main localhost 14250
+java -cp build/libs/opentelemetry-example-jaeger-all-0.2.0.jar io.opentelemetry.example.JaegerExample localhost 14250
 ```
 ## 4 - Open the Jaeger UI
 

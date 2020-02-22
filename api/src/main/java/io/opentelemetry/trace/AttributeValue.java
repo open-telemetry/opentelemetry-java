@@ -17,7 +17,7 @@
 package io.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.internal.Utils;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -47,7 +47,6 @@ public abstract class AttributeValue {
    *
    * @param stringValue The new value.
    * @return an {@code AttributeValue} with a string value.
-   * @throws NullPointerException if {@code stringValue} is {@code null}.
    * @since 0.1.0
    */
   public static AttributeValue stringAttributeValue(String stringValue) {
@@ -152,8 +151,7 @@ public abstract class AttributeValue {
     AttributeValueString() {}
 
     static AttributeValue create(String stringValue) {
-      return new AutoValue_AttributeValue_AttributeValueString(
-          Utils.checkNotNull(stringValue, "stringValue"));
+      return new AutoValue_AttributeValue_AttributeValueString(stringValue);
     }
 
     @Override
@@ -162,6 +160,7 @@ public abstract class AttributeValue {
     }
 
     @Override
+    @Nullable
     public abstract String getStringValue();
   }
 

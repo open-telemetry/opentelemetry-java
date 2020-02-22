@@ -17,10 +17,14 @@
 package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
-import static java.util.Collections.singletonMap;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.metrics.DoubleCounter;
+import io.opentelemetry.metrics.DoubleMeasure;
+import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LongMeasure;
+import io.opentelemetry.metrics.LongObserver;
 import java.util.Collections;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,11 +33,11 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link MeterSdk}. */
 @RunWith(JUnit4.class)
 public class MeterSdkTest {
+  private final MeterSdk testSdk =
+      MeterSdkProvider.builder().build().get("io.opentelemetry.sdk.metrics.MeterSdkTest");
 
   @Test
   public void testLongCounter() {
-    MeterSdk testSdk = new MeterSdk();
-
     LongCounter longCounter =
         testSdk
             .longCounterBuilder("testCounter")
@@ -44,29 +48,111 @@ public class MeterSdkTest {
             .setMonotonic(true)
             .build();
     assertThat(longCounter).isNotNull();
-    assertThat(longCounter).isInstanceOf(SdkLongCounter.class);
+    assertThat(longCounter).isInstanceOf(LongCounterSdk.class);
+
+    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+  }
+
+  @Test
+  public void testLongMeasure() {
+    LongMeasure longMeasure =
+        testSdk
+            .longMeasureBuilder("testCounter")
+            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own counter")
+            .setUnit("metric tonnes")
+            .setAbsolute(true)
+            .build();
+    assertThat(longMeasure).isNotNull();
+    assertThat(longMeasure).isInstanceOf(LongMeasureSdk.class);
+
+    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+  }
+
+  @Test
+  public void testLongObserver() {
+    LongObserver longObserver =
+        testSdk
+            .longObserverBuilder("testCounter")
+            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own counter")
+            .setUnit("metric tonnes")
+            .setMonotonic(true)
+            .build();
+    assertThat(longObserver).isNotNull();
+    assertThat(longObserver).isInstanceOf(LongObserverSdk.class);
+
+    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+  }
+
+  @Test
+  public void testDoubleCounter() {
+    DoubleCounter doubleCounter =
+        testSdk
+            .doubleCounterBuilder("testCounter")
+            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own counter")
+            .setUnit("metric tonnes")
+            .setMonotonic(true)
+            .build();
+    assertThat(doubleCounter).isNotNull();
+    assertThat(doubleCounter).isInstanceOf(DoubleCounterSdk.class);
+
+    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+  }
+
+  @Test
+  public void testDoubleMeasure() {
+    DoubleMeasure doubleMeasure =
+        testSdk
+            .doubleMeasureBuilder("testMeasure")
+            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own Measure")
+            .setUnit("metric tonnes")
+            .setAbsolute(true)
+            .build();
+    assertThat(doubleMeasure).isNotNull();
+    assertThat(doubleMeasure).isInstanceOf(DoubleMeasureSdk.class);
+
+    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+  }
+
+  @Test
+  public void testDoubleObserver() {
+    DoubleObserver doubleObserver =
+        testSdk
+            .doubleObserverBuilder("testCounter")
+            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own counter")
+            .setUnit("metric tonnes")
+            .setMonotonic(true)
+            .build();
+    assertThat(doubleObserver).isNotNull();
+    assertThat(doubleObserver).isInstanceOf(DoubleObserverSdk.class);
 
     // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
   }
 
   @Test
   public void testLabelSets() {
-    MeterSdk testSdk = new MeterSdk();
-
-    assertThat(testSdk.emptyLabelSet()).isSameInstanceAs(testSdk.emptyLabelSet());
-    assertThat(testSdk.emptyLabelSet())
+    assertThat(testSdk.createLabelSet()).isSameInstanceAs(testSdk.createLabelSet());
+    assertThat(testSdk.createLabelSet())
         .isSameInstanceAs(testSdk.createLabelSet(Collections.<String, String>emptyMap()));
+    assertThat(testSdk.createLabelSet()).isNotNull();
+
     assertThat(testSdk.createLabelSet("key", "value"))
         .isEqualTo(testSdk.createLabelSet("key", "value"));
+
     assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2"))
         .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2"));
-    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"))
-        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3"));
-    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"))
-        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2", "k3", "v3", "k4", "v4"));
 
-    assertThat(testSdk.createLabelSet("key", "value"))
-        .isEqualTo(testSdk.createLabelSet(singletonMap("key", "value")));
+    assertThat(testSdk.createLabelSet(Collections.singletonMap("key", "value")))
+        .isEqualTo(testSdk.createLabelSet("key", "value"));
 
     assertThat(testSdk.createLabelSet("key", "value"))
         .isNotEqualTo(testSdk.createLabelSet("value", "key"));

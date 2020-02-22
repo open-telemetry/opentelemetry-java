@@ -16,14 +16,16 @@
 
 package io.opentelemetry.sdk.trace;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
+import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -88,7 +90,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private int totalRecordedEvents = 0;
   // The number of children.
   @GuardedBy("lock")
-  private int numberOfChildren;
+  private int numberOfChildren = 0;
   // The status of the span.
   @GuardedBy("lock")
   @Nullable
@@ -115,10 +117,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @param resource the resource associated with this span.
    * @param attributes the attributes set during span creation.
    * @param links the links set during span creation, may be truncated.
-   * @param totalRecordedLinks the total number of links set (including dropped links).
    * @return a new and started span.
    */
-  @VisibleForTesting
   static RecordEventsReadableSpan startSpan(
       SpanContext context,
       String name,
@@ -158,7 +158,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public SpanData toSpanData() {
-
     // Copy immutable fields outside synchronized block.
     SpanContext spanContext = getSpanContext();
     SpanData.Builder builder =
@@ -169,8 +168,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             .setSpanId(spanContext.getSpanId())
             .setTraceFlags(spanContext.getTraceFlags())
             .setLinks(getLinks())
+            .setTotalRecordedLinks(totalRecordedLinks)
             .setKind(kind)
-            .setTracestate(spanContext.getTracestate())
+            .setTraceState(spanContext.getTraceState())
             .setParentSpanId(parentSpanId)
             .setHasRemoteParent(hasRemoteParent)
             .setResource(resource)
@@ -184,6 +184,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
           .setEndEpochNanos(getEndEpochNanos())
           .setStatus(getStatusWithDefault())
           .setTimedEvents(adaptTimedEvents())
+          .setTotalRecordedEvents(totalRecordedEvents)
+          .setNumberOfChildren(numberOfChildren)
           // build() does the actual copying of the collections: it needs to be synchronized
           // because of the attributes and events collections.
           .build();
@@ -250,24 +252,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns the status of the {@code Span}. If not set defaults to {@link Status#OK}.
-   *
-   * @return the status of the {@code Span}.
-   */
-  @VisibleForTesting
-  Status getStatus() {
-    synchronized (lock) {
-      return getStatusWithDefault();
-    }
-  }
-
-  /**
    * Returns a copy of the links for this span.
    *
    * @return A copy of the Links for this span.
    */
-  @VisibleForTesting
-  List<Link> getLinks() {
+  private List<Link> getLinks() {
     if (links == null) {
       return Collections.emptyList();
     }
@@ -285,17 +274,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns an unmodifiable view of the attributes associated with this span.
-   *
-   * @return An unmodifiable view of the attributes associated wit this span
-   */
-  @VisibleForTesting
-  @GuardedBy("lock")
-  Map<String, AttributeValue> getAttributes() {
-    return Collections.unmodifiableMap(attributes);
-  }
-
-  /**
    * Returns the latency of the {@code Span} in nanos. If still active then returns now() - start
    * time.
    *
@@ -309,31 +287,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns the kind of this {@code Span}.
-   *
-   * @return the kind of this {@code Span}.
-   */
-  public Kind getKind() {
-    return kind;
-  }
-
-  /**
-   * Returns the span id of this span's parent span.
-   *
-   * @return The span id of the parent span.
-   */
-  @VisibleForTesting
-  public SpanId getParentSpanId() {
-    return parentSpanId;
-  }
-
-  /**
    * Returns the {@code Clock} used by this {@code Span}.
    *
    * @return the {@code Clock} used by this {@code Span}.
    */
-  @VisibleForTesting
-  public Clock getClock() {
+  Clock getClock() {
     return clock;
   }
 
@@ -361,6 +319,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
+    if (value.getType() == Type.STRING && StringUtils.isNullOrEmpty(value.getStringValue())) {
+      return;
+    }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
@@ -511,7 +472,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.spanProcessor = spanProcessor;
     this.resource = resource;
     this.hasEnded = false;
-    this.numberOfChildren = 0;
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
@@ -527,29 +487,5 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
     }
     super.finalize();
-  }
-
-  /**
-   * The count of links that have been dropped.
-   *
-   * @return The number of links that have been dropped.
-   */
-  @VisibleForTesting
-  int getDroppedLinksCount() {
-    return totalRecordedLinks - links.size();
-  }
-
-  @VisibleForTesting
-  int getNumberOfChildren() {
-    synchronized (lock) {
-      return numberOfChildren;
-    }
-  }
-
-  @VisibleForTesting
-  int getTotalRecordedEvents() {
-    synchronized (lock) {
-      return totalRecordedEvents;
-    }
   }
 }

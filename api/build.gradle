@@ -1,7 +1,8 @@
 description = 'OpenTelemetry API'
+ext.moduleName = "io.opentelemetry.api"
 
 dependencies {
-    api libraries.grpc_context
+    api project(':opentelemetry-context-prop')
 
     annotationProcessor libraries.auto_value
 

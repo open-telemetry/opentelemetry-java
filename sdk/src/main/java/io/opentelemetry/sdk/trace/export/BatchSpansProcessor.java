@@ -17,10 +17,14 @@
 package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
+import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -233,6 +237,23 @@ public final class BatchSpansProcessor implements SpanProcessor {
   // concurrency.
   private static final class Worker implements Runnable {
 
+    static {
+      Meter meter = OpenTelemetry.getMeterRegistry().get("io.opentelemetry.sdk.trace");
+      LongCounter droppedSpansCounter =
+          meter
+              .longCounterBuilder("droppedSpans")
+              .setMonotonic(true)
+              .setUnit("1")
+              .setDescription(
+                  "The number of spans dropped by the BatchSpansProcessor due to high throughput.")
+              .build();
+      droppedSpans =
+          droppedSpansCounter.bind(
+              meter.createLabelSet("spanProcessorType", BatchSpansProcessor.class.getSimpleName()));
+    }
+
+    private static final BoundLongCounter droppedSpans;
+
     private final ExecutorService executorService =
         Executors.newSingleThreadExecutor(
             new ThreadFactory() {
@@ -272,7 +293,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private void addSpan(ReadableSpan span) {
       synchronized (monitor) {
         if (spansList.size() == maxQueueSize) {
-          // TODO: Record a counter for dropped spans.
+          droppedSpans.add(1);
           return;
         }
         // TODO: Record a gauge for referenced spans.

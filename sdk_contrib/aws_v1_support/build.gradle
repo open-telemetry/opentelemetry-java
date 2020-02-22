@@ -1,4 +1,5 @@
 description = 'OpenTelemetry SDK AWS SDK v1.x Support'
+ext.moduleName = "io.opentelemetry.sdk.contrib.trace.aws"
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

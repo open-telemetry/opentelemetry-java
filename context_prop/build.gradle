@@ -1,0 +1,13 @@
+description = 'OpenTelemetry Context Propagation'
+ext.moduleName = "io.opentelemetry.context.propagation"
+
+dependencies {
+    api libraries.grpc_context
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+}
+
+javadoc {
+    exclude 'io/opentelemetry/internal/**'
+}

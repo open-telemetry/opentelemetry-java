@@ -26,8 +26,8 @@ import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.exporters.otprotocol.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -36,7 +36,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -226,6 +226,9 @@ public class AdapterTest {
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setKind(Span.Kind.SERVER)
             .setStatus(Status.CANCELLED)
+            .setTotalRecordedEvents(0)
+            .setTotalRecordedLinks(0)
+            .setNumberOfChildren(0)
             .build();
 
     assertNotNull(Adapter.toJaeger(span));
@@ -254,10 +257,13 @@ public class AdapterTest {
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
         .setAttributes(attributes)
         .setTimedEvents(Collections.singletonList(getTimedEvent()))
+        .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
+        .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
         .setResource(Resource.create(Collections.<String, String>emptyMap()))
         .setStatus(Status.OK)
+        .setNumberOfChildren(0)
         .build();
   }
 
@@ -266,7 +272,7 @@ public class AdapterTest {
         TraceId.fromLowerBase16(traceId, 0),
         SpanId.fromLowerBase16(spanId, 0),
         TraceFlags.builder().build(),
-        Tracestate.builder().build());
+        TraceState.builder().build());
   }
 
   @Nullable

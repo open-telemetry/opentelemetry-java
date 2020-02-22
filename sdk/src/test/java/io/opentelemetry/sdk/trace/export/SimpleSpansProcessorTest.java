@@ -24,16 +24,16 @@ import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.BatchSpansProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.Tracestate;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
@@ -50,20 +50,15 @@ public class SimpleSpansProcessorTest {
   private static final String SPAN_NAME = "MySpanName";
   @Mock private ReadableSpan readableSpan;
   @Mock private SpanExporter spanExporter;
-  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
+  private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("SimpleSpansProcessor");
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
           TraceId.getInvalid(),
           SpanId.getInvalid(),
           TraceFlags.builder().setIsSampled(true).build(),
-          Tracestate.builder().build());
-  private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT =
-      SpanContext.create(
-          TraceId.getInvalid(),
-          SpanId.getInvalid(),
-          TraceFlags.builder().build(),
-          Tracestate.builder().build());
+          TraceState.builder().build());
+  private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
 
   private SimpleSpansProcessor simpleSampledSpansProcessor;
 

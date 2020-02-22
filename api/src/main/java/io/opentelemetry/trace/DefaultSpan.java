@@ -62,7 +62,7 @@ public final class DefaultSpan implements Span {
             TraceId.generateRandomId(random),
             SpanId.generateRandomId(random),
             TraceFlags.getDefault(),
-            Tracestate.getDefault()));
+            TraceState.getDefault()));
   }
 
   private final SpanContext spanContext;
@@ -74,7 +74,6 @@ public final class DefaultSpan implements Span {
   @Override
   public void setAttribute(String key, String value) {
     Utils.checkNotNull(key, "key");
-    Utils.checkNotNull(value, "value");
   }
 
   @Override

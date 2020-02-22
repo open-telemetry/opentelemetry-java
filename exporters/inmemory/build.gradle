@@ -1,4 +1,5 @@
 description = 'OpenTelemetry InMemory Export'
+ext.moduleName = "io.opentelemetry.exporters.inmemory"
 
 dependencies {
     api project(':opentelemetry-sdk')

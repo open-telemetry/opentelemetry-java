@@ -50,7 +50,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongCounter extends Instrument<BoundLongCounter> {
+public interface LongCounter extends Counter<BoundLongCounter> {
 
   /**
    * Adds the given {@code delta} to the current value. The values can be negative iff monotonic was
@@ -67,15 +67,13 @@ public interface LongCounter extends Instrument<BoundLongCounter> {
   @Override
   BoundLongCounter bind(LabelSet labelSet);
 
-  @Override
-  void unbind(BoundLongCounter boundInstrument);
-
   /**
    * A {@code Bound Instrument} for a {@code LongCounter}.
    *
    * @since 0.1.0
    */
-  interface BoundLongCounter {
+  @ThreadSafe
+  interface BoundLongCounter extends InstrumentWithBinding.BoundInstrument {
 
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
@@ -87,6 +85,9 @@ public interface LongCounter extends Instrument<BoundLongCounter> {
      * @since 0.1.0
      */
     void add(long delta);
+
+    @Override
+    void unbind();
   }
 
   /** Builder class for {@link LongCounter}. */

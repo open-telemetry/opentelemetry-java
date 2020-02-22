@@ -17,6 +17,7 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.internal.StringUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +48,7 @@ public class DoubleCounterTest {
 
   @Test
   public void preventTooLongName() {
-    char[] chars = new char[DefaultMeter.NAME_MAX_LENGTH + 1];
+    char[] chars = new char[StringUtils.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
@@ -108,20 +109,6 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void noopUnbind_WithNullInstrument() {
-    DoubleCounter doubleCounter =
-        meter
-            .doubleCounterBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("boundDoubleCounter");
-    doubleCounter.unbind(null);
-  }
-
-  @Test
   public void doesNotThrow() {
     DoubleCounter doubleCounter =
         meter
@@ -130,6 +117,6 @@ public class DoubleCounterTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    doubleCounter.bind(meter.emptyLabelSet()).add(1.0);
+    doubleCounter.bind(meter.createLabelSet()).add(1.0);
   }
 }

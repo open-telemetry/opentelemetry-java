@@ -42,7 +42,7 @@ public class DefaultTracerTest {
           TraceId.fromBytes(firstBytes, 0),
           SpanId.fromBytes(firstBytes, 8),
           TraceFlags.getDefault(),
-          Tracestate.getDefault());
+          TraceState.getDefault());
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 

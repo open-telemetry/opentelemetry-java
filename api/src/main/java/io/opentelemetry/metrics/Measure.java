@@ -16,14 +16,27 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+
 /**
  * Base interface for all the Measure instruments.
  *
  * @param <H> the Bound Instrument type.
  * @since 0.1.0
  */
-public interface Measure<H> extends Instrument<H> {
+public interface Measure<H extends BoundInstrument> extends InstrumentWithBinding<H> {
 
   /** Builder class for {@link Measure}. */
-  interface Builder<B extends Measure.Builder<B, V>, V> extends Instrument.Builder<B, V> {}
+  interface Builder<B extends Measure.Builder<B, V>, V> extends Instrument.Builder<B, V> {
+    /**
+     * Sets the absolute property for this {@code Builder}. If {@code true} only positive values are
+     * expected.
+     *
+     * <p>Default value is {@code true}
+     *
+     * @param absolute {@code true} only positive values are expected.
+     * @return this.
+     */
+    B setAbsolute(boolean absolute);
+  }
 }
