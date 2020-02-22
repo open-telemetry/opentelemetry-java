@@ -70,7 +70,8 @@ final class DisruptorEventQueue {
   enum EventType {
     ON_START,
     ON_END,
-    ON_SHUTDOWN
+    ON_SHUTDOWN,
+    ON_FORCE_FLUSH
   }
 
   // Creates a new EventQueue. Private to prevent creation of non-singleton instance.
@@ -129,6 +130,18 @@ final class DisruptorEventQueue {
     }
   }
 
+  void forceFlush() {
+    if (isShutdown) {
+      return;
+    }
+    synchronized (this) {
+      if (isShutdown) {
+        return;
+      }
+      enqueue(null, EventType.ON_FORCE_FLUSH);
+    }
+  }
+
   // An event in the {@link EventQueue}. Just holds a reference to an EventQueue.Entry.
   private static final class DisruptorEvent {
     @Nullable private ReadableSpan readableSpan = null;
@@ -179,6 +192,9 @@ final class DisruptorEventQueue {
           case ON_SHUTDOWN:
             spanProcessor.shutdown();
             shutdownCounter.countDown();
+            break;
+          case ON_FORCE_FLUSH:
+            spanProcessor.forceFlush();
             break;
         }
       } finally {

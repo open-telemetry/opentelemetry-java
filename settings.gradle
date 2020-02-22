@@ -1,5 +1,23 @@
-rootProject.name = "opentelemetry-java"
+pluginManagement {
+    plugins {
+        id "com.github.ben-manes.versions" version "0.20.0"
+        id "com.github.kt3k.coveralls" version "2.0.1"
+        id 'com.github.sherter.google-java-format' version "0.8"
+        id "com.google.protobuf" version "0.8.8"
+        id "com.jfrog.artifactory" version "4.13.0"
+        id "io.morethan.jmhreport" version "0.9.0"
+        id "me.champeau.gradle.jmh" version "0.5.0"
+        id "net.ltgt.errorprone" version "0.8.1"
+        id "ru.vyarus.animalsniffer" version "1.5.0"
+    }
 
+    repositories {
+        gradlePluginPortal()
+        google()
+    }
+}
+
+rootProject.name = "opentelemetry-java"
 include ":opentelemetry-all",
         ":opentelemetry-api",
         ":opentelemetry-context-prop",

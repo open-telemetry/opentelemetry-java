@@ -18,14 +18,17 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -41,7 +44,9 @@ public class DoubleCounterSdkTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
-      Resource.create(Collections.singletonMap("resource_key", "resource_value"));
+      Resource.create(
+          Collections.singletonMap(
+              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.DoubleCounterSdkTest", null);
   private final TestClock testClock = TestClock.create();
@@ -55,16 +60,24 @@ public class DoubleCounterSdkTest {
     DoubleCounter doubleCounter =
         testSdk
             .doubleCounterBuilder("testCounter")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
-            .setUnit("metric tonnes")
+            .setUnit("ms")
             .setMonotonic(true)
             .build();
     assertThat(doubleCounter).isInstanceOf(DoubleCounterSdk.class);
     List<MetricData> metricDataList = ((DoubleCounterSdk) doubleCounter).collect();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
+    assertThat(metricData.getDescriptor())
+        .isEqualTo(
+            Descriptor.create(
+                "testCounter",
+                "My very own counter",
+                "ms",
+                Type.MONOTONIC_DOUBLE,
+                Collections.singletonMap("sk1", "sv1")));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -72,16 +85,7 @@ public class DoubleCounterSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    DoubleCounterSdk doubleCounter =
-        (DoubleCounterSdk)
-            testSdk
-                .doubleCounterBuilder("testCounter")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-                .setLabelKeys(Collections.singletonList("sk1"))
-                .setDescription("My very own counter")
-                .setUnit("metric tonnes")
-                .setMonotonic(true)
-                .build();
+    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
     doubleCounter.add(12.1d, testSdk.createLabelSet());
     List<MetricData> metricDataList = doubleCounter.collect();
@@ -106,16 +110,7 @@ public class DoubleCounterSdkTest {
     LabelSetSdk labelSet = testSdk.createLabelSet("K", "V");
     LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
     long startTime = testClock.now();
-    DoubleCounterSdk doubleCounter =
-        (DoubleCounterSdk)
-            testSdk
-                .doubleCounterBuilder("testCounter")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-                .setLabelKeys(Collections.singletonList("sk1"))
-                .setDescription("My very own counter")
-                .setUnit("metric tonnes")
-                .setMonotonic(true)
-                .build();
+    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter boundCounter = doubleCounter.bind(labelSet);
     try {
       // Do some records using bounds and direct calls and bindings.
@@ -171,8 +166,7 @@ public class DoubleCounterSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    DoubleCounterSdk doubleCounter =
-        (DoubleCounterSdk) testSdk.doubleCounterBuilder("testCounter").build();
+    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter boundCounter = doubleCounter.bind(testSdk.createLabelSet("K", "v"));
     try {
       doubleCounter.collect();
@@ -186,6 +180,85 @@ public class DoubleCounterSdkTest {
     } finally {
       boundCounter.unbind();
     }
+  }
+
+  @Test
+  public void stressTest() {
+    final DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
+
+    StressTestRunner.Builder stressTestBuilder =
+        StressTestRunner.builder().setInstrument(doubleCounter).setCollectionIntervalMs(100);
+
+    for (int i = 0; i < 4; i++) {
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(
+              1_000, 2, new OperationUpdaterDirectCall(testSdk, doubleCounter, "K", "V")));
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(
+              1_000,
+              2,
+              new OperationUpdaterWithBinding(
+                  doubleCounter.bind(testSdk.createLabelSet("K", "V")))));
+    }
+
+    stressTestBuilder.build().run();
+    List<MetricData> metricDataList = doubleCounter.collect();
+    assertThat(metricDataList).hasSize(1);
+    assertThat(metricDataList.get(0).getPoints())
+        .containsExactly(
+            DoublePoint.create(
+                testClock.now(), testClock.now(), Collections.singletonMap("K", "V"), 80_000));
+  }
+
+  @Test
+  public void stressTest_WithDifferentLabelSet() {
+    final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
+    final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
+    final DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
+
+    StressTestRunner.Builder stressTestBuilder =
+        StressTestRunner.builder().setInstrument(doubleCounter).setCollectionIntervalMs(100);
+
+    for (int i = 0; i < 4; i++) {
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(
+              2_000,
+              1,
+              new OperationUpdaterDirectCall(testSdk, doubleCounter, keys[i], values[i])));
+
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(
+              2_000,
+              1,
+              new OperationUpdaterWithBinding(
+                  doubleCounter.bind(testSdk.createLabelSet(keys[i], values[i])))));
+    }
+
+    stressTestBuilder.build().run();
+    List<MetricData> metricDataList = doubleCounter.collect();
+    assertThat(metricDataList).hasSize(1);
+    assertThat(metricDataList.get(0).getPoints())
+        .containsExactly(
+            DoublePoint.create(
+                testClock.now(),
+                testClock.now(),
+                Collections.singletonMap(keys[0], values[0]),
+                40_000),
+            DoublePoint.create(
+                testClock.now(),
+                testClock.now(),
+                Collections.singletonMap(keys[1], values[1]),
+                40_000),
+            DoublePoint.create(
+                testClock.now(),
+                testClock.now(),
+                Collections.singletonMap(keys[2], values[2]),
+                40_000),
+            DoublePoint.create(
+                testClock.now(),
+                testClock.now(),
+                Collections.singletonMap(keys[3], values[3]),
+                40_000));
   }
 
   @Test
@@ -204,5 +277,46 @@ public class DoubleCounterSdkTest {
 
     thrown.expect(IllegalArgumentException.class);
     doubleCounter.bind(testSdk.createLabelSet()).add(-9.3);
+  }
+
+  private static class OperationUpdaterWithBinding extends OperationUpdater {
+    private final DoubleCounter.BoundDoubleCounter boundDoubleCounter;
+
+    private OperationUpdaterWithBinding(BoundDoubleCounter boundDoubleCounter) {
+      this.boundDoubleCounter = boundDoubleCounter;
+    }
+
+    @Override
+    void update() {
+      boundDoubleCounter.add(10);
+    }
+
+    @Override
+    void cleanup() {
+      boundDoubleCounter.unbind();
+    }
+  }
+
+  private static class OperationUpdaterDirectCall extends OperationUpdater {
+    private final MeterSdk meterSdk;
+    private final DoubleCounter doubleCounter;
+    private final String key;
+    private final String value;
+
+    private OperationUpdaterDirectCall(
+        MeterSdk meterSdk, DoubleCounter doubleCounter, String key, String value) {
+      this.meterSdk = meterSdk;
+      this.doubleCounter = doubleCounter;
+      this.key = key;
+      this.value = value;
+    }
+
+    @Override
+    void update() {
+      doubleCounter.add(10.0, meterSdk.createLabelSet(key, value));
+    }
+
+    @Override
+    void cleanup() {}
   }
 }
