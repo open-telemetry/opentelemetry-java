@@ -6,7 +6,7 @@ plugins {
 }
 
 description = 'OpenTelemetry SDK Contrib'
-ext.moduleName = "io.opentelemetry.sdk.contrib.trace.export"
+ext.moduleName = "io.opentelemetry.sdk.contrib.trace.config"
 
 dependencies {
     api project(':opentelemetry-api'),

@@ -51,7 +51,7 @@ public class MultiSpanExporterTest {
 
   @Test
   public void empty() {
-    SpanExporter multiSpanExporter =
+    final SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Collections.<SpanExporter>emptyList());
     multiSpanExporter.export(SPAN_LIST);
     multiSpanExporter.shutdown();
@@ -59,7 +59,7 @@ public class MultiSpanExporterTest {
 
   @Test
   public void oneSpanExporter() {
-    SpanExporter multiSpanExporter =
+    final SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Collections.singletonList(spanExporter1));
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
     assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.SUCCESS);
@@ -71,7 +71,7 @@ public class MultiSpanExporterTest {
 
   @Test
   public void twoSpanExporter() {
-    SpanExporter multiSpanExporter =
+    final SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
     when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
@@ -86,7 +86,7 @@ public class MultiSpanExporterTest {
 
   @Test
   public void twoSpanExporter_OneReturnNoneRetryable() {
-    SpanExporter multiSpanExporter =
+    final SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
     when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.FAILED_NOT_RETRYABLE);
@@ -97,7 +97,7 @@ public class MultiSpanExporterTest {
 
   @Test
   public void twoSpanExporter_OneReturnRetryable() {
-    SpanExporter multiSpanExporter =
+    final SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
     when(spanExporter1.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
     when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.FAILED_RETRYABLE);
@@ -108,10 +108,10 @@ public class MultiSpanExporterTest {
 
   @Test
   public void twoSpanExporter_FirstThrows() {
-    doThrow(new IllegalArgumentException("No export for you."))
+    doThrow(new IllegalArgumentException("No config for you."))
         .when(spanExporter1)
         .export(ArgumentMatchers.<SpanData>anyList());
-    SpanExporter multiSpanExporter =
+    final SpanExporter multiSpanExporter =
         MultiSpanExporter.create(Arrays.asList(spanExporter1, spanExporter2));
     assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
     verify(spanExporter1).export(same(SPAN_LIST));

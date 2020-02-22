@@ -48,7 +48,7 @@ public class InMemorySpanExporterTest {
     tracer.spanBuilder("two").startSpan().end();
     tracer.spanBuilder("three").startSpan().end();
 
-    List<SpanData> spanItems = exporter.getFinishedSpanItems();
+    final List<SpanData> spanItems = exporter.getFinishedSpanItems();
     assertThat(spanItems).isNotNull();
     assertThat(spanItems.size()).isEqualTo(3);
     assertThat(spanItems.get(0).getName()).isEqualTo("one");
@@ -61,7 +61,7 @@ public class InMemorySpanExporterTest {
     tracer.spanBuilder("one").startSpan().end();
     tracer.spanBuilder("two").startSpan().end();
     tracer.spanBuilder("three").startSpan().end();
-    List<SpanData> spanItems = exporter.getFinishedSpanItems();
+    final List<SpanData> spanItems = exporter.getFinishedSpanItems();
     assertThat(spanItems).isNotNull();
     assertThat(spanItems.size()).isEqualTo(3);
     // Reset then expect no items in memory.
@@ -74,7 +74,7 @@ public class InMemorySpanExporterTest {
     tracer.spanBuilder("one").startSpan().end();
     tracer.spanBuilder("two").startSpan().end();
     tracer.spanBuilder("three").startSpan().end();
-    List<SpanData> spanItems = exporter.getFinishedSpanItems();
+    final List<SpanData> spanItems = exporter.getFinishedSpanItems();
     assertThat(spanItems).isNotNull();
     assertThat(spanItems.size()).isEqualTo(3);
     // Shutdown then expect no items in memory.
@@ -90,7 +90,7 @@ public class InMemorySpanExporterTest {
     assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
         .isEqualTo(ResultCode.SUCCESS);
     exporter.shutdown();
-    // After shutdown no more export.
+    // After shutdown no more config.
     assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
         .isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
     exporter.reset();

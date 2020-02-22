@@ -36,26 +36,26 @@ public final class SimpleSpansProcessor implements SpanProcessor {
   private final SpanExporter spanExporter;
   private final boolean sampled;
 
-  private SimpleSpansProcessor(SpanExporter spanExporter, boolean sampled) {
+  private SimpleSpansProcessor(final SpanExporter spanExporter, final boolean sampled) {
     this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
     this.sampled = sampled;
   }
 
   @Override
-  public void onStart(ReadableSpan span) {
+  public void onStart(final ReadableSpan span) {
     // Do nothing.
   }
 
   @Override
-  public void onEnd(ReadableSpan span) {
+  public void onEnd(final ReadableSpan span) {
     if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
     }
     try {
-      List<SpanData> spans = Collections.singletonList(span.toSpanData());
+      final List<SpanData> spans = Collections.singletonList(span.toSpanData());
       spanExporter.export(spans);
-    } catch (Throwable e) {
-      logger.log(Level.WARNING, "Exception thrown by the export.", e);
+    } catch (final Throwable e) {
+      logger.log(Level.WARNING, "Exception thrown by the config.", e);
     }
   }
 
@@ -76,7 +76,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
    * @return a new {@link SimpleSpansProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
-  public static Builder newBuilder(SpanExporter spanExporter) {
+  public static Builder newBuilder(final SpanExporter spanExporter) {
     return new Builder(spanExporter);
   }
 
@@ -86,7 +86,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
     private final SpanExporter spanExporter;
     private boolean sampled = true;
 
-    private Builder(SpanExporter spanExporter) {
+    private Builder(final SpanExporter spanExporter) {
       this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
     }
 
@@ -96,7 +96,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
      * @param sampled report only sampled spans.
      * @return this.
      */
-    public Builder reportOnlySampled(boolean sampled) {
+    public Builder reportOnlySampled(final boolean sampled) {
       this.sampled = sampled;
       return this;
     }

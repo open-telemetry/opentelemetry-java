@@ -49,7 +49,7 @@ import javax.annotation.concurrent.GuardedBy;
  * maxExportBatchSize}.
  *
  * <p>If the queue gets half full a preemptive notification is sent to the worker thread that
- * exports the spans to wake up and start a new export cycle.
+ * exports the spans to wake up and start a new config cycle.
  *
  * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
  * TODO: Add a link to the SpanProcessor that uses Disruptor as alternative with low contention.
@@ -65,29 +65,29 @@ public final class BatchSpansProcessor implements SpanProcessor {
   private final boolean sampled;
 
   private BatchSpansProcessor(
-      SpanExporter spanExporter,
-      boolean sampled,
-      long scheduleDelayMillis,
-      int maxQueueSize,
-      int maxExportBatchSize,
-      int exporterTimeoutMillis) {
-    this.worker =
+      final SpanExporter spanExporter,
+      final boolean sampled,
+      final long scheduleDelayMillis,
+      final int maxQueueSize,
+      final int maxExportBatchSize,
+      final int exporterTimeoutMillis) {
+    worker =
         new Worker(
             spanExporter,
             scheduleDelayMillis,
             maxQueueSize,
             maxExportBatchSize,
             exporterTimeoutMillis);
-    this.workerThread = newThread(worker);
-    this.workerThread.start();
+    workerThread = newThread(worker);
+    workerThread.start();
     this.sampled = sampled;
   }
 
   @Override
-  public void onStart(ReadableSpan span) {}
+  public void onStart(final ReadableSpan span) {}
 
   @Override
-  public void onEnd(ReadableSpan span) {
+  public void onEnd(final ReadableSpan span) {
     if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
     }
@@ -112,7 +112,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
    * @return a new {@link BatchSpansProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
-  public static Builder newBuilder(SpanExporter spanExporter) {
+  public static Builder newBuilder(final SpanExporter spanExporter) {
     return new Builder(spanExporter);
   }
 
@@ -131,7 +131,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private int exporterTimeoutMillis = DEFAULT_EXPORT_TIMEOUT_MILLIS;
     private boolean sampled = true;
 
-    private Builder(SpanExporter spanExporter) {
+    private Builder(final SpanExporter spanExporter) {
       this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
     }
 
@@ -143,7 +143,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
      * @param sampled report only sampled spans.
      * @return this.
      */
-    public Builder reportOnlySampled(boolean sampled) {
+    public Builder reportOnlySampled(final boolean sampled) {
       this.sampled = sampled;
       return this;
     }
@@ -157,7 +157,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
      * @param scheduleDelayMillis the delay interval between two consecutive exports.
      * @return this.
      */
-    public Builder setScheduleDelayMillis(long scheduleDelayMillis) {
+    public Builder setScheduleDelayMillis(final long scheduleDelayMillis) {
       this.scheduleDelayMillis = scheduleDelayMillis;
       return this;
     }
@@ -170,7 +170,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
      * @param exporterTimeoutMillis the timeout for exports in milliseconds.
      * @return this
      */
-    public Builder setExporterTimeoutMillis(int exporterTimeoutMillis) {
+    public Builder setExporterTimeoutMillis(final int exporterTimeoutMillis) {
       this.exporterTimeoutMillis = exporterTimeoutMillis;
       return this;
     }
@@ -187,21 +187,21 @@ public final class BatchSpansProcessor implements SpanProcessor {
      *     dropping.
      * @return this.
      */
-    public Builder setMaxQueueSize(int maxQueueSize) {
+    public Builder setMaxQueueSize(final int maxQueueSize) {
       this.maxQueueSize = maxQueueSize;
       return this;
     }
 
     /**
-     * Sets the maximum batch size for every export. This must be smaller or equal to {@code
+     * Sets the maximum batch size for every config. This must be smaller or equal to {@code
      * maxQueuedSpans}.
      *
      * <p>Default value is {@code 512}.
      *
-     * @param maxExportBatchSize the maximum batch size for every export.
+     * @param maxExportBatchSize the maximum batch size for every config.
      * @return this.
      */
-    public Builder setMaxExportBatchSize(int maxExportBatchSize) {
+    public Builder setMaxExportBatchSize(final int maxExportBatchSize) {
       Utils.checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
       this.maxExportBatchSize = maxExportBatchSize;
       return this;
@@ -225,17 +225,17 @@ public final class BatchSpansProcessor implements SpanProcessor {
     }
   }
 
-  private static Thread newThread(Runnable runnable) {
-    Thread thread = MoreExecutors.platformThreadFactory().newThread(runnable);
+  private static Thread newThread(final Runnable runnable) {
+    final Thread thread = MoreExecutors.platformThreadFactory().newThread(runnable);
     try {
       thread.setName(WORKER_THREAD_NAME);
-    } catch (SecurityException e) {
+    } catch (final SecurityException e) {
       // OK if we can't set the name in this environment.
     }
     return thread;
   }
 
-  // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
+  // Worker is a thread that batches multiple spans and calls the registered SpanExporter to config
   // the data.
   //
   // The list of batched data is protected by an explicit monitor object which ensures full
@@ -243,8 +243,8 @@ public final class BatchSpansProcessor implements SpanProcessor {
   private static final class Worker implements Runnable {
 
     static {
-      Meter meter = OpenTelemetry.getMeterRegistry().get("io.opentelemetry.sdk.trace");
-      LongCounter droppedSpansCounter =
+      final Meter meter = OpenTelemetry.getMeterRegistry().get("io.opentelemetry.sdk.trace");
+      final LongCounter droppedSpansCounter =
           meter
               .longCounterBuilder("droppedSpans")
               .setMonotonic(true)
@@ -263,7 +263,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
         Executors.newSingleThreadExecutor(
             new ThreadFactory() {
               @Override
-              public Thread newThread(Runnable r) {
+              public Thread newThread(final Runnable r) {
                 return new Thread(r, EXPORTER_THREAD_NAME);
               }
             });
@@ -281,21 +281,21 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private final List<ReadableSpan> spansList;
 
     private Worker(
-        SpanExporter spanExporter,
-        long scheduleDelayMillis,
-        int maxQueueSize,
-        int maxExportBatchSize,
-        int exporterTimeoutMillis) {
+        final SpanExporter spanExporter,
+        final long scheduleDelayMillis,
+        final int maxQueueSize,
+        final int maxExportBatchSize,
+        final int exporterTimeoutMillis) {
       this.spanExporter = spanExporter;
       this.scheduleDelayMillis = scheduleDelayMillis;
       this.maxQueueSize = maxQueueSize;
-      this.halfMaxQueueSize = maxQueueSize >> 1;
+      halfMaxQueueSize = maxQueueSize >> 1;
       this.maxExportBatchSize = maxExportBatchSize;
-      this.spansList = new ArrayList<>(maxQueueSize);
+      spansList = new ArrayList<>(maxQueueSize);
       this.exporterTimeoutMillis = exporterTimeoutMillis;
     }
 
-    private void addSpan(ReadableSpan span) {
+    private void addSpan(final ReadableSpan span) {
       synchronized (monitor) {
         if (spansList.size() == maxQueueSize) {
           droppedSpans.add(1);
@@ -316,16 +316,16 @@ public final class BatchSpansProcessor implements SpanProcessor {
       while (!Thread.currentThread().isInterrupted()) {
         // Copy all the batched spans in a separate list to release the monitor lock asap to
         // avoid blocking the producer thread.
-        ArrayList<ReadableSpan> spansCopy;
+        final ArrayList<ReadableSpan> spansCopy;
         synchronized (monitor) {
           // If still maxExportBatchSize elements in the queue better to execute an extra
           if (spansList.size() < maxExportBatchSize) {
             do {
-              // In the case of a spurious wakeup we export only if we have at least one span in
+              // In the case of a spurious wakeup we config only if we have at least one span in
               // the batch. It is acceptable because batching is a best effort mechanism here.
               try {
                 monitor.wait(scheduleDelayMillis);
-              } catch (InterruptedException ie) {
+              } catch (final InterruptedException ie) {
                 // Preserve the interruption status as per guidance and stop doing any work.
                 Thread.currentThread().interrupt();
                 return;
@@ -335,7 +335,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
           spansCopy = new ArrayList<>(spansList);
           spansList.clear();
         }
-        // Execute the batch export outside the synchronized to not block all producers.
+        // Execute the batch config outside the synchronized to not block all producers.
         exportBatches(spansCopy);
       }
     }
@@ -346,27 +346,27 @@ public final class BatchSpansProcessor implements SpanProcessor {
     }
 
     private void forceFlush() {
-      ArrayList<ReadableSpan> spansCopy;
+      final ArrayList<ReadableSpan> spansCopy;
       synchronized (monitor) {
         spansCopy = new ArrayList<>(spansList);
         spansList.clear();
       }
-      // Execute the batch export outside the synchronized to not block all producers.
+      // Execute the batch config outside the synchronized to not block all producers.
       exportBatches(spansCopy);
     }
 
-    private void exportBatches(ArrayList<ReadableSpan> spanList) {
+    private void exportBatches(final ArrayList<ReadableSpan> spanList) {
       // TODO: Record a counter for pushed spans.
       for (int i = 0; i < spanList.size(); ) {
-        int batchSizeLimit = Math.min(i + maxExportBatchSize, spanList.size());
+        final int batchSizeLimit = Math.min(i + maxExportBatchSize, spanList.size());
         onBatchExport(createSpanDataForExport(spanList, i, batchSizeLimit));
         i = batchSizeLimit;
       }
     }
 
     private static List<SpanData> createSpanDataForExport(
-        List<ReadableSpan> spanList, int startIndex, int numberToTake) {
-      List<SpanData> spanDataBuffer = new ArrayList<>(numberToTake);
+        final List<ReadableSpan> spanList, final int startIndex, final int numberToTake) {
+      final List<SpanData> spanDataBuffer = new ArrayList<>(numberToTake);
       for (int i = startIndex; i < numberToTake; i++) {
         spanDataBuffer.add(spanList.get(i).toSpanData());
         // Remove the reference to the ReadableSpan to allow GC to free the memory.
@@ -377,7 +377,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
 
     // Exports the list of SpanData to the SpanExporter.
     private void onBatchExport(final List<SpanData> spans) {
-      Future<?> submission =
+      final Future<?> submission =
           executorService.submit(
               new Runnable() {
                 @Override
@@ -385,17 +385,17 @@ public final class BatchSpansProcessor implements SpanProcessor {
                   // In case of any exception thrown by the service handlers catch and log.
                   try {
                     spanExporter.export(spans);
-                  } catch (Throwable t) {
-                    logger.log(Level.WARNING, "Exception thrown by the export.", t);
+                  } catch (final Throwable t) {
+                    logger.log(Level.WARNING, "Exception thrown by the config.", t);
                   }
                 }
               });
       try {
         // wait at most for the configured timeout.
         submission.get(exporterTimeoutMillis, TimeUnit.MILLISECONDS);
-      } catch (InterruptedException | ExecutionException e) {
-        logger.log(Level.WARNING, "Exception thrown by the export.", e);
-      } catch (TimeoutException e) {
+      } catch (final InterruptedException | ExecutionException e) {
+        logger.log(Level.WARNING, "Exception thrown by the config.", e);
+      } catch (final TimeoutException e) {
         logger.log(Level.WARNING, "Export timed out. Cancelling execution.", e);
         submission.cancel(true);
       }

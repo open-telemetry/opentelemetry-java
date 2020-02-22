@@ -21,36 +21,36 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 
 /**
- * An interface that allows different tracing services to export recorded data for sampled spans in
+ * An interface that allows different tracing services to config recorded data for sampled spans in
  * their own format.
  *
- * <p>To export data this MUST be register to the {@code TracerSdk} using a {@link
+ * <p>To config data this MUST be register to the {@code TracerSdk} using a {@link
  * SimpleSpansProcessor} or a {@code BatchSampledSpansProcessor}.
  */
 // TODO: Change {@code BatchSampledSpansExporter} to {@link BatchSampledSpansExporter} when the
 //  class is available.
 public interface SpanExporter {
 
-  /** The possible results for the export method. */
+  /** The possible results for the config method. */
   enum ResultCode {
-    /** The export operation finished successfully. */
+    /** The config operation finished successfully. */
     SUCCESS,
 
-    /** The export operation finished with an error, but retrying may succeed. */
+    /** The config operation finished with an error, but retrying may succeed. */
     FAILED_RETRYABLE,
 
     /**
-     * The export operation finished with an error, the caller should not try to export the same
+     * The config operation finished with an error, the caller should not try to config the same
      * data again.
      */
     FAILED_NOT_RETRYABLE
   }
 
   /**
-   * Called to export sampled {@code Span}s.
+   * Called to config sampled {@code Span}s.
    *
    * @param spans the list of sampled Spans to be exported.
-   * @return the result of the export.
+   * @return the result of the config.
    */
   ResultCode export(List<SpanData> spans);
 

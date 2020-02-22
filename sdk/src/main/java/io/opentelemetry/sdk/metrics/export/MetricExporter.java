@@ -21,7 +21,7 @@ import java.util.Collection;
 
 /**
  * {@code MetricExporter} is the interface that all "push based" metric libraries should use to
- * export metrics to the OpenTelemetry exporters.
+ * config metrics to the OpenTelemetry exporters.
  *
  * <p>All OpenTelemetry exporters should allow access to a {@code MetricExporter} instance.
  *
@@ -30,20 +30,20 @@ import java.util.Collection;
 public interface MetricExporter {
 
   /**
-   * The possible results for the export method.
+   * The possible results for the config method.
    *
    * @since 0.1.0
    */
   // TODO: extract this enum and unify it with SpanExporter.ResultCode
   enum ResultCode {
-    /** The export operation finished successfully. */
+    /** The config operation finished successfully. */
     SUCCESS,
 
-    /** The export operation finished with an error, but retrying may succeed. */
+    /** The config operation finished with an error, but retrying may succeed. */
     FAILED_RETRYABLE,
 
     /**
-     * The export operation finished with an error, the caller should not try to export the same
+     * The config operation finished with an error, the caller should not try to config the same
      * data again.
      */
     FAILED_NOT_RETRYABLE
@@ -53,7 +53,7 @@ public interface MetricExporter {
    * Exports the collection of given {@link MetricData}.
    *
    * @param metrics the collection of {@link MetricData} to be exported.
-   * @return the result of the export.
+   * @return the result of the config.
    * @since 0.1.0
    */
   ResultCode export(Collection<MetricData> metrics);

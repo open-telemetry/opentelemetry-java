@@ -24,7 +24,7 @@ import io.opentelemetry.sdk.metrics.export.MetricProducer;
 public final class PushMetricExporter implements MetricExporter {  
   @Override
   ResultCode export(Collection<MetricData> metrics) {
-    // A "push based" library calls to export metrics
+    config
     return pushToBackend(metrics);
   }
 }
@@ -41,10 +41,10 @@ public final class PushExporter {
   public PushExporter(Collection<MetricProducer> producers) {
     metricExporter = new PushMetricExporter();
     intervalMetricReader =
-        new IntervalMetricReader(producers, metricExporter, 60 /* export interval sec*/);
+        new IntervalMetricReader(producers, metricExporter, 60 config);
   }
   
-  // Can be accessed by any "push based" library to export metrics.
+  config
   public MetricExporter getMetricExporter() {
     return metricExporter;
   }
