@@ -24,7 +24,7 @@ package io.opentelemetry.trace;
  *     href="https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/data-semantic-conventions.md">Semantic
  *     Conventions</a>
  */
-public final class SemanticConventions {
+public final class SemanticAttributes {
 
   /** Transport protocol used. */
   public static final String NET_TRANSPORT = "net.transport";
@@ -40,8 +40,12 @@ public final class SemanticConventions {
   public static final String NET_HOST_PORT = "net.host.port";
   /** Local hostname or similar. */
   public static final String NET_HOST_NAME = "net.host.name";
-  /** Denotes the type of the span. */
-  public static final String COMPONENT = "component";
+  /** Username or client_id extracted from the access token or Authorization header. */
+  public static final String ENDUSER_ID = "enduser.id";
+  /** Actual/assumed role the client is making the request under. */
+  public static final String ENDUSER_ROLE = "enduser.role";
+  /** Scopes or granted authorities the client currently possesses. */
+  public static final String ENDUSER_SCOPE = "enduser.scope";
   /** HTTP request method. E.g. "GET". */
   public static final String HTTP_METHOD = "http.method";
   /** Full HTTP request URL in the form scheme://host[:port]/path?query[#fragment]. */
@@ -58,14 +62,14 @@ public final class SemanticConventions {
   public static final String HTTP_STATUS_TEXT = "http.status_text";
   /** Kind of HTTP protocol used: "1.0", "1.1", "2", "SPDY" or "QUIC". */
   public static final String HTTP_FLAVOR = "http.flavor";
+  /** Value of the HTTP "User-Agent" header sent by the client. */
+  public static final String HTTP_USER_AGENT = "http.user_agent";
   /** The primary server name of the matched virtual host. Usually obtained via configuration. */
   public static final String HTTP_SERVER_NAME = "http.server_name";
   /** The matched route (path template). */
   public static final String HTTP_ROUTE = "http.route";
   /** The IP address of the original client behind all proxies, if known. */
   public static final String HTTP_CLIENT_IP = "http.client_ip";
-  /** Value of the HTTP "User-Agent" header sent by the client. */
-  public static final String HTTP_USER_AGENT = "http.user_agent";
   /** The service name, must be equal to the $service part in the span name. */
   public static final String RPC_SERVICE = "rpc.service";
   /** RPC span event attribute with value "SENT" or "RECEIVED". */
@@ -87,5 +91,5 @@ public final class SemanticConventions {
   /** JDBC substring like "mysql://db.example.com:3306" */
   public static final String DB_URL = "db.url";
 
-  private SemanticConventions() {}
+  private SemanticAttributes() {}
 }
