@@ -72,18 +72,10 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     }
   }
 
-  static DoubleMeasure.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    return new Builder(name, meterProviderSharedState, meterSharedState);
-  }
-
-  private static final class Builder
-      extends AbstractMeasure.Builder<DoubleMeasure.Builder, DoubleMeasure>
+  static final class Builder extends AbstractMeasure.Builder<DoubleMeasure.Builder, DoubleMeasure>
       implements DoubleMeasure.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
@@ -96,7 +88,7 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     }
 
     @Override
-    public DoubleMeasure build() {
+    public DoubleMeasureSdk build() {
       return new DoubleMeasureSdk(
           getInstrumentDescriptor(),
           getMeterProviderSharedState(),

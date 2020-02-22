@@ -23,6 +23,7 @@ import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,7 +37,9 @@ public class LongMeasureSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   private static final Resource RESOURCE =
-      Resource.create(Collections.singletonMap("resource_key", "resource_value"));
+      Resource.create(
+          Collections.singletonMap(
+              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.LongMeasureSdkTest", null);
   private final TestClock testClock = TestClock.create();
@@ -60,7 +63,7 @@ public class LongMeasureSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongMeasureSdk longMeasure = (LongMeasureSdk) testSdk.longMeasureBuilder("testMeasure").build();
+    LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
     BoundLongMeasure boundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
     try {
       longMeasure.collect();

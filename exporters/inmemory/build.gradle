@@ -1,3 +1,10 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
 description = 'OpenTelemetry InMemory Export'
 ext.moduleName = "io.opentelemetry.exporters.inmemory"
 
@@ -5,4 +12,7 @@ dependencies {
     api project(':opentelemetry-sdk')
 
     testImplementation "com.google.protobuf:protobuf-java:${protobufVersion}"
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }

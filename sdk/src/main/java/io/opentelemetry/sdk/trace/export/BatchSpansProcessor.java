@@ -97,7 +97,12 @@ public final class BatchSpansProcessor implements SpanProcessor {
   @Override
   public void shutdown() {
     workerThread.interrupt();
-    worker.flush();
+    worker.shutdown();
+  }
+
+  @Override
+  public void forceFlush() {
+    worker.forceFlush();
   }
 
   /**
@@ -335,7 +340,12 @@ public final class BatchSpansProcessor implements SpanProcessor {
       }
     }
 
-    private void flush() {
+    private void shutdown() {
+      forceFlush();
+      executorService.shutdown();
+    }
+
+    private void forceFlush() {
       ArrayList<ReadableSpan> spansCopy;
       synchronized (monitor) {
         spansCopy = new ArrayList<>(spansList);
@@ -343,7 +353,6 @@ public final class BatchSpansProcessor implements SpanProcessor {
       }
       // Execute the batch export outside the synchronized to not block all producers.
       exportBatches(spansCopy);
-      executorService.shutdown();
     }
 
     private void exportBatches(ArrayList<ReadableSpan> spanList) {

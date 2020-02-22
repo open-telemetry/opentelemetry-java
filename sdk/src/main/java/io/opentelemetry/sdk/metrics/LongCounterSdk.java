@@ -72,18 +72,10 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
     }
   }
 
-  static LongCounter.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    return new Builder(name, meterProviderSharedState, meterSharedState);
-  }
-
-  private static final class Builder
-      extends AbstractCounter.Builder<LongCounter.Builder, LongCounter>
+  static final class Builder extends AbstractCounter.Builder<LongCounter.Builder, LongCounter>
       implements LongCounter.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
@@ -96,7 +88,7 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
     }
 
     @Override
-    public LongCounter build() {
+    public LongCounterSdk build() {
       return new LongCounterSdk(
           getInstrumentDescriptor(),
           getMeterProviderSharedState(),

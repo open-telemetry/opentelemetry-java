@@ -1,3 +1,10 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
 description = 'OpenTelemetry Contrib Trace Utils'
 ext.moduleName = "io.opentelemetry.contrib.trace"
 

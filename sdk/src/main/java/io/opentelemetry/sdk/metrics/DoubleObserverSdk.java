@@ -38,18 +38,11 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     throw new UnsupportedOperationException("to be implemented");
   }
 
-  static DoubleObserver.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    return new Builder(name, meterProviderSharedState, meterSharedState);
-  }
-
-  private static final class Builder
+  static final class Builder
       extends AbstractObserver.Builder<DoubleObserver.Builder, DoubleObserver>
       implements DoubleObserver.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
@@ -62,7 +55,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     }
 
     @Override
-    public DoubleObserver build() {
+    public DoubleObserverSdk build() {
       return new DoubleObserverSdk(
           getInstrumentDescriptor(),
           getMeterProviderSharedState(),

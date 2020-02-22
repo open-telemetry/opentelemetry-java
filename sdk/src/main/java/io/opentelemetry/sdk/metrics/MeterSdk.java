@@ -17,13 +17,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.BatchRecorder;
-import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import java.util.Map;
@@ -45,33 +39,33 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public DoubleCounter.Builder doubleCounterBuilder(String name) {
-    return DoubleCounterSdk.builder(name, meterProviderSharedState, meterSharedState);
+  public DoubleCounterSdk.Builder doubleCounterBuilder(String name) {
+    return new DoubleCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public LongCounter.Builder longCounterBuilder(String name) {
-    return LongCounterSdk.builder(name, meterProviderSharedState, meterSharedState);
+  public LongCounterSdk.Builder longCounterBuilder(String name) {
+    return new LongCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
-    return DoubleMeasureSdk.builder(name, meterProviderSharedState, meterSharedState);
+  public DoubleMeasureSdk.Builder doubleMeasureBuilder(String name) {
+    return new DoubleMeasureSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public LongMeasure.Builder longMeasureBuilder(String name) {
-    return LongMeasureSdk.builder(name, meterProviderSharedState, meterSharedState);
+  public LongMeasureSdk.Builder longMeasureBuilder(String name) {
+    return new LongMeasureSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public DoubleObserver.Builder doubleObserverBuilder(String name) {
-    return DoubleObserverSdk.builder(name, meterProviderSharedState, meterSharedState);
+  public DoubleObserverSdk.Builder doubleObserverBuilder(String name) {
+    return new DoubleObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public LongObserver.Builder longObserverBuilder(String name) {
-    return LongObserverSdk.builder(name, meterProviderSharedState, meterSharedState);
+  public LongObserverSdk.Builder longObserverBuilder(String name) {
+    return new LongObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override

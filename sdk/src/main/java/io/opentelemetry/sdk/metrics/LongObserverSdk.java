@@ -38,18 +38,10 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     throw new UnsupportedOperationException("to be implemented");
   }
 
-  static LongObserver.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    return new Builder(name, meterProviderSharedState, meterSharedState);
-  }
-
-  private static final class Builder
-      extends AbstractObserver.Builder<LongObserver.Builder, LongObserver>
+  static final class Builder extends AbstractObserver.Builder<LongObserver.Builder, LongObserver>
       implements LongObserver.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
@@ -62,7 +54,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     }
 
     @Override
-    public LongObserver build() {
+    public LongObserverSdk build() {
       return new LongObserverSdk(
           getInstrumentDescriptor(),
           getMeterProviderSharedState(),
