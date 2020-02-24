@@ -107,7 +107,6 @@ public class DisruptorAsyncSpanProcessorTest {
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    disruptorAsyncSpanProcessor.forceFlush();
     disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(1);
@@ -139,7 +138,7 @@ public class DisruptorAsyncSpanProcessorTest {
     disruptorAsyncSpanProcessor.forceFlush();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
-    assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(0);
+    assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(1);
     disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
@@ -150,17 +149,17 @@ public class DisruptorAsyncSpanProcessorTest {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor();
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
-    for (int i = 0; i < tenK; i++) {
+    for (int i = 1; i <= tenK; i++) {
       disruptorAsyncSpanProcessor.onStart(readableSpan);
       disruptorAsyncSpanProcessor.onEnd(readableSpan);
       if (i % 10 == 0) {
         disruptorAsyncSpanProcessor.forceFlush();
       }
     }
-    disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(tenK / 10);
+    disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 
@@ -175,7 +174,6 @@ public class DisruptorAsyncSpanProcessorTest {
             .build();
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    disruptorAsyncSpanProcessor.forceFlush();
     disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor1.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor1.getCounterOnEnd()).isEqualTo(1);
