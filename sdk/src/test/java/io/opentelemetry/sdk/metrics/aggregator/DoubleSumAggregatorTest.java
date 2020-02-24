@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import java.util.Collections;
 import org.junit.Test;

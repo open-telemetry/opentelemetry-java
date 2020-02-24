@@ -36,7 +36,7 @@ public class LongSummaryAggregator extends AbstractAggregator {
 
   // The current value. This controls its own internal thread-safety via method access. Don't
   // try to use its fields directly.
-  private final Summary current = new Summary();
+  private final LongSummary current = new LongSummary();
 
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;
@@ -46,7 +46,7 @@ public class LongSummaryAggregator extends AbstractAggregator {
   void doMergeAndReset(Aggregator target) {
     LongSummaryAggregator other = (LongSummaryAggregator) target;
 
-    Summary copy = current.copyAndReset();
+    LongSummary copy = current.copyAndReset();
     other.current.update(copy.count, copy.sum, copy.min, copy.max);
   }
 
@@ -61,7 +61,7 @@ public class LongSummaryAggregator extends AbstractAggregator {
     current.record(value);
   }
 
-  private static class Summary {
+  private static class LongSummary {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     @GuardedBy("lock")
@@ -114,8 +114,8 @@ public class LongSummaryAggregator extends AbstractAggregator {
       }
     }
 
-    private Summary copyAndReset() {
-      Summary copy = new Summary();
+    private LongSummary copyAndReset() {
+      LongSummary copy = new LongSummary();
       lock.writeLock().lock();
       try {
         copy.count = count;
@@ -132,7 +132,7 @@ public class LongSummaryAggregator extends AbstractAggregator {
       return copy;
     }
 
-    private Point toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
+    private LongSummaryPoint toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
       lock.readLock().lock();
       try {
         return LongSummaryPoint.create(startEpochNanos, epochNanos, labels, count, sum, min, max);
