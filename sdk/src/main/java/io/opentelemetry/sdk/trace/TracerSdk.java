@@ -24,14 +24,10 @@ import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.propagation.BinaryTraceContext;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public final class TracerSdk implements Tracer {
-  private static final BinaryFormat<SpanContext> BINARY_FORMAT = new BinaryTraceContext();
-  private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final TracerSharedState sharedState;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
@@ -67,12 +63,12 @@ public final class TracerSdk implements Tracer {
 
   @Override
   public BinaryFormat<SpanContext> getBinaryFormat() {
-    return BINARY_FORMAT;
+    return sharedState.getBinaryFormat();
   }
 
   @Override
   public HttpTextFormat<SpanContext> getHttpTextFormat() {
-    return HTTP_TEXT_FORMAT;
+    return sharedState.getTextFormat();
   }
 
   /**

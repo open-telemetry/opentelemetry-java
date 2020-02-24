@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.context.propagation.BinaryFormat;
+import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -24,8 +26,11 @@ import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
+import io.opentelemetry.trace.propagation.BinaryTraceContext;
+import io.opentelemetry.trace.propagation.HttpTraceContext;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,8 +55,14 @@ public class TracerSdkProvider implements TracerProvider {
     return new Builder();
   }
 
-  private TracerSdkProvider(Clock clock, IdsGenerator idsGenerator, Resource resource) {
-    this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
+  private TracerSdkProvider(
+      Clock clock,
+      IdsGenerator idsGenerator,
+      Resource resource,
+      HttpTextFormat<SpanContext> textFormat,
+      BinaryFormat<SpanContext> binaryFormat) {
+    this.sharedState =
+        new TracerSharedState(clock, idsGenerator, resource, textFormat, binaryFormat);
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
 
@@ -124,6 +135,8 @@ public class TracerSdkProvider implements TracerProvider {
     private Clock clock = MillisClock.getInstance();
     private IdsGenerator idsGenerator = new RandomIdsGenerator();
     private Resource resource = EnvVarResource.getResource();
+    private HttpTextFormat<SpanContext> textFormat = HttpTraceContext.getInstance();
+    private BinaryFormat<SpanContext> binaryFormat = BinaryTraceContext.getInstance();
 
     /**
      * Assign a {@link Clock}.
@@ -163,12 +176,36 @@ public class TracerSdkProvider implements TracerProvider {
     }
 
     /**
-     * Create a new TracerSdkFactory instance.
+     * Assign an {@link HttpTextFormat}.
      *
-     * @return An initialized TracerSdkFactory.
+     * @param textFormat The text format to use for propagation.
+     * @return this
+     */
+    public Builder setTextFormat(HttpTextFormat<SpanContext> textFormat) {
+      Utils.checkNotNull(textFormat, "textFormat");
+      this.textFormat = textFormat;
+      return this;
+    }
+
+    /**
+     * Assign a {@link BinaryFormat}.
+     *
+     * @param binaryFormat The binary format to use for propagation.
+     * @return this
+     */
+    public Builder setBinaryFormat(BinaryFormat<SpanContext> binaryFormat) {
+      Utils.checkNotNull(binaryFormat, "binaryFormat");
+      this.binaryFormat = binaryFormat;
+      return this;
+    }
+
+    /**
+     * Create a new TracerSdkProvider instance.
+     *
+     * @return An initialized TracerSdkProvider.
      */
     public TracerSdkProvider build() {
-      return new TracerSdkProvider(clock, idsGenerator, resource);
+      return new TracerSdkProvider(clock, idsGenerator, resource, textFormat, binaryFormat);
     }
 
     private Builder() {}

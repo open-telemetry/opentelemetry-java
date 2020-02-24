@@ -19,12 +19,15 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.context.propagation.BinaryFormat;
+import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -78,6 +81,36 @@ public class TracerSdkProviderTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("idsGenerator");
     TracerSdkProvider.builder().setIdsGenerator(null);
+  }
+
+  @Test
+  public void builder_NullTextFormat() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("textFormat");
+    TracerSdkProvider.builder().setTextFormat(null);
+  }
+
+  @Test
+  public void builder_NullBinaryFormat() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("binaryFormat");
+    TracerSdkProvider.builder().setBinaryFormat(null);
+  }
+
+  @Test
+  public void builder_setTextFormat() {
+    @SuppressWarnings("unchecked")
+    final HttpTextFormat<SpanContext> format = Mockito.mock(HttpTextFormat.class);
+    final TracerSdkProvider registry = TracerSdkProvider.builder().setTextFormat(format).build();
+    assertThat(registry.get("test").getHttpTextFormat()).isSameInstanceAs(format);
+  }
+
+  @Test
+  public void builder_setBinaryFormat() {
+    @SuppressWarnings("unchecked")
+    final BinaryFormat<SpanContext> format = Mockito.mock(BinaryFormat.class);
+    final TracerSdkProvider registry = TracerSdkProvider.builder().setBinaryFormat(format).build();
+    assertThat(registry.get("test").getBinaryFormat()).isSameInstanceAs(format);
   }
 
   @Test

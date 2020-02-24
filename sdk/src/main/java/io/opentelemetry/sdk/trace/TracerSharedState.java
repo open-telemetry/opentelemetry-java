@@ -16,9 +16,12 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.context.propagation.BinaryFormat;
+import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.trace.SpanContext;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.concurrent.GuardedBy;
@@ -29,6 +32,8 @@ final class TracerSharedState {
   private final Clock clock;
   private final IdsGenerator idsGenerator;
   private final Resource resource;
+  private final HttpTextFormat<SpanContext> textFormat;
+  private final BinaryFormat<SpanContext> binaryFormat;
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
@@ -39,10 +44,17 @@ final class TracerSharedState {
   @GuardedBy("lock")
   private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
 
-  TracerSharedState(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+  TracerSharedState(
+      Clock clock,
+      IdsGenerator idsGenerator,
+      Resource resource,
+      HttpTextFormat<SpanContext> textFormat,
+      BinaryFormat<SpanContext> binaryFormat) {
     this.clock = clock;
     this.idsGenerator = idsGenerator;
     this.resource = resource;
+    this.textFormat = textFormat;
+    this.binaryFormat = binaryFormat;
   }
 
   Clock getClock() {
@@ -55,6 +67,10 @@ final class TracerSharedState {
 
   Resource getResource() {
     return resource;
+  }
+
+  HttpTextFormat<SpanContext> getTextFormat() {
+    return textFormat;
   }
 
   /**
@@ -116,5 +132,9 @@ final class TracerSharedState {
       activeSpanProcessor.shutdown();
       isStopped = true;
     }
+  }
+
+  public BinaryFormat<SpanContext> getBinaryFormat() {
+    return binaryFormat;
   }
 }

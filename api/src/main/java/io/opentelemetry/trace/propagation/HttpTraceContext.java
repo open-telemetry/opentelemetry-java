@@ -63,6 +63,12 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   private static final Pattern TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN =
       Pattern.compile("[ \t]*" + TRACESTATE_ENTRY_DELIMITER + "[ \t]*");
 
+  private static final HttpTraceContext INSTANCE = new HttpTraceContext();
+
+  public static HttpTraceContext getInstance() {
+    return INSTANCE;
+  }
+
   @Override
   public List<String> fields() {
     return FIELDS;

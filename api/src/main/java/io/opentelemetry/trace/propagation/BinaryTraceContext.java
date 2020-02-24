@@ -93,6 +93,12 @@ public final class BinaryTraceContext implements BinaryFormat<SpanContext> {
   private static final int ALL_FORMAT_LENGTH =
       REQUIRED_FORMAT_LENGTH + ID_SIZE + TraceFlags.getSize();
 
+  private static final BinaryTraceContext INSTANCE = new BinaryTraceContext();
+
+  public static BinaryTraceContext getInstance() {
+    return INSTANCE;
+  }
+
   @Override
   public byte[] toByteArray(SpanContext spanContext) {
     Utils.checkNotNull(spanContext, "spanContext");
