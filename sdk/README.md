@@ -1,4 +1,4 @@
 OpenTelemetry SDK
 ======================================================
 
-* Java 7 and Android API Level 24 required.
+* Java 7 and Android 7.0 (API level 24)required.
