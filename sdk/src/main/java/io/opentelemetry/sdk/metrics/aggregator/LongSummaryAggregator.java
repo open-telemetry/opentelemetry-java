@@ -132,7 +132,8 @@ public class LongSummaryAggregator extends AbstractAggregator {
       return copy;
     }
 
-    private LongSummaryPoint toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
+    private LongSummaryPoint toPoint(
+        long startEpochNanos, long epochNanos, Map<String, String> labels) {
       lock.readLock().lock();
       try {
         return LongSummaryPoint.create(startEpochNanos, epochNanos, labels, count, sum, min, max);

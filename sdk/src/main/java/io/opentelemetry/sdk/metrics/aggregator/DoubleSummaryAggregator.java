@@ -132,7 +132,8 @@ public class DoubleSummaryAggregator extends AbstractAggregator {
       return copy;
     }
 
-    private DoubleSummaryPoint toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
+    private DoubleSummaryPoint toPoint(
+        long startEpochNanos, long epochNanos, Map<String, String> labels) {
       lock.readLock().lock();
       try {
         return DoubleSummaryPoint.create(startEpochNanos, epochNanos, labels, count, sum, min, max);
