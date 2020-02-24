@@ -81,7 +81,7 @@ public class LongSummaryAggregatorTest {
     final LongSummaryAggregator summarizer = new LongSummaryAggregator();
     int numberOfThreads = 10;
     final long[] updates = new long[]{1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
-    final int numberOfUpdates = 100;
+    final int numberOfUpdates = 1000;
     final CountDownLatch startingGun = new CountDownLatch(numberOfThreads);
     List<Thread> workers = new ArrayList<>();
     for (int i = 0; i < numberOfThreads; i++) {
@@ -120,7 +120,7 @@ public class LongSummaryAggregatorTest {
     assertThat(summarizer.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             LongSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), numberOfThreads * numberOfUpdates, 10100, 1L, 23L));
+                0, 100, Collections.<String, String>emptyMap(), numberOfThreads * numberOfUpdates, 101000, 1L, 23L));
 
   }
 }
