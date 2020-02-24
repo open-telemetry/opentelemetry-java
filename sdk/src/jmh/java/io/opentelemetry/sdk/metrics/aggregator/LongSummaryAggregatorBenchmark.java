@@ -67,5 +67,4 @@ public class LongSummaryAggregatorBenchmark {
   public void aggregate_1Threads() {
     aggregator.recordLong(100);
   }
-
 }

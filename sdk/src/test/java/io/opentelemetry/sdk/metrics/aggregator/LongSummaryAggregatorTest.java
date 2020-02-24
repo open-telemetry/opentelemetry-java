@@ -80,30 +80,31 @@ public class LongSummaryAggregatorTest {
     final LongSummaryAggregator aggregator = new LongSummaryAggregator();
     final LongSummaryAggregator summarizer = new LongSummaryAggregator();
     int numberOfThreads = 10;
-    final long[] updates = new long[]{1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
+    final long[] updates = new long[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
     final int numberOfUpdates = 1000;
     final CountDownLatch startingGun = new CountDownLatch(numberOfThreads);
     List<Thread> workers = new ArrayList<>();
     for (int i = 0; i < numberOfThreads; i++) {
       final int index = i;
-      Thread t = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          long update = updates[index];
-          try {
-            startingGun.await();
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-          }
-          for (int j = 0; j < numberOfUpdates; j++) {
-            aggregator.recordLong(update);
-            if (ThreadLocalRandom.current().nextInt(10) == 0) {
-              aggregator.mergeToAndReset(summarizer);
-            }
-          }
-
-        }
-      });
+      Thread t =
+          new Thread(
+              new Runnable() {
+                @Override
+                public void run() {
+                  long update = updates[index];
+                  try {
+                    startingGun.await();
+                  } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                  }
+                  for (int j = 0; j < numberOfUpdates; j++) {
+                    aggregator.recordLong(update);
+                    if (ThreadLocalRandom.current().nextInt(10) == 0) {
+                      aggregator.mergeToAndReset(summarizer);
+                    }
+                  }
+                }
+              });
       workers.add(t);
       t.start();
     }
@@ -114,13 +115,18 @@ public class LongSummaryAggregatorTest {
     for (Thread worker : workers) {
       worker.join();
     }
-    //make sure everything gets merged when all the aggregation is done.
+    // make sure everything gets merged when all the aggregation is done.
     aggregator.mergeToAndReset(summarizer);
 
     assertThat(summarizer.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             LongSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), numberOfThreads * numberOfUpdates, 101000, 1L, 23L));
-
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                numberOfThreads * numberOfUpdates,
+                101000,
+                1L,
+                23L));
   }
 }
