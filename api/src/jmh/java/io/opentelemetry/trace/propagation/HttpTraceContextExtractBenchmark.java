@@ -29,6 +29,7 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -63,10 +64,11 @@ public class HttpTraceContextExtractBenchmark {
   }
 
   @Benchmark
-  @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
+  @BenchmarkMode({Mode.AverageTime})
   @Fork(1)
+  @Measurement(iterations = 15, time = 1)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
-  @Measurement(iterations = 50_000, time = 1, timeUnit = TimeUnit.MILLISECONDS)
   public SpanContext measureExtract() {
     return httpTraceContext.extract(carrier, getter);
   }
