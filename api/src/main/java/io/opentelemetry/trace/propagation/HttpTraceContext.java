@@ -148,7 +148,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
             && traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER;
     if (!isValid) {
       logger.info("Unparseable traceparent header. Returning INVALID span context.");
-      return INVALID_SPAN_CONTEXT;
+      return SpanContext.getInvalid();
     }
 
     try {
@@ -158,7 +158,7 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
       return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
     } catch (IllegalArgumentException e) {
       logger.info("Unparseable traceparent header. Returning INVALID span context.");
-      return INVALID_SPAN_CONTEXT;
+      return SpanContext.getInvalid();
     }
   }
 
