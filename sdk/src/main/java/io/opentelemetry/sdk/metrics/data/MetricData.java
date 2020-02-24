@@ -186,6 +186,35 @@ public abstract class MetricData {
     }
   }
 
+  @Immutable
+  @AutoValue
+  public abstract static class DoubleSummaryPoint extends Point {
+
+    DoubleSummaryPoint() {}
+
+    public abstract long getCount();
+
+    public abstract double getSum();
+
+    @Nullable
+    public abstract Double getMin();
+
+    @Nullable
+    public abstract Double getMax();
+
+    public static DoubleSummaryPoint create(
+        long startEpochNanos,
+        long epochNanos,
+        Map<String, String> labels,
+        long count,
+        double sum,
+        Double min,
+        Double max) {
+      return new AutoValue_MetricData_DoubleSummaryPoint(
+          startEpochNanos, epochNanos, labels, count, sum, min, max);
+    }
+  }
+
   /**
    * {@link Descriptor} defines metadata about the {@code MetricData} type and its schema.
    *
