@@ -50,9 +50,10 @@ public final class TraceShim {
    */
   public static io.opentracing.Tracer createTracerShim(
       TracerProvider tracerProvider, CorrelationContextManager contextManager) {
-    Utils.checkNotNull(tracerProvider, "tracerProvider");
-    Utils.checkNotNull(contextManager, "contextManager");
-    return new TracerShim(new TelemetryInfo(getTracer(tracerProvider), contextManager));
+    return new TracerShim(
+        new TelemetryInfo(
+            getTracer(Utils.checkNotNull(tracerProvider, "tracerProvider")),
+            Utils.checkNotNull(contextManager, "contextManager")));
   }
 
   private static Tracer getTracer(TracerProvider tracerProvider) {
