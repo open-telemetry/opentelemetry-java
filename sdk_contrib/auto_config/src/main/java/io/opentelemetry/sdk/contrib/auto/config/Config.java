@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ package io.opentelemetry.sdk.contrib.auto.config;
 public interface Config {
   /**
    * Returns the string configuration property corresponding to a key. If the underlying
-   * implementation cannot find a property for the key, <code>defaultValue</code> is returned.
+   * implementation cannot find a property for the key, {@code defaultValue} is returned.
    *
    * @param key The config key
    * @param defaultValue The value to use if no configuration property couldn't be found
@@ -37,8 +37,8 @@ public interface Config {
   String getString(String key, String defaultValue);
 
   /**
-   * Returns the <code>int</code> configuration property corresponding to a key. If the underlying
-   * implementation cannot find a property for the key, <code>defaultValue</code> is returned.
+   * Returns the {@code int} configuration property corresponding to a key. If the underlying
+   * implementation cannot find a property for the key, {@code defaultValue} is returned.
    *
    * @param key The config key
    * @param defaultValue The value to use if no configuration property couldn't be found
@@ -47,8 +47,8 @@ public interface Config {
   int getInt(String key, int defaultValue);
 
   /**
-   * Returns the <code>long</code> configuration property corresponding to a key. If the underlying
-   * implementation cannot find a property for the key, <code>defaultValue</code> is returned.
+   * Returns the {@code long} configuration property corresponding to a key. If the underlying
+   * implementation cannot find a property for the key, {@code defaultValue} is returned.
    *
    * @param key The config key
    * @param defaultValue The value to use if no configuration property couldn't be found
@@ -57,9 +57,8 @@ public interface Config {
   long getLong(String key, long defaultValue);
 
   /**
-   * Returns the <code>boolean</code> configuration property corresponding to a key. If the
-   * underlying implementation cannot find a property for the key, <code>defaultValue</code> is
-   * returned.
+   * Returns the {@code boolean} configuration property corresponding to a key. If the underlying
+   * implementation cannot find a property for the key, {@code defaultValue} is returned.
    *
    * @param key The config key
    * @param defaultValue The value to use if no configuration property couldn't be found
@@ -68,9 +67,8 @@ public interface Config {
   boolean getBoolean(String key, boolean defaultValue);
 
   /**
-   * Returns the <code>double</code> configuration property corresponding to a key. If the
-   * underlying implementation cannot find a property for the key, <code>defaultValue</code> is
-   * returned.
+   * Returns the {@code double} configuration property corresponding to a key. If the underlying
+   * implementation cannot find a property for the key, {@code defaultValue} is returned.
    *
    * @param key The config key
    * @param defaultValue The value to use if no configuration property couldn't be found
