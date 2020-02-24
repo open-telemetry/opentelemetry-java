@@ -28,6 +28,7 @@ import io.opentelemetry.trace.TraceState;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
 
@@ -37,6 +38,8 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public class HttpTraceContext implements HttpTextFormat<SpanContext> {
+  private static final Logger logger = Logger.getLogger(HttpTraceContext.class.getName());
+
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
   static final String TRACE_PARENT = "traceparent";
   static final String TRACE_STATE = "tracestate";
@@ -105,53 +108,73 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   public <C /*>>> extends @NonNull Object*/> SpanContext extract(C carrier, Getter<C> getter) {
     checkNotNull(carrier, "carrier");
     checkNotNull(getter, "getter");
-    TraceId traceId;
-    SpanId spanId;
-    TraceFlags traceFlags;
     String traceparent = getter.get(carrier, TRACE_PARENT);
     if (traceparent == null) {
       return SpanContext.getInvalid();
     }
-    try {
-      // TODO(bdrutu): Do we need to verify that version is hex and that for the version
-      // the length is the expected one?
-      checkArgument(
-          traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER
-              && (traceparent.length() == TRACEPARENT_HEADER_SIZE
-                  || (traceparent.length() > TRACEPARENT_HEADER_SIZE
-                      && traceparent.charAt(TRACEPARENT_HEADER_SIZE) == TRACEPARENT_DELIMITER))
-              && traceparent.charAt(SPAN_ID_OFFSET - 1) == TRACEPARENT_DELIMITER
-              && traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER,
-          "Missing or malformed TRACEPARENT.");
 
-      traceId = TraceId.fromLowerBase16(traceparent, TRACE_ID_OFFSET);
-      spanId = SpanId.fromLowerBase16(traceparent, SPAN_ID_OFFSET);
-      traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid traceparent: " + traceparent, e);
+    SpanContext contextFromParentHeader = extractContextFromTraceParent(traceparent);
+    if (!contextFromParentHeader.isValid()) {
+      return contextFromParentHeader;
     }
 
-    String traceState = getter.get(carrier, TRACE_STATE);
+    String traceStateHeader = getter.get(carrier, TRACE_STATE);
+    if (traceStateHeader == null || traceStateHeader.isEmpty()) {
+      return contextFromParentHeader;
+    }
+
     try {
-      if (traceState == null || traceState.isEmpty()) {
-        return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
-      }
-      TraceState.Builder traceStateBuilder = TraceState.builder();
-      String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(traceState);
-      checkArgument(
-          listMembers.length <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");
-      // Iterate in reverse order because when call builder set the elements is added in the
-      // front of the list.
-      for (int i = listMembers.length - 1; i >= 0; i--) {
-        String listMember = listMembers[i];
-        int index = listMember.indexOf(TRACESTATE_KEY_VALUE_DELIMITER);
-        checkArgument(index != -1, "Invalid TraceState list-member format.");
-        traceStateBuilder.set(listMember.substring(0, index), listMember.substring(index + 1));
-      }
+      TraceState traceState = extractTraceState(traceStateHeader);
       return SpanContext.createFromRemoteParent(
-          traceId, spanId, traceFlags, traceStateBuilder.build());
+          contextFromParentHeader.getTraceId(),
+          contextFromParentHeader.getSpanId(),
+          contextFromParentHeader.getTraceFlags(),
+          traceState);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid tracestate: " + traceState, e);
+      logger.info("Unparseable tracestate header. Returning span context without state.");
+      return contextFromParentHeader;
     }
+  }
+
+  private static SpanContext extractContextFromTraceParent(String traceparent) {
+    // TODO(bdrutu): Do we need to verify that version is hex and that
+    // for the version the length is the expected one?
+    boolean isValid =
+        traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER
+            && (traceparent.length() == TRACEPARENT_HEADER_SIZE
+                || (traceparent.length() > TRACEPARENT_HEADER_SIZE
+                    && traceparent.charAt(TRACEPARENT_HEADER_SIZE) == TRACEPARENT_DELIMITER))
+            && traceparent.charAt(SPAN_ID_OFFSET - 1) == TRACEPARENT_DELIMITER
+            && traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER;
+    if (!isValid) {
+      logger.info("Unparseable traceparent header. Returning INVALID span context.");
+      return INVALID_SPAN_CONTEXT;
+    }
+
+    try {
+      TraceId traceId = TraceId.fromLowerBase16(traceparent, TRACE_ID_OFFSET);
+      SpanId spanId = SpanId.fromLowerBase16(traceparent, SPAN_ID_OFFSET);
+      TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
+      return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+    } catch (IllegalArgumentException e) {
+      logger.info("Unparseable traceparent header. Returning INVALID span context.");
+      return INVALID_SPAN_CONTEXT;
+    }
+  }
+
+  private static TraceState extractTraceState(String traceStateHeader) {
+    TraceState.Builder traceStateBuilder = TraceState.builder();
+    String[] listMembers = TRACESTATE_ENTRY_DELIMITER_SPLIT_PATTERN.split(traceStateHeader);
+    checkArgument(
+        listMembers.length <= TRACESTATE_MAX_MEMBERS, "TraceState has too many elements.");
+    // Iterate in reverse order because when call builder set the elements is added in the
+    // front of the list.
+    for (int i = listMembers.length - 1; i >= 0; i--) {
+      String listMember = listMembers[i];
+      int index = listMember.indexOf(TRACESTATE_KEY_VALUE_DELIMITER);
+      checkArgument(index != -1, "Invalid TraceState list-member format.");
+      traceStateBuilder.set(listMember.substring(0, index), listMember.substring(index + 1));
+    }
+    return traceStateBuilder.build();
   }
 }
