@@ -16,20 +16,19 @@
 
 package io.opentelemetry.sdk.contrib.trace.export;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.google.common.truth.Truth.assertThat;
 
 /** Unit tests for {@link DisruptorAsyncSpanProcessor}. */
 @RunWith(JUnit4.class)
@@ -50,7 +49,6 @@ public class DisruptorAsyncSpanProcessorTest {
     private final AtomicInteger counterOnForceFlush = new AtomicInteger(0);
     private final AtomicInteger counterOnExportedForceFlushSpans = new AtomicInteger(0);
     private final AtomicInteger deltaExportedForceFlushSpans = new AtomicInteger(0);
-
 
     @Override
     public void onStart(ReadableSpan span) {
@@ -194,7 +192,7 @@ public class DisruptorAsyncSpanProcessorTest {
     final int tenK = 10000;
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor();
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
-            DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
+        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
     for (int i = 1; i <= tenK; i++) {
       disruptorAsyncSpanProcessor.onStart(readableSpan);
       disruptorAsyncSpanProcessor.onEnd(readableSpan);

@@ -44,20 +44,25 @@ final class DisruptorEventQueue {
   private static final Logger logger = Logger.getLogger(DisruptorEventQueue.class.getName());
   private static final String WORKER_THREAD_NAME = "DisruptorEventQueue_WorkerThread";
   private static final EventTranslatorTwoArg<DisruptorEvent, ReadableSpan, EventType>
-          TRANSLATOR_TWO_ARG =
+      TRANSLATOR_TWO_ARG =
           new EventTranslatorTwoArg<DisruptorEvent, ReadableSpan, EventType>() {
             @Override
             public void translateTo(
-                    DisruptorEvent event, long sequence, ReadableSpan arg0, EventType arg1) {
+                DisruptorEvent event, long sequence, ReadableSpan arg0, EventType arg1) {
               event.setEntry(arg0, arg1);
             }
           };
-  private static final EventTranslatorThreeArg<DisruptorEvent, ReadableSpan, EventType, CountDownLatch>
-          TRANSLATOR_THREE_ARG =
+  private static final EventTranslatorThreeArg<
+          DisruptorEvent, ReadableSpan, EventType, CountDownLatch>
+      TRANSLATOR_THREE_ARG =
           new EventTranslatorThreeArg<DisruptorEvent, ReadableSpan, EventType, CountDownLatch>() {
             @Override
             public void translateTo(
-                    DisruptorEvent event, long sequence, ReadableSpan arg0, EventType arg1, CountDownLatch arg2) {
+                DisruptorEvent event,
+                long sequence,
+                ReadableSpan arg0,
+                EventType arg1,
+                CountDownLatch arg2) {
               event.setEntry(arg0, arg1, arg2);
             }
           };
@@ -183,7 +188,6 @@ final class DisruptorEventQueue {
     @Nullable private EventType eventType = null;
     @Nullable private CountDownLatch flushLatch = null;
 
-
     // Sets the EventQueueEntry associated with this DisruptorEvent.
     void setEntry(@Nullable ReadableSpan readableSpan, @Nullable EventType eventType) {
       this.readableSpan = readableSpan;
@@ -191,7 +195,10 @@ final class DisruptorEventQueue {
       this.flushLatch = null;
     }
 
-    void setEntry(@Nullable ReadableSpan readableSpan, @Nullable EventType eventType, @Nullable CountDownLatch flushLatch) {
+    void setEntry(
+        @Nullable ReadableSpan readableSpan,
+        @Nullable EventType eventType,
+        @Nullable CountDownLatch flushLatch) {
       this.readableSpan = readableSpan;
       this.eventType = eventType;
       this.flushLatch = flushLatch;
@@ -208,7 +215,7 @@ final class DisruptorEventQueue {
     }
 
     void countDownFlushLatch() {
-      if(flushLatch != null){
+      if (flushLatch != null) {
         flushLatch.countDown();
       }
     }
