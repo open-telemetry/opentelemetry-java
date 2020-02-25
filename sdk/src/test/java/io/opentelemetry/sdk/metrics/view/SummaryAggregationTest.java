@@ -33,16 +33,16 @@ public class SummaryAggregationTest {
     assertThat(
             summary.getDescriptorType(
                 InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE))
-        .isEqualTo(Type.NON_MONOTONIC_DOUBLE);
+        .isEqualTo(Type.DOUBLE_SUMMARY);
     assertThat(
             summary.getDescriptorType(
                 InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.LONG))
-        .isEqualTo(Type.NON_MONOTONIC_LONG);
+        .isEqualTo(Type.LONG_SUMMARY);
     assertThat(
             summary.getDescriptorType(InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.DOUBLE))
-        .isEqualTo(Type.MONOTONIC_DOUBLE);
+        .isEqualTo(Type.DOUBLE_SUMMARY);
     assertThat(summary.getDescriptorType(InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.LONG))
-        .isEqualTo(Type.MONOTONIC_LONG);
+        .isEqualTo(Type.LONG_SUMMARY);
   }
 
   @Test

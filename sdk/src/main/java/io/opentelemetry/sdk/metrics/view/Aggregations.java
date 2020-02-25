@@ -100,19 +100,9 @@ public class Aggregations {
     @Override
     public Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      switch (instrumentType) {
-        case MEASURE_ABSOLUTE:
-          return instrumentValueType == InstrumentValueType.LONG
-              ? Type.MONOTONIC_LONG
-              : Type.MONOTONIC_DOUBLE;
-        case MEASURE_NON_ABSOLUTE:
-          return instrumentValueType == InstrumentValueType.LONG
-              ? Type.NON_MONOTONIC_LONG
-              : Type.NON_MONOTONIC_DOUBLE;
-        default:
-          throw new IllegalArgumentException(
-              "Unsupported instrument/value types : " + instrumentType + "/" + instrumentValueType);
-      }
+      return instrumentValueType == InstrumentValueType.LONG
+          ? Type.LONG_SUMMARY
+          : Type.DOUBLE_SUMMARY;
     }
 
     @Override

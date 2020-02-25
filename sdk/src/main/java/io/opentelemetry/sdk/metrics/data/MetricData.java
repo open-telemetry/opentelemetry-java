@@ -260,6 +260,20 @@ public abstract class MetricData {
        * @since 0.1.0
        */
       MONOTONIC_DOUBLE,
+
+      /**
+       * A Summary of measurements of long values, containing the minimum value recorded, the
+       * maximum value recorded, the sum of all measurements and the total number of measurements
+       * recorded.
+       */
+      LONG_SUMMARY,
+
+      /**
+       * A Summary of measurements of double values, containing the minimum value recorded, the
+       * maximum value recorded, the sum of all measurements and the total number of measurements
+       * recorded.
+       */
+      DOUBLE_SUMMARY,
     }
 
     /**
