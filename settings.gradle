@@ -21,6 +21,7 @@ rootProject.name = "opentelemetry-java"
 include ":opentelemetry-all",
         ":opentelemetry-api",
         ":opentelemetry-context-prop",
+        ":opentelemetry-contrib-context-interceptor",
         ":opentelemetry-contrib-runtime-metrics",
         ":opentelemetry-contrib-trace-utils",
         ":opentelemetry-exporters-inmemory",
@@ -40,6 +41,8 @@ project(':opentelemetry-api').projectDir = "$rootDir/api" as File
 project(':opentelemetry-context-prop').projectDir = "$rootDir/context_prop" as File
 project(':opentelemetry-contrib-runtime-metrics').projectDir =
         "$rootDir/contrib/runtime_metrics" as File
+project(':opentelemetry-contrib-context-interceptor').projectDir =
+        "$rootDir/contrib/context_interceptor" as File
 project(':opentelemetry-contrib-trace-utils').projectDir =
         "$rootDir/contrib/trace_utils" as File
 project(':opentelemetry-exporters-inmemory').projectDir =

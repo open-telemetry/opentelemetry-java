@@ -1,0 +1,18 @@
+plugins {
+    id "java"
+    // DO NOT PUBLISH THIS PROTOTYPE
+    // id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry Contrib Context Interceptor'
+ext.moduleName = "io.opentelemetry.contrib.context.interceptor"
+
+dependencies {
+    api project(':opentelemetry-context-prop'),
+            libraries.grpc_context
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+}
