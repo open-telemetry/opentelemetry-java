@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -69,8 +68,8 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public BatchRecorder newBatchRecorder(LabelSet labelSet) {
-    throw new UnsupportedOperationException("to be implemented");
+  public BatchRecorderSdk newBatchRecorder(LabelSet labelSet) {
+    return new BatchRecorderSdk(labelSet);
   }
 
   @Override

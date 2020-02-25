@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleObserver;
@@ -136,6 +137,13 @@ public class MeterSdkTest {
     assertThat(doubleObserver).isInstanceOf(DoubleObserverSdk.class);
 
     // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+  }
+
+  @Test
+  public void testBatchRecorder() {
+    BatchRecorder batchRecorder = testSdk.newBatchRecorder(testSdk.createLabelSet("key", "value"));
+    assertThat(batchRecorder).isNotNull();
+    assertThat(batchRecorder).isInstanceOf(BatchRecorderSdk.class);
   }
 
   @Test
