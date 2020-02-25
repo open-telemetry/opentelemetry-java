@@ -82,6 +82,8 @@ final class DisruptorEventQueue {
   private volatile boolean isShutdown = false;
   private final boolean blocking;
 
+  private static final byte FLUSH_WAITER_COUNTER = 1;
+
   enum EventType {
     ON_START,
     ON_END,
@@ -107,21 +109,8 @@ final class DisruptorEventQueue {
     this.blocking = blocking;
   }
 
-  // Enqueues an event on the {@link DisruptorEventQueue}.
-  void enqueue(ReadableSpan readableSpan, EventType eventType) {
-    if (isShutdown) {
-      if (!loggedShutdownMessage.getAndSet(true)) {
-        logger.info("Attempted to enqueue entry after Disruptor shutdown.");
-      }
-      return;
-    }
-
-    if (blocking) {
-      ringBuffer.publishEvent(TRANSLATOR_TWO_ARG, readableSpan, eventType);
-    } else {
-      // TODO: Record metrics if element not added.
-      ringBuffer.tryPublishEvent(TRANSLATOR_TWO_ARG, readableSpan, eventType);
-    }
+  void enqueue(ReadableSpan readableSpan, EventType eventType){
+    enqueue(readableSpan, eventType, null);
   }
 
   // Enqueues an event on the {@link DisruptorEventQueue}.
@@ -134,10 +123,18 @@ final class DisruptorEventQueue {
     }
 
     if (blocking) {
-      ringBuffer.publishEvent(TRANSLATOR_THREE_ARG, readableSpan, eventType, flushLatch);
+      if (flushLatch == null) {
+        ringBuffer.publishEvent(TRANSLATOR_TWO_ARG, readableSpan, eventType);
+      } else {
+        ringBuffer.publishEvent(TRANSLATOR_THREE_ARG, readableSpan, eventType, flushLatch);
+      }
     } else {
       // TODO: Record metrics if element not added.
-      ringBuffer.tryPublishEvent(TRANSLATOR_THREE_ARG, readableSpan, eventType, flushLatch);
+      if (flushLatch == null) {
+        ringBuffer.tryPublishEvent(TRANSLATOR_TWO_ARG, readableSpan, eventType);
+      } else {
+        ringBuffer.tryPublishEvent(TRANSLATOR_THREE_ARG, readableSpan, eventType, flushLatch);
+      }
     }
   }
 
@@ -170,7 +167,7 @@ final class DisruptorEventQueue {
       if (isShutdown) {
         return;
       }
-      CountDownLatch flushLatch = new CountDownLatch(1);
+      CountDownLatch flushLatch = new CountDownLatch(FLUSH_WAITER_COUNTER);
       enqueue(null, EventType.ON_FORCE_FLUSH, flushLatch);
       try {
         flushLatch.await();
