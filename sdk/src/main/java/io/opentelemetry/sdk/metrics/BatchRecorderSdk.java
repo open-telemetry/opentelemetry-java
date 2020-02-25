@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleMeasure;
@@ -33,7 +34,7 @@ final class BatchRecorderSdk implements BatchRecorder {
   private final LabelSet labelSet;
 
   BatchRecorderSdk(LabelSet labelSet) {
-    this.labelSet = labelSet;
+    this.labelSet = Utils.checkNotNull(labelSet, "labelSet");
   }
 
   @Override

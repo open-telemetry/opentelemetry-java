@@ -52,6 +52,13 @@ public class BatchRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
+  public void batchRecorder_NullLabelSet() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labelSet");
+    testSdk.newBatchRecorder(null).record();
+  }
+
+  @Test
   public void batchRecorder() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
