@@ -42,7 +42,7 @@ public final class TracingContextUtils {
   private static final Span DEFAULT_SPAN = DefaultSpan.getInvalid();
 
   /**
-   * Creates a new {@code Context} with the given value set.
+   * Creates a new {@code Context} with the given {@link Span} set.
    *
    * @param span the value to be set.
    * @return a new context with the given value set.
@@ -53,7 +53,7 @@ public final class TracingContextUtils {
   }
 
   /**
-   * Creates a new {@code Context} with the given value set.
+   * Creates a new {@code Context} with the given {@link Span} set.
    *
    * @param span the value to be set.
    * @param context the parent {@code Context}.
@@ -65,7 +65,7 @@ public final class TracingContextUtils {
   }
 
   /**
-   * Creates a new {@code Context} with the given {@code SpanContext} set.
+   * Creates a new {@code Context} with the given {@link SpanContext} set.
    *
    * @param spanContext the value to be set.
    * @return a new context with the given value set.
@@ -76,7 +76,7 @@ public final class TracingContextUtils {
   }
 
   /**
-   * Creates a new {@code Context} with the given {@code SpanContext} set.
+   * Creates a new {@code Context} with the given {@link SpanContext} set.
    *
    * @param spanContext the value to be set.
    * @param context the parent {@code Context}.
@@ -88,7 +88,7 @@ public final class TracingContextUtils {
   }
 
   /**
-   * Returns the {@code Span} from the current {@code Context}.
+   * Returns the {@link Span} from the current {@code Context}.
    *
    * @return the value from the current {@code Context}.
    * @since 0.1.0
@@ -98,7 +98,7 @@ public final class TracingContextUtils {
   }
 
   /**
-   * Returns the {@code Span} from the specified {@code Context}.
+   * Returns the {@link Span} from the specified {@code Context}.
    *
    * @param context the specified {@code Context}.
    * @return the value from the specified {@code Context}.
@@ -109,8 +109,8 @@ public final class TracingContextUtils {
   }
 
   /**
-   * Returns the {@code Span} from the specified {@code Context}, falling back to a default, no-op
-   * {@code Span}.
+   * Returns the {@link Span} from the specified {@code Context}, falling back to a default, no-op
+   * {@link Span}.
    *
    * @param context the specified {@code Context}.
    * @return the value from the specified {@code Context}.
@@ -146,7 +146,7 @@ public final class TracingContextUtils {
    * Returns the effective {@link SpanContext} from the specified {@code Context}.
    *
    * <p>This method tries to get any effective non-null {@link SpanContext} in {@code Context},
-   * giving higher priority to {@code Span#getContext()} and then falling back to {@code
+   * giving higher priority to {@link Span#getContext()} and then falling back to {@link
    * SpanContext}. If none is found, this method returns {@code null}.
    *
    * @param context the specified {@code Context}.
@@ -163,10 +163,10 @@ public final class TracingContextUtils {
   }
 
   /**
-   * Returns a new {@link Scope} encapsulating the provided {@code Span} added to the current {@code
+   * Returns a new {@link Scope} encapsulating the provided {@link Span} added to the current {@code
    * Context}.
    *
-   * @param span the {@code Span} to be added to the current {@code Context}.
+   * @param span the {@link Span} to be added to the current {@code Context}.
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */

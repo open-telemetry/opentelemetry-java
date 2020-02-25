@@ -34,31 +34,31 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class CorrelationsContextUtils {
-  private static final Context.Key<CorrelationContext> DIST_CONTEXT_KEY =
-      Context.key("opentelemetry-dist-context-key");
+  private static final Context.Key<CorrelationContext> CORR_CONTEXT_KEY =
+      Context.key("opentelemetry-corr-context-key");
   private static final CorrelationContext DEFAULT_VALUE = EmptyCorrelationContext.getInstance();
 
   /**
    * Creates a new {@code Context} with the given value set.
    *
-   * @param distContext the value to be set.
+   * @param corrContext the value to be set.
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withCorrelationContext(CorrelationContext distContext) {
-    return Context.current().withValue(DIST_CONTEXT_KEY, distContext);
+  public static Context withCorrelationContext(CorrelationContext corrContext) {
+    return withCorrelationContext(corrContext, Context.current());
   }
 
   /**
    * Creates a new {@code Context} with the given value set.
    *
-   * @param distContext the value to be set.
+   * @param corrContext the value to be set.
    * @param context the parent {@code Context}.
    * @return a new context with the given value set.
    * @since 0.1.0
    */
-  public static Context withCorrelationContext(CorrelationContext distContext, Context context) {
-    return context.withValue(DIST_CONTEXT_KEY, distContext);
+  public static Context withCorrelationContext(CorrelationContext corrContext, Context context) {
+    return context.withValue(CORR_CONTEXT_KEY, corrContext);
   }
 
   /**
@@ -68,7 +68,7 @@ public final class CorrelationsContextUtils {
    * @since 0.1.0
    */
   public static CorrelationContext getCorrelationContext() {
-    return DIST_CONTEXT_KEY.get();
+    return CORR_CONTEXT_KEY.get();
   }
 
   /**
@@ -79,7 +79,7 @@ public final class CorrelationsContextUtils {
    * @since 0.1.0
    */
   public static CorrelationContext getCorrelationContext(Context context) {
-    return DIST_CONTEXT_KEY.get(context);
+    return CORR_CONTEXT_KEY.get(context);
   }
 
   /**
@@ -88,10 +88,10 @@ public final class CorrelationsContextUtils {
    *
    * @param context the specified {@code Context}.
    * @return the value from the specified {@code Context}.
-   * @since 0.1.0
+   * @since 0.3.0
    */
   public static CorrelationContext getCorrelationContextWithDefault(Context context) {
-    CorrelationContext corrContext = DIST_CONTEXT_KEY.get(context);
+    CorrelationContext corrContext = CORR_CONTEXT_KEY.get(context);
     return corrContext == null ? DEFAULT_VALUE : corrContext;
   }
 
@@ -99,12 +99,12 @@ public final class CorrelationsContextUtils {
    * Returns a new {@link Scope} encapsulating the provided {@code CorrelationContext} added to the
    * current {@code Context}.
    *
-   * @param distContext the {@code CorrelationContext} to be added to the current {@code Context}.
+   * @param corrContext the {@code CorrelationContext} to be added to the current {@code Context}.
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */
-  public static Scope withScopedCorrelationContext(CorrelationContext distContext) {
-    Context context = withCorrelationContext(distContext);
+  public static Scope withScopedCorrelationContext(CorrelationContext corrContext) {
+    Context context = withCorrelationContext(corrContext);
     return ContextUtils.withScopedContext(context);
   }
 

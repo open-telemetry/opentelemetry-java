@@ -28,35 +28,35 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public final class CorrelationsContextUtilsTest {
   @Test
-  public void testGetCurrentDistributedContext_DefaultContext() {
-    CorrelationContext distContext =
+  public void testGetCurrentCorrelationContext_DefaultContext() {
+    CorrelationContext corrContext =
         CorrelationsContextUtils.getCorrelationContext(Context.current());
-    assertThat(distContext).isNull();
+    assertThat(corrContext).isNull();
   }
 
   @Test
-  public void testGetCurrentDistributedContex_DefaultContext_WithoutExplicitContext() {
-    CorrelationContext distContext = CorrelationsContextUtils.getCorrelationContext();
-    assertThat(distContext).isNull();
+  public void testGetCurrentCorrelationContex_DefaultContext_WithoutExplicitContext() {
+    CorrelationContext corrContext = CorrelationsContextUtils.getCorrelationContext();
+    assertThat(corrContext).isNull();
   }
 
   @Test
-  public void testGetCurrentDistributedContextWithDefault_DefaultContext() {
-    CorrelationContext distContext =
+  public void testGetCurrentCorrelationContextWithDefault_DefaultContext() {
+    CorrelationContext corrContext =
         CorrelationsContextUtils.getCorrelationContextWithDefault(Context.current());
-    assertThat(distContext).isNotNull();
-    assertThat(distContext.getEntries()).isEmpty();
+    assertThat(corrContext).isNotNull();
+    assertThat(corrContext.getEntries()).isEmpty();
   }
 
   @Test
-  public void testGetCurrentDistributedContextWithDefault_ContextSetToNull() {
+  public void testGetCurrentCorrelationContextWithDefault_ContextSetToNull() {
     Context orig =
         CorrelationsContextUtils.withCorrelationContext(null, Context.current()).attach();
     try {
-      CorrelationContext distContext =
+      CorrelationContext corrContext =
           CorrelationsContextUtils.getCorrelationContextWithDefault(Context.current());
-      assertThat(distContext).isNotNull();
-      assertThat(distContext.getEntries()).isEmpty();
+      assertThat(corrContext).isNotNull();
+      assertThat(corrContext.getEntries()).isEmpty();
     } finally {
       Context.current().detach(orig);
     }
