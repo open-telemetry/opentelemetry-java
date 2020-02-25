@@ -20,7 +20,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.EventTranslatorThreeArg;
-import com.lmax.disruptor.EventTranslatorTwoArg;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
@@ -43,25 +42,16 @@ import javax.annotation.concurrent.ThreadSafe;
 final class DisruptorEventQueue {
   private static final Logger logger = Logger.getLogger(DisruptorEventQueue.class.getName());
   private static final String WORKER_THREAD_NAME = "DisruptorEventQueue_WorkerThread";
-  private static final EventTranslatorTwoArg<DisruptorEvent, ReadableSpan, EventType>
-      TRANSLATOR_TWO_ARG =
-          new EventTranslatorTwoArg<DisruptorEvent, ReadableSpan, EventType>() {
-            @Override
-            public void translateTo(
-                DisruptorEvent event, long sequence, ReadableSpan arg0, EventType arg1) {
-              event.setEntry(arg0, arg1);
-            }
-          };
   private static final EventTranslatorThreeArg<
-          DisruptorEvent, ReadableSpan, EventType, CountDownLatch>
+          DisruptorEvent, EventType, ReadableSpan, CountDownLatch>
       TRANSLATOR_THREE_ARG =
-          new EventTranslatorThreeArg<DisruptorEvent, ReadableSpan, EventType, CountDownLatch>() {
+          new EventTranslatorThreeArg<DisruptorEvent, EventType, ReadableSpan, CountDownLatch>() {
             @Override
             public void translateTo(
                 DisruptorEvent event,
                 long sequence,
-                ReadableSpan arg0,
-                EventType arg1,
+                EventType arg0,
+                ReadableSpan arg1,
                 CountDownLatch arg2) {
               event.setEntry(arg0, arg1, arg2);
             }
@@ -109,7 +99,7 @@ final class DisruptorEventQueue {
     this.blocking = blocking;
   }
 
-  void enqueue(ReadableSpan readableSpan, EventType eventType){
+  void enqueue(ReadableSpan readableSpan, EventType eventType) {
     enqueue(readableSpan, eventType, null);
   }
 
@@ -123,18 +113,10 @@ final class DisruptorEventQueue {
     }
 
     if (blocking) {
-      if (flushLatch == null) {
-        ringBuffer.publishEvent(TRANSLATOR_TWO_ARG, readableSpan, eventType);
-      } else {
-        ringBuffer.publishEvent(TRANSLATOR_THREE_ARG, readableSpan, eventType, flushLatch);
-      }
+      ringBuffer.publishEvent(TRANSLATOR_THREE_ARG, eventType, readableSpan, flushLatch);
     } else {
       // TODO: Record metrics if element not added.
-      if (flushLatch == null) {
-        ringBuffer.tryPublishEvent(TRANSLATOR_TWO_ARG, readableSpan, eventType);
-      } else {
-        ringBuffer.tryPublishEvent(TRANSLATOR_THREE_ARG, readableSpan, eventType, flushLatch);
-      }
+      ringBuffer.tryPublishEvent(TRANSLATOR_THREE_ARG, eventType, readableSpan, flushLatch);
     }
   }
 
@@ -185,16 +167,9 @@ final class DisruptorEventQueue {
     @Nullable private EventType eventType = null;
     @Nullable private CountDownLatch flushLatch = null;
 
-    // Sets the EventQueueEntry associated with this DisruptorEvent.
-    void setEntry(@Nullable ReadableSpan readableSpan, @Nullable EventType eventType) {
-      this.readableSpan = readableSpan;
-      this.eventType = eventType;
-      this.flushLatch = null;
-    }
-
     void setEntry(
-        @Nullable ReadableSpan readableSpan,
         @Nullable EventType eventType,
+        @Nullable ReadableSpan readableSpan,
         @Nullable CountDownLatch flushLatch) {
       this.readableSpan = readableSpan;
       this.eventType = eventType;
@@ -255,7 +230,7 @@ final class DisruptorEventQueue {
         }
       } finally {
         // Remove the reference to the previous entry to allow the memory to be gc'ed.
-        event.setEntry(null, null);
+        event.setEntry(null, null, null);
       }
     }
   }
