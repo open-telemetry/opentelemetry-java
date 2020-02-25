@@ -85,17 +85,13 @@ public class DoubleSummaryAggregator extends AbstractAggregator {
         this.sum += summary.sum;
         if (this.min == null) {
           this.min = summary.min;
-        } else {
-          if (summary.min != null) {
-            this.min = Math.min(summary.min, this.min);
-          }
+        } else if (summary.min != null) {
+          this.min = Math.min(summary.min, this.min);
         }
         if (this.max == null) {
           this.max = summary.max;
-        } else {
-          if (summary.max != null) {
-            this.max = Math.max(summary.max, this.max);
-          }
+        } else if (summary.max != null) {
+          this.max = Math.max(summary.max, this.max);
         }
       } finally {
         lock.writeLock().unlock();
@@ -107,8 +103,8 @@ public class DoubleSummaryAggregator extends AbstractAggregator {
       try {
         count++;
         sum += value;
-        min = this.min == null ? value : Math.min(value, min);
-        max = this.max == null ? value : Math.max(value, max);
+        min = min == null ? value : Math.min(value, min);
+        max = max == null ? value : Math.max(value, max);
       } finally {
         lock.writeLock().unlock();
       }
