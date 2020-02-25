@@ -47,7 +47,7 @@ public class LongSummaryAggregator extends AbstractAggregator {
     LongSummaryAggregator other = (LongSummaryAggregator) target;
 
     LongSummary copy = current.copyAndReset();
-    other.current.update(copy.count, copy.sum, copy.min, copy.max);
+    other.current.update(copy);
   }
 
   @Nullable
@@ -78,23 +78,23 @@ public class LongSummaryAggregator extends AbstractAggregator {
     @GuardedBy("lock")
     private Long max = null;
 
-    private void update(long count, long sum, Long min, Long max) {
+    private void update(LongSummary summary) {
       lock.writeLock().lock();
       try {
-        this.count += count;
-        this.sum += sum;
+        this.count += summary.count;
+        this.sum += summary.sum;
         if (this.min == null) {
-          this.min = min;
+          this.min = summary.min;
         } else {
-          if (min != null) {
-            this.min = Math.min(min, this.min);
+          if (summary.min != null) {
+            this.min = Math.min(summary.min, this.min);
           }
         }
         if (this.max == null) {
-          this.max = max;
+          this.max = summary.max;
         } else {
-          if (max != null) {
-            this.max = Math.max(max, this.max);
+          if (summary.max != null) {
+            this.max = Math.max(summary.max, this.max);
           }
         }
       } finally {
