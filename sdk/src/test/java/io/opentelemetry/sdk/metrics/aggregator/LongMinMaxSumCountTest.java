@@ -26,11 +26,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Test;
 
-public class LongSummaryAggregatorTest {
+public class LongMinMaxSumCountTest {
 
   @Test
   public void testRecordings() {
-    LongSummaryAggregator aggregator = new LongSummaryAggregator();
+    LongMinMaxSumCount aggregator = new LongMinMaxSumCount();
 
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
@@ -58,10 +58,10 @@ public class LongSummaryAggregatorTest {
 
   @Test
   public void testMergeAndReset() {
-    LongSummaryAggregator aggregator = new LongSummaryAggregator();
+    LongMinMaxSumCount aggregator = new LongMinMaxSumCount();
 
     aggregator.recordLong(100);
-    LongSummaryAggregator mergedToAggregator = new LongSummaryAggregator();
+    LongMinMaxSumCount mergedToAggregator = new LongMinMaxSumCount();
     aggregator.mergeToAndReset(mergedToAggregator);
 
     assertThat(mergedToAggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
@@ -77,8 +77,8 @@ public class LongSummaryAggregatorTest {
 
   @Test
   public void testMultithreadedUpdates() throws Exception {
-    final LongSummaryAggregator aggregator = new LongSummaryAggregator();
-    final LongSummaryAggregator summarizer = new LongSummaryAggregator();
+    final LongMinMaxSumCount aggregator = new LongMinMaxSumCount();
+    final LongMinMaxSumCount summarizer = new LongMinMaxSumCount();
     int numberOfThreads = 10;
     final long[] updates = new long[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
     final int numberOfUpdates = 1000;

@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.metrics.view;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.sdk.metrics.aggregator.DoubleSummaryAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.LongSummaryAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCount;
+import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
@@ -49,9 +49,9 @@ public class SummaryAggregationTest {
   public void getAggregatorFactory() {
     Aggregation summary = Aggregations.summary();
     assertThat(summary.getAggregatorFactory(InstrumentValueType.LONG))
-        .isInstanceOf(LongSummaryAggregator.getFactory().getClass());
+        .isInstanceOf(LongMinMaxSumCount.getFactory().getClass());
     assertThat(summary.getAggregatorFactory(InstrumentValueType.DOUBLE))
-        .isInstanceOf(DoubleSummaryAggregator.getFactory().getClass());
+        .isInstanceOf(DoubleMinMaxSumCount.getFactory().getClass());
   }
 
   @Test

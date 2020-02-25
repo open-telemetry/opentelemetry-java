@@ -26,11 +26,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.Test;
 
-public class DoubleSummaryAggregatorTest {
+public class DoubleMinMaxSumCountTest {
 
   @Test
   public void testRecordings() {
-    DoubleSummaryAggregator aggregator = new DoubleSummaryAggregator();
+    DoubleMinMaxSumCount aggregator = new DoubleMinMaxSumCount();
 
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
@@ -58,10 +58,10 @@ public class DoubleSummaryAggregatorTest {
 
   @Test
   public void testMergeAndReset() {
-    DoubleSummaryAggregator aggregator = new DoubleSummaryAggregator();
+    DoubleMinMaxSumCount aggregator = new DoubleMinMaxSumCount();
 
     aggregator.recordDouble(100);
-    DoubleSummaryAggregator mergedToAggregator = new DoubleSummaryAggregator();
+    DoubleMinMaxSumCount mergedToAggregator = new DoubleMinMaxSumCount();
     aggregator.mergeToAndReset(mergedToAggregator);
 
     assertThat(mergedToAggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
@@ -77,8 +77,8 @@ public class DoubleSummaryAggregatorTest {
 
   @Test
   public void testMultithreadedUpdates() throws Exception {
-    final DoubleSummaryAggregator aggregator = new DoubleSummaryAggregator();
-    final DoubleSummaryAggregator summarizer = new DoubleSummaryAggregator();
+    final DoubleMinMaxSumCount aggregator = new DoubleMinMaxSumCount();
+    final DoubleMinMaxSumCount summarizer = new DoubleMinMaxSumCount();
     int numberOfThreads = 10;
     final double[] updates = new double[] {1.1, 2.1, 3.1, 5.1, 7.1, 11.1, 13.1, 17.1, 19.1, 23.1};
     final int numberOfUpdates = 1000;

@@ -17,10 +17,10 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.DoubleSummaryAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
-import io.opentelemetry.sdk.metrics.aggregator.LongSummaryAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -93,8 +93,8 @@ public class Aggregations {
     @Override
     public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
       return instrumentValueType == InstrumentValueType.LONG
-          ? LongSummaryAggregator.getFactory()
-          : DoubleSummaryAggregator.getFactory();
+          ? LongMinMaxSumCount.getFactory()
+          : DoubleMinMaxSumCount.getFactory();
     }
 
     @Override

@@ -29,13 +29,13 @@ import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
-public class DoubleSummaryAggregatorBenchmark {
+public class LongMinMaxSumCountBenchmark {
 
-  private DoubleSummaryAggregator aggregator;
+  private LongMinMaxSumCount aggregator;
 
   @Setup(Level.Trial)
   public final void setup() {
-    aggregator = new DoubleSummaryAggregator();
+    aggregator = new LongMinMaxSumCount();
   }
 
   @Benchmark
@@ -45,7 +45,7 @@ public class DoubleSummaryAggregatorBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   @Threads(value = 10)
   public void aggregate_10Threads() {
-    aggregator.recordDouble(100.0056);
+    aggregator.recordLong(100);
   }
 
   @Benchmark
@@ -55,7 +55,7 @@ public class DoubleSummaryAggregatorBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   @Threads(value = 5)
   public void aggregate_5Threads() {
-    aggregator.recordDouble(100.0056);
+    aggregator.recordLong(100);
   }
 
   @Benchmark
@@ -65,6 +65,6 @@ public class DoubleSummaryAggregatorBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   @Threads(value = 1)
   public void aggregate_1Threads() {
-    aggregator.recordDouble(100.0056);
+    aggregator.recordLong(100);
   }
 }

@@ -25,12 +25,12 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
-public class LongSummaryAggregator extends AbstractAggregator {
+public final class LongMinMaxSumCount extends AbstractAggregator {
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
         public Aggregator getAggregator() {
-          return new LongSummaryAggregator();
+          return new LongMinMaxSumCount();
         }
       };
 
@@ -44,7 +44,7 @@ public class LongSummaryAggregator extends AbstractAggregator {
 
   @Override
   void doMergeAndReset(Aggregator target) {
-    LongSummaryAggregator other = (LongSummaryAggregator) target;
+    LongMinMaxSumCount other = (LongMinMaxSumCount) target;
 
     LongSummary copy = current.copyAndReset();
     other.current.update(copy);
@@ -61,7 +61,7 @@ public class LongSummaryAggregator extends AbstractAggregator {
     current.record(value);
   }
 
-  private static class LongSummary {
+  private static final class LongSummary {
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     @GuardedBy("lock")
