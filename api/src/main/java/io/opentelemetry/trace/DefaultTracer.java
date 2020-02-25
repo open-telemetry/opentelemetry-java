@@ -23,7 +23,6 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
-import io.opentelemetry.trace.propagation.TracingContextUtils;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 

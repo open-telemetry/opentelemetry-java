@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.correlationcontext.propagation;
+package io.opentelemetry.correlationcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
-import io.opentelemetry.correlationcontext.CorrelationContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

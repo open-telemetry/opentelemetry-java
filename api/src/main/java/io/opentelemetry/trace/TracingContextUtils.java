@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.propagation;
+package io.opentelemetry.trace;
 
 import io.grpc.Context;
+import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.ContextUtils;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.Tracer;
 import javax.annotation.concurrent.Immutable;
 
 /**

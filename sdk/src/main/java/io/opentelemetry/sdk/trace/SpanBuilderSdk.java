@@ -37,7 +37,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.propagation.TracingContextUtils;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

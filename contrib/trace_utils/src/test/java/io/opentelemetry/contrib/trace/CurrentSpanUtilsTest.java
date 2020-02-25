@@ -24,7 +24,7 @@ import io.grpc.Context;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.propagation.TracingContextUtils;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 import org.junit.Before;
 import org.junit.Test;

@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.correlationcontext.propagation;
+package io.opentelemetry.correlationcontext;
 
 import io.grpc.Context;
+import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.ContextUtils;
-import io.opentelemetry.correlationcontext.CorrelationContext;
-import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
 import javax.annotation.concurrent.Immutable;
 
 /**

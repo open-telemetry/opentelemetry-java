@@ -19,7 +19,7 @@ package io.opentelemetry.contrib.trace;
 import io.grpc.Context;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.propagation.TracingContextUtils;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 
 /** Util methods/functionality to interact with the {@link Span} in the {@link io.grpc.Context}. */

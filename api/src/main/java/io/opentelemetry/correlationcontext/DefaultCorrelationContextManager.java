@@ -20,7 +20,6 @@ import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Collections;
 import java.util.List;

@@ -22,8 +22,8 @@ import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
-import io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils;
 
 /**
  * {@link CorrelationContextManagerSdk} is SDK implementation of {@link CorrelationContextManager}.

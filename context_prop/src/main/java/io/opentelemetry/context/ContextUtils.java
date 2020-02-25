@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context.propagation;
+package io.opentelemetry.context;
 
 import io.grpc.Context;
-import io.opentelemetry.context.Scope;
 import javax.annotation.concurrent.Immutable;
 
 /**

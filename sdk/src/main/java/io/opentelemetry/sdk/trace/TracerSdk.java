@@ -25,9 +25,9 @@ import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
-import io.opentelemetry.trace.propagation.TracingContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public final class TracerSdk implements Tracer {
