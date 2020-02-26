@@ -25,56 +25,41 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DoubleSumAggregator}. */
+/** Unit tests for {@link Aggregator}. */
 @RunWith(JUnit4.class)
-public class DoubleSumAggregatorTest {
+public class DoubleLastValueAggregatorTest {
   @Test
   public void factoryAggregation() {
-    AggregatorFactory factory = DoubleSumAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(DoubleSumAggregator.class);
+    AggregatorFactory factory = DoubleLastValueAggregator.getFactory();
+    assertThat(factory.getAggregator()).isInstanceOf(DoubleLastValueAggregator.class);
   }
 
   @Test
   public void toPoint() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
+    Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
     assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
   }
 
   @Test
   public void multipleRecords() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
+    Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
     aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.1);
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(12.1 * 5);
-  }
-
-  @Test
-  public void multipleRecords_WithNegatives() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(-23.2);
-    aggregator.recordDouble(12.1);
-    aggregator.recordDouble(12.3);
-    aggregator.recordDouble(-11.3);
+    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(12.1);
+    aggregator.recordDouble(13.1);
+    aggregator.recordDouble(14.1);
     assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(14.1);
   }
 
   @Test
   public void mergeAndReset() {
-    Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
+    Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
     aggregator.recordDouble(13.1);
-    aggregator.recordDouble(12.1);
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(25.2);
-    Aggregator mergedAggregator = DoubleSumAggregator.getFactory().getAggregator();
+    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(13.1);
+    Aggregator mergedAggregator = DoubleLastValueAggregator.getFactory().getAggregator();
     aggregator.mergeToAndReset(mergedAggregator);
     assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
-    assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(25.2);
+    assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(13.1);
     aggregator.recordDouble(12.1);
-    aggregator.recordDouble(-25.2);
     aggregator.mergeToAndReset(mergedAggregator);
     assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
     assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(12.1);
