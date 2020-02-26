@@ -163,7 +163,6 @@ public class LongMinMaxSumCountTest {
 
   private static List<LongValueAtPercentile> createPercentileValues(long min, long max) {
     return Arrays.asList(
-        LongValueAtPercentile.create(0.0, min),
-        LongValueAtPercentile.create(100.0, max));
+        LongValueAtPercentile.create(0.0, min), LongValueAtPercentile.create(100.0, max));
   }
 }

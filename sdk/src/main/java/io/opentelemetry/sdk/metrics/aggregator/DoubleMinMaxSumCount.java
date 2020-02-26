@@ -143,7 +143,7 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
             labels,
             count,
             sum,
-            min == null || max == null //note: min & max will be null or not null together.
+            min == null || max == null // note: min & max will be null or not null together.
                 ? Collections.<DoubleValueAtPercentile>emptyList()
                 : Arrays.asList(
                     DoubleValueAtPercentile.create(0.0, min),
