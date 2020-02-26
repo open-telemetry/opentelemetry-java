@@ -41,17 +41,35 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
   private static final long DEFAULT_SLEEPING_TIME_NS = 1000 * 1000;
 
   private final DisruptorEventQueue disruptorEventQueue;
+  private final boolean startRequired;
+  private final boolean endRequired;
 
   // TODO: Add metrics for dropped spans.
 
   @Override
   public void onStart(ReadableSpan span) {
+    if (!startRequired) {
+      return;
+    }
     disruptorEventQueue.enqueue(span, EventType.ON_START);
   }
 
   @Override
+  public boolean isStartRequired() {
+    return startRequired;
+  }
+
+  @Override
   public void onEnd(ReadableSpan span) {
+    if (!endRequired) {
+      return;
+    }
     disruptorEventQueue.enqueue(span, EventType.ON_END);
+  }
+
+  @Override
+  public boolean isEndRequired() {
+    return endRequired;
   }
 
   @Override
@@ -128,11 +146,16 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
      */
     public DisruptorAsyncSpanProcessor build() {
       return new DisruptorAsyncSpanProcessor(
-          new DisruptorEventQueue(bufferSize, waitStrategy, spanProcessor, blocking));
+          new DisruptorEventQueue(bufferSize, waitStrategy, spanProcessor, blocking),
+          spanProcessor.isStartRequired(),
+          spanProcessor.isEndRequired());
     }
   }
 
-  private DisruptorAsyncSpanProcessor(DisruptorEventQueue disruptorEventQueue) {
+  private DisruptorAsyncSpanProcessor(
+      DisruptorEventQueue disruptorEventQueue, boolean startRequired, boolean endRequired) {
     this.disruptorEventQueue = disruptorEventQueue;
+    this.startRequired = startRequired;
+    this.endRequired = endRequired;
   }
 }
