@@ -68,11 +68,14 @@ final class DisruptorEventQueue {
   private final Disruptor<DisruptorEvent> disruptor;
   private final RingBuffer<DisruptorEvent> ringBuffer;
   private final AtomicBoolean loggedShutdownMessage = new AtomicBoolean(false);
-  private final CountDownLatch shutdownCounter = new CountDownLatch(1); // only one processor.
   private volatile boolean isShutdown = false;
   private final boolean blocking;
 
-  private static final byte FLUSH_WAITER_COUNTER = 1;
+  /**
+   * Only one consumer for {@link DisruptorEventQueue#forceFlush()} and {@link
+   * DisruptorEventQueue#shutdown()} invocation.
+   */
+  private static final byte NUM_CONSUMERS = 1;
 
   enum EventType {
     ON_START,
@@ -94,7 +97,7 @@ final class DisruptorEventQueue {
             new ThreadFactoryWithName(WORKER_THREAD_NAME),
             ProducerType.MULTI,
             waitStrategy);
-    disruptor.handleEventsWith(new DisruptorEventHandler(spanProcessor, shutdownCounter));
+    disruptor.handleEventsWith(new DisruptorEventHandler(spanProcessor));
     this.ringBuffer = disruptor.start();
     this.blocking = blocking;
   }
@@ -122,26 +125,15 @@ final class DisruptorEventQueue {
 
   // Shuts down the underlying disruptor.
   void shutdown() {
-    if (isShutdown) {
-      return;
-    }
-    synchronized (this) {
-      if (isShutdown) {
-        return;
-      }
-      enqueue(null, EventType.ON_SHUTDOWN);
-      isShutdown = true;
-      try {
-        shutdownCounter.await();
-      } catch (InterruptedException e) {
-        // Preserve the interruption.
-        Thread.currentThread().interrupt();
-        logger.warning("Thread interrupted, shutdown may not finished.");
-      }
-    }
+    enqueueAndLock(EventType.ON_SHUTDOWN);
   }
 
+  // Force to publish the ended spans to the SpanProcessor
   void forceFlush() {
+    enqueueAndLock(EventType.ON_FORCE_FLUSH);
+  }
+
+  void enqueueAndLock(EventType event) {
     if (isShutdown) {
       return;
     }
@@ -149,10 +141,13 @@ final class DisruptorEventQueue {
       if (isShutdown) {
         return;
       }
-      CountDownLatch flushLatch = new CountDownLatch(FLUSH_WAITER_COUNTER);
-      enqueue(null, EventType.ON_FORCE_FLUSH, flushLatch);
+      CountDownLatch shutdownCounter = new CountDownLatch(NUM_CONSUMERS); // only one processor.
+      enqueue(null, event, shutdownCounter);
+      if (event.equals(EventType.ON_SHUTDOWN)) {
+        isShutdown = true;
+      }
       try {
-        flushLatch.await();
+        shutdownCounter.await();
       } catch (InterruptedException e) {
         // Preserve the interruption.
         Thread.currentThread().interrupt();
@@ -195,11 +190,9 @@ final class DisruptorEventQueue {
 
   private static final class DisruptorEventHandler implements EventHandler<DisruptorEvent> {
     private final SpanProcessor spanProcessor;
-    private final CountDownLatch shutdownCounter;
 
-    private DisruptorEventHandler(SpanProcessor spanProcessor, CountDownLatch shutdownCounter) {
+    private DisruptorEventHandler(SpanProcessor spanProcessor) {
       this.spanProcessor = spanProcessor;
-      this.shutdownCounter = shutdownCounter;
     }
 
     @Override
@@ -221,7 +214,7 @@ final class DisruptorEventQueue {
           case ON_SHUTDOWN:
             spanProcessor.forceFlush();
             spanProcessor.shutdown();
-            shutdownCounter.countDown();
+            event.countDownFlushLatch();
             break;
           case ON_FORCE_FLUSH:
             spanProcessor.forceFlush();
