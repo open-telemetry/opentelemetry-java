@@ -54,7 +54,7 @@ public class DoubleCounterSdkBenchmark {
   private static final Meter meter =
       new MeterSdk(METER_PROVIDER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
   private static final DoubleCounter doubleCounter =
-      meter.doubleCounterBuilder("benchmark_long_counter").build();
+      meter.doubleCounterBuilder("benchmark_double_counter").build();
   private static final BoundDoubleCounter boundDoubleCounter =
       doubleCounter.bind(meter.createLabelSet(KEY, VALUE));
 
