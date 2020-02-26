@@ -29,39 +29,42 @@ public class MinMaxSumCountAggregationTest {
 
   @Test
   public void getDescriptorType() {
-    Aggregation summary = Aggregations.minMaxSumCount();
+    Aggregation minMaxSumCount = Aggregations.minMaxSumCount();
     assertThat(
-            summary.getDescriptorType(
+            minMaxSumCount.getDescriptorType(
                 InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE))
         .isEqualTo(Type.DOUBLE_SUMMARY);
     assertThat(
-            summary.getDescriptorType(
+            minMaxSumCount.getDescriptorType(
                 InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.LONG))
         .isEqualTo(Type.LONG_SUMMARY);
     assertThat(
-            summary.getDescriptorType(InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.DOUBLE))
+            minMaxSumCount.getDescriptorType(
+                InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.DOUBLE))
         .isEqualTo(Type.DOUBLE_SUMMARY);
-    assertThat(summary.getDescriptorType(InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.LONG))
+    assertThat(
+            minMaxSumCount.getDescriptorType(
+                InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.LONG))
         .isEqualTo(Type.LONG_SUMMARY);
   }
 
   @Test
   public void getAggregatorFactory() {
-    Aggregation summary = Aggregations.minMaxSumCount();
-    assertThat(summary.getAggregatorFactory(InstrumentValueType.LONG))
+    Aggregation minMaxSumCount = Aggregations.minMaxSumCount();
+    assertThat(minMaxSumCount.getAggregatorFactory(InstrumentValueType.LONG))
         .isInstanceOf(LongMinMaxSumCount.getFactory().getClass());
-    assertThat(summary.getAggregatorFactory(InstrumentValueType.DOUBLE))
+    assertThat(minMaxSumCount.getAggregatorFactory(InstrumentValueType.DOUBLE))
         .isInstanceOf(DoubleMinMaxSumCount.getFactory().getClass());
   }
 
   @Test
   public void availableForInstrument() {
-    Aggregation summary = Aggregations.minMaxSumCount();
+    Aggregation minMaxSumCount = Aggregations.minMaxSumCount();
     for (InstrumentType type : InstrumentType.values()) {
       if (type == InstrumentType.MEASURE_ABSOLUTE || type == InstrumentType.MEASURE_NON_ABSOLUTE) {
-        assertThat(summary.availableForInstrument(type)).isTrue();
+        assertThat(minMaxSumCount.availableForInstrument(type)).isTrue();
       } else {
-        assertThat(summary.availableForInstrument(type)).isFalse();
+        assertThat(minMaxSumCount.availableForInstrument(type)).isFalse();
       }
     }
   }
