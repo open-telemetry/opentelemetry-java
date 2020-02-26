@@ -19,7 +19,9 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleValueAtPercentile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -35,25 +37,45 @@ public class DoubleMinMaxSumCountTest {
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             DoubleSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 0, 0, null, null));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                0,
+                0,
+                Collections.<DoubleValueAtPercentile>emptyList()));
 
     aggregator.recordDouble(100);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             DoubleSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 1, 100, 100d, 100d));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                1,
+                100,
+                createPercentiles(100d, 100d)));
 
     aggregator.recordDouble(50);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             DoubleSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 2, 150, 50d, 100d));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                2,
+                150,
+                createPercentiles(50d, 100d)));
 
     aggregator.recordDouble(-75);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             DoubleSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 3, 75, -75d, 100d));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                3,
+                75,
+                createPercentiles(-75d, 100d)));
   }
 
   @Test
@@ -67,12 +89,22 @@ public class DoubleMinMaxSumCountTest {
     assertThat(mergedToAggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             DoubleSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 1, 100, 100d, 100d));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                1,
+                100,
+                createPercentiles(100d, 100d)));
 
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             DoubleSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 0, 0, null, null));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                0,
+                0,
+                Collections.<DoubleValueAtPercentile>emptyList()));
   }
 
   @Test
@@ -125,7 +157,12 @@ public class DoubleMinMaxSumCountTest {
     assertThat(actual.getLabels()).isEqualTo(Collections.emptyMap());
     assertThat(actual.getCount()).isEqualTo(numberOfThreads * numberOfUpdates);
     assertThat(actual.getSum()).isWithin(0.001).of(102000d);
-    assertThat(actual.getMin()).isEqualTo(1.1d);
-    assertThat(actual.getMax()).isEqualTo(23.1d);
+    List<DoubleValueAtPercentile> percentileValues = actual.getPercentileValues();
+    assertThat(percentileValues).isEqualTo(createPercentiles(1.1d, 23.1d));
+  }
+
+  private static List<DoubleValueAtPercentile> createPercentiles(double min, double max) {
+    return Arrays.asList(
+        DoubleValueAtPercentile.create(0.0, min), DoubleValueAtPercentile.create(100.0, max));
   }
 }

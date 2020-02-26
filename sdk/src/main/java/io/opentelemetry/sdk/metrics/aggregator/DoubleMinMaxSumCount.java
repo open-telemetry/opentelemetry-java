@@ -18,7 +18,10 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoubleValueAtPercentile;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
@@ -26,6 +29,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
 public final class DoubleMinMaxSumCount extends AbstractAggregator {
+
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
@@ -62,6 +66,7 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
   }
 
   private static final class DoubleSummary {
+
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     @GuardedBy("lock")
@@ -132,7 +137,17 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
         long startEpochNanos, long epochNanos, Map<String, String> labels) {
       lock.readLock().lock();
       try {
-        return DoubleSummaryPoint.create(startEpochNanos, epochNanos, labels, count, sum, min, max);
+        return DoubleSummaryPoint.create(
+            startEpochNanos,
+            epochNanos,
+            labels,
+            count,
+            sum,
+            min == null || max == null //note: min & max will be null or not null together.
+                ? Collections.<DoubleValueAtPercentile>emptyList()
+                : Arrays.asList(
+                    DoubleValueAtPercentile.create(0.0, min),
+                    DoubleValueAtPercentile.create(100.0, max)));
       } finally {
         lock.readLock().unlock();
       }

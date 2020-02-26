@@ -19,7 +19,9 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.metrics.data.MetricData.LongSummaryPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.LongValueAtPercentile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -35,25 +37,45 @@ public class LongMinMaxSumCountTest {
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             LongSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 0, 0, null, null));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                0,
+                0,
+                Collections.<LongValueAtPercentile>emptyList()));
 
     aggregator.recordLong(100);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             LongSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 1, 100, 100L, 100L));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                1,
+                100,
+                createPercentileValues(100L, 100L)));
 
     aggregator.recordLong(50);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             LongSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 2, 150, 50L, 100L));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                2,
+                150,
+                createPercentileValues(50L, 100L)));
 
     aggregator.recordLong(-75);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             LongSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 3, 75, -75L, 100L));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                3,
+                75,
+                createPercentileValues(-75L, 100L)));
   }
 
   @Test
@@ -67,12 +89,22 @@ public class LongMinMaxSumCountTest {
     assertThat(mergedToAggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             LongSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 1, 100, 100L, 100L));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                1,
+                100,
+                createPercentileValues(100L, 100L)));
 
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
             LongSummaryPoint.create(
-                0, 100, Collections.<String, String>emptyMap(), 0, 0, null, null));
+                0,
+                100,
+                Collections.<String, String>emptyMap(),
+                0,
+                0,
+                Collections.<LongValueAtPercentile>emptyList()));
   }
 
   @Test
@@ -126,7 +158,12 @@ public class LongMinMaxSumCountTest {
                 Collections.<String, String>emptyMap(),
                 numberOfThreads * numberOfUpdates,
                 101000,
-                1L,
-                23L));
+                createPercentileValues(1L, 23L)));
+  }
+
+  private static List<LongValueAtPercentile> createPercentileValues(long min, long max) {
+    return Arrays.asList(
+        LongValueAtPercentile.create(0.0, min),
+        LongValueAtPercentile.create(100.0, max));
   }
 }
