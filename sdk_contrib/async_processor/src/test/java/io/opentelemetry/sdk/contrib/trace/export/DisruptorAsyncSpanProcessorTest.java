@@ -44,8 +44,11 @@ public class DisruptorAsyncSpanProcessorTest {
   private static class IncrementSpanProcessor implements SpanProcessor {
     private final AtomicInteger counterOnStart = new AtomicInteger(0);
     private final AtomicInteger counterOnEnd = new AtomicInteger(0);
+    private final AtomicInteger counterEndSpans = new AtomicInteger(0);
     private final AtomicInteger counterOnShutdown = new AtomicInteger(0);
     private final AtomicInteger counterOnForceFlush = new AtomicInteger(0);
+    private final AtomicInteger counterOnExportedForceFlushSpans = new AtomicInteger(0);
+    private final AtomicInteger deltaExportedForceFlushSpans = new AtomicInteger(0);
 
     @Override
     public void onStart(ReadableSpan span) {
@@ -55,6 +58,7 @@ public class DisruptorAsyncSpanProcessorTest {
     @Override
     public void onEnd(ReadableSpan span) {
       counterOnEnd.incrementAndGet();
+      counterEndSpans.incrementAndGet();
     }
 
     @Override
@@ -65,6 +69,8 @@ public class DisruptorAsyncSpanProcessorTest {
     @Override
     public void forceFlush() {
       counterOnForceFlush.incrementAndGet();
+      deltaExportedForceFlushSpans.set(counterEndSpans.getAndSet(0));
+      counterOnExportedForceFlushSpans.addAndGet(deltaExportedForceFlushSpans.get());
     }
 
     private int getCounterOnStart() {
@@ -82,6 +88,14 @@ public class DisruptorAsyncSpanProcessorTest {
     private int getCounterOnForceFlush() {
       return counterOnForceFlush.get();
     }
+
+    public int getCounterOnExportedForceFlushSpans() {
+      return counterOnExportedForceFlushSpans.get();
+    }
+
+    public int getDeltaExportedForceFlushSpans() {
+      return deltaExportedForceFlushSpans.get();
+    }
   }
 
   @Test
@@ -93,7 +107,6 @@ public class DisruptorAsyncSpanProcessorTest {
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    disruptorAsyncSpanProcessor.forceFlush();
     disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(1);
@@ -125,7 +138,7 @@ public class DisruptorAsyncSpanProcessorTest {
     disruptorAsyncSpanProcessor.forceFlush();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
-    assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(0);
+    assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(1);
     disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
@@ -136,17 +149,17 @@ public class DisruptorAsyncSpanProcessorTest {
     IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor();
     DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
         DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
-    for (int i = 0; i < tenK; i++) {
+    for (int i = 1; i <= tenK; i++) {
       disruptorAsyncSpanProcessor.onStart(readableSpan);
       disruptorAsyncSpanProcessor.onEnd(readableSpan);
       if (i % 10 == 0) {
         disruptorAsyncSpanProcessor.forceFlush();
       }
     }
-    disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(tenK / 10);
+    disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 
@@ -161,7 +174,6 @@ public class DisruptorAsyncSpanProcessorTest {
             .build();
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
-    disruptorAsyncSpanProcessor.forceFlush();
     disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor1.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor1.getCounterOnEnd()).isEqualTo(1);
@@ -171,5 +183,26 @@ public class DisruptorAsyncSpanProcessorTest {
     assertThat(incrementSpanProcessor2.getCounterOnEnd()).isEqualTo(1);
     assertThat(incrementSpanProcessor2.getCounterOnShutdown()).isEqualTo(1);
     assertThat(incrementSpanProcessor2.getCounterOnForceFlush()).isEqualTo(1);
+  }
+
+  @Test
+  public void multipleForceFlush() {
+    final int tenK = 10000;
+    IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor();
+    DisruptorAsyncSpanProcessor disruptorAsyncSpanProcessor =
+        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor).build();
+    for (int i = 1; i <= tenK; i++) {
+      disruptorAsyncSpanProcessor.onStart(readableSpan);
+      disruptorAsyncSpanProcessor.onEnd(readableSpan);
+      if (i % 100 == 0) {
+        disruptorAsyncSpanProcessor.forceFlush();
+        assertThat(incrementSpanProcessor.getDeltaExportedForceFlushSpans()).isEqualTo(100);
+      }
+    }
+    disruptorAsyncSpanProcessor.shutdown();
+    assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(tenK);
+    assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(tenK);
+    assertThat(incrementSpanProcessor.getCounterOnExportedForceFlushSpans()).isEqualTo(tenK);
+    assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
 }
