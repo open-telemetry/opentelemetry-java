@@ -25,11 +25,11 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import org.junit.Test;
 
-public class SummaryAggregationTest {
+public class MinMaxSumCountAggregationTest {
 
   @Test
   public void getDescriptorType() {
-    Aggregation summary = Aggregations.summary();
+    Aggregation summary = Aggregations.minMaxSumCount();
     assertThat(
             summary.getDescriptorType(
                 InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE))
@@ -47,7 +47,7 @@ public class SummaryAggregationTest {
 
   @Test
   public void getAggregatorFactory() {
-    Aggregation summary = Aggregations.summary();
+    Aggregation summary = Aggregations.minMaxSumCount();
     assertThat(summary.getAggregatorFactory(InstrumentValueType.LONG))
         .isInstanceOf(LongMinMaxSumCount.getFactory().getClass());
     assertThat(summary.getAggregatorFactory(InstrumentValueType.DOUBLE))
@@ -56,7 +56,7 @@ public class SummaryAggregationTest {
 
   @Test
   public void availableForInstrument() {
-    Aggregation summary = Aggregations.summary();
+    Aggregation summary = Aggregations.minMaxSumCount();
     for (InstrumentType type : InstrumentType.values()) {
       if (type == InstrumentType.MEASURE_ABSOLUTE || type == InstrumentType.MEASURE_NON_ABSOLUTE) {
         assertThat(summary.availableForInstrument(type)).isTrue();

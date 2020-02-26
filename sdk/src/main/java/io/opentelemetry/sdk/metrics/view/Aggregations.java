@@ -83,11 +83,11 @@ public class Aggregations {
    * @return an {@code Aggregation} that calculates a simple summary of all recorded measurements.
    * @since 0.3.0
    */
-  public static Aggregation summary() {
-    return Summary.INSTANCE;
+  public static Aggregation minMaxSumCount() {
+    return MinMaxSumCount.INSTANCE;
   }
 
-  private enum Summary implements Aggregation {
+  private enum MinMaxSumCount implements Aggregation {
     INSTANCE;
 
     @Override
