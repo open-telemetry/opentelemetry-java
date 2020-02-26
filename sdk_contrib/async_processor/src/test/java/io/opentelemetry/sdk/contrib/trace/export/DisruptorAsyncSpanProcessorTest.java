@@ -129,6 +129,7 @@ public class DisruptorAsyncSpanProcessorTest {
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
+    disruptorAsyncSpanProcessor.forceFlush();
     disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(1);
@@ -148,6 +149,7 @@ public class DisruptorAsyncSpanProcessorTest {
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
+    disruptorAsyncSpanProcessor.forceFlush();
     disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(1);
@@ -167,6 +169,7 @@ public class DisruptorAsyncSpanProcessorTest {
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
     disruptorAsyncSpanProcessor.onStart(readableSpan);
     disruptorAsyncSpanProcessor.onEnd(readableSpan);
+    disruptorAsyncSpanProcessor.forceFlush();
     disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
@@ -198,7 +201,7 @@ public class DisruptorAsyncSpanProcessorTest {
     disruptorAsyncSpanProcessor.forceFlush();
     assertThat(incrementSpanProcessor.getCounterOnStart()).isEqualTo(0);
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(0);
-    assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(1);
+    assertThat(incrementSpanProcessor.getCounterOnForceFlush()).isEqualTo(0);
     disruptorAsyncSpanProcessor.shutdown();
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
   }
@@ -238,11 +241,11 @@ public class DisruptorAsyncSpanProcessorTest {
     assertThat(incrementSpanProcessor1.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor1.getCounterOnEnd()).isEqualTo(1);
     assertThat(incrementSpanProcessor1.getCounterOnShutdown()).isEqualTo(1);
-    assertThat(incrementSpanProcessor1.getCounterOnForceFlush()).isEqualTo(1);
+    assertThat(incrementSpanProcessor1.getCounterOnForceFlush()).isEqualTo(0);
     assertThat(incrementSpanProcessor2.getCounterOnStart()).isEqualTo(1);
     assertThat(incrementSpanProcessor2.getCounterOnEnd()).isEqualTo(1);
     assertThat(incrementSpanProcessor2.getCounterOnShutdown()).isEqualTo(1);
-    assertThat(incrementSpanProcessor2.getCounterOnForceFlush()).isEqualTo(1);
+    assertThat(incrementSpanProcessor2.getCounterOnForceFlush()).isEqualTo(0);
   }
 
   @Test
