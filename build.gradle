@@ -239,12 +239,10 @@ subprojects {
         // invoke jmh on a single benchmark class like so:
         //   ./gradlew -PjmhIncludeSingleClass=StatsTraceContextBenchmark clean :grpc-core:jmh
         jmh {
-            fork = 1
             failOnError = true
             resultFormat = 'JSON'
-            // None of our benchmarks need the tests, and we have pseudo-circular
-            // dependencies that break when including them. (context's testCompile
-            // depends on core; core's testCompile depends on testing)
+            // Otherwise an error will happen:
+            // Could not expand ZIP 'byte-buddy-agent-1.9.7.jar'.
             includeTests = false
             profilers = ["gc"]
             if (project.hasProperty('jmhIncludeSingleClass')) {
