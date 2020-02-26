@@ -105,7 +105,7 @@ final class DisruptorEventQueue {
   void enqueueStartEvent(ReadableSpan span) {
     if (isShutdown) {
       if (!loggedShutdownMessage.getAndSet(true)) {
-        logger.info("Attempted to enqueue entry after Disruptor shutdown.");
+        logger.info("Attempted to enqueue start event after Disruptor shutdown.");
       }
       return;
     }
@@ -115,7 +115,7 @@ final class DisruptorEventQueue {
   void enqueueEndEvent(ReadableSpan span) {
     if (isShutdown) {
       if (!loggedShutdownMessage.getAndSet(true)) {
-        logger.info("Attempted to enqueue entry after Disruptor shutdown.");
+        logger.info("Attempted to enqueue end event after Disruptor shutdown.");
       }
       return;
     }
@@ -138,6 +138,9 @@ final class DisruptorEventQueue {
   // Force to publish the ended spans to the SpanProcessor
   void forceFlush() {
     if (isShutdown) {
+      if (!loggedShutdownMessage.getAndSet(true)) {
+        logger.info("Attempted to flush after Disruptor shutdown.");
+      }
       return;
     }
     enqueueAndLock(EventType.ON_FORCE_FLUSH);
