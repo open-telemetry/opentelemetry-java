@@ -158,76 +158,8 @@ public abstract class MetricData {
   }
 
   /**
-   * LongSummaryPoint is a single data point that summarizes the values in a time series of long
-   * values.
-   */
-  @Immutable
-  @AutoValue
-  public abstract static class LongSummaryPoint extends Point {
-
-    LongSummaryPoint() {}
-
-    /**
-     * The number of values that are being summarized.
-     *
-     * @return the number of values that are being summarized.
-     */
-    public abstract long getCount();
-
-    /**
-     * The sum of all the values that are being summarized.
-     *
-     * @return the sum of the values that are being summarized.
-     */
-    public abstract long getSum();
-
-    /**
-     * Percentile values in the summarization. Note: a percentile 0.0 represents the minimum value
-     * in the distribution.
-     *
-     * @return the percentiles values.
-     */
-    public abstract List<LongValueAtPercentile> getPercentileValues();
-
-    public static LongSummaryPoint create(
-        long startEpochNanos,
-        long epochNanos,
-        Map<String, String> labels,
-        long count,
-        long sum,
-        List<LongValueAtPercentile> percentileValues) {
-      return new AutoValue_MetricData_LongSummaryPoint(
-          startEpochNanos, epochNanos, labels, count, sum, percentileValues);
-    }
-  }
-
-  @Immutable
-  @AutoValue
-  public abstract static class LongValueAtPercentile {
-    LongValueAtPercentile() {}
-
-    /**
-     * The percentile of a distribution. Must be in the interval [0.0, 100.0].
-     *
-     * @return the percentile.
-     */
-    public abstract double getPercentile();
-
-    /**
-     * The value at the given percentile of a distribution.
-     *
-     * @return the value at the percentile.
-     */
-    public abstract long getValue();
-
-    public static LongValueAtPercentile create(double percentile, long value) {
-      return new AutoValue_MetricData_LongValueAtPercentile(percentile, value);
-    }
-  }
-
-  /**
-   * DoubleSummaryPoint is a single data point that summarizes the values in a time series of double
-   * values.
+   * DoubleSummaryPoint is a single data point that summarizes the values in a time series of
+   * numeric values.
    */
   @Immutable
   @AutoValue
