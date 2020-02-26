@@ -47,6 +47,11 @@ public final class SimpleSpansProcessor implements SpanProcessor {
   }
 
   @Override
+  public boolean isStartRequired() {
+    return false;
+  }
+
+  @Override
   public void onEnd(ReadableSpan span) {
     if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
@@ -57,6 +62,11 @@ public final class SimpleSpansProcessor implements SpanProcessor {
     } catch (Throwable e) {
       logger.log(Level.WARNING, "Exception thrown by the export.", e);
     }
+  }
+
+  @Override
+  public boolean isEndRequired() {
+    return true;
   }
 
   @Override

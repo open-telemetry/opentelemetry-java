@@ -27,7 +27,17 @@ final class NoopSpanProcessor implements SpanProcessor {
   public void onStart(ReadableSpan span) {}
 
   @Override
+  public boolean isStartRequired() {
+    return false;
+  }
+
+  @Override
   public void onEnd(ReadableSpan span) {}
+
+  @Override
+  public boolean isEndRequired() {
+    return false;
+  }
 
   @Override
   public void shutdown() {}
