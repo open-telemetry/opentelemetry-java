@@ -35,6 +35,12 @@ public class LongSumAggregatorTest {
   }
 
   @Test
+  public void toPoint() {
+    Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
+    assertThat(getPoint(aggregator).getValue()).isEqualTo(0);
+  }
+
+  @Test
   public void multipleRecords() {
     Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);

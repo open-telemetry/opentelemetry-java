@@ -19,26 +19,20 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 
 /**
  * Aggregator that aggregates recorded values by storing the last recorded value.
  *
- * <p>Limitations:
- *
- * <ul>
- *   <li>The current implementation does not store a time when the value was recorded, so merging
- *       multiple LastValueAggregators will not preserve the ordering of records. This is not a
- *       problem because LastValueAggregator is currently only available for Observers which record
- *       all values once.
- *   <li>The current implementation does not properly reset the current value, it should use a
- *       {@code null} value instead of 0. This is not a problem because LastValueAggregator is
- *       currently only available for Observers which do not reuse reset instances.
- * </ul>
+ * <p>Limitation: The current implementation does not store a time when the value was recorded, so
+ * merging multiple LastValueAggregators will not preserve the ordering of records. This is not a
+ * problem because LastValueAggregator is currently only available for Observers which record all
+ * values once.
  */
 public final class LongLastValueAggregator extends AbstractAggregator {
 
-  private static final long DEFAULT_VALUE = 0L;
+  @Nullable private static final Long DEFAULT_VALUE = null;
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
@@ -47,7 +41,7 @@ public final class LongLastValueAggregator extends AbstractAggregator {
         }
       };
 
-  private final AtomicLong current = new AtomicLong(DEFAULT_VALUE);
+  private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
   /**
    * Returns an {@link AggregatorFactory} that produces {@link LongLastValueAggregator} instances.
@@ -65,8 +59,12 @@ public final class LongLastValueAggregator extends AbstractAggregator {
   }
 
   @Override
+  @Nullable
   public Point toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
-    return LongPoint.create(startEpochNanos, epochNanos, labels, current.get());
+    @Nullable Long currentValue = current.get();
+    return currentValue == null
+        ? null
+        : LongPoint.create(startEpochNanos, epochNanos, labels, current.get());
   }
 
   @Override

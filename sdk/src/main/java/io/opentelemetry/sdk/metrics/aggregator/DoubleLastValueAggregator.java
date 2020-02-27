@@ -16,29 +16,23 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 
 /**
  * Aggregator that aggregates recorded values by storing the last recorded value.
  *
- * <p>Limitations:
- *
- * <ul>
- *   <li>The current implementation does not store a time when the value was recorded, so merging
- *       multiple LastValueAggregators will not preserve the ordering of records. This is not a
- *       problem because LastValueAggregator is currently only available for Observers which record
- *       all values once.
- *   <li>The current implementation does not properly reset the current value, it should use a
- *       {@code null} value instead of 0. This is not a problem because LastValueAggregator is
- *       currently only available for Observers which do not reuse reset instances.
- * </ul>
+ * <p>Limitation: The current implementation does not store a time when the value was recorded, so
+ * merging multiple LastValueAggregators will not preserve the ordering of records. This is not a
+ * problem because LastValueAggregator is currently only available for Observers which record all
+ * values once.
  */
 public final class DoubleLastValueAggregator extends AbstractAggregator {
 
-  private static final double DEFAULT_VALUE = 0.0;
+  @Nullable private static final Double DEFAULT_VALUE = null;
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
@@ -47,7 +41,7 @@ public final class DoubleLastValueAggregator extends AbstractAggregator {
         }
       };
 
-  private final AtomicDouble current = new AtomicDouble(DEFAULT_VALUE);
+  private final AtomicReference<Double> current = new AtomicReference<>(DEFAULT_VALUE);
 
   /**
    * Returns an {@link AggregatorFactory} that produces {@link DoubleLastValueAggregator} instances.
@@ -65,8 +59,12 @@ public final class DoubleLastValueAggregator extends AbstractAggregator {
   }
 
   @Override
+  @Nullable
   public Point toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
-    return DoublePoint.create(startEpochNanos, epochNanos, labels, current.get());
+    @Nullable Double currentValue = current.get();
+    return currentValue == null
+        ? null
+        : DoublePoint.create(startEpochNanos, epochNanos, labels, currentValue);
   }
 
   @Override

@@ -35,6 +35,12 @@ public class LongLastValueAggregatorTest {
   }
 
   @Test
+  public void toPoint() {
+    Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
+    assertNullPoint(aggregator);
+  }
+
+  @Test
   public void multipleRecords() {
     Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
@@ -51,11 +57,11 @@ public class LongLastValueAggregatorTest {
     assertThat(getPoint(aggregator).getValue()).isEqualTo(13);
     Aggregator mergedAggregator = LongLastValueAggregator.getFactory().getAggregator();
     aggregator.mergeToAndReset(mergedAggregator);
-    assertThat(getPoint(aggregator).getValue()).isEqualTo(0);
+    assertNullPoint(aggregator);
     assertThat(getPoint(mergedAggregator).getValue()).isEqualTo(13);
     aggregator.recordLong(12);
     aggregator.mergeToAndReset(mergedAggregator);
-    assertThat(getPoint(aggregator).getValue()).isEqualTo(0);
+    assertNullPoint(aggregator);
     assertThat(getPoint(mergedAggregator).getValue()).isEqualTo(12);
   }
 
@@ -67,5 +73,10 @@ public class LongLastValueAggregatorTest {
     assertThat(point.getLabels()).containsExactly("key", "value");
     assertThat(point).isInstanceOf(LongPoint.class);
     return (LongPoint) point;
+  }
+
+  private static void assertNullPoint(Aggregator aggregator) {
+    Point point = aggregator.toPoint(12345, 12358, Collections.singletonMap("key", "value"));
+    assertThat(point).isNull();
   }
 }

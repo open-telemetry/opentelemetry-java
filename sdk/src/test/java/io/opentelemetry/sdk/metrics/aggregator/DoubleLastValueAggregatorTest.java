@@ -37,7 +37,7 @@ public class DoubleLastValueAggregatorTest {
   @Test
   public void toPoint() {
     Aggregator aggregator = DoubleLastValueAggregator.getFactory().getAggregator();
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
+    assertNullPoint(aggregator);
   }
 
   @Test
@@ -57,11 +57,11 @@ public class DoubleLastValueAggregatorTest {
     assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(13.1);
     Aggregator mergedAggregator = DoubleLastValueAggregator.getFactory().getAggregator();
     aggregator.mergeToAndReset(mergedAggregator);
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
+    assertNullPoint(aggregator);
     assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(13.1);
     aggregator.recordDouble(12.1);
     aggregator.mergeToAndReset(mergedAggregator);
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
+    assertNullPoint(aggregator);
     assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(12.1);
   }
 
@@ -73,5 +73,10 @@ public class DoubleLastValueAggregatorTest {
     assertThat(point.getLabels()).containsExactly("key", "value");
     assertThat(point).isInstanceOf(DoublePoint.class);
     return (DoublePoint) point;
+  }
+
+  private static void assertNullPoint(Aggregator aggregator) {
+    Point point = aggregator.toPoint(12345, 12358, Collections.singletonMap("key", "value"));
+    assertThat(point).isNull();
   }
 }
