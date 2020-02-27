@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoubleValueAtPercentile;
+import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,7 +36,7 @@ public class DoubleMinMaxSumCountTest {
 
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
-            DoubleSummaryPoint.create(
+            SummaryPoint.create(
                 0,
                 100,
                 Collections.<String, String>emptyMap(),
@@ -47,7 +47,7 @@ public class DoubleMinMaxSumCountTest {
     aggregator.recordDouble(100);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
-            DoubleSummaryPoint.create(
+            SummaryPoint.create(
                 0,
                 100,
                 Collections.<String, String>emptyMap(),
@@ -58,7 +58,7 @@ public class DoubleMinMaxSumCountTest {
     aggregator.recordDouble(50);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
-            DoubleSummaryPoint.create(
+            SummaryPoint.create(
                 0,
                 100,
                 Collections.<String, String>emptyMap(),
@@ -69,7 +69,7 @@ public class DoubleMinMaxSumCountTest {
     aggregator.recordDouble(-75);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
-            DoubleSummaryPoint.create(
+            SummaryPoint.create(
                 0,
                 100,
                 Collections.<String, String>emptyMap(),
@@ -88,7 +88,7 @@ public class DoubleMinMaxSumCountTest {
 
     assertThat(mergedToAggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
-            DoubleSummaryPoint.create(
+            SummaryPoint.create(
                 0,
                 100,
                 Collections.<String, String>emptyMap(),
@@ -98,7 +98,7 @@ public class DoubleMinMaxSumCountTest {
 
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
         .isEqualTo(
-            DoubleSummaryPoint.create(
+            SummaryPoint.create(
                 0,
                 100,
                 Collections.<String, String>emptyMap(),
@@ -150,8 +150,8 @@ public class DoubleMinMaxSumCountTest {
     // make sure everything gets merged when all the aggregation is done.
     aggregator.mergeToAndReset(summarizer);
 
-    DoubleSummaryPoint actual =
-        (DoubleSummaryPoint) summarizer.toPoint(0, 100, Collections.<String, String>emptyMap());
+    SummaryPoint actual =
+        (SummaryPoint) summarizer.toPoint(0, 100, Collections.<String, String>emptyMap());
     assertThat(actual.getStartEpochNanos()).isEqualTo(0);
     assertThat(actual.getEpochNanos()).isEqualTo(100);
     assertThat(actual.getLabels()).isEqualTo(Collections.emptyMap());

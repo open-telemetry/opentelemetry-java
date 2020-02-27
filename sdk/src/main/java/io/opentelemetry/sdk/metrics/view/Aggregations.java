@@ -100,9 +100,7 @@ public class Aggregations {
     @Override
     public Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      return instrumentValueType == InstrumentValueType.LONG
-          ? Type.LONG_SUMMARY
-          : Type.DOUBLE_SUMMARY;
+      return Type.DOUBLE_SUMMARY;
     }
 
     @Override

@@ -158,14 +158,14 @@ public abstract class MetricData {
   }
 
   /**
-   * DoubleSummaryPoint is a single data point that summarizes the values in a time series of
-   * numeric values.
+   * SummaryPoint is a single data point that summarizes the values in a time series of numeric
+   * values.
    */
   @Immutable
   @AutoValue
-  public abstract static class DoubleSummaryPoint extends Point {
+  public abstract static class SummaryPoint extends Point {
 
-    DoubleSummaryPoint() {}
+    SummaryPoint() {}
 
     /**
      * The number of values that are being summarized.
@@ -189,14 +189,14 @@ public abstract class MetricData {
      */
     public abstract List<DoubleValueAtPercentile> getPercentileValues();
 
-    public static DoubleSummaryPoint create(
+    public static SummaryPoint create(
         long startEpochNanos,
         long epochNanos,
         Map<String, String> labels,
         long count,
         double sum,
         List<DoubleValueAtPercentile> percentileValues) {
-      return new AutoValue_MetricData_DoubleSummaryPoint(
+      return new AutoValue_MetricData_SummaryPoint(
           startEpochNanos, epochNanos, labels, count, sum, percentileValues);
     }
   }
@@ -272,14 +272,7 @@ public abstract class MetricData {
       MONOTONIC_DOUBLE,
 
       /**
-       * A Summary of measurements of long values, containing the minimum value recorded, the
-       * maximum value recorded, the sum of all measurements and the total number of measurements
-       * recorded.
-       */
-      LONG_SUMMARY,
-
-      /**
-       * A Summary of measurements of double values, containing the minimum value recorded, the
+       * A Summary of measurements of numberic values, containing the minimum value recorded, the
        * maximum value recorded, the sum of all measurements and the total number of measurements
        * recorded.
        */

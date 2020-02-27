@@ -37,7 +37,7 @@ public class MinMaxSumCountAggregationTest {
     assertThat(
             minMaxSumCount.getDescriptorType(
                 InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.LONG))
-        .isEqualTo(Type.LONG_SUMMARY);
+        .isEqualTo(Type.DOUBLE_SUMMARY);
     assertThat(
             minMaxSumCount.getDescriptorType(
                 InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.DOUBLE))
@@ -45,7 +45,7 @@ public class MinMaxSumCountAggregationTest {
     assertThat(
             minMaxSumCount.getDescriptorType(
                 InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.LONG))
-        .isEqualTo(Type.LONG_SUMMARY);
+        .isEqualTo(Type.DOUBLE_SUMMARY);
   }
 
   @Test

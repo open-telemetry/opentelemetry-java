@@ -17,9 +17,9 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
-import io.opentelemetry.sdk.metrics.data.MetricData.DoubleSummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoubleValueAtPercentile;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -133,11 +133,11 @@ public final class LongMinMaxSumCount extends AbstractAggregator {
       return copy;
     }
 
-    private DoubleSummaryPoint toPoint(
+    private SummaryPoint toPoint(
         long startEpochNanos, long epochNanos, Map<String, String> labels) {
       lock.readLock().lock();
       try {
-        return DoubleSummaryPoint.create(
+        return SummaryPoint.create(
             startEpochNanos,
             epochNanos,
             labels,
