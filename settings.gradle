@@ -43,13 +43,13 @@ project(':opentelemetry-contrib-runtime-metrics').projectDir =
 project(':opentelemetry-contrib-trace-utils').projectDir =
         "$rootDir/contrib/trace_utils" as File
 project(':opentelemetry-exporters-inmemory').projectDir =
-        "$rootDir/exporters/inmemory" as File
+        "$rootDir/exporters/trace/inmemory" as File
 project(':opentelemetry-exporters-jaeger').projectDir =
-        "$rootDir/exporters/jaeger" as File
+        "$rootDir/exporters/trace/jaeger" as File
 project(':opentelemetry-exporters-logging').projectDir =
-        "$rootDir/exporters/logging" as File
+        "$rootDir/exporters/trace/logging" as File
 project(':opentelemetry-exporters-otprotocol').projectDir =
-        "$rootDir/exporters/otprotocol" as File
+        "$rootDir/exporters/trace/otprotocol" as File
 project(':opentelemetry-opentracing-shim').projectDir =
         "$rootDir/opentracing_shim" as File
 project(':opentelemetry-proto').projectDir = "$rootDir/proto" as File

@@ -19,7 +19,7 @@ package io.opentelemetry.opentracingshim.testbed.suspendresumepropagation;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.trace.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Tracer;
 import java.util.List;

@@ -21,7 +21,7 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShi
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByKind;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByKind;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.trace.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentracing.Scope;
