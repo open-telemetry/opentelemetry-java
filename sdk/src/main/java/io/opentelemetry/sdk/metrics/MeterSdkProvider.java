@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import javax.annotation.Nonnull;
 
 /**
@@ -61,11 +62,11 @@ public final class MeterSdkProvider implements MeterProvider {
    */
   public Collection<MetricData> collectAll() {
     Collection<MeterSdk> meters = registry.getComponents();
-    ArrayList<MetricData> ret = new ArrayList<>(meters.size());
+    List<MetricData> result = new ArrayList<>(meters.size());
     for (MeterSdk meter : meters) {
-      ret.addAll(meter.collectAll());
+      result.addAll(meter.collectAll());
     }
-    return Collections.unmodifiableCollection(ret);
+    return Collections.unmodifiableCollection(result);
   }
 
   /**
