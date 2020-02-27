@@ -20,6 +20,7 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
@@ -153,6 +154,74 @@ public abstract class MetricData {
   }
 
   /**
+   * SummaryPoint is a single data point that summarizes the values in a time series of numeric
+   * values.
+   */
+  @Immutable
+  @AutoValue
+  public abstract static class SummaryPoint extends Point {
+
+    SummaryPoint() {}
+
+    /**
+     * The number of values that are being summarized.
+     *
+     * @return the number of values that are being summarized.
+     */
+    public abstract long getCount();
+
+    /**
+     * The sum of all the values that are being summarized.
+     *
+     * @return the sum of the values that are being summarized.
+     */
+    public abstract double getSum();
+
+    /**
+     * Percentile values in the summarization. Note: a percentile 0.0 represents the minimum value
+     * in the distribution.
+     *
+     * @return the percentiles values.
+     */
+    public abstract List<DoubleValueAtPercentile> getPercentileValues();
+
+    public static SummaryPoint create(
+        long startEpochNanos,
+        long epochNanos,
+        Map<String, String> labels,
+        long count,
+        double sum,
+        List<DoubleValueAtPercentile> percentileValues) {
+      return new AutoValue_MetricData_SummaryPoint(
+          startEpochNanos, epochNanos, labels, count, sum, percentileValues);
+    }
+  }
+
+  @Immutable
+  @AutoValue
+  public abstract static class DoubleValueAtPercentile {
+    DoubleValueAtPercentile() {}
+
+    /**
+     * The percentile of a distribution. Must be in the interval [0.0, 100.0].
+     *
+     * @return the percentile.
+     */
+    public abstract double getPercentile();
+
+    /**
+     * The value at the given percentile of a distribution.
+     *
+     * @return the value at the percentile.
+     */
+    public abstract double getValue();
+
+    public static DoubleValueAtPercentile create(double percentile, double value) {
+      return new AutoValue_MetricData_DoubleValueAtPercentile(percentile, value);
+    }
+  }
+
+  /**
    * {@link Descriptor} defines metadata about the {@code MetricData} type and its schema.
    *
    * @since 0.1.0
@@ -160,6 +229,7 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class Descriptor {
+
     Descriptor() {}
 
     /**
@@ -196,6 +266,13 @@ public abstract class MetricData {
        * @since 0.1.0
        */
       MONOTONIC_DOUBLE,
+
+      /**
+       * A Summary of measurements of numeric values, containing the minimum value recorded, the
+       * maximum value recorded, the sum of all measurements and the total number of measurements
+       * recorded.
+       */
+      DOUBLE_SUMMARY,
     }
 
     /**
