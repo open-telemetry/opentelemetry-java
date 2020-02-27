@@ -25,58 +25,43 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link LongSumAggregator}. */
+/** Unit tests for {@link LongLastValueAggregator}. */
 @RunWith(JUnit4.class)
-public class LongSumAggregatorTest {
+public class LongLastValueAggregatorTest {
   @Test
   public void factoryAggregation() {
-    AggregatorFactory factory = LongSumAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(LongSumAggregator.class);
+    AggregatorFactory factory = LongLastValueAggregator.getFactory();
+    assertThat(factory.getAggregator()).isInstanceOf(LongLastValueAggregator.class);
   }
 
   @Test
   public void toPoint() {
-    Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
-    assertThat(getPoint(aggregator).getValue()).isEqualTo(0);
+    Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
+    assertNullPoint(aggregator);
   }
 
   @Test
   public void multipleRecords() {
-    Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
+    Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
     aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    assertThat(getPoint(aggregator).getValue()).isEqualTo(12 * 5);
-  }
-
-  @Test
-  public void multipleRecords_WithNegatives() {
-    Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    aggregator.recordLong(-23);
-    aggregator.recordLong(12);
-    aggregator.recordLong(12);
-    aggregator.recordLong(-11);
+    assertThat(getPoint(aggregator).getValue()).isEqualTo(12);
+    aggregator.recordLong(13);
+    aggregator.recordLong(14);
     assertThat(getPoint(aggregator).getValue()).isEqualTo(14);
   }
 
   @Test
   public void mergeAndReset() {
-    Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
+    Aggregator aggregator = LongLastValueAggregator.getFactory().getAggregator();
     aggregator.recordLong(13);
-    aggregator.recordLong(12);
-    assertThat(getPoint(aggregator).getValue()).isEqualTo(25);
-    Aggregator mergedAggregator = LongSumAggregator.getFactory().getAggregator();
+    assertThat(getPoint(aggregator).getValue()).isEqualTo(13);
+    Aggregator mergedAggregator = LongLastValueAggregator.getFactory().getAggregator();
     aggregator.mergeToAndReset(mergedAggregator);
-    assertThat(getPoint(aggregator).getValue()).isEqualTo(0);
-    assertThat(getPoint(mergedAggregator).getValue()).isEqualTo(25);
+    assertNullPoint(aggregator);
+    assertThat(getPoint(mergedAggregator).getValue()).isEqualTo(13);
     aggregator.recordLong(12);
-    aggregator.recordLong(-25);
     aggregator.mergeToAndReset(mergedAggregator);
-    assertThat(getPoint(aggregator).getValue()).isEqualTo(0);
+    assertNullPoint(aggregator);
     assertThat(getPoint(mergedAggregator).getValue()).isEqualTo(12);
   }
 
@@ -88,5 +73,10 @@ public class LongSumAggregatorTest {
     assertThat(point.getLabels()).containsExactly("key", "value");
     assertThat(point).isInstanceOf(LongPoint.class);
     return (LongPoint) point;
+  }
+
+  private static void assertNullPoint(Aggregator aggregator) {
+    Point point = aggregator.toPoint(12345, 12358, Collections.singletonMap("key", "value"));
+    assertThat(point).isNull();
   }
 }

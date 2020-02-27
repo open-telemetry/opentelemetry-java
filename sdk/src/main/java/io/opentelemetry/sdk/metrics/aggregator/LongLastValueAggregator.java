@@ -19,26 +19,34 @@ package io.opentelemetry.sdk.metrics.aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 
-public final class LongSumAggregator extends AbstractAggregator {
+/**
+ * Aggregator that aggregates recorded values by storing the last recorded value.
+ *
+ * <p>Limitation: The current implementation does not store a time when the value was recorded, so
+ * merging multiple LastValueAggregators will not preserve the ordering of records. This is not a
+ * problem because LastValueAggregator is currently only available for Observers which record all
+ * values once.
+ */
+public final class LongLastValueAggregator extends AbstractAggregator {
 
-  private static final long DEFAULT_VALUE = 0L;
+  @Nullable private static final Long DEFAULT_VALUE = null;
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
         public Aggregator getAggregator() {
-          return new LongSumAggregator();
+          return new LongLastValueAggregator();
         }
       };
 
-  // TODO: Change to use LongAdder when changed to java8.
-  private final AtomicLong current = new AtomicLong(DEFAULT_VALUE);
+  private final AtomicReference<Long> current = new AtomicReference<>(DEFAULT_VALUE);
 
   /**
-   * Returns an {@link AggregatorFactory} that produces {@link LongSumAggregator} instances.
+   * Returns an {@link AggregatorFactory} that produces {@link LongLastValueAggregator} instances.
    *
-   * @return an {@link AggregatorFactory} that produces {@link LongSumAggregator} instances.
+   * @return an {@link AggregatorFactory} that produces {@link LongLastValueAggregator} instances.
    */
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;
@@ -46,17 +54,21 @@ public final class LongSumAggregator extends AbstractAggregator {
 
   @Override
   void doMergeAndReset(Aggregator aggregator) {
-    LongSumAggregator other = (LongSumAggregator) aggregator;
-    other.current.getAndAdd(this.current.getAndSet(DEFAULT_VALUE));
+    LongLastValueAggregator other = (LongLastValueAggregator) aggregator;
+    other.current.set(this.current.getAndSet(DEFAULT_VALUE));
   }
 
   @Override
+  @Nullable
   public Point toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
-    return LongPoint.create(startEpochNanos, epochNanos, labels, current.get());
+    @Nullable Long currentValue = current.get();
+    return currentValue == null
+        ? null
+        : LongPoint.create(startEpochNanos, epochNanos, labels, current.get());
   }
 
   @Override
   public void recordLong(long value) {
-    current.getAndAdd(value);
+    current.set(value);
   }
 }
