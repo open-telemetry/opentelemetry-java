@@ -183,7 +183,7 @@ public abstract class MetricData {
      *
      * @return the percentiles values.
      */
-    public abstract List<DoubleValueAtPercentile> getPercentileValues();
+    public abstract List<ValueAtPercentile> getPercentileValues();
 
     public static SummaryPoint create(
         long startEpochNanos,
@@ -191,7 +191,7 @@ public abstract class MetricData {
         Map<String, String> labels,
         long count,
         double sum,
-        List<DoubleValueAtPercentile> percentileValues) {
+        List<ValueAtPercentile> percentileValues) {
       return new AutoValue_MetricData_SummaryPoint(
           startEpochNanos, epochNanos, labels, count, sum, percentileValues);
     }
@@ -199,8 +199,8 @@ public abstract class MetricData {
 
   @Immutable
   @AutoValue
-  public abstract static class DoubleValueAtPercentile {
-    DoubleValueAtPercentile() {}
+  public abstract static class ValueAtPercentile {
+    ValueAtPercentile() {}
 
     /**
      * The percentile of a distribution. Must be in the interval [0.0, 100.0].
@@ -216,8 +216,8 @@ public abstract class MetricData {
      */
     public abstract double getValue();
 
-    public static DoubleValueAtPercentile create(double percentile, double value) {
-      return new AutoValue_MetricData_DoubleValueAtPercentile(percentile, value);
+    public static ValueAtPercentile create(double percentile, double value) {
+      return new AutoValue_MetricData_ValueAtPercentile(percentile, value);
     }
   }
 
@@ -272,7 +272,7 @@ public abstract class MetricData {
        * maximum value recorded, the sum of all measurements and the total number of measurements
        * recorded.
        */
-      DOUBLE_SUMMARY,
+      SUMMARY,
     }
 
     /**
