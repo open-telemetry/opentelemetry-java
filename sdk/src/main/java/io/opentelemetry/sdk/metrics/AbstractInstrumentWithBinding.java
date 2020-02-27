@@ -71,7 +71,7 @@ abstract class AbstractInstrumentWithBinding<B extends AbstractBoundInstrument>
    * call.
    */
   @Override
-  final List<MetricData> collect() {
+  final List<MetricData> collectAll() {
     collectLock.lock();
     try {
       Batcher batcher = getActiveBatcher();

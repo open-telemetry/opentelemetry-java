@@ -66,7 +66,7 @@ public class DoubleMeasureSdkTest {
     DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
     BoundDoubleMeasure boundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
     try {
-      doubleMeasure.collect();
+      doubleMeasure.collectAll();
       BoundDoubleMeasure duplicateBoundMeasure =
           doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
       try {

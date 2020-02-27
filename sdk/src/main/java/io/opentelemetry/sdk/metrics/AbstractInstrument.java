@@ -61,7 +61,7 @@ abstract class AbstractInstrument implements Instrument {
     return activeBatcher;
   }
 
-  abstract List<MetricData> collect();
+  abstract List<MetricData> collectAll();
 
   @Override
   public boolean equals(Object o) {

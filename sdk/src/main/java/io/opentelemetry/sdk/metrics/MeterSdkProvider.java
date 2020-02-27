@@ -22,8 +22,13 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.Nonnull;
 
 /**
@@ -48,6 +53,20 @@ public final class MeterSdkProvider implements MeterProvider {
   @Override
   public MeterSdk get(String instrumentationName, String instrumentationVersion) {
     return registry.get(instrumentationName, instrumentationVersion);
+  }
+
+  /**
+   * Collects all the metrics and returns a collection of collected {@link MetricData}.
+   *
+   * @return a collection of collected {@link MetricData}.
+   */
+  public Collection<MetricData> collectAll() {
+    Collection<MeterSdk> meters = registry.getComponents();
+    List<MetricData> result = new ArrayList<>(meters.size());
+    for (MeterSdk meter : meters) {
+      result.addAll(meter.collectAll());
+    }
+    return Collections.unmodifiableCollection(result);
   }
 
   /**
