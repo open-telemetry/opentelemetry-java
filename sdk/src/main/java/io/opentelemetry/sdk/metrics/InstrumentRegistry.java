@@ -26,22 +26,33 @@ import java.util.concurrent.ConcurrentMap;
 // registered only once for a given name.
 //
 // TODO: Discuss what is the right behavior when an already registered Instrument with the same name
-// is present.
+//  is present.
 // TODO: Decide what is the identifier for an Instrument? Only name?
-// TODO: How do we know if an registered instrument is the same as the provided one?
 final class InstrumentRegistry {
   private final ConcurrentMap<String, AbstractInstrument> registry = new ConcurrentHashMap<>();
 
   /**
-   * Registers the given {@code instrument} to this registry.
+   * Registers the given {@code instrument} to this registry. Returns the registered instrument if
+   * no other instrument with the same name is registered or a previously registered instrument with
+   * same name and equal with the current instrument, otherwise throws an exception.
    *
-   * @param descriptor the descriptor of the {@code Instrument}.
    * @param instrument the newly created {@code Instrument}.
-   * @return {@code true} if the instrument is successfully registered.
+   * @return the given instrument if no instrument with same name already registered, otherwise the
+   *     previous registered instrument.
+   * @throws IllegalArgumentException if instrument cannot be registered.
    */
-  boolean register(InstrumentDescriptor descriptor, AbstractInstrument instrument) {
-    AbstractInstrument oldInstrument = registry.putIfAbsent(descriptor.getName(), instrument);
-    return oldInstrument == null;
+  @SuppressWarnings("unchecked")
+  <I extends AbstractInstrument> I register(I instrument) {
+    AbstractInstrument oldInstrument =
+        registry.putIfAbsent(instrument.getDescriptor().getName(), instrument);
+    if (oldInstrument != null) {
+      if (!instrument.getClass().isInstance(oldInstrument) || !instrument.equals(oldInstrument)) {
+        throw new IllegalArgumentException(
+            "Instrument with same name and different descriptor already created.");
+      }
+      return (I) oldInstrument;
+    }
+    return instrument;
   }
 
   /**
@@ -49,7 +60,7 @@ final class InstrumentRegistry {
    *
    * @return a {@code Collection} view of the registered instruments.
    */
-  Collection<AbstractInstrument> getRegisteredInstruments() {
+  Collection<AbstractInstrument> getInstruments() {
     return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));
   }
 }

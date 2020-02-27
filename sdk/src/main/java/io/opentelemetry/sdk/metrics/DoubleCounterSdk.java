@@ -89,11 +89,12 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
 
     @Override
     public DoubleCounterSdk build() {
-      return new DoubleCounterSdk(
-          getInstrumentDescriptor(),
-          isMonotonic(),
-          getMeterProviderSharedState(),
-          getMeterSharedState());
+      return register(
+          new DoubleCounterSdk(
+              getInstrumentDescriptor(),
+              isMonotonic(),
+              getMeterProviderSharedState(),
+              getMeterSharedState()));
     }
   }
 }

@@ -151,5 +151,9 @@ abstract class AbstractInstrument implements Instrument {
     }
 
     abstract B getThis();
+
+    final <I extends AbstractInstrument> I register(I instrument) {
+      return getMeterSharedState().getInstrumentRegistry().register(instrument);
+    }
   }
 }
