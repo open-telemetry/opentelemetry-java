@@ -74,7 +74,7 @@ public class BatchRecorderSdkTest {
         .put(doubleMeasure, 13.1d)
         .record();
 
-    assertThat(doubleCounter.collect())
+    assertThat(doubleCounter.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -88,7 +88,7 @@ public class BatchRecorderSdkTest {
                 Collections.<Point>singletonList(
                     DoublePoint.create(
                         testClock.now(), testClock.now(), labelSet.getLabels(), 12.1d))));
-    assertThat(longCounter.collect())
+    assertThat(longCounter.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(

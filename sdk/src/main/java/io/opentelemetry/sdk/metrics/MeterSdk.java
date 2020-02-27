@@ -19,6 +19,9 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
@@ -80,5 +83,15 @@ final class MeterSdk implements Meter {
   @Override
   public LabelSetSdk createLabelSet(Map<String, String> labels) {
     return LabelSetSdk.create(labels);
+  }
+
+  Collection<MetricData> collectAll() {
+    InstrumentRegistry instrumentRegistry = meterSharedState.getInstrumentRegistry();
+    Collection<AbstractInstrument> instruments = instrumentRegistry.getInstruments();
+    ArrayList<MetricData> ret = new ArrayList<>(instruments.size());
+    for (AbstractInstrument instrument : instruments) {
+      ret.addAll(instrument.collectAll());
+    }
+    return ret;
   }
 }

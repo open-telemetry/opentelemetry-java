@@ -26,6 +26,16 @@ import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,8 +46,17 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link MeterSdk}. */
 @RunWith(JUnit4.class)
 public class MeterSdkTest {
+  private static final Resource RESOURCE =
+      Resource.create(
+          Collections.singletonMap(
+              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.MeterSdkTest", null);
+  private final TestClock testClock = TestClock.create();
+  private final MeterProviderSharedState meterProviderSharedState =
+      MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      MeterSdkProvider.builder().build().get("io.opentelemetry.sdk.metrics.MeterSdkTest");
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -226,6 +245,53 @@ public class MeterSdkTest {
     BatchRecorder batchRecorder = testSdk.newBatchRecorder(testSdk.createLabelSet("key", "value"));
     assertThat(batchRecorder).isNotNull();
     assertThat(batchRecorder).isInstanceOf(BatchRecorderSdk.class);
+  }
+
+  @Test
+  public void collectAll() {
+    LongCounter longCounter = testSdk.longCounterBuilder("testLongCounter").build();
+    longCounter.add(10, testSdk.createLabelSet());
+    LongMeasure longMeasure = testSdk.longMeasureBuilder("testLongMeasure").build();
+    longMeasure.record(10, testSdk.createLabelSet());
+    // LongObserver longObserver = testSdk.longObserverBuilder("testLongObserver").build();
+    DoubleCounter doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
+    doubleCounter.add(10.1, testSdk.createLabelSet());
+    DoubleMeasure doubleMeasure = testSdk.doubleMeasureBuilder("testDoubleMeasure").build();
+    doubleMeasure.record(10.1, testSdk.createLabelSet());
+    // DoubleObserver doubleObserver = testSdk.doubleObserverBuilder("testDoubleObserver").build();
+
+    assertThat(testSdk.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testLongCounter",
+                    "",
+                    "1",
+                    Type.MONOTONIC_LONG,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    LongPoint.create(
+                        testClock.now(),
+                        testClock.now(),
+                        Collections.<String, String>emptyMap(),
+                        10))),
+            MetricData.create(
+                Descriptor.create(
+                    "testDoubleCounter",
+                    "",
+                    "1",
+                    Type.MONOTONIC_DOUBLE,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    DoublePoint.create(
+                        testClock.now(),
+                        testClock.now(),
+                        Collections.<String, String>emptyMap(),
+                        10.1))));
   }
 
   @Test

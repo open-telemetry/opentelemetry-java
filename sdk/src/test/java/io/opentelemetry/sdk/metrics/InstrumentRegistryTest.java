@@ -130,7 +130,7 @@ public class InstrumentRegistryTest {
     }
 
     @Override
-    List<MetricData> collect() {
+    List<MetricData> collectAll() {
       return Collections.emptyList();
     }
   }
@@ -145,7 +145,7 @@ public class InstrumentRegistryTest {
     }
 
     @Override
-    List<MetricData> collect() {
+    List<MetricData> collectAll() {
       return Collections.emptyList();
     }
   }
