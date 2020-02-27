@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.contrib.trace.export;
 import com.google.common.base.Preconditions;
 import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.WaitStrategy;
-import io.opentelemetry.sdk.contrib.trace.export.DisruptorEventQueue.EventType;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import javax.annotation.concurrent.ThreadSafe;
@@ -51,7 +50,7 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
     if (!startRequired) {
       return;
     }
-    disruptorEventQueue.enqueue(span, EventType.ON_START);
+    disruptorEventQueue.enqueueStartEvent(span);
   }
 
   @Override
@@ -64,7 +63,7 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
     if (!endRequired) {
       return;
     }
-    disruptorEventQueue.enqueue(span, EventType.ON_END);
+    disruptorEventQueue.enqueueEndEvent(span);
   }
 
   @Override

@@ -77,7 +77,7 @@ final class DisruptorEventQueue {
    */
   private static final byte NUM_CONSUMERS = 1;
 
-  enum EventType {
+  private enum EventType {
     ON_START,
     ON_END,
     ON_SHUTDOWN,
@@ -102,19 +102,64 @@ final class DisruptorEventQueue {
     this.blocking = blocking;
   }
 
-  void enqueue(ReadableSpan readableSpan, EventType eventType) {
-    enqueue(readableSpan, eventType, null);
-  }
-
-  // Enqueues an event on the {@link DisruptorEventQueue}.
-  void enqueue(ReadableSpan readableSpan, EventType eventType, CountDownLatch flushLatch) {
+  void enqueueStartEvent(ReadableSpan span) {
     if (isShutdown) {
       if (!loggedShutdownMessage.getAndSet(true)) {
-        logger.info("Attempted to enqueue entry after Disruptor shutdown.");
+        logger.info("Attempted to enqueue start event after Disruptor shutdown.");
       }
       return;
     }
+    enqueue(EventType.ON_START, span, null);
+  }
 
+  void enqueueEndEvent(ReadableSpan span) {
+    if (isShutdown) {
+      if (!loggedShutdownMessage.getAndSet(true)) {
+        logger.info("Attempted to enqueue end event after Disruptor shutdown.");
+      }
+      return;
+    }
+    enqueue(EventType.ON_END, span, null);
+  }
+
+  // Shuts down the underlying disruptor. Ensures that when this method returns the disruptor is
+  // shutdown.
+  void shutdown() {
+    synchronized (this) {
+      if (isShutdown) {
+        // Race condition between two calls to shutdown. The other call already finished.
+        return;
+      }
+      isShutdown = true;
+      enqueueAndLock(EventType.ON_SHUTDOWN);
+    }
+  }
+
+  // Force to publish the ended spans to the SpanProcessor
+  void forceFlush() {
+    if (isShutdown) {
+      if (!loggedShutdownMessage.getAndSet(true)) {
+        logger.info("Attempted to flush after Disruptor shutdown.");
+      }
+      return;
+    }
+    enqueueAndLock(EventType.ON_FORCE_FLUSH);
+  }
+
+  private void enqueueAndLock(EventType event) {
+    CountDownLatch waitingCounter = new CountDownLatch(NUM_CONSUMERS); // only one processor.
+    enqueue(event, null, waitingCounter);
+    try {
+      waitingCounter.await();
+    } catch (InterruptedException e) {
+      // Preserve the interruption.
+      Thread.currentThread().interrupt();
+      logger.warning("Thread interrupted, shutdown may not finished.");
+    }
+  }
+
+  // Enqueues an event on the {@link DisruptorEventQueue}.
+  private void enqueue(EventType eventType, ReadableSpan readableSpan, CountDownLatch flushLatch) {
     if (blocking) {
       ringBuffer.publishEvent(TRANSLATOR_THREE_ARG, eventType, readableSpan, flushLatch);
     } else {
@@ -123,44 +168,11 @@ final class DisruptorEventQueue {
     }
   }
 
-  // Shuts down the underlying disruptor.
-  void shutdown() {
-    enqueueAndLock(EventType.ON_SHUTDOWN);
-  }
-
-  // Force to publish the ended spans to the SpanProcessor
-  void forceFlush() {
-    enqueueAndLock(EventType.ON_FORCE_FLUSH);
-  }
-
-  void enqueueAndLock(EventType event) {
-    if (isShutdown) {
-      return;
-    }
-    synchronized (this) {
-      if (isShutdown) {
-        return;
-      }
-      CountDownLatch shutdownCounter = new CountDownLatch(NUM_CONSUMERS); // only one processor.
-      enqueue(null, event, shutdownCounter);
-      if (event.equals(EventType.ON_SHUTDOWN)) {
-        isShutdown = true;
-      }
-      try {
-        shutdownCounter.await();
-      } catch (InterruptedException e) {
-        // Preserve the interruption.
-        Thread.currentThread().interrupt();
-        logger.warning("Thread interrupted, shutdown may not finished.");
-      }
-    }
-  }
-
   // An event in the {@link EventQueue}. Just holds a reference to an EventQueue.Entry.
   private static final class DisruptorEvent {
     @Nullable private ReadableSpan readableSpan = null;
     @Nullable private EventType eventType = null;
-    @Nullable private CountDownLatch flushLatch = null;
+    @Nullable private CountDownLatch waitingCounter = null;
 
     void setEntry(
         @Nullable EventType eventType,
@@ -168,7 +180,7 @@ final class DisruptorEventQueue {
         @Nullable CountDownLatch flushLatch) {
       this.readableSpan = readableSpan;
       this.eventType = eventType;
-      this.flushLatch = flushLatch;
+      this.waitingCounter = flushLatch;
     }
 
     @Nullable
@@ -181,9 +193,9 @@ final class DisruptorEventQueue {
       return eventType;
     }
 
-    void countDownFlushLatch() {
-      if (flushLatch != null) {
-        flushLatch.countDown();
+    void countDownWaitingCounter() {
+      if (waitingCounter != null) {
+        waitingCounter.countDown();
       }
     }
   }
@@ -212,13 +224,12 @@ final class DisruptorEventQueue {
             spanProcessor.onEnd(readableSpan);
             break;
           case ON_SHUTDOWN:
-            spanProcessor.forceFlush();
             spanProcessor.shutdown();
-            event.countDownFlushLatch();
+            event.countDownWaitingCounter();
             break;
           case ON_FORCE_FLUSH:
             spanProcessor.forceFlush();
-            event.countDownFlushLatch();
+            event.countDownWaitingCounter();
             break;
         }
       } finally {
