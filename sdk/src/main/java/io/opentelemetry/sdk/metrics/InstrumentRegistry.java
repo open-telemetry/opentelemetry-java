@@ -26,15 +26,15 @@ import java.util.concurrent.ConcurrentMap;
 // registered only once for a given name.
 //
 // TODO: Discuss what is the right behavior when an already registered Instrument with the same name
-// is present.
+//  is present.
 // TODO: Decide what is the identifier for an Instrument? Only name?
-// TODO: How do we know if an registered instrument is the same as the provided one?
 final class InstrumentRegistry {
   private final ConcurrentMap<String, AbstractInstrument> registry = new ConcurrentHashMap<>();
 
   /**
    * Registers the given {@code instrument} to this registry. Returns the registered instrument if
-   * succeeded otherwise throws an exception.
+   * no other instrument with the same name is registered or a previously registered instrument with
+   * same name and equal with the current instrument, otherwise throws an exception.
    *
    * @param instrument the newly created {@code Instrument}.
    * @return the given instrument if no instrument with same name already registered, otherwise the
@@ -46,8 +46,7 @@ final class InstrumentRegistry {
     AbstractInstrument oldInstrument =
         registry.putIfAbsent(instrument.getDescriptor().getName(), instrument);
     if (oldInstrument != null) {
-      if (!instrument.getClass().isInstance(oldInstrument)
-          || !instrument.getDescriptor().equals(oldInstrument.getDescriptor())) {
+      if (!instrument.getClass().isInstance(oldInstrument) || !instrument.equals(oldInstrument)) {
         throw new IllegalArgumentException(
             "Instrument with same name and different descriptor already created.");
       }
