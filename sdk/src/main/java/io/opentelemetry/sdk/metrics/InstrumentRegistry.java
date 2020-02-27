@@ -33,15 +33,27 @@ final class InstrumentRegistry {
   private final ConcurrentMap<String, AbstractInstrument> registry = new ConcurrentHashMap<>();
 
   /**
-   * Registers the given {@code instrument} to this registry.
+   * Registers the given {@code instrument} to this registry. Returns the registered instrument if
+   * succeeded otherwise throws an exception.
    *
-   * @param descriptor the descriptor of the {@code Instrument}.
    * @param instrument the newly created {@code Instrument}.
-   * @return {@code true} if the instrument is successfully registered.
+   * @return the given instrument if no instrument with same name already registered, otherwise the
+   *     previous registered instrument.
+   * @throws IllegalArgumentException if instrument cannot be registered.
    */
-  boolean register(InstrumentDescriptor descriptor, AbstractInstrument instrument) {
-    AbstractInstrument oldInstrument = registry.putIfAbsent(descriptor.getName(), instrument);
-    return oldInstrument == null;
+  @SuppressWarnings("unchecked")
+  <I extends AbstractInstrument> I register(I instrument) {
+    AbstractInstrument oldInstrument =
+        registry.putIfAbsent(instrument.getDescriptor().getName(), instrument);
+    if (oldInstrument != null) {
+      if (!instrument.getClass().isInstance(oldInstrument)
+          || !instrument.getDescriptor().equals(oldInstrument.getDescriptor())) {
+        throw new IllegalArgumentException(
+            "Instrument with same name and different descriptor already created.");
+      }
+      return (I) oldInstrument;
+    }
+    return instrument;
   }
 
   /**
@@ -49,7 +61,7 @@ final class InstrumentRegistry {
    *
    * @return a {@code Collection} view of the registered instruments.
    */
-  Collection<AbstractInstrument> getRegisteredInstruments() {
+  Collection<AbstractInstrument> getInstruments() {
     return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));
   }
 }

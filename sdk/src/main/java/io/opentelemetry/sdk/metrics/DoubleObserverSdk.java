@@ -56,11 +56,12 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
 
     @Override
     public DoubleObserverSdk build() {
-      return new DoubleObserverSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getMeterSharedState(),
-          isMonotonic());
+      return register(
+          new DoubleObserverSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isMonotonic()));
     }
   }
 }

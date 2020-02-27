@@ -86,11 +86,12 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
 
     @Override
     public LongMeasureSdk build() {
-      return new LongMeasureSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getMeterSharedState(),
-          isAbsolute());
+      return register(
+          new LongMeasureSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isAbsolute()));
     }
   }
 }

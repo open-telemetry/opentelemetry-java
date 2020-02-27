@@ -55,11 +55,12 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
 
     @Override
     public LongObserverSdk build() {
-      return new LongObserverSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getMeterSharedState(),
-          isMonotonic());
+      return register(
+          new LongObserverSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isMonotonic()));
     }
   }
 }
