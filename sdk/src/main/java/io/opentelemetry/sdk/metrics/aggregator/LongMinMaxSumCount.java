@@ -51,8 +51,13 @@ public final class LongMinMaxSumCount extends AbstractAggregator {
   void doMergeAndReset(Aggregator target) {
     LongMinMaxSumCount other = (LongMinMaxSumCount) target;
 
-    LongSummary copy = current.copyAndReset();
-    other.current.update(copy);
+    thinger(other);
+  }
+
+  private void thinger(LongMinMaxSumCount other) {
+    current.mergeAndReset(other.current);
+    //    LongSummary copy = current.copyAndReset();
+    //    other.current.update(copy);
   }
 
   @Nullable
@@ -82,18 +87,6 @@ public final class LongMinMaxSumCount extends AbstractAggregator {
     @GuardedBy("lock")
     private long max = Long.MIN_VALUE;
 
-    private void update(LongSummary summary) {
-      lock.writeLock().lock();
-      try {
-        this.count += summary.count;
-        this.sum += summary.sum;
-        this.min = Math.min(summary.min, this.min);
-        this.max = Math.max(summary.max, this.max);
-      } finally {
-        lock.writeLock().unlock();
-      }
-    }
-
     private void record(long value) {
       lock.writeLock().lock();
       try {
@@ -106,22 +99,33 @@ public final class LongMinMaxSumCount extends AbstractAggregator {
       }
     }
 
-    private LongSummary copyAndReset() {
-      LongSummary copy = new LongSummary();
+    private void mergeAndReset(LongSummary other) {
+      long myCount;
+      long mySum;
+      long myMin;
+      long myMax;
       lock.writeLock().lock();
       try {
-        copy.count = count;
-        copy.sum = sum;
-        copy.min = min;
-        copy.max = max;
-        count = 0;
-        sum = 0;
-        min = Long.MAX_VALUE;
-        max = Long.MIN_VALUE;
+        myCount = this.count;
+        mySum = this.sum;
+        myMin = this.min;
+        myMax = this.max;
+        this.count = 0;
+        this.sum = 0;
+        this.min = Long.MAX_VALUE;
+        this.max = Long.MIN_VALUE;
       } finally {
         lock.writeLock().unlock();
       }
-      return copy;
+      other.lock.writeLock().lock();
+      try {
+        other.count += myCount;
+        other.sum += mySum;
+        other.min = Math.min(myMin, other.min);
+        other.max = Math.max(myMax, other.max);
+      } finally {
+        other.lock.writeLock().unlock();
+      }
     }
 
     @Nullable

@@ -50,9 +50,7 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
   @Override
   void doMergeAndReset(Aggregator target) {
     DoubleMinMaxSumCount other = (DoubleMinMaxSumCount) target;
-
-    DoubleSummary copy = current.copyAndReset();
-    other.current.update(copy);
+    current.mergeAndReset(other.current);
   }
 
   @Nullable
@@ -82,18 +80,6 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
     @GuardedBy("lock")
     private double max = Double.NEGATIVE_INFINITY;
 
-    private void update(DoubleSummary summary) {
-      lock.writeLock().lock();
-      try {
-        this.count += summary.count;
-        this.sum += summary.sum;
-        this.min = Math.min(summary.min, this.min);
-        this.max = Math.max(summary.max, this.max);
-      } finally {
-        lock.writeLock().unlock();
-      }
-    }
-
     private void record(double value) {
       lock.writeLock().lock();
       try {
@@ -106,22 +92,33 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
       }
     }
 
-    private DoubleSummary copyAndReset() {
-      DoubleSummary copy = new DoubleSummary();
+    public void mergeAndReset(DoubleSummary other) {
+      long myCount;
+      double mySum;
+      double myMin;
+      double myMax;
       lock.writeLock().lock();
       try {
-        copy.count = count;
-        copy.sum = sum;
-        copy.min = min;
-        copy.max = max;
-        count = 0;
-        sum = 0;
-        min = Double.POSITIVE_INFINITY;
-        max = Double.NEGATIVE_INFINITY;
+        myCount = this.count;
+        mySum = this.sum;
+        myMin = this.min;
+        myMax = this.max;
+        this.count = 0;
+        this.sum = 0;
+        this.min = Long.MAX_VALUE;
+        this.max = Long.MIN_VALUE;
       } finally {
         lock.writeLock().unlock();
       }
-      return copy;
+      other.lock.writeLock().lock();
+      try {
+        other.count += myCount;
+        other.sum += mySum;
+        other.min = Math.min(myMin, other.min);
+        other.max = Math.max(myMax, other.max);
+      } finally {
+        other.lock.writeLock().unlock();
+      }
     }
 
     @Nullable
