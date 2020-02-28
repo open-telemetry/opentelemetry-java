@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.contrib.context.interceptor;
+package io.grpc.override;
 
 import io.grpc.Context;
 
 /** Interface that is called every Context update. */
-public interface Interceptor {
+public interface ContextStorageListener {
 
   /** Method that is called every Context update. */
-  void updated(Context oldContext, Context newContext);
+  void contextUpdated(Context oldContext, Context newContext);
+
+  interface Provider {
+    ContextStorageListener create();
+  }
 }

@@ -17,85 +17,65 @@
 package io.grpc.override;
 
 import io.grpc.Context;
-import io.opentelemetry.contrib.context.interceptor.Interceptor;
+import io.grpc.override.ContextStorageListener.Provider;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ServiceLoader;
 
-/**
- * {@link ContextStorageOverride} is a copy of the grpc ThreadLocalContextStorage with the ability
- * to add interceptors for every Context change.
- */
+/** If moved to grpc only the LazyStorage needs to move. */
 public final class ContextStorageOverride extends Context.Storage {
-  private static final Logger log = Logger.getLogger(ContextStorageOverride.class.getName());
-  private static volatile List<Interceptor> interceptors = Collections.emptyList();
+  private final Context.Storage contextStorageImpl;
 
   /** Public constructor to be loaded by the {@link Context}. */
-  public ContextStorageOverride() {}
-
-  /**
-   * Adds a new interceptor that is called every Context update.
-   *
-   * @param interceptor the {@code Interceptor} to be called.
-   */
-  public static synchronized void addInterceptor(Interceptor interceptor) {
-    ArrayList<Interceptor> newInterceptors = new ArrayList<>(interceptors.size() + 1);
-    newInterceptors.addAll(interceptors);
-    newInterceptors.add(interceptor);
-    interceptors = newInterceptors;
+  public ContextStorageOverride() {
+    contextStorageImpl = LazyStorage.storage;
   }
-
-  /** Currently bound context. */
-  // VisibleForTesting
-  static final ThreadLocal<Context> localContext = new ThreadLocal<>();
 
   @Override
   public Context doAttach(Context toAttach) {
-    Context current = current();
-    localContext.set(toAttach);
-    for (Interceptor interceptor : interceptors) {
-      interceptor.updated(current, toAttach);
-    }
-    return current;
+    return contextStorageImpl.doAttach(toAttach);
   }
 
   @Override
   public void detach(Context toDetach, Context toRestore) {
-    if (current() != toDetach) {
-      // Log a severe message instead of throwing an exception as the context to attach is assumed
-      // to be the correct one and the unbalanced state represents a coding mistake in a lower
-      // layer in the stack that cannot be recovered from here.
-      log.log(
-          Level.SEVERE,
-          "Context was not attached when detaching",
-          new Throwable().fillInStackTrace());
-    }
-    if (toRestore != Context.ROOT) {
-      localContext.set(toRestore);
-    } else {
-      // Avoid leaking our ClassLoader via ROOT if this Thread is reused across multiple
-      // ClassLoaders, as is common for Servlet Containers. The ThreadLocal is weakly referenced by
-      // the Thread, but its current value is strongly referenced and only lazily collected as new
-      // ThreadLocals are created.
-      //
-      // Use set(null) instead of remove() since remove() deletes the entry which is then re-created
-      // on the next get() (because of initialValue() handling). set(null) has same performance as
-      // set(toRestore).
-      localContext.set(null);
-    }
-    for (Interceptor interceptor : interceptors) {
-      interceptor.updated(toDetach, toRestore);
-    }
+    contextStorageImpl.detach(toDetach, toRestore);
   }
 
   @Override
   public Context current() {
-    Context current = localContext.get();
-    if (current == null) {
-      return Context.ROOT;
+    return contextStorageImpl.current();
+  }
+
+  private static final class LazyStorage {
+    static final Context.Storage storage = wrapWithListeners(new ThreadLocalContextStorage());
+
+    private static Context.Storage wrapWithListeners(Context.Storage impl) {
+      List<Provider> providers = loadSpi(ContextStorageListener.Provider.class);
+      if (providers.isEmpty()) {
+        // No need to use ContextStorageWithListeners
+        return impl;
+      }
+      List<ContextStorageListener> listeners = new ArrayList<>(providers.size());
+      for (ContextStorageListener.Provider provider : providers) {
+        listeners.add(provider.create());
+      }
+      return new ContextStorageWithListeners(impl, listeners);
     }
-    return current;
+
+    private static <T> List<T> loadSpi(Class<T> providerClass) {
+      List<T> result = new ArrayList<>();
+      String specifiedProvider = System.getProperty(providerClass.getName());
+      ServiceLoader<T> providers = ServiceLoader.load(providerClass);
+      for (T provider : providers) {
+        if (specifiedProvider == null || specifiedProvider.equals(provider.getClass().getName())) {
+          result.add(provider);
+        }
+      }
+      if (specifiedProvider != null) {
+        throw new IllegalStateException(
+            String.format("Service provider %s not found", specifiedProvider));
+      }
+      return result;
+    }
   }
 }
