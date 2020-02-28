@@ -75,29 +75,19 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
     @GuardedBy("lock")
     private long count = 0;
 
-    @Nullable
     @GuardedBy("lock")
-    private Double min = null;
+    private double min = Double.POSITIVE_INFINITY;
 
-    @Nullable
     @GuardedBy("lock")
-    private Double max = null;
+    private double max = Double.NEGATIVE_INFINITY;
 
     private void update(DoubleSummary summary) {
       lock.writeLock().lock();
       try {
         this.count += summary.count;
         this.sum += summary.sum;
-        if (this.min == null) {
-          this.min = summary.min;
-        } else if (summary.min != null) {
-          this.min = Math.min(summary.min, this.min);
-        }
-        if (this.max == null) {
-          this.max = summary.max;
-        } else if (summary.max != null) {
-          this.max = Math.max(summary.max, this.max);
-        }
+        this.min = Math.min(summary.min, this.min);
+        this.max = Math.max(summary.max, this.max);
       } finally {
         lock.writeLock().unlock();
       }
@@ -108,8 +98,8 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
       try {
         count++;
         sum += value;
-        min = min == null ? value : Math.min(value, min);
-        max = max == null ? value : Math.max(value, max);
+        min = Math.min(value, min);
+        max = Math.max(value, max);
       } finally {
         lock.writeLock().unlock();
       }
@@ -125,8 +115,8 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
         copy.max = max;
         count = 0;
         sum = 0;
-        min = null;
-        max = null;
+        min = Double.POSITIVE_INFINITY;
+        max = Double.NEGATIVE_INFINITY;
       } finally {
         lock.writeLock().unlock();
       }
@@ -143,7 +133,7 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
             labels,
             count,
             sum,
-            min == null || max == null // note: min & max will be null or not null together.
+            count == 0
                 ? Collections.<ValueAtPercentile>emptyList()
                 : Arrays.asList(
                     ValueAtPercentile.create(0.0, min), ValueAtPercentile.create(100.0, max)));
