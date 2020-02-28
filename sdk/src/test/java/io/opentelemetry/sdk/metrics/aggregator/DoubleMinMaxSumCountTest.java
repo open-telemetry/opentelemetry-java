@@ -32,17 +32,9 @@ public class DoubleMinMaxSumCountTest {
 
   @Test
   public void testRecordings() {
-    DoubleMinMaxSumCount aggregator = new DoubleMinMaxSumCount();
+    Aggregator aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
 
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
-        .isEqualTo(
-            SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                0,
-                0,
-                Collections.<ValueAtPercentile>emptyList()));
+    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap())).isNull();
 
     aggregator.recordDouble(100);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
@@ -80,10 +72,10 @@ public class DoubleMinMaxSumCountTest {
 
   @Test
   public void testMergeAndReset() {
-    DoubleMinMaxSumCount aggregator = new DoubleMinMaxSumCount();
+    Aggregator aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
 
     aggregator.recordDouble(100);
-    DoubleMinMaxSumCount mergedToAggregator = new DoubleMinMaxSumCount();
+    Aggregator mergedToAggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
     aggregator.mergeToAndReset(mergedToAggregator);
 
     assertThat(mergedToAggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
@@ -96,21 +88,13 @@ public class DoubleMinMaxSumCountTest {
                 100,
                 createPercentiles(100d, 100d)));
 
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
-        .isEqualTo(
-            SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                0,
-                0,
-                Collections.<ValueAtPercentile>emptyList()));
+    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap())).isNull();
   }
 
   @Test
   public void testMultithreadedUpdates() throws Exception {
-    final DoubleMinMaxSumCount aggregator = new DoubleMinMaxSumCount();
-    final DoubleMinMaxSumCount summarizer = new DoubleMinMaxSumCount();
+    final Aggregator aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
+    final Aggregator summarizer = DoubleMinMaxSumCount.getFactory().getAggregator();
     int numberOfThreads = 10;
     final double[] updates = new double[] {1.1, 2.1, 3.1, 5.1, 7.1, 11.1, 13.1, 17.1, 19.1, 23.1};
     final int numberOfUpdates = 1000;

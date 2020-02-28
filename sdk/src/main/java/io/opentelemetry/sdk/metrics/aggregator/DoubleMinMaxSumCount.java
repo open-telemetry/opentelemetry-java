@@ -21,7 +21,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
@@ -45,6 +44,8 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;
   }
+
+  private DoubleMinMaxSumCount() {}
 
   @Override
   void doMergeAndReset(Aggregator target) {
@@ -123,19 +124,20 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
       return copy;
     }
 
+    @Nullable
     private SummaryPoint toPoint(
         long startEpochNanos, long epochNanos, Map<String, String> labels) {
       lock.readLock().lock();
       try {
-        return SummaryPoint.create(
-            startEpochNanos,
-            epochNanos,
-            labels,
-            count,
-            sum,
-            count == 0
-                ? Collections.<ValueAtPercentile>emptyList()
-                : Arrays.asList(
+        return count == 0
+            ? null
+            : SummaryPoint.create(
+                startEpochNanos,
+                epochNanos,
+                labels,
+                count,
+                sum,
+                Arrays.asList(
                     ValueAtPercentile.create(0.0, min), ValueAtPercentile.create(100.0, max)));
       } finally {
         lock.readLock().unlock();

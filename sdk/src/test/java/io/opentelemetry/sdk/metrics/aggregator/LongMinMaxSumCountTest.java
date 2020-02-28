@@ -32,17 +32,9 @@ public class LongMinMaxSumCountTest {
 
   @Test
   public void testRecordings() {
-    LongMinMaxSumCount aggregator = new LongMinMaxSumCount();
+    Aggregator aggregator = LongMinMaxSumCount.getFactory().getAggregator();
 
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
-        .isEqualTo(
-            SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                0,
-                0,
-                Collections.<ValueAtPercentile>emptyList()));
+    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap())).isNull();
 
     aggregator.recordLong(100);
     assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
@@ -80,10 +72,10 @@ public class LongMinMaxSumCountTest {
 
   @Test
   public void testMergeAndReset() {
-    LongMinMaxSumCount aggregator = new LongMinMaxSumCount();
+    Aggregator aggregator = LongMinMaxSumCount.getFactory().getAggregator();
 
     aggregator.recordLong(100);
-    LongMinMaxSumCount mergedToAggregator = new LongMinMaxSumCount();
+    Aggregator mergedToAggregator = LongMinMaxSumCount.getFactory().getAggregator();
     aggregator.mergeToAndReset(mergedToAggregator);
 
     assertThat(mergedToAggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
@@ -96,21 +88,13 @@ public class LongMinMaxSumCountTest {
                 100,
                 createPercentileValues(100L, 100L)));
 
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
-        .isEqualTo(
-            SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                0,
-                0,
-                Collections.<ValueAtPercentile>emptyList()));
+    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap())).isNull();
   }
 
   @Test
   public void testMultithreadedUpdates() throws Exception {
-    final LongMinMaxSumCount aggregator = new LongMinMaxSumCount();
-    final LongMinMaxSumCount summarizer = new LongMinMaxSumCount();
+    final Aggregator aggregator = LongMinMaxSumCount.getFactory().getAggregator();
+    final Aggregator summarizer = LongMinMaxSumCount.getFactory().getAggregator();
     int numberOfThreads = 10;
     final long[] updates = new long[] {1, 2, 3, 5, 7, 11, 13, 17, 19, 23};
     final int numberOfUpdates = 1000;

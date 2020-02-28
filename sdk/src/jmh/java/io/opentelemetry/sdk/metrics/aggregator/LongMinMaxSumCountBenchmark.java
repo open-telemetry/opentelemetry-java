@@ -31,11 +31,11 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Benchmark)
 public class LongMinMaxSumCountBenchmark {
 
-  private LongMinMaxSumCount aggregator;
+  private Aggregator aggregator;
 
   @Setup(Level.Trial)
   public final void setup() {
-    aggregator = new LongMinMaxSumCount();
+    aggregator = LongMinMaxSumCount.getFactory().getAggregator();
   }
 
   @Benchmark
