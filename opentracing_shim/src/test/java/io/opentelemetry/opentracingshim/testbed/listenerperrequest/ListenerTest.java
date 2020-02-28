@@ -16,11 +16,13 @@
 
 package io.opentelemetry.opentracingshim.testbed.listenerperrequest;
 
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentracing.Tracer;
@@ -29,8 +31,10 @@ import org.junit.Test;
 
 /** Each request has own instance of ResponseListener. */
 public class ListenerTest {
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
 
   @Test
   public void test() throws Exception {
@@ -38,7 +42,7 @@ public class ListenerTest {
     Object response = client.send("message").get();
     assertEquals("message:response", response);
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(1, finished.size());
     assertEquals(finished.get(0).getKind(), Span.Kind.CLIENT);
 

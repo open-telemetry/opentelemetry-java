@@ -19,8 +19,9 @@ package io.opentelemetry.sdk.contrib.trace.testbed.latespanfinish;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
@@ -33,9 +34,10 @@ import org.junit.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class LateSpanFinishTest {
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer =
-      TestUtils.createTracer(LateSpanFinishTest.class.getName(), exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = sdk.get(LateSpanFinishTest.class.getName());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -52,7 +54,7 @@ public final class LateSpanFinishTest {
     parentSpan.end();
 
     // Children finish order is not guaranteed, but parent should finish *last*.
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(3);
     assertThat(spans.get(0).getName()).startsWith("task");
     assertThat(spans.get(1).getName()).startsWith("task");

@@ -16,14 +16,16 @@
 
 package io.opentelemetry.opentracingshim.testbed.nestedcallbacks;
 
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentracing.Scope;
@@ -39,8 +41,10 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class NestedCallbacksTest {
 
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -49,9 +53,11 @@ public final class NestedCallbacksTest {
     Span span = tracer.buildSpan("one").start();
     submitCallbacks(span);
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(1));
+    await()
+        .atMost(15, TimeUnit.SECONDS)
+        .until(finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(1));
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(1, spans.size());
     assertEquals("one", spans.get(0).getName());
 

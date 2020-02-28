@@ -17,13 +17,15 @@
 package io.opentelemetry.opentracingshim.testbed.latespanfinish;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.assertSameTrace;
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -36,8 +38,10 @@ import org.junit.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class LateSpanFinishTest {
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -54,7 +58,7 @@ public final class LateSpanFinishTest {
     parentSpan.finish();
 
     // Children finish order is not guaranteed, but parent should finish *last*.
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(3, spans.size());
     assertTrue(spans.get(0).getName().startsWith("task"));
     assertTrue(spans.get(1).getName().startsWith("task"));
