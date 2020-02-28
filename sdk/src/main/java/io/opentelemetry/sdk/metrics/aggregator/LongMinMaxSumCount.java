@@ -106,6 +106,9 @@ public final class LongMinMaxSumCount extends AbstractAggregator {
       long myMax;
       lock.writeLock().lock();
       try {
+        if (this.count == 0) {
+          return;
+        }
         myCount = this.count;
         mySum = this.sum;
         myMin = this.min;

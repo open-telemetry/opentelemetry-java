@@ -99,14 +99,17 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
       double myMax;
       lock.writeLock().lock();
       try {
+        if (this.count == 0) {
+          return;
+        }
         myCount = this.count;
         mySum = this.sum;
         myMin = this.min;
         myMax = this.max;
         this.count = 0;
         this.sum = 0;
-        this.min = Long.MAX_VALUE;
-        this.max = Long.MIN_VALUE;
+        this.min = Double.POSITIVE_INFINITY;
+        this.max = Double.NEGATIVE_INFINITY;
       } finally {
         lock.writeLock().unlock();
       }
