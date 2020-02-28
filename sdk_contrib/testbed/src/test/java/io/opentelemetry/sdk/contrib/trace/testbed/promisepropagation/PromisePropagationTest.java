@@ -19,8 +19,9 @@ package io.opentelemetry.sdk.contrib.trace.testbed.promisepropagation;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
@@ -39,9 +40,10 @@ import org.junit.Test;
  * execution for the tests without sleeps.
  */
 public class PromisePropagationTest {
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer =
-      TestUtils.createTracer(PromisePropagationTest.class.getName(), exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = sdk.get(PromisePropagationTest.class.getName());
   private Phaser phaser;
 
   @Before
@@ -93,7 +95,7 @@ public class PromisePropagationTest {
               }
             });
 
-        assertThat(exporter.getFinishedSpanItems().size()).isEqualTo(0);
+        assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems().size()).isEqualTo(0);
         successPromise.success("success!");
         errorPromise.error(new Exception("some error."));
       } finally {
@@ -107,7 +109,7 @@ public class PromisePropagationTest {
 
       phaser.arriveAndAwaitAdvance(); // wait for traces to be reported
 
-      List<SpanData> finished = exporter.getFinishedSpanItems();
+      List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
       assertThat(finished.size()).isEqualTo(4);
 
       String component = "component";

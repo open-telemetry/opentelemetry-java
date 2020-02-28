@@ -21,8 +21,9 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.DefaultSpan;
@@ -38,9 +39,10 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class NestedCallbacksTest {
 
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer =
-      TestUtils.createTracer(NestedCallbacksTest.class.getName(), exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = sdk.get(NestedCallbacksTest.class.getName());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -49,9 +51,11 @@ public final class NestedCallbacksTest {
     Span span = tracer.spanBuilder("one").startSpan();
     submitCallbacks(span);
 
-    await().atMost(15, TimeUnit.SECONDS).until(TestUtils.finishedSpansSize(exporter), equalTo(1));
+    await()
+        .atMost(15, TimeUnit.SECONDS)
+        .until(TestUtils.finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(1));
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0).getName()).isEqualTo("one");
 

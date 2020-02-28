@@ -16,10 +16,12 @@
 
 package io.opentelemetry.opentracingshim.testbed.baggagehandling;
 
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static org.junit.Assert.assertEquals;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.util.concurrent.ExecutorService;
@@ -29,8 +31,10 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 public final class BaggageHandlingTest {
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -66,7 +70,7 @@ public final class BaggageHandlingTest {
     /* Single call, no need to use await() */
     f.get(5, TimeUnit.SECONDS);
 
-    assertEquals(2, exporter.getFinishedSpanItems().size());
+    assertEquals(2, inMemoryTracing.getSpanExporter().getFinishedSpanItems().size());
     assertEquals(span.getBaggageItem("key1"), "value2");
     assertEquals(span.getBaggageItem("newkey"), "newvalue");
   }
