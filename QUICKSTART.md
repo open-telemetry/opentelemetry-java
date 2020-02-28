@@ -238,7 +238,7 @@ TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
 // Set to export the traces to a logging stream
 tracerProvider.addSpanProcessor(
     SimpleSpansProcessor.newBuilder(
-        new LoggingExporter()
+        new LoggingSpanExporter()
     ).build());
 ```
 
@@ -281,14 +281,14 @@ in bulk. Multiple Span processors can be configured to be active at the same tim
 
 ```java
 tracerProvider.addSpanProcessor(
-    SimpleSpansProcessor.newBuilder(new LoggingExporter()).build()
+    SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build()
 );
 tracerProvider.addSpanProcessor(
-    BatchSpansProcessor.newBuilder(new LoggingExporter()).build()
+    BatchSpansProcessor.newBuilder(new LoggingSpanExporter()).build()
 );
 tracerProvider.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
-            SimpleSpansProcessor.newBuilder(new LoggingExporter()).build(),
-            BatchSpansProcessor.newBuilder(new LoggingExporter()).build()
+            SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build(),
+            BatchSpansProcessor.newBuilder(new LoggingSpanExporter()).build()
 )));
 ```
 
@@ -307,7 +307,7 @@ Other exporters can be found in the [OpenTelemetry Registry].
 tracerProvider.addSpanProcessor(
     SimpleSpansProcessor.newBuilder(InMemorySpanExporter.create()).build());
 tracerProvider.addSpanProcessor(
-    SimpleSpansProcessor.newBuilder(new LoggingExporter()).build());
+    SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build());
 
 ManagedChannel jaegerChannel =
     ManagedChannelBuilder.forAddress([ip:String], [port:int]).usePlaintext().build();
