@@ -22,6 +22,8 @@ import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -36,6 +38,7 @@ import jdk.nashorn.internal.ir.annotations.Immutable;
  */
 public final class IntervalMetricReader {
   private final Exporter exporter;
+  private final ScheduledExecutorService scheduler;
   private final ScheduledFuture<?> scheduledFuture;
 
   /**
@@ -44,6 +47,7 @@ public final class IntervalMetricReader {
    * @since 0.3.0
    */
   public void shutdown() {
+    scheduler.shutdown();
     scheduledFuture.cancel(false);
     exporter.run();
   }
@@ -123,8 +127,7 @@ public final class IntervalMetricReader {
 
   private IntervalMetricReader(InternalState internalState) {
     this.exporter = new Exporter(internalState);
-    ScheduledExecutorService scheduler =
-        Executors.newScheduledThreadPool(1, MoreExecutors.platformThreadFactory());
+    this.scheduler = Executors.newScheduledThreadPool(1, MoreExecutors.platformThreadFactory());
     this.scheduledFuture =
         scheduler.scheduleAtFixedRate(
             exporter,
@@ -143,11 +146,11 @@ public final class IntervalMetricReader {
 
     @Override
     public void run() {
-      ArrayList<MetricData> metricsList = new ArrayList<>();
+      List<MetricData> metricsList = new ArrayList<>();
       for (MetricProducer metricProducer : internalState.getMetricProducers()) {
         metricsList.addAll(metricProducer.getAllMetrics());
       }
-      internalState.getMetricExporter().export(metricsList);
+      internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
     }
   }
 
