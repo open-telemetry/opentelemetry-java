@@ -60,7 +60,7 @@ public final class OpenTelemetry {
    *     be found.
    * @since 0.1.0
    */
-  public static TracerProvider getTracerRegistry() {
+  public static TracerProvider getTracerProvider() {
     return getInstance().tracerProvider;
   }
 
@@ -72,7 +72,7 @@ public final class OpenTelemetry {
    *     found.
    * @since 0.1.0
    */
-  public static MeterProvider getMeterRegistry() {
+  public static MeterProvider getMeterProvider() {
     return getInstance().meterProvider;
   }
 
