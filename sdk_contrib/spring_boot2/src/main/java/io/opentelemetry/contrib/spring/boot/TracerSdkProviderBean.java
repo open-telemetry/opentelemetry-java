@@ -20,7 +20,7 @@ import static org.springframework.beans.BeanUtils.getPropertyDescriptor;
 import static org.springframework.beans.BeanUtils.instantiateClass;
 import static org.springframework.util.ClassUtils.resolveClassName;
 
-import io.opentelemetry.exporters.logging.LoggingExporter;
+import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.IdsGenerator;
@@ -253,7 +253,7 @@ public class TracerSdkProviderBean implements FactoryBean<TracerProvider>, Initi
   private SpanProcessor constructSpanExportingProcessor() {
     SpanExporter spanExporter;
     if (spanExporters.isEmpty()) {
-      spanExporter = new LoggingExporter();
+      spanExporter = new LoggingSpanExporter();
     } else if (spanExporters.size() == 1) {
       spanExporter = spanExporters.get(0);
     } else {

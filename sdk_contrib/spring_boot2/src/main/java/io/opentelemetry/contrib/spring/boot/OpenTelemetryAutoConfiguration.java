@@ -17,7 +17,7 @@
 package io.opentelemetry.contrib.spring.boot;
 
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.exporters.logging.LoggingExporter;
+import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.internal.MillisClock;
@@ -180,7 +180,7 @@ public class OpenTelemetryAutoConfiguration {
   @ConditionalOnProperty({"management.opentelemetry.tracer.log-spans"})
   @Bean
   public SpanExporter loggingExporter() {
-    return new LoggingExporter();
+    return new LoggingSpanExporter();
   }
 
   /**
