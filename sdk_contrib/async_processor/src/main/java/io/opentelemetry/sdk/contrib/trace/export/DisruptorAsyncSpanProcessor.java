@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.contrib.trace.export;
 import com.google.common.base.Preconditions;
 import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.WaitStrategy;
-import io.opentelemetry.sdk.contrib.trace.export.DisruptorEventQueue.EventType;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import javax.annotation.concurrent.ThreadSafe;
@@ -41,17 +40,35 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
   private static final long DEFAULT_SLEEPING_TIME_NS = 1000 * 1000;
 
   private final DisruptorEventQueue disruptorEventQueue;
+  private final boolean startRequired;
+  private final boolean endRequired;
 
   // TODO: Add metrics for dropped spans.
 
   @Override
   public void onStart(ReadableSpan span) {
-    disruptorEventQueue.enqueue(span, EventType.ON_START);
+    if (!startRequired) {
+      return;
+    }
+    disruptorEventQueue.enqueueStartEvent(span);
+  }
+
+  @Override
+  public boolean isStartRequired() {
+    return startRequired;
   }
 
   @Override
   public void onEnd(ReadableSpan span) {
-    disruptorEventQueue.enqueue(span, EventType.ON_END);
+    if (!endRequired) {
+      return;
+    }
+    disruptorEventQueue.enqueueEndEvent(span);
+  }
+
+  @Override
+  public boolean isEndRequired() {
+    return endRequired;
   }
 
   @Override
@@ -128,11 +145,16 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
      */
     public DisruptorAsyncSpanProcessor build() {
       return new DisruptorAsyncSpanProcessor(
-          new DisruptorEventQueue(bufferSize, waitStrategy, spanProcessor, blocking));
+          new DisruptorEventQueue(bufferSize, waitStrategy, spanProcessor, blocking),
+          spanProcessor.isStartRequired(),
+          spanProcessor.isEndRequired());
     }
   }
 
-  private DisruptorAsyncSpanProcessor(DisruptorEventQueue disruptorEventQueue) {
+  private DisruptorAsyncSpanProcessor(
+      DisruptorEventQueue disruptorEventQueue, boolean startRequired, boolean endRequired) {
     this.disruptorEventQueue = disruptorEventQueue;
+    this.startRequired = startRequired;
+    this.endRequired = endRequired;
   }
 }

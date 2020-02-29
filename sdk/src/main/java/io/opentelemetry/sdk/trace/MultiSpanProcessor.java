@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.internal.Utils;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,7 +25,9 @@ import java.util.List;
  * {@code SpanProcessor}s.
  */
 public final class MultiSpanProcessor implements SpanProcessor {
-  private final List<SpanProcessor> spanProcessors;
+  private final List<SpanProcessor> spanProcessorsStart;
+  private final List<SpanProcessor> spanProcessorsEnd;
+  private final List<SpanProcessor> spanProcessorsAll;
 
   /**
    * Creates a new {@code MultiSpanProcessor}.
@@ -37,39 +38,58 @@ public final class MultiSpanProcessor implements SpanProcessor {
    */
   public static SpanProcessor create(List<SpanProcessor> spanProcessorList) {
     return new MultiSpanProcessor(
-        Collections.unmodifiableList(
-            new ArrayList<>(Utils.checkNotNull(spanProcessorList, "spanProcessorList"))));
+        new ArrayList<>(Utils.checkNotNull(spanProcessorList, "spanProcessorList")));
   }
 
   @Override
   public void onStart(ReadableSpan readableSpan) {
-    for (SpanProcessor spanProcessor : spanProcessors) {
+    for (SpanProcessor spanProcessor : spanProcessorsStart) {
       spanProcessor.onStart(readableSpan);
     }
   }
 
   @Override
+  public boolean isStartRequired() {
+    return !spanProcessorsStart.isEmpty();
+  }
+
+  @Override
   public void onEnd(ReadableSpan readableSpan) {
-    for (SpanProcessor spanProcessor : spanProcessors) {
+    for (SpanProcessor spanProcessor : spanProcessorsEnd) {
       spanProcessor.onEnd(readableSpan);
     }
   }
 
   @Override
+  public boolean isEndRequired() {
+    return !spanProcessorsEnd.isEmpty();
+  }
+
+  @Override
   public void shutdown() {
-    for (SpanProcessor spanProcessor : spanProcessors) {
+    for (SpanProcessor spanProcessor : spanProcessorsAll) {
       spanProcessor.shutdown();
     }
   }
 
   @Override
   public void forceFlush() {
-    for (SpanProcessor spanProcessor : spanProcessors) {
+    for (SpanProcessor spanProcessor : spanProcessorsAll) {
       spanProcessor.forceFlush();
     }
   }
 
   private MultiSpanProcessor(List<SpanProcessor> spanProcessors) {
-    this.spanProcessors = spanProcessors;
+    this.spanProcessorsAll = spanProcessors;
+    this.spanProcessorsStart = new ArrayList<>(spanProcessorsAll.size());
+    this.spanProcessorsEnd = new ArrayList<>(spanProcessorsAll.size());
+    for (SpanProcessor spanProcessor : spanProcessorsAll) {
+      if (spanProcessor.isStartRequired()) {
+        spanProcessorsStart.add(spanProcessor);
+      }
+      if (spanProcessor.isEndRequired()) {
+        spanProcessorsEnd.add(spanProcessor);
+      }
+    }
   }
 }

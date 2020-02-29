@@ -1,6 +1,5 @@
 plugins {
     id "java"
-    id "maven-publish"
 
     id "ru.vyarus.animalsniffer"
 }
@@ -9,9 +8,8 @@ description = 'OpenTelemetry SDK Testbed'
 ext.moduleName = 'io.opentelemetry.sdk.contrib.trace.testbed'
 
 dependencies {
-    api project(':opentelemetry-api')
-
-    implementation project(':opentelemetry-sdk'),
+    implementation project(':opentelemetry-api'),
+            project(':opentelemetry-sdk'),
             project(':opentelemetry-exporters-inmemory'),
             libraries.awaitility,
             libraries.guava

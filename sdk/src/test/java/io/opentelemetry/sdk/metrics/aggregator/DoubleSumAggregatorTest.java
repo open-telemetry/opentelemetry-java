@@ -25,13 +25,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link Aggregator}. */
+/** Unit tests for {@link DoubleSumAggregator}. */
 @RunWith(JUnit4.class)
 public class DoubleSumAggregatorTest {
   @Test
   public void factoryAggregation() {
     AggregatorFactory factory = DoubleSumAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(Aggregator.class);
+    assertThat(factory.getAggregator()).isInstanceOf(DoubleSumAggregator.class);
   }
 
   @Test
@@ -66,18 +66,18 @@ public class DoubleSumAggregatorTest {
   @Test
   public void mergeAndReset() {
     Aggregator aggregator = DoubleSumAggregator.getFactory().getAggregator();
-    aggregator.recordDouble(13);
-    aggregator.recordDouble(12);
-    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(25);
+    aggregator.recordDouble(13.1);
+    aggregator.recordDouble(12.1);
+    assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(25.2);
     Aggregator mergedAggregator = DoubleSumAggregator.getFactory().getAggregator();
     aggregator.mergeToAndReset(mergedAggregator);
     assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
-    assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(25);
-    aggregator.recordDouble(12);
-    aggregator.recordDouble(-25);
+    assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(25.2);
+    aggregator.recordDouble(12.1);
+    aggregator.recordDouble(-25.2);
     aggregator.mergeToAndReset(mergedAggregator);
     assertThat(getPoint(aggregator).getValue()).isWithin(1e-6).of(0);
-    assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(12);
+    assertThat(getPoint(mergedAggregator).getValue()).isWithin(1e-6).of(12.1);
   }
 
   private static DoublePoint getPoint(Aggregator aggregator) {

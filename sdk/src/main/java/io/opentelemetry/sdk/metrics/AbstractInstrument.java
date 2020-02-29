@@ -61,7 +61,7 @@ abstract class AbstractInstrument implements Instrument {
     return activeBatcher;
   }
 
-  abstract List<MetricData> collect();
+  abstract List<MetricData> collectAll();
 
   @Override
   public boolean equals(Object o) {
@@ -151,5 +151,9 @@ abstract class AbstractInstrument implements Instrument {
     }
 
     abstract B getThis();
+
+    final <I extends AbstractInstrument> I register(I instrument) {
+      return getMeterSharedState().getInstrumentRegistry().register(instrument);
+    }
   }
 }

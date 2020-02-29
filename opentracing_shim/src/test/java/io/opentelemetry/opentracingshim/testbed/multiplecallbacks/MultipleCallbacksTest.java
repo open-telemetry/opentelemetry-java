@@ -16,14 +16,16 @@
 
 package io.opentelemetry.opentracingshim.testbed.multiplecallbacks;
 
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -41,8 +43,10 @@ import org.junit.Test;
  */
 @SuppressWarnings("FutureReturnValueIgnored")
 public class MultipleCallbacksTest {
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
 
   @Test
   public void test() throws Exception {
@@ -59,9 +63,11 @@ public class MultipleCallbacksTest {
       parentDoneLatch.countDown();
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(4));
+    await()
+        .atMost(15, TimeUnit.SECONDS)
+        .until(finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(4));
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(4, spans.size());
     assertEquals("parent", spans.get(0).getName());
 

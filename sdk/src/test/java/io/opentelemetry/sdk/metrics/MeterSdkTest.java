@@ -19,28 +19,52 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link MeterSdk}. */
 @RunWith(JUnit4.class)
 public class MeterSdkTest {
+  private static final Resource RESOURCE =
+      Resource.create(
+          Collections.singletonMap(
+              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
+  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
+      InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.MeterSdkTest", null);
+  private final TestClock testClock = TestClock.create();
+  private final MeterProviderSharedState meterProviderSharedState =
+      MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
-      MeterSdkProvider.builder().build().get("io.opentelemetry.sdk.metrics.MeterSdkTest");
+      new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+
+  @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void testLongCounter() {
     LongCounter longCounter =
         testSdk
-            .longCounterBuilder("testCounter")
+            .longCounterBuilder("testLongCounter")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
@@ -50,14 +74,27 @@ public class MeterSdkTest {
     assertThat(longCounter).isNotNull();
     assertThat(longCounter).isInstanceOf(LongCounterSdk.class);
 
-    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+    assertThat(
+            testSdk
+                .longCounterBuilder("testLongCounter")
+                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setLabelKeys(Collections.singletonList("sk1"))
+                .setDescription("My very own counter")
+                .setUnit("metric tonnes")
+                .setMonotonic(true)
+                .build())
+        .isSameInstanceAs(longCounter);
+
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Instrument with same name and different descriptor already created.");
+    testSdk.longCounterBuilder("testLongCounter").build();
   }
 
   @Test
   public void testLongMeasure() {
     LongMeasure longMeasure =
         testSdk
-            .longMeasureBuilder("testCounter")
+            .longMeasureBuilder("testLongMeasure")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
@@ -67,14 +104,27 @@ public class MeterSdkTest {
     assertThat(longMeasure).isNotNull();
     assertThat(longMeasure).isInstanceOf(LongMeasureSdk.class);
 
-    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+    assertThat(
+            testSdk
+                .longMeasureBuilder("testLongMeasure")
+                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setLabelKeys(Collections.singletonList("sk1"))
+                .setDescription("My very own counter")
+                .setUnit("metric tonnes")
+                .setAbsolute(true)
+                .build())
+        .isSameInstanceAs(longMeasure);
+
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Instrument with same name and different descriptor already created.");
+    testSdk.longMeasureBuilder("testLongMeasure").build();
   }
 
   @Test
   public void testLongObserver() {
     LongObserver longObserver =
         testSdk
-            .longObserverBuilder("testCounter")
+            .longObserverBuilder("testLongObserver")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
@@ -84,14 +134,27 @@ public class MeterSdkTest {
     assertThat(longObserver).isNotNull();
     assertThat(longObserver).isInstanceOf(LongObserverSdk.class);
 
-    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+    assertThat(
+            testSdk
+                .longObserverBuilder("testLongObserver")
+                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setLabelKeys(Collections.singletonList("sk1"))
+                .setDescription("My very own counter")
+                .setUnit("metric tonnes")
+                .setMonotonic(true)
+                .build())
+        .isSameInstanceAs(longObserver);
+
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Instrument with same name and different descriptor already created.");
+    testSdk.longObserverBuilder("testLongObserver").build();
   }
 
   @Test
   public void testDoubleCounter() {
     DoubleCounter doubleCounter =
         testSdk
-            .doubleCounterBuilder("testCounter")
+            .doubleCounterBuilder("testDoubleCounter")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
@@ -101,14 +164,27 @@ public class MeterSdkTest {
     assertThat(doubleCounter).isNotNull();
     assertThat(doubleCounter).isInstanceOf(DoubleCounterSdk.class);
 
-    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+    assertThat(
+            testSdk
+                .doubleCounterBuilder("testDoubleCounter")
+                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setLabelKeys(Collections.singletonList("sk1"))
+                .setDescription("My very own counter")
+                .setUnit("metric tonnes")
+                .setMonotonic(true)
+                .build())
+        .isSameInstanceAs(doubleCounter);
+
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Instrument with same name and different descriptor already created.");
+    testSdk.doubleCounterBuilder("testDoubleCounter").build();
   }
 
   @Test
   public void testDoubleMeasure() {
     DoubleMeasure doubleMeasure =
         testSdk
-            .doubleMeasureBuilder("testMeasure")
+            .doubleMeasureBuilder("testDoubleMeasure")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own Measure")
@@ -118,14 +194,27 @@ public class MeterSdkTest {
     assertThat(doubleMeasure).isNotNull();
     assertThat(doubleMeasure).isInstanceOf(DoubleMeasureSdk.class);
 
-    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+    assertThat(
+            testSdk
+                .doubleMeasureBuilder("testDoubleMeasure")
+                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setLabelKeys(Collections.singletonList("sk1"))
+                .setDescription("My very own Measure")
+                .setUnit("metric tonnes")
+                .setAbsolute(true)
+                .build())
+        .isSameInstanceAs(doubleMeasure);
+
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Instrument with same name and different descriptor already created.");
+    testSdk.doubleMeasureBuilder("testDoubleMeasure").build();
   }
 
   @Test
   public void testDoubleObserver() {
     DoubleObserver doubleObserver =
         testSdk
-            .doubleObserverBuilder("testCounter")
+            .doubleObserverBuilder("testDoubleObserver")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
@@ -135,7 +224,74 @@ public class MeterSdkTest {
     assertThat(doubleObserver).isNotNull();
     assertThat(doubleObserver).isInstanceOf(DoubleObserverSdk.class);
 
-    // todo: verify that the MeterSdk has kept track of what has been created, once that's in place
+    assertThat(
+            testSdk
+                .doubleObserverBuilder("testDoubleObserver")
+                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setLabelKeys(Collections.singletonList("sk1"))
+                .setDescription("My very own counter")
+                .setUnit("metric tonnes")
+                .setMonotonic(true)
+                .build())
+        .isSameInstanceAs(doubleObserver);
+
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Instrument with same name and different descriptor already created.");
+    testSdk.doubleObserverBuilder("testDoubleObserver").build();
+  }
+
+  @Test
+  public void testBatchRecorder() {
+    BatchRecorder batchRecorder = testSdk.newBatchRecorder(testSdk.createLabelSet("key", "value"));
+    assertThat(batchRecorder).isNotNull();
+    assertThat(batchRecorder).isInstanceOf(BatchRecorderSdk.class);
+  }
+
+  @Test
+  public void collectAll() {
+    LongCounter longCounter = testSdk.longCounterBuilder("testLongCounter").build();
+    longCounter.add(10, testSdk.createLabelSet());
+    LongMeasure longMeasure = testSdk.longMeasureBuilder("testLongMeasure").build();
+    longMeasure.record(10, testSdk.createLabelSet());
+    // LongObserver longObserver = testSdk.longObserverBuilder("testLongObserver").build();
+    DoubleCounter doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
+    doubleCounter.add(10.1, testSdk.createLabelSet());
+    DoubleMeasure doubleMeasure = testSdk.doubleMeasureBuilder("testDoubleMeasure").build();
+    doubleMeasure.record(10.1, testSdk.createLabelSet());
+    // DoubleObserver doubleObserver = testSdk.doubleObserverBuilder("testDoubleObserver").build();
+
+    assertThat(testSdk.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testLongCounter",
+                    "",
+                    "1",
+                    Type.MONOTONIC_LONG,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    LongPoint.create(
+                        testClock.now(),
+                        testClock.now(),
+                        Collections.<String, String>emptyMap(),
+                        10))),
+            MetricData.create(
+                Descriptor.create(
+                    "testDoubleCounter",
+                    "",
+                    "1",
+                    Type.MONOTONIC_DOUBLE,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    DoublePoint.create(
+                        testClock.now(),
+                        testClock.now(),
+                        Collections.<String, String>emptyMap(),
+                        10.1))));
   }
 
   @Test

@@ -89,11 +89,12 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
 
     @Override
     public LongCounterSdk build() {
-      return new LongCounterSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getMeterSharedState(),
-          isMonotonic());
+      return register(
+          new LongCounterSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isMonotonic()));
     }
   }
 }

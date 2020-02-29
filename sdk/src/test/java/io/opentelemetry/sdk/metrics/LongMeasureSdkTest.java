@@ -66,7 +66,7 @@ public class LongMeasureSdkTest {
     LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
     BoundLongMeasure boundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
     try {
-      longMeasure.collect();
+      longMeasure.collectAll();
       BoundLongMeasure duplicateBoundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
       try {
         assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);

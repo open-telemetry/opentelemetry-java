@@ -24,8 +24,10 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 abstract class MeterSharedState {
   static MeterSharedState create(InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new AutoValue_MeterSharedState(instrumentationLibraryInfo);
+    return new AutoValue_MeterSharedState(instrumentationLibraryInfo, new InstrumentRegistry());
   }
 
   abstract InstrumentationLibraryInfo getInstrumentationLibraryInfo();
+
+  abstract InstrumentRegistry getInstrumentRegistry();
 }

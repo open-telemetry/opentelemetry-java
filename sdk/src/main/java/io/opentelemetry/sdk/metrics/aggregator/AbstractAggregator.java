@@ -20,7 +20,7 @@ abstract class AbstractAggregator implements Aggregator {
 
   @Override
   public void mergeToAndReset(Aggregator other) {
-    if (!this.getClass().isAssignableFrom(other.getClass())) {
+    if (!this.getClass().isInstance(other)) {
       return;
     }
     doMergeAndReset(other);

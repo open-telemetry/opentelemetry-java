@@ -89,11 +89,12 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
 
     @Override
     public DoubleMeasureSdk build() {
-      return new DoubleMeasureSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getMeterSharedState(),
-          isAbsolute());
+      return register(
+          new DoubleMeasureSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isAbsolute()));
     }
   }
 }

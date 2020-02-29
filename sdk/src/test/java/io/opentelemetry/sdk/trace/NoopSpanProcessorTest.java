@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +39,10 @@ public class NoopSpanProcessorTest {
   public void noCrash() {
     SpanProcessor noopSpanProcessor = NoopSpanProcessor.getInstance();
     noopSpanProcessor.onStart(readableSpan);
+    assertThat(noopSpanProcessor.isStartRequired()).isFalse();
     noopSpanProcessor.onEnd(readableSpan);
+    assertThat(noopSpanProcessor.isEndRequired()).isFalse();
+    noopSpanProcessor.forceFlush();
     noopSpanProcessor.shutdown();
   }
 }

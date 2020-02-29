@@ -67,7 +67,7 @@ public class DoubleCounterSdkTest {
             .setMonotonic(true)
             .build();
     assertThat(doubleCounter).isInstanceOf(DoubleCounterSdk.class);
-    List<MetricData> metricDataList = ((DoubleCounterSdk) doubleCounter).collect();
+    List<MetricData> metricDataList = ((DoubleCounterSdk) doubleCounter).collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
     assertThat(metricData.getDescriptor())
@@ -88,7 +88,7 @@ public class DoubleCounterSdkTest {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
     doubleCounter.add(12.1d, testSdk.createLabelSet());
-    List<MetricData> metricDataList = doubleCounter.collect();
+    List<MetricData> metricDataList = doubleCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
@@ -123,7 +123,7 @@ public class DoubleCounterSdkTest {
       doubleCounter.add(111.1d, labelSet);
 
       long firstCollect = testClock.now();
-      List<MetricData> metricDataList = doubleCounter.collect();
+      List<MetricData> metricDataList = doubleCounter.collectAll();
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
       assertThat(metricData.getPoints()).hasSize(2);
@@ -138,7 +138,7 @@ public class DoubleCounterSdkTest {
       doubleCounter.add(11d, emptyLabelSet);
 
       long secondCollect = testClock.now();
-      metricDataList = doubleCounter.collect();
+      metricDataList = doubleCounter.collectAll();
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
       assertThat(metricData.getPoints()).hasSize(2);
@@ -169,7 +169,7 @@ public class DoubleCounterSdkTest {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter boundCounter = doubleCounter.bind(testSdk.createLabelSet("K", "v"));
     try {
-      doubleCounter.collect();
+      doubleCounter.collectAll();
       BoundDoubleCounter duplicateBoundCounter =
           doubleCounter.bind(testSdk.createLabelSet("K", "v"));
       try {
@@ -202,7 +202,7 @@ public class DoubleCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleCounter.collect();
+    List<MetricData> metricDataList = doubleCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
@@ -235,7 +235,7 @@ public class DoubleCounterSdkTest {
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleCounter.collect();
+    List<MetricData> metricDataList = doubleCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(

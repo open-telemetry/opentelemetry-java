@@ -16,10 +16,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
@@ -69,8 +72,8 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public BatchRecorder newBatchRecorder(LabelSet labelSet) {
-    throw new UnsupportedOperationException("to be implemented");
+  public BatchRecorderSdk newBatchRecorder(LabelSet labelSet) {
+    return new BatchRecorderSdk(labelSet);
   }
 
   @Override
@@ -81,5 +84,15 @@ final class MeterSdk implements Meter {
   @Override
   public LabelSetSdk createLabelSet(Map<String, String> labels) {
     return LabelSetSdk.create(labels);
+  }
+
+  Collection<MetricData> collectAll() {
+    InstrumentRegistry instrumentRegistry = meterSharedState.getInstrumentRegistry();
+    Collection<AbstractInstrument> instruments = instrumentRegistry.getInstruments();
+    List<MetricData> result = new ArrayList<>(instruments.size());
+    for (AbstractInstrument instrument : instruments) {
+      result.addAll(instrument.collectAll());
+    }
+    return result;
   }
 }
