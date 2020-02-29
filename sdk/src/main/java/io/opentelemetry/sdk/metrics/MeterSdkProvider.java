@@ -22,8 +22,14 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
 import io.opentelemetry.sdk.internal.MillisClock;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.Nonnull;
 
 /**
@@ -35,9 +41,11 @@ import javax.annotation.Nonnull;
 public final class MeterSdkProvider implements MeterProvider {
 
   private final MeterSdkComponentRegistry registry;
+  private final MetricProducer metricProducer;
 
   private MeterSdkProvider(Clock clock, Resource resource) {
     this.registry = new MeterSdkComponentRegistry(MeterProviderSharedState.create(clock, resource));
+    this.metricProducer = new MetricProducerSdk(this.registry);
   }
 
   @Override
@@ -48,6 +56,17 @@ public final class MeterSdkProvider implements MeterProvider {
   @Override
   public MeterSdk get(String instrumentationName, String instrumentationVersion) {
     return registry.get(instrumentationName, instrumentationVersion);
+  }
+
+  /**
+   * Returns the {@link MetricProducer} that can be used to retrieve metrics from this {@code
+   * MeterSdkProvider}.
+   *
+   * @return the {@link MetricProducer} that can be used to retrieve metrics from this {@code
+   *     MeterSdkProvider}.
+   */
+  public MetricProducer getMetricProducer() {
+    return metricProducer;
   }
 
   /**
@@ -116,6 +135,24 @@ public final class MeterSdkProvider implements MeterProvider {
     @Override
     public MeterSdk newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo) {
       return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo);
+    }
+  }
+
+  private static final class MetricProducerSdk implements MetricProducer {
+    private final MeterSdkComponentRegistry registry;
+
+    private MetricProducerSdk(MeterSdkComponentRegistry registry) {
+      this.registry = registry;
+    }
+
+    @Override
+    public Collection<MetricData> getAllMetrics() {
+      Collection<MeterSdk> meters = registry.getComponents();
+      List<MetricData> result = new ArrayList<>(meters.size());
+      for (MeterSdk meter : meters) {
+        result.addAll(meter.collectAll());
+      }
+      return Collections.unmodifiableCollection(result);
     }
   }
 }

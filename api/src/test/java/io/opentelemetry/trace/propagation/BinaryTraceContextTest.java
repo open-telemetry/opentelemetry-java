@@ -48,7 +48,7 @@ public class BinaryTraceContextTest {
         101, 102, 103, 104, 2, 1
       };
   private static final SpanContext INVALID_SPAN_CONTEXT = DefaultSpan.getInvalid().getContext();
-  @Rule public ExpectedException expectedException = ExpectedException.none();
+  @Rule public ExpectedException thrown = ExpectedException.none();
   private final BinaryFormat<SpanContext> binaryFormat = new BinaryTraceContext();
 
   private void testSpanContextConversion(SpanContext spanContext) {
@@ -76,8 +76,10 @@ public class BinaryTraceContextTest {
         SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()));
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void toBinaryValue_NullSpanContext() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("spanContext");
     binaryFormat.toByteArray(null);
   }
 
@@ -98,22 +100,24 @@ public class BinaryTraceContextTest {
                 TRACE_ID, SPAN_ID, TRACE_OPTIONS, TraceState.getDefault()));
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void fromBinaryValue_NullInput() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("bytes");
     binaryFormat.fromByteArray(null);
   }
 
   @Test
   public void fromBinaryValue_EmptyInput() {
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage("Unsupported version.");
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Unsupported version.");
     binaryFormat.fromByteArray(new byte[0]);
   }
 
   @Test
   public void fromBinaryValue_UnsupportedVersionId() {
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage("Unsupported version.");
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Unsupported version.");
     binaryFormat.fromByteArray(
         new byte[] {
           66, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 97, 98, 99, 100, 101,
@@ -123,8 +127,8 @@ public class BinaryTraceContextTest {
 
   @Test
   public void fromBinaryValue_UnsupportedFieldIdFirst() {
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage(
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(
         "Invalid input: expected trace ID at offset "
             + BinaryTraceContext.TRACE_ID_FIELD_ID_OFFSET);
     binaryFormat.fromByteArray(
@@ -136,8 +140,8 @@ public class BinaryTraceContextTest {
 
   @Test
   public void fromBinaryValue_UnsupportedFieldIdSecond() {
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage(
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(
         "Invalid input: expected span ID at offset " + BinaryTraceContext.SPAN_ID_FIELD_ID_OFFSET);
     binaryFormat.fromByteArray(
         new byte[] {
@@ -161,23 +165,23 @@ public class BinaryTraceContextTest {
 
   @Test
   public void fromBinaryValue_ShorterTraceId() {
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage("Invalid input: truncated");
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Invalid input: truncated");
     binaryFormat.fromByteArray(
         new byte[] {0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76});
   }
 
   @Test
   public void fromBinaryValue_ShorterSpanId() {
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage("Invalid input: truncated");
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Invalid input: truncated");
     binaryFormat.fromByteArray(new byte[] {0, 1, 97, 98, 99, 100, 101, 102, 103});
   }
 
   @Test
   public void fromBinaryValue_ShorterTraceFlags() {
-    expectedException.expect(IllegalArgumentException.class);
-    expectedException.expectMessage("Invalid input: truncated");
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Invalid input: truncated");
     binaryFormat.fromByteArray(
         new byte[] {
           0, 0, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 1, 97, 98, 99, 100,

@@ -88,6 +88,14 @@ public class BatchSpansProcessorTest {
   }
 
   @Test
+  public void startEndRequirements() {
+    BatchSpansProcessor spansProcessor =
+        BatchSpansProcessor.newBuilder(new WaitingSpanExporter(0)).build();
+    assertThat(spansProcessor.isStartRequired()).isFalse();
+    assertThat(spansProcessor.isEndRequired()).isTrue();
+  }
+
+  @Test
   public void exportDifferentSampledSpans() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
     tracerSdkFactory.addSpanProcessor(

@@ -2,7 +2,6 @@ plugins {
     id "java"
     id "maven-publish"
 
-    id "io.morethan.jmhreport"
     id "me.champeau.gradle.jmh"
     id "ru.vyarus.animalsniffer"
 }

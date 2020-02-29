@@ -80,13 +80,13 @@ public class OpenTelemetryTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracerRegistry().get("testTracer"))
+    assertThat(OpenTelemetry.getTracerProvider().get("testTracer"))
         .isInstanceOf(DefaultTracer.getInstance().getClass());
-    assertThat(OpenTelemetry.getTracerRegistry().get("testTracer"))
-        .isEqualTo(OpenTelemetry.getTracerRegistry().get("testTracer"));
-    assertThat(OpenTelemetry.getMeterRegistry())
+    assertThat(OpenTelemetry.getTracerProvider().get("testTracer"))
+        .isEqualTo(OpenTelemetry.getTracerProvider().get("testTracer"));
+    assertThat(OpenTelemetry.getMeterProvider())
         .isInstanceOf(DefaultMeterProvider.getInstance().getClass());
-    assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
+    assertThat(OpenTelemetry.getMeterProvider()).isEqualTo(OpenTelemetry.getMeterProvider());
     assertThat(OpenTelemetry.getCorrelationContextManager())
         .isInstanceOf(DefaultCorrelationContextManager.getInstance().getClass());
     assertThat(OpenTelemetry.getCorrelationContextManager())
@@ -99,8 +99,8 @@ public class OpenTelemetryTest {
         createService(TraceProvider.class, FirstTraceProvider.class, SecondTraceProvider.class);
     try {
       assertTrue(
-          (OpenTelemetry.getTracerRegistry() instanceof FirstTraceProvider)
-              || (OpenTelemetry.getTracerRegistry() instanceof SecondTraceProvider));
+          (OpenTelemetry.getTracerProvider() instanceof FirstTraceProvider)
+              || (OpenTelemetry.getTracerProvider() instanceof SecondTraceProvider));
     } finally {
       serviceFile.delete();
     }
@@ -112,7 +112,7 @@ public class OpenTelemetryTest {
         createService(TraceProvider.class, FirstTraceProvider.class, SecondTraceProvider.class);
     System.setProperty(TraceProvider.class.getName(), SecondTraceProvider.class.getName());
     try {
-      assertThat(OpenTelemetry.getTracerRegistry()).isInstanceOf(SecondTraceProvider.class);
+      assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(SecondTraceProvider.class);
     } finally {
       serviceFile.delete();
     }
@@ -122,7 +122,7 @@ public class OpenTelemetryTest {
   public void testTracerNotFound() {
     System.setProperty(TraceProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getTracerRegistry().get("testTracer");
+    OpenTelemetry.getTracerProvider().get("testTracer");
   }
 
   @Test
@@ -132,9 +132,9 @@ public class OpenTelemetryTest {
             MetricsProvider.class, FirstMetricsProvider.class, SecondMetricsProvider.class);
     try {
       assertTrue(
-          (OpenTelemetry.getMeterRegistry() instanceof FirstMetricsProvider)
-              || (OpenTelemetry.getMeterRegistry() instanceof SecondMetricsProvider));
-      assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
+          (OpenTelemetry.getMeterProvider() instanceof FirstMetricsProvider)
+              || (OpenTelemetry.getMeterProvider() instanceof SecondMetricsProvider));
+      assertThat(OpenTelemetry.getMeterProvider()).isEqualTo(OpenTelemetry.getMeterProvider());
     } finally {
       serviceFile.delete();
     }
@@ -147,8 +147,8 @@ public class OpenTelemetryTest {
             MetricsProvider.class, FirstMetricsProvider.class, SecondMetricsProvider.class);
     System.setProperty(MetricsProvider.class.getName(), SecondMetricsProvider.class.getName());
     try {
-      assertThat(OpenTelemetry.getMeterRegistry()).isInstanceOf(SecondMetricsProvider.class);
-      assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
+      assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(SecondMetricsProvider.class);
+      assertThat(OpenTelemetry.getMeterProvider()).isEqualTo(OpenTelemetry.getMeterProvider());
     } finally {
       serviceFile.delete();
     }
@@ -158,7 +158,7 @@ public class OpenTelemetryTest {
   public void testMeterNotFound() {
     System.setProperty(MetricsProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getMeterRegistry();
+    OpenTelemetry.getMeterProvider();
   }
 
   @Test

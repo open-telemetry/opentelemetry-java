@@ -33,6 +33,7 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
@@ -62,10 +63,11 @@ public class HttpTraceContextInjectBenchmark {
 
   /** Benchmark for measuring inject with default trace state and sampled trace options. */
   @Benchmark
-  @BenchmarkMode({Mode.Throughput, Mode.AverageTime})
+  @BenchmarkMode({Mode.AverageTime})
   @Fork(1)
+  @Measurement(iterations = 15, time = 1)
+  @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
-  @Measurement(iterations = 50_000, time = 1, timeUnit = TimeUnit.MILLISECONDS)
   public Map<String, String> measureInject() {
     httpTraceContext.inject(contextToTest, carrier, setter);
     return carrier;

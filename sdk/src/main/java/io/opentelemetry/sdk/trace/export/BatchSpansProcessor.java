@@ -87,11 +87,21 @@ public final class BatchSpansProcessor implements SpanProcessor {
   public void onStart(ReadableSpan span) {}
 
   @Override
+  public boolean isStartRequired() {
+    return false;
+  }
+
+  @Override
   public void onEnd(ReadableSpan span) {
     if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
     }
     worker.addSpan(span);
+  }
+
+  @Override
+  public boolean isEndRequired() {
+    return true;
   }
 
   @Override
@@ -243,7 +253,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
   private static final class Worker implements Runnable {
 
     static {
-      Meter meter = OpenTelemetry.getMeterRegistry().get("io.opentelemetry.sdk.trace");
+      Meter meter = OpenTelemetry.getMeterProvider().get("io.opentelemetry.sdk.trace");
       LongCounter droppedSpansCounter =
           meter
               .longCounterBuilder("droppedSpans")

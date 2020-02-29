@@ -24,8 +24,12 @@ We would love to hear from the larger community: please provide feedback proacti
 
 ## Project setup and contribute
 
-Please refer to the [contribution guide](https://github.com/open-telemetry/opentelemetry-java/blob/master/CONTRIBUTING.md)
+Please refer to the [contribution guide](CONTRIBUTING.md)
 on how to setup and contribute!
+
+## Quick Start
+Please refer to the [quick start guide](QUICKSTART.md) on how use the OpenTelemetry API.
+
 
 ## Snapshots
 

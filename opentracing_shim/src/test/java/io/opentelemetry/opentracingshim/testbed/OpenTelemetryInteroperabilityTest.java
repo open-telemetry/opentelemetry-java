@@ -20,11 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -36,17 +35,14 @@ import org.junit.Test;
 public class OpenTelemetryInteroperabilityTest {
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final io.opentelemetry.trace.Tracer tracer = sdk.get("opentracingshim");
-  private final InMemorySpanExporter spanExporter = InMemorySpanExporter.create();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer otTracer =
       TraceShim.createTracerShim(sdk, DefaultCorrelationContextManager.getInstance());
 
-  {
-    sdk.addSpanProcessor(SimpleSpansProcessor.newBuilder(spanExporter).build());
-  }
-
   @Before
   public void before() {
-    spanExporter.reset();
+    inMemoryTracing.getSpanExporter().reset();
   }
 
   @Test
@@ -60,7 +56,7 @@ public class OpenTelemetryInteroperabilityTest {
     assertEquals(tracer.getCurrentSpan().getClass(), DefaultSpan.class);
     assertNull(otTracer.activeSpan());
 
-    List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
+    List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(2, finishedSpans.size());
     TestUtils.assertSameTrace(finishedSpans);
   }
@@ -77,7 +73,7 @@ public class OpenTelemetryInteroperabilityTest {
     assertEquals(tracer.getCurrentSpan().getClass(), DefaultSpan.class);
     assertNull(otTracer.activeSpan());
 
-    List<SpanData> finishedSpans = spanExporter.getFinishedSpanItems();
+    List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(2, finishedSpans.size());
     TestUtils.assertSameTrace(finishedSpans);
   }

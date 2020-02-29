@@ -46,7 +46,7 @@ class AbstractObserver extends AbstractInstrument {
   }
 
   @Override
-  List<MetricData> collect() {
+  List<MetricData> collectAll() {
     // TODO: Implement this.
     return Collections.emptyList();
   }

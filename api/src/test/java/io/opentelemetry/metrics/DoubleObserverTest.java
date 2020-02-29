@@ -31,7 +31,7 @@ import org.junit.runners.JUnit4;
 public class DoubleObserverTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
-  private final Meter meter = OpenTelemetry.getMeterRegistry().get("observer_double_test");
+  private final Meter meter = OpenTelemetry.getMeterProvider().get("observer_double_test");
 
   @Test
   public void preventNonPrintableName() {
