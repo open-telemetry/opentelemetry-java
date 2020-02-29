@@ -37,7 +37,7 @@ public class SemanticAttributesTest {
 
   @Before
   public void setUp() {
-    Tracer tracer = OpenTelemetry.getTracerRegistry().get("io.telemetry.api");
+    Tracer tracer = OpenTelemetry.getTracerProvider().get("io.telemetry.api");
     span = tracer.spanBuilder("junit").startSpan();
   }
 
