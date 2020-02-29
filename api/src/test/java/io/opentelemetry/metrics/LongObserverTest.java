@@ -31,7 +31,7 @@ import org.junit.runners.JUnit4;
 public class LongObserverTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
-  private final Meter meter = OpenTelemetry.getMeterRegistry().get("observer_long_test");
+  private final Meter meter = OpenTelemetry.getMeterProvider().get("observer_long_test");
 
   @Test
   public void preventNonPrintableName() {

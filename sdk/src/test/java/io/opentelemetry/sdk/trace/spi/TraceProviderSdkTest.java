@@ -30,6 +30,6 @@ public class TraceProviderSdkTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracerRegistry()).isInstanceOf(TracerSdkProvider.class);
+    assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(TracerSdkProvider.class);
   }
 }
