@@ -17,8 +17,10 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
@@ -223,14 +225,27 @@ public class Aggregations {
 
     @Override
     public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
-      // TODO: Implement LastValue aggregator and use it here.
-      return NoopAggregator.getFactory();
+      return instrumentValueType == InstrumentValueType.LONG
+          ? LongLastValueAggregator.getFactory()
+          : DoubleLastValueAggregator.getFactory();
     }
 
     @Override
     public Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      throw new UnsupportedOperationException("Implement this");
+      switch (instrumentType) {
+        case OBSERVER_MONOTONIC:
+          return instrumentValueType == InstrumentValueType.LONG
+              ? Type.MONOTONIC_LONG
+              : Type.MONOTONIC_DOUBLE;
+        case OBSERVER_NON_MONOTONIC:
+          return instrumentValueType == InstrumentValueType.LONG
+              ? Type.NON_MONOTONIC_LONG
+              : Type.NON_MONOTONIC_DOUBLE;
+        default:
+          // Do not change this unless the limitations of the current LastValueAggregator are fixed.
+          throw new IllegalArgumentException("Unsupported instrument/value types");
+      }
     }
 
     @Override
@@ -240,7 +255,9 @@ public class Aggregations {
 
     @Override
     public boolean availableForInstrument(InstrumentType instrumentType) {
-      throw new UnsupportedOperationException("Implement this");
+      // Do not change this unless the limitations of the current LastValueAggregator are fixed.
+      return instrumentType == InstrumentType.OBSERVER_MONOTONIC
+          || instrumentType == InstrumentType.OBSERVER_NON_MONOTONIC;
     }
   }
 
