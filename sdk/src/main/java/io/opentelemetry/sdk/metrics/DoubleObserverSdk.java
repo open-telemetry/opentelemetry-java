@@ -49,19 +49,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
       return Collections.emptyList();
     }
     final ActiveBatcher activeBatcher = getActiveBatcher();
-    currentMetricUpdater.update(
-        new ResultDoubleObserver() {
-          @Override
-          public void observe(double value, LabelSet labelSet) {
-            if (isMonotonic() && value < 0) {
-              throw new IllegalArgumentException(
-                  "monotonic observers can only record positive values");
-            }
-            Aggregator aggregator = activeBatcher.getAggregator();
-            aggregator.recordDouble(value);
-            activeBatcher.batch(labelSet, aggregator, /* mappedAggregator= */ false);
-          }
-        });
+    currentMetricUpdater.update(new ResultDoubleObserverSdk(activeBatcher, isMonotonic()));
     return activeBatcher.completeCollectionCycle();
   }
 
@@ -94,6 +82,27 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
               getMeterProviderSharedState(),
               getMeterSharedState(),
               isMonotonic()));
+    }
+  }
+
+  private static final class ResultDoubleObserverSdk implements ResultDoubleObserver {
+
+    private final ActiveBatcher activeBatcher;
+    private final boolean monotonic;
+
+    private ResultDoubleObserverSdk(ActiveBatcher activeBatcher, boolean monotonic) {
+      this.activeBatcher = activeBatcher;
+      this.monotonic = monotonic;
+    }
+
+    @Override
+    public void observe(double value, LabelSet labelSet) {
+      if (monotonic && value < 0) {
+        throw new IllegalArgumentException("monotonic observers can only record positive values");
+      }
+      Aggregator aggregator = activeBatcher.getAggregator();
+      aggregator.recordDouble(value);
+      activeBatcher.batch(labelSet, aggregator, /* mappedAggregator= */ false);
     }
   }
 }

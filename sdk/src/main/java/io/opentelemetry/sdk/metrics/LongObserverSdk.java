@@ -49,19 +49,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
       return Collections.emptyList();
     }
     final ActiveBatcher activeBatcher = getActiveBatcher();
-    currentMetricUpdater.update(
-        new ResultLongObserver() {
-          @Override
-          public void observe(long value, LabelSet labelSet) {
-            if (isMonotonic() && value < 0) {
-              throw new IllegalArgumentException(
-                  "monotonic observers can only record positive values");
-            }
-            Aggregator aggregator = activeBatcher.getAggregator();
-            aggregator.recordLong(value);
-            activeBatcher.batch(labelSet, aggregator, /* mappedAggregator= */ false);
-          }
-        });
+    currentMetricUpdater.update(new ResultLongObserverSdk(activeBatcher, isMonotonic()));
     return activeBatcher.completeCollectionCycle();
   }
 
@@ -93,6 +81,27 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
               getMeterProviderSharedState(),
               getMeterSharedState(),
               isMonotonic()));
+    }
+  }
+
+  private static final class ResultLongObserverSdk implements ResultLongObserver {
+
+    private final ActiveBatcher activeBatcher;
+    private final boolean monotonic;
+
+    private ResultLongObserverSdk(ActiveBatcher activeBatcher, boolean monotonic) {
+      this.activeBatcher = activeBatcher;
+      this.monotonic = monotonic;
+    }
+
+    @Override
+    public void observe(long value, LabelSet labelSet) {
+      if (monotonic && value < 0) {
+        throw new IllegalArgumentException("monotonic observers can only record positive values");
+      }
+      Aggregator aggregator = activeBatcher.getAggregator();
+      aggregator.recordLong(value);
+      activeBatcher.batch(labelSet, aggregator, /* mappedAggregator= */ false);
     }
   }
 }
