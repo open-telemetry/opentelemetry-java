@@ -19,6 +19,7 @@ package io.opentelemetry.exporters.logging;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LoggingMetricExporter implements MetricExporter {
@@ -28,7 +29,7 @@ public class LoggingMetricExporter implements MetricExporter {
   public ResultCode export(Collection<MetricData> metrics) {
     logger.info("Received a collection of " + metrics.size() + " metrics for export.");
     for (MetricData metricData : metrics) {
-      logger.info("metric: " + metricData);
+      logger.log(Level.INFO, "metric: {0}", metricData);
     }
     return ResultCode.SUCCESS;
   }
