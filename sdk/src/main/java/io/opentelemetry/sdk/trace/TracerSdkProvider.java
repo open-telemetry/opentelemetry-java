@@ -25,32 +25,32 @@ import io.opentelemetry.sdk.resources.EnvVarResource;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerRegistry;
+import io.opentelemetry.trace.TracerProvider;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * {@code Tracer} provider implementation for {@link TracerRegistry}.
+ * {@code Tracer} provider implementation for {@link TracerProvider}.
  *
  * <p>This class is not intended to be used in application code and it is used only by {@link
  * io.opentelemetry.OpenTelemetry}. However, if you need a custom implementation of the factory, you
  * can create one as needed.
  */
-public class TracerSdkRegistry implements TracerRegistry {
-  private static final Logger logger = Logger.getLogger(TracerRegistry.class.getName());
+public class TracerSdkProvider implements TracerProvider {
+  private static final Logger logger = Logger.getLogger(TracerProvider.class.getName());
   private final TracerSharedState sharedState;
   private final TracerSdkComponentRegistry tracerSdkComponentRegistry;
 
   /**
-   * Returns a new {@link Builder} for {@link TracerSdkRegistry}.
+   * Returns a new {@link Builder} for {@link TracerSdkProvider}.
    *
-   * @return a new {@link Builder} for {@link TracerSdkRegistry}.
+   * @return a new {@link Builder} for {@link TracerSdkProvider}.
    */
   public static Builder builder() {
     return new Builder();
   }
 
-  private TracerSdkRegistry(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+  private TracerSdkProvider(Clock clock, IdsGenerator idsGenerator, Resource resource) {
     this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
@@ -167,8 +167,8 @@ public class TracerSdkRegistry implements TracerRegistry {
      *
      * @return An initialized TracerSdkFactory.
      */
-    public TracerSdkRegistry build() {
-      return new TracerSdkRegistry(clock, idsGenerator, resource);
+    public TracerSdkProvider build() {
+      return new TracerSdkProvider(clock, idsGenerator, resource);
     }
 
     private Builder() {}

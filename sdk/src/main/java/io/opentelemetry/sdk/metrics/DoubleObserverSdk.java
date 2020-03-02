@@ -17,20 +17,19 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleObserver;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
 final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver {
   DoubleObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       boolean monotonic) {
     super(
         descriptor,
         InstrumentValueType.LONG,
         meterProviderSharedState,
-        instrumentationLibraryInfo,
+        meterSharedState,
         monotonic);
   }
 
@@ -39,22 +38,15 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     throw new UnsupportedOperationException("to be implemented");
   }
 
-  static DoubleObserver.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
-  }
-
-  private static final class Builder
+  static final class Builder
       extends AbstractObserver.Builder<DoubleObserver.Builder, DoubleObserver>
       implements DoubleObserver.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -63,12 +55,13 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     }
 
     @Override
-    public DoubleObserver build() {
-      return new DoubleObserverSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo(),
-          isMonotonic());
+    public DoubleObserverSdk build() {
+      return register(
+          new DoubleObserverSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isMonotonic()));
     }
   }
 }

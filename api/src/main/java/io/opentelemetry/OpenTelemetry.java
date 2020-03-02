@@ -25,9 +25,9 @@ import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
 import io.opentelemetry.trace.DefaultTraceProvider;
-import io.opentelemetry.trace.DefaultTracerRegistry;
+import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.TracerRegistry;
+import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.spi.TraceProvider;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
@@ -39,7 +39,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
- * @see TracerRegistry
+ * @see TracerProvider
  * @see MetricsProvider
  * @see CorrelationContextManagerProvider
  */
@@ -48,20 +48,20 @@ public final class OpenTelemetry {
 
   @Nullable private static volatile OpenTelemetry instance;
 
-  private final TracerRegistry tracerRegistry;
+  private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
   private final CorrelationContextManager contextManager;
 
   /**
-   * Returns a singleton {@link TracerRegistry}.
+   * Returns a singleton {@link TracerProvider}.
    *
-   * @return registered TracerRegistry of default via {@link DefaultTracerRegistry#getInstance()}.
-   * @throws IllegalStateException if a specified TracerRegistry (via system properties) could not
+   * @return registered TracerProvider of default via {@link DefaultTracerProvider#getInstance()}.
+   * @throws IllegalStateException if a specified TracerProvider (via system properties) could not
    *     be found.
    * @since 0.1.0
    */
-  public static TracerRegistry getTracerRegistry() {
-    return getInstance().tracerRegistry;
+  public static TracerProvider getTracerProvider() {
+    return getInstance().tracerProvider;
   }
 
   /**
@@ -72,7 +72,7 @@ public final class OpenTelemetry {
    *     found.
    * @since 0.1.0
    */
-  public static MeterProvider getMeterRegistry() {
+  public static MeterProvider getMeterProvider() {
     return getInstance().meterProvider;
   }
 
@@ -103,7 +103,7 @@ public final class OpenTelemetry {
 
   private OpenTelemetry() {
     TraceProvider traceProvider = loadSpi(TraceProvider.class);
-    this.tracerRegistry =
+    this.tracerProvider =
         traceProvider != null
             ? traceProvider.create()
             : DefaultTraceProvider.getInstance().create();

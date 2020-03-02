@@ -17,6 +17,7 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.internal.StringUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +37,7 @@ public class DoubleCounterTest {
   private static final String UNIT = "1";
   private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
-  private final Meter meter = OpenTelemetry.getMeterRegistry().get("counter_double_test");
+  private final Meter meter = OpenTelemetry.getMeterProvider().get("counter_double_test");
 
   @Test
   public void preventNonPrintableName() {
@@ -47,7 +48,7 @@ public class DoubleCounterTest {
 
   @Test
   public void preventTooLongName() {
-    char[] chars = new char[DefaultMeter.NAME_MAX_LENGTH + 1];
+    char[] chars = new char[StringUtils.NAME_MAX_LENGTH + 1];
     Arrays.fill(chars, 'a');
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);

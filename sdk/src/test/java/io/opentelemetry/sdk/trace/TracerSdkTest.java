@@ -47,7 +47,7 @@ public class TracerSdkTest {
           INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
   @Mock private Span span;
   private final TracerSdk tracer =
-      TracerSdkRegistry.builder()
+      TracerSdkProvider.builder()
           .build()
           .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 

@@ -29,6 +29,6 @@ import org.junit.runners.JUnit4;
 public class MetricsProviderSdkTest {
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getMeterRegistry()).isInstanceOf(MeterSdkProvider.class);
+    assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(MeterSdkProvider.class);
   }
 }

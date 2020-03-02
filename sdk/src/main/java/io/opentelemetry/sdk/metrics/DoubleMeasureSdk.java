@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.DoubleMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -27,13 +26,13 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
   private DoubleMeasureSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       boolean absolute) {
     super(
         descriptor,
         InstrumentValueType.DOUBLE,
         meterProviderSharedState,
-        instrumentationLibraryInfo,
+        meterSharedState,
         absolute);
   }
 
@@ -54,7 +53,8 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     return new BoundInstrument(isAbsolute(), batcher);
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument implements BoundDoubleMeasure {
+  static final class BoundInstrument extends AbstractBoundInstrument
+      implements DoubleMeasure.BoundDoubleMeasure {
 
     private final boolean absolute;
 
@@ -72,22 +72,14 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     }
   }
 
-  static DoubleMeasure.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
-  }
-
-  private static final class Builder
-      extends AbstractMeasure.Builder<DoubleMeasure.Builder, DoubleMeasure>
+  static final class Builder extends AbstractMeasure.Builder<DoubleMeasure.Builder, DoubleMeasure>
       implements DoubleMeasure.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -96,12 +88,13 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     }
 
     @Override
-    public DoubleMeasure build() {
-      return new DoubleMeasureSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo(),
-          isAbsolute());
+    public DoubleMeasureSdk build() {
+      return register(
+          new DoubleMeasureSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isAbsolute()));
     }
   }
 }

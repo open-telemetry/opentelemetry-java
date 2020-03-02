@@ -16,11 +16,11 @@
 
 package io.opentelemetry.trace;
 
-public class DefaultTracerRegistry implements TracerRegistry {
+public class DefaultTracerProvider implements TracerProvider {
 
-  private static final TracerRegistry instance = new DefaultTracerRegistry();
+  private static final TracerProvider instance = new DefaultTracerProvider();
 
-  public static TracerRegistry getInstance() {
+  public static TracerProvider getInstance() {
     return instance;
   }
 

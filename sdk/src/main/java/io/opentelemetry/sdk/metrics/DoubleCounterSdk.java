@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -28,12 +27,12 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
       InstrumentDescriptor descriptor,
       boolean monotonic,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+      MeterSharedState meterSharedState) {
     super(
         descriptor,
         InstrumentValueType.DOUBLE,
         meterProviderSharedState,
-        instrumentationLibraryInfo,
+        meterSharedState,
         monotonic);
   }
 
@@ -54,7 +53,8 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     return new BoundInstrument(isMonotonic(), batcher);
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument implements BoundDoubleCounter {
+  static final class BoundInstrument extends AbstractBoundInstrument
+      implements DoubleCounter.BoundDoubleCounter {
 
     private final boolean monotonic;
 
@@ -72,22 +72,14 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     }
   }
 
-  static DoubleCounter.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
-  }
-
-  private static final class Builder
-      extends AbstractCounter.Builder<DoubleCounter.Builder, DoubleCounter>
+  static final class Builder extends AbstractCounter.Builder<DoubleCounter.Builder, DoubleCounter>
       implements DoubleCounter.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -96,12 +88,13 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     }
 
     @Override
-    public DoubleCounter build() {
-      return new DoubleCounterSdk(
-          getInstrumentDescriptor(),
-          isMonotonic(),
-          getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo());
+    public DoubleCounterSdk build() {
+      return register(
+          new DoubleCounterSdk(
+              getInstrumentDescriptor(),
+              isMonotonic(),
+              getMeterProviderSharedState(),
+              getMeterSharedState()));
     }
   }
 }

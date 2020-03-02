@@ -25,13 +25,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link Aggregator}. */
+/** Unit tests for {@link LongSumAggregator}. */
 @RunWith(JUnit4.class)
 public class LongSumAggregatorTest {
   @Test
   public void factoryAggregation() {
     AggregatorFactory factory = LongSumAggregator.getFactory();
-    assertThat(factory.getAggregator()).isInstanceOf(Aggregator.class);
+    assertThat(factory.getAggregator()).isInstanceOf(LongSumAggregator.class);
+  }
+
+  @Test
+  public void toPoint() {
+    Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
+    assertThat(getPoint(aggregator).getValue()).isEqualTo(0);
   }
 
   @Test
@@ -58,7 +64,7 @@ public class LongSumAggregatorTest {
   }
 
   @Test
-  public void mergeAndReset_WithNegatives() {
+  public void mergeAndReset() {
     Aggregator aggregator = LongSumAggregator.getFactory().getAggregator();
     aggregator.recordLong(13);
     aggregator.recordLong(12);

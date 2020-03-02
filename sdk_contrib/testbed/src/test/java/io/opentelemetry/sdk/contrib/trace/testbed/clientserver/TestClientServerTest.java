@@ -21,8 +21,9 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
@@ -36,9 +37,10 @@ import org.junit.Test;
 
 public class TestClientServerTest {
 
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer =
-      TestUtils.createTracer(TestClientServerTest.class.getName(), exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = sdk.get(TestClientServerTest.class.getName());
   private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(10);
   private Server server;
 
@@ -59,9 +61,11 @@ public class TestClientServerTest {
     Client client = new Client(queue, tracer);
     client.send();
 
-    await().atMost(15, TimeUnit.SECONDS).until(TestUtils.finishedSpansSize(exporter), equalTo(2));
+    await()
+        .atMost(15, TimeUnit.SECONDS)
+        .until(TestUtils.finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(2));
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(2, finished.size());
 
     finished = TestUtils.sortByStartTime(finished);

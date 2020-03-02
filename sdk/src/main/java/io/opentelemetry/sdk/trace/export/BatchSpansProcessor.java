@@ -17,7 +17,11 @@
 package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
+import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -83,6 +87,11 @@ public final class BatchSpansProcessor implements SpanProcessor {
   public void onStart(ReadableSpan span) {}
 
   @Override
+  public boolean isStartRequired() {
+    return false;
+  }
+
+  @Override
   public void onEnd(ReadableSpan span) {
     if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
@@ -91,9 +100,19 @@ public final class BatchSpansProcessor implements SpanProcessor {
   }
 
   @Override
+  public boolean isEndRequired() {
+    return true;
+  }
+
+  @Override
   public void shutdown() {
     workerThread.interrupt();
-    worker.flush();
+    worker.shutdown();
+  }
+
+  @Override
+  public void forceFlush() {
+    worker.forceFlush();
   }
 
   /**
@@ -233,6 +252,23 @@ public final class BatchSpansProcessor implements SpanProcessor {
   // concurrency.
   private static final class Worker implements Runnable {
 
+    static {
+      Meter meter = OpenTelemetry.getMeterProvider().get("io.opentelemetry.sdk.trace");
+      LongCounter droppedSpansCounter =
+          meter
+              .longCounterBuilder("droppedSpans")
+              .setMonotonic(true)
+              .setUnit("1")
+              .setDescription(
+                  "The number of spans dropped by the BatchSpansProcessor due to high throughput.")
+              .build();
+      droppedSpans =
+          droppedSpansCounter.bind(
+              meter.createLabelSet("spanProcessorType", BatchSpansProcessor.class.getSimpleName()));
+    }
+
+    private static final BoundLongCounter droppedSpans;
+
     private final ExecutorService executorService =
         Executors.newSingleThreadExecutor(
             new ThreadFactory() {
@@ -272,7 +308,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private void addSpan(ReadableSpan span) {
       synchronized (monitor) {
         if (spansList.size() == maxQueueSize) {
-          // TODO: Record a counter for dropped spans.
+          droppedSpans.add(1);
           return;
         }
         // TODO: Record a gauge for referenced spans.
@@ -314,7 +350,12 @@ public final class BatchSpansProcessor implements SpanProcessor {
       }
     }
 
-    private void flush() {
+    private void shutdown() {
+      forceFlush();
+      executorService.shutdown();
+    }
+
+    private void forceFlush() {
       ArrayList<ReadableSpan> spansCopy;
       synchronized (monitor) {
         spansCopy = new ArrayList<>(spansList);
@@ -322,7 +363,6 @@ public final class BatchSpansProcessor implements SpanProcessor {
       }
       // Execute the batch export outside the synchronized to not block all producers.
       exportBatches(spansCopy);
-      executorService.shutdown();
     }
 
     private void exportBatches(ArrayList<ReadableSpan> spanList) {

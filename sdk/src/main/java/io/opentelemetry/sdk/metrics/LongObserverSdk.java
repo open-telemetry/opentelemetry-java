@@ -17,20 +17,19 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LongObserver;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
 final class LongObserverSdk extends AbstractObserver implements LongObserver {
   LongObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       boolean monotonic) {
     super(
         descriptor,
         InstrumentValueType.LONG,
         meterProviderSharedState,
-        instrumentationLibraryInfo,
+        meterSharedState,
         monotonic);
   }
 
@@ -39,22 +38,14 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     throw new UnsupportedOperationException("to be implemented");
   }
 
-  static LongObserver.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
-  }
-
-  private static final class Builder
-      extends AbstractObserver.Builder<LongObserver.Builder, LongObserver>
+  static final class Builder extends AbstractObserver.Builder<LongObserver.Builder, LongObserver>
       implements LongObserver.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -63,12 +54,13 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     }
 
     @Override
-    public LongObserver build() {
-      return new LongObserverSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo(),
-          isMonotonic());
+    public LongObserverSdk build() {
+      return register(
+          new LongObserverSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isMonotonic()));
     }
   }
 }

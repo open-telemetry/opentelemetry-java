@@ -22,7 +22,7 @@ import static org.mockito.Mockito.doThrow;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class BatchSpansProcessorTest {
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
-  private final TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.builder().build();
+  private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final Tracer tracer = tracerSdkFactory.get("BatchSpansProcessorTest");
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
@@ -85,6 +85,14 @@ public class BatchSpansProcessorTest {
     TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOff())
         .startSpan()
         .end();
+  }
+
+  @Test
+  public void startEndRequirements() {
+    BatchSpansProcessor spansProcessor =
+        BatchSpansProcessor.newBuilder(new WaitingSpanExporter(0)).build();
+    assertThat(spansProcessor.isStartRequired()).isFalse();
+    assertThat(spansProcessor.isEndRequired()).isTrue();
   }
 
   @Test
@@ -126,6 +134,28 @@ public class BatchSpansProcessorTest {
             span4.toSpanData(),
             span5.toSpanData(),
             span6.toSpanData());
+  }
+
+  @Test
+  public void forceExport() {
+    WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1, 1);
+    BatchSpansProcessor batchSpansProcessor =
+        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+            .setMaxQueueSize(10_000)
+            .setMaxExportBatchSize(2_000)
+            .setScheduleDelayMillis(10_000) // 10s
+            .build();
+    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
+    for (int i = 0; i < 100; i++) {
+      createSampledEndedSpan("notExported");
+    }
+    List<SpanData> exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(0);
+    batchSpansProcessor.forceFlush();
+    exported = waitingSpanExporter.waitForExport();
+    assertThat(exported).isNotNull();
+    assertThat(exported.size()).isEqualTo(100);
   }
 
   @Test
@@ -395,10 +425,16 @@ public class BatchSpansProcessorTest {
     private final List<SpanData> spanDataList = new ArrayList<>();
     private final int numberToWaitFor;
     private CountDownLatch countDownLatch;
+    private int timeout = 10;
 
     WaitingSpanExporter(int numberToWaitFor) {
       countDownLatch = new CountDownLatch(numberToWaitFor);
       this.numberToWaitFor = numberToWaitFor;
+    }
+
+    WaitingSpanExporter(int numberToWaitFor, int timeout) {
+      this(numberToWaitFor);
+      this.timeout = timeout;
     }
 
     /**
@@ -411,7 +447,7 @@ public class BatchSpansProcessorTest {
     @Nullable
     List<SpanData> waitForExport() {
       try {
-        countDownLatch.await(10, TimeUnit.SECONDS);
+        countDownLatch.await(timeout, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
         // Preserve the interruption status as per guidance.
         Thread.currentThread().interrupt();

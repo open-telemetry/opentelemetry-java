@@ -17,8 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Measure;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
 abstract class AbstractMeasure<B extends AbstractBoundInstrument>
@@ -30,12 +28,12 @@ abstract class AbstractMeasure<B extends AbstractBoundInstrument>
       InstrumentDescriptor descriptor,
       InstrumentValueType instrumentValueType,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       boolean absolute) {
     super(
         descriptor,
         meterProviderSharedState,
-        instrumentationLibraryInfo,
+        meterSharedState,
         new ActiveBatcher(Batchers.getNoop()));
     this.absolute = absolute;
     this.instrumentValueType = instrumentValueType;
@@ -77,8 +75,8 @@ abstract class AbstractMeasure<B extends AbstractBoundInstrument>
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -90,9 +88,5 @@ abstract class AbstractMeasure<B extends AbstractBoundInstrument>
     final boolean isAbsolute() {
       return this.absolute;
     }
-  }
-
-  static InstrumentType getInstrumentType(boolean absolute) {
-    return absolute ? InstrumentType.MEASURE_ABSOLUTE : InstrumentType.MEASURE_NON_ABSOLUTE;
   }
 }

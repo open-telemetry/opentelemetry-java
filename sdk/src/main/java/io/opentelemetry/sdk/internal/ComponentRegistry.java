@@ -17,12 +17,15 @@
 package io.opentelemetry.sdk.internal;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 
 /**
- * Base class for all the registry classes (Tracer, Meter, etc.).
+ * Base class for all the provider classes (TracerProvider, MeterProvider, etc.).
  *
  * @param <V> the type of the registered value.
  */
@@ -38,7 +41,7 @@ public abstract class ComponentRegistry<V> {
    * @param instrumentationName the name of the instrumentation library.
    * @return the registered value associated with this name and {@code null} version.
    */
-  public V get(String instrumentationName) {
+  public final V get(String instrumentationName) {
     return get(instrumentationName, null);
   }
 
@@ -50,7 +53,7 @@ public abstract class ComponentRegistry<V> {
    * @param instrumentationVersion the version of the instrumentation library.
    * @return the registered value associated with this name and version.
    */
-  public V get(String instrumentationName, @Nullable String instrumentationVersion) {
+  public final V get(String instrumentationName, @Nullable String instrumentationVersion) {
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         InstrumentationLibraryInfo.create(instrumentationName, instrumentationVersion);
 
@@ -62,6 +65,15 @@ public abstract class ComponentRegistry<V> {
     V newComponent = newComponent(instrumentationLibraryInfo);
     V oldComponent = registry.putIfAbsent(instrumentationLibraryInfo, newComponent);
     return oldComponent != null ? oldComponent : newComponent;
+  }
+
+  /**
+   * Returns a {@code Collection} view of the registered components.
+   *
+   * @return a {@code Collection} view of the registered components.
+   */
+  public final Collection<V> getComponents() {
+    return Collections.unmodifiableCollection(new ArrayList<>(registry.values()));
   }
 
   public abstract V newComponent(InstrumentationLibraryInfo instrumentationLibraryInfo);

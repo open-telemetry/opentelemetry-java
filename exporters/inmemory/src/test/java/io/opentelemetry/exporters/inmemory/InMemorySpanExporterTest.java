@@ -18,7 +18,7 @@ package io.opentelemetry.exporters.inmemory;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
@@ -33,13 +33,13 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link InMemorySpanExporter}. */
 @RunWith(JUnit4.class)
 public class InMemorySpanExporterTest {
-  private final TracerSdkRegistry tracerSdkRegistry = TracerSdkRegistry.builder().build();
-  private final Tracer tracer = tracerSdkRegistry.get("InMemorySpanExporterTest");
+  private final TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
+  private final Tracer tracer = tracerSdkProvider.get("InMemorySpanExporterTest");
   private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
 
   @Before
   public void setup() {
-    tracerSdkRegistry.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    tracerSdkProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
   }
 
   @Test

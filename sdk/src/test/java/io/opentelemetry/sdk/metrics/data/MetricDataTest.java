@@ -23,7 +23,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
@@ -35,6 +38,7 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link io.opentelemetry.sdk.metrics.data.MetricData}. */
 @RunWith(JUnit4.class)
 public class MetricDataTest {
+
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   private static final Descriptor LONG_METRIC_DESCRIPTOR =
@@ -55,12 +59,26 @@ public class MetricDataTest {
   private static final long EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(2000);
   private static final long LONG_VALUE = 10;
   private static final double DOUBLE_VALUE = 1.234;
+  private static final ValueAtPercentile MINIMUM_VALUE =
+      ValueAtPercentile.create(0.0, DOUBLE_VALUE);
+  private static final ValueAtPercentile MAXIMUM_VALUE =
+      ValueAtPercentile.create(100.0, DOUBLE_VALUE);
   private static final LongPoint LONG_POINT =
       MetricData.LongPoint.create(
           START_EPOCH_NANOS, EPOCH_NANOS, Collections.singletonMap("key", "value"), LONG_VALUE);
   private static final DoublePoint DOUBLE_POINT =
       DoublePoint.create(
           START_EPOCH_NANOS, EPOCH_NANOS, Collections.singletonMap("key", "value"), DOUBLE_VALUE);
+  private static final SummaryPoint SUMMARY_POINT =
+      SummaryPoint.create(
+          START_EPOCH_NANOS,
+          EPOCH_NANOS,
+          Collections.singletonMap("key", "value"),
+          LONG_VALUE,
+          DOUBLE_VALUE,
+          Arrays.asList(
+              ValueAtPercentile.create(0.0, DOUBLE_VALUE),
+              ValueAtPercentile.create(100, DOUBLE_VALUE)));
 
   @Test
   public void metricData_NullDescriptor() {
@@ -69,7 +87,7 @@ public class MetricDataTest {
     MetricData.create(
         null,
         Resource.getEmpty(),
-        InstrumentationLibraryInfo.EMPTY,
+        InstrumentationLibraryInfo.getEmpty(),
         Collections.<Point>singletonList(DOUBLE_POINT));
   }
 
@@ -80,7 +98,7 @@ public class MetricDataTest {
     MetricData.create(
         LONG_METRIC_DESCRIPTOR,
         null,
-        InstrumentationLibraryInfo.EMPTY,
+        InstrumentationLibraryInfo.getEmpty(),
         Collections.<Point>singletonList(DOUBLE_POINT));
   }
 
@@ -100,7 +118,7 @@ public class MetricDataTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("points");
     MetricData.create(
-        LONG_METRIC_DESCRIPTOR, Resource.getEmpty(), InstrumentationLibraryInfo.EMPTY, null);
+        LONG_METRIC_DESCRIPTOR, Resource.getEmpty(), InstrumentationLibraryInfo.getEmpty(), null);
   }
 
   @Test
@@ -109,12 +127,12 @@ public class MetricDataTest {
         MetricData.create(
             LONG_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
-            InstrumentationLibraryInfo.EMPTY,
+            InstrumentationLibraryInfo.getEmpty(),
             Collections.<Point>emptyList());
     assertThat(metricData.getDescriptor()).isEqualTo(LONG_METRIC_DESCRIPTOR);
     assertThat(metricData.getResource()).isEqualTo(Resource.getEmpty());
     assertThat(metricData.getInstrumentationLibraryInfo())
-        .isEqualTo(InstrumentationLibraryInfo.EMPTY);
+        .isEqualTo(InstrumentationLibraryInfo.getEmpty());
     assertThat(metricData.getPoints()).isEmpty();
   }
 
@@ -128,9 +146,27 @@ public class MetricDataTest {
         MetricData.create(
             LONG_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
-            InstrumentationLibraryInfo.EMPTY,
+            InstrumentationLibraryInfo.getEmpty(),
             Collections.<Point>singletonList(LONG_POINT));
     assertThat(metricData.getPoints()).containsExactly(LONG_POINT);
+  }
+
+  @Test
+  public void metricData_SummaryPoints() {
+    assertThat(SUMMARY_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
+    assertThat(SUMMARY_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
+    assertThat(SUMMARY_POINT.getLabels()).containsExactly("key", "value");
+    assertThat(SUMMARY_POINT.getCount()).isEqualTo(LONG_VALUE);
+    assertThat(SUMMARY_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
+    assertThat(SUMMARY_POINT.getPercentileValues())
+        .isEqualTo(Arrays.asList(MINIMUM_VALUE, MAXIMUM_VALUE));
+    MetricData metricData =
+        MetricData.create(
+            DOUBLE_METRIC_DESCRIPTOR,
+            Resource.getEmpty(),
+            InstrumentationLibraryInfo.getEmpty(),
+            Collections.<Point>singletonList(SUMMARY_POINT));
+    assertThat(metricData.getPoints()).containsExactly(SUMMARY_POINT);
   }
 
   @Test
@@ -143,7 +179,7 @@ public class MetricDataTest {
         MetricData.create(
             DOUBLE_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
-            InstrumentationLibraryInfo.EMPTY,
+            InstrumentationLibraryInfo.getEmpty(),
             Collections.<Point>singletonList(DOUBLE_POINT));
     assertThat(metricData.getPoints()).containsExactly(DOUBLE_POINT);
   }

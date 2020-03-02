@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.LongMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -27,14 +26,10 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
   private LongMeasureSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       boolean absolute) {
     super(
-        descriptor,
-        InstrumentValueType.LONG,
-        meterProviderSharedState,
-        instrumentationLibraryInfo,
-        absolute);
+        descriptor, InstrumentValueType.LONG, meterProviderSharedState, meterSharedState, absolute);
   }
 
   @Override
@@ -55,7 +50,8 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     return new BoundInstrument(isAbsolute(), batcher);
   }
 
-  static final class BoundInstrument extends AbstractBoundInstrument implements BoundLongMeasure {
+  static final class BoundInstrument extends AbstractBoundInstrument
+      implements LongMeasure.BoundLongMeasure {
 
     private final boolean absolute;
 
@@ -73,22 +69,14 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     }
   }
 
-  static LongMeasure.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo) {
-    return new Builder(name, meterProviderSharedState, instrumentationLibraryInfo);
-  }
-
-  private static final class Builder
-      extends AbstractMeasure.Builder<LongMeasure.Builder, LongMeasure>
+  static final class Builder extends AbstractMeasure.Builder<LongMeasure.Builder, LongMeasure>
       implements LongMeasure.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, meterProviderSharedState, instrumentationLibraryInfo);
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -97,12 +85,13 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     }
 
     @Override
-    public LongMeasure build() {
-      return new LongMeasureSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo(),
-          isAbsolute());
+    public LongMeasureSdk build() {
+      return register(
+          new LongMeasureSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isAbsolute()));
     }
   }
 }

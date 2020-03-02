@@ -19,8 +19,9 @@ package io.opentelemetry.sdk.contrib.trace.testbed.actorpropagation;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
@@ -42,9 +43,10 @@ import org.junit.Test;
  */
 @SuppressWarnings("FutureReturnValueIgnored")
 public class ActorPropagationTest {
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer =
-      TestUtils.createTracer(ActorPropagationTest.class.getName(), exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = sdk.get(ActorPropagationTest.class.getName());
   private Phaser phaser;
 
   @Before
@@ -66,15 +68,17 @@ public class ActorPropagationTest {
       }
 
       phaser.arriveAndAwaitAdvance(); // child tracer started
-      assertThat(exporter.getFinishedSpanItems()).hasSize(1);
+      assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems()).hasSize(1);
       phaser.arriveAndAwaitAdvance(); // continue...
       phaser.arriveAndAwaitAdvance(); // child tracer finished
-      assertThat(exporter.getFinishedSpanItems()).hasSize(3);
-      assertThat(TestUtils.getByKind(exporter.getFinishedSpanItems(), Span.Kind.CONSUMER))
+      assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems()).hasSize(3);
+      assertThat(
+              TestUtils.getByKind(
+                  inMemoryTracing.getSpanExporter().getFinishedSpanItems(), Span.Kind.CONSUMER))
           .hasSize(2);
       phaser.arriveAndDeregister(); // continue...
 
-      List<SpanData> finished = exporter.getFinishedSpanItems();
+      List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
       assertThat(finished.size()).isEqualTo(3);
       assertThat(finished.get(0).getTraceId()).isEqualTo(finished.get(1).getTraceId());
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
@@ -100,15 +104,17 @@ public class ActorPropagationTest {
         span.end();
       }
       phaser.arriveAndAwaitAdvance(); // child tracer started
-      assertThat(exporter.getFinishedSpanItems().size()).isEqualTo(1);
+      assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems().size()).isEqualTo(1);
       phaser.arriveAndAwaitAdvance(); // continue...
       phaser.arriveAndAwaitAdvance(); // child tracer finished
-      assertThat(exporter.getFinishedSpanItems().size()).isEqualTo(3);
-      assertThat(TestUtils.getByKind(exporter.getFinishedSpanItems(), Span.Kind.CONSUMER))
+      assertThat(inMemoryTracing.getSpanExporter().getFinishedSpanItems().size()).isEqualTo(3);
+      assertThat(
+              TestUtils.getByKind(
+                  inMemoryTracing.getSpanExporter().getFinishedSpanItems(), Span.Kind.CONSUMER))
           .hasSize(2);
       phaser.arriveAndDeregister(); // continue...
 
-      List<SpanData> finished = exporter.getFinishedSpanItems();
+      List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
       String message1 = future1.get(); // This really should be a non-blocking callback...
       String message2 = future2.get(); // This really should be a non-blocking callback...
       assertThat(message1).isEqualTo("received my message 1");

@@ -19,12 +19,9 @@ package io.opentelemetry.sdk.contrib.trace.testbed;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,16 +33,6 @@ import javax.annotation.Nullable;
 
 public final class TestUtils {
   private TestUtils() {}
-
-  /**
-   * Creates a new {@code io.opentracing.Tracer} out of the {@code TracerSdk} implementation and
-   * exporting to the specified {@code InMemorySpanExporter}.
-   */
-  public static Tracer createTracer(String instrumentationName, InMemorySpanExporter exporter) {
-    TracerSdkRegistry sdk = TracerSdkRegistry.builder().build();
-    sdk.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
-    return sdk.get(instrumentationName);
-  }
 
   /** Returns the number of finished {@code Span}s in the specified {@code InMemorySpanExporter}. */
   public static Callable<Integer> finishedSpansSize(final InMemorySpanExporter tracer) {

@@ -21,7 +21,9 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class LongSumAggregator implements Aggregator {
+public final class LongSumAggregator extends AbstractAggregator {
+
+  private static final long DEFAULT_VALUE = 0L;
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
@@ -31,20 +33,21 @@ public final class LongSumAggregator implements Aggregator {
       };
 
   // TODO: Change to use LongAdder when changed to java8.
-  private final AtomicLong current = new AtomicLong(0L);
+  private final AtomicLong current = new AtomicLong(DEFAULT_VALUE);
 
+  /**
+   * Returns an {@link AggregatorFactory} that produces {@link LongSumAggregator} instances.
+   *
+   * @return an {@link AggregatorFactory} that produces {@link LongSumAggregator} instances.
+   */
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
   @Override
-  public void mergeToAndReset(Aggregator aggregator) {
-    if (!(aggregator instanceof LongSumAggregator)) {
-      return;
-    }
-
+  void doMergeAndReset(Aggregator aggregator) {
     LongSumAggregator other = (LongSumAggregator) aggregator;
-    other.current.getAndAdd(this.current.getAndSet(0));
+    other.current.getAndAdd(this.current.getAndSet(DEFAULT_VALUE));
   }
 
   @Override
@@ -53,14 +56,7 @@ public final class LongSumAggregator implements Aggregator {
   }
 
   @Override
-  public void recordDouble(double value) {
-    throw new UnsupportedOperationException("This Aggregator does not support double values");
-  }
-
-  @Override
   public void recordLong(long value) {
     current.getAndAdd(value);
   }
-
-  LongSumAggregator() {}
 }

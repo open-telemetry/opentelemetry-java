@@ -17,7 +17,11 @@
 package io.opentelemetry.sdk.metrics.view;
 
 import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
+import io.opentelemetry.sdk.metrics.aggregator.DoubleLastValueAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.DoubleMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.DoubleSumAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.LongLastValueAggregator;
+import io.opentelemetry.sdk.metrics.aggregator.LongMinMaxSumCount;
 import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -71,6 +75,46 @@ public class Aggregations {
    */
   public static Aggregation lastValue() {
     return LastValue.INSTANCE;
+  }
+
+  /**
+   * Returns an {@code Aggregation} that calculates a simple summary of all recorded measurements.
+   * The summary consists of the count of measurements, the sum of all measurements, the maximum
+   * value recorded and the minimum value recorded.
+   *
+   * @return an {@code Aggregation} that calculates a simple summary of all recorded measurements.
+   * @since 0.3.0
+   */
+  public static Aggregation minMaxSumCount() {
+    return MinMaxSumCount.INSTANCE;
+  }
+
+  private enum MinMaxSumCount implements Aggregation {
+    INSTANCE;
+
+    @Override
+    public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
+      return instrumentValueType == InstrumentValueType.LONG
+          ? LongMinMaxSumCount.getFactory()
+          : DoubleMinMaxSumCount.getFactory();
+    }
+
+    @Override
+    public Type getDescriptorType(
+        InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
+      return Type.SUMMARY;
+    }
+
+    @Override
+    public String getUnit(String initialUnit) {
+      return initialUnit;
+    }
+
+    @Override
+    public boolean availableForInstrument(InstrumentType instrumentType) {
+      return instrumentType == InstrumentType.MEASURE_ABSOLUTE
+          || instrumentType == InstrumentType.MEASURE_NON_ABSOLUTE;
+    }
   }
 
   @Immutable
@@ -181,14 +225,27 @@ public class Aggregations {
 
     @Override
     public AggregatorFactory getAggregatorFactory(InstrumentValueType instrumentValueType) {
-      // TODO: Implement LastValue aggregator and use it here.
-      return NoopAggregator.getFactory();
+      return instrumentValueType == InstrumentValueType.LONG
+          ? LongLastValueAggregator.getFactory()
+          : DoubleLastValueAggregator.getFactory();
     }
 
     @Override
     public Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
-      throw new UnsupportedOperationException("Implement this");
+      switch (instrumentType) {
+        case OBSERVER_MONOTONIC:
+          return instrumentValueType == InstrumentValueType.LONG
+              ? Type.MONOTONIC_LONG
+              : Type.MONOTONIC_DOUBLE;
+        case OBSERVER_NON_MONOTONIC:
+          return instrumentValueType == InstrumentValueType.LONG
+              ? Type.NON_MONOTONIC_LONG
+              : Type.NON_MONOTONIC_DOUBLE;
+        default:
+          // Do not change this unless the limitations of the current LastValueAggregator are fixed.
+          throw new IllegalArgumentException("Unsupported instrument/value types");
+      }
     }
 
     @Override
@@ -198,7 +255,9 @@ public class Aggregations {
 
     @Override
     public boolean availableForInstrument(InstrumentType instrumentType) {
-      throw new UnsupportedOperationException("Implement this");
+      // Do not change this unless the limitations of the current LastValueAggregator are fixed.
+      return instrumentType == InstrumentType.OBSERVER_MONOTONIC
+          || instrumentType == InstrumentType.OBSERVER_NON_MONOTONIC;
     }
   }
 

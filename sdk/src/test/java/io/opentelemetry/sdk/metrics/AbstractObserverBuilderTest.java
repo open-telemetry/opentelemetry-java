@@ -35,19 +35,19 @@ public class AbstractObserverBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
-  private static final MeterProviderSharedState METER_SHARED_STATE =
+  private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
-  private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.EMPTY;
+  private static final MeterSharedState METER_SHARED_STATE =
+      MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
 
   @Test
   public void defaultValue() {
     TestInstrumentBuilder testInstrumentBuilder =
-        new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
+        new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE);
     assertThat(testInstrumentBuilder.isMonotonic()).isFalse();
-    assertThat(testInstrumentBuilder.getMeterProviderSharedState()).isEqualTo(METER_SHARED_STATE);
-    assertThat(testInstrumentBuilder.getInstrumentationLibraryInfo())
-        .isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
+    assertThat(testInstrumentBuilder.getMeterProviderSharedState())
+        .isSameInstanceAs(METER_PROVIDER_SHARED_STATE);
+    assertThat(testInstrumentBuilder.getMeterSharedState()).isSameInstanceAs(METER_SHARED_STATE);
 
     TestInstrument testInstrument = testInstrumentBuilder.build();
     assertThat(testInstrument).isInstanceOf(TestInstrument.class);
@@ -61,7 +61,7 @@ public class AbstractObserverBuilderTest {
   @Test
   public void setAndGetValues() {
     TestInstrumentBuilder testInstrumentBuilder =
-        new TestInstrumentBuilder(NAME, METER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO)
+        new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
             .setMonotonic(true);
     assertThat(testInstrumentBuilder.isMonotonic()).isTrue();
     assertThat(testInstrumentBuilder.build()).isInstanceOf(TestInstrument.class);
@@ -71,9 +71,9 @@ public class AbstractObserverBuilderTest {
       extends AbstractObserver.Builder<TestInstrumentBuilder, TestInstrument> {
     TestInstrumentBuilder(
         String name,
-        MeterProviderSharedState sharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
-      super(name, sharedState, instrumentationLibraryInfo);
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class AbstractObserverBuilderTest {
       return new TestInstrument(
           getInstrumentDescriptor(),
           getMeterProviderSharedState(),
-          getInstrumentationLibraryInfo(),
+          getMeterSharedState(),
           isMonotonic());
     }
   }
@@ -96,14 +96,14 @@ public class AbstractObserverBuilderTest {
 
     TestInstrument(
         InstrumentDescriptor descriptor,
-        MeterProviderSharedState meterSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo,
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState,
         boolean monotonic) {
       super(
           descriptor,
           InstrumentValueType.LONG,
+          meterProviderSharedState,
           meterSharedState,
-          instrumentationLibraryInfo,
           monotonic);
     }
 

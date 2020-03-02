@@ -21,7 +21,9 @@ import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import java.util.Map;
 
-public final class DoubleSumAggregator implements Aggregator {
+public final class DoubleSumAggregator extends AbstractAggregator {
+
+  private static final double DEFAULT_VALUE = 0.0;
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
@@ -31,20 +33,21 @@ public final class DoubleSumAggregator implements Aggregator {
       };
 
   // TODO: Change to use DoubleAdder when changed to java8.
-  private final AtomicDouble current = new AtomicDouble(0.0);
+  private final AtomicDouble current = new AtomicDouble(DEFAULT_VALUE);
 
+  /**
+   * Returns an {@link AggregatorFactory} that produces {@link DoubleSumAggregator} instances.
+   *
+   * @return an {@link AggregatorFactory} that produces {@link DoubleSumAggregator} instances.
+   */
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;
   }
 
   @Override
-  public void mergeToAndReset(Aggregator aggregator) {
-    if (!(aggregator instanceof DoubleSumAggregator)) {
-      return;
-    }
-
+  void doMergeAndReset(Aggregator aggregator) {
     DoubleSumAggregator other = (DoubleSumAggregator) aggregator;
-    other.current.getAndAdd(this.current.getAndSet(0));
+    other.current.getAndAdd(this.current.getAndSet(DEFAULT_VALUE));
   }
 
   @Override
@@ -53,14 +56,7 @@ public final class DoubleSumAggregator implements Aggregator {
   }
 
   @Override
-  public void recordLong(long value) {
-    throw new UnsupportedOperationException("This is a DoubleSumAggregator");
-  }
-
-  @Override
   public void recordDouble(double value) {
     current.getAndAdd(value);
   }
-
-  DoubleSumAggregator() {}
 }

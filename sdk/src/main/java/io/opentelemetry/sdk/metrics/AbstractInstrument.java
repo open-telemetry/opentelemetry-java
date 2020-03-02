@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.Instrument;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,18 +30,18 @@ abstract class AbstractInstrument implements Instrument {
 
   private final InstrumentDescriptor descriptor;
   private final MeterProviderSharedState meterProviderSharedState;
-  private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+  private final MeterSharedState meterSharedState;
   private final ActiveBatcher activeBatcher;
 
   // All arguments cannot be null because they are checked in the abstract builder classes.
   AbstractInstrument(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      MeterSharedState meterSharedState,
       ActiveBatcher activeBatcher) {
     this.descriptor = descriptor;
     this.meterProviderSharedState = meterProviderSharedState;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.meterSharedState = meterSharedState;
     this.activeBatcher = activeBatcher;
   }
 
@@ -54,15 +53,15 @@ abstract class AbstractInstrument implements Instrument {
     return meterProviderSharedState;
   }
 
-  final InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-    return instrumentationLibraryInfo;
+  final MeterSharedState getMeterSharedState() {
+    return meterSharedState;
   }
 
   final ActiveBatcher getActiveBatcher() {
     return activeBatcher;
   }
 
-  abstract List<MetricData> collect();
+  abstract List<MetricData> collectAll();
 
   @Override
   public boolean equals(Object o) {
@@ -93,7 +92,7 @@ abstract class AbstractInstrument implements Instrument {
 
     private final String name;
     private final MeterProviderSharedState meterProviderSharedState;
-    private final InstrumentationLibraryInfo instrumentationLibraryInfo;
+    private final MeterSharedState meterSharedState;
     private String description = "";
     private String unit = "1";
     private List<String> labelKeys = Collections.emptyList();
@@ -102,14 +101,14 @@ abstract class AbstractInstrument implements Instrument {
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
-        InstrumentationLibraryInfo instrumentationLibraryInfo) {
+        MeterSharedState meterSharedState) {
       Utils.checkNotNull(name, "name");
       Utils.checkArgument(
           StringUtils.isValidMetricName(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
       this.name = name;
       this.meterProviderSharedState = meterProviderSharedState;
-      this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+      this.meterSharedState = meterSharedState;
     }
 
     @Override
@@ -143,8 +142,8 @@ abstract class AbstractInstrument implements Instrument {
       return meterProviderSharedState;
     }
 
-    final InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
-      return instrumentationLibraryInfo;
+    final MeterSharedState getMeterSharedState() {
+      return meterSharedState;
     }
 
     final InstrumentDescriptor getInstrumentDescriptor() {
@@ -152,5 +151,9 @@ abstract class AbstractInstrument implements Instrument {
     }
 
     abstract B getThis();
+
+    final <I extends AbstractInstrument> I register(I instrument) {
+      return getMeterSharedState().getInstrumentRegistry().register(instrument);
+    }
   }
 }
