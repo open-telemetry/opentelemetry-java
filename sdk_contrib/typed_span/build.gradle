@@ -1,0 +1,16 @@
+plugins {
+    id "java"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry SDK Typed Span'
+ext.moduleName = 'io.opentelemetry.sdk.contrib.trace.types.span'
+
+dependencies {
+    implementation project(':opentelemetry-api'),
+            project(':opentelemetry-sdk'),
+            libraries.guava
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+}
