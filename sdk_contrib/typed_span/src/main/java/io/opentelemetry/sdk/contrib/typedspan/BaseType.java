@@ -20,15 +20,15 @@ import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.trace.Span;
 
 public abstract class BaseType {
-	Span.Builder span;
-	TracerSdk tracerSdk;
+  Span.Builder span;
+  TracerSdk tracerSdk;
 
-	protected BaseType(String spanName) {
-		tracerSdk = OpenTelemetrySdk.getTracerRegistry().get(this.getClass().getCanonicalName());
-		this.span = tracerSdk.spanBuilder(spanName);
-	}
+  protected BaseType(String spanName) {
+    tracerSdk = OpenTelemetrySdk.getTracerRegistry().get(this.getClass().getCanonicalName());
+    this.span = tracerSdk.spanBuilder(spanName);
+  }
 
-	Span.Builder build(){
-		return span;
-	}
+  Span.Builder build() {
+    return span;
+  }
 }

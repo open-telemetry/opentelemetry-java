@@ -9,8 +9,9 @@ ext.moduleName = 'io.opentelemetry.sdk.contrib.trace.types.span'
 
 dependencies {
     implementation project(':opentelemetry-api'),
-            project(':opentelemetry-sdk'),
-            libraries.guava
+        project(':opentelemetry-sdk'),
+        project(':opentelemetry-exporters-inmemory'),
+        libraries.guava
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
 }
