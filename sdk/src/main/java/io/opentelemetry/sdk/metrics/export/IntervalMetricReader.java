@@ -42,7 +42,7 @@ public final class IntervalMetricReader {
   private final ScheduledFuture<?> scheduledFuture;
 
   /**
-   * Stops the worker thread by calling {@link Thread#interrupt()}.
+   * Stops the scheduled task and calls export one more time.
    *
    * @since 0.3.0
    */

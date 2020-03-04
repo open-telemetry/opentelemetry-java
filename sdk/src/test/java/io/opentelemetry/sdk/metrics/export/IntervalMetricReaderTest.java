@@ -33,10 +33,14 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class IntervalMetricsReader {
+/** Unit tests for {@link IntervalMetricReader}. */
+@RunWith(JUnit4.class)
+public class IntervalMetricReaderTest {
   private static final MetricData.Descriptor METRIC_DESCRIPTOR =
       MetricData.Descriptor.create(
           "my metric",
