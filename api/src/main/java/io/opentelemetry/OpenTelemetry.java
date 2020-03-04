@@ -18,6 +18,7 @@ package io.opentelemetry;
 
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
+import io.opentelemetry.correlationcontext.DefaultCorrelationContextManagerProvider;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DefaultMetricsProvider;
@@ -118,7 +119,7 @@ public final class OpenTelemetry {
     contextManager =
         contextManagerProvider != null
             ? contextManagerProvider.create()
-            : DefaultCorrelationContextManager.getInstance();
+            : DefaultCorrelationContextManagerProvider.getInstance().create();
   }
 
   /**

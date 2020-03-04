@@ -43,7 +43,6 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
    *
    * @return a {@code CorrelationContextManager} singleton that is the default implementation for
    *     {@link CorrelationContextManager}.
-   * @since 0.1.0
    */
   public static CorrelationContextManager getInstance() {
     return INSTANCE;
