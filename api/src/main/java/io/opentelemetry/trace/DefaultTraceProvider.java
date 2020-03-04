@@ -18,9 +18,16 @@ package io.opentelemetry.trace;
 
 import io.opentelemetry.trace.spi.TraceProvider;
 
-public class DefaultTraceProvider implements TraceProvider {
+public final class DefaultTraceProvider implements TraceProvider {
   private static final TraceProvider instance = new DefaultTraceProvider();
 
+  /**
+   * Returns a {@code TraceProvider} singleton that is the default implementation for {@link
+   * TraceProvider}.
+   *
+   * @return a {@code TraceProvider} singleton that is the default implementation for {@link
+   *     TraceProvider}.
+   */
   public static TraceProvider getInstance() {
     return instance;
   }
@@ -29,4 +36,6 @@ public class DefaultTraceProvider implements TraceProvider {
   public TracerProvider create() {
     return DefaultTracerProvider.getInstance();
   }
+
+  private DefaultTraceProvider() {}
 }
