@@ -49,8 +49,7 @@ public class DoubleObserverSdkTest {
   @Test
   public void observeMonotonic_NegativeValue() {
     DoubleObserverSdk doubleObserver =
-        (DoubleObserverSdk)
-            testSdk.doubleObserverBuilder("testObserver").setMonotonic(true).build();
+        testSdk.doubleObserverBuilder("testObserver").setMonotonic(true).build();
 
     doubleObserver.setCallback(
         new Callback<ResultDoubleObserver>() {

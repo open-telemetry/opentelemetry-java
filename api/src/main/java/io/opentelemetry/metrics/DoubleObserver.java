@@ -17,6 +17,8 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.DoubleObserver.ResultDoubleObserver;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -57,7 +59,25 @@ public interface DoubleObserver extends Observer<ResultDoubleObserver> {
   void setCallback(Callback<ResultDoubleObserver> metricUpdater);
 
   /** Builder class for {@link DoubleObserver}. */
-  interface Builder extends Observer.Builder<DoubleObserver.Builder, DoubleObserver> {}
+  interface Builder extends Observer.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
+    @Override
+    Builder setMonotonic(boolean monotonic);
+
+    @Override
+    DoubleObserver build();
+  }
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface ResultDoubleObserver {

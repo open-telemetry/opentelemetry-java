@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 
-import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -97,10 +96,10 @@ public class MeterSdkRegistryTest {
   @Test
   public void metricProducer_GetAllMetrics() {
     MeterSdk meterSdk1 = meterRegistry.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
-    LongCounter longCounter1 = meterSdk1.longCounterBuilder("testLongCounter").build();
+    LongCounterSdk longCounter1 = meterSdk1.longCounterBuilder("testLongCounter").build();
     longCounter1.add(10, meterSdk1.createLabelSet());
     MeterSdk meterSdk2 = meterRegistry.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
-    LongCounter longCounter2 = meterSdk2.longCounterBuilder("testLongCounter").build();
+    LongCounterSdk longCounter2 = meterSdk2.longCounterBuilder("testLongCounter").build();
     longCounter2.add(10, meterSdk2.createLabelSet());
 
     assertThat(meterRegistry.getMetricProducer().getAllMetrics())

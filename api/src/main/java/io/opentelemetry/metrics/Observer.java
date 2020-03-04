@@ -16,6 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -47,7 +49,19 @@ public interface Observer<R> extends Instrument {
   void setCallback(Callback<R> metricUpdater);
 
   /** Builder class for {@link Observer}. */
-  interface Builder<B extends Instrument.Builder<B, V>, V> extends Instrument.Builder<B, V> {
+  interface Builder extends Instrument.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
     /**
      * Sets the monotonicity property for this {@code Instrument}. If {@code true} successive values
      * are expected to rise monotonically.
@@ -57,6 +71,9 @@ public interface Observer<R> extends Instrument {
      * @param monotonic {@code true} successive values are expected to rise monotonically.
      * @return this.
      */
-    B setMonotonic(boolean monotonic);
+    Builder setMonotonic(boolean monotonic);
+
+    @Override
+    Observer<?> build();
   }
 }

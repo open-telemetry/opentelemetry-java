@@ -17,6 +17,8 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -84,5 +86,23 @@ public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
   }
 
   /** Builder class for {@link DoubleMeasure}. */
-  interface Builder extends Measure.Builder<Builder, DoubleMeasure> {}
+  interface Builder extends Measure.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
+    @Override
+    Builder setAbsolute(boolean absolute);
+
+    @Override
+    DoubleMeasure build();
+  }
 }

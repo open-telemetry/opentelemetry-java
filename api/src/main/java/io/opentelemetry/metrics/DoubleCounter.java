@@ -17,6 +17,8 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -90,5 +92,23 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
   }
 
   /** Builder class for {@link DoubleCounter}. */
-  interface Builder extends Counter.Builder<Builder, DoubleCounter> {}
+  interface Builder extends Counter.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
+    @Override
+    Builder setMonotonic(boolean monotonic);
+
+    @Override
+    DoubleCounter build();
+  }
 }

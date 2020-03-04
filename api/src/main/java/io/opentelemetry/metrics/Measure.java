@@ -17,6 +17,8 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -29,7 +31,19 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface Measure<H extends BoundInstrument> extends InstrumentWithBinding<H> {
 
   /** Builder class for {@link Measure}. */
-  interface Builder<B extends Measure.Builder<B, V>, V> extends Instrument.Builder<B, V> {
+  interface Builder extends Instrument.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
     /**
      * Sets the absolute property for this {@code Builder}. If {@code true} only positive values are
      * expected.
@@ -39,6 +53,9 @@ public interface Measure<H extends BoundInstrument> extends InstrumentWithBindin
      * @param absolute {@code true} only positive values are expected.
      * @return this.
      */
-    B setAbsolute(boolean absolute);
+    Builder setAbsolute(boolean absolute);
+
+    @Override
+    Measure<?> build();
   }
 }

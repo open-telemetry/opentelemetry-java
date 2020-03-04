@@ -67,8 +67,8 @@ abstract class AbstractObserver extends AbstractInstrument {
     return result;
   }
 
-  abstract static class Builder<B extends Observer.Builder<B, V>, V>
-      extends AbstractInstrument.Builder<B, V> implements Observer.Builder<B, V> {
+  abstract static class Builder<B extends AbstractObserver.Builder<B>>
+      extends AbstractInstrument.Builder<B> implements Observer.Builder {
     private boolean monotonic = false;
 
     Builder(

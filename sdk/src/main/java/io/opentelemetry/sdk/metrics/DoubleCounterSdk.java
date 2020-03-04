@@ -72,7 +72,7 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     }
   }
 
-  static final class Builder extends AbstractCounter.Builder<DoubleCounter.Builder, DoubleCounter>
+  static final class Builder extends AbstractCounter.Builder<DoubleCounterSdk.Builder>
       implements DoubleCounter.Builder {
 
     Builder(

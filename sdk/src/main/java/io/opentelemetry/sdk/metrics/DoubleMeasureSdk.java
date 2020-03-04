@@ -72,7 +72,7 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     }
   }
 
-  static final class Builder extends AbstractMeasure.Builder<DoubleMeasure.Builder, DoubleMeasure>
+  static final class Builder extends AbstractMeasure.Builder<DoubleMeasureSdk.Builder>
       implements DoubleMeasure.Builder {
 
     Builder(

@@ -57,7 +57,7 @@ public class LongCounterSdkTest {
 
   @Test
   public void collectMetrics_NoRecords() {
-    LongCounter longCounter =
+    LongCounterSdk longCounter =
         testSdk
             .longCounterBuilder("testCounter")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
@@ -66,8 +66,7 @@ public class LongCounterSdkTest {
             .setUnit("ms")
             .setMonotonic(true)
             .build();
-    assertThat(longCounter).isInstanceOf(LongCounterSdk.class);
-    List<MetricData> metricDataList = ((LongCounterSdk) longCounter).collectAll();
+    List<MetricData> metricDataList = longCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
     assertThat(metricData.getDescriptor())
@@ -151,7 +150,7 @@ public class LongCounterSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet() {
-    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").build();
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
     BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
     try {
@@ -181,7 +180,8 @@ public class LongCounterSdkTest {
 
   @Test
   public void longCounterAdd_MonotonicityCheck() {
-    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
+    LongCounterSdk longCounter =
+        testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     longCounter.add(-45, testSdk.createLabelSet());
@@ -189,7 +189,8 @@ public class LongCounterSdkTest {
 
   @Test
   public void boundLongCounterAdd_MonotonicityCheck() {
-    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
+    LongCounterSdk longCounter =
+        testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     longCounter.bind(testSdk.createLabelSet()).add(-9);

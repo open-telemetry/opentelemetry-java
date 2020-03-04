@@ -57,7 +57,7 @@ public class DoubleCounterSdkTest {
 
   @Test
   public void collectMetrics_NoRecords() {
-    DoubleCounter doubleCounter =
+    DoubleCounterSdk doubleCounter =
         testSdk
             .doubleCounterBuilder("testCounter")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
@@ -66,8 +66,7 @@ public class DoubleCounterSdkTest {
             .setUnit("ms")
             .setMonotonic(true)
             .build();
-    assertThat(doubleCounter).isInstanceOf(DoubleCounterSdk.class);
-    List<MetricData> metricDataList = ((DoubleCounterSdk) doubleCounter).collectAll();
+    List<MetricData> metricDataList = doubleCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
     assertThat(metricData.getDescriptor())
@@ -153,7 +152,7 @@ public class DoubleCounterSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet() {
-    DoubleCounter doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
+    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter boundCounter = doubleCounter.bind(testSdk.createLabelSet("K", "v"));
     BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind(testSdk.createLabelSet("K", "v"));
     try {
@@ -184,7 +183,7 @@ public class DoubleCounterSdkTest {
 
   @Test
   public void doubleCounterAdd_Monotonicity() {
-    DoubleCounter doubleCounter =
+    DoubleCounterSdk doubleCounter =
         testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
@@ -193,7 +192,7 @@ public class DoubleCounterSdkTest {
 
   @Test
   public void boundDoubleCounterAdd_Monotonicity() {
-    DoubleCounter doubleCounter =
+    DoubleCounterSdk doubleCounter =
         testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);

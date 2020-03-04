@@ -180,7 +180,7 @@ public class LongMeasureSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet() {
-    LongMeasure longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
+    LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
     BoundLongMeasure boundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
     BoundLongMeasure duplicateBoundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
     try {
@@ -210,7 +210,8 @@ public class LongMeasureSdkTest {
 
   @Test
   public void longMeasureRecord_Absolute() {
-    LongMeasure longMeasure = testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
+    LongMeasureSdk longMeasure =
+        testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     longMeasure.record(-45, testSdk.createLabelSet());
@@ -218,7 +219,8 @@ public class LongMeasureSdkTest {
 
   @Test
   public void boundLongMeasure_Absolute() {
-    LongMeasure longMeasure = testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
+    LongMeasureSdk longMeasure =
+        testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
     longMeasure.bind(testSdk.createLabelSet()).record(-9);

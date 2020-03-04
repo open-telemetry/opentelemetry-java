@@ -177,7 +177,7 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet() {
-    DoubleMeasure doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
+    DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
     BoundDoubleMeasure boundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
     BoundDoubleMeasure duplicateBoundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
     try {
@@ -208,7 +208,7 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void doubleMeasureRecord_Absolute() {
-    DoubleMeasure doubleMeasure =
+    DoubleMeasureSdk doubleMeasure =
         testSdk.doubleMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
@@ -217,7 +217,7 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void boundDoubleMeasureRecord_Absolute() {
-    DoubleMeasure doubleMeasure =
+    DoubleMeasureSdk doubleMeasure =
         testSdk.doubleMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);

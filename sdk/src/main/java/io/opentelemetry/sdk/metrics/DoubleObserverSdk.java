@@ -58,8 +58,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     this.metricUpdater = Utils.checkNotNull(metricUpdater, "metricUpdater");
   }
 
-  static final class Builder
-      extends AbstractObserver.Builder<DoubleObserver.Builder, DoubleObserver>
+  static final class Builder extends AbstractObserver.Builder<DoubleObserverSdk.Builder>
       implements DoubleObserver.Builder {
 
     Builder(
