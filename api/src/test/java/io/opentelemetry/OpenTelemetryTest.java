@@ -37,7 +37,7 @@ import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
-import io.opentelemetry.trace.DefaultTracer;
+import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
@@ -79,17 +79,15 @@ public class OpenTelemetryTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracerProvider().get("testTracer"))
-        .isInstanceOf(DefaultTracer.getInstance().getClass());
-    assertThat(OpenTelemetry.getTracerProvider().get("testTracer"))
-        .isEqualTo(OpenTelemetry.getTracerProvider().get("testTracer"));
-    assertThat(OpenTelemetry.getMeterProvider())
-        .isInstanceOf(DefaultMeterProvider.getInstance().getClass());
-    assertThat(OpenTelemetry.getMeterProvider()).isEqualTo(OpenTelemetry.getMeterProvider());
+    assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(DefaultTracerProvider.class);
+    assertThat(OpenTelemetry.getTracerProvider())
+        .isSameInstanceAs(OpenTelemetry.getTracerProvider());
+    assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
+    assertThat(OpenTelemetry.getMeterProvider()).isSameInstanceAs(OpenTelemetry.getMeterProvider());
     assertThat(OpenTelemetry.getCorrelationContextManager())
-        .isInstanceOf(DefaultCorrelationContextManager.getInstance().getClass());
+        .isInstanceOf(DefaultCorrelationContextManager.class);
     assertThat(OpenTelemetry.getCorrelationContextManager())
-        .isEqualTo(OpenTelemetry.getCorrelationContextManager());
+        .isSameInstanceAs(OpenTelemetry.getCorrelationContextManager());
   }
 
   @Test
