@@ -34,8 +34,11 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.trace.AttributeValue;
+import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -291,7 +294,44 @@ public class MeterSdkTest {
                         testClock.now(),
                         testClock.now(),
                         Collections.<String, String>emptyMap(),
-                        10.1))));
+                        10.1))),
+            MetricData.create(
+                Descriptor.create(
+                    "testLongMeasure",
+                    "",
+                    "1",
+                    Type.SUMMARY,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    SummaryPoint.create(
+                        testClock.now(),
+                        testClock.now(),
+                        Collections.<String, String>emptyMap(),
+                        1,
+                        10,
+                        Arrays.asList(
+                            ValueAtPercentile.create(0, 10), ValueAtPercentile.create(100, 10))))),
+            MetricData.create(
+                Descriptor.create(
+                    "testDoubleMeasure",
+                    "",
+                    "1",
+                    Type.SUMMARY,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    SummaryPoint.create(
+                        testClock.now(),
+                        testClock.now(),
+                        Collections.<String, String>emptyMap(),
+                        1,
+                        10.1d,
+                        Arrays.asList(
+                            ValueAtPercentile.create(0, 10.1d),
+                            ValueAtPercentile.create(100, 10.1d))))));
   }
 
   @Test
