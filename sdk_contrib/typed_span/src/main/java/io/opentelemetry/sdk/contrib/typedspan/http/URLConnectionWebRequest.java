@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentelemetry.sdk.contrib.typedspan;
+package io.opentelemetry.sdk.contrib.typedspan.http;
 
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdk;
-import io.opentelemetry.trace.Span;
+import java.net.URLConnection;
 
-public abstract class BaseType {
-  Span.Builder span;
-  TracerSdk tracerSdk;
+public final class URLConnectionWebRequest extends WebRequest {
 
-  protected BaseType(String spanName) {
-    tracerSdk = OpenTelemetrySdk.getTracerRegistry().get(this.getClass().getCanonicalName());
-    this.span = tracerSdk.spanBuilder(spanName);
+  public URLConnectionWebRequest(URLConnection connection, String spanName, String url, String host, String schema) {
+    super(spanName, url, host, schema, connection.getDoOutput() ? Method.POST : Method.GET);
   }
 
-  public Span.Builder build() {
-    return span;
-  }
 }

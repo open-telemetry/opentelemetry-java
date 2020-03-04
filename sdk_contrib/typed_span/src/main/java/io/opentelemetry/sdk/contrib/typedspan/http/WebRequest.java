@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.opentelemetry.sdk.contrib.typedspan;
+package io.opentelemetry.sdk.contrib.typedspan.http;
 
+import io.opentelemetry.sdk.contrib.typedspan.BaseType;
 import io.opentelemetry.trace.Span;
-import java.net.URL;
-import java.net.URLConnection;
-import sun.net.www.protocol.http.HttpURLConnection;
 
-public class WebRequest extends BaseType {
+import java.net.URL;
+
+public abstract class WebRequest extends BaseType {
 
   static final String UNKNOWN_URL = "<unknown>";
 
@@ -34,7 +34,7 @@ public class WebRequest extends BaseType {
   public static final String SCHEME_KEY = "http.scheme";
   public static final String METHOD_KEY = "http.method";
 
-  enum Method {
+  public enum Method {
     GET,
     HEAD,
     POST,
@@ -58,7 +58,7 @@ public class WebRequest extends BaseType {
     this.method = method;
   }
 
-  private static String extractSpanName(URL url) {
+  public static String extractSpanName(URL url) {
     if (url == null) {
       return WebRequest.UNKNOWN_URL;
     }
@@ -66,56 +66,8 @@ public class WebRequest extends BaseType {
     return url.toString().split("\\?", 2)[0];
   }
 
-  public static Span.Builder create(URLConnection connection) {
-    String spanName = extractSpanName(connection.getURL());
-    String url = connection.getURL().toString();
-    String host = connection.getHeaderField("Host");
-    String schema = connection.getURL().getProtocol();
-    Method method = Method.GET;
-    WebRequest wb = new WebRequest(spanName, url, host, schema, method);
-    return wb.build();
-  }
-
-  public static Span.Builder create(HttpURLConnection connection) {
-    String spanName = extractSpanName(connection.getURL());
-    String url = connection.getURL().toString();
-    String host = connection.getHeaderField("Host");
-    String schema = connection.getURL().getProtocol();
-    Method method;
-    switch (connection.getRequestMethod()) {
-      case "GET":
-        method = Method.GET;
-        break;
-      case "POST":
-        method = Method.POST;
-        break;
-      case "HEAD":
-        method = Method.HEAD;
-        break;
-      case "PUT":
-        method = Method.PUT;
-        break;
-      case "DELETE":
-        method = Method.DELETE;
-        break;
-      case "CONNECT":
-        method = Method.CONNECT;
-        break;
-      case "OPTIONS":
-        method = Method.OPTIONS;
-        break;
-      case "PATCH":
-        method = Method.PATCH;
-        break;
-      default:
-        method = Method.GET;
-    }
-    WebRequest wb = new WebRequest(spanName, url, host, schema, method);
-    return wb.build();
-  }
-
   @Override
-  Span.Builder build() {
+  public Span.Builder build() {
     Span.Builder builder = super.build();
     builder.setAttribute(URL_KEY, url);
     builder.setAttribute(HOST_KEY, host);

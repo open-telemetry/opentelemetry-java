@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.contrib.typedspan.http.WebRequest;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import java.net.URL;
@@ -29,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import java.net.HttpURLConnection;
 
 /** Unit tests for {@link BaseType}. */
 @RunWith(JUnit4.class)
@@ -43,18 +45,35 @@ public class TypedSpanTest {
   }
 
   @Test
-  public void testClassName() throws Exception {
+  public void testURLConnectio() throws Exception {
     URLConnection connection = new URL("https://www.google.com/q?=typed%20span").openConnection();
-    WebRequest.create(connection).startSpan().end();
+    TypedSpanFactory.create(connection).startSpan().end();
     List<SpanData> spans = exporter.getFinishedSpanItems();
     assertThat(spans.size()).isEqualTo(1);
     SpanData span = spans.get(0);
     // Empty fields should not be dropped
     assertThat(span.getAttributes().size()).isEqualTo(4);
     assertThat(span.getAttributes().get(WebRequest.URL_KEY).getStringValue())
-        .isEqualTo("https://www.google.com/q?=typed%20span");
+            .isEqualTo("https://www.google.com/q?=typed%20span");
     assertThat(span.getAttributes().get(WebRequest.HOST_KEY).getStringValue()).isEqualTo("");
     assertThat(span.getAttributes().get(WebRequest.SCHEME_KEY).getStringValue()).isEqualTo("https");
     assertThat(span.getAttributes().get(WebRequest.METHOD_KEY).getStringValue()).isEqualTo("GET");
   }
+
+  @Test
+  public void testHttpURLConnectio() throws Exception {
+    HttpURLConnection connection = (HttpURLConnection) new URL("https://www.google.com/q?=typed%20span").openConnection();
+    TypedSpanFactory.create(connection).startSpan().end();
+    List<SpanData> spans = exporter.getFinishedSpanItems();
+    assertThat(spans.size()).isEqualTo(1);
+    SpanData span = spans.get(0);
+    // Empty fields should not be dropped
+    assertThat(span.getAttributes().size()).isEqualTo(4);
+    assertThat(span.getAttributes().get(WebRequest.URL_KEY).getStringValue())
+            .isEqualTo("https://www.google.com/q?=typed%20span");
+    assertThat(span.getAttributes().get(WebRequest.HOST_KEY).getStringValue()).isEqualTo("");
+    assertThat(span.getAttributes().get(WebRequest.SCHEME_KEY).getStringValue()).isEqualTo("https");
+    assertThat(span.getAttributes().get(WebRequest.METHOD_KEY).getStringValue()).isEqualTo("GET");
+  }
+
 }
