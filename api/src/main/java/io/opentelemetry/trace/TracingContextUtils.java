@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import io.grpc.Context;
 import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -35,7 +36,6 @@ public final class TracingContextUtils {
       Context.<Span>key("opentelemetry-trace-span-key");
   private static final Context.Key<SpanContext> CONTEXT_SPANCONTEXT_KEY =
       Context.<SpanContext>key("opentelemetry-trace-spancontext-key");
-  private static final Span DEFAULT_SPAN = DefaultSpan.getInvalid();
 
   /**
    * Creates a new {@code Context} with the given {@link Span} set.
@@ -84,24 +84,14 @@ public final class TracingContextUtils {
   }
 
   /**
-   * Returns the {@link Span} from the current {@code Context}.
+   * Returns the {@link Span} from the current {@code Context}, falling back to a default, no-op
+   * {@link Span}.
    *
-   * @return the value from the current {@code Context}.
-   * @since 0.1.0
+   * @return the {@link Span} from the current {@code Context}.
+   * @since 0.3.0
    */
   public static Span getSpan() {
-    return CONTEXT_SPAN_KEY.get();
-  }
-
-  /**
-   * Returns the {@link Span} from the specified {@code Context}.
-   *
-   * @param context the specified {@code Context}.
-   * @return the value from the specified {@code Context}.
-   * @since 0.1.0
-   */
-  public static Span getSpan(Context context) {
-    return CONTEXT_SPAN_KEY.get(context);
+    return getSpan(Context.current());
   }
 
   /**
@@ -109,12 +99,25 @@ public final class TracingContextUtils {
    * {@link Span}.
    *
    * @param context the specified {@code Context}.
-   * @return the value from the specified {@code Context}.
+   * @return the {@link Span} from the specified {@code Context}.
    * @since 0.3.0
    */
-  public static Span getSpanWithDefault(Context context) {
+  public static Span getSpan(Context context) {
     Span span = CONTEXT_SPAN_KEY.get(context);
-    return span == null ? DEFAULT_SPAN : span;
+    return span == null ? DefaultSpan.getInvalid() : span;
+  }
+
+  /**
+   * Returns the {@link Span} from the specified {@code Context}. If none is found, this method
+   * returns {code null}.
+   *
+   * @param context the specified {@code Context}.
+   * @return the {@link Span} from the specified {@code Context}.
+   * @since 0.1.0
+   */
+  @Nullable
+  public static Span getSpanWithoutDefault(Context context) {
+    return CONTEXT_SPAN_KEY.get(context);
   }
 
   /**
@@ -150,7 +153,7 @@ public final class TracingContextUtils {
    * @since 0.3.0
    */
   public static SpanContext getEffectiveSpanContext(Context context) {
-    Span span = getSpan(context);
+    Span span = getSpanWithoutDefault(context);
     if (span != null) {
       return span.getContext();
     }

@@ -49,7 +49,7 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return TracingContextUtils.getSpanWithDefault(Context.current());
+    return TracingContextUtils.getSpan(Context.current());
   }
 
   @Override

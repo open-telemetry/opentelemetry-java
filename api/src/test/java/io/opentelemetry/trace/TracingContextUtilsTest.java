@@ -19,7 +19,6 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
-import io.opentelemetry.OpenTelemetry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -27,39 +26,52 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link TracingContextUtils}. */
 @RunWith(JUnit4.class)
 public final class TracingContextUtilsTest {
-  @Test
-  public void testGetCurrentSpan_DefaultContext() {
-    Span span = TracingContextUtils.getSpan(Context.current());
-    assertThat(span).isNull();
-  }
 
   @Test
-  public void testGetCurrentSpan_DefaultContext_WithoutExplicitContext() {
+  public void testGetCurrentSpan_Default() {
     Span span = TracingContextUtils.getSpan();
-    assertThat(span).isNull();
-  }
-
-  @Test
-  public void testGetCurrentSpanWithDefault_DefaultContext() {
-    Span span = TracingContextUtils.getSpanWithDefault(Context.current());
-    assertThat(span).isNotNull();
     assertThat(span).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 
   @Test
-  public void testGetCurrentSpanWithDefault_ContextSetToNull() {
-    Context orig = TracingContextUtils.withSpan(null, Context.current()).attach();
+  public void testGetCurrentSpan_Default_SetSpan() {
+    Span span = DefaultSpan.create(SpanContext.getInvalid());
+    Context orig = TracingContextUtils.withSpan(span).attach();
     try {
-      Span span = TracingContextUtils.getSpanWithDefault(Context.current());
-      assertThat(span).isNotNull();
-      assertThat(span).isSameInstanceAs(DefaultSpan.getInvalid());
+      assertThat(TracingContextUtils.getSpan()).isSameInstanceAs(span);
     } finally {
       Context.current().detach(orig);
     }
   }
 
   @Test
-  public void testGetCurrentSpanContext_DefaultContext() {
+  public void testGetCurrentSpan_DefaultContext() {
+    Span span = TracingContextUtils.getSpan(Context.current());
+    assertThat(span).isSameInstanceAs(DefaultSpan.getInvalid());
+  }
+
+  @Test
+  public void testGetCurrentSpan_ExplicitContext() {
+    Span span = DefaultSpan.create(SpanContext.getInvalid());
+    Context context = TracingContextUtils.withSpan(span);
+    assertThat(TracingContextUtils.getSpan(context)).isSameInstanceAs(span);
+  }
+
+  @Test
+  public void testGetCurrentSpanWithoutDefault_DefaultContext() {
+    Span span = TracingContextUtils.getSpanWithoutDefault(Context.current());
+    assertThat(span).isNull();
+  }
+
+  @Test
+  public void testGetCurrentSpanWithoutDefault_ExplicitContext() {
+    Span span = DefaultSpan.create(SpanContext.getInvalid());
+    Context context = TracingContextUtils.withSpan(span);
+    assertThat(TracingContextUtils.getSpanWithoutDefault(context)).isSameInstanceAs(span);
+  }
+
+  @Test
+  public void testGetCurrentSpanContextWithoutDefault_DefaultContext() {
     SpanContext spanContext = TracingContextUtils.getSpanContext(Context.current());
     assertThat(spanContext).isNull();
   }
@@ -71,18 +83,17 @@ public final class TracingContextUtilsTest {
   }
 
   @Test
-  public void testAnySpanContext_DefaultContext() {
+  public void testEffectiveSpanContext_DefaultContext() {
     SpanContext spanContext = TracingContextUtils.getEffectiveSpanContext(Context.current());
     assertThat(spanContext).isNull();
   }
 
   @Test
-  public void testAnySpanContext_SetSpanContext() {
+  public void testEffectiveSpanContext_SetSpanContext() {
     Context orig =
         TracingContextUtils.withSpanContext(DefaultSpan.getInvalid().getContext()).attach();
     try {
       SpanContext spanContext = TracingContextUtils.getEffectiveSpanContext(Context.current());
-      assertThat(spanContext).isNotNull();
       assertThat(spanContext).isSameInstanceAs(DefaultSpan.getInvalid().getContext());
     } finally {
       Context.current().detach(orig);
@@ -90,11 +101,10 @@ public final class TracingContextUtilsTest {
   }
 
   @Test
-  public void testAnySpanContext_SetSpan() {
+  public void testEffectiveSpanContext_SetSpan() {
     Context orig = TracingContextUtils.withSpan(DefaultSpan.getInvalid()).attach();
     try {
       SpanContext spanContext = TracingContextUtils.getEffectiveSpanContext(Context.current());
-      assertThat(spanContext).isNotNull();
       assertThat(spanContext).isSameInstanceAs(DefaultSpan.getInvalid().getContext());
     } finally {
       Context.current().detach(orig);
@@ -103,7 +113,7 @@ public final class TracingContextUtilsTest {
 
   @Test
   public void testSetSpanAndSpanContext() {
-    Span span = OpenTelemetry.getTracerRegistry().get(null).spanBuilder("testSpan").startSpan();
+    Span span = DefaultSpan.create(SpanContext.getInvalid());
     SpanContext spanContext =
         SpanContext.create(
             new TraceId(1, 1), new SpanId(1), TraceFlags.getDefault(), TraceState.getDefault());
@@ -113,15 +123,12 @@ public final class TracingContextUtilsTest {
       Context context2 = TracingContextUtils.withSpanContext(spanContext).attach();
       try {
         SpanContext spanContextInContext = TracingContextUtils.getSpanContext(Context.current());
-        assertThat(spanContextInContext).isNotNull();
         assertThat(spanContextInContext).isSameInstanceAs(spanContext);
 
-        Span spanInContext = TracingContextUtils.getSpan(Context.current());
-        assertThat(spanInContext).isNotNull();
+        Span spanInContext = TracingContextUtils.getSpanWithoutDefault(Context.current());
         assertThat(spanInContext).isSameInstanceAs(span);
 
         SpanContext anySpanContext = TracingContextUtils.getEffectiveSpanContext(Context.current());
-        assertThat(anySpanContext).isNotNull();
         assertThat(anySpanContext).isSameInstanceAs(span.getContext());
       } finally {
         Context.current().detach(context2);

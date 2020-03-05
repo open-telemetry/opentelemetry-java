@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
@@ -43,7 +42,7 @@ public final class TracerSdk implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return TracingContextUtils.getSpanWithDefault(Context.current());
+    return TracingContextUtils.getSpan();
   }
 
   @Override

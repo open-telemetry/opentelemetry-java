@@ -19,6 +19,7 @@ package io.opentelemetry.correlationcontext;
 import io.grpc.Context;
 import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -34,7 +35,6 @@ import javax.annotation.concurrent.Immutable;
 public final class CorrelationsContextUtils {
   private static final Context.Key<CorrelationContext> CORR_CONTEXT_KEY =
       Context.key("opentelemetry-corr-context-key");
-  private static final CorrelationContext DEFAULT_VALUE = EmptyCorrelationContext.getInstance();
 
   /**
    * Creates a new {@code Context} with the given value set.
@@ -60,44 +60,47 @@ public final class CorrelationsContextUtils {
   }
 
   /**
-   * Returns the value from the current {@code Context}.
+   * Returns the {@link CorrelationContext} from the current {@code Context}, falling back to a
+   * default, no-op {@link CorrelationContext}.
    *
-   * @return the value from the specified {@code Context}.
-   * @since 0.1.0
+   * @return the {@link CorrelationContext} from the current {@code Context}.
+   * @since 0.3.0
    */
   public static CorrelationContext getCorrelationContext() {
-    return CORR_CONTEXT_KEY.get();
+    return getCorrelationContext(Context.current());
   }
 
   /**
-   * Returns the value from the specified {@code Context}.
+   * Returns the {@link CorrelationContext} from the specified {@code Context}, falling back to a
+   * default, no-op {@link CorrelationContext}.
    *
    * @param context the specified {@code Context}.
-   * @return the value from the specified {@code Context}.
-   * @since 0.1.0
+   * @return the {@link CorrelationContext} from the specified {@code Context}.
+   * @since 0.3.0
    */
   public static CorrelationContext getCorrelationContext(Context context) {
+    CorrelationContext corrContext = CORR_CONTEXT_KEY.get(context);
+    return corrContext == null ? EmptyCorrelationContext.getInstance() : corrContext;
+  }
+
+  /**
+   * Returns the {@link CorrelationContext} from the specified {@code Context}. If none is found,
+   * this method returns {code null}.
+   *
+   * @param context the specified {@code Context}.
+   * @return the {@link CorrelationContext} from the specified {@code Context}.
+   * @since 0.1.0
+   */
+  @Nullable
+  public static CorrelationContext getCorrelationContextWithoutDefault(Context context) {
     return CORR_CONTEXT_KEY.get(context);
   }
 
   /**
-   * Returns the value from the specified {@code Context}, falling back to a default, no-op {@link
-   * CorrelationContext}.
-   *
-   * @param context the specified {@code Context}.
-   * @return the value from the specified {@code Context}.
-   * @since 0.3.0
-   */
-  public static CorrelationContext getCorrelationContextWithDefault(Context context) {
-    CorrelationContext corrContext = CORR_CONTEXT_KEY.get(context);
-    return corrContext == null ? DEFAULT_VALUE : corrContext;
-  }
-
-  /**
-   * Returns a new {@link Scope} encapsulating the provided {@code CorrelationContext} added to the
+   * Returns a new {@link Scope} encapsulating the provided {@link CorrelationContext} added to the
    * current {@code Context}.
    *
-   * @param corrContext the {@code CorrelationContext} to be added to the current {@code Context}.
+   * @param corrContext the {@link CorrelationContext} to be added to the current {@code Context}.
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */

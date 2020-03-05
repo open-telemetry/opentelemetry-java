@@ -53,7 +53,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return CorrelationsContextUtils.getCorrelationContextWithDefault(Context.current());
+    return CorrelationsContextUtils.getCorrelationContext(Context.current());
   }
 
   @Override
