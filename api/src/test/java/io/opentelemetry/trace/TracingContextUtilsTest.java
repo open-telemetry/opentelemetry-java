@@ -29,42 +29,42 @@ public final class TracingContextUtilsTest {
 
   @Test
   public void testGetCurrentSpan_Default() {
-    Span span = TracingContextUtils.getSpan();
+    Span span = TracingContextUtils.getCurrentSpan();
     assertThat(span).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 
   @Test
-  public void testGetCurrentSpan_Default_SetSpan() {
+  public void testGetCurrentSpan_SetSpan() {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
     Context orig = TracingContextUtils.withSpan(span).attach();
     try {
-      assertThat(TracingContextUtils.getSpan()).isSameInstanceAs(span);
+      assertThat(TracingContextUtils.getCurrentSpan()).isSameInstanceAs(span);
     } finally {
       Context.current().detach(orig);
     }
   }
 
   @Test
-  public void testGetCurrentSpan_DefaultContext() {
+  public void testGetSpan_DefaultContext() {
     Span span = TracingContextUtils.getSpan(Context.current());
     assertThat(span).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 
   @Test
-  public void testGetCurrentSpan_ExplicitContext() {
+  public void testGetSpan_ExplicitContext() {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
     Context context = TracingContextUtils.withSpan(span);
     assertThat(TracingContextUtils.getSpan(context)).isSameInstanceAs(span);
   }
 
   @Test
-  public void testGetCurrentSpanWithoutDefault_DefaultContext() {
+  public void testGetSpanWithoutDefault_DefaultContext() {
     Span span = TracingContextUtils.getSpanWithoutDefault(Context.current());
     assertThat(span).isNull();
   }
 
   @Test
-  public void testGetCurrentSpanWithoutDefault_ExplicitContext() {
+  public void testGetSpanWithoutDefault_ExplicitContext() {
     Span span = DefaultSpan.create(SpanContext.getInvalid());
     Context context = TracingContextUtils.withSpan(span);
     assertThat(TracingContextUtils.getSpanWithoutDefault(context)).isSameInstanceAs(span);

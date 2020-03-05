@@ -30,7 +30,7 @@ public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return CorrelationsContextUtils.getCorrelationContext();
+    return CorrelationsContextUtils.getCurrentCorrelationContext();
   }
 
   @Override

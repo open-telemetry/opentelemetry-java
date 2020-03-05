@@ -66,7 +66,7 @@ public final class CorrelationsContextUtils {
    * @return the {@link CorrelationContext} from the current {@code Context}.
    * @since 0.3.0
    */
-  public static CorrelationContext getCorrelationContext() {
+  public static CorrelationContext getCurrentCorrelationContext() {
     return getCorrelationContext(Context.current());
   }
 

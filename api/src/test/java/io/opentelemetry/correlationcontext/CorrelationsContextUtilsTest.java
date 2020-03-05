@@ -29,31 +29,32 @@ public final class CorrelationsContextUtilsTest {
 
   @Test
   public void testGetCurrentCorrelationContext_Default() {
-    CorrelationContext corrContext = CorrelationsContextUtils.getCorrelationContext();
+    CorrelationContext corrContext = CorrelationsContextUtils.getCurrentCorrelationContext();
     assertThat(corrContext).isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
-  public void testGetCurrentCorrelationContext_Default_SetCorrContext() {
+  public void testGetCurrentCorrelationContext_SetCorrContext() {
     CorrelationContext corrContext =
         DefaultCorrelationContextManager.getInstance().contextBuilder().build();
     Context orig = CorrelationsContextUtils.withCorrelationContext(corrContext).attach();
     try {
-      assertThat(CorrelationsContextUtils.getCorrelationContext()).isSameInstanceAs(corrContext);
+      assertThat(CorrelationsContextUtils.getCurrentCorrelationContext())
+          .isSameInstanceAs(corrContext);
     } finally {
       Context.current().detach(orig);
     }
   }
 
   @Test
-  public void testGetCurrentCorrelationContext_DefaultContext() {
+  public void testGetCorrelationContext_DefaultContext() {
     CorrelationContext corrContext =
         CorrelationsContextUtils.getCorrelationContext(Context.current());
     assertThat(corrContext).isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
-  public void testGetCurrentCorrelationContext_ExplicitContext() {
+  public void testGetCorrelationContext_ExplicitContext() {
     CorrelationContext corrContext =
         DefaultCorrelationContextManager.getInstance().contextBuilder().build();
     Context context =
@@ -63,14 +64,14 @@ public final class CorrelationsContextUtilsTest {
   }
 
   @Test
-  public void testGetCurrentCorrelationContextWithoutDefault_DefaultContext() {
+  public void testGetCorrelationContextWithoutDefault_DefaultContext() {
     CorrelationContext corrContext =
         CorrelationsContextUtils.getCorrelationContextWithoutDefault(Context.current());
     assertThat(corrContext).isNull();
   }
 
   @Test
-  public void testGetCurrentCorrelationContextWithoutDefault_ExplicitContext() {
+  public void testGetCorrelationContextWithoutDefault_ExplicitContext() {
     CorrelationContext corrContext =
         DefaultCorrelationContextManager.getInstance().contextBuilder().build();
     Context context =

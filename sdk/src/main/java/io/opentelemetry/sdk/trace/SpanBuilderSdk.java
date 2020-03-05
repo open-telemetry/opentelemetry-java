@@ -248,7 +248,7 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static SpanContext parent(
       ParentType parentType, Span explicitParent, SpanContext remoteParent) {
-    Span currentSpan = TracingContextUtils.getSpan();
+    Span currentSpan = TracingContextUtils.getCurrentSpan();
     switch (parentType) {
       case NO_PARENT:
         return null;
@@ -266,7 +266,7 @@ final class SpanBuilderSdk implements Span.Builder {
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
       case CURRENT_SPAN:
-        return TracingContextUtils.getSpan();
+        return TracingContextUtils.getCurrentSpan();
       case EXPLICIT_PARENT:
         return explicitParent;
       default:

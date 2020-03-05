@@ -249,6 +249,6 @@ public class CurrentSpanUtilsTest {
   }
 
   private static Span getCurrentSpan() {
-    return TracingContextUtils.getSpan();
+    return TracingContextUtils.getCurrentSpan();
   }
 }
