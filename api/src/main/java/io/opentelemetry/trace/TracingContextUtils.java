@@ -121,47 +121,6 @@ public final class TracingContextUtils {
   }
 
   /**
-   * Returns the {@link SpanContext} from the current {@code Context}.
-   *
-   * @return the value from the current {@code Context}.
-   * @since 0.3.0
-   */
-  public static SpanContext getSpanContext() {
-    return CONTEXT_SPANCONTEXT_KEY.get();
-  }
-
-  /**
-   * Returns the {@link SpanContext} from the specified {@code Context}.
-   *
-   * @param context the specified {@code Context}.
-   * @return the value from the specified {@code Context}.
-   * @since 0.3.0
-   */
-  public static SpanContext getSpanContext(Context context) {
-    return CONTEXT_SPANCONTEXT_KEY.get(context);
-  }
-
-  /**
-   * Returns the effective {@link SpanContext} from the specified {@code Context}.
-   *
-   * <p>This method tries to get any effective non-null {@link SpanContext} in {@code Context},
-   * giving higher priority to {@link Span#getContext()} and then falling back to {@link
-   * SpanContext}. If none is found, this method returns {@code null}.
-   *
-   * @param context the specified {@code Context}.
-   * @return the value from the specified {@code Context}.
-   * @since 0.3.0
-   */
-  public static SpanContext getEffectiveSpanContext(Context context) {
-    Span span = getSpanWithoutDefault(context);
-    if (span != null) {
-      return span.getContext();
-    }
-
-    return getSpanContext(context);
-  }
-
-  /**
    * Returns a new {@link Scope} encapsulating the provided {@link Span} added to the current {@code
    * Context}.
    *
