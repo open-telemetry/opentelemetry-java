@@ -25,17 +25,12 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Util methods/functionality to interact with the {@link io.grpc.Context}.
  *
- * <p>Users must interact with the current Context via the public APIs in {@link Tracer} and avoid
- * accessing this class directly.
- *
  * @since 0.1.0
  */
 @Immutable
 public final class TracingContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
       Context.<Span>key("opentelemetry-trace-span-key");
-  private static final Context.Key<SpanContext> CONTEXT_SPANCONTEXT_KEY =
-      Context.<SpanContext>key("opentelemetry-trace-spancontext-key");
 
   /**
    * Creates a new {@code Context} with the given {@link Span} set.
@@ -58,29 +53,6 @@ public final class TracingContextUtils {
    */
   public static Context withSpan(Span span, Context context) {
     return context.withValue(CONTEXT_SPAN_KEY, span);
-  }
-
-  /**
-   * Creates a new {@code Context} with the given {@link SpanContext} set.
-   *
-   * @param spanContext the value to be set.
-   * @return a new context with the given value set.
-   * @since 0.3.0
-   */
-  public static Context withSpanContext(SpanContext spanContext) {
-    return withSpanContext(spanContext, Context.current());
-  }
-
-  /**
-   * Creates a new {@code Context} with the given {@link SpanContext} set.
-   *
-   * @param spanContext the value to be set.
-   * @param context the parent {@code Context}.
-   * @return a new context with the given value set.
-   * @since 0.3.0
-   */
-  public static Context withSpanContext(SpanContext spanContext, Context context) {
-    return context.withValue(CONTEXT_SPANCONTEXT_KEY, spanContext);
   }
 
   /**
