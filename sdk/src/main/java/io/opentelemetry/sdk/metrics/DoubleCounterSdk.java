@@ -72,18 +72,10 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     }
   }
 
-  static DoubleCounter.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    return new Builder(name, meterProviderSharedState, meterSharedState);
-  }
-
-  private static final class Builder
-      extends AbstractCounter.Builder<DoubleCounter.Builder, DoubleCounter>
+  static final class Builder extends AbstractCounter.Builder<DoubleCounter.Builder, DoubleCounter>
       implements DoubleCounter.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
@@ -96,12 +88,13 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     }
 
     @Override
-    public DoubleCounter build() {
-      return new DoubleCounterSdk(
-          getInstrumentDescriptor(),
-          isMonotonic(),
-          getMeterProviderSharedState(),
-          getMeterSharedState());
+    public DoubleCounterSdk build() {
+      return register(
+          new DoubleCounterSdk(
+              getInstrumentDescriptor(),
+              isMonotonic(),
+              getMeterProviderSharedState(),
+              getMeterSharedState()));
     }
   }
 }

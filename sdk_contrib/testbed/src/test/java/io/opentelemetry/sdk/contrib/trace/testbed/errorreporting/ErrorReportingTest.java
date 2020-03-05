@@ -22,8 +22,9 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import io.opentelemetry.trace.DefaultSpan;
@@ -39,9 +40,10 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class ErrorReportingTest {
 
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer =
-      TestUtils.createTracer(ErrorReportingTest.class.getName(), exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = sdk.get(ErrorReportingTest.class.getName());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   /* Very simple error handling **/
@@ -58,7 +60,7 @@ public final class ErrorReportingTest {
 
     assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0).getStatus().getCanonicalCode().value())
         .isEqualTo(Status.UNKNOWN.getCanonicalCode().value());
@@ -82,9 +84,11 @@ public final class ErrorReportingTest {
           }
         });
 
-    await().atMost(5, TimeUnit.SECONDS).until(TestUtils.finishedSpansSize(exporter), equalTo(1));
+    await()
+        .atMost(5, TimeUnit.SECONDS)
+        .until(TestUtils.finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(1));
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0).getStatus().getCanonicalCode())
         .isEqualTo(Status.UNKNOWN.getCanonicalCode());
@@ -116,7 +120,7 @@ public final class ErrorReportingTest {
 
     assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0).getStatus().getCanonicalCode())
         .isEqualTo(Status.UNKNOWN.getCanonicalCode());
@@ -150,9 +154,11 @@ public final class ErrorReportingTest {
               tracer));
     }
 
-    await().atMost(5, TimeUnit.SECONDS).until(TestUtils.finishedSpansSize(exporter), equalTo(1));
+    await()
+        .atMost(5, TimeUnit.SECONDS)
+        .until(TestUtils.finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(1));
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
     assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
   }

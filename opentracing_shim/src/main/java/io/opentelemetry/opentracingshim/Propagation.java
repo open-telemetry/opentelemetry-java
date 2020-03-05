@@ -17,10 +17,8 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentracing.propagation.Binary;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -78,20 +76,5 @@ final class Propagation extends BaseShimObject {
     public String get(Map<String, String> carrier, String key) {
       return carrier.get(key);
     }
-  }
-
-  public void injectBinaryFormat(SpanContextShim context, Binary carrier) {
-    byte[] contextBuff = tracer().getBinaryFormat().toByteArray(context.getSpanContext());
-    ByteBuffer byteBuff = carrier.injectionBuffer(contextBuff.length);
-    byteBuff.put(contextBuff);
-  }
-
-  public SpanContextShim extractBinaryFormat(Binary carrier) {
-
-    ByteBuffer byteBuff = carrier.extractionBuffer();
-    byte[] buff = new byte[byteBuff.remaining()];
-    byteBuff.get(buff);
-
-    return new SpanContextShim(telemetryInfo, tracer().getBinaryFormat().fromByteArray(buff));
   }
 }

@@ -196,7 +196,7 @@ public class AbstractInstrumentBuilderTest {
     }
 
     @Override
-    List<MetricData> collect() {
+    List<MetricData> collectAll() {
       return Collections.emptyList();
     }
   }

@@ -261,7 +261,7 @@ public class AdapterTest {
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
-        .setResource(Resource.create(Collections.<String, String>emptyMap()))
+        .setResource(Resource.create(Collections.<String, AttributeValue>emptyMap()))
         .setStatus(Status.OK)
         .setNumberOfChildren(0)
         .build();

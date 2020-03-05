@@ -19,9 +19,17 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,7 +41,9 @@ import org.junit.runners.JUnit4;
 public class MeterSdkRegistryTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
-  private final MeterSdkProvider meterRegistry = MeterSdkProvider.builder().build();
+  private final TestClock testClock = TestClock.create();
+  private final MeterSdkProvider meterRegistry =
+      MeterSdkProvider.builder().setClock(testClock).setResource(Resource.getEmpty()).build();
 
   @Test
   public void builder_HappyPath() {
@@ -82,5 +92,48 @@ public class MeterSdkRegistryTest {
         InstrumentationLibraryInfo.create("theName", "theVersion");
     MeterSdk meter = meterRegistry.get(expected.getName(), expected.getVersion());
     assertThat(meter.getInstrumentationLibraryInfo()).isEqualTo(expected);
+  }
+
+  @Test
+  public void metricProducer_GetAllMetrics() {
+    MeterSdk meterSdk1 = meterRegistry.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
+    LongCounter longCounter1 = meterSdk1.longCounterBuilder("testLongCounter").build();
+    longCounter1.add(10, meterSdk1.createLabelSet());
+    MeterSdk meterSdk2 = meterRegistry.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
+    LongCounter longCounter2 = meterSdk2.longCounterBuilder("testLongCounter").build();
+    longCounter2.add(10, meterSdk2.createLabelSet());
+
+    assertThat(meterRegistry.getMetricProducer().getAllMetrics())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testLongCounter",
+                    "",
+                    "1",
+                    Type.MONOTONIC_LONG,
+                    Collections.<String, String>emptyMap()),
+                Resource.getEmpty(),
+                meterSdk1.getInstrumentationLibraryInfo(),
+                Collections.<Point>singletonList(
+                    LongPoint.create(
+                        testClock.now(),
+                        testClock.now(),
+                        Collections.<String, String>emptyMap(),
+                        10))),
+            MetricData.create(
+                Descriptor.create(
+                    "testLongCounter",
+                    "",
+                    "1",
+                    Type.MONOTONIC_LONG,
+                    Collections.<String, String>emptyMap()),
+                Resource.getEmpty(),
+                meterSdk2.getInstrumentationLibraryInfo(),
+                Collections.<Point>singletonList(
+                    LongPoint.create(
+                        testClock.now(),
+                        testClock.now(),
+                        Collections.<String, String>emptyMap(),
+                        10))));
   }
 }

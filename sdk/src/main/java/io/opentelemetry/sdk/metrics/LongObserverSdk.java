@@ -16,10 +16,19 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.internal.Utils;
+import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongObserver;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.Collections;
+import java.util.List;
+import javax.annotation.Nullable;
 
 final class LongObserverSdk extends AbstractObserver implements LongObserver {
+  @Nullable private volatile Callback<ResultLongObserver> metricUpdater = null;
+
   LongObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
@@ -34,22 +43,25 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
   }
 
   @Override
-  public void setCallback(Callback<LongObserver.ResultLongObserver> metricUpdater) {
-    throw new UnsupportedOperationException("to be implemented");
+  List<MetricData> collectAll() {
+    Callback<ResultLongObserver> currentMetricUpdater = metricUpdater;
+    if (currentMetricUpdater == null) {
+      return Collections.emptyList();
+    }
+    final ActiveBatcher activeBatcher = getActiveBatcher();
+    currentMetricUpdater.update(new ResultLongObserverSdk(activeBatcher, isMonotonic()));
+    return activeBatcher.completeCollectionCycle();
   }
 
-  static LongObserver.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    return new Builder(name, meterProviderSharedState, meterSharedState);
+  @Override
+  public void setCallback(Callback<ResultLongObserver> metricUpdater) {
+    this.metricUpdater = Utils.checkNotNull(metricUpdater, "metricUpdater");
   }
 
-  private static final class Builder
-      extends AbstractObserver.Builder<LongObserver.Builder, LongObserver>
+  static final class Builder extends AbstractObserver.Builder<LongObserver.Builder, LongObserver>
       implements LongObserver.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
@@ -62,12 +74,34 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     }
 
     @Override
-    public LongObserver build() {
-      return new LongObserverSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getMeterSharedState(),
-          isMonotonic());
+    public LongObserverSdk build() {
+      return register(
+          new LongObserverSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isMonotonic()));
+    }
+  }
+
+  private static final class ResultLongObserverSdk implements ResultLongObserver {
+
+    private final ActiveBatcher activeBatcher;
+    private final boolean monotonic;
+
+    private ResultLongObserverSdk(ActiveBatcher activeBatcher, boolean monotonic) {
+      this.activeBatcher = activeBatcher;
+      this.monotonic = monotonic;
+    }
+
+    @Override
+    public void observe(long value, LabelSet labelSet) {
+      if (monotonic && value < 0) {
+        throw new IllegalArgumentException("monotonic observers can only record positive values");
+      }
+      Aggregator aggregator = activeBatcher.getAggregator();
+      aggregator.recordLong(value);
+      activeBatcher.batch(labelSet, aggregator, /* mappedAggregator= */ false);
     }
   }
 }

@@ -16,10 +16,19 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DoubleObserver;
+import io.opentelemetry.metrics.LabelSet;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.Collections;
+import java.util.List;
+import javax.annotation.Nullable;
 
 final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver {
+  @Nullable private volatile Callback<ResultDoubleObserver> metricUpdater = null;
+
   DoubleObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
@@ -34,22 +43,26 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
   }
 
   @Override
+  List<MetricData> collectAll() {
+    Callback<ResultDoubleObserver> currentMetricUpdater = metricUpdater;
+    if (currentMetricUpdater == null) {
+      return Collections.emptyList();
+    }
+    final ActiveBatcher activeBatcher = getActiveBatcher();
+    currentMetricUpdater.update(new ResultDoubleObserverSdk(activeBatcher, isMonotonic()));
+    return activeBatcher.completeCollectionCycle();
+  }
+
+  @Override
   public void setCallback(Callback<DoubleObserver.ResultDoubleObserver> metricUpdater) {
-    throw new UnsupportedOperationException("to be implemented");
+    this.metricUpdater = Utils.checkNotNull(metricUpdater, "metricUpdater");
   }
 
-  static DoubleObserver.Builder builder(
-      String name,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    return new Builder(name, meterProviderSharedState, meterSharedState);
-  }
-
-  private static final class Builder
+  static final class Builder
       extends AbstractObserver.Builder<DoubleObserver.Builder, DoubleObserver>
       implements DoubleObserver.Builder {
 
-    private Builder(
+    Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
@@ -62,12 +75,34 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     }
 
     @Override
-    public DoubleObserver build() {
-      return new DoubleObserverSdk(
-          getInstrumentDescriptor(),
-          getMeterProviderSharedState(),
-          getMeterSharedState(),
-          isMonotonic());
+    public DoubleObserverSdk build() {
+      return register(
+          new DoubleObserverSdk(
+              getInstrumentDescriptor(),
+              getMeterProviderSharedState(),
+              getMeterSharedState(),
+              isMonotonic()));
+    }
+  }
+
+  private static final class ResultDoubleObserverSdk implements ResultDoubleObserver {
+
+    private final ActiveBatcher activeBatcher;
+    private final boolean monotonic;
+
+    private ResultDoubleObserverSdk(ActiveBatcher activeBatcher, boolean monotonic) {
+      this.activeBatcher = activeBatcher;
+      this.monotonic = monotonic;
+    }
+
+    @Override
+    public void observe(double value, LabelSet labelSet) {
+      if (monotonic && value < 0) {
+        throw new IllegalArgumentException("monotonic observers can only record positive values");
+      }
+      Aggregator aggregator = activeBatcher.getAggregator();
+      aggregator.recordDouble(value);
+      activeBatcher.batch(labelSet, aggregator, /* mappedAggregator= */ false);
     }
   }
 }

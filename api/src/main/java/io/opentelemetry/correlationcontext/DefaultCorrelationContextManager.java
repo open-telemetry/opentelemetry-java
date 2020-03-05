@@ -18,7 +18,6 @@ package io.opentelemetry.correlationcontext;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.Utils;
 import java.util.Collections;
@@ -35,7 +34,6 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class DefaultCorrelationContextManager implements CorrelationContextManager {
   private static final DefaultCorrelationContextManager INSTANCE =
       new DefaultCorrelationContextManager();
-  private static final BinaryFormat<CorrelationContext> BINARY_FORMAT = new NoopBinaryFormat();
   private static final HttpTextFormat<CorrelationContext> HTTP_TEXT_FORMAT =
       new NoopHttpTextFormat();
 
@@ -45,7 +43,6 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
    *
    * @return a {@code CorrelationContextManager} singleton that is the default implementation for
    *     {@link CorrelationContextManager}.
-   * @since 0.1.0
    */
   public static CorrelationContextManager getInstance() {
     return INSTANCE;
@@ -64,11 +61,6 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
   @Override
   public Scope withContext(CorrelationContext distContext) {
     return CorrelationsContextUtils.withScopedCorrelationContext(distContext);
-  }
-
-  @Override
-  public BinaryFormat<CorrelationContext> getBinaryFormat() {
-    return BINARY_FORMAT;
   }
 
   @Override
@@ -106,23 +98,6 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
     @Override
     public CorrelationContext build() {
-      return EmptyCorrelationContext.getInstance();
-    }
-  }
-
-  @Immutable
-  private static final class NoopBinaryFormat implements BinaryFormat<CorrelationContext> {
-    static final byte[] EMPTY_BYTE_ARRAY = {};
-
-    @Override
-    public byte[] toByteArray(CorrelationContext distContext) {
-      Utils.checkNotNull(distContext, "distContext");
-      return EMPTY_BYTE_ARRAY;
-    }
-
-    @Override
-    public CorrelationContext fromByteArray(byte[] bytes) {
-      Utils.checkNotNull(bytes, "bytes");
       return EmptyCorrelationContext.getInstance();
     }
   }

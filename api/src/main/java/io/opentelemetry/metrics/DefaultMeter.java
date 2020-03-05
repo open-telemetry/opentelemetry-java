@@ -113,6 +113,8 @@ public final class DefaultMeter implements Meter {
     return NoopLabelSet.INSTANCE;
   }
 
+  private DefaultMeter() {}
+
   /** No-op implementation of DoubleCounter interface. */
   @Immutable
   private static final class NoopDoubleCounter implements DoubleCounter {

@@ -30,10 +30,11 @@ import io.opentelemetry.trace.TraceId;
 import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
-public class LoggingExporterTest {
+/** Tests for the {@link LoggingSpanExporter}. */
+public class LoggingSpanExporterTest {
   @Test
   public void returnCode() {
-    LoggingExporter exporter = new LoggingExporter();
+    LoggingSpanExporter exporter = new LoggingSpanExporter();
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     SpanData spanData =
         SpanData.newBuilder()

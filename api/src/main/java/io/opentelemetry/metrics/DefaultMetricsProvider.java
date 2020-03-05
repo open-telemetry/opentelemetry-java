@@ -18,9 +18,16 @@ package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.spi.MetricsProvider;
 
-public class DefaultMetricsProvider implements MetricsProvider {
+public final class DefaultMetricsProvider implements MetricsProvider {
   private static final MetricsProvider instance = new DefaultMetricsProvider();
 
+  /**
+   * Returns a {@code MetricsProvider} singleton that is the default implementation for {@link
+   * MetricsProvider}.
+   *
+   * @return a {@code MetricsProvider} singleton that is the default implementation for {@link
+   *     MetricsProvider}.
+   */
   public static MetricsProvider getInstance() {
     return instance;
   }
@@ -29,4 +36,6 @@ public class DefaultMetricsProvider implements MetricsProvider {
   public MeterProvider create() {
     return DefaultMeterProvider.getInstance();
   }
+
+  private DefaultMetricsProvider() {}
 }

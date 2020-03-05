@@ -87,6 +87,11 @@ public final class BatchSpansProcessor implements SpanProcessor {
   public void onStart(ReadableSpan span) {}
 
   @Override
+  public boolean isStartRequired() {
+    return false;
+  }
+
+  @Override
   public void onEnd(ReadableSpan span) {
     if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
@@ -95,9 +100,19 @@ public final class BatchSpansProcessor implements SpanProcessor {
   }
 
   @Override
+  public boolean isEndRequired() {
+    return true;
+  }
+
+  @Override
   public void shutdown() {
     workerThread.interrupt();
-    worker.flush();
+    worker.shutdown();
+  }
+
+  @Override
+  public void forceFlush() {
+    worker.forceFlush();
   }
 
   /**
@@ -238,7 +253,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
   private static final class Worker implements Runnable {
 
     static {
-      Meter meter = OpenTelemetry.getMeterRegistry().get("io.opentelemetry.sdk.trace");
+      Meter meter = OpenTelemetry.getMeterProvider().get("io.opentelemetry.sdk.trace");
       LongCounter droppedSpansCounter =
           meter
               .longCounterBuilder("droppedSpans")
@@ -335,7 +350,12 @@ public final class BatchSpansProcessor implements SpanProcessor {
       }
     }
 
-    private void flush() {
+    private void shutdown() {
+      forceFlush();
+      executorService.shutdown();
+    }
+
+    private void forceFlush() {
       ArrayList<ReadableSpan> spansCopy;
       synchronized (monitor) {
         spansCopy = new ArrayList<>(spansList);
@@ -343,7 +363,6 @@ public final class BatchSpansProcessor implements SpanProcessor {
       }
       // Execute the batch export outside the synchronized to not block all producers.
       exportBatches(spansCopy);
-      executorService.shutdown();
     }
 
     private void exportBatches(ArrayList<ReadableSpan> spanList) {

@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
@@ -38,7 +37,7 @@ import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
-import io.opentelemetry.trace.DefaultTracer;
+import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
@@ -80,17 +79,15 @@ public class OpenTelemetryTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracerRegistry().get("testTracer"))
-        .isInstanceOf(DefaultTracer.getInstance().getClass());
-    assertThat(OpenTelemetry.getTracerRegistry().get("testTracer"))
-        .isEqualTo(OpenTelemetry.getTracerRegistry().get("testTracer"));
-    assertThat(OpenTelemetry.getMeterRegistry())
-        .isInstanceOf(DefaultMeterProvider.getInstance().getClass());
-    assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
+    assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(DefaultTracerProvider.class);
+    assertThat(OpenTelemetry.getTracerProvider())
+        .isSameInstanceAs(OpenTelemetry.getTracerProvider());
+    assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
+    assertThat(OpenTelemetry.getMeterProvider()).isSameInstanceAs(OpenTelemetry.getMeterProvider());
     assertThat(OpenTelemetry.getCorrelationContextManager())
-        .isInstanceOf(DefaultCorrelationContextManager.getInstance().getClass());
+        .isInstanceOf(DefaultCorrelationContextManager.class);
     assertThat(OpenTelemetry.getCorrelationContextManager())
-        .isEqualTo(OpenTelemetry.getCorrelationContextManager());
+        .isSameInstanceAs(OpenTelemetry.getCorrelationContextManager());
   }
 
   @Test
@@ -99,8 +96,8 @@ public class OpenTelemetryTest {
         createService(TraceProvider.class, FirstTraceProvider.class, SecondTraceProvider.class);
     try {
       assertTrue(
-          (OpenTelemetry.getTracerRegistry() instanceof FirstTraceProvider)
-              || (OpenTelemetry.getTracerRegistry() instanceof SecondTraceProvider));
+          (OpenTelemetry.getTracerProvider() instanceof FirstTraceProvider)
+              || (OpenTelemetry.getTracerProvider() instanceof SecondTraceProvider));
     } finally {
       serviceFile.delete();
     }
@@ -112,7 +109,7 @@ public class OpenTelemetryTest {
         createService(TraceProvider.class, FirstTraceProvider.class, SecondTraceProvider.class);
     System.setProperty(TraceProvider.class.getName(), SecondTraceProvider.class.getName());
     try {
-      assertThat(OpenTelemetry.getTracerRegistry()).isInstanceOf(SecondTraceProvider.class);
+      assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(SecondTraceProvider.class);
     } finally {
       serviceFile.delete();
     }
@@ -122,7 +119,7 @@ public class OpenTelemetryTest {
   public void testTracerNotFound() {
     System.setProperty(TraceProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getTracerRegistry().get("testTracer");
+    OpenTelemetry.getTracerProvider().get("testTracer");
   }
 
   @Test
@@ -132,9 +129,9 @@ public class OpenTelemetryTest {
             MetricsProvider.class, FirstMetricsProvider.class, SecondMetricsProvider.class);
     try {
       assertTrue(
-          (OpenTelemetry.getMeterRegistry() instanceof FirstMetricsProvider)
-              || (OpenTelemetry.getMeterRegistry() instanceof SecondMetricsProvider));
-      assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
+          (OpenTelemetry.getMeterProvider() instanceof FirstMetricsProvider)
+              || (OpenTelemetry.getMeterProvider() instanceof SecondMetricsProvider));
+      assertThat(OpenTelemetry.getMeterProvider()).isEqualTo(OpenTelemetry.getMeterProvider());
     } finally {
       serviceFile.delete();
     }
@@ -147,8 +144,8 @@ public class OpenTelemetryTest {
             MetricsProvider.class, FirstMetricsProvider.class, SecondMetricsProvider.class);
     System.setProperty(MetricsProvider.class.getName(), SecondMetricsProvider.class.getName());
     try {
-      assertThat(OpenTelemetry.getMeterRegistry()).isInstanceOf(SecondMetricsProvider.class);
-      assertThat(OpenTelemetry.getMeterRegistry()).isEqualTo(OpenTelemetry.getMeterRegistry());
+      assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(SecondMetricsProvider.class);
+      assertThat(OpenTelemetry.getMeterProvider()).isEqualTo(OpenTelemetry.getMeterProvider());
     } finally {
       serviceFile.delete();
     }
@@ -158,7 +155,7 @@ public class OpenTelemetryTest {
   public void testMeterNotFound() {
     System.setProperty(MetricsProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getMeterRegistry();
+    OpenTelemetry.getMeterProvider();
   }
 
   @Test
@@ -265,12 +262,6 @@ public class OpenTelemetryTest {
     @Nullable
     @Override
     public Span.Builder spanBuilder(String spanName) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public BinaryFormat<SpanContext> getBinaryFormat() {
       return null;
     }
 
@@ -403,12 +394,6 @@ public class OpenTelemetryTest {
     @Nullable
     @Override
     public Scope withContext(CorrelationContext distContext) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public BinaryFormat<CorrelationContext> getBinaryFormat() {
       return null;
     }
 

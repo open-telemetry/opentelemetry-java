@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public final class LongSumAggregator extends AbstractAggregator {
+
+  private static final long DEFAULT_VALUE = 0L;
   private static final AggregatorFactory AGGREGATOR_FACTORY =
       new AggregatorFactory() {
         @Override
@@ -31,8 +33,13 @@ public final class LongSumAggregator extends AbstractAggregator {
       };
 
   // TODO: Change to use LongAdder when changed to java8.
-  private final AtomicLong current = new AtomicLong(0L);
+  private final AtomicLong current = new AtomicLong(DEFAULT_VALUE);
 
+  /**
+   * Returns an {@link AggregatorFactory} that produces {@link LongSumAggregator} instances.
+   *
+   * @return an {@link AggregatorFactory} that produces {@link LongSumAggregator} instances.
+   */
   public static AggregatorFactory getFactory() {
     return AGGREGATOR_FACTORY;
   }
@@ -40,7 +47,7 @@ public final class LongSumAggregator extends AbstractAggregator {
   @Override
   void doMergeAndReset(Aggregator aggregator) {
     LongSumAggregator other = (LongSumAggregator) aggregator;
-    other.current.getAndAdd(this.current.getAndSet(0));
+    other.current.getAndAdd(this.current.getAndSet(DEFAULT_VALUE));
   }
 
   @Override

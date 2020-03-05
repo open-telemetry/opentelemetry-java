@@ -17,7 +17,6 @@
 package io.opentelemetry.correlationcontext;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.BinaryFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -64,45 +63,6 @@ public interface CorrelationContextManager {
    * @since 0.1.0
    */
   Scope withContext(CorrelationContext distContext);
-
-  /**
-   * Returns the {@link BinaryFormat} for this implementation.
-   *
-   * <p>Example of usage on the client:
-   *
-   * <pre>{@code
-   * private static final CorrelationContextManager contextManager =
-   *     OpenTelemetry.getCorrelationContextManager();
-   * private static final BinaryFormat binaryFormat = contextManager.getBinaryFormat();
-   *
-   * Request createRequest() {
-   *   Request req = new Request();
-   *   byte[] ctxBuffer = binaryFormat.toByteArray(contextManager.getCurrentContext());
-   *   request.addMetadata("distributedContext", ctxBuffer);
-   *   return request;
-   * }
-   * }</pre>
-   *
-   * <p>Example of usage on the server:
-   *
-   * <pre>{@code
-   * private static final CorrelationContextManager contextManager =
-   *     OpenTelemetry.getCorrelationContextManager();
-   * private static final BinaryFormat binaryFormat = contextManager.getBinaryFormat();
-   *
-   * void onRequestReceived(Request request) {
-   *   byte[] ctxBuffer = request.getMetadata("distributedContext");
-   *   CorrelationContext distContext = textFormat.fromByteArray(ctxBuffer);
-   *   try (Scope s = contextManager.withContext(distContext)) {
-   *     // Handle request and send response back.
-   *   }
-   * }
-   * }</pre>
-   *
-   * @return the {@code BinaryFormat} for this implementation.
-   * @since 0.1.0
-   */
-  BinaryFormat<CorrelationContext> getBinaryFormat();
 
   /**
    * Returns the {@link HttpTextFormat} for this implementation.

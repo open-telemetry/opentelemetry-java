@@ -19,16 +19,17 @@ package io.opentelemetry.exporters.logging;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** A Span Exporter that logs every span at INFO level using java.util.logging. */
-public class LoggingExporter implements SpanExporter {
-  private static final Logger logger = Logger.getLogger(LoggingExporter.class.getName());
+public class LoggingSpanExporter implements SpanExporter {
+  private static final Logger logger = Logger.getLogger(LoggingSpanExporter.class.getName());
 
   @Override
   public ResultCode export(List<SpanData> spans) {
     for (SpanData span : spans) {
-      logger.info("span: " + span);
+      logger.log(Level.INFO, "span: {0}", span);
     }
     return ResultCode.SUCCESS;
   }
