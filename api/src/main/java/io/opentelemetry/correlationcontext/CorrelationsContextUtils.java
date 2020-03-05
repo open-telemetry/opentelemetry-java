@@ -60,8 +60,8 @@ public final class CorrelationsContextUtils {
   }
 
   /**
-   * Returns the {@link CorrelationContext} from the current {@code Context}, falling back to a
-   * default, no-op {@link CorrelationContext}.
+   * Returns the {@link CorrelationContext} from the current {@code Context}, falling back to an
+   * empty {@link CorrelationContext}.
    *
    * @return the {@link CorrelationContext} from the current {@code Context}.
    * @since 0.3.0
@@ -71,8 +71,8 @@ public final class CorrelationsContextUtils {
   }
 
   /**
-   * Returns the {@link CorrelationContext} from the specified {@code Context}, falling back to a
-   * default, no-op {@link CorrelationContext}.
+   * Returns the {@link CorrelationContext} from the specified {@code Context}, falling back to an
+   * empty {@link CorrelationContext}.
    *
    * @param context the specified {@code Context}.
    * @return the {@link CorrelationContext} from the specified {@code Context}.
