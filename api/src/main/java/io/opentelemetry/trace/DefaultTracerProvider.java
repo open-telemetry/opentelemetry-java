@@ -16,6 +16,9 @@
 
 package io.opentelemetry.trace;
 
+import javax.annotation.concurrent.ThreadSafe;
+
+@ThreadSafe
 public class DefaultTracerProvider implements TracerProvider {
 
   private static final TracerProvider instance = new DefaultTracerProvider();
