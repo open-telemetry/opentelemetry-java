@@ -22,14 +22,11 @@ import java.util.concurrent.ThreadLocalRandom;
 
 final class RandomIdsGenerator implements IdsGenerator {
   private static final long INVALID_ID = 0;
+  private static final long MIN_VALID_ID = 1;
 
   @Override
   public SpanId generateSpanId() {
-    long id;
-    ThreadLocalRandom random = ThreadLocalRandom.current();
-    do {
-      id = random.nextLong();
-    } while (id == INVALID_ID);
+    long id = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE) + MIN_VALID_ID;
     return new SpanId(id);
   }
 
