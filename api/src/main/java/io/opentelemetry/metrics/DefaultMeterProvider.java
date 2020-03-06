@@ -16,6 +16,9 @@
 
 package io.opentelemetry.metrics;
 
+import javax.annotation.concurrent.ThreadSafe;
+
+@ThreadSafe
 public class DefaultMeterProvider implements MeterProvider {
 
   private static final MeterProvider instance = new DefaultMeterProvider();

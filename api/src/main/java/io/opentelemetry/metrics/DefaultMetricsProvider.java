@@ -17,7 +17,9 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.spi.MetricsProvider;
+import javax.annotation.concurrent.ThreadSafe;
 
+@ThreadSafe
 public final class DefaultMetricsProvider implements MetricsProvider {
   private static final MetricsProvider instance = new DefaultMetricsProvider();
 
