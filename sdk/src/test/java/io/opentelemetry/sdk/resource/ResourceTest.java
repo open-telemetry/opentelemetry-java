@@ -42,86 +42,86 @@ public class ResourceTest {
 
   @Before
   public void setUp() {
-    Map<String, AttributeValue> labelMap1 = new HashMap<>();
-    labelMap1.put("a", AttributeValue.stringAttributeValue("1"));
-    labelMap1.put("b", AttributeValue.stringAttributeValue("2"));
-    Map<String, AttributeValue> labelMap2 = new HashMap<>();
-    labelMap2.put("a", AttributeValue.stringAttributeValue("1"));
-    labelMap2.put("b", AttributeValue.stringAttributeValue("3"));
-    labelMap2.put("c", AttributeValue.stringAttributeValue("4"));
-    resource1 = Resource.create(labelMap1);
-    resource2 = Resource.create(labelMap2);
+    Map<String, AttributeValue> attributeMap1 = new HashMap<>();
+    attributeMap1.put("a", AttributeValue.stringAttributeValue("1"));
+    attributeMap1.put("b", AttributeValue.stringAttributeValue("2"));
+    Map<String, AttributeValue> attributeMap2 = new HashMap<>();
+    attributeMap2.put("a", AttributeValue.stringAttributeValue("1"));
+    attributeMap2.put("b", AttributeValue.stringAttributeValue("3"));
+    attributeMap2.put("c", AttributeValue.stringAttributeValue("4"));
+    resource1 = Resource.create(attributeMap1);
+    resource2 = Resource.create(attributeMap2);
   }
 
   @Test
   public void create() {
-    Map<String, AttributeValue> labelMap = new HashMap<>();
-    labelMap.put("a", AttributeValue.stringAttributeValue("1"));
-    labelMap.put("b", AttributeValue.stringAttributeValue("2"));
-    Resource resource = Resource.create(labelMap);
-    assertThat(resource.getLabels()).isNotNull();
-    assertThat(resource.getLabels().size()).isEqualTo(2);
-    assertThat(resource.getLabels()).isEqualTo(labelMap);
+    Map<String, AttributeValue> attributeMap = new HashMap<>();
+    attributeMap.put("a", AttributeValue.stringAttributeValue("1"));
+    attributeMap.put("b", AttributeValue.stringAttributeValue("2"));
+    Resource resource = Resource.create(attributeMap);
+    assertThat(resource.getAttributes()).isNotNull();
+    assertThat(resource.getAttributes().size()).isEqualTo(2);
+    assertThat(resource.getAttributes()).isEqualTo(attributeMap);
 
     Resource resource1 = Resource.create(Collections.<String, AttributeValue>emptyMap());
-    assertThat(resource1.getLabels()).isNotNull();
-    assertThat(resource1.getLabels()).isEmpty();
+    assertThat(resource1.getAttributes()).isNotNull();
+    assertThat(resource1.getAttributes()).isEmpty();
   }
 
   @Test
   public void testResourceEquals() {
-    Map<String, AttributeValue> labelMap1 = new HashMap<>();
-    labelMap1.put("a", AttributeValue.stringAttributeValue("1"));
-    labelMap1.put("b", AttributeValue.stringAttributeValue("2"));
-    Map<String, AttributeValue> labelMap2 = new HashMap<>();
-    labelMap2.put("a", AttributeValue.stringAttributeValue("1"));
-    labelMap2.put("b", AttributeValue.stringAttributeValue("3"));
-    labelMap2.put("c", AttributeValue.stringAttributeValue("4"));
+    Map<String, AttributeValue> attributeMap1 = new HashMap<>();
+    attributeMap1.put("a", AttributeValue.stringAttributeValue("1"));
+    attributeMap1.put("b", AttributeValue.stringAttributeValue("2"));
+    Map<String, AttributeValue> attributeMap2 = new HashMap<>();
+    attributeMap2.put("a", AttributeValue.stringAttributeValue("1"));
+    attributeMap2.put("b", AttributeValue.stringAttributeValue("3"));
+    attributeMap2.put("c", AttributeValue.stringAttributeValue("4"));
     new EqualsTester()
-        .addEqualityGroup(Resource.create(labelMap1), Resource.create(labelMap1))
-        .addEqualityGroup(Resource.create(labelMap2))
+        .addEqualityGroup(Resource.create(attributeMap1), Resource.create(attributeMap1))
+        .addEqualityGroup(Resource.create(attributeMap2))
         .testEquals();
   }
 
   @Test
   public void testMergeResources() {
-    Map<String, AttributeValue> expectedLabelMap = new HashMap<>();
-    expectedLabelMap.put("a", AttributeValue.stringAttributeValue("1"));
-    expectedLabelMap.put("b", AttributeValue.stringAttributeValue("2"));
-    expectedLabelMap.put("c", AttributeValue.stringAttributeValue("4"));
+    Map<String, AttributeValue> expectedAttributeMap = new HashMap<>();
+    expectedAttributeMap.put("a", AttributeValue.stringAttributeValue("1"));
+    expectedAttributeMap.put("b", AttributeValue.stringAttributeValue("2"));
+    expectedAttributeMap.put("c", AttributeValue.stringAttributeValue("4"));
 
     Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(resource2);
-    assertThat(resource.getLabels()).isEqualTo(expectedLabelMap);
+    assertThat(resource.getAttributes()).isEqualTo(expectedAttributeMap);
   }
 
   @Test
   public void testMergeResources_Resource1() {
-    Map<String, AttributeValue> expectedLabelMap = new HashMap<>();
-    expectedLabelMap.put("a", AttributeValue.stringAttributeValue("1"));
-    expectedLabelMap.put("b", AttributeValue.stringAttributeValue("2"));
+    Map<String, AttributeValue> expectedAttributeMap = new HashMap<>();
+    expectedAttributeMap.put("a", AttributeValue.stringAttributeValue("1"));
+    expectedAttributeMap.put("b", AttributeValue.stringAttributeValue("2"));
 
     Resource resource = DEFAULT_RESOURCE.merge(resource1);
-    assertThat(resource.getLabels()).isEqualTo(expectedLabelMap);
+    assertThat(resource.getAttributes()).isEqualTo(expectedAttributeMap);
   }
 
   @Test
   public void testMergeResources_Resource1_Null() {
-    Map<String, AttributeValue> expectedLabelMap = new HashMap<>();
-    expectedLabelMap.put("a", AttributeValue.stringAttributeValue("1"));
-    expectedLabelMap.put("b", AttributeValue.stringAttributeValue("3"));
-    expectedLabelMap.put("c", AttributeValue.stringAttributeValue("4"));
+    Map<String, AttributeValue> expectedAttributeMap = new HashMap<>();
+    expectedAttributeMap.put("a", AttributeValue.stringAttributeValue("1"));
+    expectedAttributeMap.put("b", AttributeValue.stringAttributeValue("3"));
+    expectedAttributeMap.put("c", AttributeValue.stringAttributeValue("4"));
 
     Resource resource = DEFAULT_RESOURCE.merge(null).merge(resource2);
-    assertThat(resource.getLabels()).isEqualTo(expectedLabelMap);
+    assertThat(resource.getAttributes()).isEqualTo(expectedAttributeMap);
   }
 
   @Test
   public void testMergeResources_Resource2_Null() {
-    Map<String, AttributeValue> expectedLabelMap = new HashMap<>();
-    expectedLabelMap.put("a", AttributeValue.stringAttributeValue("1"));
-    expectedLabelMap.put("b", AttributeValue.stringAttributeValue("2"));
+    Map<String, AttributeValue> expectedAttributeMap = new HashMap<>();
+    expectedAttributeMap.put("a", AttributeValue.stringAttributeValue("1"));
+    expectedAttributeMap.put("b", AttributeValue.stringAttributeValue("2"));
 
     Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(null);
-    assertThat(resource.getLabels()).isEqualTo(expectedLabelMap);
+    assertThat(resource.getAttributes()).isEqualTo(expectedAttributeMap);
   }
 }

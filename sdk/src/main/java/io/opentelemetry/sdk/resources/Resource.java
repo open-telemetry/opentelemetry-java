@@ -58,26 +58,26 @@ public abstract class Resource {
   }
 
   /**
-   * Returns a map of labels that describe the resource.
+   * Returns a map of attributes that describe the resource.
    *
-   * @return a map of labels.
+   * @return a map of attributes.
    * @since 0.1.0
    */
-  public abstract Map<String, AttributeValue> getLabels();
+  public abstract Map<String, AttributeValue> getAttributes();
 
   /**
    * Returns a {@link Resource}.
    *
-   * @param labels a map of labels that describe the resource.
+   * @param attributes a map of attributes that describe the resource.
    * @return a {@code Resource}.
-   * @throws NullPointerException if {@code labels} is null.
-   * @throws IllegalArgumentException if label key or label value is not a valid printable ASCII
-   *     string or exceed {@link #MAX_LENGTH} characters.
+   * @throws NullPointerException if {@code attributes} is null.
+   * @throws IllegalArgumentException if attribute key or attribute value is not a valid printable
+   *     ASCII string or exceed {@link #MAX_LENGTH} characters.
    * @since 0.1.0
    */
-  public static Resource create(Map<String, AttributeValue> labels) {
-    checkLabels(Utils.checkNotNull(labels, "labels"));
-    return new AutoValue_Resource(Collections.unmodifiableMap(new LinkedHashMap<>(labels)));
+  public static Resource create(Map<String, AttributeValue> attributes) {
+    checkAttributes(Utils.checkNotNull(attributes, "attributes"));
+    return new AutoValue_Resource(Collections.unmodifiableMap(new LinkedHashMap<>(attributes)));
   }
 
   /**
@@ -93,19 +93,19 @@ public abstract class Resource {
       return this;
     }
 
-    Map<String, AttributeValue> mergedLabelMap = new LinkedHashMap<>(other.getLabels());
-    // Labels from resource overwrite labels from otherResource.
-    for (Entry<String, AttributeValue> entry : this.getLabels().entrySet()) {
-      mergedLabelMap.put(entry.getKey(), entry.getValue());
+    Map<String, AttributeValue> mergedAttributeMap = new LinkedHashMap<>(other.getAttributes());
+    // Attributes from resource overwrite attributes from otherResource.
+    for (Entry<String, AttributeValue> entry : this.getAttributes().entrySet()) {
+      mergedAttributeMap.put(entry.getKey(), entry.getValue());
     }
-    return new AutoValue_Resource(Collections.unmodifiableMap(mergedLabelMap));
+    return new AutoValue_Resource(Collections.unmodifiableMap(mergedAttributeMap));
   }
 
-  private static void checkLabels(Map<String, AttributeValue> labels) {
-    for (Entry<String, AttributeValue> entry : labels.entrySet()) {
+  private static void checkAttributes(Map<String, AttributeValue> attributes) {
+    for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
       Utils.checkArgument(
-          isValidAndNotEmpty(entry.getKey()), "Label key" + ERROR_MESSAGE_INVALID_CHARS);
-      Utils.checkNotNull(entry.getValue(), "Label value" + ERROR_MESSAGE_INVALID_VALUE);
+          isValidAndNotEmpty(entry.getKey()), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
+      Utils.checkNotNull(entry.getValue(), "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
     }
   }
 
