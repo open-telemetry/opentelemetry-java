@@ -22,8 +22,10 @@ import com.google.common.testing.EqualsTester;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
+import java.util.List;
 import org.junit.Test;
 
 public class AbstractObserverTest {
@@ -76,6 +78,11 @@ public class AbstractObserverTest {
           METER_PROVIDER_SHARED_STATE,
           METER_SHARED_STATE,
           monotonic);
+    }
+
+    @Override
+    List<MetricData> collectAll() {
+      return Collections.emptyList();
     }
   }
 }

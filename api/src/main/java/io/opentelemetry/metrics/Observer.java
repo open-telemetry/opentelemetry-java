@@ -16,12 +16,15 @@
 
 package io.opentelemetry.metrics;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
  * Base interface for all the Observer metrics.
  *
  * @param <R> the callback Result type.
  * @since 0.1.0
  */
+@ThreadSafe
 public interface Observer<R> extends Instrument {
   /**
    * A {@code Callback} for a {@code Observer}.

@@ -16,10 +16,13 @@
 
 package io.opentelemetry.metrics;
 
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
  * LabelSet is an implementation-level interface that represents a set of Labels for use as
  * pre-defined labels in the metrics API.
  *
  * <p>LabelSets that have the same key/value pairs should have the same equals/hashcode.
  */
+@ThreadSafe
 public interface LabelSet {}

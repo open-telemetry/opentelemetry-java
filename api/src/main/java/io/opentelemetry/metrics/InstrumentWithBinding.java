@@ -17,6 +17,7 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Base interface for all metrics with bounds defined in this package.
@@ -24,6 +25,7 @@ import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
  * @param <B> the specific type of Bound Instrument this instrument can provide.
  * @since 0.3.0
  */
+@ThreadSafe
 public interface InstrumentWithBinding<B extends BoundInstrument> extends Instrument {
   /**
    * Returns a {@code Bound Instrument} associated with the specified {@code labelSet}. Multiples

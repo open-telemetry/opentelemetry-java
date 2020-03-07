@@ -19,12 +19,14 @@ package io.opentelemetry.trace.unsafe;
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
+import javax.annotation.concurrent.NotThreadSafe;
 
 /**
  * A scope that manages the {@link Context} for a {@link Span}.
  *
  * @since 0.1.0
  */
+@NotThreadSafe
 final class SpanInScope implements Scope {
   private final Context previous;
   private final Context current;

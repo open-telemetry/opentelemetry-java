@@ -21,12 +21,14 @@ import io.opentelemetry.internal.Utils;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * No-op implementations of {@link Meter}.
  *
  * @since 0.1.0
  */
+@ThreadSafe
 public final class DefaultMeter implements Meter {
 
   private static final DefaultMeter INSTANCE = new DefaultMeter();
@@ -112,6 +114,8 @@ public final class DefaultMeter implements Meter {
     Utils.checkMapKeysNotNull(labels, "Null map keys are not allowed for LabelSet creation");
     return NoopLabelSet.INSTANCE;
   }
+
+  private DefaultMeter() {}
 
   /** No-op implementation of DoubleCounter interface. */
   @Immutable

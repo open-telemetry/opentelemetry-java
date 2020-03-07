@@ -23,7 +23,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.propagation.BinaryTraceContext;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.unsafe.ContextUtils;
 import org.junit.Before;
@@ -70,11 +69,6 @@ public class TracerSdkTest {
   @Test
   public void defaultHttpTextFormat() {
     assertThat(tracer.getHttpTextFormat()).isInstanceOf(HttpTraceContext.class);
-  }
-
-  @Test
-  public void defaultBinaryFormat() {
-    assertThat(tracer.getBinaryFormat()).isInstanceOf(BinaryTraceContext.class);
   }
 
   @Test

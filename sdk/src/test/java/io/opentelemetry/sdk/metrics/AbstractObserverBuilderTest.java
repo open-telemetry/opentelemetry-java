@@ -22,7 +22,10 @@ import io.opentelemetry.metrics.Observer;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -109,6 +112,11 @@ public class AbstractObserverBuilderTest {
 
     @Override
     public void setCallback(Callback<TestResult> metricUpdater) {}
+
+    @Override
+    List<MetricData> collectAll() {
+      return Collections.emptyList();
+    }
   }
 
   private static final class TestResult {}
