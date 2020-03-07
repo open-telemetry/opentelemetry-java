@@ -28,11 +28,11 @@ public class OpenTelemetrySdkTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetrySdk.getTracerRegistry())
+    assertThat(OpenTelemetrySdk.getTracerProvider())
         .isSameInstanceAs(OpenTelemetry.getTracerProvider());
     assertThat(OpenTelemetrySdk.getCorrelationContextManager())
         .isSameInstanceAs(OpenTelemetry.getCorrelationContextManager());
-    assertThat(OpenTelemetrySdk.getMeterRegistry())
+    assertThat(OpenTelemetrySdk.getMeterProvider())
         .isSameInstanceAs(OpenTelemetry.getMeterProvider());
   }
 }
