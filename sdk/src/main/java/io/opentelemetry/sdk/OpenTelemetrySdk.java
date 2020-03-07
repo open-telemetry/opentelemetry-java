@@ -39,7 +39,7 @@ public final class OpenTelemetrySdk {
    * @return TracerProvider returned by {@link OpenTelemetry#getTracerProvider()}.
    * @since 0.1.0
    */
-  public static TracerSdkProvider getTracerRegistry() {
+  public static TracerSdkProvider getTracerProvider() {
     return (TracerSdkProvider) OpenTelemetry.getTracerProvider();
   }
 
@@ -49,7 +49,7 @@ public final class OpenTelemetrySdk {
    * @return MeterProvider returned by {@link OpenTelemetry#getMeterProvider()}.
    * @since 0.1.0
    */
-  public static MeterSdkProvider getMeterRegistry() {
+  public static MeterSdkProvider getMeterProvider() {
     return (MeterSdkProvider) OpenTelemetry.getMeterProvider();
   }
 
