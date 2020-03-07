@@ -20,7 +20,7 @@ import io.opentelemetry.trace.Span;
 import javax.annotation.Nullable;
 
 /** Defines the behavior for one attribute definition. */
-public interface Attribute<T> {
+public interface AttributeSetter<T> {
 
   /**
    * Returns the attribute name.

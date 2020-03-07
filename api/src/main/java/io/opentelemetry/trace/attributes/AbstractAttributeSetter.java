@@ -16,29 +16,30 @@
 
 package io.opentelemetry.trace.attributes;
 
-import io.opentelemetry.trace.Span;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-/** Defines the behavior for a span attribute with long values. */
+/**
+ * Abstract base class for {@link AttributeSetter} implementations.
+ *
+ * @param <T> the attribute value type
+ */
 @Immutable
-public class LongAttribute extends AbstractAttribute<Long> {
+public abstract class AbstractAttributeSetter<T> implements AttributeSetter<T> {
+
+  protected String attributeKey;
 
   /**
    * Constructs an attribute object.
    *
    * @param attributeKey the attribute name/key
    */
-  public LongAttribute(String attributeKey) {
-    super(attributeKey);
+  protected AbstractAttributeSetter(String attributeKey) {
+    super();
+    this.attributeKey = attributeKey;
   }
 
   @Override
-  public void set(Span span, @Nullable Long value) {
-    if (value != null) {
-      span.setAttribute(key(), value);
-    } else {
-      span.setAttribute(key(), (String) null);
-    }
+  public String key() {
+    return attributeKey;
   }
 }

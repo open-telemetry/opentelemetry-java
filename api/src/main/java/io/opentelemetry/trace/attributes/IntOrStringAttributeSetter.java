@@ -25,14 +25,14 @@ import javax.annotation.concurrent.Immutable;
  * or strings in most applications.
  */
 @Immutable
-public class IntOrStringAttribute extends AbstractAttribute<Integer> {
+public class IntOrStringAttributeSetter extends AbstractAttributeSetter<Integer> {
 
   /**
    * Constructs an attribute object.
    *
    * @param attributeKey the attribute name/key
    */
-  public IntOrStringAttribute(String attributeKey) {
+  public IntOrStringAttributeSetter(String attributeKey) {
     super(attributeKey);
   }
 
@@ -53,7 +53,11 @@ public class IntOrStringAttribute extends AbstractAttribute<Integer> {
    */
   public void set(Span span, @Nullable String value) {
     if (value != null) {
-      span.setAttribute(key(), Long.valueOf(value));
+      try {
+        span.setAttribute(key(), Long.valueOf(value));
+      } catch (NumberFormatException ignore) {
+        // NoOp
+      }
     } else {
       span.setAttribute(key(), (String) null);
     }

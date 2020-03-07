@@ -46,24 +46,24 @@ public class SemanticAttributesTest {
     Set<String> keys = new HashSet<>();
     Field[] fields = SemanticAttributes.class.getFields();
     for (int i = 0; i < fields.length; i++) {
-      Attribute<?> attribute = (Attribute<?>) fields[i].get(null);
+      AttributeSetter<?> attribute = (AttributeSetter<?>) fields[i].get(null);
       keys.add(attribute.key());
-      if (attribute instanceof StringAttribute) {
-        ((StringAttribute) attribute).set(span, "TestValue");
-        ((StringAttribute) attribute).set(span, null);
-      } else if (attribute instanceof IntOrStringAttribute) {
-        ((IntOrStringAttribute) attribute).set(span, 80);
-        ((IntOrStringAttribute) attribute).set(span, "443");
-        ((IntOrStringAttribute) attribute).set(span, (String) null);
-      } else if (attribute instanceof LongAttribute) {
-        ((LongAttribute) attribute).set(span, 42L);
-        ((LongAttribute) attribute).set(span, null);
-      } else if (attribute instanceof DoubleAttribute) {
-        ((DoubleAttribute) attribute).set(span, 3.14);
-        ((DoubleAttribute) attribute).set(span, null);
-      } else if (attribute instanceof BooleanAttribute) {
-        ((BooleanAttribute) attribute).set(span, false);
-        ((BooleanAttribute) attribute).set(span, null);
+      if (attribute instanceof StringAttributeSetter) {
+        ((StringAttributeSetter) attribute).set(span, "TestValue");
+        ((StringAttributeSetter) attribute).set(span, null);
+      } else if (attribute instanceof IntOrStringAttributeSetter) {
+        ((IntOrStringAttributeSetter) attribute).set(span, 80);
+        ((IntOrStringAttributeSetter) attribute).set(span, "443");
+        ((IntOrStringAttributeSetter) attribute).set(span, (String) null);
+      } else if (attribute instanceof LongAttributeSetter) {
+        ((LongAttributeSetter) attribute).set(span, 42L);
+        ((LongAttributeSetter) attribute).set(span, null);
+      } else if (attribute instanceof DoubleAttributeSetter) {
+        ((DoubleAttributeSetter) attribute).set(span, 3.14);
+        ((DoubleAttributeSetter) attribute).set(span, null);
+      } else if (attribute instanceof BooleanAttributeSetter) {
+        ((BooleanAttributeSetter) attribute).set(span, false);
+        ((BooleanAttributeSetter) attribute).set(span, null);
       }
     }
     assertEquals(fields.length, keys.size());

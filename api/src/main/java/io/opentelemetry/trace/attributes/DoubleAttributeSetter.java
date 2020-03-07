@@ -22,14 +22,14 @@ import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with double values. */
 @Immutable
-public class DoubleAttribute extends AbstractAttribute<Double> {
+public class DoubleAttributeSetter extends AbstractAttributeSetter<Double> {
 
   /**
    * Constructs an attribute object.
    *
    * @param attributeKey the attribute name/key
    */
-  public DoubleAttribute(String attributeKey) {
+  public DoubleAttributeSetter(String attributeKey) {
     super(attributeKey);
   }
 

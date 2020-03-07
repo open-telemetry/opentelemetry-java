@@ -22,14 +22,14 @@ import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with string values. */
 @Immutable
-public class StringAttribute extends AbstractAttribute<String> {
+public class StringAttributeSetter extends AbstractAttributeSetter<String> {
 
   /**
    * Constructs an attribute object.
    *
    * @param attributeKey the attribute name/key
    */
-  public StringAttribute(String attributeKey) {
+  public StringAttributeSetter(String attributeKey) {
     super(attributeKey);
   }
 

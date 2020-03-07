@@ -27,82 +27,103 @@ package io.opentelemetry.trace.attributes;
 public final class SemanticAttributes {
 
   /** Transport protocol used. */
-  public static final Attribute<String> NET_TRANSPORT = new StringAttribute("net.transport");
+  public static final AttributeSetter<String> NET_TRANSPORT =
+      new StringAttributeSetter("net.transport");
   /** Remote address of the peer (dotted decimal for IPv4 or RFC5952 for IPv6). */
-  public static final Attribute<String> NET_PEER_IP = new StringAttribute("net.peer.ip");
+  public static final AttributeSetter<String> NET_PEER_IP =
+      new StringAttributeSetter("net.peer.ip");
   /** Remote port number as an integer. E.g., 80. */
-  public static final Attribute<Integer> NET_PEER_PORT = new IntOrStringAttribute("net.peer.port");
+  public static final AttributeSetter<Integer> NET_PEER_PORT =
+      new IntOrStringAttributeSetter("net.peer.port");
   /** Remote hostname or similar. */
-  public static final Attribute<String> NET_PEER_NAME = new StringAttribute("net.peer.name");
+  public static final AttributeSetter<String> NET_PEER_NAME =
+      new StringAttributeSetter("net.peer.name");
   /** Like net.peer.ip but for the host IP. Useful in case of a multi-IP host. */
-  public static final Attribute<String> NET_HOST_IP = new StringAttribute("net.host.ip");
+  public static final AttributeSetter<String> NET_HOST_IP =
+      new StringAttributeSetter("net.host.ip");
   /** Like net.peer.port but for the host port. */
-  public static final Attribute<Integer> NET_HOST_PORT = new IntOrStringAttribute("net.host.port");
+  public static final AttributeSetter<Integer> NET_HOST_PORT =
+      new IntOrStringAttributeSetter("net.host.port");
   /** Local hostname or similar. */
-  public static final Attribute<String> NET_HOST_NAME = new StringAttribute("net.host.name");
+  public static final AttributeSetter<String> NET_HOST_NAME =
+      new StringAttributeSetter("net.host.name");
   /**
    * Username or client_id extracted from the access token or Authorization header in the inbound
    * request from outside the system.
    */
-  public static final Attribute<String> ENDUSER_ID = new StringAttribute("enduser.id");
+  public static final AttributeSetter<String> ENDUSER_ID = new StringAttributeSetter("enduser.id");
   /**
    * Actual/assumed role the client is making the request under extracted from token or application
    * security context.
    */
-  public static final Attribute<String> ENDUSER_ROLE = new StringAttribute("enduser.role");
+  public static final AttributeSetter<String> ENDUSER_ROLE =
+      new StringAttributeSetter("enduser.role");
   /**
    * Scopes or granted authorities the client currently possesses extracted from token or
    * application security context. The value would come from the scope associated with an OAuth 2.0
    * Access Token or an attribute value in a SAML 2.0 Assertion.
    */
-  public static final Attribute<String> ENDUSER_SCOPE = new StringAttribute("enduser.scope");
+  public static final AttributeSetter<String> ENDUSER_SCOPE =
+      new StringAttributeSetter("enduser.scope");
   /** HTTP request method. E.g. "GET". */
-  public static final Attribute<String> HTTP_METHOD = new StringAttribute("http.method");
+  public static final AttributeSetter<String> HTTP_METHOD =
+      new StringAttributeSetter("http.method");
   /** Full HTTP request URL in the form scheme://host[:port]/path?query[#fragment]. */
-  public static final Attribute<String> HTTP_URL = new StringAttribute("http.url");
+  public static final AttributeSetter<String> HTTP_URL = new StringAttributeSetter("http.url");
   /** The full request target as passed in a HTTP request line or equivalent. */
-  public static final Attribute<String> HTTP_TARGET = new StringAttribute("http.target");
+  public static final AttributeSetter<String> HTTP_TARGET =
+      new StringAttributeSetter("http.target");
   /** The value of the HTTP host header. */
-  public static final Attribute<String> HTTP_HOST = new StringAttribute("http.host");
+  public static final AttributeSetter<String> HTTP_HOST = new StringAttributeSetter("http.host");
   /** The URI scheme identifying the used protocol: "http" or "https". */
-  public static final Attribute<String> HTTP_SCHEME = new StringAttribute("http.scheme");
+  public static final AttributeSetter<String> HTTP_SCHEME =
+      new StringAttributeSetter("http.scheme");
   /** HTTP response status code. E.g. 200 (integer) If and only if one was received/sent. */
-  public static final Attribute<Integer> HTTP_STATUS_CODE =
-      new IntOrStringAttribute("http.status_code");
+  public static final AttributeSetter<Integer> HTTP_STATUS_CODE =
+      new IntOrStringAttributeSetter("http.status_code");
   /** HTTP reason phrase. E.g. "OK" */
-  public static final Attribute<String> HTTP_STATUS_TEXT = new StringAttribute("http.status_text");
+  public static final AttributeSetter<String> HTTP_STATUS_TEXT =
+      new StringAttributeSetter("http.status_text");
   /** Kind of HTTP protocol used: "1.0", "1.1", "2", "SPDY" or "QUIC". */
-  public static final Attribute<String> HTTP_FLAVOR = new StringAttribute("http.flavor");
+  public static final AttributeSetter<String> HTTP_FLAVOR =
+      new StringAttributeSetter("http.flavor");
   /** Value of the HTTP "User-Agent" header sent by the client. */
-  public static final Attribute<String> HTTP_USER_AGENT = new StringAttribute("http.user_agent");
+  public static final AttributeSetter<String> HTTP_USER_AGENT =
+      new StringAttributeSetter("http.user_agent");
   /** The primary server name of the matched virtual host. Usually obtained via configuration. */
-  public static final Attribute<String> HTTP_SERVER_NAME = new StringAttribute("http.server_name");
+  public static final AttributeSetter<String> HTTP_SERVER_NAME =
+      new StringAttributeSetter("http.server_name");
   /** The matched route (path template). */
-  public static final Attribute<String> HTTP_ROUTE = new StringAttribute("http.route");
+  public static final AttributeSetter<String> HTTP_ROUTE = new StringAttributeSetter("http.route");
   /** The IP address of the original client behind all proxies, if known. */
-  public static final Attribute<String> HTTP_CLIENT_IP = new StringAttribute("http.client_ip");
+  public static final AttributeSetter<String> HTTP_CLIENT_IP =
+      new StringAttributeSetter("http.client_ip");
   /** The service name, must be equal to the $service part in the span name. */
-  public static final Attribute<String> RPC_SERVICE = new StringAttribute("rpc.service");
+  public static final AttributeSetter<String> RPC_SERVICE =
+      new StringAttributeSetter("rpc.service");
   /** RPC span event attribute with value "SENT" or "RECEIVED". */
-  public static final Attribute<String> MESSAGE_TYPE = new StringAttribute("message.type");
+  public static final AttributeSetter<String> MESSAGE_TYPE =
+      new StringAttributeSetter("message.type");
   /** RPC span event attribute starting from 1 for each of sent messages and received messages. */
-  public static final Attribute<Long> MESSAGE_ID = new LongAttribute("message.id");
+  public static final AttributeSetter<Long> MESSAGE_ID = new LongAttributeSetter("message.id");
   /** RPC span event attribute for compressed size. */
-  public static final Attribute<Long> MESSAGE_COMPRESSED_SIZE =
-      new LongAttribute("message.compressed_size");
+  public static final AttributeSetter<Long> MESSAGE_COMPRESSED_SIZE =
+      new LongAttributeSetter("message.compressed_size");
   /** RPC span event attribute for uncompressed size. */
-  public static final Attribute<Long> MESSAGE_UNCOMPRESSED_SIZE =
-      new LongAttribute("message.uncompressed_size");
+  public static final AttributeSetter<Long> MESSAGE_UNCOMPRESSED_SIZE =
+      new LongAttributeSetter("message.uncompressed_size");
   /** Database type. For any SQL database, "sql". For others, the lower-case database category. */
-  public static final Attribute<String> DB_TYPE = new StringAttribute("db.type");
+  public static final AttributeSetter<String> DB_TYPE = new StringAttributeSetter("db.type");
   /** Database instance name. */
-  public static final Attribute<String> DB_ISNTANCE = new StringAttribute("db.instance");
+  public static final AttributeSetter<String> DB_ISNTANCE =
+      new StringAttributeSetter("db.instance");
   /** Database statement for the given database type. */
-  public static final Attribute<String> DB_STATEMENT = new StringAttribute("db.statement");
+  public static final AttributeSetter<String> DB_STATEMENT =
+      new StringAttributeSetter("db.statement");
   /** Username for accessing database. */
-  public static final Attribute<String> DB_USER = new StringAttribute("db.user");
+  public static final AttributeSetter<String> DB_USER = new StringAttributeSetter("db.user");
   /** JDBC substring like "mysql://db.example.com:3306" */
-  public static final Attribute<String> DB_URL = new StringAttribute("db.url");
+  public static final AttributeSetter<String> DB_URL = new StringAttributeSetter("db.url");
 
   private SemanticAttributes() {}
 }

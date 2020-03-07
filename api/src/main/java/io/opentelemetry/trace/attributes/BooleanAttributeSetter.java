@@ -22,14 +22,14 @@ import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with boolean values. */
 @Immutable
-public class BooleanAttribute extends AbstractAttribute<Boolean> {
+public class BooleanAttributeSetter extends AbstractAttributeSetter<Boolean> {
 
   /**
    * Constructs an attribute object.
    *
    * @param attributeKey the attribute name/key
    */
-  public BooleanAttribute(String attributeKey) {
+  public BooleanAttributeSetter(String attributeKey) {
     super(attributeKey);
   }
 
