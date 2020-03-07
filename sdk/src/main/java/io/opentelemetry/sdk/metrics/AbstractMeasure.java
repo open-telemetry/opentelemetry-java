@@ -17,7 +17,9 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Measure;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 abstract class AbstractMeasure<B extends AbstractBoundInstrument>
     extends AbstractInstrumentWithBinding<B> {
@@ -34,7 +36,14 @@ abstract class AbstractMeasure<B extends AbstractBoundInstrument>
         descriptor,
         meterProviderSharedState,
         meterSharedState,
-        new ActiveBatcher(Batchers.getNoop()));
+        new ActiveBatcher(
+            getDefaultBatcher(
+                descriptor,
+                getInstrumentType(absolute),
+                instrumentValueType,
+                meterProviderSharedState,
+                meterSharedState,
+                Aggregations.minMaxSumCount())));
     this.absolute = absolute;
     this.instrumentValueType = instrumentValueType;
   }
@@ -88,5 +97,9 @@ abstract class AbstractMeasure<B extends AbstractBoundInstrument>
     final boolean isAbsolute() {
       return this.absolute;
     }
+  }
+
+  private static InstrumentType getInstrumentType(boolean absolute) {
+    return absolute ? InstrumentType.MEASURE_ABSOLUTE : InstrumentType.MEASURE_NON_ABSOLUTE;
   }
 }

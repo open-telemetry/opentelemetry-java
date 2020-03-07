@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.After;
@@ -363,6 +364,7 @@ public class BatchSpansProcessorTest {
 
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span2.toSpanData());
+    assertThat(waitingSpanExporter.shutDownCalled.get()).isTrue();
   }
 
   private static final class BlockingSpanExporter implements SpanExporter {
@@ -426,6 +428,7 @@ public class BatchSpansProcessorTest {
     private final int numberToWaitFor;
     private CountDownLatch countDownLatch;
     private int timeout = 10;
+    private final AtomicBoolean shutDownCalled = new AtomicBoolean(false);
 
     WaitingSpanExporter(int numberToWaitFor) {
       countDownLatch = new CountDownLatch(numberToWaitFor);
@@ -469,7 +472,7 @@ public class BatchSpansProcessorTest {
 
     @Override
     public void shutdown() {
-      // Do nothing;
+      shutDownCalled.set(true);
     }
 
     public void reset() {

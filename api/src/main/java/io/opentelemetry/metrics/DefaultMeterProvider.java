@@ -16,10 +16,20 @@
 
 package io.opentelemetry.metrics;
 
+import javax.annotation.concurrent.ThreadSafe;
+
+@ThreadSafe
 public class DefaultMeterProvider implements MeterProvider {
 
   private static final MeterProvider instance = new DefaultMeterProvider();
 
+  /**
+   * Returns a {@code MeterProvider} singleton that is the default implementation for {@link
+   * MeterProvider}.
+   *
+   * @return a {@code MeterProvider} singleton that is the default implementation for {@link
+   *     MeterProvider}.
+   */
   public static MeterProvider getInstance() {
     return instance;
   }
@@ -33,4 +43,6 @@ public class DefaultMeterProvider implements MeterProvider {
   public Meter get(String instrumentationName, String instrumentationVersion) {
     return DefaultMeter.getInstance();
   }
+
+  private DefaultMeterProvider() {}
 }

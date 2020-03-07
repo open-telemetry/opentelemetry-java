@@ -95,7 +95,7 @@ public class DoubleCounterSdkTest {
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).hasSize(1);
     // TODO: This is not perfect because we compare double values using direct equal, maybe worth
-    //  changing to do a proper comparison for double values, here and everywhere in this file.
+    //  changing to do a proper comparison for double values, here and everywhere else.
     assertThat(metricData.getPoints())
         .containsExactly(
             DoublePoint.create(
@@ -183,6 +183,24 @@ public class DoubleCounterSdkTest {
   }
 
   @Test
+  public void doubleCounterAdd_Monotonicity() {
+    DoubleCounter doubleCounter =
+        testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
+
+    thrown.expect(IllegalArgumentException.class);
+    doubleCounter.add(-45.77d, testSdk.createLabelSet());
+  }
+
+  @Test
+  public void boundDoubleCounterAdd_Monotonicity() {
+    DoubleCounter doubleCounter =
+        testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
+
+    thrown.expect(IllegalArgumentException.class);
+    doubleCounter.bind(testSdk.createLabelSet()).add(-9.3);
+  }
+
+  @Test
   public void stressTest() {
     final DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 
@@ -261,24 +279,6 @@ public class DoubleCounterSdkTest {
                 40_000));
   }
 
-  @Test
-  public void doubleCounterAdd_Monotonicity() {
-    DoubleCounter doubleCounter =
-        testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
-
-    thrown.expect(IllegalArgumentException.class);
-    doubleCounter.add(-45.77d, testSdk.createLabelSet());
-  }
-
-  @Test
-  public void boundDoubleCounterAdd_Monotonicity() {
-    DoubleCounter doubleCounter =
-        testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
-
-    thrown.expect(IllegalArgumentException.class);
-    doubleCounter.bind(testSdk.createLabelSet()).add(-9.3);
-  }
-
   private static class OperationUpdaterWithBinding extends OperationUpdater {
     private final DoubleCounter.BoundDoubleCounter boundDoubleCounter;
 
@@ -288,7 +288,7 @@ public class DoubleCounterSdkTest {
 
     @Override
     void update() {
-      boundDoubleCounter.add(10);
+      boundDoubleCounter.add(9.0);
     }
 
     @Override
@@ -313,7 +313,7 @@ public class DoubleCounterSdkTest {
 
     @Override
     void update() {
-      doubleCounter.add(10.0, meterSdk.createLabelSet(key, value));
+      doubleCounter.add(11.0, meterSdk.createLabelSet(key, value));
     }
 
     @Override

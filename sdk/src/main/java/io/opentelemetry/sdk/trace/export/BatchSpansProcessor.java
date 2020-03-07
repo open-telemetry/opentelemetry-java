@@ -353,6 +353,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private void shutdown() {
       forceFlush();
       executorService.shutdown();
+      spanExporter.shutdown();
     }
 
     private void forceFlush() {
