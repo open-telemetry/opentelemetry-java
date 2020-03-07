@@ -18,7 +18,9 @@ package io.opentelemetry.trace;
 
 import io.opentelemetry.internal.Utils;
 import java.util.Arrays;
+import javax.annotation.concurrent.Immutable;
 
+@Immutable
 final class BigendianEncoding {
   static final int LONG_BYTES = Long.SIZE / Byte.SIZE;
   static final int BYTE_BASE16 = 2;

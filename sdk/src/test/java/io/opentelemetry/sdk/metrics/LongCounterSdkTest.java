@@ -42,7 +42,6 @@ import org.junit.runners.JUnit4;
 public class LongCounterSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
-
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
@@ -95,8 +94,6 @@ public class LongCounterSdkTest {
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).hasSize(1);
-    // TODO: This is not perfect because we compare long values using direct equal, maybe worth
-    //  changing to do a proper comparison for long values, here and everywhere in this file.
     assertThat(metricData.getPoints())
         .containsExactly(
             LongPoint.create(
@@ -150,6 +147,52 @@ public class LongCounterSdkTest {
     } finally {
       boundCounter.unbind();
     }
+  }
+
+  @Test
+  public void sameBound_ForSameLabelSet() {
+    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").build();
+    BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    try {
+      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
+    } finally {
+      boundCounter.unbind();
+      duplicateBoundCounter.unbind();
+    }
+  }
+
+  @Test
+  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
+    BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    try {
+      longCounter.collectAll();
+      BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+      try {
+        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
+      } finally {
+        duplicateBoundCounter.unbind();
+      }
+    } finally {
+      boundCounter.unbind();
+    }
+  }
+
+  @Test
+  public void longCounterAdd_MonotonicityCheck() {
+    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
+
+    thrown.expect(IllegalArgumentException.class);
+    longCounter.add(-45, testSdk.createLabelSet());
+  }
+
+  @Test
+  public void boundLongCounterAdd_MonotonicityCheck() {
+    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
+
+    thrown.expect(IllegalArgumentException.class);
+    longCounter.bind(testSdk.createLabelSet()).add(-9);
   }
 
   @Test
@@ -228,52 +271,6 @@ public class LongCounterSdkTest {
                 20_000));
   }
 
-  @Test
-  public void sameBound_ForSameLabelSet() {
-    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
-    BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
-    try {
-      assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-    } finally {
-      boundCounter.unbind();
-      duplicateBoundCounter.unbind();
-    }
-  }
-
-  @Test
-  public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
-    try {
-      longCounter.collectAll();
-      BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
-      try {
-        assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
-      } finally {
-        duplicateBoundCounter.unbind();
-      }
-    } finally {
-      boundCounter.unbind();
-    }
-  }
-
-  @Test
-  public void longCounterAdd_MonotonicityCheck() {
-    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
-
-    thrown.expect(IllegalArgumentException.class);
-    longCounter.add(-45, testSdk.createLabelSet());
-  }
-
-  @Test
-  public void boundLongCounterAdd_MonotonicityCheck() {
-    LongCounter longCounter = testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
-
-    thrown.expect(IllegalArgumentException.class);
-    longCounter.bind(testSdk.createLabelSet()).add(-9);
-  }
-
   private static class OperationUpdaterWithBinding extends OperationUpdater {
     private final LongCounter.BoundLongCounter boundLongCounter;
 
@@ -283,7 +280,7 @@ public class LongCounterSdkTest {
 
     @Override
     void update() {
-      boundLongCounter.add(10);
+      boundLongCounter.add(9);
     }
 
     @Override
@@ -308,7 +305,7 @@ public class LongCounterSdkTest {
 
     @Override
     void update() {
-      longCounter.add(10, meterSdk.createLabelSet(key, value));
+      longCounter.add(11, meterSdk.createLabelSet(key, value));
     }
 
     @Override

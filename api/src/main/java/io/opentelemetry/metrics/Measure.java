@@ -17,6 +17,7 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Base interface for all the Measure instruments.
@@ -24,6 +25,7 @@ import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
  * @param <H> the Bound Instrument type.
  * @since 0.1.0
  */
+@ThreadSafe
 public interface Measure<H extends BoundInstrument> extends InstrumentWithBinding<H> {
 
   /** Builder class for {@link Measure}. */

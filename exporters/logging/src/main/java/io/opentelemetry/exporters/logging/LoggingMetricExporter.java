@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,21 @@
 
 package io.opentelemetry.exporters.logging;
 
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-import java.util.List;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** A Span Exporter that logs every span at INFO level using java.util.logging. */
-public class LoggingSpanExporter implements SpanExporter {
-  private static final Logger logger = Logger.getLogger(LoggingSpanExporter.class.getName());
+public class LoggingMetricExporter implements MetricExporter {
+  private static final Logger logger = Logger.getLogger(LoggingMetricExporter.class.getName());
 
   @Override
-  public ResultCode export(List<SpanData> spans) {
-    for (SpanData span : spans) {
-      logger.log(Level.INFO, "span: {0}", span);
+  public ResultCode export(Collection<MetricData> metrics) {
+    logger.info("Received a collection of " + metrics.size() + " metrics for export.");
+    for (MetricData metricData : metrics) {
+      logger.log(Level.INFO, "metric: {0}", metricData);
     }
     return ResultCode.SUCCESS;
   }
-
-  @Override
-  public void shutdown() {}
 }
