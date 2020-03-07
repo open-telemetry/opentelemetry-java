@@ -92,11 +92,10 @@ class ServiceResourceFactory implements FactoryBean<Resource> {
         if (matcher.find()) {
           labels.put(
               ResourceConstants.SERVICE_VERSION,
-              AttributeValue.stringAttributeValue(SEMVER + buildProperties.getVersion()));
+              AttributeValue.stringAttributeValue(SEMVER + version));
         } else {
           labels.put(
-              ResourceConstants.SERVICE_VERSION,
-              AttributeValue.stringAttributeValue(buildProperties.getVersion()));
+              ResourceConstants.SERVICE_VERSION, AttributeValue.stringAttributeValue(version));
         }
       }
     }
