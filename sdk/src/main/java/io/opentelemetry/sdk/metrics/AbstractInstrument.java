@@ -19,7 +19,11 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.Instrument;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -155,5 +159,34 @@ abstract class AbstractInstrument implements Instrument {
     final <I extends AbstractInstrument> I register(I instrument) {
       return getMeterSharedState().getInstrumentRegistry().register(instrument);
     }
+  }
+
+  static Descriptor getDefaultMetricDescriptor(
+      InstrumentDescriptor descriptor,
+      InstrumentType instrumentType,
+      InstrumentValueType instrumentValueType,
+      Aggregation aggregation) {
+    return Descriptor.create(
+        descriptor.getName(),
+        descriptor.getDescription(),
+        aggregation.getUnit(descriptor.getUnit()),
+        aggregation.getDescriptorType(instrumentType, instrumentValueType),
+        descriptor.getConstantLabels());
+  }
+
+  static Batcher getDefaultBatcher(
+      InstrumentDescriptor descriptor,
+      InstrumentType instrumentType,
+      InstrumentValueType instrumentValueType,
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      Aggregation defaultAggregation) {
+    return Batchers.getCumulativeAllLabels(
+        getDefaultMetricDescriptor(
+            descriptor, instrumentType, instrumentValueType, defaultAggregation),
+        meterProviderSharedState.getResource(),
+        meterSharedState.getInstrumentationLibraryInfo(),
+        defaultAggregation.getAggregatorFactory(instrumentValueType),
+        meterProviderSharedState.getClock());
   }
 }

@@ -17,7 +17,9 @@
 package io.opentelemetry.correlationcontext;
 
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
+import javax.annotation.concurrent.ThreadSafe;
 
+@ThreadSafe
 public final class DefaultCorrelationContextManagerProvider
     implements CorrelationContextManagerProvider {
   private static final CorrelationContextManagerProvider instance =
