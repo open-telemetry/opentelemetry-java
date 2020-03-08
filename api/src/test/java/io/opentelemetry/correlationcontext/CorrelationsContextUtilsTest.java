@@ -37,7 +37,8 @@ public final class CorrelationsContextUtilsTest {
   public void testGetCurrentCorrelationContext_SetCorrContext() {
     CorrelationContext corrContext =
         DefaultCorrelationContextManager.getInstance().contextBuilder().build();
-    Context orig = CorrelationsContextUtils.withCorrelationContext(corrContext).attach();
+    Context orig =
+        CorrelationsContextUtils.withCorrelationContext(corrContext, Context.current()).attach();
     try {
       assertThat(CorrelationsContextUtils.getCurrentCorrelationContext())
           .isSameInstanceAs(corrContext);

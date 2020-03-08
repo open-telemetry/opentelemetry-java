@@ -40,17 +40,6 @@ public final class CorrelationsContextUtils {
    * Creates a new {@code Context} with the given value set.
    *
    * @param corrContext the value to be set.
-   * @return a new context with the given value set.
-   * @since 0.1.0
-   */
-  public static Context withCorrelationContext(CorrelationContext corrContext) {
-    return withCorrelationContext(corrContext, Context.current());
-  }
-
-  /**
-   * Creates a new {@code Context} with the given value set.
-   *
-   * @param corrContext the value to be set.
    * @param context the parent {@code Context}.
    * @return a new context with the given value set.
    * @since 0.1.0
@@ -105,7 +94,7 @@ public final class CorrelationsContextUtils {
    * @since 0.1.0
    */
   public static Scope withScopedCorrelationContext(CorrelationContext corrContext) {
-    Context context = withCorrelationContext(corrContext);
+    Context context = withCorrelationContext(corrContext, Context.current());
     return ContextUtils.withScopedContext(context);
   }
 

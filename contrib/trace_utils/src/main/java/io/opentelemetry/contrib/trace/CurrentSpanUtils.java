@@ -65,7 +65,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public void run() {
-      Context origContext = TracingContextUtils.withSpan(span).attach();
+      Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
       try {
         runnable.run();
       } catch (Throwable t) {
@@ -98,7 +98,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public V call() throws Exception {
-      Context origContext = TracingContextUtils.withSpan(span).attach();
+      Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
       try {
         return callable.call();
       } catch (Exception e) {

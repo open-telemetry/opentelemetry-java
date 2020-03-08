@@ -36,17 +36,6 @@ public final class TracingContextUtils {
    * Creates a new {@code Context} with the given {@link Span} set.
    *
    * @param span the value to be set.
-   * @return a new context with the given value set.
-   * @since 0.1.0
-   */
-  public static Context withSpan(Span span) {
-    return withSpan(span, Context.current());
-  }
-
-  /**
-   * Creates a new {@code Context} with the given {@link Span} set.
-   *
-   * @param span the value to be set.
    * @param context the parent {@code Context}.
    * @return a new context with the given value set.
    * @since 0.1.0
@@ -101,7 +90,7 @@ public final class TracingContextUtils {
    * @since 0.1.0
    */
   public static Scope withScopedSpan(Span span) {
-    return ContextUtils.withScopedContext(withSpan(span));
+    return ContextUtils.withScopedContext(withSpan(span, Context.current()));
   }
 
   private TracingContextUtils() {}

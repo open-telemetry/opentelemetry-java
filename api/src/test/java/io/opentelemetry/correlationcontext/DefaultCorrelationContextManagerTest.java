@@ -67,7 +67,8 @@ public final class DefaultCorrelationContextManagerTest {
 
   @Test
   public void getCurrentContext_ContextSetToNull() {
-    Context orig = CorrelationsContextUtils.withCorrelationContext(null).attach();
+    Context orig =
+        CorrelationsContextUtils.withCorrelationContext(null, Context.current()).attach();
     try {
       CorrelationContext distContext = defaultCorrelationContextManager.getCurrentContext();
       assertThat(distContext).isNotNull();
