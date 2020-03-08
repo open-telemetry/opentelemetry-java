@@ -19,7 +19,7 @@ package io.opentelemetry.contrib.trace;
 import io.grpc.Context;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 
 /** Util methods/functionality to interact with the {@link Span} in the {@link io.grpc.Context}. */
@@ -65,7 +65,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public void run() {
-      Context origContext = ContextUtils.withValue(span).attach();
+      Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
       try {
         runnable.run();
       } catch (Throwable t) {
@@ -98,7 +98,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public V call() throws Exception {
-      Context origContext = ContextUtils.withValue(span).attach();
+      Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
       try {
         return callable.call();
       } catch (Exception e) {

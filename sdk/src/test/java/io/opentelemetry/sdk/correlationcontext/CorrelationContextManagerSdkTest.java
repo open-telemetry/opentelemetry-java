@@ -21,8 +21,8 @@ import static com.google.common.truth.Truth.assertThat;
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
-import io.opentelemetry.correlationcontext.unsafe.ContextUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +52,8 @@ public class CorrelationContextManagerSdkTest {
 
   @Test
   public void testGetCurrentContext_ContextSetToNull() {
-    Context orig = ContextUtils.withValue(null).attach();
+    Context orig =
+        CorrelationsContextUtils.withCorrelationContext(null, Context.current()).attach();
     try {
       CorrelationContext distContext = contextManager.getCurrentContext();
       assertThat(distContext).isNotNull();
