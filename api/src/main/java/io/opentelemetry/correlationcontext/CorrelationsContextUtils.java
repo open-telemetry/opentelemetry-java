@@ -26,9 +26,6 @@ import javax.annotation.concurrent.Immutable;
  * Utility methods for accessing the {@link CorrelationContext} contained in the {@link
  * io.grpc.Context}.
  *
- * <p>Most code should interact with the current context via the public APIs in {@link
- * CorrelationContext} and avoid accessing this class directly.
- *
  * @since 0.1.0
  */
 @Immutable

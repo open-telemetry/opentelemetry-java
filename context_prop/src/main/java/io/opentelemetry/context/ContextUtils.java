@@ -22,9 +22,6 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Util methods/functionality to interact with the {@link io.grpc.Context}.
  *
- * <p>Users must interact with the current Context via the public APIs and avoid accessing this
- * class directly.
- *
  * @since 0.1.0
  */
 @Immutable
