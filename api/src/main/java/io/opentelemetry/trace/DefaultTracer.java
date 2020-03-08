@@ -50,7 +50,7 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Scope withSpan(Span span) {
-    return TracingContextUtils.withScopedSpan(span);
+    return TracingContextUtils.currentContextWith(span);
   }
 
   @Override

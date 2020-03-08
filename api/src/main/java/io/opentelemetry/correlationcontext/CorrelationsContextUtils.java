@@ -90,7 +90,7 @@ public final class CorrelationsContextUtils {
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */
-  public static Scope withScopedCorrelationContext(CorrelationContext corrContext) {
+  public static Scope currentContextWith(CorrelationContext corrContext) {
     Context context = withCorrelationContext(corrContext, Context.current());
     return ContextUtils.withScopedContext(context);
   }
