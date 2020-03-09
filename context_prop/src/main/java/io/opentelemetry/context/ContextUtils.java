@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context.propagation;
+package io.opentelemetry.context;
 
 import io.grpc.Context;
-import io.opentelemetry.context.Scope;
 import javax.annotation.concurrent.Immutable;
 
 /**
  * Util methods/functionality to interact with the {@link io.grpc.Context}.
- *
- * <p>Users must interact with the current Context via the public APIs and avoid accessing this
- * class directly.
  *
  * @since 0.1.0
  */
