@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.exporters.otprotocol;
+package io.opentelemetry.sdk.contrib.otproto;
 
 import com.google.protobuf.ByteString;
 import io.opentelemetry.proto.trace.v1.ConstantSampler;
@@ -25,7 +25,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 
 /** Utilities for converting various objects to protobuf representations. */
-public class TraceProtoUtils {
+public final class TraceProtoUtils {
   private TraceProtoUtils() {}
 
   /**
@@ -88,7 +88,8 @@ public class TraceProtoUtils {
       }
     }
     if (traceConfigProto.hasProbabilitySampler()) {
-      // TODO: add support for Probability Sampler
+      return Samplers.probability(
+          traceConfigProto.getProbabilitySampler().getSamplingProbability());
     }
     if (traceConfigProto.hasRateLimitingSampler()) {
       // TODO: add support for RateLimiting Sampler

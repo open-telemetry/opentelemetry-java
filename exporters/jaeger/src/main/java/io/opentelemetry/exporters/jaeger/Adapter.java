@@ -20,7 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
-import io.opentelemetry.exporters.otprotocol.TraceProtoUtils;
+import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import io.opentelemetry.trace.AttributeValue;
