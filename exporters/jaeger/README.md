@@ -4,6 +4,22 @@
 
 This is the OpenTelemetry exporter, sending span data to Jaeger via gRPC. 
 
+## Configuration
+
+Jaeger exporter can be configured by system properties and environmental variables.
+These configuration properties work only for `Jaeger.GrpcSpanExporter.installDefault()`.
+
+* `JAEGER_ENDPOINT` - collector's gRPC endpoint e.g. `localhost:14250`
+* `JAEGER_SERVICE_NAME` - service name e.g. `my-deployment`
+
+An example of simples Jaeger gRPC exporter initialization. In this case
+spans will be sent to Jaeger collector running on `localhost`:
+```java
+TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+JaegerGrpcSpanExporter.installDefault(tracerProvider);
+
+```
+
 ## Proto files
 
 The proto files in this repository were copied over from the [Jaeger main repository][proto-origin]. At this moment, they have to be manually synchronize, but a [discussion exists][proto-discussion] on how to properly consume them in a more appropriate manner.
