@@ -43,6 +43,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private static final String JAEGER_ENDPOINT = "JAEGER_ENDPOINT";
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
+  private static final String DEFAULT_JAEGER_ENDPOINT = "localhost:14250";
   private static final String HOSTNAME_KEY = "hostname";
   private static final String UNKNOWN = "unknown";
   private static final String IP_KEY = "ip";
@@ -213,15 +214,15 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
 
   /**
    * Configure and install Jaeger exporter with default settings. Configuration can be provided via
-   * system properties and environmental variables: {@code JAEGER_ENDPOINT} and {@code
-   * JAEGER_SERVICE_NAME}.
+   * system properties and environmental variables: {@code JAEGER_ENDPOINT} e.g. {@code
+   * localhost:14250} and {@code JAEGER_SERVICE_NAME} e.g. {@code my-deployment}.
    *
    * @param tracerProvider tracer provider
    */
   public static void installDefault(TracerSdkProvider tracerProvider) {
     String host = getProperty(JAEGER_ENDPOINT);
     if (host == null || host.isEmpty()) {
-      host = "localhost:14250";
+      host = DEFAULT_JAEGER_ENDPOINT;
     }
     String serviceName = getProperty(JAEGER_SERVICE_NAME);
     if (serviceName == null || serviceName.isEmpty()) {
