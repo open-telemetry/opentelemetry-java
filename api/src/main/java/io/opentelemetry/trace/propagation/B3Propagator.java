@@ -27,6 +27,7 @@ import io.opentelemetry.trace.TraceState;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
@@ -103,9 +104,16 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
     checkNotNull(carrier, "carrier");
     checkNotNull(getter, "getter");
 
+    String traceId;
+    String spanId;
+    String sampled;
     if (singleHeader) {
       String value = getter.get(carrier, COMBINED_HEADER);
       if (value == null || value.isEmpty()) {
+        logger.info(
+            "Missing or empty combined header: "
+                + COMBINED_HEADER
+                + ". Returning INVALID span context.");
         return SpanContext.getInvalid();
       }
 
@@ -114,27 +122,57 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
       // NOTE: we do not use parentSpanId
       String[] parts = value.split(COMBINED_HEADER_DELIMITER);
       if (parts.length < 2 || parts.length > 4) {
+        logger.info(
+            "Invalid combined header '" + COMBINED_HEADER + ". Returning INVALID span context.");
         return SpanContext.getInvalid();
       }
 
-      return buildSpanContext(parts[0], parts[1], parts.length == 3 ? parts[2] : null);
-    } else {
-      String traceId = getter.get(carrier, TRACE_ID_HEADER);
-      String spanId = getter.get(carrier, SPAN_ID_HEADER);
-      String sampled = getter.get(carrier, SAMPLED_HEADER);
+      traceId = parts[0];
+      if (!isTraceIdValid(traceId)) {
+        logger.info(
+            "Invalid TraceId in B3 header: "
+                + COMBINED_HEADER
+                + ". Returning INVALID span context.");
+        return SpanContext.getInvalid();
+      }
 
-      return buildSpanContext(traceId, spanId, sampled);
+      spanId = parts[1];
+      if (!isSpanIdValid(spanId)) {
+        logger.info(
+            "Invalid SpanId in B3 header: "
+                + COMBINED_HEADER
+                + ". Returning INVALID span context.");
+        return SpanContext.getInvalid();
+      }
+
+      sampled = parts.length == 3 ? parts[2] : null;
+    } else {
+      traceId = getter.get(carrier, TRACE_ID_HEADER);
+      if (!isTraceIdValid(traceId)) {
+        logger.info(
+            "Invalid TraceId in B3 header: "
+                + TRACE_ID_HEADER
+                + "'. Returning INVALID span context.");
+        return SpanContext.getInvalid();
+      }
+
+      spanId = getter.get(carrier, SPAN_ID_HEADER);
+      if (!isSpanIdValid(spanId)) {
+        logger.info(
+            "Invalid SpanId in B3 header: "
+                + SPAN_ID_HEADER
+                + "'. Returning INVALID span context.");
+        return SpanContext.getInvalid();
+      }
+
+      sampled = getter.get(carrier, SAMPLED_HEADER);
     }
+
+    return buildSpanContext(traceId, spanId, sampled);
   }
 
   private static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
     try {
-      if (traceId == null || traceId.isEmpty() || traceId.length() > MAX_TRACE_ID_LENGTH) {
-        return SpanContext.getInvalid();
-      }
-      if (spanId == null || traceId.isEmpty() || spanId.length() > MAX_SPAN_ID_LENGTH) {
-        return SpanContext.getInvalid();
-      }
       TraceFlags traceFlags =
           TraceFlags.builder()
               .setIsSampled(
@@ -148,7 +186,16 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
           traceFlags,
           TraceState.getDefault());
     } catch (Exception e) {
+      logger.log(Level.INFO, "Error parsing B3 header. Returning INVALID span context.", e);
       return SpanContext.getInvalid();
     }
+  }
+
+  private static boolean isTraceIdValid(String value) {
+    return !(value == null || value.isEmpty() || value.length() > MAX_TRACE_ID_LENGTH);
+  }
+
+  private static boolean isSpanIdValid(String value) {
+    return !(value == null || value.isEmpty() || value.length() > MAX_SPAN_ID_LENGTH);
   }
 }
