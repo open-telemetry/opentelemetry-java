@@ -18,11 +18,14 @@ package io.opentelemetry.exporters.jaeger;
 
 import io.grpc.Deadline;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.BatchSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -36,10 +39,12 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class JaegerGrpcSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(JaegerGrpcSpanExporter.class.getName());
+  private static final String JAEGER_SERVICE_NAME = "JAEGER_SERVICE_NAME";
+  private static final String JAEGER_ENDPOINT = "JAEGER_ENDPOINT";
   private static final String CLIENT_VERSION_KEY = "jaeger.version";
   private static final String CLIENT_VERSION_VALUE = "opentelemetry-java";
   private static final String HOSTNAME_KEY = "hostname";
-  private static final String HOSTNAME_DEFAULT = "(unknown)";
+  private static final String UNKNOWN = "unknown";
   private static final String IP_KEY = "ip";
   private static final String IP_DEFAULT = "0.0.0.0";
 
@@ -68,7 +73,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       hostname = InetAddress.getLocalHost().getHostName();
       ipv4 = InetAddress.getLocalHost().getHostAddress();
     } catch (UnknownHostException e) {
-      hostname = HOSTNAME_DEFAULT;
+      hostname = UNKNOWN;
       ipv4 = IP_DEFAULT;
     }
 
@@ -204,5 +209,36 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     public JaegerGrpcSpanExporter build() {
       return new JaegerGrpcSpanExporter(serviceName, channel, deadline);
     }
+  }
+
+  /**
+   * Configure and install Jaeger exporter with default settings. Configuration can be provided via
+   * system properties and environmental variables: {@code JAEGER_ENDPOINT} and {@code
+   * JAEGER_SERVICE_NAME}.
+   *
+   * @param tracerProvider tracer provider
+   */
+  public static void installDefault(TracerSdkProvider tracerProvider) {
+    String host = getProperty(JAEGER_ENDPOINT);
+    if (host == null || host.isEmpty()) {
+      host = "localhost:14250";
+    }
+    String serviceName = getProperty(JAEGER_SERVICE_NAME);
+    if (serviceName == null || serviceName.isEmpty()) {
+      serviceName = UNKNOWN;
+    }
+    ManagedChannel channel = ManagedChannelBuilder.forTarget(host).usePlaintext().build();
+    JaegerGrpcSpanExporter jaegerSpanExporter =
+        new JaegerGrpcSpanExporter.Builder()
+            .setServiceName(serviceName)
+            .setChannel(channel)
+            .build();
+
+    BatchSpansProcessor spansProcessor = BatchSpansProcessor.newBuilder(jaegerSpanExporter).build();
+    tracerProvider.addSpanProcessor(spansProcessor);
+  }
+
+  private static String getProperty(String name) {
+    return System.getProperty(name, System.getenv(name));
   }
 }
