@@ -147,6 +147,16 @@ public class B3PropagatorTest {
   }
 
   @Test
+  public void extract_InvalidSpanId_Size() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(B3Propagator.TRACE_ID_HEADER, TRACE_ID_BASE16);
+    invalidHeaders.put(B3Propagator.SPAN_ID_HEADER, "abcdefghijklmnop" + "00");
+    invalidHeaders.put(B3Propagator.SAMPLED_HEADER, B3Propagator.TRUE_INT);
+    assertThat(b3Propagator.extract(invalidHeaders, getter))
+        .isSameInstanceAs(SpanContext.getInvalid());
+  }
+
+  @Test
   public void inject_SampledContext_SingleHeader() {
     Map<String, String> carrier = new LinkedHashMap<>();
     b3PropagatorSingleHeader.inject(
@@ -199,6 +209,24 @@ public class B3PropagatorTest {
   }
 
   @Test
+  public void extract_Null_SingleHeader() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(B3Propagator.COMBINED_HEADER, null);
+
+    assertThat(b3PropagatorSingleHeader.extract(invalidHeaders, getter))
+        .isSameInstanceAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  public void extract_Empty_SingleHeader() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(B3Propagator.COMBINED_HEADER, "");
+
+    assertThat(b3PropagatorSingleHeader.extract(invalidHeaders, getter))
+        .isSameInstanceAs(SpanContext.getInvalid());
+  }
+
+  @Test
   public void extract_InvalidTraceId_SingleHeader() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
@@ -242,6 +270,26 @@ public class B3PropagatorTest {
     invalidHeaders.put(
         B3Propagator.COMBINED_HEADER,
         TRACE_ID_BASE16 + "-" + "abcdefghijklmnop" + "00" + "-" + B3Propagator.TRUE_INT);
+
+    assertThat(b3Propagator.extract(invalidHeaders, getter))
+        .isSameInstanceAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  public void extract_TooFewParts_SingleHeader() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(B3Propagator.COMBINED_HEADER, TRACE_ID_BASE16);
+
+    assertThat(b3Propagator.extract(invalidHeaders, getter))
+        .isSameInstanceAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  public void extract_TooManyParts_SingleHeader() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(
+        B3Propagator.COMBINED_HEADER,
+        TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-" + B3Propagator.TRUE_INT + "-extra");
 
     assertThat(b3Propagator.extract(invalidHeaders, getter))
         .isSameInstanceAs(SpanContext.getInvalid());
