@@ -43,12 +43,30 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
   static final String SAMPLED_HEADER = "X-B3-Sampled";
   static final String TRUE_INT = "1";
   static final String FALSE_INT = "0";
+  static final String COMBINED_HEADER = "b3";
+  static final String COMBINED_HEADER_DELIMITER = "-";
 
   private static final int MAX_TRACE_ID_LENGTH = 2 * TraceId.getSize();
   private static final int MAX_SPAN_ID_LENGTH = 2 * SpanId.getSize();
 
   private static final List<String> FIELDS =
       Collections.unmodifiableList(Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER));
+
+  private final boolean singleHeader;
+
+  /** Creates a new instance of {@link B3Propagator}. Defaults to use multiple headers. */
+  public B3Propagator() {
+    this(false);
+  }
+
+  /**
+   * Creates a new instance of {@link B3Propagator}.
+   *
+   * @param singleHeader whether to use single or multiple headers.
+   */
+  public B3Propagator(Boolean singleHeader) {
+    this.singleHeader = singleHeader;
+  }
 
   @Override
   public List<String> fields() {
@@ -61,27 +79,62 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
     checkNotNull(setter, "setter");
     checkNotNull(carrier, "carrier");
 
-    setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceId().toLowerBase16());
-    setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanId().toLowerBase16());
-    setter.set(
-        carrier, SAMPLED_HEADER, spanContext.getTraceFlags().isSampled() ? TRUE_INT : FALSE_INT);
+    String sampled = spanContext.getTraceFlags().isSampled() ? TRUE_INT : FALSE_INT;
+
+    if (singleHeader) {
+      setter.set(
+          carrier,
+          COMBINED_HEADER,
+          spanContext.getTraceId().toLowerBase16()
+              + COMBINED_HEADER_DELIMITER
+              + spanContext.getSpanId().toLowerBase16()
+              + COMBINED_HEADER_DELIMITER
+              + sampled);
+    } else {
+      setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceId().toLowerBase16());
+      setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanId().toLowerBase16());
+      setter.set(carrier, SAMPLED_HEADER, sampled);
+    }
   }
 
   @Override
+  @SuppressWarnings("StringSplitter")
   public <C /*>>> extends @NonNull Object*/> SpanContext extract(C carrier, Getter<C> getter) {
     checkNotNull(carrier, "carrier");
     checkNotNull(getter, "getter");
 
-    try {
+    if (singleHeader) {
+      String value = getter.get(carrier, COMBINED_HEADER);
+      if (value == null || value.isEmpty()) {
+        return SpanContext.getInvalid();
+      }
+
+      // must have between 2 and 4 hyphen delimieted parts:
+      //   traceId-spanId-sampled-parentSpanId (last two are optional)
+      // NOTE: we do not use parentSpanId
+      String[] parts = value.split(COMBINED_HEADER_DELIMITER);
+      if (parts.length < 2 || parts.length > 4) {
+        return SpanContext.getInvalid();
+      }
+
+      return buildSpanContext(parts[0], parts[1], parts.length == 3 ? parts[2] : null);
+    } else {
       String traceId = getter.get(carrier, TRACE_ID_HEADER);
+      String spanId = getter.get(carrier, SPAN_ID_HEADER);
+      String sampled = getter.get(carrier, SAMPLED_HEADER);
+
+      return buildSpanContext(traceId, spanId, sampled);
+    }
+  }
+
+  private static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
+    try {
       if (traceId == null || traceId.isEmpty() || traceId.length() > MAX_TRACE_ID_LENGTH) {
         return SpanContext.getInvalid();
       }
-      String spanId = getter.get(carrier, SPAN_ID_HEADER);
       if (spanId == null || traceId.isEmpty() || spanId.length() > MAX_SPAN_ID_LENGTH) {
         return SpanContext.getInvalid();
       }
-      String sampled = getter.get(carrier, SAMPLED_HEADER);
       TraceFlags traceFlags =
           TraceFlags.builder()
               .setIsSampled(
@@ -94,8 +147,7 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
           SpanId.fromLowerBase16(spanId, 0),
           traceFlags,
           TraceState.getDefault());
-    } catch (Exception exception) {
-      logger.info("Unable to retrieve B3 encoded span context. Returning INVALID span context.");
+    } catch (Exception e) {
       return SpanContext.getInvalid();
     }
   }
