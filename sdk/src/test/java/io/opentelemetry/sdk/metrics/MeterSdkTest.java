@@ -20,12 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.metrics.BatchRecorder;
-import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.DoubleObserver;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -65,7 +59,7 @@ public class MeterSdkTest {
 
   @Test
   public void testLongCounter() {
-    LongCounter longCounter =
+    LongCounterSdk longCounter =
         testSdk
             .longCounterBuilder("testLongCounter")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
@@ -75,7 +69,6 @@ public class MeterSdkTest {
             .setMonotonic(true)
             .build();
     assertThat(longCounter).isNotNull();
-    assertThat(longCounter).isInstanceOf(LongCounterSdk.class);
 
     assertThat(
             testSdk
@@ -95,7 +88,7 @@ public class MeterSdkTest {
 
   @Test
   public void testLongMeasure() {
-    LongMeasure longMeasure =
+    LongMeasureSdk longMeasure =
         testSdk
             .longMeasureBuilder("testLongMeasure")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
@@ -105,7 +98,6 @@ public class MeterSdkTest {
             .setAbsolute(true)
             .build();
     assertThat(longMeasure).isNotNull();
-    assertThat(longMeasure).isInstanceOf(LongMeasureSdk.class);
 
     assertThat(
             testSdk
@@ -125,7 +117,7 @@ public class MeterSdkTest {
 
   @Test
   public void testLongObserver() {
-    LongObserver longObserver =
+    LongObserverSdk longObserver =
         testSdk
             .longObserverBuilder("testLongObserver")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
@@ -135,7 +127,6 @@ public class MeterSdkTest {
             .setMonotonic(true)
             .build();
     assertThat(longObserver).isNotNull();
-    assertThat(longObserver).isInstanceOf(LongObserverSdk.class);
 
     assertThat(
             testSdk
@@ -155,7 +146,7 @@ public class MeterSdkTest {
 
   @Test
   public void testDoubleCounter() {
-    DoubleCounter doubleCounter =
+    DoubleCounterSdk doubleCounter =
         testSdk
             .doubleCounterBuilder("testDoubleCounter")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
@@ -165,7 +156,6 @@ public class MeterSdkTest {
             .setMonotonic(true)
             .build();
     assertThat(doubleCounter).isNotNull();
-    assertThat(doubleCounter).isInstanceOf(DoubleCounterSdk.class);
 
     assertThat(
             testSdk
@@ -185,7 +175,7 @@ public class MeterSdkTest {
 
   @Test
   public void testDoubleMeasure() {
-    DoubleMeasure doubleMeasure =
+    DoubleMeasureSdk doubleMeasure =
         testSdk
             .doubleMeasureBuilder("testDoubleMeasure")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
@@ -195,7 +185,6 @@ public class MeterSdkTest {
             .setAbsolute(true)
             .build();
     assertThat(doubleMeasure).isNotNull();
-    assertThat(doubleMeasure).isInstanceOf(DoubleMeasureSdk.class);
 
     assertThat(
             testSdk
@@ -215,7 +204,7 @@ public class MeterSdkTest {
 
   @Test
   public void testDoubleObserver() {
-    DoubleObserver doubleObserver =
+    DoubleObserverSdk doubleObserver =
         testSdk
             .doubleObserverBuilder("testDoubleObserver")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
@@ -225,7 +214,6 @@ public class MeterSdkTest {
             .setMonotonic(true)
             .build();
     assertThat(doubleObserver).isNotNull();
-    assertThat(doubleObserver).isInstanceOf(DoubleObserverSdk.class);
 
     assertThat(
             testSdk
@@ -252,14 +240,14 @@ public class MeterSdkTest {
 
   @Test
   public void collectAll() {
-    LongCounter longCounter = testSdk.longCounterBuilder("testLongCounter").build();
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, testSdk.createLabelSet());
-    LongMeasure longMeasure = testSdk.longMeasureBuilder("testLongMeasure").build();
+    LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testLongMeasure").build();
     longMeasure.record(10, testSdk.createLabelSet());
     // LongObserver longObserver = testSdk.longObserverBuilder("testLongObserver").build();
-    DoubleCounter doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
+    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
     doubleCounter.add(10.1, testSdk.createLabelSet());
-    DoubleMeasure doubleMeasure = testSdk.doubleMeasureBuilder("testDoubleMeasure").build();
+    DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testDoubleMeasure").build();
     doubleMeasure.record(10.1, testSdk.createLabelSet());
     // DoubleObserver doubleObserver = testSdk.doubleObserverBuilder("testDoubleObserver").build();
 

@@ -71,7 +71,7 @@ public class AbstractMeasureBuilderTest {
   }
 
   private static final class TestInstrumentBuilder
-      extends AbstractMeasure.Builder<TestInstrumentBuilder, TestInstrument> {
+      extends AbstractMeasure.Builder<TestInstrumentBuilder> {
     TestInstrumentBuilder(
         String name,
         MeterProviderSharedState meterProviderSharedState,

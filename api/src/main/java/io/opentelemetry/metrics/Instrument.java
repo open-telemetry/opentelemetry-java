@@ -29,13 +29,8 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 @SuppressWarnings("InterfaceWithOnlyStatics")
 public interface Instrument {
-  /**
-   * The {@code Builder} class for the {@code Instrument}.
-   *
-   * @param <B> the specific builder object.
-   * @param <V> the return value for {@code build()}.
-   */
-  interface Builder<B extends Builder<B, V>, V> {
+  /** The {@code Builder} class for the {@code Instrument}. */
+  interface Builder {
     /**
      * Sets the description of the {@code Instrument}.
      *
@@ -44,7 +39,7 @@ public interface Instrument {
      * @param description the description of the Instrument.
      * @return this.
      */
-    B setDescription(String description);
+    Builder setDescription(String description);
 
     /**
      * Sets the unit of the {@code Instrument}.
@@ -54,7 +49,7 @@ public interface Instrument {
      * @param unit the unit of the Instrument.
      * @return this.
      */
-    B setUnit(String unit);
+    Builder setUnit(String unit);
 
     /**
      * Sets the list of label keys for the Instrument.
@@ -64,7 +59,7 @@ public interface Instrument {
      * @param labelKeys the list of label keys for the Instrument.
      * @return this.
      */
-    B setLabelKeys(List<String> labelKeys);
+    Builder setLabelKeys(List<String> labelKeys);
 
     /**
      * Sets the map of constant labels (they will be added to all the Bound Instruments) for the
@@ -75,13 +70,13 @@ public interface Instrument {
      * @param constantLabels the map of constant labels for the Instrument.
      * @return this.
      */
-    B setConstantLabels(Map<String, String> constantLabels);
+    Builder setConstantLabels(Map<String, String> constantLabels);
 
     /**
      * Builds and returns a {@code Instrument} with the desired options.
      *
      * @return a {@code Instrument} with the desired options.
      */
-    V build();
+    Instrument build();
   }
 }

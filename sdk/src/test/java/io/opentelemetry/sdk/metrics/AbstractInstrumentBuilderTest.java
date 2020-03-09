@@ -169,7 +169,7 @@ public class AbstractInstrumentBuilderTest {
   }
 
   private static final class TestInstrumentBuilder
-      extends AbstractInstrument.Builder<TestInstrumentBuilder, TestInstrument> {
+      extends AbstractInstrument.Builder<TestInstrumentBuilder> {
     TestInstrumentBuilder(
         String name, MeterProviderSharedState sharedState, MeterSharedState meterSharedState) {
       super(name, sharedState, meterSharedState);

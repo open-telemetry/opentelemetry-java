@@ -86,8 +86,8 @@ abstract class AbstractInstrument implements Instrument {
     return descriptor.hashCode();
   }
 
-  abstract static class Builder<B extends Instrument.Builder<B, V>, V>
-      implements Instrument.Builder<B, V> {
+  abstract static class Builder<B extends AbstractInstrument.Builder<?>>
+      implements Instrument.Builder {
     /* VisibleForTesting */ static final int NAME_MAX_LENGTH = 255;
     /* VisibleForTesting */ static final String ERROR_MESSAGE_INVALID_NAME =
         "Name should be a ASCII string with a length no greater than "

@@ -58,7 +58,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     this.metricUpdater = Utils.checkNotNull(metricUpdater, "metricUpdater");
   }
 
-  static final class Builder extends AbstractObserver.Builder<LongObserver.Builder, LongObserver>
+  static final class Builder extends AbstractObserver.Builder<LongObserverSdk.Builder>
       implements LongObserver.Builder {
 
     Builder(

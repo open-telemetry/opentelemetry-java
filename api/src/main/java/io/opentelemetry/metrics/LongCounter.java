@@ -17,6 +17,8 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -91,5 +93,23 @@ public interface LongCounter extends Counter<BoundLongCounter> {
   }
 
   /** Builder class for {@link LongCounter}. */
-  interface Builder extends Counter.Builder<Builder, LongCounter> {}
+  interface Builder extends Counter.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
+    @Override
+    Builder setMonotonic(boolean monotonic);
+
+    @Override
+    LongCounter build();
+  }
 }

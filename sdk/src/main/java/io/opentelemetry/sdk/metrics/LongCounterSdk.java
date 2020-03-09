@@ -72,7 +72,7 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
     }
   }
 
-  static final class Builder extends AbstractCounter.Builder<LongCounter.Builder, LongCounter>
+  static final class Builder extends AbstractCounter.Builder<LongCounterSdk.Builder>
       implements LongCounter.Builder {
 
     Builder(

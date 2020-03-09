@@ -49,7 +49,7 @@ public class LongObserverSdkTest {
   @Test
   public void observeMonotonic_NegativeValue() {
     LongObserverSdk longObserver =
-        (LongObserverSdk) testSdk.longObserverBuilder("testObserver").setMonotonic(true).build();
+        testSdk.longObserverBuilder("testObserver").setMonotonic(true).build();
 
     longObserver.setCallback(
         new Callback<ResultLongObserver>() {

@@ -69,7 +69,7 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     }
   }
 
-  static final class Builder extends AbstractMeasure.Builder<LongMeasure.Builder, LongMeasure>
+  static final class Builder extends AbstractMeasure.Builder<LongMeasureSdk.Builder>
       implements LongMeasure.Builder {
 
     Builder(
