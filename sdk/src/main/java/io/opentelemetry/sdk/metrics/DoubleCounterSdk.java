@@ -37,7 +37,11 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
   }
 
   @Override
-  public void add(double delta, LabelSet labelSet) {
+  public void add(double delta, String... labelKeyValuePairs) {
+    add(delta, LabelSetSdk.create(labelKeyValuePairs));
+  }
+
+  public void add(double delta, LabelSetSdk labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
     boundInstrument.add(delta);
     boundInstrument.unbind();

@@ -98,13 +98,7 @@ public final class DefaultMeter implements Meter {
 
   @Override
   public LabelSet createLabelSet(String... keyValuePairs) {
-    Utils.checkArgument(
-        keyValuePairs.length % 2 == 0,
-        "You must provide an even number of key/value pair arguments.");
-    for (int i = 0; i < keyValuePairs.length; i += 2) {
-      String key = keyValuePairs[i];
-      Utils.checkNotNull(key, "You cannot provide null keys for LabelSet creation.");
-    }
+    Utils.validateLabelPairs(keyValuePairs);
     return NoopLabelSet.INSTANCE;
   }
 
@@ -125,7 +119,9 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleCounter() {}
 
     @Override
-    public void add(double delta, LabelSet labelSet) {}
+    public void add(double delta, String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
+    }
 
     @Override
     public NoopBoundDoubleCounter bind(LabelSet labelSet) {
