@@ -43,8 +43,7 @@ public class DoubleCounterApiBenchmark {
   private static final String KEY = "key";
   private static final String VALUE = "value";
 
-  private static final Meter METER =
-          DefaultMeter.getInstance();
+  private static final Meter METER = DefaultMeter.getInstance();
 
   private static final DoubleCounter doubleCounter =
       METER.doubleCounterBuilder("benchmark_double_counter").build();
@@ -78,30 +77,30 @@ public class DoubleCounterApiBenchmark {
   @Benchmark
   @Threads(value = 8)
   public void addEightThreadsCommonLabelSet() {
-      doubleCounter.add(100, METER.createLabelSet(KEY, VALUE));
+    doubleCounter.add(100, METER.createLabelSet(KEY, VALUE));
   }
 
   @Benchmark
   @Threads(value = 8)
   public void addEightThreadsDifferentLabelSets(ThreadState state) {
-      doubleCounter.add(100.0, METER.createLabelSet(state.threadKey, VALUE));
+    doubleCounter.add(100.0, METER.createLabelSet(state.threadKey, VALUE));
   }
 
   @Benchmark
   @Threads(value = 1)
   public void addOneThreadBound() {
-      boundDoubleCounter.add(100.0);
+    boundDoubleCounter.add(100.0);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void addEightThreadsBound() {
-      boundDoubleCounter.add(100.0);
+    boundDoubleCounter.add(100.0);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void addEightThreadsDifferentLabelSetsBound(ThreadState state) {
-      state.boundDoubleCounter.add(100.0);
+    state.boundDoubleCounter.add(100.0);
   }
 }

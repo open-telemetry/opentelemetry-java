@@ -39,59 +39,55 @@ import java.util.concurrent.TimeUnit;
 @Fork(1)
 public class DoubleMeasureApiBenchmark {
 
+  @State(Scope.Thread)
+  public static class ThreadState {
 
-    @State(Scope.Thread)
-    public static class ThreadState {
+    private String threadId;
+    private DoubleMeasure measure;
+    private LabelSet threadLabelSet;
+    private LabelSet commonLabelSet;
+    private DoubleMeasure.BoundDoubleMeasure boundMeasure;
 
-        private String threadId;
-        private DoubleMeasure measure;
-        private LabelSet threadLabelSet;
-        private LabelSet commonLabelSet;
-        private DoubleMeasure.BoundDoubleMeasure boundMeasure;
-
-        @Setup(Level.Trial)
-        public void doSetup() {
-            Meter meter = DefaultMeter.getInstance();
-            measure = meter.doubleMeasureBuilder("benchmark_double_measure").build();
-            threadId = Thread.currentThread().getName();
-            threadLabelSet = meter.createLabelSet("thread_id", threadId);
-            commonLabelSet = meter.createLabelSet("KEY", "VALUE");
-            boundMeasure = meter.doubleMeasureBuilder("bound_benchmark_double_measure")
-                    .build()
-                    .bind(threadLabelSet);
-        }
-
-        @TearDown(Level.Trial)
-        public void doTearDown() {
-        }
-
+    @Setup(Level.Trial)
+    public void doSetup() {
+      Meter meter = DefaultMeter.getInstance();
+      measure = meter.doubleMeasureBuilder("benchmark_double_measure").build();
+      threadId = Thread.currentThread().getName();
+      threadLabelSet = meter.createLabelSet("thread_id", threadId);
+      commonLabelSet = meter.createLabelSet("KEY", "VALUE");
+      boundMeasure =
+          meter.doubleMeasureBuilder("bound_benchmark_double_measure").build().bind(threadLabelSet);
     }
 
-    @Benchmark
-    public void recordSingleThread(ThreadState state) {
-        state.measure.record(5.0d, state.commonLabelSet);
-    }
+    @TearDown(Level.Trial)
+    public void doTearDown() {}
+  }
 
-    @Benchmark
-    public void recordSingleThreadBound(ThreadState state) {
-        state.boundMeasure.record(5.0d);
-    }
+  @Benchmark
+  public void recordSingleThread(ThreadState state) {
+    state.measure.record(5.0d, state.commonLabelSet);
+  }
 
-    @Benchmark
-    @Threads(8)
-    public void record8ThreadsCommonLabelSet(ThreadState state) {
-        state.measure.record(5.0d, state.commonLabelSet);
-    }
+  @Benchmark
+  public void recordSingleThreadBound(ThreadState state) {
+    state.boundMeasure.record(5.0d);
+  }
 
-    @Benchmark
-    @Threads(8)
-    public void record8ThreadsBound(ThreadState state) {
-        state.boundMeasure.record(5.0d);
-    }
+  @Benchmark
+  @Threads(8)
+  public void record8ThreadsCommonLabelSet(ThreadState state) {
+    state.measure.record(5.0d, state.commonLabelSet);
+  }
 
-    @Benchmark
-    @Threads(8)
-    public void record8ThreadsDifferentLabelSets(ThreadState state) {
-        state.measure.record(5.0d, state.threadLabelSet);
-    }
+  @Benchmark
+  @Threads(8)
+  public void record8ThreadsBound(ThreadState state) {
+    state.boundMeasure.record(5.0d);
+  }
+
+  @Benchmark
+  @Threads(8)
+  public void record8ThreadsDifferentLabelSets(ThreadState state) {
+    state.measure.record(5.0d, state.threadLabelSet);
+  }
 }

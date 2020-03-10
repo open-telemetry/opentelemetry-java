@@ -34,14 +34,13 @@ import java.util.concurrent.TimeUnit;
 @Fork(1)
 public class LabelSetApiBenchmark {
 
-    private static final Meter METER = DefaultMeter.getInstance();
-    private static final String KEY = "KEY";
-    private static final String VALUE = "VALUE";
+  private static final Meter METER = DefaultMeter.getInstance();
+  private static final String KEY = "KEY";
+  private static final String VALUE = "VALUE";
 
-    @Benchmark
-    @Threads(value = 1)
-    public void createSimpleLabelSet() {
-        METER.createLabelSet(KEY, VALUE);
-    }
-
+  @Benchmark
+  @Threads(value = 1)
+  public void createSimpleLabelSet() {
+    METER.createLabelSet(KEY, VALUE);
+  }
 }

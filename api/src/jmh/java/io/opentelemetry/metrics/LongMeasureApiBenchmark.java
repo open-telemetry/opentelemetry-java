@@ -39,59 +39,55 @@ import java.util.concurrent.TimeUnit;
 @Fork(1)
 public class LongMeasureApiBenchmark {
 
+  @State(Scope.Thread)
+  public static class ThreadState {
 
-    @State(Scope.Thread)
-    public static class ThreadState {
+    private String threadId;
+    private LongMeasure measure;
+    private LabelSet threadLabelSet;
+    private LabelSet commonLabelSet;
+    private LongMeasure.BoundLongMeasure boundMeasure;
 
-        private String threadId;
-        private LongMeasure measure;
-        private LabelSet threadLabelSet;
-        private LabelSet commonLabelSet;
-        private LongMeasure.BoundLongMeasure boundMeasure;
-
-        @Setup(Level.Trial)
-        public void doSetup() {
-            Meter meter = DefaultMeter.getInstance();
-            measure = meter.longMeasureBuilder("benchmark_long_measure").build();
-            threadId = Thread.currentThread().getName();
-            threadLabelSet = meter.createLabelSet("thread_id", threadId);
-            commonLabelSet = meter.createLabelSet("KEY", "VALUE");
-            boundMeasure = meter.longMeasureBuilder("bound_benchmark_long_measure")
-                    .build()
-                    .bind(threadLabelSet);
-        }
-
-        @TearDown(Level.Trial)
-        public void doTearDown() {
-        }
-
+    @Setup(Level.Trial)
+    public void doSetup() {
+      Meter meter = DefaultMeter.getInstance();
+      measure = meter.longMeasureBuilder("benchmark_long_measure").build();
+      threadId = Thread.currentThread().getName();
+      threadLabelSet = meter.createLabelSet("thread_id", threadId);
+      commonLabelSet = meter.createLabelSet("KEY", "VALUE");
+      boundMeasure =
+          meter.longMeasureBuilder("bound_benchmark_long_measure").build().bind(threadLabelSet);
     }
 
-    @Benchmark
-    public void recordSingleThread(ThreadState state) {
-        state.measure.record(5L, state.commonLabelSet);
-    }
+    @TearDown(Level.Trial)
+    public void doTearDown() {}
+  }
 
-    @Benchmark
-    public void recordSingleThreadBound(ThreadState state) {
-        state.boundMeasure.record(5L);
-    }
+  @Benchmark
+  public void recordSingleThread(ThreadState state) {
+    state.measure.record(5L, state.commonLabelSet);
+  }
 
-    @Benchmark
-    @Threads(8)
-    public void record8ThreadsCommonLabelSet(ThreadState state) {
-        state.measure.record(5L, state.commonLabelSet);
-    }
+  @Benchmark
+  public void recordSingleThreadBound(ThreadState state) {
+    state.boundMeasure.record(5L);
+  }
 
-    @Benchmark
-    @Threads(8)
-    public void record8ThreadsBound(ThreadState state) {
-        state.boundMeasure.record(5L);
-    }
+  @Benchmark
+  @Threads(8)
+  public void record8ThreadsCommonLabelSet(ThreadState state) {
+    state.measure.record(5L, state.commonLabelSet);
+  }
 
-    @Benchmark
-    @Threads(8)
-    public void record8ThreadsDifferentLabelSets(ThreadState state) {
-        state.measure.record(5L, state.threadLabelSet);
-    }
+  @Benchmark
+  @Threads(8)
+  public void record8ThreadsBound(ThreadState state) {
+    state.boundMeasure.record(5L);
+  }
+
+  @Benchmark
+  @Threads(8)
+  public void record8ThreadsDifferentLabelSets(ThreadState state) {
+    state.measure.record(5L, state.threadLabelSet);
+  }
 }

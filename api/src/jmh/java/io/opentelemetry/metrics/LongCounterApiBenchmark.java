@@ -43,8 +43,7 @@ public class LongCounterApiBenchmark {
   private static final String KEY = "key";
   private static final String VALUE = "value";
 
-  private static final Meter METER =
-          DefaultMeter.getInstance();
+  private static final Meter METER = DefaultMeter.getInstance();
 
   private static final LongCounter longCounter =
       METER.longCounterBuilder("benchmark_long_counter").build();
@@ -78,30 +77,30 @@ public class LongCounterApiBenchmark {
   @Benchmark
   @Threads(value = 8)
   public void addEightThreadsCommonLabelSet() {
-      longCounter.add(100, METER.createLabelSet(KEY, VALUE));
+    longCounter.add(100, METER.createLabelSet(KEY, VALUE));
   }
 
   @Benchmark
   @Threads(value = 8)
   public void addEightThreadsDifferentLabelSets(ThreadState state) {
-      longCounter.add(100, METER.createLabelSet(state.threadKey, VALUE));
+    longCounter.add(100, METER.createLabelSet(state.threadKey, VALUE));
   }
 
   @Benchmark
   @Threads(value = 1)
   public void addOneThreadBound() {
-      boundLongCounter.add(100);
+    boundLongCounter.add(100);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void addEightThreadsCommonLabelSetBound() {
-      boundLongCounter.add(100);
+    boundLongCounter.add(100);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void addEightThreadsDifferentLabelSetsBound(ThreadState state) {
-      state.boundLongCounter.add(100);
+    state.boundLongCounter.add(100);
   }
 }
