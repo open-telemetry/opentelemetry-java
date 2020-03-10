@@ -100,7 +100,6 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
   }
 
   @Override
-  @SuppressWarnings("StringSplitter")
   public <C /*>>> extends @NonNull Object*/> SpanContext extract(C carrier, Getter<C> getter) {
     checkNotNull(carrier, "carrier");
     checkNotNull(getter, "getter");
@@ -112,6 +111,7 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
     }
   }
 
+  @SuppressWarnings("StringSplitter")
   private static <C /*>>> extends @NonNull Object*/> SpanContext getSpanContextFromSingleHeader(
       C carrier, Getter<C> getter) {
     String value = getter.get(carrier, COMBINED_HEADER);
