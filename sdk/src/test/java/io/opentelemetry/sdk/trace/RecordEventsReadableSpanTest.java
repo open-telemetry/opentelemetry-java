@@ -550,9 +550,9 @@ public class RecordEventsReadableSpanTest {
     TraceConfig traceConfig = TraceConfig.getDefault();
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();
-    Map<String, AttributeValue> labels = new HashMap<>();
-    labels.put("foo", AttributeValue.stringAttributeValue("bar"));
-    Resource resource = Resource.create(labels);
+    Map<String, AttributeValue> attribute = new HashMap<>();
+    attribute.put("foo", AttributeValue.stringAttributeValue("bar"));
+    Resource resource = Resource.create(attribute);
     Map<String, AttributeValue> attributes = TestUtils.generateRandomAttributes();
     AttributesWithCapacity attributesWithCapacity = new AttributesWithCapacity(32);
     attributesWithCapacity.putAllAttributes(attributes);
