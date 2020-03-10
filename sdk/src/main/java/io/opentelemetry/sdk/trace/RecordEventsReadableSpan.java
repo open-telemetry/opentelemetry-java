@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.EndSpanOptions;
@@ -169,7 +170,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             .setLinks(getLinks())
             .setTotalRecordedLinks(totalRecordedLinks)
             .setKind(kind)
-            .setTracestate(spanContext.getTracestate())
+            .setTraceState(spanContext.getTraceState())
             .setParentSpanId(parentSpanId)
             .setHasRemoteParent(hasRemoteParent)
             .setResource(resource)
@@ -286,15 +287,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   /**
-   * Returns the kind of this {@code Span}.
-   *
-   * @return the kind of this {@code Span}.
-   */
-  public Kind getKind() {
-    return kind;
-  }
-
-  /**
    * Returns the {@code Clock} used by this {@code Span}.
    *
    * @return the {@code Clock} used by this {@code Span}.
@@ -327,7 +319,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
-    if (value.getType() == Type.STRING && StringUtils.isNullOrBlank(value.getStringValue())) {
+    if (value.getType() == Type.STRING && StringUtils.isNullOrEmpty(value.getStringValue())) {
       return;
     }
     synchronized (lock) {

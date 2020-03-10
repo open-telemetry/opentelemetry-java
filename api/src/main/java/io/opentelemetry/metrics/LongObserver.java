@@ -16,8 +16,9 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.LongObserver.BoundLongObserver;
 import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -35,14 +36,15 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
+ *   private static final LabelSet labelSet = meter.createLabelSet("my_label");
  *
  *   void init() {
  *     observer.setCallback(
- *         new LongObserver.Callback<LongObserver.Result>() {
+ *         new LongObserver.Callback<LongObserver.ResultLongObserver>() {
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(ResultLongObserver result) {
- *             result.put(observer.bind(labelset), count.addAndGet(1));
+ *             result.observe(count.addAndGet(1), labelSet);
  *           }
  *         });
  *   }
@@ -52,29 +54,33 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongObserver extends Observer<ResultLongObserver, BoundLongObserver> {
-  @Override
-  BoundLongObserver bind(LabelSet labelSet);
-
-  @Override
-  void unbind(BoundLongObserver boundInstrument);
-
+public interface LongObserver extends Observer<ResultLongObserver> {
   @Override
   void setCallback(Callback<ResultLongObserver> metricUpdater);
 
   /** Builder class for {@link LongObserver}. */
-  interface Builder extends Observer.Builder<LongObserver.Builder, LongObserver> {}
+  interface Builder extends Observer.Builder {
+    @Override
+    Builder setDescription(String description);
 
-  /**
-   * A {@code Bound} for a {@code Observer}.
-   *
-   * @since 0.1.0
-   */
-  @ThreadSafe
-  interface BoundLongObserver {}
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
+    @Override
+    Builder setMonotonic(boolean monotonic);
+
+    @Override
+    LongObserver build();
+  }
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface ResultLongObserver {
-    void put(BoundLongObserver bound, long value);
+    void observe(long value, LabelSet labelSet);
   }
 }

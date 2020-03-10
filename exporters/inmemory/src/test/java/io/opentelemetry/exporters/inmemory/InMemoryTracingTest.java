@@ -19,9 +19,9 @@ package io.opentelemetry.exporters.inmemory;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.trace.Samplers;
-import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
 import org.junit.Rule;
@@ -33,27 +33,24 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link InMemoryTracing}. */
 @RunWith(JUnit4.class)
 public class InMemoryTracingTest {
-  private final InMemoryTracing tracing = new InMemoryTracing();
-  private final Tracer tracer = tracing.getTracerRegistry().get("InMemoryTracing");
+  private final TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
+  private final InMemoryTracing tracing =
+      InMemoryTracing.builder().setTracerProvider(tracerSdkProvider).build();
+  private final Tracer tracer = tracerSdkProvider.get("InMemoryTracing");
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void defaultFinishedSpanItems() {
-    assertThat(tracing.getFinishedSpanItems().size()).isEqualTo(0);
-  }
-
-  @Test
-  public void ctor_tracer() {
-    TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
-    InMemoryTracing tracing = new InMemoryTracing(tracerSdkFactory);
-    assertThat(tracing.getTracerRegistry()).isSameInstanceAs(tracerSdkFactory);
+  public void defaultInstance() {
+    assertThat(tracing.getTracerProvider()).isSameInstanceAs(tracerSdkProvider);
+    assertThat(tracing.getSpanExporter().getFinishedSpanItems()).hasSize(0);
   }
 
   @Test
   public void ctor_nullTracer() {
     thrown.expect(NullPointerException.class);
-    new InMemoryTracing(null);
+    thrown.expectMessage("tracerProvider");
+    InMemoryTracing.builder().setTracerProvider(null).build();
   }
 
   @Test
@@ -61,7 +58,8 @@ public class InMemoryTracingTest {
     tracer.spanBuilder("A").startSpan().end();
     tracer.spanBuilder("B").startSpan().end();
 
-    List<SpanData> finishedSpanItems = tracing.getFinishedSpanItems();
+    List<SpanData> finishedSpanItems = tracing.getSpanExporter().getFinishedSpanItems();
+    assertThat(finishedSpanItems).hasSize(2);
     assertThat(finishedSpanItems.get(0).getName()).isEqualTo("A");
     assertThat(finishedSpanItems.get(1).getName()).isEqualTo("B");
   }
@@ -69,29 +67,27 @@ public class InMemoryTracingTest {
   @Test
   public void getFinishedSpanItems_sampled() {
     tracer.spanBuilder("A").startSpan().end();
-    TracerSdkRegistry tracerSdkFactory = tracing.getTracerRegistry();
-    TraceConfig originalConfig = tracerSdkFactory.getActiveTraceConfig();
-    tracerSdkFactory.updateActiveTraceConfig(
+    TraceConfig originalConfig = tracerSdkProvider.getActiveTraceConfig();
+    tracerSdkProvider.updateActiveTraceConfig(
         originalConfig.toBuilder().setSampler(Samplers.alwaysOff()).build());
     try {
       tracer.spanBuilder("B").startSpan().end();
     } finally {
-      tracerSdkFactory.updateActiveTraceConfig(originalConfig);
+      tracerSdkProvider.updateActiveTraceConfig(originalConfig);
     }
 
-    List<SpanData> finishedSpanItems = tracing.getFinishedSpanItems();
-    assertThat(finishedSpanItems.size()).isEqualTo(1);
+    List<SpanData> finishedSpanItems = tracing.getSpanExporter().getFinishedSpanItems();
+    assertThat(finishedSpanItems).hasSize(1);
     assertThat(finishedSpanItems.get(0).getName()).isEqualTo("A");
   }
 
   @Test
   public void reset() {
-    tracer.spanBuilder("A").startSpan();
-    tracer.spanBuilder("B").startSpan();
-    tracing.reset();
-    assertThat(tracing.getFinishedSpanItems().size()).isEqualTo(0);
+    tracer.spanBuilder("A").startSpan().end();
+    tracer.spanBuilder("B").startSpan().end();
+    assertThat(tracing.getSpanExporter().getFinishedSpanItems()).hasSize(2);
 
-    tracing.reset();
-    assertThat(tracing.getFinishedSpanItems().size()).isEqualTo(0);
+    tracing.getSpanExporter().reset();
+    assertThat(tracing.getSpanExporter().getFinishedSpanItems()).hasSize(0);
   }
 }

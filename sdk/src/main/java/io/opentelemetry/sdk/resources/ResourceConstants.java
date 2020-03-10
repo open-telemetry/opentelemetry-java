@@ -73,6 +73,12 @@ public class ResourceConstants {
   public static final String HOST_NAME = "host.name";
   /** Type of host. For Cloud this must be the machine type. */
   public static final String HOST_TYPE = "host.type";
+  /** Name of the VM image or OS install the host was instantiated from. */
+  public static final String HOST_IMAGE_NAME = "host.image.name";
+  /** VM image id. For Cloud, this value is from the provider. */
+  public static final String HOST_IMAGE_ID = "host.image.id";
+  /** The version string of the VM image. */
+  public static final String HOST_IMAGE_VERSION = "host.image.version";
   /** Name of the cloud provider. */
   public static final String CLOUD_PROVIDER = "cloud.provider";
   /** The cloud account id used to identify different entities. */

@@ -18,7 +18,6 @@ package io.opentelemetry.correlationcontext;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -39,7 +38,6 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
    *
    * @return a {@code CorrelationContextManager} singleton that is the default implementation for
    *     {@link CorrelationContextManager}.
-   * @since 0.1.0
    */
   public static CorrelationContextManager getInstance() {
     return INSTANCE;
@@ -47,7 +45,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return CorrelationsContextUtils.getCorrelationContextWithDefault(Context.current());
+    return CorrelationsContextUtils.getCurrentCorrelationContext();
   }
 
   @Override

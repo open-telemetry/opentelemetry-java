@@ -72,8 +72,6 @@ final class TracerShim extends BaseShimObject implements Tracer {
         || format == Format.Builtin.TEXT_MAP_INJECT
         || format == Format.Builtin.HTTP_HEADERS) {
       propagation.injectTextFormat(contextShim, (TextMapInject) carrier);
-    } else {
-      logger.log(Level.WARNING, "Binary format is not implemented.");
     }
   }
 
@@ -85,8 +83,6 @@ final class TracerShim extends BaseShimObject implements Tracer {
           || format == Format.Builtin.TEXT_MAP_EXTRACT
           || format == Format.Builtin.HTTP_HEADERS) {
         return propagation.extractTextFormat((TextMapExtract) carrier);
-      } else {
-        logger.log(Level.WARNING, "Binary format is not implemented.");
       }
     } catch (Exception e) {
       logger.log(

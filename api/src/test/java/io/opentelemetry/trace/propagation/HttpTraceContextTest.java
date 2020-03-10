@@ -17,8 +17,8 @@
 package io.opentelemetry.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACEPARENT;
-import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACESTATE;
+import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACE_PARENT;
+import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACE_STATE;
 
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
@@ -29,7 +29,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
+import io.opentelemetry.trace.TraceState;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -44,9 +44,9 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class HttpTraceContextTest {
 
-  private static final Tracestate TRACESTATE_DEFAULT = Tracestate.builder().build();
-  private static final Tracestate TRACESTATE_NOT_DEFAULT =
-      Tracestate.builder().set("foo", "bar").set("bar", "baz").build();
+  private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
+  private static final TraceState TRACE_STATE_NOT_DEFAULT =
+      TraceState.builder().set("foo", "bar").set("bar", "baz").build();
   private static final String TRACE_ID_BASE16 = "ff000000000000000000000000000041";
   private static final TraceId TRACE_ID = TraceId.fromLowerBase16(TRACE_ID_BASE16, 0);
   private static final String SPAN_ID_BASE16 = "ff00000000000041";
@@ -89,48 +89,52 @@ public class HttpTraceContextTest {
 
   @Test
   public void inject_SampledContext() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
         TracingContextUtils.withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_DEFAULT));
+            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_DEFAULT),
+            Context.current());
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier).containsExactly(TRACEPARENT, TRACEPARENT_HEADER_SAMPLED);
   }
 
   @Test
   public void inject_NotSampledContext() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
         TracingContextUtils.withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT),
+            Context.current());
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier).containsExactly(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
   }
 
   @Test
   public void inject_SampledContext_WithTraceState() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
         TracingContextUtils.withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_NOT_DEFAULT));
+            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_NOT_DEFAULT),
+            Context.current());
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier)
         .containsExactly(
-            TRACEPARENT, TRACEPARENT_HEADER_SAMPLED, TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING);
+            TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED, TRACE_STATE, TRACESTATE_NOT_DEFAULT_ENCODING);
   }
 
   @Test
   public void inject_NotSampledContext_WithTraceState() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
         TracingContextUtils.withSpanContext(
-            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
+            SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT),
+            Context.current());
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier)
         .containsExactly(
-            TRACEPARENT,
+            TRACE_PARENT,
             TRACEPARENT_HEADER_NOT_SAMPLED,
-            TRACESTATE,
+            TRACE_STATE,
             TRACESTATE_NOT_DEFAULT_ENCODING);
   }
 
@@ -177,36 +181,36 @@ public class HttpTraceContextTest {
 
   @Test
   public void extract_SampledContext() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_SAMPLED);
     Context context = httpTraceContext.extract(Context.current(), carrier, getter);
     assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_DEFAULT));
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
   public void extract_NotSampledContext() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_NOT_SAMPLED);
     Context context = httpTraceContext.extract(Context.current(), carrier, getter);
     assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
+                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
   public void extract_SampledContext_WithTraceState() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(TRACEPARENT, TRACEPARENT_HEADER_SAMPLED);
     carrier.put(TRACESTATE, TRACESTATE_NOT_DEFAULT_ENCODING);
     Context context = httpTraceContext.extract(Context.current(), carrier, getter);
     assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACESTATE_NOT_DEFAULT));
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT));
   }
 
   @Test
@@ -218,7 +222,7 @@ public class HttpTraceContextTest {
     assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
+                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT));
   }
 
   @Test
@@ -229,7 +233,7 @@ public class HttpTraceContextTest {
     assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
+                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -241,7 +245,7 @@ public class HttpTraceContextTest {
     assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_DEFAULT));
+                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
   }
 
   @Test
@@ -253,113 +257,113 @@ public class HttpTraceContextTest {
     assertThat(TracingContextUtils.getSpanContext(context))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
-                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACESTATE_NOT_DEFAULT));
+                TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT));
   }
 
   @Test
   public void extract_InvalidTraceId() {
-    Map<String, String> invalidHeaders = new LinkedHashMap<String, String>();
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
         TRACEPARENT, "00-" + "abcdefghijklmnopabcdefghijklmnop" + "-" + SPAN_ID_BASE16 + "-01");
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(
-        "Invalid traceparent: "
-            + "00-"
-            + "abcdefghijklmnopabcdefghijklmnop"
-            + "-"
-            + SPAN_ID_BASE16
-            + "-01");
-    httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    Context context = httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    assertThat(TracingContextUtils.getSpanContext(context))
+        .isSameInstanceAs(SpanContext.getInvalid());
   }
 
   @Test
   public void extract_InvalidTraceId_Size() {
-    Map<String, String> invalidHeaders = new LinkedHashMap<String, String>();
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(TRACEPARENT, "00-" + TRACE_ID_BASE16 + "00-" + SPAN_ID_BASE16 + "-01");
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(
-        "Invalid traceparent: " + "00-" + TRACE_ID_BASE16 + "00-" + SPAN_ID_BASE16 + "-01");
-    httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    Context context = httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    assertThat(TracingContextUtils.getSpanContext(context))
+        .isSameInstanceAs(SpanContext.getInvalid());
   }
 
   @Test
   public void extract_InvalidSpanId() {
     Map<String, String> invalidHeaders = new HashMap<String, String>();
     invalidHeaders.put(TRACEPARENT, "00-" + TRACE_ID_BASE16 + "-" + "abcdefghijklmnop" + "-01");
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(
-        "Invalid traceparent: " + "00-" + TRACE_ID_BASE16 + "-" + "abcdefghijklmnop" + "-01");
-    httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    Context context = httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    assertThat(TracingContextUtils.getSpan(context)).isSameInstanceAs(SpanContext.getInvalid());
   }
 
   @Test
   public void extract_InvalidSpanId_Size() {
-    Map<String, String> invalidHeaders = new HashMap<String, String>();
+    Map<String, String> invalidHeaders = new HashMap<>();
     invalidHeaders.put(TRACEPARENT, "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "00-01");
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(
-        "Invalid traceparent: " + "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "00-01");
-    httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    Context context = httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    assertThat(TracingContextUtils.getSpanContext(context))
+        .isSameInstanceAs(SpanContext.getInvalid());
   }
 
   @Test
   public void extract_InvalidTraceFlags() {
-    Map<String, String> invalidHeaders = new HashMap<String, String>();
+    Map<String, String> invalidHeaders = new HashMap<>();
     invalidHeaders.put(TRACEPARENT, "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-gh");
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(
-        "Invalid traceparent: " + "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-gh");
-    httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    Context context = httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    assertThat(TracingContextUtils.getSpanContext(context))
+        .isSameInstanceAs(SpanContext.getInvalid());
   }
 
   @Test
   public void extract_InvalidTraceFlags_Size() {
-    Map<String, String> invalidHeaders = new HashMap<String, String>();
+    Map<String, String> invalidHeaders = new HashMap<>();
     invalidHeaders.put(TRACEPARENT, "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-0100");
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(
-        "Invalid traceparent: " + "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-0100");
-    httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    Context context = httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    assertThat(TracingContextUtils.getSpanContext(context))
+        .isSameInstanceAs(SpanContext.getInvalid());
   }
 
   @Test
   public void extract_InvalidTracestate_EntriesDelimiter() {
-    Map<String, String> invalidHeaders = new HashMap<String, String>();
+    Map<String, String> invalidHeaders = new HashMap<>();
     invalidHeaders.put(TRACEPARENT, "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01");
     invalidHeaders.put(TRACESTATE, "foo=bar;test=test");
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid tracestate: " + "foo=bar;test=test");
-    httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    Context context = httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    assertThat(TracingContextUtils.getSpanContext(context))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
   public void extract_InvalidTracestate_KeyValueDelimiter() {
-    Map<String, String> invalidHeaders = new HashMap<String, String>();
+    Map<String, String> invalidHeaders = new HashMap<>();
     invalidHeaders.put(TRACEPARENT, "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01");
     invalidHeaders.put(TRACESTATE, "foo=bar,test-test");
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid tracestate: " + "foo=bar,test-test");
-    httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    Context context = httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    assertThat(TracingContextUtils.getSpanContext(context))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
   public void extract_InvalidTracestate_OneString() {
-    Map<String, String> invalidHeaders = new HashMap<String, String>();
+    Map<String, String> invalidHeaders = new HashMap<>();
     invalidHeaders.put(TRACEPARENT, "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-01");
     invalidHeaders.put(TRACESTATE, "test-test");
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid tracestate: " + "test-test");
-    httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    Context context = httpTraceContext.extract(Context.current(), invalidHeaders, getter);
+    assertThat(TracingContextUtils.getSpanContext(context))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
   }
 
   @Test
   public void fieldsList() {
-    assertThat(httpTraceContext.fields()).containsExactly(TRACEPARENT, TRACESTATE);
+    assertThat(httpTraceContext.fields()).containsExactly(TRACE_PARENT, TRACE_STATE);
   }
 
   @Test
   public void headerNames() {
-    assertThat(TRACEPARENT).isEqualTo("traceparent");
-    assertThat(TRACESTATE).isEqualTo("tracestate");
+    assertThat(TRACE_PARENT).isEqualTo("traceparent");
+    assertThat(TRACE_STATE).isEqualTo("tracestate");
+  }
+
+  @Test
+  public void extract_emptyCarrier() {
+    Map<String, String> emptyHeaders = new HashMap<>();
+    assertThat(httpTraceContext.extract(emptyHeaders, getter)).isEqualTo(SpanContext.getInvalid());
   }
 }

@@ -44,7 +44,7 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return TracingContextUtils.getSpanWithDefault(Context.current());
+    return TracingContextUtils.getCurrentSpan();
   }
 
   @Override
@@ -54,7 +54,7 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return NoopSpanBuilder.create(spanName);
+    return NoopSpanBuilder.create(this, spanName);
   }
 
   private DefaultTracer() {}

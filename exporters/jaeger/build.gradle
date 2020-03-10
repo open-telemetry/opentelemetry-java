@@ -1,21 +1,18 @@
-description = 'OpenTelemetry - Jaeger Exporter'
+plugins {
+    id "java"
+    id "maven-publish"
 
-apply plugin: 'com.google.protobuf'
-
-
-buildscript {
-    repositories {
-        maven { url "https://plugins.gradle.org/m2/" }
-    }
-    dependencies {
-        classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.8"
-    }
+    id "com.google.protobuf"
+    id "ru.vyarus.animalsniffer"
 }
+
+description = 'OpenTelemetry - Jaeger Exporter'
+ext.moduleName = "io.opentelemetry.exporters.jaeger"
 
 dependencies {
     api project(':opentelemetry-sdk')
 
-    implementation project(':opentelemetry-exporters-otprotocol'),
+    implementation project(':opentelemetry-sdk-contrib-otproto'),
             libraries.grpc_api,
             project(':opentelemetry-sdk'),
             libraries.grpc_protobuf,
@@ -27,7 +24,7 @@ dependencies {
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
 
 animalsniffer {

@@ -16,74 +16,83 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.BatchRecorder;
-import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleGauge;
-import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.metrics.LabelSet;
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongGauge;
-import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
-public class MeterSdk implements Meter {
+final class MeterSdk implements Meter {
+  private final MeterProviderSharedState meterProviderSharedState;
+  private final MeterSharedState meterSharedState;
 
-  @Override
-  public LongGauge.Builder longGaugeBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+  MeterSdk(
+      MeterProviderSharedState meterProviderSharedState,
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    this.meterProviderSharedState = meterProviderSharedState;
+    this.meterSharedState = MeterSharedState.create(instrumentationLibraryInfo);
+  }
+
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return meterSharedState.getInstrumentationLibraryInfo();
   }
 
   @Override
-  public DoubleGauge.Builder doubleGaugeBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+  public DoubleCounterSdk.Builder doubleCounterBuilder(String name) {
+    return new DoubleCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public DoubleCounter.Builder doubleCounterBuilder(String name) {
-    return SdkDoubleCounter.Builder.builder(name);
+  public LongCounterSdk.Builder longCounterBuilder(String name) {
+    return new LongCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public LongCounter.Builder longCounterBuilder(String name) {
-    return SdkLongCounter.Builder.builder(name);
+  public DoubleMeasureSdk.Builder doubleMeasureBuilder(String name) {
+    return new DoubleMeasureSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
-    return SdkDoubleMeasure.Builder.builder(name);
+  public LongMeasureSdk.Builder longMeasureBuilder(String name) {
+    return new LongMeasureSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public LongMeasure.Builder longMeasureBuilder(String name) {
-    return SdkLongMeasure.Builder.builder(name);
+  public DoubleObserverSdk.Builder doubleObserverBuilder(String name) {
+    return new DoubleObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public DoubleObserver.Builder doubleObserverBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+  public LongObserverSdk.Builder longObserverBuilder(String name) {
+    return new LongObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public LongObserver.Builder longObserverBuilder(String name) {
-    throw new UnsupportedOperationException("to be implemented");
+  public BatchRecorderSdk newBatchRecorder(LabelSet labelSet) {
+    return new BatchRecorderSdk(labelSet);
   }
 
   @Override
-  public BatchRecorder newMeasureBatchRecorder() {
-    throw new UnsupportedOperationException("to be implemented");
+  public LabelSetSdk createLabelSet(String... keyValuePairs) {
+    return LabelSetSdk.create(keyValuePairs);
   }
 
   @Override
-  public LabelSet createLabelSet(String... keyValuePairs) {
-    return SdkLabelSet.create(keyValuePairs);
+  public LabelSetSdk createLabelSet(Map<String, String> labels) {
+    return LabelSetSdk.create(labels);
   }
 
-  @Override
-  public LabelSet createLabelSet(Map<String, String> labels) {
-    return SdkLabelSet.create(labels);
+  Collection<MetricData> collectAll() {
+    InstrumentRegistry instrumentRegistry = meterSharedState.getInstrumentRegistry();
+    Collection<AbstractInstrument> instruments = instrumentRegistry.getInstruments();
+    List<MetricData> result = new ArrayList<>(instruments.size());
+    for (AbstractInstrument instrument : instruments) {
+      result.addAll(instrument.collectAll());
+    }
+    return result;
   }
 }

@@ -16,16 +16,34 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.concurrent.ThreadSafe;
+
 /**
  * Base interface for all the Counter metrics.
  *
  * @param <H> the Bound Counter type.
  * @since 0.1.0
  */
-public interface Counter<H> extends Instrument<H> {
+@ThreadSafe
+public interface Counter<H extends BoundInstrument> extends InstrumentWithBinding<H> {
 
   /** Builder class for {@link Counter}. */
-  interface Builder<B extends Counter.Builder<B, V>, V> extends Instrument.Builder<B, V> {
+  interface Builder extends Instrument.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
     /**
      * Sets the monotonicity property for this {@code Counter}. If {@code true} only non-negative
      * values are expected.
@@ -35,6 +53,9 @@ public interface Counter<H> extends Instrument<H> {
      * @param monotonic {@code true} only positive values are expected.
      * @return this.
      */
-    B setMonotonic(boolean monotonic);
+    Builder setMonotonic(boolean monotonic);
+
+    @Override
+    Counter<?> build();
   }
 }

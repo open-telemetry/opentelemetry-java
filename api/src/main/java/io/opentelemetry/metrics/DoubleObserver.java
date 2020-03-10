@@ -16,8 +16,9 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.DoubleObserver.BoundDoubleObserver;
 import io.opentelemetry.metrics.DoubleObserver.ResultDoubleObserver;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -35,14 +36,15 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
+ *   private static final LabelSet labelSet = meter.createLabelSet("my_label");
  *
  *   void init() {
  *     observer.setCallback(
- *         new DoubleObserver.Callback<DoubleObserver.Result>() {
+ *         new DoubleObserver.Callback<DoubleObserver.ResultDoubleObserver>() {
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(Result result) {
- *             result.put(observer.bind(labelSet), 0.8 * count.addAndGet(1));
+ *             result.observe(0.8 * count.addAndGet(1), labelSet);
  *           }
  *         });
  *   }
@@ -52,29 +54,33 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleObserver extends Observer<ResultDoubleObserver, BoundDoubleObserver> {
-  @Override
-  BoundDoubleObserver bind(LabelSet labelSet);
-
-  @Override
-  void unbind(BoundDoubleObserver boundInstrument);
-
+public interface DoubleObserver extends Observer<ResultDoubleObserver> {
   @Override
   void setCallback(Callback<ResultDoubleObserver> metricUpdater);
 
   /** Builder class for {@link DoubleObserver}. */
-  interface Builder extends Observer.Builder<DoubleObserver.Builder, DoubleObserver> {}
+  interface Builder extends Observer.Builder {
+    @Override
+    Builder setDescription(String description);
 
-  /**
-   * A {@code BoundDoubleObserver} for a {@code Observer} for double values.
-   *
-   * @since 0.1.0
-   */
-  @ThreadSafe
-  interface BoundDoubleObserver {}
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
+    @Override
+    Builder setMonotonic(boolean monotonic);
+
+    @Override
+    DoubleObserver build();
+  }
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface ResultDoubleObserver {
-    void put(BoundDoubleObserver boundDoubleObserver, double value);
+    void observe(double value, LabelSet labelSet);
   }
 }

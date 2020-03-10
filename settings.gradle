@@ -1,5 +1,23 @@
-rootProject.name = "opentelemetry-java"
+pluginManagement {
+    plugins {
+        id "com.github.ben-manes.versions" version "0.20.0"
+        id "com.github.kt3k.coveralls" version "2.0.1"
+        id 'com.github.sherter.google-java-format' version "0.8"
+        id "com.google.protobuf" version "0.8.8"
+        id "com.jfrog.artifactory" version "4.13.0"
+        id "io.morethan.jmhreport" version "0.9.0"
+        id "me.champeau.gradle.jmh" version "0.5.0"
+        id "net.ltgt.errorprone" version "0.8.1"
+        id "ru.vyarus.animalsniffer" version "1.5.0"
+    }
 
+    repositories {
+        gradlePluginPortal()
+        google()
+    }
+}
+
+rootProject.name = "opentelemetry-java"
 include ":opentelemetry-all",
         ":opentelemetry-api",
         ":opentelemetry-context-prop",
@@ -13,7 +31,9 @@ include ":opentelemetry-all",
         ":opentelemetry-proto",
         ":opentelemetry-sdk",
         ":opentelemetry-sdk-contrib-async-processor",
+        ":opentelemetry-sdk-contrib-auto-config",
         ":opentelemetry-sdk-contrib-aws-v1-support",
+        ":opentelemetry-sdk-contrib-otproto",
         ":opentelemetry-sdk-contrib-testbed"
 
 project(':opentelemetry-all').projectDir = "$rootDir/all" as File
@@ -37,7 +57,11 @@ project(':opentelemetry-proto').projectDir = "$rootDir/proto" as File
 project(':opentelemetry-sdk').projectDir = "$rootDir/sdk" as File
 project(':opentelemetry-sdk-contrib-async-processor').projectDir =
         "$rootDir/sdk_contrib/async_processor" as File
+project(':opentelemetry-sdk-contrib-auto-config').projectDir =
+        "$rootDir/sdk_contrib/auto_config" as File
 project(':opentelemetry-sdk-contrib-aws-v1-support').projectDir =
         "$rootDir/sdk_contrib/aws_v1_support" as File
+project(':opentelemetry-sdk-contrib-otproto').projectDir =
+        "$rootDir/sdk_contrib/otproto" as File
 project(':opentelemetry-sdk-contrib-testbed').projectDir =
         "$rootDir/sdk_contrib/testbed" as File

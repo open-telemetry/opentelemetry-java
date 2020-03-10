@@ -35,6 +35,13 @@ public interface SpanProcessor {
   void onStart(ReadableSpan span);
 
   /**
+   * Returns {@code true} if this {@link SpanProcessor} requires start events.
+   *
+   * @return {@code true} if this {@link SpanProcessor} requires start events.
+   */
+  boolean isStartRequired();
+
+  /**
    * Called when a {@link io.opentelemetry.trace.Span} is ended, if the {@link Span#isRecording()}
    * returns true.
    *
@@ -43,9 +50,27 @@ public interface SpanProcessor {
    *
    * @param span the {@code ReadableSpan} that just ended.
    */
-  // TODO: Consider checking whether the given span is processed with onStart().
   void onEnd(ReadableSpan span);
 
-  /** Called when {@link TracerSdkRegistry#shutdown()} is called. */
+  /**
+   * Returns {@code true} if this {@link SpanProcessor} requires end events.
+   *
+   * @return {@code true} if this {@link SpanProcessor} requires end events.
+   */
+  boolean isEndRequired();
+
+  /**
+   * Called when {@link TracerSdkProvider#shutdown()} is called.
+   *
+   * <p>Implementations must ensure that all span events are processed before returning.
+   */
   void shutdown();
+
+  /**
+   * Processes all span events that have not yet been processed.
+   *
+   * <p>This method is called synchronously on the execution thread, and should not throw
+   * exceptions.
+   */
+  void forceFlush();
 }

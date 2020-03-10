@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.concurrent.GuardedBy;
 
-// Represents the shared state/config between all Tracers created by the same TracerRegistry.
+// Represents the shared state/config between all Tracers created by the same TracerProvider.
 final class TracerSharedState {
   private final Object lock = new Object();
   private final Clock clock;

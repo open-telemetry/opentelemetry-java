@@ -19,9 +19,10 @@ package io.opentelemetry.sdk.contrib.trace.testbed.concurrentcommonrequesthandle
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
@@ -39,13 +40,15 @@ import org.junit.Test;
  */
 public class HandlerTest {
 
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = TestUtils.createTracer(HandlerTest.class.getName(), exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = sdk.get(HandlerTest.class.getName());
   private final Client client = new Client(new RequestHandler(tracer));
 
   @Before
   public void before() {
-    exporter.reset();
+    inMemoryTracing.getSpanExporter().reset();
   }
 
   @Test
@@ -56,7 +59,7 @@ public class HandlerTest {
     assertThat(responseFuture.get(15, TimeUnit.SECONDS)).isEqualTo("message:response");
     assertThat(responseFuture2.get(15, TimeUnit.SECONDS)).isEqualTo("message2:response");
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(finished).hasSize(2);
 
     for (SpanData spanProto : finished) {
@@ -81,7 +84,7 @@ public class HandlerTest {
       parentSpan.end();
     }
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(finished).hasSize(2);
 
     SpanData child = TestUtils.getOneByName(finished, RequestHandler.OPERATION_NAME);
@@ -116,7 +119,7 @@ public class HandlerTest {
     String response = client.send("wrong_parent").get(15, TimeUnit.SECONDS);
     assertThat(response).isEqualTo("wrong_parent:response");
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(finished).hasSize(3);
 
     finished = TestUtils.sortByStartTime(finished);

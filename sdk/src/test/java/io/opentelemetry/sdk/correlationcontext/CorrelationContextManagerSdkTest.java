@@ -21,8 +21,8 @@ import static com.google.common.truth.Truth.assertThat;
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
-import io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +52,8 @@ public class CorrelationContextManagerSdkTest {
 
   @Test
   public void testGetCurrentContext_ContextSetToNull() {
-    Context orig = CorrelationsContextUtils.withCorrelationContext(null).attach();
+    Context orig =
+        CorrelationsContextUtils.withCorrelationContext(null, Context.current()).attach();
     try {
       CorrelationContext distContext = contextManager.getCurrentContext();
       assertThat(distContext).isNotNull();
@@ -66,11 +67,8 @@ public class CorrelationContextManagerSdkTest {
   public void testWithCorrelationContext() {
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    Scope wtm = contextManager.withContext(distContext);
-    try {
+    try (Scope wtm = contextManager.withContext(distContext)) {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
-    } finally {
-      wtm.close();
     }
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
@@ -79,8 +77,7 @@ public class CorrelationContextManagerSdkTest {
   @Test
   public void testWithCorrelationContextUsingWrap() {
     Runnable runnable;
-    Scope wtm = contextManager.withContext(distContext);
-    try {
+    try (Scope wtm = contextManager.withContext(distContext)) {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
       runnable =
           Context.current()
@@ -91,8 +88,6 @@ public class CorrelationContextManagerSdkTest {
                       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
                     }
                   });
-    } finally {
-      wtm.close();
     }
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());

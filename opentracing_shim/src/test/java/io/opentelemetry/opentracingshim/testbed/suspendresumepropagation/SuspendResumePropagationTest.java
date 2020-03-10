@@ -17,10 +17,12 @@
 package io.opentelemetry.opentracingshim.testbed.suspendresumepropagation;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Tracer;
 import java.util.List;
 import org.junit.Before;
@@ -33,8 +35,10 @@ import org.junit.Test;
  * @author tylerbenson
  */
 public class SuspendResumePropagationTest {
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
 
   @Before
   public void before() {}
@@ -55,7 +59,7 @@ public class SuspendResumePropagationTest {
     job1.done();
     job2.done();
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(finished.size()).isEqualTo(2);
 
     assertThat(finished.get(0).getName()).isEqualTo("job 1");

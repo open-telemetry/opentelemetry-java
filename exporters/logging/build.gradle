@@ -1,16 +1,18 @@
-description = 'OpenTelemetry - Logging Exporter'
+plugins {
+    id "java"
+    id "maven-publish"
 
-buildscript {
-    repositories {
-        maven { url "https://plugins.gradle.org/m2/" }
-    }
+    id "ru.vyarus.animalsniffer"
 }
+
+description = 'OpenTelemetry - Logging Exporter'
+ext.moduleName = "io.opentelemetry.exporters.logging"
 
 dependencies {
     api project(':opentelemetry-sdk')
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
 
 animalsniffer {

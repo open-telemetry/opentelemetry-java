@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.List;
 
 /**
@@ -55,8 +55,8 @@ public interface SpanExporter {
   ResultCode export(List<SpanData> spans);
 
   /**
-   * Called when {@link TracerSdkRegistry#shutdown()} is called, if this {@code SpanExporter} is
-   * register to a {@code TracerSdkRegistry} object.
+   * Called when {@link TracerSdkProvider#shutdown()} is called, if this {@code SpanExporter} is
+   * register to a {@code TracerSdkProvider} object.
    */
   void shutdown();
 }

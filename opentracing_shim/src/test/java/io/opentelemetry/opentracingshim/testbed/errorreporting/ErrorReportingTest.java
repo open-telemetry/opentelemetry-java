@@ -16,16 +16,18 @@
 
 package io.opentelemetry.opentracingshim.testbed.errorreporting;
 
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.SpanData.TimedEvent;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -43,8 +45,10 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class ErrorReportingTest {
 
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   /* Very simple error handling **/
@@ -61,7 +65,7 @@ public final class ErrorReportingTest {
 
     assertNull(tracer.scopeManager().activeSpan());
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
     assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
   }
@@ -84,9 +88,11 @@ public final class ErrorReportingTest {
           }
         });
 
-    await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(1));
+    await()
+        .atMost(5, TimeUnit.SECONDS)
+        .until(finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(1));
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
     assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
   }
@@ -121,7 +127,7 @@ public final class ErrorReportingTest {
 
     assertNull(tracer.scopeManager().activeSpan());
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
     assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
 
@@ -157,9 +163,11 @@ public final class ErrorReportingTest {
               tracer));
     }
 
-    await().atMost(5, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(1));
+    await()
+        .atMost(5, TimeUnit.SECONDS)
+        .until(finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(1));
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(spans.size(), 1);
     assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
   }

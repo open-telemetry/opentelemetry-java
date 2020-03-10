@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -76,7 +77,7 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkRegistry tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
+      TracerSdkProvider tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
     return startSpanWithSampler(
         tracerSdkFactory,
         tracer,
@@ -92,7 +93,7 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static Span.Builder startSpanWithSampler(
-      TracerSdkRegistry tracerSdkFactory,
+      TracerSdkProvider tracerSdkFactory,
       Tracer tracer,
       String spanName,
       Sampler sampler,

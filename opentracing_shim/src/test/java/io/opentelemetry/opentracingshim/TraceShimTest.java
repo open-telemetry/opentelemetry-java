@@ -20,31 +20,38 @@ import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class TraceShimTest {
+  @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim();
-    assertEquals(OpenTelemetry.getTracerRegistry().get("opentracingshim"), tracerShim.tracer());
+    assertEquals(OpenTelemetry.getTracerProvider().get("opentracingshim"), tracerShim.tracer());
     assertEquals(OpenTelemetry.getCorrelationContextManager(), tracerShim.contextManager());
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void createTracerShim_nullTracer() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("tracerProvider");
     TraceShim.createTracerShim(null, OpenTelemetry.getCorrelationContextManager());
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void createTracerShim_nullContextManager() {
-    TraceShim.createTracerShim(OpenTelemetry.getTracerRegistry(), null);
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("contextManager");
+    TraceShim.createTracerShim(OpenTelemetry.getTracerProvider(), null);
   }
 
   @Test
   public void createTracerShim() {
-    TracerSdkRegistry sdk = TracerSdkRegistry.create();
+    TracerSdkProvider sdk = TracerSdkProvider.builder().build();
     CorrelationContextManagerSdk contextManager = new CorrelationContextManagerSdk();
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim(sdk, contextManager);
     assertEquals(sdk.get("opentracingshim"), tracerShim.tracer());

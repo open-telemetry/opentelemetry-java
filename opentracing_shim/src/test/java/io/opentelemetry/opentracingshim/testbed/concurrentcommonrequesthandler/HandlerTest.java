@@ -16,7 +16,6 @@
 
 package io.opentelemetry.opentracingshim.testbed.concurrentcommonrequesthandler;
 
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByName;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
 import static org.junit.Assert.assertEquals;
@@ -25,8 +24,11 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -44,13 +46,15 @@ import org.junit.Test;
  */
 public class HandlerTest {
 
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private final Client client = new Client(new RequestHandler(tracer));
 
   @Before
   public void before() {
-    exporter.reset();
+    inMemoryTracing.getSpanExporter().reset();
   }
 
   @Test
@@ -61,7 +65,7 @@ public class HandlerTest {
     assertEquals("message:response", responseFuture.get(15, TimeUnit.SECONDS));
     assertEquals("message2:response", responseFuture2.get(15, TimeUnit.SECONDS));
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(2, finished.size());
 
     for (SpanData spanData : finished) {
@@ -86,7 +90,7 @@ public class HandlerTest {
       parentSpan.finish();
     }
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(2, finished.size());
 
     SpanData child = getOneByName(finished, RequestHandler.OPERATION_NAME);
@@ -121,7 +125,7 @@ public class HandlerTest {
     String response = client.send("wrong_parent").get(15, TimeUnit.SECONDS);
     assertEquals("wrong_parent:response", response);
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(3, finished.size());
 
     finished = sortByStartTime(finished);

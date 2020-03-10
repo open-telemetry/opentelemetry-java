@@ -16,7 +16,6 @@
 
 package io.opentelemetry.opentracingshim.testbed.activespanreplacement;
 
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSize;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
 import static org.awaitility.Awaitility.await;
@@ -26,8 +25,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -40,8 +42,10 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public class ActiveSpanReplacementTest {
 
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -53,9 +57,11 @@ public class ActiveSpanReplacementTest {
       submitAnotherTask(span);
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(3));
+    await()
+        .atMost(15, TimeUnit.SECONDS)
+        .until(finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(3));
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(3, spans.size());
     assertEquals("initial", spans.get(0).getName()); // Isolated task
     assertEquals("subtask", spans.get(1).getName());

@@ -16,16 +16,15 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import io.opentelemetry.trace.propagation.TracingContextUtils;
+import io.opentelemetry.trace.TracingContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
-public class TracerSdk implements Tracer {
+public final class TracerSdk implements Tracer {
   private final TracerSharedState sharedState;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
@@ -36,7 +35,7 @@ public class TracerSdk implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return TracingContextUtils.getSpanWithDefault(Context.current());
+    return TracingContextUtils.getCurrentSpan();
   }
 
   @Override
@@ -61,11 +60,11 @@ public class TracerSdk implements Tracer {
 
   /**
    * Returns the instrumentation library specified when creating the tracer using {@link
-   * TracerSdkRegistry}.
+   * TracerSdkProvider}.
    *
    * @return an instance of {@link InstrumentationLibraryInfo}
    */
-  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+  InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
     return instrumentationLibraryInfo;
   }
 }

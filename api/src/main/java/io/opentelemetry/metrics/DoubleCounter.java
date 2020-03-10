@@ -17,6 +17,8 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -67,15 +69,13 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
   @Override
   BoundDoubleCounter bind(LabelSet labelSet);
 
-  @Override
-  void unbind(BoundDoubleCounter boundInstrument);
-
   /**
    * A {@code Bound Instrument} for a {@code CounterDouble}.
    *
    * @since 0.1.0
    */
-  interface BoundDoubleCounter {
+  @ThreadSafe
+  interface BoundDoubleCounter extends InstrumentWithBinding.BoundInstrument {
     /**
      * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
      * was set to {@code false}.
@@ -86,8 +86,29 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
      * @since 0.1.0
      */
     void add(double delta);
+
+    @Override
+    void unbind();
   }
 
   /** Builder class for {@link DoubleCounter}. */
-  interface Builder extends Counter.Builder<Builder, DoubleCounter> {}
+  interface Builder extends Counter.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
+    @Override
+    Builder setMonotonic(boolean monotonic);
+
+    @Override
+    DoubleCounter build();
+  }
 }

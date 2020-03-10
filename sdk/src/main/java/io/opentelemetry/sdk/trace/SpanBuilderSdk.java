@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.DefaultSpan;
@@ -35,8 +36,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.Tracestate;
-import io.opentelemetry.trace.propagation.TracingContextUtils;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +44,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
-class SpanBuilderSdk implements Span.Builder {
+final class SpanBuilderSdk implements Span.Builder {
   private static final TraceFlags TRACE_OPTIONS_SAMPLED =
       TraceFlags.builder().setIsSampled(true).build();
   private static final TraceFlags TRACE_OPTIONS_NOT_SAMPLED =
@@ -186,7 +186,7 @@ class SpanBuilderSdk implements Span.Builder {
   public Span.Builder setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
     Utils.checkNotNull(value, "value");
-    if (value.getType() == Type.STRING && StringUtils.isNullOrBlank(value.getStringValue())) {
+    if (value.getType() == Type.STRING && StringUtils.isNullOrEmpty(value.getStringValue())) {
       return this;
     }
     attributes.putAttribute(key, value);
@@ -205,7 +205,7 @@ class SpanBuilderSdk implements Span.Builder {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
     TraceId traceId;
     SpanId spanId = idsGenerator.generateSpanId();
-    Tracestate tracestate = Tracestate.getDefault();
+    TraceState traceState = TraceState.getDefault();
     if (parentContext == null || !parentContext.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
@@ -214,17 +214,19 @@ class SpanBuilderSdk implements Span.Builder {
     } else {
       // New child span.
       traceId = parentContext.getTraceId();
-      tracestate = parentContext.getTracestate();
+      traceState = parentContext.getTraceState();
     }
     Decision samplingDecision =
-        traceConfig.getSampler().shouldSample(parentContext, traceId, spanId, spanName, links);
+        traceConfig
+            .getSampler()
+            .shouldSample(parentContext, traceId, spanId, spanName, spanKind, attributes, links);
 
     SpanContext spanContext =
         SpanContext.create(
             traceId,
             spanId,
             samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
-            tracestate);
+            traceState);
 
     if (!samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
@@ -279,8 +281,7 @@ class SpanBuilderSdk implements Span.Builder {
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
       case CURRENT_CONTEXT:
-        Span span = TracingContextUtils.getSpan();
-        return DefaultSpan.getInvalid().equals(span) ? null : span;
+        return TracingContextUtils.getSpanWithoutDefault(Context.current());
       case EXPLICIT_PARENT:
         return explicitParent;
       default:

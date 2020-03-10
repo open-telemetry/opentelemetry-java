@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.SpanData;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -47,6 +47,11 @@ public final class SimpleSpansProcessor implements SpanProcessor {
   }
 
   @Override
+  public boolean isStartRequired() {
+    return false;
+  }
+
+  @Override
   public void onEnd(ReadableSpan span) {
     if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
       return;
@@ -60,8 +65,18 @@ public final class SimpleSpansProcessor implements SpanProcessor {
   }
 
   @Override
+  public boolean isEndRequired() {
+    return true;
+  }
+
+  @Override
   public void shutdown() {
     spanExporter.shutdown();
+  }
+
+  @Override
+  public void forceFlush() {
+    // Do nothing.
   }
 
   /**

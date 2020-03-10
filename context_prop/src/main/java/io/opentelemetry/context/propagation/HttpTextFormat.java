@@ -115,7 +115,7 @@ public interface HttpTextFormat {
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param getter invoked for each propagation key to get.
    * @param <C> carrier of propagation fields, such as an http request.
-   * @return the {@code Context} containing the non-{@code null} extracted value.
+   * @return the {@code Context} containing the extracted value.
    * @since 0.1.0
    */
   <C> Context extract(Context context, C carrier, Getter<C> getter);

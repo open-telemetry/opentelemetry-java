@@ -23,7 +23,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.propagation.TracingContextUtils;
+import io.opentelemetry.trace.TracingContextUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +46,9 @@ public class TracerSdkTest {
           INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
   @Mock private Span span;
   private final TracerSdk tracer =
-      TracerSdkRegistry.create().get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+      TracerSdkProvider.builder()
+          .build()
+          .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
   @Before
   public void setUp() {
@@ -66,7 +68,7 @@ public class TracerSdkTest {
   @Test
   public void getCurrentSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Context origContext = TracingContextUtils.withSpan(span).attach();
+    Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
     // Make sure context is detached even if test fails.
     try {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
@@ -79,11 +81,8 @@ public class TracerSdkTest {
   @Test
   public void withSpan_NullSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Scope ws = tracer.withSpan(null);
-    try {
+    try (Scope ws = tracer.withSpan(null)) {
       assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    } finally {
-      ws.close();
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -91,11 +90,8 @@ public class TracerSdkTest {
   @Test
   public void getCurrentSpan_WithSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Scope ws = tracer.withSpan(span);
-    try {
+    try (Scope ws = tracer.withSpan(span)) {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
-    } finally {
-      ws.close();
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }

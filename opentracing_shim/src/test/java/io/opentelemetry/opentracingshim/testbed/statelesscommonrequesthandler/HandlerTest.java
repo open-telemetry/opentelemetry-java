@@ -16,11 +16,13 @@
 
 package io.opentelemetry.opentracingshim.testbed.statelesscommonrequesthandler;
 
-import static io.opentelemetry.opentracingshim.testbed.TestUtils.createTracerShim;
 import static org.junit.Assert.assertEquals;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentracing.Tracer;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -34,13 +36,15 @@ import org.junit.Test;
  */
 public final class HandlerTest {
 
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracerShim(exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
   private final Client client = new Client(new RequestHandler(tracer));
 
   @Before
   public void before() {
-    exporter.reset();
+    inMemoryTracing.getSpanExporter().reset();
   }
 
   @Test
@@ -53,7 +57,7 @@ public final class HandlerTest {
     assertEquals("message2:response", responseFuture2.get(5, TimeUnit.SECONDS));
     assertEquals("message:response", responseFuture.get(5, TimeUnit.SECONDS));
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertEquals(3, finished.size());
   }
 }

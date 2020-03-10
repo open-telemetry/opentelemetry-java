@@ -20,14 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
-import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentracing.Tracer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,22 +35,12 @@ import javax.annotation.Nullable;
 public final class TestUtils {
   private TestUtils() {}
 
-  /**
-   * Creates a new {@code io.opentracing.Tracer} out of the {@code TracerSdk} implementation and
-   * exporting to the specified {@code InMemorySpanExporter}.
-   */
-  public static Tracer createTracerShim(InMemorySpanExporter exporter) {
-    TracerSdkRegistry tracerSdkFactory = TracerSdkRegistry.create();
-    tracerSdkFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
-    return TraceShim.createTracerShim(tracerSdkFactory, new CorrelationContextManagerSdk());
-  }
-
   /** Returns the number of finished {@code Span}s in the specified {@code InMemorySpanExporter}. */
-  public static Callable<Integer> finishedSpansSize(final InMemorySpanExporter tracer) {
+  public static Callable<Integer> finishedSpansSize(final InMemorySpanExporter exporter) {
     return new Callable<Integer>() {
       @Override
       public Integer call() {
-        return tracer.getFinishedSpanItems().size();
+        return exporter.getFinishedSpanItems().size();
       }
     };
   }

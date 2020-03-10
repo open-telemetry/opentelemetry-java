@@ -18,9 +18,9 @@ package io.opentelemetry.sdk.contrib.trace.testbed.listenerperrequest;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
@@ -29,8 +29,10 @@ import org.junit.Test;
 
 /** Each request has own instance of ResponseListener. */
 public class ListenerTest {
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = TestUtils.createTracer(ListenerTest.class.getName(), exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = sdk.get(ListenerTest.class.getName());
 
   @Test
   public void test() throws Exception {
@@ -38,7 +40,7 @@ public class ListenerTest {
     Object response = client.send("message").get();
     assertThat(response).isEqualTo("message:response");
 
-    List<SpanData> finished = exporter.getFinishedSpanItems();
+    List<SpanData> finished = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(finished).hasSize(1);
     assertThat(finished.get(0).getKind()).isEqualTo(Kind.CLIENT);
 

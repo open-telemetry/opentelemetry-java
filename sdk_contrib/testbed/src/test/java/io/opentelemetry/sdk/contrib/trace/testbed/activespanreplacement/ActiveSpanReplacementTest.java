@@ -17,15 +17,15 @@
 package io.opentelemetry.sdk.contrib.trace.testbed.activespanreplacement;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.createTracer;
 import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.finishedSpansSize;
 import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.sleep;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
@@ -39,8 +39,10 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public class ActiveSpanReplacementTest {
 
-  private final InMemorySpanExporter exporter = InMemorySpanExporter.create();
-  private final Tracer tracer = createTracer(ActiveSpanReplacementTest.class.getName(), exporter);
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final InMemoryTracing inMemoryTracing =
+      InMemoryTracing.builder().setTracerProvider(sdk).build();
+  private final Tracer tracer = sdk.get(ActiveSpanReplacementTest.class.getName());
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
@@ -52,9 +54,11 @@ public class ActiveSpanReplacementTest {
       submitAnotherTask(span);
     }
 
-    await().atMost(15, TimeUnit.SECONDS).until(finishedSpansSize(exporter), equalTo(3));
+    await()
+        .atMost(15, TimeUnit.SECONDS)
+        .until(finishedSpansSize(inMemoryTracing.getSpanExporter()), equalTo(3));
 
-    List<SpanData> spans = exporter.getFinishedSpanItems();
+    List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(3);
     assertThat(spans.get(0).getName()).isEqualTo("initial"); // Isolated task
     assertThat(spans.get(1).getName()).isEqualTo("subtask");

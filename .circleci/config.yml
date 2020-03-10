@@ -6,6 +6,9 @@ init_task: &init_task
 build_task: &build_task
   name: Build
   command: make test
+compile_benchmark_task: &compile_benchmark_task
+  name: Compile JMH
+  command: make benchmark
 verify_task: &verify_task
   name: Verify Google Java Format
   command: make verify-format
@@ -15,6 +18,10 @@ publish_snapshots_task: &publish_snapshots_task
 
 jobs:
   build:
+    environment:
+      # Configure the JVM and Gradle to avoid OOM errors
+      _JAVA_OPTIONS: "-Xmx1g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -29,6 +36,8 @@ jobs:
       - run:
           <<: *build_task
       - run:
+          <<: *compile_benchmark_task
+      - run:
           name: Cover
           command: ./gradlew check :opentelemetry-all:jacocoTestReport
       - run:
@@ -41,14 +50,18 @@ jobs:
           paths:
             - ~/.gradle
           key: gradle-{{ checksum "build.gradle" }}
-  java9:
+  java11:
+    environment:
+      # Configure the JVM and Gradle to avoid OOM errors
+      _JAVA_OPTIONS: "-Xmx3g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     docker:
-      - image: circleci/openjdk:9-jdk
+      - image: circleci/openjdk:11.0.6-jdk-buster
     steps:
       - checkout
       - restore_cache:
           keys:
-            - java9-gradle-{{ checksum "build.gradle" }}
+            - java11-gradle-{{ checksum "build.gradle" }}
 #     make in missing in openjdk:9-jdk image
       - run: sudo apt-get update && sudo apt-get install -y make
       - run:
@@ -57,14 +70,16 @@ jobs:
           <<: *verify_task
       - run:
           <<: *build_task
+      - run:
+          <<: *compile_benchmark_task
       - save_cache:
           paths:
             - ~/.gradle
-          key: java9-gradle-{{ checksum "build.gradle" }}
+          key: java11-gradle-{{ checksum "build.gradle" }}
 
 workflows:
   version: 2
   build_and_test:
     jobs:
       - build
-      - java9
+      - java11

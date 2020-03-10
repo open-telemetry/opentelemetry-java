@@ -1,15 +1,13 @@
-description = 'OpenTelemetry Proto'
+plugins {
+    id "java"
+    id "maven-publish"
 
-apply plugin: 'com.google.protobuf'
-
-buildscript {
-    repositories {
-        maven { url "https://plugins.gradle.org/m2/" }
-    }
-    dependencies {
-        classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.8"
-    }
+    id "com.google.protobuf"
+    id "ru.vyarus.animalsniffer"
 }
+
+description = 'OpenTelemetry Proto'
+ext.moduleName = 'io.opentelemetry.proto'
 
 dependencies {
     api libraries.protobuf

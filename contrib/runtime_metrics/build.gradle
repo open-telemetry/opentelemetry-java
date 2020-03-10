@@ -1,4 +1,12 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
 description = 'OpenTelemetry Contrib Runtime Metrics'
+ext.moduleName = "io.opentelemetry.contrib.metrics.runtime"
 
 dependencies {
     implementation project(':opentelemetry-api')
@@ -6,7 +14,4 @@ dependencies {
     annotationProcessor libraries.auto_value
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
-    // Runtime metrics are not android compatible, because we have only one artifact for contrib,
-    // disable the android requirement for the moment.
-    // signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
 }

@@ -14,7 +14,7 @@ This project contains the following top level components:
 
 * [api](api/): The OpenTelemetry API.
   * [trace](api/src/main/java/io/opentelemetry/trace/): The tracing api. Includes `Tracer`, `Span` and `SpanContext`.
-  * [distributedcontext](api/src/main/java/io/opentelemetry/distributedcontext/): Collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
+  * [correlationcontext](/api/src/main/java/io/opentelemetry/correlationcontext): Collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
   * [context](api/src/main/java/io/opentelemetry/context/): In-process and inter-process propagation layer.
   * [metrics](api/src/main/java/io/opentelemetry/metrics/): Metrics layer.
 * [sdk](sdk/): The reference implementation complying to the OpenTelemetry API.
@@ -24,8 +24,12 @@ We would love to hear from the larger community: please provide feedback proacti
 
 ## Project setup and contribute
 
-Please refer to the [contribution guide](https://github.com/open-telemetry/opentelemetry-java/blob/master/CONTRIBUTING.md)
+Please refer to the [contribution guide](CONTRIBUTING.md)
 on how to setup and contribute!
+
+## Quick Start
+Please refer to the [quick start guide](QUICKSTART.md) on how use the OpenTelemetry API.
+
 
 ## Snapshots
 

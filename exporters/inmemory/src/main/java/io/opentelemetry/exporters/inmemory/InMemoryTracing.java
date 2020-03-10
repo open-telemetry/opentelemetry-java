@@ -16,26 +16,28 @@
 
 package io.opentelemetry.exporters.inmemory;
 
-import io.opentelemetry.internal.Utils;
-import io.opentelemetry.sdk.trace.SpanData;
-import io.opentelemetry.sdk.trace.TracerSdkRegistry;
+import com.google.auto.value.AutoValue;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
-import java.util.List;
+import javax.annotation.concurrent.Immutable;
 
 /**
- * InMemoryTracing is an utility class that uses a {@code TracerSdk} to create {@code Span}s and
- * later expose the finished items in memory. Can be used to test OpenTelemetry integration.
+ * InMemoryTracing is an utility class that helps installing the {@link SimpleSpansProcessor} and an
+ * instance of the {@link InMemorySpanExporter} to a given {@link TracerSdkProvider}. Can be used to
+ * test OpenTelemetry integration.
  *
  * <p>Example usage:
  *
  * <pre><code>
  *   {@literal @}Test
  *   public void testCondition() {
- *     InMemoryTracing tracing = new InMemoryTracing();
- *     Tracer tracer = tracing.getTracer();
+ *     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build()
+ *     InMemoryTracing tracing =
+ *         InMemoryTracing.builder().setTracerSdkProvider(tracerSdkProvider).build();
+ *     Tracer tracer = tracerSdkProvider.getTracer("MyTestClass");
  *     tracer.spanBuilder("span").startSpan().end();
  *
- *     List&lt;io.opentelemetry.sdk.trace.SpanData&gt; spans = tracing.getFinishedSpanItems();
+ *     List&lt;io.opentelemetry.sdk.trace.data.SpanData&gt; spans = tracing.getFinishedSpanItems();
  *     assertThat(spans.size()).isEqualTo(1);
  *     assertThat(spans.get(0).getName()).isEqualTo("span");
  *   }
@@ -43,71 +45,59 @@ import java.util.List;
  *
  * @since 0.1.0
  */
-public final class InMemoryTracing {
-  private final TracerSdkRegistry tracerSdkRegistry;
-  private final InMemorySpanExporter exporter;
-
+@AutoValue
+@Immutable
+public abstract class InMemoryTracing {
   /**
-   * Creates a new {@code InMemoryTracing} with a new {@code TracerSdk}.
+   * Returns the {@code TracerSdkProvider} passed during construction.
    *
+   * @return the {@code TracerSdkProvider} passed during construction.
    * @since 0.1.0
    */
-  public InMemoryTracing() {
-    this(TracerSdkRegistry.create());
+  abstract TracerSdkProvider getTracerProvider();
+
+  /**
+   * Returns the installed {@link InMemorySpanExporter}.
+   *
+   * @return the installed {@link InMemorySpanExporter}.
+   * @since 0.1.0
+   */
+  public abstract InMemorySpanExporter getSpanExporter();
+
+  /**
+   * Returns a new {@link Builder} for {@link InMemoryTracing}.
+   *
+   * @return a new {@link Builder} for {@link InMemoryTracing}.
+   */
+  public static Builder builder() {
+    return new AutoValue_InMemoryTracing.Builder();
   }
 
   /**
-   * Creates a new {@code InMemoryTracing} with the specified {@code TracerSdk}.
+   * Builder for {@link InMemoryTracing}.
    *
-   * @param tracerSdkRegistry the {@code TracerSdkRegistry} to be used.
-   * @throws NullPointerException if {@code tracer} is {@code null}.
-   * @since 0.1.0
+   * @since 0.3.0
    */
-  public InMemoryTracing(TracerSdkRegistry tracerSdkRegistry) {
-    Utils.checkNotNull(tracerSdkRegistry, "tracerSdkFactory");
+  @AutoValue.Builder
+  public abstract static class Builder {
+    public abstract Builder setTracerProvider(TracerSdkProvider tracerProvider);
 
-    this.tracerSdkRegistry = tracerSdkRegistry;
-    this.exporter = InMemorySpanExporter.create();
-    tracerSdkRegistry.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
-  }
+    abstract Builder setSpanExporter(InMemorySpanExporter exporter);
 
-  /**
-   * Returns a {@code Tracer} that can be used to create {@code Span}s and later recovered through
-   * {@link #getFinishedSpanItems()}.
-   *
-   * @return the {@code Tracer} to be used to create {@code Span}s.
-   * @since 0.1.0
-   */
-  public TracerSdkRegistry getTracerRegistry() {
-    return tracerSdkRegistry;
-  }
+    abstract TracerSdkProvider getTracerProvider();
 
-  /**
-   * Clears the internal {@code List} of finished {@code Span}s.
-   *
-   * @since 0.1.0
-   */
-  public void reset() {
-    exporter.reset();
-  }
+    abstract InMemoryTracing autoBuild();
 
-  /**
-   * Returns a copy {@code List} of the finished {@code Span}s, represented by {@code
-   * io.opentelemetry.sdk.trace.SpanData}.
-   *
-   * @return a {@code List} of the finished {@code Span}s.
-   * @since 0.1.0
-   */
-  public List<SpanData> getFinishedSpanItems() {
-    return exporter.getFinishedSpanItems();
-  }
-
-  /**
-   * Attemps to stop all activity for the underlying tracer by calling {@code TracerSdk.shutdown()}.
-   *
-   * @since 0.1.0
-   */
-  public void shutdown() {
-    tracerSdkRegistry.shutdown();
+    /**
+     * Builds a new {@link InMemoryTracing} with current settings.
+     *
+     * @return a {@code InMemoryTracing}.
+     * @since 0.3.0
+     */
+    public final InMemoryTracing build() {
+      InMemorySpanExporter exporter = InMemorySpanExporter.create();
+      getTracerProvider().addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+      return setSpanExporter(exporter).autoBuild();
+    }
   }
 }

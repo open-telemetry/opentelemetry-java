@@ -1,29 +1,24 @@
+plugins {
+    id "java"
+}
+
 description = "OpenTelemetry All"
+ext.moduleName = "io.opentelemetry.all"
 
 def subprojects = [
         project(':opentelemetry-api'),
         project(':opentelemetry-context-prop'),
         project(':opentelemetry-contrib-runtime-metrics'),
         project(':opentelemetry-contrib-trace-utils'),
+        project(':opentelemetry-exporters-logging'),
         project(':opentelemetry-exporters-inmemory'),
         project(':opentelemetry-exporters-jaeger'),
+        project(':opentelemetry-exporters-otprotocol'),
         project(':opentelemetry-opentracing-shim'),
         project(':opentelemetry-sdk'),
         project(':opentelemetry-sdk-contrib-async-processor'),
-        project(':opentelemetry-sdk-contrib-testbed'),
-]
-
-// A subset of subprojects for which we want to publish javadoc.
-def subprojects_javadoc = [
-        project(':opentelemetry-api'),
-        project(':opentelemetry-context-prop'),
-        project(':opentelemetry-contrib-runtime-metrics'),
-        project(':opentelemetry-contrib-trace-utils'),
-        project(':opentelemetry-exporters-inmemory'),
-        project(':opentelemetry-exporters-jaeger'),
-        project(':opentelemetry-opentracing-shim'),
-        project(':opentelemetry-sdk'),
-        project(':opentelemetry-sdk-contrib-async-processor'),
+        project(':opentelemetry-sdk-contrib-auto-config'),
+        project(':opentelemetry-sdk-contrib-otproto'),
         project(':opentelemetry-sdk-contrib-testbed'),
 ]
 
@@ -36,19 +31,6 @@ for (subproject in rootProject.subprojects) {
 
 dependencies {
     compile subprojects
-}
-
-javadoc {
-    classpath = files(subprojects_javadoc.collect { subproject ->
-        subproject.javadoc.classpath
-    })
-    for (subproject in subprojects_javadoc) {
-        if (subproject == project) {
-            continue
-        }
-        source subproject.javadoc.source
-        options.links subproject.javadoc.options.links.toArray(new String[0])
-    }
 }
 
 task jacocoMerge(type: JacocoMerge) {

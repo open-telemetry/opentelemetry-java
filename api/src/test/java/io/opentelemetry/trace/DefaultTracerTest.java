@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.trace.propagation.TracingContextUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,7 +41,7 @@ public class DefaultTracerTest {
           TraceId.fromBytes(firstBytes, 0),
           SpanId.fromBytes(firstBytes, 8),
           TraceFlags.getDefault(),
-          Tracestate.getDefault());
+          TraceState.getDefault());
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 

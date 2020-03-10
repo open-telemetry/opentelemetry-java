@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.resources;
 
+import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +25,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Provides a framework for detection of resource information from the environment variable
- * "OC_RESOURCE_LABELS".
+ * "OTEL_RESOURCE_LABELS".
  *
  * @since 0.1.0
  */
@@ -40,7 +41,7 @@ public final class EnvVarResource {
   private EnvVarResource() {}
 
   /**
-   * Returns a {@link Resource}. This resource information is loaded from the OC_RESOURCE_LABELS
+   * Returns a {@link Resource}. This resource information is loaded from the OTEL_RESOURCE_LABELS
    * environment variable.
    *
    * @return a {@code Resource}.
@@ -51,18 +52,18 @@ public final class EnvVarResource {
   }
 
   /*
-   * Creates a label map from the OC_RESOURCE_LABELS environment variable.
+   * Creates a label map from the OTEL_RESOURCE_LABELS environment variable.
    *
-   * <p>OC_RESOURCE_LABELS: A comma-separated list of labels describing the source in more detail,
+   * <p>OTEL_RESOURCE_LABELS: A comma-separated list of labels describing the source in more detail,
    * e.g. “key1=val1,key2=val2”. Domain names and paths are accepted as label keys. Values may be
    * quoted or unquoted in general. If a value contains whitespaces, =, or " characters, it must
    * always be quoted.
    */
-  private static Map<String, String> parseResourceLabels(@Nullable String rawEnvLabels) {
+  private static Map<String, AttributeValue> parseResourceLabels(@Nullable String rawEnvLabels) {
     if (rawEnvLabels == null) {
       return Collections.emptyMap();
     } else {
-      Map<String, String> labels = new HashMap<>();
+      Map<String, AttributeValue> labels = new HashMap<>();
       String[] rawLabels = rawEnvLabels.split(LABEL_LIST_SPLITTER, -1);
       for (String rawLabel : rawLabels) {
         String[] keyValuePair = rawLabel.split(LABEL_KEY_VALUE_SPLITTER, -1);
@@ -70,7 +71,8 @@ public final class EnvVarResource {
           continue;
         }
         String key = keyValuePair[0].trim();
-        String value = keyValuePair[1].trim().replaceAll("^\"|\"$", "");
+        AttributeValue value =
+            AttributeValue.stringAttributeValue(keyValuePair[1].trim().replaceAll("^\"|\"$", ""));
         labels.put(key, value);
       }
       return Collections.unmodifiableMap(labels);

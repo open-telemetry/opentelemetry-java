@@ -16,7 +16,7 @@
 
 package io.opentelemetry.exporters.inmemory;
 
-import io.opentelemetry.sdk.trace.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
 import java.util.Collections;

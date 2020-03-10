@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.resources;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public abstract class Resource {
           + " characters.";
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
-  private static final Resource EMPTY = create(Collections.<String, String>emptyMap());
+  private static final Resource EMPTY = create(Collections.<String, AttributeValue>emptyMap());
 
   Resource() {}
 
@@ -62,7 +63,7 @@ public abstract class Resource {
    * @return a map of labels.
    * @since 0.1.0
    */
-  public abstract Map<String, String> getLabels();
+  public abstract Map<String, AttributeValue> getLabels();
 
   /**
    * Returns a {@link Resource}.
@@ -74,7 +75,7 @@ public abstract class Resource {
    *     string or exceed {@link #MAX_LENGTH} characters.
    * @since 0.1.0
    */
-  public static Resource create(Map<String, String> labels) {
+  public static Resource create(Map<String, AttributeValue> labels) {
     checkLabels(Utils.checkNotNull(labels, "labels"));
     return new AutoValue_Resource(Collections.unmodifiableMap(new LinkedHashMap<>(labels)));
   }
@@ -92,19 +93,19 @@ public abstract class Resource {
       return this;
     }
 
-    Map<String, String> mergedLabelMap = new LinkedHashMap<>(other.getLabels());
+    Map<String, AttributeValue> mergedLabelMap = new LinkedHashMap<>(other.getLabels());
     // Labels from resource overwrite labels from otherResource.
-    for (Entry<String, String> entry : this.getLabels().entrySet()) {
+    for (Entry<String, AttributeValue> entry : this.getLabels().entrySet()) {
       mergedLabelMap.put(entry.getKey(), entry.getValue());
     }
     return new AutoValue_Resource(Collections.unmodifiableMap(mergedLabelMap));
   }
 
-  private static void checkLabels(Map<String, String> labels) {
-    for (Entry<String, String> entry : labels.entrySet()) {
+  private static void checkLabels(Map<String, AttributeValue> labels) {
+    for (Entry<String, AttributeValue> entry : labels.entrySet()) {
       Utils.checkArgument(
           isValidAndNotEmpty(entry.getKey()), "Label key" + ERROR_MESSAGE_INVALID_CHARS);
-      Utils.checkArgument(isValid(entry.getValue()), "Label value" + ERROR_MESSAGE_INVALID_VALUE);
+      Utils.checkNotNull(entry.getValue(), "Label value" + ERROR_MESSAGE_INVALID_VALUE);
     }
   }
 

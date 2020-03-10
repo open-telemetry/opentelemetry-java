@@ -1,6 +1,10 @@
-description = 'OpenTelemetry OpenTracing Bridge'
+plugins {
+    id "java"
+    id "maven-publish"
+}
 
-def protobufVersion = '3.7.1'
+description = 'OpenTelemetry OpenTracing Bridge'
+ext.moduleName = "io.opentelemetry.opentracingshim"
 
 dependencies {
     api project(':opentelemetry-api'),
@@ -8,7 +12,6 @@ dependencies {
 
     testImplementation project(':opentelemetry-sdk'),
             project(':opentelemetry-exporters-inmemory'),
-            libraries.protobuf,
             libraries.junit,
             libraries.truth,
             libraries.slf4jsimple,

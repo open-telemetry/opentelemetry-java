@@ -1,4 +1,13 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "me.champeau.gradle.jmh"
+    id "ru.vyarus.animalsniffer"
+}
+
 description = 'OpenTelemetry SDK'
+ext.moduleName = "io.opentelemetry.sdk"
 
 dependencies {
     api project(':opentelemetry-api')
@@ -7,8 +16,10 @@ dependencies {
 
     annotationProcessor libraries.auto_value
 
+    testAnnotationProcessor libraries.auto_value
+
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
-    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
 
 animalsniffer {

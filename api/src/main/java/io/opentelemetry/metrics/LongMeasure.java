@@ -17,6 +17,8 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -63,16 +65,13 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
   @Override
   BoundLongMeasure bind(LabelSet labelSet);
 
-  @Override
-  void unbind(BoundLongMeasure boundInstrument);
-
   /**
    * A {@code Bound Instrument} for a {@code LongMeasure}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundLongMeasure {
+  interface BoundLongMeasure extends InstrumentWithBinding.BoundInstrument {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *
@@ -81,8 +80,29 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
      * @since 0.1.0
      */
     void record(long value);
+
+    @Override
+    void unbind();
   }
 
   /** Builder class for {@link LongMeasure}. */
-  interface Builder extends Measure.Builder<Builder, LongMeasure> {}
+  interface Builder extends Measure.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
+    @Override
+    Builder setAbsolute(boolean absolute);
+
+    @Override
+    LongMeasure build();
+  }
 }
