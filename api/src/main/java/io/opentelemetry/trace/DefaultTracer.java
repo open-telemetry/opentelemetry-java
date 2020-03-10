@@ -93,16 +93,6 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setParent(Context context) {
-      Utils.checkNotNull(context, "context");
-      spanContext = TracingContextUtils.getEffectiveSpanContext(context);
-      if (spanContext == null) {
-        isRootSpan = true;
-      }
-      return this;
-    }
-
-    @Override
     public NoopSpanBuilder setNoParent() {
       isRootSpan = true;
       return this;

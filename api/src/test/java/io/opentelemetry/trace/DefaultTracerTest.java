@@ -109,27 +109,6 @@ public class DefaultTracerTest {
   }
 
   @Test
-  public void testSpanContextPropagationFromSpanInContext() {
-    Context context =
-        TracingContextUtils.withSpanContext(
-            SpanContext.create(
-                new TraceId(1, 1), new SpanId(1), TraceFlags.getDefault(), TraceState.getDefault()),
-            TracingContextUtils.withSpan(new DefaultSpan(spanContext), Context.current()));
-
-    // Span in Context has higher priority than SpanContext.
-    Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
-    assertThat(span.getContext()).isSameInstanceAs(spanContext);
-  }
-
-  @Test
-  public void testSpanContextPropagationFromContext() {
-    Context context = TracingContextUtils.withSpanContext(spanContext, Context.current());
-
-    Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
-    assertThat(span.getContext()).isSameInstanceAs(spanContext);
-  }
-
-  @Test
   public void testSpanContextPropagationCurrentSpan() {
     DefaultSpan parent = new DefaultSpan(spanContext);
     Scope scope = defaultTracer.withSpan(parent);
