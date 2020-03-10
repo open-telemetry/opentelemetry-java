@@ -19,6 +19,7 @@ package io.opentelemetry.trace.propagation;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -109,7 +110,7 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
     String sampled;
     if (singleHeader) {
       String value = getter.get(carrier, COMBINED_HEADER);
-      if (value == null || value.isEmpty()) {
+      if (StringUtils.isNullOrEmpty(value)) {
         logger.info(
             "Missing or empty combined header: "
                 + COMBINED_HEADER
@@ -192,10 +193,10 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
   }
 
   private static boolean isTraceIdValid(String value) {
-    return !(value == null || value.isEmpty() || value.length() > MAX_TRACE_ID_LENGTH);
+    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_TRACE_ID_LENGTH);
   }
 
   private static boolean isSpanIdValid(String value) {
-    return !(value == null || value.isEmpty() || value.length() > MAX_SPAN_ID_LENGTH);
+    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_SPAN_ID_LENGTH);
   }
 }
