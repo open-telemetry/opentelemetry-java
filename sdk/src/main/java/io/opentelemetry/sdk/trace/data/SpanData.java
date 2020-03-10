@@ -164,16 +164,6 @@ public abstract class SpanData {
   public abstract long getEndEpochNanos();
 
   /**
-   * Returns {@code true} if the parent is on a different process. {@code false} if this is a root
-   * span.
-   *
-   * @return {@code true} if the parent is on a different process. {@code false} if this is a root
-   *     span.
-   * @since 0.3.0
-   */
-  public abstract boolean getHasRemoteParent();
-
-  /**
    * Returns whether this Span has already been ended.
    *
    * @return {@code true} if the span has already been ended, {@code false} if not.
@@ -293,8 +283,7 @@ public abstract class SpanData {
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
-        .setTraceFlags(TraceFlags.getDefault())
-        .setHasRemoteParent(false);
+        .setTraceFlags(TraceFlags.getDefault());
   }
 
   /**
@@ -463,15 +452,6 @@ public abstract class SpanData {
      * @since 0.1.0
      */
     public abstract Builder setLinks(List<io.opentelemetry.trace.Link> links);
-
-    /**
-     * Sets to true if the span has a parent on a different process.
-     *
-     * @param hasRemoteParent A boolean indicating if the span has a remote parent.
-     * @return this
-     * @since 0.3.0
-     */
-    public abstract Builder setHasRemoteParent(boolean hasRemoteParent);
 
     /**
      * Sets to true if the span has been ended.

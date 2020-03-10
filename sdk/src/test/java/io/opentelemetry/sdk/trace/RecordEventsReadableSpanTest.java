@@ -67,7 +67,6 @@ public class RecordEventsReadableSpanTest {
   private final TraceId traceId = idsGenerator.generateTraceId();
   private final SpanId spanId = idsGenerator.generateSpanId();
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
-  private final boolean expectedHasRemoteParent = true;
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final long startEpochNanos = 1000_123_789_654L;
@@ -229,16 +228,6 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(Kind.CLIENT);
     try {
       assertThat(span.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
-    } finally {
-      span.end();
-    }
-  }
-
-  @Test
-  public void getSpanHasRemoteParent() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.SERVER);
-    try {
-      assertThat(span.toSpanData().getHasRemoteParent()).isTrue();
     } finally {
       span.end();
     }
@@ -526,7 +515,6 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getTraceId()).isEqualTo(traceId);
     assertThat(spanData.getSpanId()).isEqualTo(spanId);
     assertThat(spanData.getParentSpanId()).isEqualTo(parentSpanId);
-    assertThat(spanData.getHasRemoteParent()).isEqualTo(expectedHasRemoteParent);
     assertThat(spanData.getTraceState()).isEqualTo(TraceState.getDefault());
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
@@ -612,7 +600,6 @@ public class RecordEventsReadableSpanTest {
             .setTraceId(traceId)
             .setSpanId(spanId)
             .setAttributes(attributes)
-            .setHasRemoteParent(false)
             .build();
 
     SpanData result = readableSpan.toSpanData();

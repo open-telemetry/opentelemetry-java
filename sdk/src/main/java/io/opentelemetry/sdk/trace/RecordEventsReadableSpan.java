@@ -54,8 +54,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
   private final SpanId parentSpanId;
-  // True if the parent is on a different process.
-  private final boolean hasRemoteParent;
   // Handler called when the span starts and ends.
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
@@ -138,7 +136,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             instrumentationLibraryInfo,
             kind,
             parentSpanId == null ? SpanId.getInvalid() : parentSpanId,
-            hasRemoteParent,
             traceConfig,
             spanProcessor,
             clock,
@@ -169,7 +166,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             .setKind(kind)
             .setTraceState(spanContext.getTraceState())
             .setParentSpanId(parentSpanId)
-            .setHasRemoteParent(hasRemoteParent)
             .setResource(resource)
             .setStartEpochNanos(startEpochNanos);
 
@@ -438,7 +434,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
       SpanId parentSpanId,
-      boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,
@@ -450,7 +445,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.context = context;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.parentSpanId = parentSpanId;
-    this.hasRemoteParent = hasRemoteParent;
     this.links = links;
     this.totalRecordedLinks = totalRecordedLinks;
     this.name = name;
