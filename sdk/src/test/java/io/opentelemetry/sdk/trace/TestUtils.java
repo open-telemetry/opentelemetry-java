@@ -64,7 +64,6 @@ public final class TestUtils {
         .setStartEpochNanos(TimeUnit.SECONDS.toNanos(100) + 100)
         .setStatus(Status.OK)
         .setEndEpochNanos(TimeUnit.SECONDS.toNanos(200) + 200)
-        .setNumberOfChildren(0)
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
         .build();

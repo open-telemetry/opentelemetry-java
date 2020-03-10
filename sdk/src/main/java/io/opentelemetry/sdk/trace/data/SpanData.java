@@ -192,13 +192,6 @@ public abstract class SpanData {
   public abstract int getTotalRecordedEvents();
 
   /**
-   * The total number of child spans that were created for this span.
-   *
-   * @return The total number of child spans created from this span.
-   */
-  public abstract int getNumberOfChildren();
-
-  /**
    * The total number of {@link SpanData.Link} links that were recorded on this span. This number
    * may be larger than the number of links that are attached to this span, if the total number
    * recorded was greater than the configured maximum value. See: {@link
@@ -301,7 +294,6 @@ public abstract class SpanData {
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
         .setTraceFlags(TraceFlags.getDefault())
-        .setNumberOfChildren(0)
         .setHasRemoteParent(false);
   }
 
@@ -507,14 +499,5 @@ public abstract class SpanData {
      * @since 0.4.0
      */
     public abstract Builder setTotalRecordedLinks(int totalRecordedLinks);
-
-    /**
-     * Set the total number of child spans on this span.
-     *
-     * @param numberOfChildren The total number of children.
-     * @return this
-     * @since 0.4.0
-     */
-    public abstract Builder setNumberOfChildren(int numberOfChildren);
   }
 }
