@@ -29,7 +29,6 @@ import io.opentelemetry.metrics.LongMeasure;
  * <p>TODO: Add an async queue processing to process batch records.
  */
 final class BatchRecorderSdk implements BatchRecorder {
-
   private final LabelSetSdk labelSet;
 
   BatchRecorderSdk(String... keyValuePairs) {
