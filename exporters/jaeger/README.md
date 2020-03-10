@@ -15,9 +15,8 @@ These configuration properties work only for `Jaeger.GrpcSpanExporter.installDef
 An example of simples Jaeger gRPC exporter initialization. In this case
 spans will be sent to Jaeger collector running on `localhost`:
 ```java
-TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
-JaegerGrpcSpanExporter.installDefault(tracerProvider);
-
+Builder builder = JaegerGrpcSpanExporter.Builder.fromEnv();
+builder.install(OpenTelemetrySdk.getTracerProvider());
 ```
 
 ## Proto files

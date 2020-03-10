@@ -203,6 +203,20 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     }
 
     /**
+     * Creates builder from system properties and environmental variables: {@code JAEGER_ENDPOINT}
+     * e.g. {@code localhost:14250} and {@code JAEGER_SERVICE_NAME} e.g. {@code my-deployment}.
+     *
+     * @return thes builder's instance
+     */
+    public static Builder fromEnv() {
+      Builder builder = new Builder();
+      String host = getProperty(JAEGER_ENDPOINT, DEFAULT_JAEGER_ENDPOINT);
+      builder.channel = ManagedChannelBuilder.forTarget(host).usePlaintext().build();
+      builder.serviceName = getProperty(JAEGER_SERVICE_NAME, UNKNOWN);
+      return builder;
+    }
+
+    /**
      * Constructs a new instance of the exporter based on the builder's values.
      *
      * @return a new exporter's instance
@@ -210,36 +224,23 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     public JaegerGrpcSpanExporter build() {
       return new JaegerGrpcSpanExporter(serviceName, channel, deadline);
     }
+
+    /**
+     * Installs exporter into tracer SDK provider with batching span processor.
+     *
+     * @param tracerSdkProvider tracer SDK provider
+     */
+    public void install(TracerSdkProvider tracerSdkProvider) {
+      BatchSpansProcessor spansProcessor = BatchSpansProcessor.newBuilder(this.build()).build();
+      tracerSdkProvider.addSpanProcessor(spansProcessor);
+    }
   }
 
-  /**
-   * Configure and install Jaeger exporter with default settings. Configuration can be provided via
-   * system properties and environmental variables: {@code JAEGER_ENDPOINT} e.g. {@code
-   * localhost:14250} and {@code JAEGER_SERVICE_NAME} e.g. {@code my-deployment}.
-   *
-   * @param tracerProvider tracer provider
-   */
-  public static void installDefault(TracerSdkProvider tracerProvider) {
-    String host = getProperty(JAEGER_ENDPOINT);
-    if (host == null || host.isEmpty()) {
-      host = DEFAULT_JAEGER_ENDPOINT;
+  private static String getProperty(String name, String defaultValue) {
+    String val = System.getProperty(name, System.getenv(name));
+    if (val == null || val.isEmpty()) {
+      return defaultValue;
     }
-    String serviceName = getProperty(JAEGER_SERVICE_NAME);
-    if (serviceName == null || serviceName.isEmpty()) {
-      serviceName = UNKNOWN;
-    }
-    ManagedChannel channel = ManagedChannelBuilder.forTarget(host).usePlaintext().build();
-    JaegerGrpcSpanExporter jaegerSpanExporter =
-        new JaegerGrpcSpanExporter.Builder()
-            .setServiceName(serviceName)
-            .setChannel(channel)
-            .build();
-
-    BatchSpansProcessor spansProcessor = BatchSpansProcessor.newBuilder(jaegerSpanExporter).build();
-    tracerProvider.addSpanProcessor(spansProcessor);
-  }
-
-  private static String getProperty(String name) {
-    return System.getProperty(name, System.getenv(name));
+    return val;
   }
 }
