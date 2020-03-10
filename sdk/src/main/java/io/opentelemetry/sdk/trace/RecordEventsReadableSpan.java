@@ -104,8 +104,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    * @param name the displayed name for the new span.
    * @param kind the span kind.
    * @param parentSpanId the span_id of the parent span, or null if the new span is a root span.
-   * @param hasRemoteParent {@code true} if the parentContext is remote. {@code false} if this is a
-   *     root span.
    * @param traceConfig trace parameters like sampler and probability.
    * @param spanProcessor handler called when the span starts and ends.
    * @param clock the clock used to get the time.
@@ -120,7 +118,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
       @Nullable SpanId parentSpanId,
-      boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
       Clock clock,
