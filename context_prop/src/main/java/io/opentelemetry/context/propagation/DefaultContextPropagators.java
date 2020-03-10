@@ -109,14 +109,20 @@ public final class DefaultContextPropagators implements ContextPropagators {
 
   private static final class MultiHttpTextFormat implements HttpTextFormat {
     private final HttpTextFormat[] textPropagators;
+    private final List<String> allFields;
 
     private MultiHttpTextFormat(List<HttpTextFormat> textPropagators) {
       this.textPropagators = new HttpTextFormat[textPropagators.size()];
       textPropagators.toArray(this.textPropagators);
+      this.allFields = getAllFields(this.textPropagators);
     }
 
     @Override
     public List<String> fields() {
+      return allFields;
+    }
+
+    private static List<String> getAllFields(HttpTextFormat[] textPropagators) {
       List<String> fields = new ArrayList<>();
       for (int i = 0; i < textPropagators.length; i++) {
         fields.addAll(textPropagators[i].fields());
