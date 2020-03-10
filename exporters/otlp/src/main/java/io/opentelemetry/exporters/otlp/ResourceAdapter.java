@@ -23,7 +23,7 @@ import java.util.Map;
 final class ResourceAdapter {
   static Resource toProtoResource(io.opentelemetry.sdk.resources.Resource resource) {
     Resource.Builder builder = Resource.newBuilder();
-    for (Map.Entry<String, AttributeValue> resourceEntry : resource.getLabels().entrySet()) {
+    for (Map.Entry<String, AttributeValue> resourceEntry : resource.getAttributes().entrySet()) {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }

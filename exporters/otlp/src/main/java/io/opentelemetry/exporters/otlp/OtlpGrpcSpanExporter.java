@@ -82,7 +82,6 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
         case OUT_OF_RANGE:
         case UNAVAILABLE:
         case DATA_LOSS:
-          logger.info(e.getStatus().toString());
           return ResultCode.FAILED_RETRYABLE;
         default:
           return ResultCode.FAILED_NOT_RETRYABLE;
