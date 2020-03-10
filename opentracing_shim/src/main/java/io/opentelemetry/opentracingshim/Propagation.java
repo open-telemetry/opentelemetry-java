@@ -18,6 +18,8 @@ package io.opentelemetry.opentracingshim;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
+import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 import java.util.HashMap;
@@ -30,13 +32,11 @@ final class Propagation extends BaseShimObject {
   }
 
   public void injectTextFormat(SpanContextShim contextShim, TextMapInject carrier) {
-    Context context = Context.current();
+    Context context =
+        TracingContextUtils.withSpanContext(contextShim.getSpanContext(), Context.current());
     context =
-        io.opentelemetry.trace.propagation.TracingContextUtils.withSpanContext(
-            contextShim.getSpanContext(), context);
-    context =
-        io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils
-            .withCorrelationContext(contextShim.getCorrelationContext(), context);
+        CorrelationsContextUtils.withCorrelationContext(
+            contextShim.getCorrelationContext(), context);
 
     propagators().getHttpTextFormat().inject(context, carrier, TextMapSetter.INSTANCE);
   }
@@ -59,9 +59,7 @@ final class Propagation extends BaseShimObject {
     }
 
     return new SpanContextShim(
-        telemetryInfo,
-        io.opentelemetry.correlationcontext.propagation.CorrelationsContextUtils
-            .getCorrelationContext(context));
+        telemetryInfo, spanContext, CorrelationsContextUtils.getCorrelationContext(context));
   }
 
   static final class TextMapSetter implements HttpTextFormat.Setter<TextMapInject> {

@@ -26,6 +26,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -127,9 +128,6 @@ public class HttpTraceContext implements HttpTextFormat {
   }
 
   private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {
-    TraceId traceId;
-    SpanId spanId;
-    TraceFlags traceFlags;
     String traceparent = getter.get(carrier, TRACE_PARENT);
     if (traceparent == null) {
       return SpanContext.getInvalid();

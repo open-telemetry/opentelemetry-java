@@ -19,7 +19,6 @@ package io.opentelemetry.trace;
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.trace.propagation.TracingContextUtils;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -54,7 +53,7 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return NoopSpanBuilder.create(this, spanName);
+    return NoopSpanBuilder.create(spanName);
   }
 
   private DefaultTracer() {}

@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
+import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
 import org.junit.Rule;
 import org.junit.Test;
@@ -112,8 +113,8 @@ public class DefaultTracerTest {
     Context context =
         TracingContextUtils.withSpanContext(
             SpanContext.create(
-                new TraceId(1, 1), new SpanId(1), TraceFlags.getDefault(), Tracestate.getDefault()),
-            TracingContextUtils.withSpan(new DefaultSpan(spanContext)));
+                new TraceId(1, 1), new SpanId(1), TraceFlags.getDefault(), TraceState.getDefault()),
+            TracingContextUtils.withSpan(new DefaultSpan(spanContext), Context.current()));
 
     // Span in Context has higher priority than SpanContext.
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
@@ -122,7 +123,7 @@ public class DefaultTracerTest {
 
   @Test
   public void testSpanContextPropagationFromContext() {
-    Context context = TracingContextUtils.withSpanContext(spanContext);
+    Context context = TracingContextUtils.withSpanContext(spanContext, Context.current());
 
     Span span = defaultTracer.spanBuilder(SPAN_NAME).setParent(context).startSpan();
     assertThat(span.getContext()).isSameInstanceAs(spanContext);
@@ -142,8 +143,8 @@ public class DefaultTracerTest {
 
   @Test
   public void testSpanContextPropagationCurrentSpanContext() {
-    Context context = TracingContextUtils.withSpanContext(spanContext);
-    Scope scope = io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
+    Context context = TracingContextUtils.withSpanContext(spanContext, Context.current());
+    Scope scope = ContextUtils.withScopedContext(context);
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);
@@ -157,9 +158,9 @@ public class DefaultTracerTest {
     Context context =
         TracingContextUtils.withSpanContext(
             SpanContext.create(
-                new TraceId(1, 1), new SpanId(1), TraceFlags.getDefault(), Tracestate.getDefault()),
-            TracingContextUtils.withSpan(new DefaultSpan(spanContext)));
-    Scope scope = io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
+                new TraceId(1, 1), new SpanId(1), TraceFlags.getDefault(), TraceState.getDefault()),
+            TracingContextUtils.withSpan(new DefaultSpan(spanContext), Context.current()));
+    Scope scope = io.opentelemetry.context.ContextUtils.withScopedContext(context);
     // Span in Context has higher priority than SpanContext.
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();

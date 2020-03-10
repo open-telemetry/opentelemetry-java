@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 
 import io.grpc.Context;
+import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -32,6 +33,7 @@ import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -410,7 +412,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentExplicitContext_withSpan() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Context context = TracingContextUtils.withSpan(parent);
+    Context context = TracingContextUtils.withSpan(parent, Context.current());
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
@@ -429,7 +431,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentExplicitContext_withSpanContext() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Context context = TracingContextUtils.withSpanContext(parent.getContext());
+    Context context = TracingContextUtils.withSpanContext(parent.getContext(), Context.current());
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
@@ -450,7 +452,7 @@ public class SpanBuilderSdkTest {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     Context context =
         TracingContextUtils.withSpanContext(
-            sampledSpanContext, TracingContextUtils.withSpan(parent));
+            sampledSpanContext, TracingContextUtils.withSpan(parent, Context.current()));
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan)
@@ -506,8 +508,8 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentCurrentSpanContext() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    Context context = TracingContextUtils.withSpanContext(parent.getContext());
-    Scope scope = io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
+    Context context = TracingContextUtils.withSpanContext(parent.getContext(), Context.current());
+    Scope scope = ContextUtils.withScopedContext(context);
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
@@ -528,8 +530,8 @@ public class SpanBuilderSdkTest {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
     Context context =
         TracingContextUtils.withSpanContext(
-            sampledSpanContext, TracingContextUtils.withSpan(parent));
-    Scope scope = io.opentelemetry.context.propagation.ContextUtils.withScopedContext(context);
+            sampledSpanContext, TracingContextUtils.withSpan(parent, Context.current()));
+    Scope scope = ContextUtils.withScopedContext(context);
     try {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
