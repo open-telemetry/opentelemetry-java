@@ -109,7 +109,6 @@ public class SpanDataTest {
         .setStatus(Status.OK)
         .setHasRemoteParent(false)
         .setTotalRecordedEvents(0)
-        .setTotalRecordedLinks(0)
-        .setNumberOfChildren(0);
+        .setTotalRecordedLinks(0);
   }
 }

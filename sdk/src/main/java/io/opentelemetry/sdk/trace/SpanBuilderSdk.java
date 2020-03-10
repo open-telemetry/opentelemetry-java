@@ -238,7 +238,6 @@ final class SpanBuilderSdk implements Span.Builder {
   private static Clock getClock(Span parent, Clock clock) {
     if (parent instanceof RecordEventsReadableSpan) {
       RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
-      parentRecordEventsSpan.addChild();
       return parentRecordEventsSpan.getClock();
     } else {
       return MonotonicClock.create(clock);

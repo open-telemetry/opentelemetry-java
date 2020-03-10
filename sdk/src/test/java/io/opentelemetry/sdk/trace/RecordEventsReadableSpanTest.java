@@ -507,7 +507,6 @@ public class RecordEventsReadableSpanTest {
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addEvent("event2", Collections.<String, AttributeValue>emptyMap());
     testClock.advanceMillis(MILLIS_PER_SECOND);
-    span.addChild();
     span.updateName(SPAN_NEW_NAME);
     if (status != null) {
       span.setStatus(status);
@@ -614,7 +613,6 @@ public class RecordEventsReadableSpanTest {
             .setSpanId(spanId)
             .setAttributes(attributes)
             .setHasRemoteParent(false)
-            .setNumberOfChildren(0)
             .build();
 
     SpanData result = readableSpan.toSpanData();

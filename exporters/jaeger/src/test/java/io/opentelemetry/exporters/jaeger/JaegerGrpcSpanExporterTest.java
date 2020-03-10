@@ -93,7 +93,6 @@ public class JaegerGrpcSpanExporterTest {
             .setLinks(Collections.<Link>emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setNumberOfChildren(0)
             .build();
 
     // test

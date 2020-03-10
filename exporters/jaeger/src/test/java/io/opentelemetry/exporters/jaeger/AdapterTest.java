@@ -232,7 +232,6 @@ public class AdapterTest {
             .setStatus(Status.CANCELLED)
             .setTotalRecordedEvents(0)
             .setTotalRecordedLinks(0)
-            .setNumberOfChildren(0)
             .build();
 
     assertNotNull(Adapter.toJaeger(span));
@@ -267,7 +266,6 @@ public class AdapterTest {
         .setKind(Span.Kind.SERVER)
         .setResource(Resource.create(Collections.<String, AttributeValue>emptyMap()))
         .setStatus(Status.OK)
-        .setNumberOfChildren(0)
         .build();
   }
 
