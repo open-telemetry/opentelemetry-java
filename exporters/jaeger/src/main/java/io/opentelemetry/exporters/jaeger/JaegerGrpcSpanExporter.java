@@ -16,7 +16,6 @@
 
 package io.opentelemetry.exporters.jaeger;
 
-import io.grpc.Deadline;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
@@ -46,17 +45,17 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   private final CollectorServiceGrpc.CollectorServiceBlockingStub blockingStub;
   private final Model.Process process;
   private final ManagedChannel managedChannel;
-  private final long deadline;
+  private final long deadlineMs;
 
   /**
    * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.
    *
    * @param serviceName this service's name.
    * @param channel the channel to use when communicating with the Jaeger Collector.
-   * @param deadline max waiting time for the collector to process each span batch. When set to 0 or
-   *     to a negative value, the exporter will wait indefinitely.
+   * @param deadlineMs max waiting time for the collector to process each span batch. When set to 0
+   *     or to a negative value, the exporter will wait indefinitely.
    */
-  private JaegerGrpcSpanExporter(String serviceName, ManagedChannel channel, long deadline) {
+  private JaegerGrpcSpanExporter(String serviceName, ManagedChannel channel, long deadlineMs) {
     String hostname;
     String ipv4;
 
@@ -93,7 +92,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
 
     this.managedChannel = channel;
     this.blockingStub = CollectorServiceGrpc.newBlockingStub(channel);
-    this.deadline = deadline;
+    this.deadlineMs = deadlineMs;
   }
 
   /**
@@ -104,18 +103,19 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    */
   @Override
   public ResultCode export(List<SpanData> spans) {
-    Model.Batch.Builder builder = Model.Batch.newBuilder();
-    builder.addAllSpans(Adapter.toJaeger(spans));
-    builder.setProcess(this.process);
-
-    Collector.PostSpansRequest.Builder requestBuilder = Collector.PostSpansRequest.newBuilder();
-    requestBuilder.setBatch(builder.build());
-    Collector.PostSpansRequest request = requestBuilder.build();
+    Collector.PostSpansRequest request =
+        Collector.PostSpansRequest.newBuilder()
+            .setBatch(
+                Model.Batch.newBuilder()
+                    .addAllSpans(Adapter.toJaeger(spans))
+                    .setProcess(this.process)
+                    .build())
+            .build();
 
     try {
       CollectorServiceGrpc.CollectorServiceBlockingStub stub = this.blockingStub;
-      if (deadline > 0) {
-        stub = stub.withDeadline(Deadline.after(deadline, TimeUnit.MILLISECONDS));
+      if (deadlineMs > 0) {
+        stub = stub.withDeadlineAfter(deadlineMs, TimeUnit.MILLISECONDS);
       }
 
       // for now, there's nothing to check in the response object
@@ -161,13 +161,13 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   public static class Builder {
     private String serviceName;
     private ManagedChannel channel;
-    private long deadline = 1_000; // ms
+    private long deadlineMs = 1_000; // 1 second
 
     /**
      * Sets the service name to be used by this exporter. Required.
      *
-     * @param serviceName the service name
-     * @return this builder's instance
+     * @param serviceName the service name.
+     * @return this.
      */
     public Builder setServiceName(String serviceName) {
       this.serviceName = serviceName;
@@ -177,8 +177,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     /**
      * Sets the managed chanel to use when communicating with the backend. Required.
      *
-     * @param channel the channel to use
-     * @return this builder's instance
+     * @param channel the channel to use.
+     * @return this.
      */
     public Builder setChannel(ManagedChannel channel) {
       this.channel = channel;
@@ -188,21 +188,21 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
     /**
      * Sets the max waiting time for the collector to process each span batch. Optional.
      *
-     * @param deadline the max waiting time
-     * @return this builder's instance
+     * @param deadlineMs the max waiting time in millis.
+     * @return this.
      */
-    public Builder setDeadline(long deadline) {
-      this.deadline = deadline;
+    public Builder setDeadlineMs(long deadlineMs) {
+      this.deadlineMs = deadlineMs;
       return this;
     }
 
     /**
      * Constructs a new instance of the exporter based on the builder's values.
      *
-     * @return a new exporter's instance
+     * @return a new exporter's instance.
      */
     public JaegerGrpcSpanExporter build() {
-      return new JaegerGrpcSpanExporter(serviceName, channel, deadline);
+      return new JaegerGrpcSpanExporter(serviceName, channel, deadlineMs);
     }
   }
 }

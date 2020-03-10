@@ -44,7 +44,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+/** Unit tests for {@link Adapter}. */
+@RunWith(JUnit4.class)
 public class AdapterTest {
 
   private static final String LINK_TRACE_ID = "00000000000000000000000000cba123";
