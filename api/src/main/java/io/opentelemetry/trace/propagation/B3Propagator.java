@@ -105,70 +105,72 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
     checkNotNull(carrier, "carrier");
     checkNotNull(getter, "getter");
 
-    String traceId;
-    String spanId;
-    String sampled;
     if (singleHeader) {
-      String value = getter.get(carrier, COMBINED_HEADER);
-      if (StringUtils.isNullOrEmpty(value)) {
-        logger.info(
-            "Missing or empty combined header: "
-                + COMBINED_HEADER
-                + ". Returning INVALID span context.");
-        return SpanContext.getInvalid();
-      }
-
-      // must have between 2 and 4 hyphen delimieted parts:
-      //   traceId-spanId-sampled-parentSpanId (last two are optional)
-      // NOTE: we do not use parentSpanId
-      String[] parts = value.split(COMBINED_HEADER_DELIMITER);
-      if (parts.length < 2 || parts.length > 4) {
-        logger.info(
-            "Invalid combined header '" + COMBINED_HEADER + ". Returning INVALID span context.");
-        return SpanContext.getInvalid();
-      }
-
-      traceId = parts[0];
-      if (!isTraceIdValid(traceId)) {
-        logger.info(
-            "Invalid TraceId in B3 header: "
-                + COMBINED_HEADER
-                + ". Returning INVALID span context.");
-        return SpanContext.getInvalid();
-      }
-
-      spanId = parts[1];
-      if (!isSpanIdValid(spanId)) {
-        logger.info(
-            "Invalid SpanId in B3 header: "
-                + COMBINED_HEADER
-                + ". Returning INVALID span context.");
-        return SpanContext.getInvalid();
-      }
-
-      sampled = parts.length == 3 ? parts[2] : null;
+      return getSpanContextFromSingleHeader(carrier, getter);
     } else {
-      traceId = getter.get(carrier, TRACE_ID_HEADER);
-      if (!isTraceIdValid(traceId)) {
-        logger.info(
-            "Invalid TraceId in B3 header: "
-                + TRACE_ID_HEADER
-                + "'. Returning INVALID span context.");
-        return SpanContext.getInvalid();
-      }
+      return getSpanContextFromMultipleHeaders(carrier, getter);
+    }
+  }
 
-      spanId = getter.get(carrier, SPAN_ID_HEADER);
-      if (!isSpanIdValid(spanId)) {
-        logger.info(
-            "Invalid SpanId in B3 header: "
-                + SPAN_ID_HEADER
-                + "'. Returning INVALID span context.");
-        return SpanContext.getInvalid();
-      }
-
-      sampled = getter.get(carrier, SAMPLED_HEADER);
+  private static <C /*>>> extends @NonNull Object*/> SpanContext getSpanContextFromSingleHeader(
+      C carrier, Getter<C> getter) {
+    String value = getter.get(carrier, COMBINED_HEADER);
+    if (StringUtils.isNullOrEmpty(value)) {
+      logger.info(
+          "Missing or empty combined header: "
+              + COMBINED_HEADER
+              + ". Returning INVALID span context.");
+      return SpanContext.getInvalid();
     }
 
+    // must have between 2 and 4 hyphen delimieted parts:
+    //   traceId-spanId-sampled-parentSpanId (last two are optional)
+    // NOTE: we do not use parentSpanId
+    String[] parts = value.split(COMBINED_HEADER_DELIMITER);
+    if (parts.length < 2 || parts.length > 4) {
+      logger.info(
+          "Invalid combined header '" + COMBINED_HEADER + ". Returning INVALID span context.");
+      return SpanContext.getInvalid();
+    }
+
+    String traceId = parts[0];
+    if (!isTraceIdValid(traceId)) {
+      logger.info(
+          "Invalid TraceId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
+      return SpanContext.getInvalid();
+    }
+
+    String spanId = parts[1];
+    if (!isSpanIdValid(spanId)) {
+      logger.info(
+          "Invalid SpanId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
+      return SpanContext.getInvalid();
+    }
+
+    String sampled = parts.length == 3 ? parts[2] : null;
+
+    return buildSpanContext(traceId, spanId, sampled);
+  }
+
+  private static <C /*>>> extends @NonNull Object*/> SpanContext getSpanContextFromMultipleHeaders(
+      C carrier, Getter<C> getter) {
+    String traceId = getter.get(carrier, TRACE_ID_HEADER);
+    if (!isTraceIdValid(traceId)) {
+      logger.info(
+          "Invalid TraceId in B3 header: "
+              + TRACE_ID_HEADER
+              + "'. Returning INVALID span context.");
+      return SpanContext.getInvalid();
+    }
+
+    String spanId = getter.get(carrier, SPAN_ID_HEADER);
+    if (!isSpanIdValid(spanId)) {
+      logger.info(
+          "Invalid SpanId in B3 header: " + SPAN_ID_HEADER + "'. Returning INVALID span context.");
+      return SpanContext.getInvalid();
+    }
+
+    String sampled = getter.get(carrier, SAMPLED_HEADER);
     return buildSpanContext(traceId, spanId, sampled);
   }
 
