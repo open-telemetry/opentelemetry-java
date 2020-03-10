@@ -21,9 +21,9 @@ import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACE_PARENT;
 import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACE_STATE;
 
 import io.grpc.Context;
-import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -141,16 +141,10 @@ public class HttpTraceContextTest {
 
   @Test
   public void inject_Span() {
-    // Use non-default values to verify that the Span is actually consumed.
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     Span span =
-        OpenTelemetry.getTracerProvider()
-            .get(null)
-            .spanBuilder("testSpan")
-            .setParent(
-                SpanContext.create(
-                    TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT))
-            .startSpan();
+        DefaultSpan.create(
+            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT));
     Context context = TracingContextUtils.withSpan(span, Context.current());
     httpTraceContext.inject(context, carrier, setter);
     assertThat(carrier)
@@ -163,13 +157,8 @@ public class HttpTraceContextTest {
     // Span has higher priority than SpanContext.
     Map<String, String> carrier = new LinkedHashMap<String, String>();
     Span span =
-        OpenTelemetry.getTracerProvider()
-            .get(null)
-            .spanBuilder("testSpan")
-            .setParent(
-                SpanContext.create(
-                    TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT))
-            .startSpan();
+        DefaultSpan.create(
+            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT));
     SpanContext spanContext =
         SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT);
     Context context =
