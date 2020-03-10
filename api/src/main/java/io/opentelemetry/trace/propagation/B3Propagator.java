@@ -66,7 +66,7 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
    *
    * @param singleHeader whether to use single or multiple headers.
    */
-  public B3Propagator(Boolean singleHeader) {
+  public B3Propagator(boolean singleHeader) {
     this.singleHeader = singleHeader;
   }
 
