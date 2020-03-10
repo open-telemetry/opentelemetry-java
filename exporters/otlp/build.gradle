@@ -9,10 +9,12 @@ description = 'OpenTelemetry Protocol Exporter'
 ext.moduleName = "io.opentelemetry.exporters.otprotocol"
 
 dependencies {
-    api project(':opentelemetry-proto'),
-            project(':opentelemetry-sdk')
+    api project(':opentelemetry-sdk')
 
-    implementation libraries.grpc_protobuf,
+    implementation project(':opentelemetry-sdk-contrib-otproto'),
+            project(':opentelemetry-sdk'),
+            libraries.grpc_api,
+            libraries.grpc_protobuf,
             libraries.grpc_stub,
             libraries.protobuf,
             libraries.protobuf_util
