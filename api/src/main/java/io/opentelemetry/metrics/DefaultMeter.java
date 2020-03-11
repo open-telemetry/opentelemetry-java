@@ -206,8 +206,9 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleMeasure() {}
 
     @Override
-    public void record(double value, LabelSet labelSet) {
+    public void record(double value, String... labelKeyValuePairs) {
       Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+      Utils.validateLabelPairs(labelKeyValuePairs);
     }
 
     @Override

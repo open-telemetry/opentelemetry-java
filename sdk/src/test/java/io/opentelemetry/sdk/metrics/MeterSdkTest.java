@@ -248,7 +248,7 @@ public class MeterSdkTest {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
     doubleCounter.add(10.1);
     DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testDoubleMeasure").build();
-    doubleMeasure.record(10.1, testSdk.createLabelSet());
+    doubleMeasure.record(10.1);
     // DoubleObserver doubleObserver = testSdk.doubleObserverBuilder("testDoubleObserver").build();
 
     assertThat(testSdk.collectAll())

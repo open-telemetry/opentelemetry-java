@@ -46,7 +46,7 @@ final class BatchRecorderSdk implements BatchRecorder {
 
   @Override
   public BatchRecorder put(DoubleMeasure measure, double value) {
-    measure.record(value, labelSet);
+    ((DoubleMeasureSdk) measure).record(value, labelSet);
     return this;
   }
 
