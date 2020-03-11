@@ -209,10 +209,36 @@ public class B3PropagatorTest {
   }
 
   @Test
+  public void extract_SampledContext_DebugFlag_SingleHeader() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(
+        B3Propagator.COMBINED_HEADER,
+        TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-" + B3Propagator.TRUE_INT + "-" + "0");
+
+    assertThat(b3PropagatorSingleHeader.extract(carrier, getter))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+  }
+
+  @Test
   public void extract_SampledContext_Bool_SingleHeader() {
     Map<String, String> carrier = new LinkedHashMap<>();
     carrier.put(
         B3Propagator.COMBINED_HEADER, TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-" + "true");
+
+    assertThat(b3PropagatorSingleHeader.extract(carrier, getter))
+        .isEqualTo(
+            SpanContext.createFromRemoteParent(
+                TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
+  }
+
+  @Test
+  public void extract_SampledContext_Bool_DebugFlag_SingleHeader() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    carrier.put(
+        B3Propagator.COMBINED_HEADER,
+        TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-" + "true" + "-" + "0");
 
     assertThat(b3PropagatorSingleHeader.extract(carrier, getter))
         .isEqualTo(

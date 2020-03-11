@@ -149,7 +149,7 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
       return SpanContext.getInvalid();
     }
 
-    String sampled = parts.length == 3 ? parts[2] : null;
+    String sampled = parts.length >= 3 ? parts[2] : null;
 
     return buildSpanContext(traceId, spanId, sampled);
   }
