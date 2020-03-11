@@ -91,8 +91,8 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public BatchRecorder newBatchRecorder(LabelSet labelSet) {
-    Utils.checkNotNull(labelSet, "labelSet");
+  public BatchRecorder newBatchRecorder(String... keyValuePairs) {
+    Utils.validateLabelPairs(keyValuePairs);
     return new NoopBatchRecorder();
   }
 

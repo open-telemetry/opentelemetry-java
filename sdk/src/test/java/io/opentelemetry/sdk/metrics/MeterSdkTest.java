@@ -233,7 +233,7 @@ public class MeterSdkTest {
 
   @Test
   public void testBatchRecorder() {
-    BatchRecorder batchRecorder = testSdk.newBatchRecorder(testSdk.createLabelSet("key", "value"));
+    BatchRecorder batchRecorder = testSdk.newBatchRecorder("key", "value");
     assertThat(batchRecorder).isNotNull();
     assertThat(batchRecorder).isInstanceOf(BatchRecorderSdk.class);
   }

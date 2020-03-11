@@ -41,7 +41,7 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     record(delta, LabelSetSdk.create(labelKeyValuePairs));
   }
 
-  void record(double value, LabelSet labelSet) {
+  void record(double value, LabelSetSdk labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
     boundInstrument.record(value);
     boundInstrument.unbind();

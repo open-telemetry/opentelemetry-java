@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -72,8 +71,8 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public BatchRecorderSdk newBatchRecorder(LabelSet labelSet) {
-    return new BatchRecorderSdk(labelSet);
+  public BatchRecorderSdk newBatchRecorder(String... keyValuePairs) {
+    return new BatchRecorderSdk(keyValuePairs);
   }
 
   @Override

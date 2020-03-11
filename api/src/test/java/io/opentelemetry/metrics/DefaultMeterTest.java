@@ -113,9 +113,9 @@ public final class DefaultMeterTest {
   }
 
   @Test
-  public void testNewBatchRecorder_NullLabelSet() throws Exception {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelSet");
-    defaultMeter.newBatchRecorder(null);
+  public void testNewBatchRecorder_badLabelSet() throws Exception {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("key/value");
+    defaultMeter.newBatchRecorder("key");
   }
 }
