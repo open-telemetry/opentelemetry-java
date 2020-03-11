@@ -62,10 +62,10 @@ public final class StringUtils {
   }
 
   /**
-   * Pads a given string on the left with leading 0's up the max length.
+   * Pads a given string on the left with leading 0's up the length.
    *
    * @param value the string to pad
-   * @param length the size
+   * @param length the number if characters to pad up to
    * @return the padded string
    */
   public static String padLeft(String value, int length) {
