@@ -257,8 +257,9 @@ public final class DefaultMeter implements Meter {
     private NoopLongMeasure() {}
 
     @Override
-    public void record(long value, LabelSet labelSet) {
+    public void record(long value, String... labelKeyValuePairs) {
       Utils.checkArgument(value >= 0, "Unsupported negative values.");
+      Utils.validateLabelPairs(labelKeyValuePairs);
     }
 
     @Override

@@ -40,7 +40,7 @@ final class BatchRecorderSdk implements BatchRecorder {
 
   @Override
   public BatchRecorder put(LongMeasure measure, long value) {
-    measure.record(value, labelSet);
+    ((LongMeasureSdk) measure).record(value, labelSet);
     return this;
   }
 
