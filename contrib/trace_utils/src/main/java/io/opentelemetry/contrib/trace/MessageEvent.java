@@ -115,4 +115,9 @@ public final class MessageEvent implements Event {
   private MessageEvent(Map<String, AttributeValue> attributeValueMap) {
     this.attributeValueMap = attributeValueMap;
   }
+
+  @Override
+  public long getDroppedAttributeCount() {
+    return 0;
+  }
 }

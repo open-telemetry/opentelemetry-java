@@ -56,6 +56,11 @@ public class SpanBuilderTest {
           public Map<String, AttributeValue> getAttributes() {
             return Collections.emptyMap();
           }
+
+          @Override
+          public long getDroppedAttributeCount() {
+            return 0;
+          }
         });
     spanBuilder.setAttribute("key", "value");
     spanBuilder.setAttribute("key", 12345L);

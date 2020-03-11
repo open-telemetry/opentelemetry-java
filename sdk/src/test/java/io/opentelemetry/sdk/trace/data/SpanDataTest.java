@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace.data;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptyList;
+import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -83,6 +84,46 @@ public class SpanDataTest {
     spanData
         .getTimedEvents()
         .add(TimedEvent.create(1234, "foo", Collections.<String, AttributeValue>emptyMap()));
+  }
+
+  @Test
+  public void defaultDroppedAttributeCountIsZero() {
+    SpanData spanData = createSpanDataWithMutableCollections();
+    assertEquals(0, spanData.getDroppedAttributeCount());
+  }
+
+  @Test
+  public void canSetDroppedAttributecountWithBuilder() {
+    SpanData spanData = createBasicSpanBuilder().setDroppedAttributeCount(123).build();
+    assertEquals(123, spanData.getDroppedAttributeCount());
+  }
+
+  @Test
+  public void link_defaultDroppedAttributeCountIsZero() {
+    SpanData.Link link = SpanData.Link.create(SpanContext.getInvalid());
+    assertThat(link.getDroppedAttributeCount()).isEqualTo(0);
+  }
+
+  @Test
+  public void link_canSetDroppedAttributeCountIsZero() {
+    SpanData.Link link = SpanData.Link.create(SpanContext.getInvalid());
+    assertThat(link.getDroppedAttributeCount()).isEqualTo(0);
+  }
+
+  @Test
+  public void timedEvent_defaultDroppedAttributeCountIsZero() {
+    SpanData.TimedEvent event =
+        SpanData.TimedEvent.create(
+            START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap());
+    assertThat(event.getDroppedAttributeCount()).isEqualTo(0);
+  }
+
+  @Test
+  public void timedEvent_canSetDroppedAttributeCountIsZero() {
+    SpanData.TimedEvent event =
+        SpanData.TimedEvent.create(
+            START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap(), 123);
+    assertThat(event.getDroppedAttributeCount()).isEqualTo(123);
   }
 
   private static SpanData createSpanDataWithMutableCollections() {
