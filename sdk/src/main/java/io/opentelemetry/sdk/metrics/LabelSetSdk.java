@@ -20,7 +20,6 @@ import static java.util.Collections.unmodifiableMap;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.metrics.LabelSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +27,7 @@ import javax.annotation.concurrent.Immutable;
 
 @AutoValue
 @Immutable
-abstract class LabelSetSdk implements LabelSet {
+abstract class LabelSetSdk {
   private static final LabelSetSdk EMPTY =
       new AutoValue_LabelSetSdk(Collections.<String, String>emptyMap());
 

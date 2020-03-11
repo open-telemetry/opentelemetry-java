@@ -36,7 +36,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
- *   private static final LabelSet labelSet = meter.createLabelSet("my_label");
  *
  *   void init() {
  *     observer.setCallback(
@@ -44,7 +43,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(ResultLongObserver result) {
- *             result.observe(count.addAndGet(1), labelSet);
+ *             result.observe(count.addAndGet(1), "my_label_key", "my_label_value");
  *           }
  *         });
  *   }

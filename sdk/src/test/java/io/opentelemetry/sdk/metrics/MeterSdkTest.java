@@ -241,7 +241,7 @@ public class MeterSdkTest {
   @Test
   public void collectAll() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
-    longCounter.add(10, testSdk.createLabelSet());
+    longCounter.add(10);
     LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testLongMeasure").build();
     longMeasure.record(10);
     // LongObserver longObserver = testSdk.longObserverBuilder("testLongObserver").build();
@@ -320,25 +320,5 @@ public class MeterSdkTest {
                         Arrays.asList(
                             ValueAtPercentile.create(0, 10.1d),
                             ValueAtPercentile.create(100, 10.1d))))));
-  }
-
-  @Test
-  public void testLabelSets() {
-    assertThat(testSdk.createLabelSet()).isSameInstanceAs(testSdk.createLabelSet());
-    assertThat(testSdk.createLabelSet())
-        .isSameInstanceAs(testSdk.createLabelSet(Collections.<String, String>emptyMap()));
-    assertThat(testSdk.createLabelSet()).isNotNull();
-
-    assertThat(testSdk.createLabelSet("key", "value"))
-        .isEqualTo(testSdk.createLabelSet("key", "value"));
-
-    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2"))
-        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2"));
-
-    assertThat(testSdk.createLabelSet(Collections.singletonMap("key", "value")))
-        .isEqualTo(testSdk.createLabelSet("key", "value"));
-
-    assertThat(testSdk.createLabelSet("key", "value"))
-        .isNotEqualTo(testSdk.createLabelSet("value", "key"));
   }
 }

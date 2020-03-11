@@ -60,7 +60,7 @@ public class LongMeasureSdkTest {
 
   @Test
   public void collectMetrics_NoRecords() {
-    LongMeasure longMeasure =
+    LongMeasureSdk longMeasure =
         testSdk
             .longMeasureBuilder("testMeasure")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
@@ -70,7 +70,7 @@ public class LongMeasureSdkTest {
             .setAbsolute(true)
             .build();
     assertThat(longMeasure).isInstanceOf(LongMeasureSdk.class);
-    List<MetricData> metricDataList = ((LongMeasureSdk) longMeasure).collectAll();
+    List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
@@ -110,8 +110,8 @@ public class LongMeasureSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = testSdk.createLabelSet("K", "V");
-    LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
+    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
+    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
     long startTime = testClock.now();
     LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
     BoundLongMeasure boundMeasure = longMeasure.bind("K", "V");

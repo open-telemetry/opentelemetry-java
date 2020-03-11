@@ -64,7 +64,7 @@ public class BatchRecorderSdkTest {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
     DoubleCounterSdk doubleMeasure = testSdk.doubleCounterBuilder("testDoubleMeasure").build();
     DoubleCounterSdk longMeasure = testSdk.doubleCounterBuilder("testLongMeasure").build();
-    LabelSetSdk labelSet = testSdk.createLabelSet("key", "value");
+    LabelSetSdk labelSet = LabelSetSdk.create("key", "value");
 
     testSdk
         .newBatchRecorder("key", "value")

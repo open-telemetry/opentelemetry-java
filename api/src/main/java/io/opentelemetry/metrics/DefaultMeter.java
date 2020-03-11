@@ -96,19 +96,6 @@ public final class DefaultMeter implements Meter {
     return new NoopBatchRecorder();
   }
 
-  @Override
-  public LabelSet createLabelSet(String... keyValuePairs) {
-    Utils.validateLabelPairs(keyValuePairs);
-    return NoopLabelSet.INSTANCE;
-  }
-
-  @Override
-  public LabelSet createLabelSet(Map<String, String> labels) {
-    Utils.checkNotNull(labels, "labels");
-    Utils.checkMapKeysNotNull(labels, "Null map keys are not allowed for LabelSet creation");
-    return NoopLabelSet.INSTANCE;
-  }
-
   private DefaultMeter() {}
 
   /** No-op implementation of DoubleCounter interface. */
@@ -433,9 +420,5 @@ public final class DefaultMeter implements Meter {
     }
 
     protected abstract B getThis();
-  }
-
-  private enum NoopLabelSet implements LabelSet {
-    INSTANCE
   }
 }
