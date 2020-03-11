@@ -114,7 +114,7 @@ public class LongMeasureSdkTest {
     LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
     long startTime = testClock.now();
     LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
-    BoundLongMeasure boundMeasure = longMeasure.bind(labelSet);
+    BoundLongMeasure boundMeasure = longMeasure.bind("K", "V");
     try {
       // Do some records using bounds and direct calls and bindings.
       longMeasure.record(12);
@@ -181,8 +181,8 @@ public class LongMeasureSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
-    BoundLongMeasure boundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
-    BoundLongMeasure duplicateBoundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
+    BoundLongMeasure boundMeasure = longMeasure.bind("K", "v");
+    BoundLongMeasure duplicateBoundMeasure = longMeasure.bind("K", "v");
     try {
       assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
     } finally {
@@ -194,10 +194,10 @@ public class LongMeasureSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
-    BoundLongMeasure boundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
+    BoundLongMeasure boundMeasure = longMeasure.bind("K", "v");
     try {
       longMeasure.collectAll();
-      BoundLongMeasure duplicateBoundMeasure = longMeasure.bind(testSdk.createLabelSet("K", "v"));
+      BoundLongMeasure duplicateBoundMeasure = longMeasure.bind("K", "v");
       try {
         assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
       } finally {
@@ -223,7 +223,7 @@ public class LongMeasureSdkTest {
         testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    longMeasure.bind(testSdk.createLabelSet()).record(-9);
+    longMeasure.bind().record(-9);
   }
 
   @Test
@@ -241,8 +241,7 @@ public class LongMeasureSdkTest {
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new LongMeasureSdkTest.OperationUpdaterWithBinding(
-                  longMeasure.bind(testSdk.createLabelSet("K", "V")))));
+              new LongMeasureSdkTest.OperationUpdaterWithBinding(longMeasure.bind("K", "V"))));
     }
 
     stressTestBuilder.build().run();
@@ -280,7 +279,7 @@ public class LongMeasureSdkTest {
               1_000,
               2,
               new LongMeasureSdkTest.OperationUpdaterWithBinding(
-                  longMeasure.bind(testSdk.createLabelSet(keys[i], values[i])))));
+                  longMeasure.bind(keys[i], values[i]))));
     }
 
     stressTestBuilder.build().run();

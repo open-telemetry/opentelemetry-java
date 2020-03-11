@@ -108,7 +108,7 @@ public class LongCounterSdkTest {
     LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
     long startTime = testClock.now();
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(labelSet);
+    BoundLongCounter boundCounter = longCounter.bind("K", "V");
     try {
       // Do some records using bounds and direct calls and bindings.
       longCounter.add(12, emptyLabelSet);
@@ -151,8 +151,8 @@ public class LongCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
-    BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    BoundLongCounter boundCounter = longCounter.bind("K", "v");
+    BoundLongCounter duplicateBoundCounter = longCounter.bind("K", "v");
     try {
       assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
     } finally {
@@ -164,10 +164,10 @@ public class LongCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    BoundLongCounter boundCounter = longCounter.bind("K", "v");
     try {
       longCounter.collectAll();
-      BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+      BoundLongCounter duplicateBoundCounter = longCounter.bind("K", "v");
       try {
         assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
       } finally {
@@ -193,7 +193,7 @@ public class LongCounterSdkTest {
         testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    longCounter.bind(testSdk.createLabelSet()).add(-9);
+    longCounter.bind().add(-9);
   }
 
   @Test
@@ -209,9 +209,7 @@ public class LongCounterSdkTest {
               2_000, 1, new OperationUpdaterDirectCall(longCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000,
-              1,
-              new OperationUpdaterWithBinding(longCounter.bind(testSdk.createLabelSet("K", "V")))));
+              2_000, 1, new OperationUpdaterWithBinding(longCounter.bind("K", "V"))));
     }
 
     stressTestBuilder.build().run();
@@ -239,10 +237,7 @@ public class LongCounterSdkTest {
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000,
-              2,
-              new OperationUpdaterWithBinding(
-                  longCounter.bind(testSdk.createLabelSet(keys[i], values[i])))));
+              1_000, 2, new OperationUpdaterWithBinding(longCounter.bind(keys[i], values[i]))));
     }
 
     stressTestBuilder.build().run();

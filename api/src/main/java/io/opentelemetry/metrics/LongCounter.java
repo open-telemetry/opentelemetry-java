@@ -67,7 +67,7 @@ public interface LongCounter extends Counter<BoundLongCounter> {
   void add(long delta, String... labelKeyValuePairs);
 
   @Override
-  BoundLongCounter bind(LabelSet labelSet);
+  BoundLongCounter bind(String... labelKeyValuePairs);
 
   /**
    * A {@code Bound Instrument} for a {@code LongCounter}.

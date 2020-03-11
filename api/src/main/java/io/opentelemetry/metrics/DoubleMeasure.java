@@ -63,7 +63,7 @@ public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
   void record(double value, String... labelKeyValuePairs);
 
   @Override
-  BoundDoubleMeasure bind(LabelSet labelSet);
+  BoundDoubleMeasure bind(String... labelKeyValuePairs);
 
   /**
    * A {@code Bound Instrument} for a {@code LongMeasure}.

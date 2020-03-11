@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -116,8 +115,8 @@ public class AbstractMeasureBuilderTest {
     }
 
     @Override
-    public TestBoundMeasure bind(LabelSet labelSet) {
-      return bindInternal((LabelSetSdk) labelSet);
+    public TestBoundMeasure bind(String... labelKeyValuePairs) {
+      return bindInternal(LabelSetSdk.create(labelKeyValuePairs));
     }
   }
 

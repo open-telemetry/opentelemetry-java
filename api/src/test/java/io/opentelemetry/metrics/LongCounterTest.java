@@ -94,7 +94,7 @@ public class LongCounterTest {
   }
 
   @Test
-  public void noopBind_WithNullLabelSet() {
+  public void noopBind_WithBadLabelSet() {
     LongCounter longCounter =
         meter
             .longCounterBuilder(NAME)
@@ -102,9 +102,9 @@ public class LongCounterTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelSet");
-    longCounter.bind(null);
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("key/value");
+    longCounter.bind("key");
   }
 
   @Test
@@ -116,6 +116,6 @@ public class LongCounterTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    longCounter.bind(meter.createLabelSet()).add(1);
+    longCounter.bind().add(1);
   }
 }

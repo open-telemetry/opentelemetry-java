@@ -67,7 +67,7 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
   void add(double delta, String... labelKeyValuePairs);
 
   @Override
-  BoundDoubleCounter bind(LabelSet labelSet);
+  BoundDoubleCounter bind(String... labelKeyValuePairs);
 
   /**
    * A {@code Bound Instrument} for a {@code CounterDouble}.

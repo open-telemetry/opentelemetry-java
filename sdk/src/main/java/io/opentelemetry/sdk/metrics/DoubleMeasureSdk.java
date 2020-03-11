@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.metrics.DoubleMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -42,14 +41,14 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
   }
 
   void record(double value, LabelSetSdk labelSet) {
-    BoundInstrument boundInstrument = bind(labelSet);
+    BoundInstrument boundInstrument = bindInternal(labelSet);
     boundInstrument.record(value);
     boundInstrument.unbind();
   }
 
   @Override
-  public BoundInstrument bind(LabelSet labelSet) {
-    return bindInternal((LabelSetSdk) labelSet);
+  public BoundInstrument bind(String... labelKeyValuePairs) {
+    return bindInternal(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override

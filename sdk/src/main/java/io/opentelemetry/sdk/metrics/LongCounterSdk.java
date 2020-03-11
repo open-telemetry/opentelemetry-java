@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -42,14 +41,14 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
   }
 
   void add(long delta, LabelSetSdk labelSet) {
-    BoundInstrument boundInstrument = bind(labelSet);
+    BoundInstrument boundInstrument = bindInternal(labelSet);
     boundInstrument.add(delta);
     boundInstrument.unbind();
   }
 
   @Override
-  public BoundInstrument bind(LabelSet labelSet) {
-    return bindInternal((LabelSetSdk) labelSet);
+  public BoundInstrument bind(String... labelKeyValuePairs) {
+    return bindInternal(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override
