@@ -41,6 +41,21 @@ public interface InstrumentWithBinding<B extends BoundInstrument> extends Instru
    */
   B bind(LabelSet labelSet);
 
+  /**
+   * Returns a {@code Bound Instrument} associated with the specified set of labels. Labels are
+   * specified as key-value pairs of String. Multiples requests with the same set of labels may
+   * return the same {@code Bound Instrument} instance.
+   *
+   * <p>It is recommended that callers keep a reference to the Bound Instrument instead of always
+   * calling this method for every operation.
+   *
+   * @param labelKeyValuePairs the set of labels, as key-value pairs of String.
+   * @return a {@code Bound Instrument}
+   * @throws IllegalArgumentException if {@code labelValues} are not valid.
+   * @since 0.1.0
+   */
+  B bind(String... labelKeyValuePairs);
+
   interface BoundInstrument {
     /**
      * Unbinds the current {@code Bound} from the Instrument.

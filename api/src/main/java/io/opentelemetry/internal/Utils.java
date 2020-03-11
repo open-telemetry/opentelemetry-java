@@ -220,8 +220,7 @@ public final class Utils {
    */
   public static void validateLabelPairs(String[] keyValuePairs) {
     checkArgument(
-        keyValuePairs.length % 2 == 0,
-        "You must provide an even number of key/value pair arguments.");
+        keyValuePairs.length % 2 == 0, "You must provide an even number of key/value arguments.");
     for (int i = 0; i < keyValuePairs.length; i += 2) {
       String key = keyValuePairs[i];
       checkNotNull(key, "You cannot provide null keys for label creation.");

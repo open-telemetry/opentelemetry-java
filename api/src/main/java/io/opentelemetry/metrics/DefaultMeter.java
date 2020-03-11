@@ -129,6 +129,12 @@ public final class DefaultMeter implements Meter {
       return NoopBoundDoubleCounter.INSTANCE;
     }
 
+    @Override
+    public BoundDoubleCounter bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
+      return NoopBoundDoubleCounter.INSTANCE;
+    }
+
     /** No-op implementation of BoundDoubleCounter interface. */
     @Immutable
     private enum NoopBoundDoubleCounter implements BoundDoubleCounter {
@@ -169,6 +175,12 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopBoundLongCounter bind(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
+      return NoopBoundLongCounter.INSTANCE;
+    }
+
+    @Override
+    public BoundLongCounter bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundLongCounter.INSTANCE;
     }
 
@@ -213,6 +225,12 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopBoundDoubleMeasure bind(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
+      return NoopBoundDoubleMeasure.INSTANCE;
+    }
+
+    @Override
+    public BoundDoubleMeasure bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundDoubleMeasure.INSTANCE;
     }
 
@@ -263,6 +281,12 @@ public final class DefaultMeter implements Meter {
     @Override
     public NoopBoundLongMeasure bind(LabelSet labelSet) {
       Utils.checkNotNull(labelSet, "labelSet");
+      return NoopBoundLongMeasure.INSTANCE;
+    }
+
+    @Override
+    public BoundLongMeasure bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundLongMeasure.INSTANCE;
     }
 

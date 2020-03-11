@@ -41,7 +41,7 @@ abstract class AbstractInstrumentWithBinding<B extends AbstractBoundInstrument>
   // Cannot make this "bind" because of a Java problem if we make this class also implement the
   // InstrumentWithBinding then the subclass will fail to compile because of different "bind"
   // signature. This is a good trade-off.
-  final B bindInternal(LabelSet labelSet) {
+  final B bindInternal(LabelSetSdk labelSet) {
     B binding = boundLabels.get(labelSet);
     if (binding != null && binding.bind()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.

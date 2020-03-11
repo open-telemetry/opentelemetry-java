@@ -113,7 +113,7 @@ public class DoubleMeasureSdkTest {
     LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
     long startTime = testClock.now();
     DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
-    BoundDoubleMeasure boundMeasure = doubleMeasure.bind(labelSet);
+    BoundDoubleMeasure boundMeasure = doubleMeasure.bind("K", "V");
     try {
       // Do some records using bounds and direct calls and bindings.
       doubleMeasure.record(12.1d, emptyLabelSet);
@@ -178,8 +178,8 @@ public class DoubleMeasureSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
-    BoundDoubleMeasure boundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
-    BoundDoubleMeasure duplicateBoundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
+    BoundDoubleMeasure boundMeasure = doubleMeasure.bind("K", "v");
+    BoundDoubleMeasure duplicateBoundMeasure = doubleMeasure.bind("K", "v");
     try {
       assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
     } finally {
@@ -191,11 +191,10 @@ public class DoubleMeasureSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
-    BoundDoubleMeasure boundMeasure = doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
+    BoundDoubleMeasure boundMeasure = doubleMeasure.bind("K", "v");
     try {
       doubleMeasure.collectAll();
-      BoundDoubleMeasure duplicateBoundMeasure =
-          doubleMeasure.bind(testSdk.createLabelSet("K", "v"));
+      BoundDoubleMeasure duplicateBoundMeasure = doubleMeasure.bind("K", "v");
       try {
         assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
       } finally {
@@ -221,7 +220,7 @@ public class DoubleMeasureSdkTest {
         testSdk.doubleMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    doubleMeasure.bind(testSdk.createLabelSet()).record(-9.3f);
+    doubleMeasure.bind().record(-9.3f);
   }
 
   @Test
@@ -240,10 +239,7 @@ public class DoubleMeasureSdkTest {
                   testSdk, doubleMeasure, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000,
-              2,
-              new OperationUpdaterWithBinding(
-                  doubleMeasure.bind(testSdk.createLabelSet("K", "V")))));
+              1_000, 2, new OperationUpdaterWithBinding(doubleMeasure.bind("K", "V"))));
     }
 
     stressTestBuilder.build().run();
@@ -279,10 +275,7 @@ public class DoubleMeasureSdkTest {
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000,
-              1,
-              new OperationUpdaterWithBinding(
-                  doubleMeasure.bind(testSdk.createLabelSet(keys[i], values[i])))));
+              2_000, 1, new OperationUpdaterWithBinding(doubleMeasure.bind(keys[i], values[i]))));
     }
 
     stressTestBuilder.build().run();

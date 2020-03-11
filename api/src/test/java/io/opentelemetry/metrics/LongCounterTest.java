@@ -102,9 +102,9 @@ public class LongCounterTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelSet");
-    longCounter.bind(null);
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("key/value");
+    longCounter.bind("foo");
   }
 
   @Test

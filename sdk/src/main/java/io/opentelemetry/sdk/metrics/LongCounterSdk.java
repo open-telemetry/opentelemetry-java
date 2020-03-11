@@ -45,7 +45,12 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return bindInternal(labelSet);
+    return bindInternal((LabelSetSdk) labelSet);
+  }
+
+  @Override
+  public BoundLongCounter bind(String... labelKeyValuePairs) {
+    return bindInternal(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override

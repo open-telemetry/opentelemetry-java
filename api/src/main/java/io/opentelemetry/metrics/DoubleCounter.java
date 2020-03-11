@@ -61,10 +61,13 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
    * <p>The value added is associated with the current {@code Context} and provided LabelSet.
    *
    * @param delta the value to add.
-   * @param labelKeyValuePairs the labels to be associated to this recording.
+   * @param labelKeyValuePairs the set of labels to be associated to this recording.
    * @since 0.1.0
    */
   void add(double delta, String... labelKeyValuePairs);
+
+  @Override
+  BoundDoubleCounter bind(String... labelKeyValuePairs);
 
   @Override
   BoundDoubleCounter bind(LabelSet labelSet);

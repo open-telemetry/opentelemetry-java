@@ -110,7 +110,7 @@ public class DoubleCounterSdkTest {
     LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
     long startTime = testClock.now();
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
-    BoundDoubleCounter boundCounter = doubleCounter.bind(labelSet);
+    BoundDoubleCounter boundCounter = doubleCounter.bind("K", "V");
     try {
       // Do some records using bounds and direct calls and bindings.
       doubleCounter.add(12.1d);
@@ -153,8 +153,8 @@ public class DoubleCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
-    BoundDoubleCounter boundCounter = doubleCounter.bind(testSdk.createLabelSet("K", "v"));
-    BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind(testSdk.createLabelSet("K", "v"));
+    BoundDoubleCounter boundCounter = doubleCounter.bind("K", "v");
+    BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind("K", "v");
     try {
       assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
     } finally {
@@ -166,11 +166,10 @@ public class DoubleCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
-    BoundDoubleCounter boundCounter = doubleCounter.bind(testSdk.createLabelSet("K", "v"));
+    BoundDoubleCounter boundCounter = doubleCounter.bind("K", "v");
     try {
       doubleCounter.collectAll();
-      BoundDoubleCounter duplicateBoundCounter =
-          doubleCounter.bind(testSdk.createLabelSet("K", "v"));
+      BoundDoubleCounter duplicateBoundCounter = doubleCounter.bind("K", "v");
       try {
         assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
       } finally {
@@ -196,7 +195,7 @@ public class DoubleCounterSdkTest {
         testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    doubleCounter.bind(testSdk.createLabelSet()).add(-9.3);
+    doubleCounter.bind().add(-9.3);
   }
 
   @Test
@@ -212,10 +211,7 @@ public class DoubleCounterSdkTest {
               1_000, 2, new OperationUpdaterDirectCall(doubleCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000,
-              2,
-              new OperationUpdaterWithBinding(
-                  doubleCounter.bind(testSdk.createLabelSet("K", "V")))));
+              1_000, 2, new OperationUpdaterWithBinding(doubleCounter.bind("K", "V"))));
     }
 
     stressTestBuilder.build().run();
@@ -243,10 +239,7 @@ public class DoubleCounterSdkTest {
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000,
-              1,
-              new OperationUpdaterWithBinding(
-                  doubleCounter.bind(testSdk.createLabelSet(keys[i], values[i])))));
+              2_000, 1, new OperationUpdaterWithBinding(doubleCounter.bind(keys[i], values[i]))));
     }
 
     stressTestBuilder.build().run();
