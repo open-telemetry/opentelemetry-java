@@ -164,7 +164,7 @@ public final class DefaultMeter implements Meter {
     private NoopLongCounter() {}
 
     @Override
-    public void add(long delta, LabelSet labelSet) {}
+    public void add(long delta, String... labelKeyValuePairs) {}
 
     @Override
     public NoopBoundLongCounter bind(LabelSet labelSet) {

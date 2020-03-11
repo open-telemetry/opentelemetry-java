@@ -52,7 +52,7 @@ final class BatchRecorderSdk implements BatchRecorder {
 
   @Override
   public BatchRecorder put(LongCounter counter, long value) {
-    counter.add(value, labelSet);
+    ((LongCounterSdk) counter).add(value, labelSet);
     return this;
   }
 
