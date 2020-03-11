@@ -51,5 +51,5 @@ public interface Link {
    *
    * @return the number of dropped attributes.
    */
-  int getDroppedAttributeCount();
+  long getDroppedAttributeCount();
 }

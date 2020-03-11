@@ -99,7 +99,7 @@ public class DefaultSpanTest {
     }
 
     @Override
-    public int getDroppedAttributeCount() {
+    public long getDroppedAttributeCount() {
       return 0;
     }
   }

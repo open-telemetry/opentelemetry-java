@@ -126,4 +126,9 @@ public final class MessageEvent implements Event {
   public int getDroppedAttributeCount() {
     return droppedAttributeCount;
   }
+
+  @Override
+  public long getDroppedAttributeCount() {
+    return 0;
+  }
 }
