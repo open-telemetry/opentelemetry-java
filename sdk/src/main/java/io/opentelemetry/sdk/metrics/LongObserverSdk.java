@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -95,13 +94,14 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     }
 
     @Override
-    public void observe(long value, LabelSet labelSet) {
+    public void observe(long value, String... keyValueLabelPairs) {
       if (monotonic && value < 0) {
         throw new IllegalArgumentException("monotonic observers can only record positive values");
       }
       Aggregator aggregator = activeBatcher.getAggregator();
       aggregator.recordLong(value);
-      activeBatcher.batch(labelSet, aggregator, /* mappedAggregator= */ false);
+      activeBatcher.batch(
+          LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
     }
   }
 }

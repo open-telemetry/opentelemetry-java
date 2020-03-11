@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
@@ -42,7 +41,7 @@ final class ActiveBatcher implements Batcher {
   }
 
   @Override
-  public void batch(LabelSet labelSet, Aggregator aggregator, boolean mappedAggregator) {
+  public void batch(LabelSetSdk labelSet, Aggregator aggregator, boolean mappedAggregator) {
     batcher.batch(labelSet, aggregator, mappedAggregator);
   }
 
