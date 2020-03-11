@@ -61,5 +61,23 @@ public final class StringUtils {
     return metricName.matches(pattern);
   }
 
+  /**
+   * Pads a given string on the left with leading 0's up the max length.
+   *
+   * @param value the string to pad
+   * @param length the size
+   * @return the padded string
+   */
+  public static String padLeft(String value, int length) {
+    if (value == null || length <= 0) {
+      throw new IllegalArgumentException();
+    }
+
+    if (value.length() >= length) {
+      return value;
+    }
+    return String.format("%1$" + length + "s", value).replace(' ', '0');
+  }
+
   private StringUtils() {}
 }

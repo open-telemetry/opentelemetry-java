@@ -183,7 +183,7 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
               : NOT_SAMPLED_FLAGS;
 
       return SpanContext.createFromRemoteParent(
-          TraceId.fromLowerBase16(traceId, 0),
+          TraceId.fromLowerBase16(StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH), 0),
           SpanId.fromLowerBase16(spanId, 0),
           traceFlags,
           TraceState.getDefault());

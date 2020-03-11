@@ -17,6 +17,7 @@
 package io.opentelemetry.internal;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,5 +39,30 @@ public final class StringUtilsTest {
     assertThat(StringUtils.isNullOrEmpty(null)).isTrue();
     assertThat(StringUtils.isNullOrEmpty("hello")).isFalse();
     assertThat(StringUtils.isNullOrEmpty(" ")).isFalse();
+  }
+
+  @Test
+  public void padLeft() {
+    assertEquals(StringUtils.padLeft("value", 10), "00000value");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void padLeft_throws_for_value() {
+    StringUtils.padLeft(null, 10);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void padLeft_throws_for_negative_length() {
+    StringUtils.padLeft("value", -10);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void padLeft_throws_for_zero_length() {
+    StringUtils.padLeft("value", 0);
+  }
+
+  @Test
+  public void padLeft_length_does_not_exceed_length() {
+    assertEquals(StringUtils.padLeft("value", 3), "value");
   }
 }
