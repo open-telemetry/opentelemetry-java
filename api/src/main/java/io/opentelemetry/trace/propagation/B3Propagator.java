@@ -50,6 +50,9 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
 
   private static final int MAX_TRACE_ID_LENGTH = 2 * TraceId.getSize();
   private static final int MAX_SPAN_ID_LENGTH = 2 * SpanId.getSize();
+  private static final TraceFlags SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(true).build();
+  private static final TraceFlags NOT_SAMPLED_FLAGS =
+      TraceFlags.builder().setIsSampled(false).build();
 
   private static final List<String> FIELDS =
       Collections.unmodifiableList(Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER));
@@ -177,11 +180,9 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
   private static SpanContext buildSpanContext(String traceId, String spanId, String sampled) {
     try {
       TraceFlags traceFlags =
-          TraceFlags.builder()
-              .setIsSampled(
-                  TRUE_INT.equals(sampled)
-                      || Boolean.parseBoolean(sampled)) // accept either "1" or "true"
-              .build();
+          TRUE_INT.equals(sampled) || Boolean.parseBoolean(sampled) // accept either "1" or "true"
+              ? SAMPLED_FLAGS
+              : NOT_SAMPLED_FLAGS;
 
       return SpanContext.createFromRemoteParent(
           TraceId.fromLowerBase16(traceId, 0),
