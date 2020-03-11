@@ -46,19 +46,31 @@ public final class StringUtilsTest {
     assertEquals(StringUtils.padLeft("value", 10), "00000value");
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void padLeft_throws_for_value() {
-    StringUtils.padLeft(null, 10);
+  @Test
+  public void padLeft_throws_for_null_value() {
+    try {
+      StringUtils.padLeft(null, 10);
+    } catch (Throwable e) {
+      assertThat(e).isInstanceOf(IllegalArgumentException.class);
+    }
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void padLeft_throws_for_negative_length() {
-    StringUtils.padLeft("value", -10);
+    try {
+      StringUtils.padLeft("value", -10);
+    } catch (Throwable e) {
+      assertThat(e).isInstanceOf(IllegalArgumentException.class);
+    }
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void padLeft_throws_for_zero_length() {
-    StringUtils.padLeft("value", 0);
+    try {
+      StringUtils.padLeft("value", 0);
+    } catch (Throwable e) {
+      assertThat(e).isInstanceOf(IllegalArgumentException.class);
+    }
   }
 
   @Test
