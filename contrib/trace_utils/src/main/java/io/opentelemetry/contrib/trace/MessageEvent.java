@@ -16,7 +16,7 @@
 
 package io.opentelemetry.contrib.trace;
 
-import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.trace.Event;
 import java.util.Collections;
 import java.util.HashMap;

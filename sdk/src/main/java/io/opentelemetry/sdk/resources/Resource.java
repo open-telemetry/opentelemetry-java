@@ -17,9 +17,9 @@
 package io.opentelemetry.sdk.resources;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
