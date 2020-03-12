@@ -49,7 +49,7 @@ public class TimedEventTest {
         }
 
         @Override
-        public long getDroppedAttributeCount() {
+        public int getDroppedAttributeCount() {
           return 0;
         }
       };

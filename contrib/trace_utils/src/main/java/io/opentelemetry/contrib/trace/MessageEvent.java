@@ -69,7 +69,7 @@ public final class MessageEvent implements Event {
   private static final AttributeValue zeroAttributeValue = AttributeValue.longAttributeValue(0);
 
   private final Map<String, AttributeValue> attributeValueMap;
-  private long droppedAttributeCount = 0;
+  private int droppedAttributeCount = 0;
 
   /**
    * Returns a {@code MessageEvent} with the desired values.
@@ -89,7 +89,7 @@ public final class MessageEvent implements Event {
       long messageId,
       long uncompressedSize,
       long compressedSize,
-      long droppedAttributeCount) {
+      int droppedAttributeCount) {
     Map<String, AttributeValue> attributeValueMap = new HashMap<>();
     attributeValueMap.put(TYPE, type == Type.SENT ? sentAttributeValue : receivedAttributeValue);
     attributeValueMap.put(
@@ -117,13 +117,13 @@ public final class MessageEvent implements Event {
     return attributeValueMap;
   }
 
-  private MessageEvent(Map<String, AttributeValue> attributeValueMap, long droppedAttributeCount) {
+  private MessageEvent(Map<String, AttributeValue> attributeValueMap, int droppedAttributeCount) {
     this.attributeValueMap = attributeValueMap;
     this.droppedAttributeCount = droppedAttributeCount;
   }
 
   @Override
-  public long getDroppedAttributeCount() {
+  public int getDroppedAttributeCount() {
     return droppedAttributeCount;
   }
 }

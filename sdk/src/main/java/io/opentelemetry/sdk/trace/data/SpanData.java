@@ -206,7 +206,7 @@ public abstract class SpanData {
    *
    * @return the number of dropped attributes.
    */
-  public abstract long getDroppedAttributeCount();
+  public abstract int getDroppedAttributeCount();
 
   /**
    * An immutable implementation of {@link Link}.
@@ -217,7 +217,7 @@ public abstract class SpanData {
   @AutoValue
   public abstract static class Link implements io.opentelemetry.trace.Link {
 
-    private static final long ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
+    private static final int ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
 
     /**
      * Returns a new immutable {@code Link}.
@@ -259,7 +259,7 @@ public abstract class SpanData {
     public static Link create(
         SpanContext spanContext,
         Map<String, AttributeValue> attributes,
-        long droppedAttributeCount) {
+        int droppedAttributeCount) {
       return new AutoValue_SpanData_Link(
           spanContext,
           Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
@@ -273,7 +273,7 @@ public abstract class SpanData {
     public abstract Map<String, AttributeValue> getAttributes();
 
     @Override
-    public abstract long getDroppedAttributeCount();
+    public abstract int getDroppedAttributeCount();
 
     Link() {}
   }
@@ -287,7 +287,7 @@ public abstract class SpanData {
   @AutoValue
   public abstract static class TimedEvent implements Event {
 
-    private static final long ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
+    private static final int ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
 
     /**
      * Returns a new immutable {@code TimedEvent}.
@@ -317,7 +317,7 @@ public abstract class SpanData {
         long epochNanos,
         String name,
         Map<String, AttributeValue> attributes,
-        long droppedAttributeCount) {
+        int droppedAttributeCount) {
       return new AutoValue_SpanData_TimedEvent(epochNanos, name, attributes, droppedAttributeCount);
     }
 
@@ -336,7 +336,7 @@ public abstract class SpanData {
     public abstract Map<String, AttributeValue> getAttributes();
 
     @Override
-    public abstract long getDroppedAttributeCount();
+    public abstract int getDroppedAttributeCount();
 
     TimedEvent() {}
   }
@@ -572,6 +572,6 @@ public abstract class SpanData {
      * @param droppedAttributeCount The number of dropped attributes.
      * @return
      */
-    public abstract Builder setDroppedAttributeCount(long droppedAttributeCount);
+    public abstract Builder setDroppedAttributeCount(int droppedAttributeCount);
   }
 }
