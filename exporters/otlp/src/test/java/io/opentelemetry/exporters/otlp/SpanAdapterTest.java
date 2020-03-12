@@ -19,6 +19,7 @@ package io.opentelemetry.exporters.otlp;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.protobuf.ByteString;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
 import io.opentelemetry.proto.trace.v1.Span;
@@ -28,7 +29,6 @@ import io.opentelemetry.proto.trace.v1.Status.StatusCode;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
-import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;

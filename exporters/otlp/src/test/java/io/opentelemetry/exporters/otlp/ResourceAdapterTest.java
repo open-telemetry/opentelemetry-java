@@ -19,10 +19,10 @@ package io.opentelemetry.exporters.otlp;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
