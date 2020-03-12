@@ -16,9 +16,9 @@
 
 package io.opentelemetry.exporters.otlp;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
-import io.opentelemetry.trace.AttributeValue;
 
 final class CommonAdapter {
   static AttributeKeyValue toProtoAttribute(String key, AttributeValue attributeValue) {

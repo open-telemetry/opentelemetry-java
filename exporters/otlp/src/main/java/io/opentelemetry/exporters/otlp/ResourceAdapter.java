@@ -16,8 +16,8 @@
 
 package io.opentelemetry.exporters.otlp;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.proto.resource.v1.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Map;
 
 final class ResourceAdapter {

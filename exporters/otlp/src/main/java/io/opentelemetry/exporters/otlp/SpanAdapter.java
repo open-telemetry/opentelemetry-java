@@ -16,6 +16,7 @@
 
 package io.opentelemetry.exporters.otlp;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
@@ -25,7 +26,6 @@ import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
-import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import java.util.ArrayList;
 import java.util.HashMap;
