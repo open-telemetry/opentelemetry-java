@@ -19,8 +19,8 @@ package io.opentelemetry.sdk.resource;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

@@ -18,14 +18,14 @@ package io.opentelemetry.sdk.trace;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
+import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;

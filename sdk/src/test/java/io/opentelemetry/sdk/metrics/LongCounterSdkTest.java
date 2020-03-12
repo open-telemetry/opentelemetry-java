@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -28,7 +29,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.resources;
 
-import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.common.AttributeValue;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

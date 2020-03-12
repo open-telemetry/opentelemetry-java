@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.Utils;

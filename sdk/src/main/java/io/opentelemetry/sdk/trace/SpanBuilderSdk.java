@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
@@ -25,8 +27,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;

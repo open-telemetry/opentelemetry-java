@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -31,7 +32,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Rule;

@@ -16,12 +16,12 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.DoubleObserver.ResultDoubleObserver;
 import io.opentelemetry.metrics.Observer.Callback;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
