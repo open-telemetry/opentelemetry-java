@@ -243,12 +243,12 @@ public class MeterSdkTest {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
     longCounter.add(10, testSdk.createLabelSet());
     LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testLongMeasure").build();
-    longMeasure.record(10, testSdk.createLabelSet());
+    longMeasure.record(10);
     // LongObserver longObserver = testSdk.longObserverBuilder("testLongObserver").build();
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
-    doubleCounter.add(10.1, testSdk.createLabelSet());
+    doubleCounter.add(10.1);
     DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testDoubleMeasure").build();
-    doubleMeasure.record(10.1, testSdk.createLabelSet());
+    doubleMeasure.record(10.1);
     // DoubleObserver doubleObserver = testSdk.doubleObserverBuilder("testDoubleObserver").build();
 
     assertThat(testSdk.collectAll())
