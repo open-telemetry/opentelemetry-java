@@ -578,7 +578,7 @@ public abstract class SpanData {
      * Set the number of dropped attributes on this span.
      *
      * @param droppedAttributeCount The number of dropped attributes.
-     * @return
+     * @return this
      */
     public abstract Builder setDroppedAttributeCount(int droppedAttributeCount);
   }
