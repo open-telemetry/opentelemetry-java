@@ -69,7 +69,7 @@ class ConfigureTraceExample {
     TraceConfig config = TraceConfig.getDefault();
     printTraceConfig();
 
-    // We can have 32 Attributes by default. Let's add some to a span and verify they are stored
+    // We can have a maximum of 32 Attributes by default. Let's add some to a span and verify they are stored
     // correctly.
     Span multiAttrSpan = tracer.spanBuilder("Example Span Attributes").startSpan();
     multiAttrSpan.setAttribute("Attribute 1", "first attribute value");
@@ -88,8 +88,7 @@ class ConfigureTraceExample {
     singleAttrSpan.setAttribute("Attribute 2", "second attribute value");
     singleAttrSpan.end();
 
-    // We can also change how the Spans are sampled. For example, we can turn off completely the
-    // spans.
+    // For example, we can configure that all spans are dropped using the "always off" sampler.
     TraceConfig alwaysOff =
         TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOff()).build();
     tracerProvider.updateActiveTraceConfig(alwaysOff);
@@ -121,7 +120,9 @@ class ConfigureTraceExample {
 
           @Override
           public Map<String, AttributeValue> attributes() {
-            return Collections.emptyMap();
+            // This method MUST return an immutable list of Attributes
+            // that will be added to the generated Span.
+            return Collections.unmodifiableMap(Collections.emptyMap());
           }
         };
       }
@@ -141,7 +142,7 @@ class ConfigureTraceExample {
     tracer.spanBuilder("#2 - SAMPLED").startSpan().end();
     tracer.spanBuilder("#3 - Smth").startSpan().end();
     tracer
-        .spanBuilder("#4 - SAMPLED this trace will be showed in the console output")
+        .spanBuilder("#4 - SAMPLED this trace will be shown in the console output")
         .startSpan()
         .end();
     tracer.spanBuilder("#5").startSpan().end();

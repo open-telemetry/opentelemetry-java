@@ -51,9 +51,8 @@ class ConfigureSpanProcessorExample {
     // Print to the console the list of span processors enabled.
     DemoUtils.printProcessorList(tracer);
 
-    // We can also implement our own SpanProcessor. It is necessary to only implement the relative
-    // interface
-    // which requires three methods that are called during the lifespan of Spans.
+    // We can also implement our own SpanProcessor. It is only necessary to implement the respective
+    // interface which requires three methods that are called during the lifespan of Spans.
     class MySpanProcessor implements SpanProcessor {
 
       @Override
@@ -64,8 +63,8 @@ class ConfigureSpanProcessorExample {
 
       @Override
       public void onEnd(ReadableSpan span) {
-        // This method is called when a span is terminated;
-        System.out.printf("Span %s - Terminated\n", span.getName());
+        // This method is called when a span is ended;
+        System.out.printf("Span %s - Ended\n", span.getName());
       }
 
       @Override
@@ -81,8 +80,7 @@ class ConfigureSpanProcessorExample {
     }
 
     // We can also configure multiple span processors at the same time using the MultiSpanProcessor
-    // class.
-    // MultiSpanProcessor can be nested.
+    // class. MultiSpanProcessor can be nested.
     tracerProvider.addSpanProcessor(
         MultiSpanProcessor.create(
             Arrays.asList(
@@ -100,7 +98,7 @@ class ConfigureSpanProcessorExample {
     tracer.spanBuilder("Span #3").startSpan().end();
 
     // We shutdown the OpenTelemetry library
-    // This automatically shuts down
+    // This also calls `shutdown` on all configured SpanProcessors.
     OpenTelemetrySdk.getTracerFactory().shutdown();
   }
 }
