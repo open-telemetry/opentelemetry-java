@@ -56,7 +56,7 @@ public class SpanBenchmark {
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public SpanData exerciseSpan_01Thread() {
-    return doSomeWork();
+    return doSpanWork(span);
   }
 
   @Benchmark
@@ -66,7 +66,7 @@ public class SpanBenchmark {
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public SpanData exerciseSpan_05Threads() {
-    return doSomeWork();
+    return doSpanWork(span);
   }
 
   @Benchmark
@@ -76,7 +76,7 @@ public class SpanBenchmark {
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public SpanData exerciseSpan_02Threads() {
-    return doSomeWork();
+    return doSpanWork(span);
   }
 
   @Benchmark
@@ -86,10 +86,10 @@ public class SpanBenchmark {
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public SpanData exerciseSpan_10Threads() {
-    return doSomeWork();
+    return doSpanWork(span);
   }
 
-  private SpanData doSomeWork() {
+  private static SpanData doSpanWork(RecordEventsReadableSpan span) {
     span.setAttribute("longAttribute", 33L);
     span.setAttribute("stringAttribute", "test_value");
     span.setStatus(Status.OK);
