@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace.data;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -89,13 +88,13 @@ public class SpanDataTest {
   @Test
   public void defaultDroppedAttributeCountIsZero() {
     SpanData spanData = createSpanDataWithMutableCollections();
-    assertEquals(0, spanData.getDroppedAttributeCount());
+    assertThat(spanData.getDroppedAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void canSetDroppedAttributecountWithBuilder() {
     SpanData spanData = createBasicSpanBuilder().setDroppedAttributeCount(123).build();
-    assertEquals(123, spanData.getDroppedAttributeCount());
+    assertThat(spanData.getDroppedAttributeCount()).isEqualTo(123);
   }
 
   @Test
