@@ -36,7 +36,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class IntervalMetricsReader {
+/** Unit tests for {@link IntervalMetricReader}. */
+public class IntervalMetricReaderTest {
   private static final MetricData.Descriptor METRIC_DESCRIPTOR =
       MetricData.Descriptor.create(
           "my metric",
@@ -53,7 +54,7 @@ public class IntervalMetricsReader {
       MetricData.create(
           METRIC_DESCRIPTOR,
           Resource.getEmpty(),
-          InstrumentationLibraryInfo.create("IntervalMetricsReader", null),
+          InstrumentationLibraryInfo.create("IntervalMetricReaderTest", null),
           LONG_POINT_LIST);
 
   @Mock private MetricProducer metricProducer;

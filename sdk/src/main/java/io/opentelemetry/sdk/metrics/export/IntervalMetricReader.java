@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import jdk.nashorn.internal.ir.annotations.Immutable;
 
@@ -39,16 +38,14 @@ import jdk.nashorn.internal.ir.annotations.Immutable;
 public final class IntervalMetricReader {
   private final Exporter exporter;
   private final ScheduledExecutorService scheduler;
-  private final ScheduledFuture<?> scheduledFuture;
 
   /**
-   * Stops the worker thread by calling {@link Thread#interrupt()}.
+   * Stops the scheduled task and calls export one more time.
    *
    * @since 0.3.0
    */
   public void shutdown() {
     scheduler.shutdown();
-    scheduledFuture.cancel(false);
     exporter.run();
   }
 
@@ -125,15 +122,15 @@ public final class IntervalMetricReader {
     }
   }
 
+  @SuppressWarnings("FutureReturnValueIgnored")
   private IntervalMetricReader(InternalState internalState) {
     this.exporter = new Exporter(internalState);
     this.scheduler = Executors.newScheduledThreadPool(1, MoreExecutors.platformThreadFactory());
-    this.scheduledFuture =
-        scheduler.scheduleAtFixedRate(
-            exporter,
-            internalState.getExportIntervalMillis(),
-            internalState.getExportIntervalMillis(),
-            TimeUnit.MILLISECONDS);
+    this.scheduler.scheduleAtFixedRate(
+        exporter,
+        internalState.getExportIntervalMillis(),
+        internalState.getExportIntervalMillis(),
+        TimeUnit.MILLISECONDS);
   }
 
   private static final class Exporter implements Runnable {
