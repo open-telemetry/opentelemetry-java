@@ -52,10 +52,10 @@ public class BatchRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
-  public void batchRecorder_NullLabelSet() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelSet");
-    testSdk.newBatchRecorder(null).record();
+  public void batchRecorder_badLabelSet() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("key/value");
+    testSdk.newBatchRecorder("key").record();
   }
 
   @Test
@@ -67,7 +67,7 @@ public class BatchRecorderSdkTest {
     LabelSetSdk labelSet = testSdk.createLabelSet("key", "value");
 
     testSdk
-        .newBatchRecorder(labelSet)
+        .newBatchRecorder("key", "value")
         .put(longCounter, 12)
         .put(doubleCounter, 12.1d)
         .put(longMeasure, 13)
