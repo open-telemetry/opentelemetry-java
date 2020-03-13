@@ -41,7 +41,6 @@ public final class MessageEvent implements Event {
   private static final String ID = "message.id";
   private static final String COMPRESSED_SIZE = "message.compressed_size";
   private static final String UNCOMPRESSED_SIZE = "message.uncompressed_size";
-  private static final int ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
 
   /**
    * Available types for a {@code MessageEvent}.
@@ -70,7 +69,6 @@ public final class MessageEvent implements Event {
   private static final AttributeValue zeroAttributeValue = AttributeValue.longAttributeValue(0);
 
   private final Map<String, AttributeValue> attributeValueMap;
-  private int droppedAttributeCount = ZERO_DROPPED_ATTRIBUTE_COUNT;
 
   /**
    * Returns a {@code MessageEvent} with the desired values.
@@ -86,11 +84,7 @@ public final class MessageEvent implements Event {
    * @since 0.1.0
    */
   public static MessageEvent create(
-      Type type,
-      long messageId,
-      long uncompressedSize,
-      long compressedSize,
-      int droppedAttributeCount) {
+      Type type, long messageId, long uncompressedSize, long compressedSize) {
     Map<String, AttributeValue> attributeValueMap = new HashMap<>();
     attributeValueMap.put(TYPE, type == Type.SENT ? sentAttributeValue : receivedAttributeValue);
     attributeValueMap.put(
@@ -105,7 +99,7 @@ public final class MessageEvent implements Event {
         compressedSize == 0
             ? zeroAttributeValue
             : AttributeValue.longAttributeValue(compressedSize));
-    return new MessageEvent(Collections.unmodifiableMap(attributeValueMap), droppedAttributeCount);
+    return new MessageEvent(Collections.unmodifiableMap(attributeValueMap));
   }
 
   @Override
@@ -118,17 +112,7 @@ public final class MessageEvent implements Event {
     return attributeValueMap;
   }
 
-  private MessageEvent(Map<String, AttributeValue> attributeValueMap, int droppedAttributeCount) {
+  private MessageEvent(Map<String, AttributeValue> attributeValueMap) {
     this.attributeValueMap = attributeValueMap;
-    this.droppedAttributeCount = droppedAttributeCount;
-  }
-
-  /**
-   * Returns the number of dropped attributes.
-   *
-   * @return the number of dropped attributes.
-   */
-  public int getDroppedAttributeCount() {
-    return droppedAttributeCount;
   }
 }
