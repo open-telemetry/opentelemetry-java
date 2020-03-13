@@ -49,7 +49,7 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return bindInternal(labelSet);
+    return bindInternal((LabelSetSdk) labelSet);
   }
 
   @Override

@@ -57,7 +57,7 @@ public class DoubleObserverSdkTest {
           public void update(ResultDoubleObserver result) {
             thrown.expect(IllegalArgumentException.class);
             thrown.expectMessage("monotonic observers can only record positive values");
-            result.observe(-45.0, testSdk.createLabelSet());
+            result.observe(-45.0);
           }
         });
     doubleObserver.collectAll();

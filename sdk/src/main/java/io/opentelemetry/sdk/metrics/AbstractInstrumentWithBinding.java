@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 abstract class AbstractInstrumentWithBinding<B extends AbstractBoundInstrument>
     extends AbstractInstrument {
-  private final ConcurrentHashMap<LabelSet, B> boundLabels;
+  private final ConcurrentHashMap<LabelSetSdk, B> boundLabels;
   private final ReentrantLock collectLock;
 
   AbstractInstrumentWithBinding(
@@ -41,7 +40,7 @@ abstract class AbstractInstrumentWithBinding<B extends AbstractBoundInstrument>
   // Cannot make this "bind" because of a Java problem if we make this class also implement the
   // InstrumentWithBinding then the subclass will fail to compile because of different "bind"
   // signature. This is a good trade-off.
-  final B bindInternal(LabelSet labelSet) {
+  final B bindInternal(LabelSetSdk labelSet) {
     B binding = boundLabels.get(labelSet);
     if (binding != null && binding.bind()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
@@ -75,7 +74,7 @@ abstract class AbstractInstrumentWithBinding<B extends AbstractBoundInstrument>
     collectLock.lock();
     try {
       Batcher batcher = getActiveBatcher();
-      for (Map.Entry<LabelSet, B> entry : boundLabels.entrySet()) {
+      for (Map.Entry<LabelSetSdk, B> entry : boundLabels.entrySet()) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
         if (unmappedEntry) {
           // If able to unmap then remove the record from the current Map. This can race with the

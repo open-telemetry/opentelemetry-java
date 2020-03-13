@@ -45,8 +45,7 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-
-    return bindInternal(labelSet);
+    return bindInternal((LabelSetSdk) labelSet);
   }
 
   @Override

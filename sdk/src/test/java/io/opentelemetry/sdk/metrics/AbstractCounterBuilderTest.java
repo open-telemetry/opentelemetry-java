@@ -116,7 +116,7 @@ public class AbstractCounterBuilderTest {
 
     @Override
     public TestBoundCounter bind(LabelSet labelSet) {
-      return bindInternal(labelSet);
+      return bindInternal((LabelSetSdk) labelSet);
     }
   }
 

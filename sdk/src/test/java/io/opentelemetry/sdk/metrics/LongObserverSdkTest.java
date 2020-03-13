@@ -57,7 +57,7 @@ public class LongObserverSdkTest {
           public void update(ResultLongObserver result) {
             thrown.expect(IllegalArgumentException.class);
             thrown.expectMessage("monotonic observers can only record positive values");
-            result.observe(-45, testSdk.createLabelSet());
+            result.observe(-45);
           }
         });
     longObserver.collectAll();
