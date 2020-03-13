@@ -37,14 +37,14 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
   }
 
   void record(long value, LabelSetSdk labelSet) {
-    BoundInstrument boundInstrument = bindInternal(labelSet);
+    BoundInstrument boundInstrument = bind(labelSet);
     boundInstrument.record(value);
     boundInstrument.unbind();
   }
 
   @Override
   public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bindInternal(LabelSetSdk.create(labelKeyValuePairs));
+    return bind(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override

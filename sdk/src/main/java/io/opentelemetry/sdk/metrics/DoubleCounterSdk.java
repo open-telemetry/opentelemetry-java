@@ -41,14 +41,14 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
   }
 
   void add(double delta, LabelSetSdk labelSet) {
-    BoundInstrument boundInstrument = bindInternal(labelSet);
+    BoundInstrument boundInstrument = bind(labelSet);
     boundInstrument.add(delta);
     boundInstrument.unbind();
   }
 
   @Override
   public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bindInternal(LabelSetSdk.create(labelKeyValuePairs));
+    return bind(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override

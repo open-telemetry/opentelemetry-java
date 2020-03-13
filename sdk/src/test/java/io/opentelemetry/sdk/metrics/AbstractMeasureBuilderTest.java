@@ -116,7 +116,7 @@ public class AbstractMeasureBuilderTest {
 
     @Override
     public TestBoundMeasure bind(String... labelKeyValuePairs) {
-      return bindInternal(LabelSetSdk.create(labelKeyValuePairs));
+      return bind(LabelSetSdk.create(labelKeyValuePairs));
     }
   }
 
