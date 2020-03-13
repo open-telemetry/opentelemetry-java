@@ -42,11 +42,4 @@ public interface Event {
    * @since 0.1.0
    */
   Map<String, AttributeValue> getAttributes();
-
-  /**
-   * Returns the number of dropped attributes.
-   *
-   * @return the number of dropped attributes.
-   */
-  long getDroppedAttributeCount();
 }

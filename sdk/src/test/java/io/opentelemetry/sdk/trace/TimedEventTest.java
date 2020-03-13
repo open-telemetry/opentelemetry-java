@@ -47,11 +47,6 @@ public class TimedEventTest {
         public Map<String, AttributeValue> getAttributes() {
           return ATTRIBUTES_2;
         }
-
-        @Override
-        public int getDroppedAttributeCount() {
-          return 0;
-        }
       };
 
   @Test

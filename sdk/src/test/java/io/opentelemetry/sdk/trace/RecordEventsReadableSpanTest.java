@@ -318,11 +318,6 @@ public class RecordEventsReadableSpanTest {
             public Map<String, AttributeValue> getAttributes() {
               return Collections.emptyMap();
             }
-
-            @Override
-            public int getDroppedAttributeCount() {
-              return 0;
-            }
           });
     } finally {
       span.end();

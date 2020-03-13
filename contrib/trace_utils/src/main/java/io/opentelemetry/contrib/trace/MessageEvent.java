@@ -122,13 +122,12 @@ public final class MessageEvent implements Event {
     this.droppedAttributeCount = droppedAttributeCount;
   }
 
-  @Override
+  /**
+   * Returns the number of dropped attributes.
+   *
+   * @return the number of dropped attributes.
+   */
   public int getDroppedAttributeCount() {
     return droppedAttributeCount;
-  }
-
-  @Override
-  public long getDroppedAttributeCount() {
-    return 0;
   }
 }

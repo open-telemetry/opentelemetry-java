@@ -97,10 +97,5 @@ public class DefaultSpanTest {
     public Map<String, AttributeValue> getAttributes() {
       return Collections.emptyMap();
     }
-
-    @Override
-    public long getDroppedAttributeCount() {
-      return 0;
-    }
   }
 }

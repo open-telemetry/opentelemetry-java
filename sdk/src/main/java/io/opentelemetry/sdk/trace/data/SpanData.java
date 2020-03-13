@@ -272,7 +272,11 @@ public abstract class SpanData {
     @Override
     public abstract Map<String, AttributeValue> getAttributes();
 
-    @Override
+    /**
+     * Returns the number of dropped attributes.
+     *
+     * @return the number of dropped attributes.
+     */
     public abstract int getDroppedAttributeCount();
 
     Link() {}
@@ -335,7 +339,11 @@ public abstract class SpanData {
     @Override
     public abstract Map<String, AttributeValue> getAttributes();
 
-    @Override
+    /**
+     * Returns the number of dropped attributes.
+     *
+     * @return the number of dropped attributes.
+     */
     public abstract int getDroppedAttributeCount();
 
     TimedEvent() {}
