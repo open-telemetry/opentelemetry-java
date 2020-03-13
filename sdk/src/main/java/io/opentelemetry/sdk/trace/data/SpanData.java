@@ -266,12 +266,6 @@ public abstract class SpanData {
           droppedAttributeCount);
     }
 
-    @Override
-    public abstract SpanContext getContext();
-
-    @Override
-    public abstract Map<String, AttributeValue> getAttributes();
-
     /**
      * Returns the number of dropped attributes.
      *
