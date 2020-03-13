@@ -42,6 +42,7 @@ public final class MessageEvent implements Event {
   private static final String COMPRESSED_SIZE = "message.compressed_size";
   private static final String UNCOMPRESSED_SIZE = "message.uncompressed_size";
   private static final int ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
+
   /**
    * Available types for a {@code MessageEvent}.
    *
