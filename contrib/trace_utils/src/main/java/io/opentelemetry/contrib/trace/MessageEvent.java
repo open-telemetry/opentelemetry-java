@@ -41,7 +41,7 @@ public final class MessageEvent implements Event {
   private static final String ID = "message.id";
   private static final String COMPRESSED_SIZE = "message.compressed_size";
   private static final String UNCOMPRESSED_SIZE = "message.uncompressed_size";
-
+  private static final int ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
   /**
    * Available types for a {@code MessageEvent}.
    *
@@ -69,7 +69,7 @@ public final class MessageEvent implements Event {
   private static final AttributeValue zeroAttributeValue = AttributeValue.longAttributeValue(0);
 
   private final Map<String, AttributeValue> attributeValueMap;
-  private int droppedAttributeCount = 0;
+  private int droppedAttributeCount = ZERO_DROPPED_ATTRIBUTE_COUNT;
 
   /**
    * Returns a {@code MessageEvent} with the desired values.
