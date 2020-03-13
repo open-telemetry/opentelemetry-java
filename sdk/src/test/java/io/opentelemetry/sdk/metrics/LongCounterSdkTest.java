@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -28,7 +29,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -206,7 +206,7 @@ public class LongCounterSdkTest {
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterDirectCall(testSdk, longCounter, "K", "V")));
+              2_000, 1, new OperationUpdaterDirectCall(longCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               2_000,
@@ -235,7 +235,7 @@ public class LongCounterSdkTest {
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterDirectCall(testSdk, longCounter, keys[i], values[i])));
+              1_000, 2, new OperationUpdaterDirectCall(longCounter, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
@@ -291,14 +291,12 @@ public class LongCounterSdkTest {
   }
 
   private static class OperationUpdaterDirectCall extends OperationUpdater {
-    private final MeterSdk meterSdk;
+
     private final LongCounter longCounter;
     private final String key;
     private final String value;
 
-    private OperationUpdaterDirectCall(
-        MeterSdk meterSdk, LongCounter longCounter, String key, String value) {
-      this.meterSdk = meterSdk;
+    private OperationUpdaterDirectCall(LongCounter longCounter, String key, String value) {
       this.longCounter = longCounter;
       this.key = key;
       this.value = value;
@@ -306,7 +304,7 @@ public class LongCounterSdkTest {
 
     @Override
     void update() {
-      longCounter.add(11, meterSdk.createLabelSet(key, value));
+      longCounter.add(11, key, value);
     }
 
     @Override

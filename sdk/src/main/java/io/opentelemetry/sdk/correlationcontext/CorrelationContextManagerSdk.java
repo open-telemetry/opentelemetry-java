@@ -38,6 +38,6 @@ public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
   @Override
   public Scope withContext(CorrelationContext distContext) {
-    return CorrelationsContextUtils.withScopedCorrelationContext(distContext);
+    return CorrelationsContextUtils.currentContextWith(distContext);
   }
 }

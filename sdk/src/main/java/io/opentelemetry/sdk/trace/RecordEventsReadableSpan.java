@@ -18,14 +18,14 @@ package io.opentelemetry.sdk.trace;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
+import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -88,9 +88,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
-  // The number of children.
-  @GuardedBy("lock")
-  private int numberOfChildren = 0;
   // The status of the span.
   @GuardedBy("lock")
   @Nullable
@@ -185,7 +182,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
           .setStatus(getStatusWithDefault())
           .setTimedEvents(adaptTimedEvents())
           .setTotalRecordedEvents(totalRecordedEvents)
-          .setNumberOfChildren(numberOfChildren)
           // build() does the actual copying of the collections: it needs to be synchronized
           // because of the attributes and events collections.
           .build();
@@ -427,16 +423,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public boolean isRecording() {
     return true;
-  }
-
-  void addChild() {
-    synchronized (lock) {
-      if (hasEnded) {
-        logger.log(Level.FINE, "Calling end() on an ended Span.");
-        return;
-      }
-      numberOfChildren++;
-    }
   }
 
   @GuardedBy("lock")

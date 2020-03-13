@@ -79,19 +79,19 @@ public class LongCounterSdkBenchmark {
   @Benchmark
   @Threads(value = 1)
   public void add_1Threads() {
-    longCounter.add(100, meter.createLabelSet(KEY, VALUE));
+    longCounter.add(100, KEY, VALUE);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void add_8Threads_SameLabelSet() {
-    longCounter.add(100, meter.createLabelSet(KEY, VALUE));
+    longCounter.add(100, KEY, VALUE);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void add_8Threads_DifferentLabelSet(ThreadState state) {
-    longCounter.add(100, meter.createLabelSet(state.threadKey, VALUE));
+    longCounter.add(100, state.threadKey, VALUE);
   }
 
   @Benchmark

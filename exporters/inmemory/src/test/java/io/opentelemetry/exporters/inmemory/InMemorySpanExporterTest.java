@@ -111,7 +111,6 @@ public class InMemorySpanExporterTest {
         .setEndEpochNanos(200_000_000_200L)
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
-        .setNumberOfChildren(0)
         .build();
   }
 }

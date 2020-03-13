@@ -17,6 +17,7 @@
 package io.opentelemetry.trace;
 
 import io.grpc.Context;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
@@ -48,7 +49,7 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Scope withSpan(Span span) {
-    return TracingContextUtils.withScopedSpan(span);
+    return TracingContextUtils.currentContextWith(span);
   }
 
   @Override

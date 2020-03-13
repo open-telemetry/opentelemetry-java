@@ -79,19 +79,19 @@ public class DoubleCounterSdkBenchmark {
   @Benchmark
   @Threads(value = 1)
   public void add_1Threads() {
-    doubleCounter.add(100.1d, meter.createLabelSet(KEY, VALUE));
+    doubleCounter.add(100.1d, KEY, VALUE);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void add_8Threads_SameLabelSet() {
-    doubleCounter.add(100.1d, meter.createLabelSet(KEY, VALUE));
+    doubleCounter.add(100.1d, KEY, VALUE);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void add_8Threads_DifferentLabelSet(ThreadState state) {
-    doubleCounter.add(100.1d, meter.createLabelSet(state.threadKey, VALUE));
+    doubleCounter.add(100.1d, state.threadKey, VALUE);
   }
 
   @Benchmark

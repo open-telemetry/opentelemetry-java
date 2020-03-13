@@ -17,7 +17,6 @@
 package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
 import io.opentelemetry.metrics.Meter;
@@ -79,16 +78,14 @@ public final class MemoryPools {
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
             .setMonotonic(false)
             .build();
-    final LabelSet usedHeap = meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP);
-    final LabelSet usedNonHeap =
-        meter.createLabelSet(TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP);
-    final LabelSet committedHeap =
-        meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP);
-    final LabelSet committedNonHeap =
-        meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, NON_HEAP);
+    final String[] usedHeap = new String[] {TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP};
+    final String[] usedNonHeap = new String[] {TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP};
+    final String[] committedHeap = new String[] {TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, HEAP};
+    final String[] committedNonHeap =
+        new String[] {TYPE_LABEL_KEY, COMMITTED, AREA_LABEL_KEY, NON_HEAP};
     // TODO: Decide if max is needed or not. May be derived with some approximation from max(used).
-    final LabelSet maxHeap = meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP);
-    final LabelSet maxNonHeap = meter.createLabelSet(TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP);
+    final String[] maxHeap = new String[] {TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP};
+    final String[] maxNonHeap = new String[] {TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP};
     areaMetric.setCallback(
         new LongObserver.Callback<ResultLongObserver>() {
           @Override
@@ -116,14 +113,14 @@ public final class MemoryPools {
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))
             .setMonotonic(false)
             .build();
-    final List<LabelSet> usedLabelSets = new ArrayList<>(poolBeans.size());
-    final List<LabelSet> committedLabelSets = new ArrayList<>(poolBeans.size());
-    final List<LabelSet> maxLabelSets = new ArrayList<>(poolBeans.size());
+    final List<String[]> usedLabelSets = new ArrayList<>(poolBeans.size());
+    final List<String[]> committedLabelSets = new ArrayList<>(poolBeans.size());
+    final List<String[]> maxLabelSets = new ArrayList<>(poolBeans.size());
     for (final MemoryPoolMXBean pool : poolBeans) {
-      usedLabelSets.add(meter.createLabelSet(TYPE_LABEL_KEY, USED, POOL_LABEL_KEY, pool.getName()));
+      usedLabelSets.add(new String[] {TYPE_LABEL_KEY, USED, POOL_LABEL_KEY, pool.getName()});
       committedLabelSets.add(
-          meter.createLabelSet(TYPE_LABEL_KEY, COMMITTED, POOL_LABEL_KEY, pool.getName()));
-      maxLabelSets.add(meter.createLabelSet(TYPE_LABEL_KEY, MAX, POOL_LABEL_KEY, pool.getName()));
+          new String[] {TYPE_LABEL_KEY, COMMITTED, POOL_LABEL_KEY, pool.getName()});
+      maxLabelSets.add(new String[] {TYPE_LABEL_KEY, MAX, POOL_LABEL_KEY, pool.getName()});
     }
     poolMetric.setCallback(
         new Callback<ResultLongObserver>() {

@@ -56,11 +56,11 @@ public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
    * LabelSet.
    *
    * @param value the measurement to record.
-   * @param labelSet the labels to be associated to this recording
+   * @param labelKeyValuePairs the set of labels to be associated to this recording
    * @throws IllegalArgumentException if value is negative.
-   * @since 0.1.0
+   * @since 0.3.0
    */
-  void record(double value, LabelSet labelSet);
+  void record(double value, String... labelKeyValuePairs);
 
   @Override
   BoundDoubleMeasure bind(LabelSet labelSet);

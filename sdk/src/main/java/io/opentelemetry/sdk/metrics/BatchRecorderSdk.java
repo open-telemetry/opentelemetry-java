@@ -16,11 +16,9 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongMeasure;
 
@@ -31,33 +29,33 @@ import io.opentelemetry.metrics.LongMeasure;
  * <p>TODO: Add an async queue processing to process batch records.
  */
 final class BatchRecorderSdk implements BatchRecorder {
-  private final LabelSet labelSet;
+  private final LabelSetSdk labelSet;
 
-  BatchRecorderSdk(LabelSet labelSet) {
-    this.labelSet = Utils.checkNotNull(labelSet, "labelSet");
+  BatchRecorderSdk(String... keyValuePairs) {
+    this.labelSet = LabelSetSdk.create(keyValuePairs);
   }
 
   @Override
   public BatchRecorder put(LongMeasure measure, long value) {
-    measure.record(value, labelSet);
+    ((LongMeasureSdk) measure).record(value, labelSet);
     return this;
   }
 
   @Override
   public BatchRecorder put(DoubleMeasure measure, double value) {
-    measure.record(value, labelSet);
+    ((DoubleMeasureSdk) measure).record(value, labelSet);
     return this;
   }
 
   @Override
   public BatchRecorder put(LongCounter counter, long value) {
-    counter.add(value, labelSet);
+    ((LongCounterSdk) counter).add(value, labelSet);
     return this;
   }
 
   @Override
   public BatchRecorder put(DoubleCounter counter, double value) {
-    counter.add(value, labelSet);
+    ((DoubleCounterSdk) counter).add(value, labelSet);
     return this;
   }
 

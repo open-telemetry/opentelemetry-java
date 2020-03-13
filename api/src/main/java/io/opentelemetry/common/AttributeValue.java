@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace;
+package io.opentelemetry.common;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.Nullable;

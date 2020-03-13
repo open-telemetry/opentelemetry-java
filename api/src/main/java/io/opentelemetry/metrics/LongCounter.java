@@ -61,10 +61,10 @@ public interface LongCounter extends Counter<BoundLongCounter> {
    * <p>The value added is associated with the current {@code Context} and provided LabelSet.
    *
    * @param delta the value to add.
-   * @param labelSet the labels to be associated to this recording.
+   * @param labelKeyValuePairs the set of labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(long delta, LabelSet labelSet);
+  void add(long delta, String... labelKeyValuePairs);
 
   @Override
   BoundLongCounter bind(LabelSet labelSet);

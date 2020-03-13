@@ -16,12 +16,12 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
 import io.opentelemetry.metrics.Observer.Callback;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,7 +57,7 @@ public class LongObserverSdkTest {
           public void update(ResultLongObserver result) {
             thrown.expect(IllegalArgumentException.class);
             thrown.expectMessage("monotonic observers can only record positive values");
-            result.observe(-45, testSdk.createLabelSet());
+            result.observe(-45);
           }
         });
     longObserver.collectAll();

@@ -117,7 +117,7 @@ public class AbstractMeasureBuilderTest {
 
     @Override
     public TestBoundMeasure bind(LabelSet labelSet) {
-      return bindInternal(labelSet);
+      return bindInternal((LabelSetSdk) labelSet);
     }
   }
 

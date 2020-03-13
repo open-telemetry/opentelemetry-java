@@ -13,8 +13,8 @@ dependencies {
     api project(':opentelemetry-sdk')
 
     implementation project(':opentelemetry-sdk-contrib-otproto'),
-            libraries.grpc_api,
             project(':opentelemetry-sdk'),
+            libraries.grpc_api,
             libraries.grpc_protobuf,
             libraries.grpc_stub,
             libraries.protobuf,

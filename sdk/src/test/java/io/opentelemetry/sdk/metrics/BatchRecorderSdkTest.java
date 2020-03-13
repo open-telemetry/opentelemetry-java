@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -27,7 +28,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,10 +52,10 @@ public class BatchRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
-  public void batchRecorder_NullLabelSet() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelSet");
-    testSdk.newBatchRecorder(null).record();
+  public void batchRecorder_badLabelSet() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("key/value");
+    testSdk.newBatchRecorder("key").record();
   }
 
   @Test
@@ -67,7 +67,7 @@ public class BatchRecorderSdkTest {
     LabelSetSdk labelSet = testSdk.createLabelSet("key", "value");
 
     testSdk
-        .newBatchRecorder(labelSet)
+        .newBatchRecorder("key", "value")
         .put(longCounter, 12)
         .put(doubleCounter, 12.1d)
         .put(longMeasure, 13)

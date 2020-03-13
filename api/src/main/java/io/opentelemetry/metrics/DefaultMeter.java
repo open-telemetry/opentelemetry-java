@@ -91,20 +91,14 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public BatchRecorder newBatchRecorder(LabelSet labelSet) {
-    Utils.checkNotNull(labelSet, "labelSet");
+  public BatchRecorder newBatchRecorder(String... keyValuePairs) {
+    Utils.validateLabelPairs(keyValuePairs);
     return new NoopBatchRecorder();
   }
 
   @Override
   public LabelSet createLabelSet(String... keyValuePairs) {
-    Utils.checkArgument(
-        keyValuePairs.length % 2 == 0,
-        "You must provide an even number of key/value pair arguments.");
-    for (int i = 0; i < keyValuePairs.length; i += 2) {
-      String key = keyValuePairs[i];
-      Utils.checkNotNull(key, "You cannot provide null keys for LabelSet creation.");
-    }
+    Utils.validateLabelPairs(keyValuePairs);
     return NoopLabelSet.INSTANCE;
   }
 
@@ -125,7 +119,9 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleCounter() {}
 
     @Override
-    public void add(double delta, LabelSet labelSet) {}
+    public void add(double delta, String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
+    }
 
     @Override
     public NoopBoundDoubleCounter bind(LabelSet labelSet) {
@@ -168,7 +164,7 @@ public final class DefaultMeter implements Meter {
     private NoopLongCounter() {}
 
     @Override
-    public void add(long delta, LabelSet labelSet) {}
+    public void add(long delta, String... labelKeyValuePairs) {}
 
     @Override
     public NoopBoundLongCounter bind(LabelSet labelSet) {
@@ -210,8 +206,9 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleMeasure() {}
 
     @Override
-    public void record(double value, LabelSet labelSet) {
+    public void record(double value, String... labelKeyValuePairs) {
       Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+      Utils.validateLabelPairs(labelKeyValuePairs);
     }
 
     @Override
@@ -260,8 +257,9 @@ public final class DefaultMeter implements Meter {
     private NoopLongMeasure() {}
 
     @Override
-    public void record(long value, LabelSet labelSet) {
+    public void record(long value, String... labelKeyValuePairs) {
       Utils.checkArgument(value >= 0, "Unsupported negative values.");
+      Utils.validateLabelPairs(labelKeyValuePairs);
     }
 
     @Override

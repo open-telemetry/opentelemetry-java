@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -28,7 +29,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -86,7 +86,7 @@ public class DoubleCounterSdkTest {
   public void collectMetrics_WithOneRecord() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
-    doubleCounter.add(12.1d, testSdk.createLabelSet());
+    doubleCounter.add(12.1d);
     List<MetricData> metricDataList = doubleCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
@@ -113,13 +113,13 @@ public class DoubleCounterSdkTest {
     BoundDoubleCounter boundCounter = doubleCounter.bind(labelSet);
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleCounter.add(12.1d, emptyLabelSet);
+      doubleCounter.add(12.1d);
       boundCounter.add(123.3d);
-      doubleCounter.add(21.4d, emptyLabelSet);
+      doubleCounter.add(21.4d);
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(321.5d);
-      doubleCounter.add(111.1d, labelSet);
+      doubleCounter.add(111.1d, "K", "V");
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = doubleCounter.collectAll();
@@ -134,7 +134,7 @@ public class DoubleCounterSdkTest {
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(222d);
-      doubleCounter.add(11d, emptyLabelSet);
+      doubleCounter.add(11d);
 
       long secondCollect = testClock.now();
       metricDataList = doubleCounter.collectAll();
@@ -187,7 +187,7 @@ public class DoubleCounterSdkTest {
         testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    doubleCounter.add(-45.77d, testSdk.createLabelSet());
+    doubleCounter.add(-45.77d);
   }
 
   @Test
@@ -209,7 +209,7 @@ public class DoubleCounterSdkTest {
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterDirectCall(testSdk, doubleCounter, "K", "V")));
+              1_000, 2, new OperationUpdaterDirectCall(doubleCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               1_000,
@@ -239,9 +239,7 @@ public class DoubleCounterSdkTest {
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000,
-              1,
-              new OperationUpdaterDirectCall(testSdk, doubleCounter, keys[i], values[i])));
+              2_000, 1, new OperationUpdaterDirectCall(doubleCounter, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
@@ -297,14 +295,12 @@ public class DoubleCounterSdkTest {
   }
 
   private static class OperationUpdaterDirectCall extends OperationUpdater {
-    private final MeterSdk meterSdk;
+
     private final DoubleCounter doubleCounter;
     private final String key;
     private final String value;
 
-    private OperationUpdaterDirectCall(
-        MeterSdk meterSdk, DoubleCounter doubleCounter, String key, String value) {
-      this.meterSdk = meterSdk;
+    private OperationUpdaterDirectCall(DoubleCounter doubleCounter, String key, String value) {
       this.doubleCounter = doubleCounter;
       this.key = key;
       this.value = value;
@@ -312,7 +308,7 @@ public class DoubleCounterSdkTest {
 
     @Override
     void update() {
-      doubleCounter.add(11.0, meterSdk.createLabelSet(key, value));
+      doubleCounter.add(11.0, key, value);
     }
 
     @Override

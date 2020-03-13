@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -30,7 +31,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -89,7 +89,7 @@ public class LongMeasureSdkTest {
   public void collectMetrics_WithOneRecord() {
     LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testMeasure").build();
     testClock.advanceNanos(SECOND_NANOS);
-    longMeasure.record(12, testSdk.createLabelSet());
+    longMeasure.record(12);
     List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
@@ -117,13 +117,13 @@ public class LongMeasureSdkTest {
     BoundLongMeasure boundMeasure = longMeasure.bind(labelSet);
     try {
       // Do some records using bounds and direct calls and bindings.
-      longMeasure.record(12, emptyLabelSet);
+      longMeasure.record(12);
       boundMeasure.record(123);
-      longMeasure.record(21, emptyLabelSet);
+      longMeasure.record(21);
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(321);
-      longMeasure.record(111, labelSet);
+      longMeasure.record(111, "K", "V");
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = longMeasure.collectAll();
@@ -150,7 +150,7 @@ public class LongMeasureSdkTest {
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(222);
-      longMeasure.record(11, emptyLabelSet);
+      longMeasure.record(11);
 
       long secondCollect = testClock.now();
       metricDataList = longMeasure.collectAll();
@@ -214,7 +214,7 @@ public class LongMeasureSdkTest {
         testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    longMeasure.record(-45, testSdk.createLabelSet());
+    longMeasure.record(-45);
   }
 
   @Test
@@ -236,9 +236,7 @@ public class LongMeasureSdkTest {
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000,
-              1,
-              new LongMeasureSdkTest.OperationUpdaterDirectCall(testSdk, longMeasure, "K", "V")));
+              2_000, 1, new LongMeasureSdkTest.OperationUpdaterDirectCall(longMeasure, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
               2_000,
@@ -275,8 +273,7 @@ public class LongMeasureSdkTest {
           StressTestRunner.Operation.create(
               1_000,
               2,
-              new LongMeasureSdkTest.OperationUpdaterDirectCall(
-                  testSdk, longMeasure, keys[i], values[i])));
+              new LongMeasureSdkTest.OperationUpdaterDirectCall(longMeasure, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
@@ -340,14 +337,12 @@ public class LongMeasureSdkTest {
   }
 
   private static class OperationUpdaterDirectCall extends OperationUpdater {
-    private final MeterSdk meterSdk;
+
     private final LongMeasure longMeasure;
     private final String key;
     private final String value;
 
-    private OperationUpdaterDirectCall(
-        MeterSdk meterSdk, LongMeasure longMeasure, String key, String value) {
-      this.meterSdk = meterSdk;
+    private OperationUpdaterDirectCall(LongMeasure longMeasure, String key, String value) {
       this.longMeasure = longMeasure;
       this.key = key;
       this.value = value;
@@ -355,7 +350,7 @@ public class LongMeasureSdkTest {
 
     @Override
     void update() {
-      longMeasure.record(11, meterSdk.createLabelSet(key, value));
+      longMeasure.record(11, key, value);
     }
 
     @Override

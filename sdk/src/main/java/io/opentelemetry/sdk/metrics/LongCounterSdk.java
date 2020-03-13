@@ -37,7 +37,11 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
   }
 
   @Override
-  public void add(long delta, LabelSet labelSet) {
+  public void add(long delta, String... labelKeyValuePairs) {
+    add(delta, LabelSetSdk.create(labelKeyValuePairs));
+  }
+
+  void add(long delta, LabelSetSdk labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
     boundInstrument.add(delta);
     boundInstrument.unbind();
@@ -45,7 +49,7 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
 
   @Override
   public BoundInstrument bind(LabelSet labelSet) {
-    return bindInternal(labelSet);
+    return bindInternal((LabelSetSdk) labelSet);
   }
 
   @Override

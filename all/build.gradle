@@ -13,7 +13,7 @@ def subprojects = [
         project(':opentelemetry-exporters-logging'),
         project(':opentelemetry-exporters-inmemory'),
         project(':opentelemetry-exporters-jaeger'),
-        project(':opentelemetry-exporters-otprotocol'),
+        project(':opentelemetry-exporters-otlp'),
         project(':opentelemetry-opentracing-shim'),
         project(':opentelemetry-sdk'),
         project(':opentelemetry-sdk-contrib-async-processor'),

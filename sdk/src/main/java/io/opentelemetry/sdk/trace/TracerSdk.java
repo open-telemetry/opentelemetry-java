@@ -40,7 +40,7 @@ public final class TracerSdk implements Tracer {
 
   @Override
   public Scope withSpan(Span span) {
-    return TracingContextUtils.withScopedSpan(span);
+    return TracingContextUtils.currentContextWith(span);
   }
 
   @Override

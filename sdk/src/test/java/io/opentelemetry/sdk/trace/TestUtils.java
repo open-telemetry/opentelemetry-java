@@ -16,9 +16,9 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -64,7 +64,6 @@ public final class TestUtils {
         .setStartEpochNanos(TimeUnit.SECONDS.toNanos(100) + 100)
         .setStatus(Status.OK)
         .setEndEpochNanos(TimeUnit.SECONDS.toNanos(200) + 200)
-        .setNumberOfChildren(0)
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
         .build();
