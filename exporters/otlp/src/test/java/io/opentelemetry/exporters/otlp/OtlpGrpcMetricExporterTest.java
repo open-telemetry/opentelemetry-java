@@ -23,16 +23,18 @@ import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
-import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
-import io.opentelemetry.proto.trace.v1.ResourceSpans;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
-import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
+import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
+import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
+import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
+import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,12 +46,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link OtlpGrpcSpanExporter}. */
+/** Unit tests for {@link OtlpGrpcMetricExporter}. */
 @RunWith(JUnit4.class)
-public class OtlpGrpcSpanExporterTest {
-  private static final String TRACE_ID = "00000000000000000000000000abc123";
-  private static final String SPAN_ID = "0000000000def456";
-
+public class OtlpGrpcMetricExporterTest {
   @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
   private final FakeCollector fakeCollector = new FakeCollector();
@@ -70,30 +69,30 @@ public class OtlpGrpcSpanExporterTest {
 
   @Test
   public void testExport() {
-    SpanData span = generateFakeSpan();
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+    MetricData span = generateFakeMetric();
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(span))).isEqualTo(ResultCode.SUCCESS);
-      assertThat(fakeCollector.getReceivedSpans())
-          .isEqualTo(SpanAdapter.toProtoResourceSpans(Collections.singletonList(span)));
+      assertThat(fakeCollector.getReceivedMetrics())
+          .isEqualTo(MetricAdapter.toProtoResourceMetrics(Collections.singletonList(span)));
     } finally {
       exporter.shutdown();
     }
   }
 
   @Test
-  public void testExport_MultipleSpans() {
-    List<SpanData> spans = new ArrayList<>();
+  public void testExport_MultipleMetrics() {
+    List<MetricData> spans = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
-      spans.add(generateFakeSpan());
+      spans.add(generateFakeMetric());
     }
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(spans)).isEqualTo(ResultCode.SUCCESS);
-      assertThat(fakeCollector.getReceivedSpans())
-          .isEqualTo(SpanAdapter.toProtoResourceSpans(spans));
+      assertThat(fakeCollector.getReceivedMetrics())
+          .isEqualTo(MetricAdapter.toProtoResourceMetrics(spans));
     } finally {
       exporter.shutdown();
     }
@@ -101,9 +100,9 @@ public class OtlpGrpcSpanExporterTest {
 
   @Test
   public void testExport_AfterShutdown() {
-    SpanData span = generateFakeSpan();
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+    MetricData span = generateFakeMetric();
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     exporter.shutdown();
     // TODO: This probably should not be retryable because we never restart the channel.
     assertThat(exporter.export(Collections.singletonList(span)))
@@ -113,10 +112,10 @@ public class OtlpGrpcSpanExporterTest {
   @Test
   public void testExport_Cancelled() {
     fakeCollector.setReturnedStatus(io.grpc.Status.CANCELLED);
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
           .isEqualTo(ResultCode.FAILED_RETRYABLE);
     } finally {
       exporter.shutdown();
@@ -126,10 +125,10 @@ public class OtlpGrpcSpanExporterTest {
   @Test
   public void testExport_DeadlineExceeded() {
     fakeCollector.setReturnedStatus(io.grpc.Status.DEADLINE_EXCEEDED);
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
           .isEqualTo(ResultCode.FAILED_RETRYABLE);
     } finally {
       exporter.shutdown();
@@ -139,10 +138,10 @@ public class OtlpGrpcSpanExporterTest {
   @Test
   public void testExport_ResourceExhausted() {
     fakeCollector.setReturnedStatus(io.grpc.Status.RESOURCE_EXHAUSTED);
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
           .isEqualTo(ResultCode.FAILED_RETRYABLE);
     } finally {
       exporter.shutdown();
@@ -152,10 +151,10 @@ public class OtlpGrpcSpanExporterTest {
   @Test
   public void testExport_OutOfRange() {
     fakeCollector.setReturnedStatus(io.grpc.Status.OUT_OF_RANGE);
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
           .isEqualTo(ResultCode.FAILED_RETRYABLE);
     } finally {
       exporter.shutdown();
@@ -165,10 +164,10 @@ public class OtlpGrpcSpanExporterTest {
   @Test
   public void testExport_Unavailable() {
     fakeCollector.setReturnedStatus(io.grpc.Status.UNAVAILABLE);
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
           .isEqualTo(ResultCode.FAILED_RETRYABLE);
     } finally {
       exporter.shutdown();
@@ -178,10 +177,10 @@ public class OtlpGrpcSpanExporterTest {
   @Test
   public void testExport_DataLoss() {
     fakeCollector.setReturnedStatus(io.grpc.Status.DATA_LOSS);
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
           .isEqualTo(ResultCode.FAILED_RETRYABLE);
     } finally {
       exporter.shutdown();
@@ -191,45 +190,42 @@ public class OtlpGrpcSpanExporterTest {
   @Test
   public void testExport_PermissionDenied() {
     fakeCollector.setReturnedStatus(io.grpc.Status.PERMISSION_DENIED);
-    OtlpGrpcSpanExporter exporter =
-        OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
-      assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
+      assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
           .isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
     } finally {
       exporter.shutdown();
     }
   }
 
-  private static SpanData generateFakeSpan() {
-    long duration = TimeUnit.MILLISECONDS.toNanos(900);
+  private static MetricData generateFakeMetric() {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
-    long endNs = startNs + duration;
-    return SpanData.newBuilder()
-        .setHasEnded(true)
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
-        .setName("GET /api/endpoint")
-        .setStartEpochNanos(startNs)
-        .setEndEpochNanos(endNs)
-        .setStatus(Status.OK)
-        .setKind(Kind.SERVER)
-        .setLinks(Collections.<SpanData.Link>emptyList())
-        .setTotalRecordedLinks(0)
-        .setTotalRecordedEvents(0)
-        .build();
+    long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
+    return MetricData.create(
+        Descriptor.create(
+            "name",
+            "description",
+            "1",
+            Type.MONOTONIC_LONG,
+            Collections.<String, String>emptyMap()),
+        Resource.getEmpty(),
+        InstrumentationLibraryInfo.getEmpty(),
+        Collections.<Point>singletonList(
+            LongPoint.create(startNs, endNs, Collections.singletonMap("k", "v"), 5)));
   }
 
-  private static final class FakeCollector extends TraceServiceGrpc.TraceServiceImplBase {
-    private final List<ResourceSpans> receivedSpans = new ArrayList<>();
+  private static final class FakeCollector extends MetricsServiceGrpc.MetricsServiceImplBase {
+    private final List<ResourceMetrics> receivedMetrics = new ArrayList<>();
     private io.grpc.Status returnedStatus = io.grpc.Status.OK;
 
     @Override
     public void export(
-        ExportTraceServiceRequest request,
-        io.grpc.stub.StreamObserver<ExportTraceServiceResponse> responseObserver) {
-      receivedSpans.addAll(request.getResourceSpansList());
-      responseObserver.onNext(ExportTraceServiceResponse.newBuilder().build());
+        ExportMetricsServiceRequest request,
+        io.grpc.stub.StreamObserver<ExportMetricsServiceResponse> responseObserver) {
+      receivedMetrics.addAll(request.getResourceMetricsList());
+      responseObserver.onNext(ExportMetricsServiceResponse.newBuilder().build());
       if (!returnedStatus.isOk()) {
         if (returnedStatus.getCode() == Code.DEADLINE_EXCEEDED) {
           // Do not call onCompleted to simulate a deadline exceeded.
@@ -241,8 +237,8 @@ public class OtlpGrpcSpanExporterTest {
       responseObserver.onCompleted();
     }
 
-    List<ResourceSpans> getReceivedSpans() {
-      return receivedSpans;
+    List<ResourceMetrics> getReceivedMetrics() {
+      return receivedMetrics;
     }
 
     void setReturnedStatus(io.grpc.Status returnedStatus) {
