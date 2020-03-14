@@ -19,6 +19,8 @@ package io.opentelemetry.exporters.otlp;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
+import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 
 final class CommonAdapter {
   static AttributeKeyValue toProtoAttribute(String key, AttributeValue attributeValue) {
@@ -43,6 +45,17 @@ final class CommonAdapter {
             .build();
     }
     return builder.setType(ValueType.UNRECOGNIZED).build();
+  }
+
+  static InstrumentationLibrary toProtoInstrumentationLibrary(
+      InstrumentationLibraryInfo instrumentationLibraryInfo) {
+    return InstrumentationLibrary.newBuilder()
+        .setName(instrumentationLibraryInfo.getName())
+        .setVersion(
+            instrumentationLibraryInfo.getVersion() == null
+                ? ""
+                : instrumentationLibraryInfo.getVersion())
+        .build();
   }
 
   private CommonAdapter() {}
