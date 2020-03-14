@@ -38,12 +38,12 @@ import javax.annotation.concurrent.ThreadSafe;
  * public static final Context.Key CONCERN_KEY = Context.key("my-concern-key");
  * public MyConcernPropagator implements HttpTextFormat {
  *   public <C> void inject(Context context, C carrier, Setter<C> setter) {
- *     Object concernObj = CONCERN_KEY.get(context);
- *     // Use concernObj in the specified context to propagate data.
+ *     Object concern = CONCERN_KEY.get(context);
+ *     // Use concern in the specified context to propagate data.
  *   }
  *   public <C> Context extract(Context context, C carrier, Getter<C> setter) {
  *     // Use setter to get the data from the carrier.
- *     return context.withValue(CONCERN_KEY, concernObj);
+ *     return context.withValue(CONCERN_KEY, concern);
  *   }
  * }
  * }</pre>
