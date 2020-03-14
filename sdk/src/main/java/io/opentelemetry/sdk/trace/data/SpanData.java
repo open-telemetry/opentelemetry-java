@@ -145,7 +145,7 @@ public abstract class SpanData {
    * @return links recorded for this {@code Span}.
    * @since 0.1.0
    */
-  public abstract List<io.opentelemetry.trace.Link> getLinks();
+  public abstract List<Link> getLinks();
 
   /**
    * Returns the {@code Status}.
@@ -253,6 +253,7 @@ public abstract class SpanData {
      *
      * @param spanContext the {@code SpanContext} of this {@code Link}.
      * @param attributes the attributes of this {@code Link}.
+     * @param droppedAttributeCount number of dropped attributed for this {@code Link}.
      * @return a new immutable {@code TimedEvent<T>}
      * @since 0.1.0
      */
@@ -353,7 +354,7 @@ public abstract class SpanData {
     return new AutoValue_SpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
-        .setLinks(Collections.<io.opentelemetry.trace.Link>emptyList())
+        .setLinks(Collections.<Link>emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
         .setTimedEvents(Collections.<TimedEvent>emptyList())
@@ -379,7 +380,7 @@ public abstract class SpanData {
 
     abstract List<TimedEvent> getTimedEvents();
 
-    abstract List<io.opentelemetry.trace.Link> getLinks();
+    abstract List<Link> getLinks();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -530,7 +531,7 @@ public abstract class SpanData {
      * @see io.opentelemetry.trace.Link
      * @since 0.1.0
      */
-    public abstract Builder setLinks(List<io.opentelemetry.trace.Link> links);
+    public abstract Builder setLinks(List<Link> links);
 
     /**
      * Sets to true if the span has a parent on a different process.

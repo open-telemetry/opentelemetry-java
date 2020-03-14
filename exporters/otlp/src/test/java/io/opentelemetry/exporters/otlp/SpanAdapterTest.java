@@ -68,14 +68,13 @@ public class SpanAdapterTest {
                 .setEndEpochNanos(12349)
                 .setAttributes(
                     Collections.singletonMap("key", AttributeValue.booleanAttributeValue(true)))
+                .setDroppedAttributeCount(1)
                 .setTimedEvents(
                     Collections.singletonList(
                         TimedEvent.create(
                             12347, "my_event", Collections.<String, AttributeValue>emptyMap())))
                 .setTotalRecordedEvents(3)
-                .setLinks(
-                    Collections.<io.opentelemetry.trace.Link>singletonList(
-                        Link.create(SPAN_CONTEXT)))
+                .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
                 .setStatus(io.opentelemetry.trace.Status.OK)
                 .build());
@@ -94,8 +93,7 @@ public class SpanAdapterTest {
                 .setBoolValue(true)
                 .setType(ValueType.BOOL)
                 .build());
-    // Fix this when we plugged dropped attributes.
-    assertThat(span.getDroppedAttributesCount()).isEqualTo(0);
+    assertThat(span.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(span.getEventsList())
         .containsExactly(
             Span.Event.newBuilder().setTimeUnixnano(12347).setName("my_event").build());
@@ -255,7 +253,8 @@ public class SpanAdapterTest {
                     12345,
                     "test_with_attributes",
                     Collections.singletonMap(
-                        "key_string", AttributeValue.stringAttributeValue("string")))))
+                        "key_string", AttributeValue.stringAttributeValue("string")),
+                    5)))
         .isEqualTo(
             Span.Event.newBuilder()
                 .setTimeUnixnano(12345)
@@ -266,6 +265,7 @@ public class SpanAdapterTest {
                         .setStringValue("string")
                         .setType(ValueType.STRING)
                         .build())
+                .setDroppedAttributesCount(5)
                 .build());
   }
 
@@ -286,7 +286,8 @@ public class SpanAdapterTest {
                 Link.create(
                     SPAN_CONTEXT,
                     Collections.singletonMap(
-                        "key_string", AttributeValue.stringAttributeValue("string")))))
+                        "key_string", AttributeValue.stringAttributeValue("string")),
+                    5)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -297,6 +298,7 @@ public class SpanAdapterTest {
                         .setStringValue("string")
                         .setType(ValueType.STRING)
                         .build())
+                .setDroppedAttributesCount(5)
                 .build());
   }
 }
