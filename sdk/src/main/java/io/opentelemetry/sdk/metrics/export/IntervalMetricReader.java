@@ -46,7 +46,16 @@ public final class IntervalMetricReader {
    */
   public void shutdown() {
     scheduler.shutdown();
-    exporter.run();
+    try {
+      scheduler.awaitTermination(5, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      // force a shutdown if the export hasn't finished.
+      scheduler.shutdownNow();
+      // reset the interrupted status
+      Thread.currentThread().interrupt();
+    } finally {
+      exporter.run();
+    }
   }
 
   /**
