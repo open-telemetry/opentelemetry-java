@@ -30,9 +30,10 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class TracingContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
-      Context.<Span>key("opentelemetry-trace-span-key");
+      Context.<Span>keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.getInvalid());
   private static final Context.Key<SpanContext> CONTEXT_SPANCONTEXT_KEY =
-      Context.<SpanContext>key("opentelemetry-trace-spancontext-key");
+      Context.<SpanContext>keyWithDefault(
+          "opentelemetry-trace-spancontext-key", SpanContext.getInvalid());
 
   /**
    * Returns the {@link Span} from the current {@code Context}, falling back to a default, no-op
@@ -78,8 +79,7 @@ public final class TracingContextUtils {
    * @since 0.3.0
    */
   public static Span getSpan(Context context) {
-    Span span = CONTEXT_SPAN_KEY.get(context);
-    return span == null ? DefaultSpan.getInvalid() : span;
+    return CONTEXT_SPAN_KEY.get(context);
   }
 
   /**
@@ -92,7 +92,8 @@ public final class TracingContextUtils {
    */
   @Nullable
   public static Span getSpanWithoutDefault(Context context) {
-    return CONTEXT_SPAN_KEY.get(context);
+    Span span = CONTEXT_SPAN_KEY.get(context);
+    return span == DefaultSpan.getInvalid() ? null : span;
   }
 
   /**
@@ -104,8 +105,7 @@ public final class TracingContextUtils {
    * @since 0.3.0
    */
   public static SpanContext getSpanContext(Context context) {
-    SpanContext spanContext = CONTEXT_SPANCONTEXT_KEY.get(context);
-    return spanContext == null ? SpanContext.getInvalid() : spanContext;
+    return CONTEXT_SPANCONTEXT_KEY.get(context);
   }
 
   /**
@@ -116,8 +116,10 @@ public final class TracingContextUtils {
    * @return the {@link SpanContext} from the specified {@code Context}.
    * @since 0.3.0
    */
+  @Nullable
   public static SpanContext getSpanContextWithoutDefault(Context context) {
-    return CONTEXT_SPANCONTEXT_KEY.get(context);
+    SpanContext spanContext = CONTEXT_SPANCONTEXT_KEY.get(context);
+    return spanContext == SpanContext.getInvalid() ? null : spanContext;
   }
 
   /**
@@ -131,6 +133,7 @@ public final class TracingContextUtils {
    * @return the value from the specified {@code Context}.
    * @since 0.3.0
    */
+  @Nullable
   public static SpanContext getEffectiveSpanContext(Context context) {
     Span span = getSpanWithoutDefault(context);
     return span != null ? span.getContext() : getSpanContextWithoutDefault(context);

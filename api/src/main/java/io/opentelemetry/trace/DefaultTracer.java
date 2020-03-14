@@ -21,6 +21,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -66,7 +67,7 @@ public final class DefaultTracer implements Tracer {
     }
 
     private boolean isRootSpan;
-    private SpanContext spanContext;
+    @Nullable private SpanContext spanContext;
 
     @Override
     public Span startSpan() {
