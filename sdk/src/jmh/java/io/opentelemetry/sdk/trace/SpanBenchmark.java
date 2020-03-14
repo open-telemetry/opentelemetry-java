@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
 import java.util.concurrent.TimeUnit;
@@ -55,8 +54,8 @@ public class SpanBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public SpanData exerciseSpan_01Thread() {
-    return doSpanWork(span);
+  public void addAttributesEventsStatusEnd_01Thread() {
+    doSpanWork(span);
   }
 
   @Benchmark
@@ -65,8 +64,8 @@ public class SpanBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public SpanData exerciseSpan_05Threads() {
-    return doSpanWork(span);
+  public void addAttributesEventsStatusEnd_05Threads() {
+    doSpanWork(span);
   }
 
   @Benchmark
@@ -75,8 +74,8 @@ public class SpanBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public SpanData exerciseSpan_02Threads() {
-    return doSpanWork(span);
+  public void addAttributesEventsStatusEnd_02Threads() {
+    doSpanWork(span);
   }
 
   @Benchmark
@@ -85,17 +84,16 @@ public class SpanBenchmark {
   @Warmup(iterations = 5, time = 1)
   @Measurement(iterations = 10, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public SpanData exerciseSpan_10Threads() {
-    return doSpanWork(span);
+  public void addAttributesEventsStatusEnd_10Threads() {
+    doSpanWork(span);
   }
 
-  private static SpanData doSpanWork(RecordEventsReadableSpan span) {
+  private static void doSpanWork(RecordEventsReadableSpan span) {
     span.setAttribute("longAttribute", 33L);
     span.setAttribute("stringAttribute", "test_value");
     span.setStatus(Status.OK);
 
     span.addEvent("testEvent");
     span.end();
-    return span.toSpanData();
   }
 }
