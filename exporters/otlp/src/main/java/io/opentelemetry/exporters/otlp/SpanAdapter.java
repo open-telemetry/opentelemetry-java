@@ -17,11 +17,13 @@
 package io.opentelemetry.exporters.otlp;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.proto.trace.v1.InstrumentationLibrarySpans;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.proto.trace.v1.Status.StatusCode;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -34,23 +36,50 @@ import java.util.Map;
 
 final class SpanAdapter {
   static List<ResourceSpans> toProtoResourceSpans(List<SpanData> spanDataList) {
-    Map<Resource, ResourceSpans.Builder> resourceSpansBuilderMap = new HashMap<>();
-    for (SpanData spanData : spanDataList) {
-      Resource resource = spanData.getResource();
-      ResourceSpans.Builder resourceSpansBuilder =
-          resourceSpansBuilderMap.get(spanData.getResource());
-      if (resourceSpansBuilder == null) {
-        resourceSpansBuilder =
-            ResourceSpans.newBuilder().setResource(ResourceAdapter.toProtoResource(resource));
-        resourceSpansBuilderMap.put(resource, resourceSpansBuilder);
+    Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> resourceAndLibraryMap =
+        groupByResourceAndLibrary(spanDataList);
+    List<ResourceSpans> resourceSpans = new ArrayList<>(resourceAndLibraryMap.size());
+    for (Map.Entry<Resource, Map<InstrumentationLibraryInfo, List<Span>>> entryResource :
+        resourceAndLibraryMap.entrySet()) {
+      List<InstrumentationLibrarySpans> instrumentationLibrarySpans =
+          new ArrayList<>(entryResource.getValue().size());
+      for (Map.Entry<InstrumentationLibraryInfo, List<Span>> entryLibrary :
+          entryResource.getValue().entrySet()) {
+        instrumentationLibrarySpans.add(
+            InstrumentationLibrarySpans.newBuilder()
+                .setInstrumentationLibrary(
+                    CommonAdapter.toProtoInstrumentationLibrary(entryLibrary.getKey()))
+                .addAllSpans(entryLibrary.getValue())
+                .build());
       }
-      resourceSpansBuilder.addSpans(toProtoSpan(spanData));
-    }
-    List<ResourceSpans> resourceSpans = new ArrayList<>(resourceSpansBuilderMap.size());
-    for (ResourceSpans.Builder resourceSpansBuilder : resourceSpansBuilderMap.values()) {
-      resourceSpans.add(resourceSpansBuilder.build());
+      resourceSpans.add(
+          ResourceSpans.newBuilder()
+              .setResource(ResourceAdapter.toProtoResource(entryResource.getKey()))
+              .addAllInstrumentationLibrarySpans(instrumentationLibrarySpans)
+              .build());
     }
     return resourceSpans;
+  }
+
+  private static Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>>
+      groupByResourceAndLibrary(List<SpanData> spanDataList) {
+    Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> result = new HashMap<>();
+    for (SpanData spanData : spanDataList) {
+      Resource resource = spanData.getResource();
+      Map<InstrumentationLibraryInfo, List<Span>> libraryInfoListMap =
+          result.get(spanData.getResource());
+      if (libraryInfoListMap == null) {
+        libraryInfoListMap = new HashMap<>();
+        result.put(resource, libraryInfoListMap);
+      }
+      List<Span> spanList = libraryInfoListMap.get(spanData.getInstrumentationLibraryInfo());
+      if (spanList == null) {
+        spanList = new ArrayList<>();
+        libraryInfoListMap.put(spanData.getInstrumentationLibraryInfo(), spanList);
+      }
+      spanList.add(toProtoSpan(spanData));
+    }
+    return result;
   }
 
   static Span toProtoSpan(SpanData spanData) {
