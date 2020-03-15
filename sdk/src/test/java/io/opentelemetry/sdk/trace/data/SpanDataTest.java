@@ -22,7 +22,6 @@ import static java.util.Collections.emptyList;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -127,13 +126,13 @@ public class SpanDataTest {
 
   private static SpanData createSpanDataWithMutableCollections() {
     return createBasicSpanBuilder()
-        .setLinks(new ArrayList<Link>())
+        .setLinks(new ArrayList<SpanData.Link>())
         .setTimedEvents(new ArrayList<TimedEvent>())
         .setAttributes(new HashMap<String, AttributeValue>())
         .build();
   }
 
-  private static Link emptyLink() {
+  private static SpanData.Link emptyLink() {
     return SpanData.Link.create(SpanContext.getInvalid());
   }
 

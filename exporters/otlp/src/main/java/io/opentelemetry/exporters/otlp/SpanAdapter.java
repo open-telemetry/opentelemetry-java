@@ -27,8 +27,8 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
-import io.opentelemetry.trace.Link;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,7 +96,7 @@ final class SpanAdapter {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
-    // TODO: Set DroppedAttributesCount;
+    builder.setDroppedAttributesCount(spanData.getDroppedAttributeCount());
     for (TimedEvent timedEvent : spanData.getTimedEvents()) {
       builder.addEvents(toProtoSpanEvent(timedEvent));
     }
@@ -134,7 +134,7 @@ final class SpanAdapter {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
-    // TODO: Set DroppedAttributesCount;
+    builder.setDroppedAttributesCount(timedEvent.getDroppedAttributeCount());
     return builder.build();
   }
 
@@ -147,7 +147,7 @@ final class SpanAdapter {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
-    // TODO: Set DroppedAttributesCount;
+    builder.setDroppedAttributesCount(link.getDroppedAttributeCount());
     return builder.build();
   }
 
