@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link ResourceAdapter}. */
+/** Unit tests for {@link SpanAdapter}. */
 @RunWith(JUnit4.class)
 public class SpanAdapterTest {
   private static final byte[] TRACE_ID_BYTES =
