@@ -23,10 +23,12 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
 final class LongObserverSdk extends AbstractObserver implements LongObserver {
   @Nullable private volatile Callback<ResultLongObserver> metricUpdater = null;
+  private final ReentrantLock collectLock = new ReentrantLock();
 
   LongObserverSdk(
       InstrumentDescriptor descriptor,
@@ -47,9 +49,14 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     if (currentMetricUpdater == null) {
       return Collections.emptyList();
     }
-    final ActiveBatcher activeBatcher = getActiveBatcher();
-    currentMetricUpdater.update(new ResultLongObserverSdk(activeBatcher, isMonotonic()));
-    return activeBatcher.completeCollectionCycle();
+    collectLock.lock();
+    try {
+      final ActiveBatcher activeBatcher = getActiveBatcher();
+      currentMetricUpdater.update(new ResultLongObserverSdk(activeBatcher, isMonotonic()));
+      return activeBatcher.completeCollectionCycle();
+    } finally {
+      collectLock.unlock();
+    }
   }
 
   @Override

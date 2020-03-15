@@ -23,10 +23,12 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
 final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver {
   @Nullable private volatile Callback<ResultDoubleObserver> metricUpdater = null;
+  private final ReentrantLock collectLock = new ReentrantLock();
 
   DoubleObserverSdk(
       InstrumentDescriptor descriptor,
@@ -35,7 +37,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
       boolean monotonic) {
     super(
         descriptor,
-        InstrumentValueType.LONG,
+        InstrumentValueType.DOUBLE,
         meterProviderSharedState,
         meterSharedState,
         monotonic);
@@ -47,9 +49,14 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     if (currentMetricUpdater == null) {
       return Collections.emptyList();
     }
-    final ActiveBatcher activeBatcher = getActiveBatcher();
-    currentMetricUpdater.update(new ResultDoubleObserverSdk(activeBatcher, isMonotonic()));
-    return activeBatcher.completeCollectionCycle();
+    collectLock.lock();
+    try {
+      final ActiveBatcher activeBatcher = getActiveBatcher();
+      currentMetricUpdater.update(new ResultDoubleObserverSdk(activeBatcher, isMonotonic()));
+      return activeBatcher.completeCollectionCycle();
+    } finally {
+      collectLock.unlock();
+    }
   }
 
   @Override
