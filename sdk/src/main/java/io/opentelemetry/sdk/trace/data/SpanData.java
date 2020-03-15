@@ -145,7 +145,7 @@ public abstract class SpanData {
    * @return links recorded for this {@code Span}.
    * @since 0.1.0
    */
-  public abstract List<io.opentelemetry.trace.Link> getLinks();
+  public abstract List<Link> getLinks();
 
   /**
    * Returns the {@code Status}.
@@ -202,6 +202,13 @@ public abstract class SpanData {
   public abstract int getTotalRecordedLinks();
 
   /**
+   * Returns the number of dropped attributes.
+   *
+   * @return the number of dropped attributes.
+   */
+  public abstract int getDroppedAttributeCount();
+
+  /**
    * An immutable implementation of {@link Link}.
    *
    * @since 0.1.0
@@ -209,6 +216,8 @@ public abstract class SpanData {
   @Immutable
   @AutoValue
   public abstract static class Link implements io.opentelemetry.trace.Link {
+
+    private static final int ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
 
     /**
      * Returns a new immutable {@code Link}.
@@ -219,7 +228,9 @@ public abstract class SpanData {
      */
     public static Link create(SpanContext spanContext) {
       return new AutoValue_SpanData_Link(
-          spanContext, Collections.<String, AttributeValue>emptyMap());
+          spanContext,
+          Collections.<String, AttributeValue>emptyMap(),
+          ZERO_DROPPED_ATTRIBUTE_COUNT);
     }
 
     /**
@@ -232,8 +243,38 @@ public abstract class SpanData {
      */
     public static Link create(SpanContext spanContext, Map<String, AttributeValue> attributes) {
       return new AutoValue_SpanData_Link(
-          spanContext, Collections.unmodifiableMap(new LinkedHashMap<>(attributes)));
+          spanContext,
+          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
+          ZERO_DROPPED_ATTRIBUTE_COUNT);
     }
+
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @param attributes the attributes of this {@code Link}.
+     * @param droppedAttributeCount number of dropped attributed for this {@code Link}.
+     * @return a new immutable {@code TimedEvent<T>}
+     * @since 0.1.0
+     */
+    public static Link create(
+        SpanContext spanContext,
+        Map<String, AttributeValue> attributes,
+        int droppedAttributeCount) {
+      return new AutoValue_SpanData_Link(
+          spanContext,
+          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
+          droppedAttributeCount);
+    }
+
+    /**
+     * Returns the number of dropped attributes.
+     *
+     * @return the number of dropped attributes.
+     */
+    public abstract int getDroppedAttributeCount();
+
+    Link() {}
   }
 
   /**
@@ -244,6 +285,8 @@ public abstract class SpanData {
   @Immutable
   @AutoValue
   public abstract static class TimedEvent implements Event {
+
+    private static final int ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
 
     /**
      * Returns a new immutable {@code TimedEvent}.
@@ -256,7 +299,25 @@ public abstract class SpanData {
      */
     public static TimedEvent create(
         long epochNanos, String name, Map<String, AttributeValue> attributes) {
-      return new AutoValue_SpanData_TimedEvent(epochNanos, name, attributes);
+      return new AutoValue_SpanData_TimedEvent(
+          epochNanos, name, attributes, ZERO_DROPPED_ATTRIBUTE_COUNT);
+    }
+
+    /**
+     * Returns a new immutable {@code TimedEvent}.
+     *
+     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
+     * @param name the name of the {@code Event}.
+     * @param attributes the attributes of the {@code Event}.
+     * @return a new immutable {@code TimedEvent<T>}
+     * @since 0.1.0
+     */
+    public static TimedEvent create(
+        long epochNanos,
+        String name,
+        Map<String, AttributeValue> attributes,
+        int droppedAttributeCount) {
+      return new AutoValue_SpanData_TimedEvent(epochNanos, name, attributes, droppedAttributeCount);
     }
 
     /**
@@ -273,6 +334,13 @@ public abstract class SpanData {
     @Override
     public abstract Map<String, AttributeValue> getAttributes();
 
+    /**
+     * Returns the number of dropped attributes.
+     *
+     * @return the number of dropped attributes.
+     */
+    public abstract int getDroppedAttributeCount();
+
     TimedEvent() {}
   }
 
@@ -286,7 +354,7 @@ public abstract class SpanData {
     return new AutoValue_SpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
-        .setLinks(Collections.<io.opentelemetry.trace.Link>emptyList())
+        .setLinks(Collections.<Link>emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
         .setTimedEvents(Collections.<TimedEvent>emptyList())
@@ -294,7 +362,8 @@ public abstract class SpanData {
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
         .setTraceFlags(TraceFlags.getDefault())
-        .setHasRemoteParent(false);
+        .setHasRemoteParent(false)
+        .setDroppedAttributeCount(0);
   }
 
   /**
@@ -311,7 +380,7 @@ public abstract class SpanData {
 
     abstract List<TimedEvent> getTimedEvents();
 
-    abstract List<io.opentelemetry.trace.Link> getLinks();
+    abstract List<Link> getLinks();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -462,7 +531,7 @@ public abstract class SpanData {
      * @see io.opentelemetry.trace.Link
      * @since 0.1.0
      */
-    public abstract Builder setLinks(List<io.opentelemetry.trace.Link> links);
+    public abstract Builder setLinks(List<Link> links);
 
     /**
      * Sets to true if the span has a parent on a different process.
@@ -499,5 +568,13 @@ public abstract class SpanData {
      * @since 0.4.0
      */
     public abstract Builder setTotalRecordedLinks(int totalRecordedLinks);
+
+    /**
+     * Set the number of dropped attributes on this span.
+     *
+     * @param droppedAttributeCount The number of dropped attributes.
+     * @return this
+     */
+    public abstract Builder setDroppedAttributeCount(int droppedAttributeCount);
   }
 }

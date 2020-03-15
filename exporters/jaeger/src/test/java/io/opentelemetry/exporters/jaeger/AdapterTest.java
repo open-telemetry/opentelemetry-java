@@ -28,8 +28,8 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -190,8 +190,7 @@ public class AdapterTest {
   public void testSpanRefs() {
     // prepare
     Link link =
-        SpanData.Link.create(
-            createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+        Link.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -203,7 +202,7 @@ public class AdapterTest {
   @Test
   public void testSpanRef() {
     // prepare
-    Link link = SpanData.Link.create(createSpanContext(TRACE_ID, SPAN_ID));
+    Link link = Link.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
@@ -248,7 +247,7 @@ public class AdapterTest {
     AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
     Map<String, AttributeValue> attributes = ImmutableMap.of("valueB", valueB);
 
-    Link link = SpanData.Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+    Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return SpanData.newBuilder()
         .setHasEnded(true)

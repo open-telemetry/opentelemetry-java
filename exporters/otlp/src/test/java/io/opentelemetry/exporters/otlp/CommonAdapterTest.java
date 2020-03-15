@@ -21,6 +21,8 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue;
 import io.opentelemetry.proto.common.v1.AttributeKeyValue.ValueType;
+import io.opentelemetry.proto.common.v1.InstrumentationLibrary;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -70,5 +72,23 @@ public class CommonAdapterTest {
                 .setDoubleValue(100.3)
                 .setType(ValueType.DOUBLE)
                 .build());
+  }
+
+  @Test
+  public void toProtoInstrumentationLibrary() {
+    InstrumentationLibrary instrumentationLibrary =
+        CommonAdapter.toProtoInstrumentationLibrary(
+            InstrumentationLibraryInfo.create("name", "version"));
+    assertThat(instrumentationLibrary.getName()).isEqualTo("name");
+    assertThat(instrumentationLibrary.getVersion()).isEqualTo("version");
+  }
+
+  @Test
+  public void toProtoInstrumentationLibrary_NoVersion() {
+    InstrumentationLibrary instrumentationLibrary =
+        CommonAdapter.toProtoInstrumentationLibrary(
+            InstrumentationLibraryInfo.create("name", null));
+    assertThat(instrumentationLibrary.getName()).isEqualTo("name");
+    assertThat(instrumentationLibrary.getVersion()).isEmpty();
   }
 }

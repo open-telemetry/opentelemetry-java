@@ -560,8 +560,7 @@ public class RecordEventsReadableSpanTest {
     Map<String, AttributeValue> event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
         SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
-    Link link1 = SpanData.Link.create(context, TestUtils.generateRandomAttributes());
-    List<Link> links = Collections.singletonList(link1);
+    SpanData.Link link1 = SpanData.Link.create(context, TestUtils.generateRandomAttributes());
 
     RecordEventsReadableSpan readableSpan =
         RecordEventsReadableSpan.startSpan(
@@ -576,7 +575,7 @@ public class RecordEventsReadableSpanTest {
             clock,
             resource,
             attributesWithCapacity,
-            links,
+            Collections.<Link>singletonList(link1),
             1,
             0);
     long startEpochNanos = clock.now();
@@ -607,8 +606,8 @@ public class RecordEventsReadableSpanTest {
             .setTotalRecordedEvents(2)
             .setResource(resource)
             .setParentSpanId(parentSpanId)
-            .setLinks(links)
-            .setTotalRecordedLinks(links.size())
+            .setLinks(Collections.singletonList(link1))
+            .setTotalRecordedLinks(1)
             .setTraceId(traceId)
             .setSpanId(spanId)
             .setAttributes(attributes)

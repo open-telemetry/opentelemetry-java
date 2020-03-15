@@ -252,17 +252,19 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return A copy of the Links for this span.
    */
-  private List<Link> getLinks() {
+  private List<SpanData.Link> getLinks() {
     if (links == null) {
       return Collections.emptyList();
     }
-    List<Link> result = new ArrayList<>(links.size());
+    List<SpanData.Link> result = new ArrayList<>(links.size());
     for (Link link : links) {
-      Link newLink = link;
+      SpanData.Link newLink;
       if (!(link instanceof SpanData.Link)) {
         // Make a copy because the given Link may not be immutable and we may reference a lot of
         // memory.
         newLink = SpanData.Link.create(link.getContext(), link.getAttributes());
+      } else {
+        newLink = (SpanData.Link) link;
       }
       result.add(newLink);
     }
