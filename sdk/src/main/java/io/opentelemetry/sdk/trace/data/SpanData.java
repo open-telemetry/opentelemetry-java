@@ -219,6 +219,8 @@ public abstract class SpanData {
   @AutoValue
   public abstract static class Link implements io.opentelemetry.trace.Link {
 
+    private static final Map<String, AttributeValue> DEFAULT_ATTRIBUTE_COLLECTION =
+        Collections.<String, AttributeValue>emptyMap();
     private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
 
     /**
@@ -230,7 +232,7 @@ public abstract class SpanData {
      */
     public static Link create(SpanContext spanContext) {
       return new AutoValue_SpanData_Link(
-          spanContext, Collections.<String, AttributeValue>emptyMap(), DEFAULT_ATTRIBUTE_COUNT);
+          spanContext, DEFAULT_ATTRIBUTE_COLLECTION, DEFAULT_ATTRIBUTE_COUNT);
     }
 
     /**
@@ -245,7 +247,7 @@ public abstract class SpanData {
       return new AutoValue_SpanData_Link(
           spanContext,
           Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
-          DEFAULT_ATTRIBUTE_COUNT);
+          attributes.size());
     }
 
     /**
@@ -287,8 +289,6 @@ public abstract class SpanData {
   @AutoValue
   public abstract static class TimedEvent implements Event {
 
-    private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
-
     /**
      * Returns a new immutable {@code TimedEvent}.
      *
@@ -300,8 +300,7 @@ public abstract class SpanData {
      */
     public static TimedEvent create(
         long epochNanos, String name, Map<String, AttributeValue> attributes) {
-      return new AutoValue_SpanData_TimedEvent(
-          epochNanos, name, attributes, DEFAULT_ATTRIBUTE_COUNT);
+      return new AutoValue_SpanData_TimedEvent(epochNanos, name, attributes, attributes.size());
     }
 
     /**
