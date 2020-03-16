@@ -112,7 +112,7 @@ public abstract class AttributeValue {
    * @return an {@code AttributeValue} with a boolean array value.
    * @since 0.3.0
    */
-  public static AttributeValue arrayAttributeValue(boolean... booleanValues) {
+  public static AttributeValue arrayAttributeValue(Boolean... booleanValues) {
     return AttributeValueBooleanArray.create(booleanValues);
   }
 
@@ -123,7 +123,7 @@ public abstract class AttributeValue {
    * @return an {@code AttributeValue} with a long array value.
    * @since 0.3.0
    */
-  public static AttributeValue arrayAttributeValue(long... longValues) {
+  public static AttributeValue arrayAttributeValue(Long... longValues) {
     return AttributeValueLongArray.create(longValues);
   }
 
@@ -134,7 +134,7 @@ public abstract class AttributeValue {
    * @return an {@code AttributeValue} with a double array value.
    * @since 0.3.0
    */
-  public static AttributeValue arrayAttributeValue(double... doubleValues) {
+  public static AttributeValue arrayAttributeValue(Double... doubleValues) {
     return AttributeValueDoubleArray.create(doubleValues);
   }
 
@@ -351,13 +351,13 @@ public abstract class AttributeValue {
 
     AttributeValueBooleanArray() {}
 
-    static AttributeValue create(boolean... booleanValues) {
+    static AttributeValue create(Boolean... booleanValues) {
       if (booleanValues == null) {
         return new AutoValue_AttributeValue_AttributeValueBooleanArray(
             Collections.<Boolean>emptyList());
       }
       List<Boolean> values = new ArrayList<>(booleanValues.length);
-      for (boolean value : booleanValues) {
+      for (Boolean value : booleanValues) {
         values.add(value);
       }
       return new AutoValue_AttributeValue_AttributeValueBooleanArray(
@@ -379,12 +379,12 @@ public abstract class AttributeValue {
 
     AttributeValueLongArray() {}
 
-    static AttributeValue create(long... longValues) {
+    static AttributeValue create(Long... longValues) {
       if (longValues == null) {
         return new AutoValue_AttributeValue_AttributeValueLongArray(Collections.<Long>emptyList());
       }
       List<Long> values = new ArrayList<>(longValues.length);
-      for (long value : longValues) {
+      for (Long value : longValues) {
         values.add(value);
       }
       return new AutoValue_AttributeValue_AttributeValueLongArray(
@@ -406,13 +406,13 @@ public abstract class AttributeValue {
 
     AttributeValueDoubleArray() {}
 
-    static AttributeValue create(double... doubleValues) {
+    static AttributeValue create(Double... doubleValues) {
       if (doubleValues == null) {
         return new AutoValue_AttributeValue_AttributeValueDoubleArray(
             Collections.<Double>emptyList());
       }
       List<Double> values = new ArrayList<>(doubleValues.length);
-      for (double value : doubleValues) {
+      for (Double value : doubleValues) {
         values.add(value);
       }
       return new AutoValue_AttributeValue_AttributeValueDoubleArray(

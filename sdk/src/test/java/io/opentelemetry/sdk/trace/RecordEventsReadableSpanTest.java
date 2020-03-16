@@ -303,10 +303,10 @@ public class RecordEventsReadableSpanTest {
       span.setAttribute(
           "ArrayBooleanKey", AttributeValue.arrayAttributeValue(true, false, false, true));
       span.setAttribute("NullArrayStringKey", AttributeValue.arrayAttributeValue((String[]) null));
-      span.setAttribute("NullArrayLongKey", AttributeValue.arrayAttributeValue((long[]) null));
-      span.setAttribute("NullArrayDoubleKey", AttributeValue.arrayAttributeValue((double[]) null));
+      span.setAttribute("NullArrayLongKey", AttributeValue.arrayAttributeValue((Long[]) null));
+      span.setAttribute("NullArrayDoubleKey", AttributeValue.arrayAttributeValue((Double[]) null));
       span.setAttribute(
-          "NullArrayBooleanKey", AttributeValue.arrayAttributeValue((boolean[]) null));
+          "NullArrayBooleanKey", AttributeValue.arrayAttributeValue((Boolean[]) null));
     } finally {
       span.end();
     }

@@ -43,6 +43,11 @@ final class CommonAdapter {
             .setType(ValueType.DOUBLE)
             .setDoubleValue(attributeValue.getDoubleValue())
             .build();
+      case BOOLEAN_ARRAY:
+      case LONG_ARRAY:
+      case DOUBLE_ARRAY:
+      case STRING_ARRAY:
+        return builder.setType(ValueType.UNRECOGNIZED).build();
     }
     return builder.setType(ValueType.UNRECOGNIZED).build();
   }
