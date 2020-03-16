@@ -16,11 +16,18 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
 import io.opentelemetry.metrics.Observer.Callback;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Rule;
@@ -34,6 +41,7 @@ import org.junit.runners.JUnit4;
 public class LongObserverSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
           Collections.singletonMap(
@@ -45,6 +53,99 @@ public class LongObserverSdkTest {
       MeterProviderSharedState.create(testClock, RESOURCE);
   private final MeterSdk testSdk =
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
+
+  @Test
+  public void collectMetrics_NoCallback() {
+    LongObserverSdk longObserver =
+        testSdk
+            .longObserverBuilder("testObserver")
+            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own measure")
+            .setUnit("ms")
+            .build();
+    assertThat(longObserver.collectAll()).isEmpty();
+  }
+
+  @Test
+  public void collectMetrics_NoRecords() {
+    LongObserverSdk longObserver =
+        testSdk
+            .longObserverBuilder("testObserver")
+            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own measure")
+            .setUnit("ms")
+            .build();
+    longObserver.setCallback(
+        new Callback<ResultLongObserver>() {
+          @Override
+          public void update(ResultLongObserver result) {
+            // Do nothing.
+          }
+        });
+    assertThat(longObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testObserver",
+                    "My very own measure",
+                    "ms",
+                    Type.NON_MONOTONIC_LONG,
+                    Collections.singletonMap("sk1", "sv1")),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>emptyList()));
+  }
+
+  @Test
+  public void collectMetrics_WithOneRecord() {
+    LongObserverSdk longObserver =
+        testSdk.longObserverBuilder("testObserver").setMonotonic(true).build();
+    longObserver.setCallback(
+        new Callback<ResultLongObserver>() {
+          @Override
+          public void update(ResultLongObserver result) {
+            result.observe(12, "k", "v");
+          }
+        });
+    testClock.advanceNanos(SECOND_NANOS);
+    assertThat(longObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testObserver",
+                    "",
+                    "1",
+                    Type.MONOTONIC_LONG,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    LongPoint.create(
+                        testClock.now() - SECOND_NANOS,
+                        testClock.now(),
+                        Collections.singletonMap("k", "v"),
+                        12))));
+    testClock.advanceNanos(SECOND_NANOS);
+    assertThat(longObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testObserver",
+                    "",
+                    "1",
+                    Type.MONOTONIC_LONG,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    LongPoint.create(
+                        testClock.now() - 2 * SECOND_NANOS,
+                        testClock.now(),
+                        Collections.singletonMap("k", "v"),
+                        12))));
+  }
 
   @Test
   public void observeMonotonic_NegativeValue() {
