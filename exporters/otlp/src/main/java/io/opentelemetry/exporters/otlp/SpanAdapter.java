@@ -96,7 +96,8 @@ final class SpanAdapter {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
-    builder.setDroppedAttributesCount(spanData.getDroppedAttributeCount());
+    builder.setDroppedAttributesCount(
+        spanData.getTotalAttributeCount() - spanData.getAttributes().size());
     for (TimedEvent timedEvent : spanData.getTimedEvents()) {
       builder.addEvents(toProtoSpanEvent(timedEvent));
     }

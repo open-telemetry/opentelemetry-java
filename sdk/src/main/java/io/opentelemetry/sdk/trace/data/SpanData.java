@@ -202,11 +202,13 @@ public abstract class SpanData {
   public abstract int getTotalRecordedLinks();
 
   /**
-   * Returns the number of dropped attributes.
+   * The total number of attributes that were recorded on this span. This number may be larger than
+   * the number of attributes that are attached to this span, if the total number recorded was
+   * greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfAttributes()}
    *
    * @return the number of dropped attributes.
    */
-  public abstract int getDroppedAttributeCount();
+  public abstract int getTotalAttributeCount();
 
   /**
    * An immutable implementation of {@link Link}.
@@ -363,7 +365,7 @@ public abstract class SpanData {
         .setTraceState(TraceState.getDefault())
         .setTraceFlags(TraceFlags.getDefault())
         .setHasRemoteParent(false)
-        .setDroppedAttributeCount(0);
+        .setTotalAttributeCount(0);
   }
 
   /**
@@ -570,11 +572,11 @@ public abstract class SpanData {
     public abstract Builder setTotalRecordedLinks(int totalRecordedLinks);
 
     /**
-     * Set the number of dropped attributes on this span.
+     * Set the total number of attributes recorded on this span.
      *
-     * @param droppedAttributeCount The number of dropped attributes.
+     * @param totalAttributeCount The total number of attributes recorded.
      * @return this
      */
-    public abstract Builder setDroppedAttributeCount(int droppedAttributeCount);
+    public abstract Builder setTotalAttributeCount(int totalAttributeCount);
   }
 }

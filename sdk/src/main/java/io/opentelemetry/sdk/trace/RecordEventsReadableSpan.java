@@ -63,10 +63,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final List<Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
-  // Max number of attibutes per span
+  // Max number of attibutes per span.
   private int maxNumberOfAttributes = 0;
-  // Number of dropped attributes after reaching maxNumberOfAttributes
-  private int droppedAttributeCount = 0;
+  // Number of attributes recorded.
+  private int totalAttributeCount = 0;
 
   // Lock used to internally guard the mutable state of this instance
   private final Object lock = new Object();
@@ -176,7 +176,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             .setHasRemoteParent(hasRemoteParent)
             .setResource(resource)
             .setStartEpochNanos(startEpochNanos)
-            .setDroppedAttributeCount(droppedAttributeCount);
+            .setTotalAttributeCount(totalAttributeCount);
 
     // Copy remainder within synchronized
     synchronized (lock) {
@@ -330,13 +330,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
+      totalAttributeCount++;
       if (attributes.get(key) == null && attributes.size() >= maxNumberOfAttributes) {
         logger.log(
             Level.FINE,
             "Span has maximum number of attributes ("
                 + maxNumberOfAttributes
                 + "). Dropping new entries.");
-        droppedAttributeCount += 1;
         return;
       }
       attributes.putAttribute(key, value);

@@ -87,13 +87,13 @@ public class SpanDataTest {
   @Test
   public void defaultDroppedAttributeCountIsZero() {
     SpanData spanData = createSpanDataWithMutableCollections();
-    assertThat(spanData.getDroppedAttributeCount()).isEqualTo(0);
+    assertThat(spanData.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void canSetDroppedAttributecountWithBuilder() {
-    SpanData spanData = createBasicSpanBuilder().setDroppedAttributeCount(123).build();
-    assertThat(spanData.getDroppedAttributeCount()).isEqualTo(123);
+    SpanData spanData = createBasicSpanBuilder().setTotalAttributeCount(123).build();
+    assertThat(spanData.getTotalAttributeCount()).isEqualTo(123);
   }
 
   @Test

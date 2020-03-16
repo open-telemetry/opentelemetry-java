@@ -341,13 +341,13 @@ public class RecordEventsReadableSpanTest {
       }
       SpanData spanData = span.toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
-      assertThat(spanData.getDroppedAttributeCount()).isEqualTo(maxNumberOfAttributes);
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(2 * maxNumberOfAttributes);
     } finally {
       span.end();
     }
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
-    assertThat(spanData.getDroppedAttributeCount()).isEqualTo(maxNumberOfAttributes);
+    assertThat(spanData.getTotalAttributeCount()).isEqualTo(2 * maxNumberOfAttributes);
   }
 
   @Test
@@ -365,7 +365,7 @@ public class RecordEventsReadableSpanTest {
       }
       SpanData spanData = span.toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
-      assertThat(spanData.getDroppedAttributeCount()).isEqualTo(maxNumberOfAttributes);
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(2 * maxNumberOfAttributes);
 
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
         int val = i + maxNumberOfAttributes * 3 / 2;
