@@ -1,6 +1,8 @@
 # gRPC Example
 
-This is an example that demonstrates how to use the OpenTelemetry SDK 
+**Note:** This is an advanced scenario useful for people that want to *manually* instrument their own code. 
+
+This example demonstrates how to use the OpenTelemetry SDK 
 to instrument normal and streamed gRPC calls. 
 The example creates the **Root Span** on the client and sends the distributed context
 over the gRPC request. On the server side, the example shows how to extract the context
@@ -9,7 +11,7 @@ and create a **Child Span**.
 # How to run
 
 ## Prerequisites
-* Java 1.8.231
+* Java 1.8
 
 ## 1 - Compile 
 ```bash
