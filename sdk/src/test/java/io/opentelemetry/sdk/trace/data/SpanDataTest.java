@@ -103,7 +103,7 @@ public class SpanDataTest {
   }
 
   @Test
-  public void link_canSetTotalAttributeCountIsZero() {
+  public void link_canSetTotalAttributeCount() {
     SpanData.Link link = SpanData.Link.create(SpanContext.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
@@ -117,7 +117,7 @@ public class SpanDataTest {
   }
 
   @Test
-  public void timedEvent_canSetTotalAttributeCountIsZero() {
+  public void timedEvent_canSetTotalAttributeCount() {
     SpanData.TimedEvent event =
         SpanData.TimedEvent.create(
             START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap(), 123);
