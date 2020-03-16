@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -125,26 +124,4 @@ public interface Meter {
    * @since 0.1.0
    */
   BatchRecorder newBatchRecorder(String... keyValuePairs);
-
-  /**
-   * Returns a new {@link LabelSet} with the given labels.
-   *
-   * <p>The arguments must are in key, value pairs, so an even number of arguments are required.
-   *
-   * <p>If no arguments are provided, the resulting LabelSet will be the empty one.
-   *
-   * @param keyValuePairs pairs of keys and values for the labels.
-   * @return a new {@link LabelSet} with the given labels.
-   * @throws IllegalArgumentException if there aren't an even number of arguments.
-   */
-  LabelSet createLabelSet(String... keyValuePairs);
-
-  /**
-   * Returns a new {@link LabelSet} with labels built from the keys and values in the provided Map.
-   *
-   * @param labels The key-value pairs to turn into labels.
-   * @return a new {@link LabelSet} with the given labels.
-   * @throws NullPointerException if the map is null.
-   */
-  LabelSet createLabelSet(Map<String, String> labels);
 }

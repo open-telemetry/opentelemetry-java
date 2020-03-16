@@ -99,20 +99,6 @@ public final class DefaultMeterTest {
   }
 
   @Test
-  public void testVarargsLabelSetValidation_UnmatchedKeysAndValues() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("even");
-    defaultMeter.createLabelSet("key");
-  }
-
-  @Test
-  public void testVarargsLabelSetValidation_NullKey() throws Exception {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("null");
-    defaultMeter.createLabelSet(null, "value");
-  }
-
-  @Test
   public void testNewBatchRecorder_badLabelSet() throws Exception {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("key/value");

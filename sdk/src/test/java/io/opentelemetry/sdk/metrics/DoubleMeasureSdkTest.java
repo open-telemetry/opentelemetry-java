@@ -60,7 +60,7 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void collectMetrics_NoRecords() {
-    DoubleMeasure doubleMeasure =
+    DoubleMeasureSdk doubleMeasure =
         testSdk
             .doubleMeasureBuilder("testMeasure")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
@@ -69,7 +69,7 @@ public class DoubleMeasureSdkTest {
             .setUnit("ms")
             .build();
     assertThat(doubleMeasure).isInstanceOf(DoubleMeasureSdk.class);
-    List<MetricData> metricDataList = ((DoubleMeasureSdk) doubleMeasure).collectAll();
+    List<MetricData> metricDataList = doubleMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
@@ -109,8 +109,8 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = testSdk.createLabelSet("K", "V");
-    LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
+    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
+    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
     long startTime = testClock.now();
     DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
     BoundDoubleMeasure boundMeasure = doubleMeasure.bind("K", "V");

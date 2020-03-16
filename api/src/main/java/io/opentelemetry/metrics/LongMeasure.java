@@ -52,8 +52,8 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface LongMeasure extends Measure<BoundLongMeasure> {
 
   /**
-   * Records the given measurement, associated with the current {@code Context} and provided
-   * LabelSet.
+   * Records the given measurement, associated with the current {@code Context} and provided set of
+   * labels.
    *
    * @param value the measurement to record.
    * @param labelKeyValuePairs the set of labels to be associated to this recording

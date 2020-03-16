@@ -86,7 +86,7 @@ public class LongCounterSdkTest {
   public void collectMetrics_WithOneRecord() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
-    longCounter.add(12, testSdk.createLabelSet());
+    longCounter.add(12);
     List<MetricData> metricDataList = longCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
@@ -104,8 +104,8 @@ public class LongCounterSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = testSdk.createLabelSet("K", "V");
-    LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
+    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
+    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
     long startTime = testClock.now();
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     BoundLongCounter boundCounter = longCounter.bind("K", "V");
@@ -184,7 +184,7 @@ public class LongCounterSdkTest {
         testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    longCounter.add(-45, testSdk.createLabelSet());
+    longCounter.add(-45);
   }
 
   @Test

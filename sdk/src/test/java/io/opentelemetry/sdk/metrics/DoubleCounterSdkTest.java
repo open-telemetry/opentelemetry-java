@@ -106,8 +106,8 @@ public class DoubleCounterSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = testSdk.createLabelSet("K", "V");
-    LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
+    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
+    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
     long startTime = testClock.now();
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter boundCounter = doubleCounter.bind("K", "V");
