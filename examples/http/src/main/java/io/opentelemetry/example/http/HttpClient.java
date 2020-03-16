@@ -34,9 +34,9 @@ import java.nio.charset.Charset;
 
 public class HttpClient {
 
-
   // OTel API
-  private static Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpClient");
+  private static Tracer tracer =
+      OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpClient");
   // Export traces to log
   private static LoggingExporter loggingExporter = new LoggingExporter();
   // Inject the span context into the request

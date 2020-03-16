@@ -97,7 +97,8 @@ public class HttpServer {
   private static int port = 8080;
 
   // OTel API
-  private static Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpServer");
+  private static Tracer tracer =
+      OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpServer");
   // Export traces to log
   private static LoggingExporter loggingExporter = new LoggingExporter();
   // Extract the context from http headers
