@@ -135,7 +135,8 @@ final class SpanAdapter {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
-    builder.setDroppedAttributesCount(timedEvent.getDroppedAttributeCount());
+    builder.setDroppedAttributesCount(
+        timedEvent.getTotalAttributeCount() - timedEvent.getAttributes().size());
     return builder.build();
   }
 
@@ -148,7 +149,7 @@ final class SpanAdapter {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
-    builder.setDroppedAttributesCount(link.getDroppedAttributeCount());
+    builder.setDroppedAttributesCount(link.getTotalAttributeCount() - link.getAttributes().size());
     return builder.build();
   }
 

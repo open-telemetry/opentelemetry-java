@@ -265,7 +265,7 @@ public class SpanAdapterTest {
                         .setStringValue("string")
                         .setType(ValueType.STRING)
                         .build())
-                .setDroppedAttributesCount(5)
+                .setDroppedAttributesCount(4)
                 .build());
   }
 
@@ -298,7 +298,7 @@ public class SpanAdapterTest {
                         .setStringValue("string")
                         .setType(ValueType.STRING)
                         .build())
-                .setDroppedAttributesCount(5)
+                .setDroppedAttributesCount(4)
                 .build());
   }
 }

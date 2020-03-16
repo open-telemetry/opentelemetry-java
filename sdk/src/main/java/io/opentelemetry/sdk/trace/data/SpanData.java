@@ -206,7 +206,7 @@ public abstract class SpanData {
    * the number of attributes that are attached to this span, if the total number recorded was
    * greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfAttributes()}
    *
-   * @return the number of dropped attributes.
+   * @return The total number of attributes on this span.
    */
   public abstract int getTotalAttributeCount();
 
@@ -219,7 +219,7 @@ public abstract class SpanData {
   @AutoValue
   public abstract static class Link implements io.opentelemetry.trace.Link {
 
-    private static final int ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
+    private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
 
     /**
      * Returns a new immutable {@code Link}.
@@ -230,9 +230,7 @@ public abstract class SpanData {
      */
     public static Link create(SpanContext spanContext) {
       return new AutoValue_SpanData_Link(
-          spanContext,
-          Collections.<String, AttributeValue>emptyMap(),
-          ZERO_DROPPED_ATTRIBUTE_COUNT);
+          spanContext, Collections.<String, AttributeValue>emptyMap(), DEFAULT_ATTRIBUTE_COUNT);
     }
 
     /**
@@ -247,7 +245,7 @@ public abstract class SpanData {
       return new AutoValue_SpanData_Link(
           spanContext,
           Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
-          ZERO_DROPPED_ATTRIBUTE_COUNT);
+          DEFAULT_ATTRIBUTE_COUNT);
     }
 
     /**
@@ -255,26 +253,27 @@ public abstract class SpanData {
      *
      * @param spanContext the {@code SpanContext} of this {@code Link}.
      * @param attributes the attributes of this {@code Link}.
-     * @param droppedAttributeCount number of dropped attributed for this {@code Link}.
+     * @param totalAttributeCount the total number of attributed for this {@code Link}.
      * @return a new immutable {@code TimedEvent<T>}
      * @since 0.1.0
      */
     public static Link create(
-        SpanContext spanContext,
-        Map<String, AttributeValue> attributes,
-        int droppedAttributeCount) {
+        SpanContext spanContext, Map<String, AttributeValue> attributes, int totalAttributeCount) {
       return new AutoValue_SpanData_Link(
           spanContext,
           Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
-          droppedAttributeCount);
+          totalAttributeCount);
     }
 
     /**
-     * Returns the number of dropped attributes.
+     * The total number of attributes that were recorded on this Link. This number may be larger
+     * than the number of attributes that are attached to this span, if the total number recorded
+     * was greater than the configured maximum value. See: {@link
+     * TraceConfig#getMaxNumberOfAttributesPerLink()}
      *
-     * @return the number of dropped attributes.
+     * @return The number of attributes on this link.
      */
-    public abstract int getDroppedAttributeCount();
+    public abstract int getTotalAttributeCount();
 
     Link() {}
   }
@@ -288,7 +287,7 @@ public abstract class SpanData {
   @AutoValue
   public abstract static class TimedEvent implements Event {
 
-    private static final int ZERO_DROPPED_ATTRIBUTE_COUNT = 0;
+    private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
 
     /**
      * Returns a new immutable {@code TimedEvent}.
@@ -302,7 +301,7 @@ public abstract class SpanData {
     public static TimedEvent create(
         long epochNanos, String name, Map<String, AttributeValue> attributes) {
       return new AutoValue_SpanData_TimedEvent(
-          epochNanos, name, attributes, ZERO_DROPPED_ATTRIBUTE_COUNT);
+          epochNanos, name, attributes, DEFAULT_ATTRIBUTE_COUNT);
     }
 
     /**
@@ -311,6 +310,7 @@ public abstract class SpanData {
      * @param epochNanos epoch timestamp in nanos of the {@code Event}.
      * @param name the name of the {@code Event}.
      * @param attributes the attributes of the {@code Event}.
+     * @param totalAttributeCount the total number of attributes for this {@code} Event.
      * @return a new immutable {@code TimedEvent<T>}
      * @since 0.1.0
      */
@@ -318,8 +318,8 @@ public abstract class SpanData {
         long epochNanos,
         String name,
         Map<String, AttributeValue> attributes,
-        int droppedAttributeCount) {
-      return new AutoValue_SpanData_TimedEvent(epochNanos, name, attributes, droppedAttributeCount);
+        int totalAttributeCount) {
+      return new AutoValue_SpanData_TimedEvent(epochNanos, name, attributes, totalAttributeCount);
     }
 
     /**
@@ -337,11 +337,14 @@ public abstract class SpanData {
     public abstract Map<String, AttributeValue> getAttributes();
 
     /**
-     * Returns the number of dropped attributes.
+     * The total number of attributes that were recorded on this Event. This number may be larger
+     * than the number of attributes that are attached to this span, if the total number recorded
+     * was greater than the configured maximum value. See: {@link
+     * TraceConfig#getMaxNumberOfAttributesPerEvent()}
      *
-     * @return the number of dropped attributes.
+     * @return The total number of attributes on this event.
      */
-    public abstract int getDroppedAttributeCount();
+    public abstract int getTotalAttributeCount();
 
     TimedEvent() {}
   }
