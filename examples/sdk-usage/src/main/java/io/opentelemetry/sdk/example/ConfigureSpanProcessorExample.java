@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.example;
 
-import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
+import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.example.unsafe.DemoUtils;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
@@ -31,7 +31,7 @@ import java.util.Arrays;
 /** This example shows how to instantiate different Span Processors. */
 class ConfigureSpanProcessorExample {
 
-  static InMemorySpanExporter exporter = InMemorySpanExporter.create();
+  static LoggingSpanExporter exporter = new LoggingSpanExporter();
 
   public static void main(String[] args) throws Exception {
     // Get the Tracer Provider
