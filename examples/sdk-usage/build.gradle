@@ -1,9 +1,12 @@
 plugins {
     id 'java'
+    id 'com.github.sherter.google-java-format' version '0.8'
+    id "com.jfrog.artifactory" version "4.14.1"
 }
 
 group 'io.opentelemetry'
-version '0.2.0'
+version '0.3.0-SNAPSHOT'
+
 
 //create a single Jar with all dependencies
 task fatJar(type: Jar) {
@@ -12,12 +15,23 @@ task fatJar(type: Jar) {
     with jar
 }
 
+googleJavaFormat {
+    toolVersion = '1.7'
+}
+
+compileJava.dependsOn(verifyGoogleJavaFormat)
+
 repositories {
     mavenCentral()
+    jcenter()
+    maven {
+        // Add snapshot repository
+        url "https://oss.jfrog.org/artifactory/oss-snapshot-local"
+    }
 }
 
 dependencies {
-    implementation 'io.opentelemetry:opentelemetry-sdk:0.2.0'
-    implementation 'io.opentelemetry:opentelemetry-exporters-inmemory:0.2.0'
+    compile "io.opentelemetry:opentelemetry-sdk:${version}"
+    compile "io.opentelemetry:opentelemetry-exporters-inmemory:${version}"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
