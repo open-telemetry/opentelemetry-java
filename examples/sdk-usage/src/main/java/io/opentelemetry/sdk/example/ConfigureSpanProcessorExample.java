@@ -23,10 +23,9 @@ import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdk;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
-
 import java.util.Arrays;
 
 /** This example shows how to instantiate different Span Processors. */
@@ -36,7 +35,7 @@ class ConfigureSpanProcessorExample {
 
   public static void main(String[] args) throws Exception {
     // Get the Tracer Provider
-    TracerSdkFactory tracerProvider = OpenTelemetrySdk.getTracerFactory();
+    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
 
     // Configure the simple spans processor.
     tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
@@ -62,15 +61,37 @@ class ConfigureSpanProcessorExample {
       }
 
       @Override
+      public boolean isStartRequired() {
+        // This method is called at initialization of the current SpanProcessor.
+        // If this method returns true, onStart() will be called for every created span.
+        return true;
+      }
+
+      @Override
       public void onEnd(ReadableSpan span) {
         // This method is called when a span is ended;
         System.out.printf("Span %s - Ended\n", span.getName());
       }
 
       @Override
+      public boolean isEndRequired() {
+        // This method is called at initialization of the current SpanProcessor.
+        // If this method returns true, onEnd() will be called for every ended span.
+        return true;
+      }
+
+      @Override
       public void shutdown() {
         // This method is called when the OpenTelemetry library is shutting down;
         System.out.printf("Goodbye by %s\n", this.getClass().getSimpleName());
+      }
+
+      @Override
+      public void forceFlush() {
+        // This method is useful for async Span Processors.
+        // When this method is called, spans that are ended but not yet processed must be processed.
+        System.out.println(
+            "This is a sync implementation, so every span is processed within the onEnd() method");
       }
 
       @Override
@@ -99,6 +120,6 @@ class ConfigureSpanProcessorExample {
 
     // We shutdown the OpenTelemetry library
     // This also calls `shutdown` on all configured SpanProcessors.
-    OpenTelemetrySdk.getTracerFactory().shutdown();
+    OpenTelemetrySdk.getTracerProvider().shutdown();
   }
 }

@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.example.unsafe;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdk;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -29,6 +28,7 @@ import java.util.List;
  * demonstration only. It is SEVERELY discouraged to access private fields since they are shared
  * among different threads.
  */
+@SuppressWarnings("unchecked")
 public class DemoUtils {
 
   public static void printProcessorList(TracerSdk tracer) throws Exception {
@@ -38,7 +38,7 @@ public class DemoUtils {
     Method method = sharedState.getClass().getDeclaredMethod("getActiveSpanProcessor");
     method.setAccessible(true);
     Object multiSpanProcessor = method.invoke(sharedState);
-    Field spanListField = multiSpanProcessor.getClass().getDeclaredField("spanProcessors");
+    Field spanListField = multiSpanProcessor.getClass().getDeclaredField("spanProcessorsAll");
     spanListField.setAccessible(true);
     List<SpanProcessor> spanProcessors = (List) spanListField.get(multiSpanProcessor);
     System.out.println(spanProcessors.size() + " active span processors:");
@@ -51,7 +51,7 @@ public class DemoUtils {
       System.out.print(tabs + "- ");
       System.out.println(spanProcessor.getClass().getName());
       if (spanProcessor instanceof MultiSpanProcessor) {
-        Field listProcessors = spanProcessor.getClass().getDeclaredField("spanProcessors");
+        Field listProcessors = spanProcessor.getClass().getDeclaredField("spanProcessorsAll");
         listProcessors.setAccessible(true);
         List<SpanProcessor> multiProcessorList = (List) listProcessors.get(spanProcessor);
         printProcessorList(multiProcessorList, tab + 1);

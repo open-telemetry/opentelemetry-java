@@ -16,21 +16,20 @@
 
 package io.opentelemetry.sdk.example;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdk;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +45,12 @@ class ConfigureTraceExample {
     }
 
     @Override
+    public boolean isStartRequired() {
+      // We don't need onStart() events in this example.
+      return false;
+    }
+
+    @Override
     public void onEnd(ReadableSpan span) {
       Map<String, AttributeValue> attrs = span.toSpanData().getAttributes();
       System.out.printf("Span %s has %d attributes: \n", span.getName(), attrs.size());
@@ -56,12 +61,21 @@ class ConfigureTraceExample {
     }
 
     @Override
+    public boolean isEndRequired() {
+      // onEnd() events are required by this example.
+      return true;
+    }
+
+    @Override
     public void shutdown() {}
+
+    @Override
+    public void forceFlush() {}
   }
 
   public static void main(String[] args) {
     // Configure a tracer for these examples
-    TracerSdkFactory tracerProvider = OpenTelemetrySdk.getTracerFactory();
+    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     TracerSdk tracer = tracerProvider.get("example");
     tracerProvider.addSpanProcessor(new MyProcessor());
 
@@ -69,7 +83,8 @@ class ConfigureTraceExample {
     TraceConfig config = TraceConfig.getDefault();
     printTraceConfig();
 
-    // We can have a maximum of 32 Attributes by default. Let's add some to a span and verify they are stored
+    // We can have a maximum of 32 Attributes by default. Let's add some to a span and verify they
+    // are stored
     // correctly.
     Span multiAttrSpan = tracer.spanBuilder("Example Span Attributes").startSpan();
     multiAttrSpan.setAttribute("Attribute 1", "first attribute value");
@@ -109,6 +124,8 @@ class ConfigureTraceExample {
           TraceId traceId,
           SpanId spanId,
           String name,
+          Span.Kind spanKind,
+          Map<String, AttributeValue> attributes,
           List<Link> parentLinks) {
         // We sample only if the name contains "SAMPLE"
         return new Decision() {
@@ -149,7 +166,7 @@ class ConfigureTraceExample {
   }
 
   private static void printTraceConfig() {
-    TraceConfig config = OpenTelemetrySdk.getTracerFactory().getActiveTraceConfig();
+    TraceConfig config = OpenTelemetrySdk.getTracerProvider().getActiveTraceConfig();
     System.out.print("Max number of attributes: ");
     System.out.println(config.getMaxNumberOfAttributes());
     System.out.print("Max number of attributes per event: ");

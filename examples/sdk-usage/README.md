@@ -11,3 +11,13 @@ Compile with
 ```shell script
 ./gradlew fatJar
 ```
+
+## Run
+
+The following commands are used to run the examples.
+```shell script
+java -cp build/libs/opentelemetry-example-sdk-usage-all-0.3.0-SNAPSHOT.jar io.opentelemetry.sdk.example.ConfigureTraceExample
+```
+```shell script
+java -cp build/libs/opentelemetry-example-sdk-usage-all-0.3.0-SNAPSHOT.jar io.opentelemetry.sdk.example.ConfigureSpanProcessorExample
+```
