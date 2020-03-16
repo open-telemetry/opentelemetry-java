@@ -28,18 +28,18 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface InstrumentWithBinding<B extends BoundInstrument> extends Instrument {
   /**
-   * Returns a {@code Bound Instrument} associated with the specified {@code labelSet}. Multiples
-   * requests with the same {@code labelSet} may return the same {@code Bound Instrument} instance.
+   * Returns a {@code Bound Instrument} associated with the specified labels. Multiples requests
+   * with the same set of labels may return the same {@code Bound Instrument} instance.
    *
    * <p>It is recommended that callers keep a reference to the Bound Instrument instead of always
    * calling this method for every operation.
    *
-   * @param labelSet the set of labels.
+   * @param labelKeyValuePairs the set of labels, as key-value pairs.
    * @return a {@code Bound Instrument}
    * @throws NullPointerException if {@code labelValues} is null.
    * @since 0.1.0
    */
-  B bind(LabelSet labelSet);
+  B bind(String... labelKeyValuePairs);
 
   interface BoundInstrument {
     /**

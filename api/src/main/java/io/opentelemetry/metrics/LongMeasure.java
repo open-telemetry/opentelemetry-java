@@ -63,7 +63,7 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
   void record(long value, String... labelKeyValuePairs);
 
   @Override
-  BoundLongMeasure bind(LabelSet labelSet);
+  BoundLongMeasure bind(String... labelKeyValuePairs);
 
   /**
    * A {@code Bound Instrument} for a {@code LongMeasure}.

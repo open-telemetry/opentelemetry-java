@@ -124,8 +124,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundDoubleCounter bind(LabelSet labelSet) {
-      Utils.checkNotNull(labelSet, "labelSet");
+    public NoopBoundDoubleCounter bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundDoubleCounter.INSTANCE;
     }
 
@@ -167,8 +167,8 @@ public final class DefaultMeter implements Meter {
     public void add(long delta, String... labelKeyValuePairs) {}
 
     @Override
-    public NoopBoundLongCounter bind(LabelSet labelSet) {
-      Utils.checkNotNull(labelSet, "labelSet");
+    public NoopBoundLongCounter bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundLongCounter.INSTANCE;
     }
 
@@ -212,8 +212,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundDoubleMeasure bind(LabelSet labelSet) {
-      Utils.checkNotNull(labelSet, "labelSet");
+    public NoopBoundDoubleMeasure bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundDoubleMeasure.INSTANCE;
     }
 
@@ -263,8 +263,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundLongMeasure bind(LabelSet labelSet) {
-      Utils.checkNotNull(labelSet, "labelSet");
+    public NoopBoundLongMeasure bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundLongMeasure.INSTANCE;
     }
 

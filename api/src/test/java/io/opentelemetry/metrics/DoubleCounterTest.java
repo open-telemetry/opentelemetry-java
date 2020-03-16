@@ -95,7 +95,7 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void noopBind_WithNullLabelSet() {
+  public void noopBind_WithBadLabelSet() {
     DoubleCounter doubleCounter =
         meter
             .doubleCounterBuilder(NAME)
@@ -103,9 +103,9 @@ public class DoubleCounterTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelSet");
-    doubleCounter.bind(null);
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("key/value");
+    doubleCounter.bind("key");
   }
 
   @Test
@@ -117,6 +117,6 @@ public class DoubleCounterTest {
             .setLabelKeys(LABEL_KEY)
             .setUnit(UNIT)
             .build();
-    doubleCounter.bind(meter.createLabelSet()).add(1.0);
+    doubleCounter.bind().add(1.0);
   }
 }
