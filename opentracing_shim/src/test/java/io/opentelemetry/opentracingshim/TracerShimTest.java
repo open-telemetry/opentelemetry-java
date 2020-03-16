@@ -19,8 +19,10 @@ package io.opentelemetry.opentracingshim;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -84,5 +86,13 @@ public class TracerShimTest {
     Map<String, String> map = new HashMap<String, String>();
     tracerShim.inject(null, Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
     assertEquals(0, map.size());
+  }
+
+  @Test
+  public void close() {
+    tracerShim.close();
+    Span otSpan = tracerShim.buildSpan(null).start();
+    io.opentelemetry.trace.Span span = ((SpanShim) otSpan).getSpan();
+    assertTrue(span instanceof DefaultSpan);
   }
 }
