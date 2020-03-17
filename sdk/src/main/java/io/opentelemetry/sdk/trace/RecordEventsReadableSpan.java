@@ -66,8 +66,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final int totalRecordedLinks;
   // Max number of attibutes per span.
   private final int maxNumberOfAttributes;
-  // Number of attributes recorded.
-  private int totalAttributeCount = 0;
   // Max number of attributes per event.
   private final int maxNumberOfAttributesPerEvent;
 
@@ -92,6 +90,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // List of recorded events.
   @GuardedBy("lock")
   private final EvictingQueue<TimedEvent> events;
+  // Number of attributes recorded.
+  @GuardedBy("lock")
+  private int totalAttributeCount = 0;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
@@ -178,8 +179,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
             .setParentSpanId(parentSpanId)
             .setHasRemoteParent(hasRemoteParent)
             .setResource(resource)
-            .setStartEpochNanos(startEpochNanos)
-            .setTotalAttributeCount(totalAttributeCount);
+            .setStartEpochNanos(startEpochNanos);
 
     // Copy remainder within synchronized
     synchronized (lock) {
@@ -189,6 +189,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
           .setEndEpochNanos(getEndEpochNanos())
           .setStatus(getStatusWithDefault())
           .setTimedEvents(adaptTimedEvents())
+          .setTotalAttributeCount(totalAttributeCount)
           .setTotalRecordedEvents(totalRecordedEvents)
           // build() does the actual copying of the collections: it needs to be synchronized
           // because of the attributes and events collections.
