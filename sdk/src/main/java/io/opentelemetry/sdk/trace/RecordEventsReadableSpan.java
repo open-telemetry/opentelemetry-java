@@ -337,9 +337,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       if (attributes.get(key) == null && attributes.size() >= maxNumberOfAttributes) {
         logger.log(
             Level.FINE,
-            "Span has maximum number of attributes ("
+            "Span with name '"
+                + this.name
+                + "' has reached the maximum number of attributes ("
                 + maxNumberOfAttributes
-                + "). Dropping new entries.");
+                + "). Dropping attribute with key '"
+                + key
+                + "'");
         return;
       }
       attributes.putAttribute(key, value);
