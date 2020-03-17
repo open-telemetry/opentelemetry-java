@@ -50,6 +50,10 @@ import javax.annotation.concurrent.ThreadSafe;
 final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
+  private static final String MAX_SPAN_ATTRIBUTE_COUNT_LOG_MESSAGE =
+      "Span with name '%s' has reached the maximum number of attributes (%d). Dropping attribute with key '%s'";
+  private static final String MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE =
+      "Link has reached the maximum number of attributes (%d). Dropping %d attributes.";
 
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
@@ -338,13 +342,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       if (attributes.get(key) == null && attributes.size() >= maxNumberOfAttributes) {
         logger.log(
             Level.FINE,
-            "Span with name '"
-                + this.name
-                + "' has reached the maximum number of attributes ("
-                + maxNumberOfAttributes
-                + "). Dropping attribute with key '"
-                + key
-                + "'");
+            String.format(
+                MAX_SPAN_ATTRIBUTE_COUNT_LOG_MESSAGE, this.name, maxNumberOfAttributes, key));
         return;
       }
       attributes.putAttribute(key, value);
@@ -399,11 +398,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
     logger.log(
         Level.FINE,
-        "Link has reached the maximum number of attributes ("
-            + maxNumberOfAttributesPerEvent
-            + "). Dropping "
-            + (attributes.size() - temp.size())
-            + " attributes.");
+        String.format(
+            MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE,
+            maxNumberOfAttributesPerEvent,
+            attributes.size() - temp.size()));
     return temp;
   }
 
