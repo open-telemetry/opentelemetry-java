@@ -392,8 +392,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
     Map<String, AttributeValue> temp = new HashMap<String, AttributeValue>();
     for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      temp.put(entry.getKey(), entry.getValue());
+      if (temp.size() < this.maxNumberOfAttributesPerEvent) {
+        temp.put(entry.getKey(), entry.getValue());
+      }
     }
+    logger.log(
+        Level.FINE,
+        "Link has reached the maximum number of attributes ("
+            + maxNumberOfAttributesPerEvent
+            + "). Dropping "
+            + (attributes.size() - temp.size())
+            + " attributes.");
     return temp;
   }
 
