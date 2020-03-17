@@ -22,3 +22,7 @@ publish-snapshots:
 ifeq ($(CIRCLE_BRANCH),master)
 	./gradlew artifactoryPublish
 endif
+
+.PHONY: publish-release-artifacts
+publish-release-artifacts:
+	./gradlew bintrayUpload

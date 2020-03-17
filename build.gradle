@@ -1,6 +1,7 @@
 plugins {
     id "com.github.sherter.google-java-format" apply false
     id "com.jfrog.artifactory" apply false
+    id "com.jfrog.bintray" version "1.8.4" apply false // Need *specific* version.
     id "net.ltgt.errorprone" apply false
     id "ru.vyarus.animalsniffer" apply false
     id "io.morethan.jmhreport" apply false
@@ -262,8 +263,9 @@ subprojects {
     }
 
     plugins.withId("maven-publish") {
-        // Always include the artifactory plugin to do the deployment.
+        // Always include the artifactory/bintray plugins to do the deployment.
         pluginManager.apply "com.jfrog.artifactory"
+        pluginManager.apply "com.jfrog.bintray"
 
         publishing {
             publications {
@@ -327,6 +329,38 @@ subprojects {
             }
             resolve {
                 repoKey = 'libs-release'
+            }
+        }
+
+        // Release artifacts publishing.
+        bintray {
+            user = System.getenv("BINTRAY_USER")
+            key = System.getenv("BINTRAY_KEY")
+            publications = ['mavenPublication']
+
+            publish = true
+
+            pkg {
+                repo = 'maven'
+                name = 'opentelemetry-java'
+                licenses = ['Apache-2.0']
+                vcsUrl = 'https://github.com/open-telemetry/opentelemetry-java.git'
+                userOrg = 'open-telemetry'
+
+                githubRepo = 'open-telemetry/opentelemetry-java'
+
+                version {
+                    name = project.version
+
+                    gpg {
+                        sign = true
+                    }
+
+                    mavenCentralSync {
+                        user = System.getenv("SONATYPE_USER")
+                        password = System.getenv("SONATYPE_KEY")
+                    }
+                }
             }
         }
     }
