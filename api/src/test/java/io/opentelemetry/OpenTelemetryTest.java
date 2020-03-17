@@ -30,7 +30,6 @@ import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleObserver;
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongObserver;
@@ -48,8 +47,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
-import java.util.Map;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -338,19 +335,7 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public BatchRecorder newBatchRecorder(LabelSet labelSet) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public LabelSet createLabelSet(String... keyValuePairs) {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public LabelSet createLabelSet(@Nonnull Map<String, String> labels) {
+    public BatchRecorder newBatchRecorder(String... keyValuePairs) {
       return null;
     }
 

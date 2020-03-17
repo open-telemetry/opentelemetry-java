@@ -16,14 +16,12 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /** {@link MeterSdk} is SDK implementation of {@link Meter}. */
 final class MeterSdk implements Meter {
@@ -72,18 +70,8 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public BatchRecorderSdk newBatchRecorder(LabelSet labelSet) {
-    return new BatchRecorderSdk(labelSet);
-  }
-
-  @Override
-  public LabelSetSdk createLabelSet(String... keyValuePairs) {
-    return LabelSetSdk.create(keyValuePairs);
-  }
-
-  @Override
-  public LabelSetSdk createLabelSet(Map<String, String> labels) {
-    return LabelSetSdk.create(labels);
+  public BatchRecorderSdk newBatchRecorder(String... keyValuePairs) {
+    return new BatchRecorderSdk(keyValuePairs);
   }
 
   Collection<MetricData> collectAll() {

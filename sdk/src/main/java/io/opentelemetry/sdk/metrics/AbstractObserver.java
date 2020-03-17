@@ -17,7 +17,9 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Observer;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 abstract class AbstractObserver extends AbstractInstrument {
   private final boolean monotonic;
@@ -33,7 +35,15 @@ abstract class AbstractObserver extends AbstractInstrument {
         descriptor,
         meterProviderSharedState,
         meterSharedState,
-        new ActiveBatcher(Batchers.getNoop()));
+        new ActiveBatcher(
+            new ActiveBatcher(
+                getDefaultBatcher(
+                    descriptor,
+                    getInstrumentType(monotonic),
+                    instrumentValueType,
+                    meterProviderSharedState,
+                    meterSharedState,
+                    Aggregations.lastValue()))));
     this.monotonic = monotonic;
     this.instrumentValueType = instrumentValueType;
   }
@@ -87,5 +97,9 @@ abstract class AbstractObserver extends AbstractInstrument {
     final boolean isMonotonic() {
       return this.monotonic;
     }
+  }
+
+  private static InstrumentType getInstrumentType(boolean monotonic) {
+    return monotonic ? InstrumentType.OBSERVER_MONOTONIC : InstrumentType.OBSERVER_NON_MONOTONIC;
   }
 }

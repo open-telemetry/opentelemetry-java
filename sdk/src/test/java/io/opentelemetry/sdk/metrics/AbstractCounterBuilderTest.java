@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.metrics.Counter;
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
@@ -115,8 +114,8 @@ public class AbstractCounterBuilderTest {
     }
 
     @Override
-    public TestBoundCounter bind(LabelSet labelSet) {
-      return bindInternal(labelSet);
+    public TestBoundCounter bind(String... labelKeyValuePairs) {
+      return bind(LabelSetSdk.create(labelKeyValuePairs));
     }
   }
 

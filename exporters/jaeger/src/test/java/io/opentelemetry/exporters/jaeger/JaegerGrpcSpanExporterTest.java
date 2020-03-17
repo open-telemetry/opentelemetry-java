@@ -33,7 +33,6 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -90,10 +89,9 @@ public class JaegerGrpcSpanExporterTest {
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(Status.OK)
             .setKind(Kind.CONSUMER)
-            .setLinks(Collections.<Link>emptyList())
+            .setLinks(Collections.<SpanData.Link>emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setNumberOfChildren(0)
             .build();
 
     // test

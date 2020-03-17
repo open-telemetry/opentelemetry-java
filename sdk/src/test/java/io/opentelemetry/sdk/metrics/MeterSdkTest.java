@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -31,7 +32,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Rule;
@@ -233,7 +233,7 @@ public class MeterSdkTest {
 
   @Test
   public void testBatchRecorder() {
-    BatchRecorder batchRecorder = testSdk.newBatchRecorder(testSdk.createLabelSet("key", "value"));
+    BatchRecorder batchRecorder = testSdk.newBatchRecorder("key", "value");
     assertThat(batchRecorder).isNotNull();
     assertThat(batchRecorder).isInstanceOf(BatchRecorderSdk.class);
   }
@@ -241,14 +241,14 @@ public class MeterSdkTest {
   @Test
   public void collectAll() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
-    longCounter.add(10, testSdk.createLabelSet());
+    longCounter.add(10);
     LongMeasureSdk longMeasure = testSdk.longMeasureBuilder("testLongMeasure").build();
-    longMeasure.record(10, testSdk.createLabelSet());
+    longMeasure.record(10);
     // LongObserver longObserver = testSdk.longObserverBuilder("testLongObserver").build();
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
-    doubleCounter.add(10.1, testSdk.createLabelSet());
+    doubleCounter.add(10.1);
     DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testDoubleMeasure").build();
-    doubleMeasure.record(10.1, testSdk.createLabelSet());
+    doubleMeasure.record(10.1);
     // DoubleObserver doubleObserver = testSdk.doubleObserverBuilder("testDoubleObserver").build();
 
     assertThat(testSdk.collectAll())
@@ -320,25 +320,5 @@ public class MeterSdkTest {
                         Arrays.asList(
                             ValueAtPercentile.create(0, 10.1d),
                             ValueAtPercentile.create(100, 10.1d))))));
-  }
-
-  @Test
-  public void testLabelSets() {
-    assertThat(testSdk.createLabelSet()).isSameInstanceAs(testSdk.createLabelSet());
-    assertThat(testSdk.createLabelSet())
-        .isSameInstanceAs(testSdk.createLabelSet(Collections.<String, String>emptyMap()));
-    assertThat(testSdk.createLabelSet()).isNotNull();
-
-    assertThat(testSdk.createLabelSet("key", "value"))
-        .isEqualTo(testSdk.createLabelSet("key", "value"));
-
-    assertThat(testSdk.createLabelSet("k1", "v1", "k2", "v2"))
-        .isEqualTo(testSdk.createLabelSet("k1", "v1", "k2", "v2"));
-
-    assertThat(testSdk.createLabelSet(Collections.singletonMap("key", "value")))
-        .isEqualTo(testSdk.createLabelSet("key", "value"));
-
-    assertThat(testSdk.createLabelSet("key", "value"))
-        .isNotEqualTo(testSdk.createLabelSet("value", "key"));
   }
 }

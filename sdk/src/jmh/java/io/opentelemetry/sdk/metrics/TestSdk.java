@@ -1,4 +1,4 @@
-package io.opentelemetry.sdk.metrics;/*
+/*
  * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +14,8 @@ package io.opentelemetry.sdk.metrics;/*
  * limitations under the License.
  */
 
+package io.opentelemetry.sdk.metrics;
+
 import com.google.errorprone.annotations.Immutable;
 import io.opentelemetry.metrics.DefaultMeter;
 import io.opentelemetry.metrics.Meter;
@@ -22,37 +24,38 @@ import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.Resource;
 
 public enum TestSdk {
-    NO_SDK(new SdkBuilder() {
+  NO_SDK(
+      new SdkBuilder() {
         @Override
         Meter build() {
-            return DefaultMeter.getInstance();
+          return DefaultMeter.getInstance();
         }
-    }),
-    SDK(new SdkBuilder() {
+      }),
+  SDK(
+      new SdkBuilder() {
         @Override
         Meter build() {
-            MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
-                    MeterProviderSharedState.create(MillisClock.getInstance(), Resource.getEmpty());
-            InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-                    InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics", null);
+          MeterProviderSharedState meterProviderSharedState =
+              MeterProviderSharedState.create(MillisClock.getInstance(), Resource.getEmpty());
+          InstrumentationLibraryInfo instrumentationLibraryInfo =
+              InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics", null);
 
-            return new MeterSdk(METER_PROVIDER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
+          return new MeterSdk(meterProviderSharedState, instrumentationLibraryInfo);
         }
-    });
+      });
 
+  private final SdkBuilder sdkBuilder;
 
-    private final SdkBuilder sdkBuilder;
+  TestSdk(SdkBuilder sdkBuilder) {
+    this.sdkBuilder = sdkBuilder;
+  }
 
-    TestSdk(SdkBuilder sdkBuilder) {
-        this.sdkBuilder = sdkBuilder;
-    }
+  public Meter getMeter() {
+    return sdkBuilder.build();
+  }
 
-    public Meter getMeter() {
-        return sdkBuilder.build();
-    }
-
-    @Immutable
-    private abstract static class SdkBuilder {
-        abstract Meter build();
-    }
+  @Immutable
+  private abstract static class SdkBuilder {
+    abstract Meter build();
+  }
 }

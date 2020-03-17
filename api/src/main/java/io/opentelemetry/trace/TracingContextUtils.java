@@ -89,7 +89,7 @@ public final class TracingContextUtils {
    * @return the {@link Scope} for the updated {@code Context}.
    * @since 0.1.0
    */
-  public static Scope withScopedSpan(Span span) {
+  public static Scope currentContextWith(Span span) {
     return ContextUtils.withScopedContext(withSpan(span, Context.current()));
   }
 

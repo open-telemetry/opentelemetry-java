@@ -18,6 +18,7 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.AttributeValue;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.Rule;

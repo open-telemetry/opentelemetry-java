@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -28,7 +29,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -86,7 +86,7 @@ public class LongCounterSdkTest {
   public void collectMetrics_WithOneRecord() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
-    longCounter.add(12, testSdk.createLabelSet());
+    longCounter.add(12);
     List<MetricData> metricDataList = longCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
@@ -104,11 +104,11 @@ public class LongCounterSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = testSdk.createLabelSet("K", "V");
-    LabelSetSdk emptyLabelSet = testSdk.createLabelSet();
+    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
+    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
     long startTime = testClock.now();
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(labelSet);
+    BoundLongCounter boundCounter = longCounter.bind("K", "V");
     try {
       // Do some records using bounds and direct calls and bindings.
       longCounter.add(12, emptyLabelSet);
@@ -151,8 +151,8 @@ public class LongCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
-    BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    BoundLongCounter boundCounter = longCounter.bind("K", "v");
+    BoundLongCounter duplicateBoundCounter = longCounter.bind("K", "v");
     try {
       assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
     } finally {
@@ -164,10 +164,10 @@ public class LongCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
-    BoundLongCounter boundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+    BoundLongCounter boundCounter = longCounter.bind("K", "v");
     try {
       longCounter.collectAll();
-      BoundLongCounter duplicateBoundCounter = longCounter.bind(testSdk.createLabelSet("K", "v"));
+      BoundLongCounter duplicateBoundCounter = longCounter.bind("K", "v");
       try {
         assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
       } finally {
@@ -184,7 +184,7 @@ public class LongCounterSdkTest {
         testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    longCounter.add(-45, testSdk.createLabelSet());
+    longCounter.add(-45);
   }
 
   @Test
@@ -193,7 +193,7 @@ public class LongCounterSdkTest {
         testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
 
     thrown.expect(IllegalArgumentException.class);
-    longCounter.bind(testSdk.createLabelSet()).add(-9);
+    longCounter.bind().add(-9);
   }
 
   @Test
@@ -206,12 +206,10 @@ public class LongCounterSdkTest {
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterDirectCall(testSdk, longCounter, "K", "V")));
+              2_000, 1, new OperationUpdaterDirectCall(longCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000,
-              1,
-              new OperationUpdaterWithBinding(longCounter.bind(testSdk.createLabelSet("K", "V")))));
+              2_000, 1, new OperationUpdaterWithBinding(longCounter.bind("K", "V"))));
     }
 
     stressTestBuilder.build().run();
@@ -235,14 +233,11 @@ public class LongCounterSdkTest {
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterDirectCall(testSdk, longCounter, keys[i], values[i])));
+              1_000, 2, new OperationUpdaterDirectCall(longCounter, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000,
-              2,
-              new OperationUpdaterWithBinding(
-                  longCounter.bind(testSdk.createLabelSet(keys[i], values[i])))));
+              1_000, 2, new OperationUpdaterWithBinding(longCounter.bind(keys[i], values[i]))));
     }
 
     stressTestBuilder.build().run();
@@ -291,14 +286,12 @@ public class LongCounterSdkTest {
   }
 
   private static class OperationUpdaterDirectCall extends OperationUpdater {
-    private final MeterSdk meterSdk;
+
     private final LongCounter longCounter;
     private final String key;
     private final String value;
 
-    private OperationUpdaterDirectCall(
-        MeterSdk meterSdk, LongCounter longCounter, String key, String value) {
-      this.meterSdk = meterSdk;
+    private OperationUpdaterDirectCall(LongCounter longCounter, String key, String value) {
       this.longCounter = longCounter;
       this.key = key;
       this.value = value;
@@ -306,7 +299,7 @@ public class LongCounterSdkTest {
 
     @Override
     void update() {
-      longCounter.add(11, meterSdk.createLabelSet(key, value));
+      longCounter.add(11, key, value);
     }
 
     @Override

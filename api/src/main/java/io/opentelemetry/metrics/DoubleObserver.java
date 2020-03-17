@@ -36,7 +36,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
- *   private static final LabelSet labelSet = meter.createLabelSet("my_label");
  *
  *   void init() {
  *     observer.setCallback(
@@ -44,7 +43,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(Result result) {
- *             result.observe(0.8 * count.addAndGet(1), labelSet);
+ *             result.observe(0.8 * count.addAndGet(1), "labelKey", "labelValue");
  *           }
  *         });
  *   }
@@ -81,6 +80,6 @@ public interface DoubleObserver extends Observer<ResultDoubleObserver> {
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface ResultDoubleObserver {
-    void observe(double value, LabelSet labelSet);
+    void observe(double value, String... keyValueLabelPairs);
   }
 }
