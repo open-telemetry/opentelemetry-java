@@ -49,8 +49,8 @@ The start and end time of the span is automatically set by the OpenTelemetry SDK
 ```java
 Span span = tracer.spanBuilder("my span").startSpan();
 try (Scope scope = tracer.withSpan(span)) {
-// your use case
-...
+	// your use case
+	...
 }
 span.end();
 ```
