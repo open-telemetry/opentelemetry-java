@@ -36,6 +36,7 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -64,9 +65,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Number of links recorded.
   private final int totalRecordedLinks;
   // Max number of attibutes per span.
-  private final int maxNumberOfAttributes = 0;
+  private final int maxNumberOfAttributes;
   // Number of attributes recorded.
   private int totalAttributeCount = 0;
+  // Max number of attributes per event.
+  private final int maxNumberOfAttributesPerEvent;
 
   // Lock used to internally guard the mutable state of this instance
   private final Object lock = new Object();
@@ -355,12 +358,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes) {
-    addTimedEvent(TimedEvent.create(clock.now(), name, attributes));
+    int totalAttributeCount = attributes.size();
+    addTimedEvent(
+        TimedEvent.create(
+            clock.now(), name, limitEventAttributes(attributes), totalAttributeCount));
   }
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
-    addTimedEvent(TimedEvent.create(timestamp, name, attributes));
+    int totalAttributeCount = attributes.size();
+    addTimedEvent(
+        TimedEvent.create(timestamp, name, limitEventAttributes(attributes), totalAttributeCount));
   }
 
   @Override
@@ -371,6 +379,18 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void addEvent(Event event, long timestamp) {
     addTimedEvent(TimedEvent.create(timestamp, event));
+  }
+
+  private Map<String, AttributeValue> limitEventAttributes(Map<String, AttributeValue> attributes) {
+    if (attributes.size() <= this.maxNumberOfAttributesPerEvent) {
+      return attributes;
+    }
+
+    Map<String, AttributeValue> temp = new HashMap<String, AttributeValue>();
+    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
+      temp.put(entry.getKey(), entry.getValue());
+    }
+    return temp;
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
@@ -479,6 +499,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.attributes = attributes;
     this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
     this.maxNumberOfAttributes = traceConfig.getMaxNumberOfAttributes();
+    this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
   }
 
   @SuppressWarnings("NoFinalizer")
