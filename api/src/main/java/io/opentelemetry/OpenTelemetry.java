@@ -102,7 +102,7 @@ public final class OpenTelemetry {
    * propagators for each supported format.
    *
    * @return registered propagators container, defaulting to a {@link ContextPropagators} object
-   *     with {@code HttpTraceContext} registered.
+   *     with {@link HttpTraceContext} registered.
    * @throws IllegalStateException if a specified manager (via system properties) could not be
    *     found.
    * @since 0.3.0
