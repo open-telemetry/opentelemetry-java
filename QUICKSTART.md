@@ -51,8 +51,12 @@ Span span = tracer.spanBuilder("my span").startSpan();
 try (Scope scope = tracer.withSpan(span)) {
 	// your use case
 	...
+} catch (Throwable t) {
+    Status status = Status.UNKNOWN.withDescription("Change it to your error message");
+    span.setStatus(status);
+} finally {
+    span.end(); // closing the scope does not end the span, this has to be done manually
 }
-span.end(); // closing the scope does not end the span, this has to be done manually
 ```
 
 ### Create nested Spans
