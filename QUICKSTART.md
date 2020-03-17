@@ -47,9 +47,11 @@ Tracer tracer =
 To create a basic span, you only need to specify the name of the span.
 The start and end time of the span is automatically set by the OpenTelemetry SDK.
 ```java
-Span span = tracer.spanBuilder("SpanName").startSpan();
+Span span = tracer.spanBuilder("my span").startSpan();
+try (Scope scope = tracer.withSpan(span)) {
 // your use case
 ...
+}
 span.end();
 ```
 
