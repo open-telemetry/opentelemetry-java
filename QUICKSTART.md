@@ -52,7 +52,7 @@ try (Scope scope = tracer.withSpan(span)) {
 	// your use case
 	...
 }
-span.end();
+span.end(); // closing the scope does not end the span, this has to be done manually
 ```
 
 ### Create nested Spans
