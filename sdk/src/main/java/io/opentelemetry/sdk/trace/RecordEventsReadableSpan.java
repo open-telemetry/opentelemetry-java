@@ -64,7 +64,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Number of links recorded.
   private final int totalRecordedLinks;
   // Max number of attibutes per span.
-  private int maxNumberOfAttributes = 0;
+  private final int maxNumberOfAttributes = 0;
   // Number of attributes recorded.
   private int totalAttributeCount = 0;
 
