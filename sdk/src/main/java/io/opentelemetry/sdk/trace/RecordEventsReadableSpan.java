@@ -50,8 +50,11 @@ import javax.annotation.concurrent.ThreadSafe;
 final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
+
+  @SuppressWarnings("checkstyle:LineLength")
   private static final String MAX_SPAN_ATTRIBUTE_COUNT_LOG_MESSAGE =
       "Span with name '%s' has reached the maximum number of attributes (%d). Dropping attribute with key '%s'";
+
   private static final String MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE =
       "Link has reached the maximum number of attributes (%d). Dropping %d attributes.";
 
