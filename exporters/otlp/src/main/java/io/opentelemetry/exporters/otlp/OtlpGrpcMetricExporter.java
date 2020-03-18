@@ -104,6 +104,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * Initiates an orderly shutdown in which preexisting calls continue but new calls are immediately
    * cancelled. The channel is forcefully closed after a timeout.
    */
+  @Override
   public void shutdown() {
     try {
       managedChannel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
