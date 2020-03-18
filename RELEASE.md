@@ -37,7 +37,7 @@ is`v1.2.3-RC$`, where `$` denotes a release candidate version, e.g. `v1.2.3-RC1`
 The following credentials are required for publishing (and automatically set in Circle CI):
 
 * `BINTRAY_USER` and `BINTRAY_KEY`: Bintray username and API Key.
-  See [this](https://www.jfrog.com/confluence/display/BT/Bintray+Security#BintraySecurity-APIKeys)
+  See [this](https://www.jfrog.com/confluence/display/BT/Bintray+Security#BintraySecurity-APIKeys).
 
 * `SONATYPE_USER` and `SONATYPE_KEY`: Sonatype username and password.
 
@@ -46,7 +46,7 @@ The following credentials are required for publishing (and automatically set in 
 Releasing from the local setup can be done providing the previously mentioned four credential values, i.e.
 `BINTRAY_KEY`, `BINTRAY_USER`, `SONATYPE_USER` and `SONATYPE_KEY`:
 
-```
+```sh
 export BINTRAY_USER=my_bintray_user
 export BINTRAY_KEY=my_user_api_key
 export SONATYPE_USER=my_maven_user
