@@ -68,7 +68,7 @@ public class SpanAdapterTest {
                 .setEndEpochNanos(12349)
                 .setAttributes(
                     Collections.singletonMap("key", AttributeValue.booleanAttributeValue(true)))
-                .setDroppedAttributeCount(1)
+                .setTotalAttributeCount(2)
                 .setTimedEvents(
                     Collections.singletonList(
                         TimedEvent.create(
@@ -265,7 +265,7 @@ public class SpanAdapterTest {
                         .setStringValue("string")
                         .setType(ValueType.STRING)
                         .build())
-                .setDroppedAttributesCount(5)
+                .setDroppedAttributesCount(4)
                 .build());
   }
 
@@ -298,7 +298,7 @@ public class SpanAdapterTest {
                         .setStringValue("string")
                         .setType(ValueType.STRING)
                         .build())
-                .setDroppedAttributesCount(5)
+                .setDroppedAttributesCount(4)
                 .build());
   }
 }
