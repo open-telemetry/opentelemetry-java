@@ -167,24 +167,20 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
-    Object contentValue = null;
+    boolean remove = true;
     if (value != null) {
       switch (value.getType()) {
-        case BOOLEAN:
-          contentValue = value.getBooleanValue();
-          break;
-        case LONG:
-          contentValue = value.getLongValue();
-          break;
-        case DOUBLE:
-          contentValue = value.getDoubleValue();
-          break;
         case STRING:
-          contentValue = value.getStringValue();
+          remove = value.getStringValue() == null;
+          break;
+        case BOOLEAN:
+        case LONG:
+        case DOUBLE:
+          remove = false;
           break;
       }
     }
-    if (contentValue == null) {
+    if (remove) {
       attributes.remove(key);
     } else {
       attributes.putAttribute(key, value);
