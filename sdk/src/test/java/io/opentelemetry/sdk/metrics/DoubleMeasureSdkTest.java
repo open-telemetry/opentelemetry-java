@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
@@ -78,7 +79,8 @@ public class DoubleMeasureSdkTest {
                     "My very own measure",
                     "ms",
                     Type.SUMMARY,
-                    Collections.singletonMap("sk1", "sv1")),
+                    Collections.singletonMap("sk1", "sv1"),
+                    TemporalQuality.DELTA),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>emptyList()));
@@ -94,7 +96,12 @@ public class DoubleMeasureSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testMeasure", "", "1", Type.SUMMARY, Collections.<String, String>emptyMap()),
+                    "testMeasure",
+                    "",
+                    "1",
+                    Type.SUMMARY,
+                    Collections.<String, String>emptyMap(),
+                    TemporalQuality.DELTA),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(

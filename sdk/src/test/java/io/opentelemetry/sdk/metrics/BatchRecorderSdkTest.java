@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
@@ -82,7 +83,8 @@ public class BatchRecorderSdkTest {
                     "",
                     "1",
                     Type.MONOTONIC_DOUBLE,
-                    Collections.<String, String>emptyMap()),
+                    Collections.<String, String>emptyMap(),
+                    TemporalQuality.CUMULATIVE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
@@ -96,7 +98,8 @@ public class BatchRecorderSdkTest {
                     "",
                     "1",
                     Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                    Collections.<String, String>emptyMap(),
+                    TemporalQuality.CUMULATIVE),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(

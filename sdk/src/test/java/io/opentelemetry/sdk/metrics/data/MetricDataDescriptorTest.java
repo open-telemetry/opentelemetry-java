@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics.data;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,46 +43,71 @@ public class MetricDataDescriptorTest {
   public void testGet() {
     Descriptor descriptor =
         Descriptor.create(
-            METRIC_NAME, DESCRIPTION, UNIT, TYPE, Collections.singletonMap(KEY, VALUE));
+            METRIC_NAME,
+            DESCRIPTION,
+            UNIT,
+            TYPE,
+            Collections.singletonMap(KEY, VALUE),
+            TemporalQuality.INSTANTANEOUS);
     assertThat(descriptor.getName()).isEqualTo(METRIC_NAME);
     assertThat(descriptor.getDescription()).isEqualTo(DESCRIPTION);
     assertThat(descriptor.getUnit()).isEqualTo(UNIT);
     assertThat(descriptor.getType()).isEqualTo(TYPE);
     assertThat(descriptor.getConstantLabels()).containsExactly(KEY, VALUE);
+    assertThat(descriptor.getTemporalQuality()).isEqualTo(TemporalQuality.INSTANTANEOUS);
   }
 
   @Test
   public void create_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    Descriptor.create(null, DESCRIPTION, UNIT, TYPE, Collections.singletonMap(KEY, VALUE));
+    Descriptor.create(
+        null,
+        DESCRIPTION,
+        UNIT,
+        TYPE,
+        Collections.singletonMap(KEY, VALUE),
+        TemporalQuality.INSTANTANEOUS);
   }
 
   @Test
   public void create_NullDescription() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    Descriptor.create(METRIC_NAME, null, UNIT, TYPE, Collections.singletonMap(KEY, VALUE));
+    Descriptor.create(
+        METRIC_NAME, null, UNIT, TYPE, Collections.singletonMap(KEY, VALUE), TemporalQuality.DELTA);
   }
 
   @Test
   public void create_NullUnit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    Descriptor.create(METRIC_NAME, DESCRIPTION, null, TYPE, Collections.singletonMap(KEY, VALUE));
+    Descriptor.create(
+        METRIC_NAME,
+        DESCRIPTION,
+        null,
+        TYPE,
+        Collections.singletonMap(KEY, VALUE),
+        TemporalQuality.DELTA);
   }
 
   @Test
   public void create_NullType() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("type");
-    Descriptor.create(METRIC_NAME, DESCRIPTION, UNIT, null, Collections.singletonMap(KEY, VALUE));
+    Descriptor.create(
+        METRIC_NAME,
+        DESCRIPTION,
+        UNIT,
+        null,
+        Collections.singletonMap(KEY, VALUE),
+        TemporalQuality.DELTA);
   }
 
   @Test
   public void create_NullConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    Descriptor.create(METRIC_NAME, DESCRIPTION, UNIT, TYPE, null);
+    Descriptor.create(METRIC_NAME, DESCRIPTION, UNIT, TYPE, null, TemporalQuality.DELTA);
   }
 }

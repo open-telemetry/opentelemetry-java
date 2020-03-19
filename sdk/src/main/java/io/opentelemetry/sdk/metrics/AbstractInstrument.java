@@ -171,7 +171,8 @@ abstract class AbstractInstrument implements Instrument {
         descriptor.getDescription(),
         aggregation.getUnit(descriptor.getUnit()),
         aggregation.getDescriptorType(instrumentType, instrumentValueType),
-        descriptor.getConstantLabels());
+        descriptor.getConstantLabels(),
+        aggregation.getTemporalQuality());
   }
 
   static Batcher getDefaultBatcher(

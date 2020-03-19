@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.metrics.aggregator.LongSumAggregator;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import javax.annotation.concurrent.Immutable;
 
@@ -115,6 +116,11 @@ public class Aggregations {
       return instrumentType == InstrumentType.MEASURE_ABSOLUTE
           || instrumentType == InstrumentType.MEASURE_NON_ABSOLUTE;
     }
+
+    @Override
+    public TemporalQuality getTemporalQuality() {
+      return TemporalQuality.DELTA;
+    }
   }
 
   @Immutable
@@ -158,6 +164,11 @@ public class Aggregations {
       // Available for all instruments.
       return true;
     }
+
+    @Override
+    public TemporalQuality getTemporalQuality() {
+      return TemporalQuality.CUMULATIVE;
+    }
   }
 
   @Immutable
@@ -185,6 +196,11 @@ public class Aggregations {
     public boolean availableForInstrument(InstrumentType instrumentType) {
       // Available for all instruments.
       return true;
+    }
+
+    @Override
+    public TemporalQuality getTemporalQuality() {
+      return TemporalQuality.CUMULATIVE;
     }
   }
 
@@ -216,6 +232,12 @@ public class Aggregations {
     @Override
     public boolean availableForInstrument(InstrumentType instrumentType) {
       throw new UnsupportedOperationException("Implement this");
+    }
+
+    @Override
+    public TemporalQuality getTemporalQuality() {
+      // TODO: Implement as appropriate
+      return TemporalQuality.CUMULATIVE;
     }
   }
 
@@ -258,6 +280,11 @@ public class Aggregations {
       // Do not change this unless the limitations of the current LastValueAggregator are fixed.
       return instrumentType == InstrumentType.OBSERVER_MONOTONIC
           || instrumentType == InstrumentType.OBSERVER_NON_MONOTONIC;
+    }
+
+    @Override
+    public TemporalQuality getTemporalQuality() {
+      return TemporalQuality.INSTANTANEOUS;
     }
   }
 

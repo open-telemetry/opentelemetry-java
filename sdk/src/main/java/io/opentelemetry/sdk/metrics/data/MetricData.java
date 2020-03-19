@@ -32,6 +32,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class MetricData {
+
   MetricData() {}
 
   /**
@@ -79,6 +80,7 @@ public abstract class MetricData {
 
   @Immutable
   public abstract static class Point {
+
     Point() {}
 
     /**
@@ -116,6 +118,7 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class LongPoint extends Point {
+
     LongPoint() {}
 
     /**
@@ -138,6 +141,7 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class DoublePoint extends Point {
+
     DoublePoint() {}
 
     /**
@@ -200,6 +204,7 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class ValueAtPercentile {
+
     ValueAtPercentile() {}
 
     /**
@@ -275,6 +280,20 @@ public abstract class MetricData {
       SUMMARY,
     }
 
+    public enum TemporalQuality {
+      /**
+       * The MetricData is relevant for a single moment in time. This is most common for metrics
+       * generated from Observer Instruments
+       */
+      INSTANTANEOUS,
+
+      /** The MetricData is aggregated over the lifetime of the instrument that created it. */
+      CUMULATIVE,
+
+      /** The MetricData is aggregated since the last collection cycle. */
+      DELTA
+    }
+
     /**
      * Returns the metric descriptor name.
      *
@@ -315,13 +334,17 @@ public abstract class MetricData {
      */
     public abstract Map<String, String> getConstantLabels();
 
+    public abstract TemporalQuality getTemporalQuality();
+
     public static Descriptor create(
         String name,
         String description,
         String unit,
         Type type,
-        Map<String, String> constantLabels) {
-      return new AutoValue_MetricData_Descriptor(name, description, unit, type, constantLabels);
+        Map<String, String> constantLabels,
+        TemporalQuality temporalQuality) {
+      return new AutoValue_MetricData_Descriptor(
+          name, description, unit, type, constantLabels, temporalQuality);
     }
   }
 }

@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.metrics.aggregator.AggregatorFactory;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -68,4 +69,6 @@ public interface Aggregation {
    *     InstrumentType}.
    */
   boolean availableForInstrument(InstrumentType instrumentType);
+
+  TemporalQuality getTemporalQuality();
 }

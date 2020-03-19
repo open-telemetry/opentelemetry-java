@@ -21,6 +21,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
@@ -52,7 +53,8 @@ public class LoggingMetricExporterTest {
                     "A summarized test measure",
                     "ms",
                     Type.SUMMARY,
-                    ImmutableMap.of("foo", "bar", "baz", "zoom")),
+                    ImmutableMap.of("foo", "bar", "baz", "zoom"),
+                    TemporalQuality.CUMULATIVE),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.<Point>singletonList(
@@ -71,7 +73,8 @@ public class LoggingMetricExporterTest {
                     "A simple counter",
                     "one",
                     Type.MONOTONIC_LONG,
-                    ImmutableMap.of("alpha", "aleph", "beta", "bet")),
+                    ImmutableMap.of("alpha", "aleph", "beta", "bet"),
+                    TemporalQuality.CUMULATIVE),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.<Point>singletonList(
@@ -86,7 +89,8 @@ public class LoggingMetricExporterTest {
                     "an observer gauge",
                     "kb",
                     Type.NON_MONOTONIC_DOUBLE,
-                    ImmutableMap.of("uno", "eins", "dos", "zwei")),
+                    ImmutableMap.of("uno", "eins", "dos", "zwei"),
+                    TemporalQuality.CUMULATIVE),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.<Point>singletonList(

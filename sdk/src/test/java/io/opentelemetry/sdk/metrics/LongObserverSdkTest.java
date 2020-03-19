@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
@@ -92,7 +93,8 @@ public class LongObserverSdkTest {
                     "My very own measure",
                     "ms",
                     Type.NON_MONOTONIC_LONG,
-                    Collections.singletonMap("sk1", "sv1")),
+                    Collections.singletonMap("sk1", "sv1"),
+                    TemporalQuality.INSTANTANEOUS),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>emptyList()));
@@ -118,7 +120,8 @@ public class LongObserverSdkTest {
                     "",
                     "1",
                     Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                    Collections.<String, String>emptyMap(),
+                    TemporalQuality.INSTANTANEOUS),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
@@ -136,7 +139,8 @@ public class LongObserverSdkTest {
                     "",
                     "1",
                     Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                    Collections.<String, String>emptyMap(),
+                    TemporalQuality.INSTANTANEOUS),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(

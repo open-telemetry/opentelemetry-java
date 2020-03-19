@@ -30,6 +30,7 @@ import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
@@ -209,7 +210,8 @@ public class OtlpGrpcMetricExporterTest {
             "description",
             "1",
             Type.MONOTONIC_LONG,
-            Collections.<String, String>emptyMap()),
+            Collections.<String, String>emptyMap(),
+            TemporalQuality.CUMULATIVE),
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
         Collections.<Point>singletonList(

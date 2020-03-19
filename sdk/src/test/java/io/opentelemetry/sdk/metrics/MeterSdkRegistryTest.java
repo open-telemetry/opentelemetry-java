@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
@@ -110,7 +111,8 @@ public class MeterSdkRegistryTest {
                     "",
                     "1",
                     Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                    Collections.<String, String>emptyMap(),
+                    TemporalQuality.CUMULATIVE),
                 Resource.getEmpty(),
                 meterSdk1.getInstrumentationLibraryInfo(),
                 Collections.<Point>singletonList(
@@ -125,7 +127,8 @@ public class MeterSdkRegistryTest {
                     "",
                     "1",
                     Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                    Collections.<String, String>emptyMap(),
+                    TemporalQuality.CUMULATIVE),
                 Resource.getEmpty(),
                 meterSdk2.getInstrumentationLibraryInfo(),
                 Collections.<Point>singletonList(

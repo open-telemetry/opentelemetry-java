@@ -37,6 +37,7 @@ import io.opentelemetry.proto.metrics.v1.SummaryDataPoint.ValueAtPercentile;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -249,7 +250,8 @@ public class MetricAdapterTest {
                     "description",
                     "1",
                     Descriptor.Type.MONOTONIC_DOUBLE,
-                    Collections.singletonMap("k", "v"))))
+                    Collections.singletonMap("k", "v"),
+                    TemporalQuality.CUMULATIVE)))
         .isEqualTo(
             MetricDescriptor.newBuilder()
                 .setName("name")
@@ -267,7 +269,8 @@ public class MetricAdapterTest {
                     "description",
                     "1",
                     Descriptor.Type.MONOTONIC_DOUBLE,
-                    Collections.<String, String>emptyMap())))
+                    Collections.<String, String>emptyMap(),
+                    TemporalQuality.CUMULATIVE)))
         .isEqualTo(
             MetricDescriptor.newBuilder()
                 .setName("name")
@@ -287,7 +290,8 @@ public class MetricAdapterTest {
                         "description",
                         "1",
                         Descriptor.Type.MONOTONIC_LONG,
-                        Collections.singletonMap("k", "v")),
+                        Collections.singletonMap("k", "v"),
+                        TemporalQuality.CUMULATIVE),
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
                     Collections.<Point>singletonList(
@@ -324,7 +328,8 @@ public class MetricAdapterTest {
                         "description",
                         "1",
                         Descriptor.Type.MONOTONIC_DOUBLE,
-                        Collections.singletonMap("k", "v")),
+                        Collections.singletonMap("k", "v"),
+                        TemporalQuality.CUMULATIVE),
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
                     Collections.<Point>singletonList(
@@ -363,7 +368,8 @@ public class MetricAdapterTest {
             "description",
             "1",
             Descriptor.Type.MONOTONIC_DOUBLE,
-            Collections.singletonMap("k", "v"));
+            Collections.singletonMap("k", "v"),
+            TemporalQuality.CUMULATIVE);
     Resource resource =
         Resource.create(Collections.singletonMap("ka", AttributeValue.stringAttributeValue("va")));
     io.opentelemetry.proto.resource.v1.Resource resourceProto =
