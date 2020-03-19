@@ -57,4 +57,7 @@ public interface MetricExporter {
    * @since 0.1.0
    */
   ResultCode export(Collection<MetricData> metrics);
+
+  /** Called when the associated IntervalMetricReader is shutdown. */
+  void shutdown();
 }

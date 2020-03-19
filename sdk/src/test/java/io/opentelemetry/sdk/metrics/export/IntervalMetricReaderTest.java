@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.Before;
@@ -103,11 +104,14 @@ public class IntervalMetricReaderTest {
     // This export was called during shutdown.
     assertThat(waitingMetricExporter.waitForNumberOfExports(1))
         .containsExactly(Collections.singletonList(METRIC_DATA));
+
+    assertThat(waitingMetricExporter.hasShutdown.get()).isTrue();
   }
 
   private static class WaitingMetricExporter implements MetricExporter {
 
     private final Object monitor = new Object();
+    private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
 
     @GuardedBy("monitor")
     private List<List<MetricData>> exportedMetrics = new ArrayList<>();
@@ -119,6 +123,11 @@ public class IntervalMetricReaderTest {
         monitor.notifyAll();
       }
       return ResultCode.SUCCESS;
+    }
+
+    @Override
+    public void shutdown() {
+      hasShutdown.set(true);
     }
 
     /**
