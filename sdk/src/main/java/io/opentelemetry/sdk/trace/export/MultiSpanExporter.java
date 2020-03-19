@@ -21,6 +21,7 @@ import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILED_R
 import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.SUCCESS;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +48,7 @@ public final class MultiSpanExporter implements SpanExporter {
   }
 
   @Override
-  public ResultCode export(List<SpanData> spans) {
+  public ResultCode export(Collection<SpanData> spans) {
     ResultCode currentResultCode = SUCCESS;
     for (SpanExporter spanExporter : spanExporters) {
       try {

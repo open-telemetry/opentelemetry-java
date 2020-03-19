@@ -23,6 +23,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -42,7 +43,7 @@ public class MultiSpanExporterBenchmark {
   private static class NoopSpanExporter implements SpanExporter {
 
     @Override
-    public ResultCode export(List<SpanData> spans) {
+    public ResultCode export(Collection<SpanData> spans) {
       return ResultCode.SUCCESS;
     }
 
