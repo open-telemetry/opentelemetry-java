@@ -32,7 +32,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 @AutoValue
 public abstract class MetricData {
-
   MetricData() {}
 
   /**
@@ -80,7 +79,6 @@ public abstract class MetricData {
 
   @Immutable
   public abstract static class Point {
-
     Point() {}
 
     /**
@@ -118,7 +116,6 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class LongPoint extends Point {
-
     LongPoint() {}
 
     /**
@@ -141,7 +138,6 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class DoublePoint extends Point {
-
     DoublePoint() {}
 
     /**
@@ -164,7 +160,6 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class SummaryPoint extends Point {
-
     SummaryPoint() {}
 
     /**
@@ -204,7 +199,6 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class ValueAtPercentile {
-
     ValueAtPercentile() {}
 
     /**
@@ -234,7 +228,6 @@ public abstract class MetricData {
   @Immutable
   @AutoValue
   public abstract static class Descriptor {
-
     Descriptor() {}
 
     /**
@@ -334,6 +327,11 @@ public abstract class MetricData {
      */
     public abstract Map<String, String> getConstantLabels();
 
+    /**
+     * A description of the time period over which the data was aggregated.
+     *
+     * @return The {@link TemporalQuality} of this data.
+     */
     public abstract TemporalQuality getTemporalQuality();
 
     public static Descriptor create(
