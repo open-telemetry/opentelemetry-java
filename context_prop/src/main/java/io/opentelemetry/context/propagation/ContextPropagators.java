@@ -16,7 +16,7 @@
 
 package io.opentelemetry.context.propagation;
 
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A container of the registered propagators for every supported format.
@@ -77,7 +77,7 @@ import javax.annotation.concurrent.Immutable;
  *
  * @since 0.3.0
  */
-@Immutable
+@ThreadSafe
 public interface ContextPropagators {
 
   /**
