@@ -139,7 +139,7 @@ public class DefaultTracerTest {
             SpanContext.create(
                 new TraceId(1, 1), new SpanId(1), TraceFlags.getDefault(), TraceState.getDefault()),
             TracingContextUtils.withSpan(new DefaultSpan(spanContext), Context.current()));
-    Scope scope = io.opentelemetry.context.ContextUtils.withScopedContext(context);
+    Scope scope = ContextUtils.withScopedContext(context);
     // Span in Context has higher priority than SpanContext.
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
