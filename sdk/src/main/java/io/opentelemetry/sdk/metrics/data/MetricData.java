@@ -273,6 +273,10 @@ public abstract class MetricData {
       SUMMARY,
     }
 
+    /**
+     * A description of the temporal nature of the aggregation that was performed to produce the
+     * MetricData.
+     */
     public enum TemporalQuality {
       /**
        * The MetricData is relevant for a single moment in time. This is most common for metrics
