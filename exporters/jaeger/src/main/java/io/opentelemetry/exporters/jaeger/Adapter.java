@@ -49,7 +49,7 @@ final class Adapter {
    * @return the collection of Jaeger spans
    * @see #toJaeger(SpanData)
    */
-  static Collection<Model.Span> toJaeger(List<SpanData> spans) {
+  static Collection<Model.Span> toJaeger(Collection<SpanData> spans) {
     List<Model.Span> convertedList = new ArrayList<>(spans.size());
     for (SpanData span : spans) {
       convertedList.add(toJaeger(span));

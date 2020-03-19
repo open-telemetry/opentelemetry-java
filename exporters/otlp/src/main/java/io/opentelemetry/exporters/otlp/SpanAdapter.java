@@ -30,12 +30,13 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 final class SpanAdapter {
-  static List<ResourceSpans> toProtoResourceSpans(List<SpanData> spanDataList) {
+  static List<ResourceSpans> toProtoResourceSpans(Collection<SpanData> spanDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> resourceAndLibraryMap =
         groupByResourceAndLibrary(spanDataList);
     List<ResourceSpans> resourceSpans = new ArrayList<>(resourceAndLibraryMap.size());
@@ -62,7 +63,7 @@ final class SpanAdapter {
   }
 
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>>
-      groupByResourceAndLibrary(List<SpanData> spanDataList) {
+      groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> result = new HashMap<>();
     for (SpanData spanData : spanDataList) {
       Resource resource = spanData.getResource();
