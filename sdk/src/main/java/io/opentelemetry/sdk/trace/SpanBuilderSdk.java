@@ -167,6 +167,15 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
+    if (isToRemove(value)) {
+      attributes.remove(key);
+    } else {
+      attributes.putAttribute(key, value);
+    }
+    return this;
+  }
+
+  private static boolean isToRemove(AttributeValue value) {
     boolean remove = true;
     if (value != null) {
       switch (value.getType()) {
@@ -180,12 +189,7 @@ final class SpanBuilderSdk implements Span.Builder {
           break;
       }
     }
-    if (remove) {
-      attributes.remove(key);
-    } else {
-      attributes.putAttribute(key, value);
-    }
-    return this;
+    return remove;
   }
 
   @Override
