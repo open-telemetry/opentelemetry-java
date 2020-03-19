@@ -263,8 +263,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
                   "The number of spans dropped by the BatchSpansProcessor due to high throughput.")
               .build();
       droppedSpans =
-          droppedSpansCounter.bind(
-              meter.createLabelSet("spanProcessorType", BatchSpansProcessor.class.getSimpleName()));
+          droppedSpansCounter.bind("spanProcessorType", BatchSpansProcessor.class.getSimpleName());
     }
 
     private static final BoundLongCounter droppedSpans;

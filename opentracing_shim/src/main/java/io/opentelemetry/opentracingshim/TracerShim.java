@@ -32,6 +32,7 @@ final class TracerShim extends BaseShimObject implements Tracer {
 
   private final ScopeManager scopeManagerShim;
   private final Propagation propagation;
+  private volatile boolean isClosed;
 
   TracerShim(TelemetryInfo telemetryInfo) {
     super(telemetryInfo);
@@ -56,6 +57,10 @@ final class TracerShim extends BaseShimObject implements Tracer {
 
   @Override
   public SpanBuilder buildSpan(String operationName) {
+    if (isClosed) {
+      return new NoopSpanBuilderShim(telemetryInfo(), operationName);
+    }
+
     return new SpanBuilderShim(telemetryInfo, operationName);
   }
 
@@ -97,7 +102,7 @@ final class TracerShim extends BaseShimObject implements Tracer {
 
   @Override
   public void close() {
-    // TODO
+    isClosed = true;
   }
 
   static SpanContextShim getContextShim(SpanContext context) {

@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.metrics.DoubleMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 
@@ -37,15 +36,19 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
   }
 
   @Override
-  public void record(double value, LabelSet labelSet) {
+  public void record(double delta, String... labelKeyValuePairs) {
+    record(delta, LabelSetSdk.create(labelKeyValuePairs));
+  }
+
+  void record(double value, LabelSetSdk labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
     boundInstrument.record(value);
     boundInstrument.unbind();
   }
 
   @Override
-  public BoundInstrument bind(LabelSet labelSet) {
-    return bindInternal(labelSet);
+  public BoundInstrument bind(String... labelKeyValuePairs) {
+    return bind(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override
@@ -72,7 +75,7 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     }
   }
 
-  static final class Builder extends AbstractMeasure.Builder<DoubleMeasure.Builder, DoubleMeasure>
+  static final class Builder extends AbstractMeasure.Builder<DoubleMeasureSdk.Builder>
       implements DoubleMeasure.Builder {
 
     Builder(

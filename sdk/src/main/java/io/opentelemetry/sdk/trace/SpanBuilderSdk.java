@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
@@ -25,8 +27,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -36,7 +36,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -238,7 +238,6 @@ final class SpanBuilderSdk implements Span.Builder {
   private static Clock getClock(Span parent, Clock clock) {
     if (parent instanceof RecordEventsReadableSpan) {
       RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
-      parentRecordEventsSpan.addChild();
       return parentRecordEventsSpan.getClock();
     } else {
       return MonotonicClock.create(clock);
@@ -248,7 +247,7 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static SpanContext parent(
       ParentType parentType, Span explicitParent, SpanContext remoteParent) {
-    Span currentSpan = ContextUtils.getValue();
+    Span currentSpan = TracingContextUtils.getCurrentSpan();
     switch (parentType) {
       case NO_PARENT:
         return null;
@@ -266,7 +265,7 @@ final class SpanBuilderSdk implements Span.Builder {
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
       case CURRENT_SPAN:
-        return ContextUtils.getValue();
+        return TracingContextUtils.getCurrentSpan();
       case EXPLICIT_PARENT:
         return explicitParent;
       default:

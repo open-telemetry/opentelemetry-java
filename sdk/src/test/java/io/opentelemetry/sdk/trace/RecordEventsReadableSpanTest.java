@@ -20,12 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
@@ -341,22 +341,13 @@ public class RecordEventsReadableSpanTest {
       }
       SpanData spanData = span.toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
-      for (int i = 0; i < maxNumberOfAttributes; i++) {
-        AttributeValue expectedValue = AttributeValue.longAttributeValue(i + maxNumberOfAttributes);
-        assertThat(
-                spanData.getAttributes().get("MyStringAttributeKey" + (i + maxNumberOfAttributes)))
-            .isEqualTo(expectedValue);
-      }
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(2 * maxNumberOfAttributes);
     } finally {
       span.end();
     }
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
-    for (int i = 0; i < maxNumberOfAttributes; i++) {
-      AttributeValue expectedValue = AttributeValue.longAttributeValue(i + maxNumberOfAttributes);
-      assertThat(spanData.getAttributes().get("MyStringAttributeKey" + (i + maxNumberOfAttributes)))
-          .isEqualTo(expectedValue);
-    }
+    assertThat(spanData.getTotalAttributeCount()).isEqualTo(2 * maxNumberOfAttributes);
   }
 
   @Test
@@ -374,15 +365,11 @@ public class RecordEventsReadableSpanTest {
       }
       SpanData spanData = span.toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
-      for (int i = 0; i < maxNumberOfAttributes; i++) {
-        AttributeValue expectedValue = AttributeValue.longAttributeValue(i + maxNumberOfAttributes);
-        assertThat(
-                spanData.getAttributes().get("MyStringAttributeKey" + (i + maxNumberOfAttributes)))
-            .isEqualTo(expectedValue);
-      }
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(2 * maxNumberOfAttributes);
 
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
-        span.setAttribute("MyStringAttributeKey" + i, AttributeValue.longAttributeValue(i));
+        int val = i + maxNumberOfAttributes * 3 / 2;
+        span.setAttribute("MyStringAttributeKey" + i, AttributeValue.longAttributeValue(val));
       }
       spanData = span.toSpanData();
       assertThat(spanData.getAttributes().size()).isEqualTo(maxNumberOfAttributes);
@@ -390,11 +377,11 @@ public class RecordEventsReadableSpanTest {
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
         int val = i + maxNumberOfAttributes * 3 / 2;
         AttributeValue expectedValue = AttributeValue.longAttributeValue(val);
-        assertThat(spanData.getAttributes().get("MyStringAttributeKey" + val))
+        assertThat(spanData.getAttributes().get("MyStringAttributeKey" + i))
             .isEqualTo(expectedValue);
       }
       // Test that we have the newest re-added initial entries.
-      for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
+      for (int i = maxNumberOfAttributes / 2; i < maxNumberOfAttributes; i++) {
         AttributeValue expectedValue = AttributeValue.longAttributeValue(i);
         assertThat(spanData.getAttributes().get("MyStringAttributeKey" + i))
             .isEqualTo(expectedValue);
@@ -507,7 +494,6 @@ public class RecordEventsReadableSpanTest {
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.addEvent("event2", Collections.<String, AttributeValue>emptyMap());
     testClock.advanceMillis(MILLIS_PER_SECOND);
-    span.addChild();
     span.updateName(SPAN_NEW_NAME);
     if (status != null) {
       span.setStatus(status);
@@ -551,9 +537,9 @@ public class RecordEventsReadableSpanTest {
     TraceConfig traceConfig = TraceConfig.getDefault();
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();
-    Map<String, AttributeValue> labels = new HashMap<>();
-    labels.put("foo", AttributeValue.stringAttributeValue("bar"));
-    Resource resource = Resource.create(labels);
+    Map<String, AttributeValue> attribute = new HashMap<>();
+    attribute.put("foo", AttributeValue.stringAttributeValue("bar"));
+    Resource resource = Resource.create(attribute);
     Map<String, AttributeValue> attributes = TestUtils.generateRandomAttributes();
     AttributesWithCapacity attributesWithCapacity = new AttributesWithCapacity(32);
     attributesWithCapacity.putAllAttributes(attributes);
@@ -561,8 +547,7 @@ public class RecordEventsReadableSpanTest {
     Map<String, AttributeValue> event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
         SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
-    Link link1 = SpanData.Link.create(context, TestUtils.generateRandomAttributes());
-    List<Link> links = Collections.singletonList(link1);
+    SpanData.Link link1 = SpanData.Link.create(context, TestUtils.generateRandomAttributes());
 
     RecordEventsReadableSpan readableSpan =
         RecordEventsReadableSpan.startSpan(
@@ -577,7 +562,7 @@ public class RecordEventsReadableSpanTest {
             clock,
             resource,
             attributesWithCapacity,
-            links,
+            Collections.<Link>singletonList(link1),
             1,
             0);
     long startEpochNanos = clock.now();
@@ -608,13 +593,12 @@ public class RecordEventsReadableSpanTest {
             .setTotalRecordedEvents(2)
             .setResource(resource)
             .setParentSpanId(parentSpanId)
-            .setLinks(links)
-            .setTotalRecordedLinks(links.size())
+            .setLinks(Collections.singletonList(link1))
+            .setTotalRecordedLinks(1)
             .setTraceId(traceId)
             .setSpanId(spanId)
             .setAttributes(attributes)
             .setHasRemoteParent(false)
-            .setNumberOfChildren(0)
             .build();
 
     SpanData result = readableSpan.toSpanData();

@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.trace.Event;
 import java.util.Collections;
 import java.util.Map;
@@ -29,12 +29,15 @@ abstract class TimedEvent {
 
   private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES =
       Collections.unmodifiableMap(Collections.<String, AttributeValue>emptyMap());
+  private static final int DEFAULT_TOTAL_ATTRIBUTE_COUNT = 0;
 
   abstract long getEpochNanos();
 
   abstract String getName();
 
   abstract Map<String, AttributeValue> getAttributes();
+
+  abstract int getTotalAttributeCount();
 
   TimedEvent() {}
 
@@ -58,7 +61,24 @@ abstract class TimedEvent {
    * @return an {@code TimedEvent}.
    */
   static TimedEvent create(long epochNanos, String name, Map<String, AttributeValue> attributes) {
-    return new AutoValue_TimedEvent_RawTimedEvent(epochNanos, name, attributes);
+    return new AutoValue_TimedEvent_RawTimedEvent(epochNanos, name, attributes, attributes.size());
+  }
+
+  /**
+   * Creates an {@link TimedEvent} with the given time, name and attributes.
+   *
+   * @param epochNanos epoch timestamp in nanos.
+   * @param name the name of this {@code TimedEvent}.
+   * @param attributes the attributes of this {@code TimedEvent}.
+   * @return an {@code TimedEvent}.
+   */
+  static TimedEvent create(
+      long epochNanos,
+      String name,
+      Map<String, AttributeValue> attributes,
+      int totalAttributeCount) {
+    return new AutoValue_TimedEvent_RawTimedEvent(
+        epochNanos, name, attributes, totalAttributeCount);
   }
 
   /**
@@ -69,7 +89,8 @@ abstract class TimedEvent {
    * @return an {@code TimedEvent}.
    */
   static TimedEvent create(long epochNanos, Event event) {
-    return new AutoValue_TimedEvent_RawTimedEventWithEvent(epochNanos, event);
+    return new AutoValue_TimedEvent_RawTimedEventWithEvent(
+        epochNanos, event, DEFAULT_TOTAL_ATTRIBUTE_COUNT);
   }
 
   @AutoValue
@@ -86,6 +107,9 @@ abstract class TimedEvent {
     Map<String, AttributeValue> getAttributes() {
       return getEvent().getAttributes();
     }
+
+    @Override
+    abstract int getTotalAttributeCount();
   }
 
   @AutoValue

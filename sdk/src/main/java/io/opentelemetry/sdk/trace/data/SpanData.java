@@ -17,10 +17,10 @@
 package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -145,7 +145,7 @@ public abstract class SpanData {
    * @return links recorded for this {@code Span}.
    * @since 0.1.0
    */
-  public abstract List<io.opentelemetry.trace.Link> getLinks();
+  public abstract List<Link> getLinks();
 
   /**
    * Returns the {@code Status}.
@@ -192,13 +192,6 @@ public abstract class SpanData {
   public abstract int getTotalRecordedEvents();
 
   /**
-   * The total number of child spans that were created for this span.
-   *
-   * @return The total number of child spans created from this span.
-   */
-  public abstract int getNumberOfChildren();
-
-  /**
    * The total number of {@link SpanData.Link} links that were recorded on this span. This number
    * may be larger than the number of links that are attached to this span, if the total number
    * recorded was greater than the configured maximum value. See: {@link
@@ -209,6 +202,15 @@ public abstract class SpanData {
   public abstract int getTotalRecordedLinks();
 
   /**
+   * The total number of attributes that were recorded on this span. This number may be larger than
+   * the number of attributes that are attached to this span, if the total number recorded was
+   * greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfAttributes()}
+   *
+   * @return The total number of attributes on this span.
+   */
+  public abstract int getTotalAttributeCount();
+
+  /**
    * An immutable implementation of {@link Link}.
    *
    * @since 0.1.0
@@ -216,6 +218,10 @@ public abstract class SpanData {
   @Immutable
   @AutoValue
   public abstract static class Link implements io.opentelemetry.trace.Link {
+
+    private static final Map<String, AttributeValue> DEFAULT_ATTRIBUTE_COLLECTION =
+        Collections.<String, AttributeValue>emptyMap();
+    private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
 
     /**
      * Returns a new immutable {@code Link}.
@@ -226,7 +232,7 @@ public abstract class SpanData {
      */
     public static Link create(SpanContext spanContext) {
       return new AutoValue_SpanData_Link(
-          spanContext, Collections.<String, AttributeValue>emptyMap());
+          spanContext, DEFAULT_ATTRIBUTE_COLLECTION, DEFAULT_ATTRIBUTE_COUNT);
     }
 
     /**
@@ -239,8 +245,39 @@ public abstract class SpanData {
      */
     public static Link create(SpanContext spanContext, Map<String, AttributeValue> attributes) {
       return new AutoValue_SpanData_Link(
-          spanContext, Collections.unmodifiableMap(new LinkedHashMap<>(attributes)));
+          spanContext,
+          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
+          attributes.size());
     }
+
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @param attributes the attributes of this {@code Link}.
+     * @param totalAttributeCount the total number of attributed for this {@code Link}.
+     * @return a new immutable {@code TimedEvent<T>}
+     * @since 0.1.0
+     */
+    public static Link create(
+        SpanContext spanContext, Map<String, AttributeValue> attributes, int totalAttributeCount) {
+      return new AutoValue_SpanData_Link(
+          spanContext,
+          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
+          totalAttributeCount);
+    }
+
+    /**
+     * The total number of attributes that were recorded on this Link. This number may be larger
+     * than the number of attributes that are attached to this span, if the total number recorded
+     * was greater than the configured maximum value. See: {@link
+     * TraceConfig#getMaxNumberOfAttributesPerLink()}
+     *
+     * @return The number of attributes on this link.
+     */
+    public abstract int getTotalAttributeCount();
+
+    Link() {}
   }
 
   /**
@@ -263,7 +300,25 @@ public abstract class SpanData {
      */
     public static TimedEvent create(
         long epochNanos, String name, Map<String, AttributeValue> attributes) {
-      return new AutoValue_SpanData_TimedEvent(epochNanos, name, attributes);
+      return new AutoValue_SpanData_TimedEvent(epochNanos, name, attributes, attributes.size());
+    }
+
+    /**
+     * Returns a new immutable {@code TimedEvent}.
+     *
+     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
+     * @param name the name of the {@code Event}.
+     * @param attributes the attributes of the {@code Event}.
+     * @param totalAttributeCount the total number of attributes for this {@code} Event.
+     * @return a new immutable {@code TimedEvent<T>}
+     * @since 0.1.0
+     */
+    public static TimedEvent create(
+        long epochNanos,
+        String name,
+        Map<String, AttributeValue> attributes,
+        int totalAttributeCount) {
+      return new AutoValue_SpanData_TimedEvent(epochNanos, name, attributes, totalAttributeCount);
     }
 
     /**
@@ -280,6 +335,16 @@ public abstract class SpanData {
     @Override
     public abstract Map<String, AttributeValue> getAttributes();
 
+    /**
+     * The total number of attributes that were recorded on this Event. This number may be larger
+     * than the number of attributes that are attached to this span, if the total number recorded
+     * was greater than the configured maximum value. See: {@link
+     * TraceConfig#getMaxNumberOfAttributesPerEvent()}
+     *
+     * @return The total number of attributes on this event.
+     */
+    public abstract int getTotalAttributeCount();
+
     TimedEvent() {}
   }
 
@@ -293,7 +358,7 @@ public abstract class SpanData {
     return new AutoValue_SpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
-        .setLinks(Collections.<io.opentelemetry.trace.Link>emptyList())
+        .setLinks(Collections.<Link>emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
         .setTimedEvents(Collections.<TimedEvent>emptyList())
@@ -301,8 +366,8 @@ public abstract class SpanData {
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
         .setTraceFlags(TraceFlags.getDefault())
-        .setNumberOfChildren(0)
-        .setHasRemoteParent(false);
+        .setHasRemoteParent(false)
+        .setTotalAttributeCount(0);
   }
 
   /**
@@ -319,7 +384,7 @@ public abstract class SpanData {
 
     abstract List<TimedEvent> getTimedEvents();
 
-    abstract List<io.opentelemetry.trace.Link> getLinks();
+    abstract List<Link> getLinks();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -470,7 +535,7 @@ public abstract class SpanData {
      * @see io.opentelemetry.trace.Link
      * @since 0.1.0
      */
-    public abstract Builder setLinks(List<io.opentelemetry.trace.Link> links);
+    public abstract Builder setLinks(List<Link> links);
 
     /**
      * Sets to true if the span has a parent on a different process.
@@ -509,12 +574,11 @@ public abstract class SpanData {
     public abstract Builder setTotalRecordedLinks(int totalRecordedLinks);
 
     /**
-     * Set the total number of child spans on this span.
+     * Set the total number of attributes recorded on this span.
      *
-     * @param numberOfChildren The total number of children.
+     * @param totalAttributeCount The total number of attributes recorded.
      * @return this
-     * @since 0.4.0
      */
-    public abstract Builder setNumberOfChildren(int numberOfChildren);
+    public abstract Builder setTotalAttributeCount(int totalAttributeCount);
   }
 }

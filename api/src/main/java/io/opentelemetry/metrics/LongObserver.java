@@ -17,6 +17,8 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -34,7 +36,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
- *   private static final LabelSet labelSet = meter.createLabelSet("my_label");
  *
  *   void init() {
  *     observer.setCallback(
@@ -42,7 +43,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(ResultLongObserver result) {
- *             result.observe(count.addAndGet(1), labelSet);
+ *             result.observe(count.addAndGet(1), "my_label_key", "my_label_value");
  *           }
  *         });
  *   }
@@ -57,10 +58,28 @@ public interface LongObserver extends Observer<ResultLongObserver> {
   void setCallback(Callback<ResultLongObserver> metricUpdater);
 
   /** Builder class for {@link LongObserver}. */
-  interface Builder extends Observer.Builder<LongObserver.Builder, LongObserver> {}
+  interface Builder extends Observer.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
+    @Override
+    Builder setMonotonic(boolean monotonic);
+
+    @Override
+    LongObserver build();
+  }
 
   /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
   interface ResultLongObserver {
-    void observe(long value, LabelSet labelSet);
+    void observe(long value, String... keyValueLabelPairs);
   }
 }

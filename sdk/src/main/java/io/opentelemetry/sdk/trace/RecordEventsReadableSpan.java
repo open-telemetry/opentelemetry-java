@@ -18,14 +18,14 @@ package io.opentelemetry.sdk.trace;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
+import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -36,6 +36,7 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -50,6 +51,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
+  @SuppressWarnings("checkstyle:LineLength")
+  private static final String MAX_SPAN_ATTRIBUTE_COUNT_LOG_MESSAGE =
+      "Span with name '%s' has reached the maximum number of attributes (%d). Dropping attribute with key '%s'";
+
+  private static final String MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE =
+      "Link has reached the maximum number of attributes (%d). Dropping %d attributes.";
+
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
@@ -63,6 +71,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final List<Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
+  // Max number of attibutes per span.
+  private final int maxNumberOfAttributes;
+  // Max number of attributes per event.
+  private final int maxNumberOfAttributesPerEvent;
 
   // Lock used to internally guard the mutable state of this instance
   private final Object lock = new Object();
@@ -85,12 +97,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // List of recorded events.
   @GuardedBy("lock")
   private final EvictingQueue<TimedEvent> events;
+  // Number of attributes recorded.
+  @GuardedBy("lock")
+  private int totalAttributeCount = 0;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
-  // The number of children.
-  @GuardedBy("lock")
-  private int numberOfChildren = 0;
   // The status of the span.
   @GuardedBy("lock")
   @Nullable
@@ -184,8 +196,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
           .setEndEpochNanos(getEndEpochNanos())
           .setStatus(getStatusWithDefault())
           .setTimedEvents(adaptTimedEvents())
+          .setTotalAttributeCount(totalAttributeCount)
           .setTotalRecordedEvents(totalRecordedEvents)
-          .setNumberOfChildren(numberOfChildren)
           // build() does the actual copying of the collections: it needs to be synchronized
           // because of the attributes and events collections.
           .build();
@@ -256,17 +268,19 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return A copy of the Links for this span.
    */
-  private List<Link> getLinks() {
+  private List<SpanData.Link> getLinks() {
     if (links == null) {
       return Collections.emptyList();
     }
-    List<Link> result = new ArrayList<>(links.size());
+    List<SpanData.Link> result = new ArrayList<>(links.size());
     for (Link link : links) {
-      Link newLink = link;
+      SpanData.Link newLink;
       if (!(link instanceof SpanData.Link)) {
         // Make a copy because the given Link may not be immutable and we may reference a lot of
         // memory.
         newLink = SpanData.Link.create(link.getContext(), link.getAttributes());
+      } else {
+        newLink = (SpanData.Link) link;
       }
       result.add(newLink);
     }
@@ -327,6 +341,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
+      totalAttributeCount++;
+      if (attributes.get(key) == null && attributes.size() >= maxNumberOfAttributes) {
+        logger.log(
+            Level.FINE,
+            String.format(
+                MAX_SPAN_ATTRIBUTE_COUNT_LOG_MESSAGE, this.name, maxNumberOfAttributes, key));
+        return;
+      }
       attributes.putAttribute(key, value);
     }
   }
@@ -343,12 +365,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes) {
-    addTimedEvent(TimedEvent.create(clock.now(), name, attributes));
+    int totalAttributeCount = attributes.size();
+    addTimedEvent(
+        TimedEvent.create(
+            clock.now(), name, limitEventAttributes(attributes), totalAttributeCount));
   }
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
-    addTimedEvent(TimedEvent.create(timestamp, name, attributes));
+    int totalAttributeCount = attributes.size();
+    addTimedEvent(
+        TimedEvent.create(timestamp, name, limitEventAttributes(attributes), totalAttributeCount));
   }
 
   @Override
@@ -359,6 +386,26 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void addEvent(Event event, long timestamp) {
     addTimedEvent(TimedEvent.create(timestamp, event));
+  }
+
+  private Map<String, AttributeValue> limitEventAttributes(Map<String, AttributeValue> attributes) {
+    if (attributes.size() <= this.maxNumberOfAttributesPerEvent) {
+      return attributes;
+    }
+
+    Map<String, AttributeValue> temp = new HashMap<String, AttributeValue>();
+    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
+      if (temp.size() < this.maxNumberOfAttributesPerEvent) {
+        temp.put(entry.getKey(), entry.getValue());
+      }
+    }
+    logger.log(
+        Level.FINE,
+        String.format(
+            MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE,
+            maxNumberOfAttributesPerEvent,
+            attributes.size() - temp.size()));
+    return temp;
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
@@ -429,16 +476,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     return true;
   }
 
-  void addChild() {
-    synchronized (lock) {
-      if (hasEnded) {
-        logger.log(Level.FINE, "Calling end() on an ended Span.");
-        return;
-      }
-      numberOfChildren++;
-    }
-  }
-
   @GuardedBy("lock")
   private Status getStatusWithDefault() {
     synchronized (lock) {
@@ -476,6 +513,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.startEpochNanos = startEpochNanos;
     this.attributes = attributes;
     this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
+    this.maxNumberOfAttributes = traceConfig.getMaxNumberOfAttributes();
+    this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
   }
 
   @SuppressWarnings("NoFinalizer")

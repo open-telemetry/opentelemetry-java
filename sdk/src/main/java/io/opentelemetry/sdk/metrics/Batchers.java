@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
@@ -63,7 +62,7 @@ final class Batchers {
     }
 
     @Override
-    public void batch(LabelSet labelSet, Aggregator aggregator, boolean mappedAggregator) {}
+    public void batch(LabelSetSdk labelSet, Aggregator aggregator, boolean mappedAggregator) {}
 
     @Override
     public List<MetricData> completeCollectionCycle() {
@@ -104,8 +103,9 @@ final class Batchers {
     }
 
     @Override
-    public final void batch(LabelSet labelSet, Aggregator aggregator, boolean unmappedAggregator) {
-      Map<String, String> labels = ((LabelSetSdk) labelSet).getLabels();
+    public final void batch(
+        LabelSetSdk labelSet, Aggregator aggregator, boolean unmappedAggregator) {
+      Map<String, String> labels = labelSet.getLabels();
       Aggregator currentAggregator = aggregatorMap.get(labels);
       if (currentAggregator == null) {
         // This aggregator is not mapped, we can use this instance.

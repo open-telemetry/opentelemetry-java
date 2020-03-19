@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.trace.AttributeValue;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.trace.Event;
 import java.util.Collections;
 import java.util.Map;
@@ -63,6 +63,16 @@ public class TimedEventTest {
     assertThat(event.getEpochNanos()).isEqualTo(1234567890L);
     assertThat(event.getName()).isEqualTo(NAME);
     assertThat(event.getAttributes()).isEqualTo(ATTRIBUTES);
+    assertThat(event.getTotalAttributeCount()).isEqualTo(ATTRIBUTES.size());
+  }
+
+  @Test
+  public void rawTimedEventWithNameAndAttributesAndTotalAttributeCount() {
+    TimedEvent event = TimedEvent.create(1234567890L, NAME, ATTRIBUTES, ATTRIBUTES.size() + 2);
+    assertThat(event.getEpochNanos()).isEqualTo(1234567890L);
+    assertThat(event.getName()).isEqualTo(NAME);
+    assertThat(event.getAttributes()).isEqualTo(ATTRIBUTES);
+    assertThat(event.getTotalAttributeCount()).isEqualTo(ATTRIBUTES.size() + 2);
   }
 
   @Test

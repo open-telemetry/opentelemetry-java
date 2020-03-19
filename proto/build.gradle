@@ -10,7 +10,10 @@ description = 'OpenTelemetry Proto'
 ext.moduleName = 'io.opentelemetry.proto'
 
 dependencies {
-    api libraries.protobuf
+    api libraries.protobuf,
+            libraries.grpc_api,
+            libraries.grpc_protobuf,
+            libraries.grpc_stub
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
@@ -27,6 +30,12 @@ protobuf {
     protoc {
         // The artifact spec for the Protobuf Compiler
         artifact = "com.google.protobuf:protoc:${protocVersion}"
+    }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
     }
 }
 

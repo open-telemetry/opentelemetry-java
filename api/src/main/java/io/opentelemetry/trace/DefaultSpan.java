@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
 import java.util.Random;

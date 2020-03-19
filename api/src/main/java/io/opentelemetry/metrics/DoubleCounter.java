@@ -17,6 +17,8 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
+import java.util.List;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -56,16 +58,16 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
    * Adds the given {@code delta} to the current value. The values can be negative iff monotonic was
    * set to {@code false}.
    *
-   * <p>The value added is associated with the current {@code Context} and provided LabelSet.
+   * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
    * @param delta the value to add.
-   * @param labelSet the labels to be associated to this recording
+   * @param labelKeyValuePairs the labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(double delta, LabelSet labelSet);
+  void add(double delta, String... labelKeyValuePairs);
 
   @Override
-  BoundDoubleCounter bind(LabelSet labelSet);
+  BoundDoubleCounter bind(String... labelKeyValuePairs);
 
   /**
    * A {@code Bound Instrument} for a {@code CounterDouble}.
@@ -90,5 +92,23 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
   }
 
   /** Builder class for {@link DoubleCounter}. */
-  interface Builder extends Counter.Builder<Builder, DoubleCounter> {}
+  interface Builder extends Counter.Builder {
+    @Override
+    Builder setDescription(String description);
+
+    @Override
+    Builder setUnit(String unit);
+
+    @Override
+    Builder setLabelKeys(List<String> labelKeys);
+
+    @Override
+    Builder setConstantLabels(Map<String, String> constantLabels);
+
+    @Override
+    Builder setMonotonic(boolean monotonic);
+
+    @Override
+    DoubleCounter build();
+  }
 }

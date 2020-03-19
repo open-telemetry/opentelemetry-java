@@ -16,11 +16,11 @@
 
 package io.opentelemetry.trace;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
-import io.opentelemetry.trace.unsafe.ContextUtils;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -46,12 +46,12 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span getCurrentSpan() {
-    return ContextUtils.getValue();
+    return TracingContextUtils.getCurrentSpan();
   }
 
   @Override
   public Scope withSpan(Span span) {
-    return ContextUtils.withSpan(span);
+    return TracingContextUtils.currentContextWith(span);
   }
 
   @Override
