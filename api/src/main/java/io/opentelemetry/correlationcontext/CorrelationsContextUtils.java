@@ -31,8 +31,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class CorrelationsContextUtils {
   private static final Context.Key<CorrelationContext> CORR_CONTEXT_KEY =
-      Context.keyWithDefault(
-          "opentelemetry-corr-context-key", EmptyCorrelationContext.getInstance());
+      Context.key("opentelemetry-corr-context-key");
 
   /**
    * Creates a new {@code Context} with the given value set.
@@ -66,7 +65,8 @@ public final class CorrelationsContextUtils {
    * @since 0.3.0
    */
   public static CorrelationContext getCorrelationContext(Context context) {
-    return CORR_CONTEXT_KEY.get(context);
+    CorrelationContext corrContext = CORR_CONTEXT_KEY.get(context);
+    return corrContext == null ? EmptyCorrelationContext.getInstance() : corrContext;
   }
 
   /**
@@ -79,8 +79,7 @@ public final class CorrelationsContextUtils {
    */
   @Nullable
   public static CorrelationContext getCorrelationContextWithoutDefault(Context context) {
-    CorrelationContext corrContext = CORR_CONTEXT_KEY.get(context);
-    return corrContext == EmptyCorrelationContext.getInstance() ? null : corrContext;
+    return CORR_CONTEXT_KEY.get(context);
   }
 
   /**
