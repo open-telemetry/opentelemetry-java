@@ -16,10 +16,11 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.common.AttributeValue.Type.STRING;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -331,35 +332,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
-    Preconditions.checkNotNull(value, "value");
-    switch (value.getType()) {
-      case STRING:
-        if (StringUtils.isNullOrEmpty(value.getStringValue())) {
-          return;
-        }
-        break;
-      case STRING_ARRAY:
-        if (value.getStringArrayValue().size() == 0) {
-          return;
-        }
-        break;
-      case BOOLEAN_ARRAY:
-        if (value.getBooleanArrayValue().size() == 0) {
-          return;
-        }
-        break;
-      case LONG_ARRAY:
-        if (value.getLongArrayValue().size() == 0) {
-          return;
-        }
-        break;
-      case DOUBLE_ARRAY:
-        if (value.getDoubleArrayValue().size() == 0) {
-          return;
-        }
-        break;
-      default:
-        break;
+    if (value == null || (value.getType().equals(STRING) && value.getStringValue() == null)) {
+      synchronized (lock) {
+        attributes.remove(key);
+      }
+      return;
     }
     synchronized (lock) {
       if (hasEnded) {
