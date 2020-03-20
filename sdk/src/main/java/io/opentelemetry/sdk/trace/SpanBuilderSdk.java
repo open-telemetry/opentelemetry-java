@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
@@ -62,7 +63,7 @@ final class SpanBuilderSdk implements Span.Builder {
   private final AttributesWithCapacity attributes;
   private List<Link> links;
   private int totalNumberOfLinksAdded = 0;
-  private ParentType parentType = ParentType.CURRENT_SPAN;
+  private ParentType parentType = ParentType.CURRENT_CONTEXT;
   private long startEpochNanos = 0;
 
   SpanBuilderSdk(
@@ -260,12 +261,11 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static SpanContext parent(
       ParentType parentType, Span explicitParent, SpanContext remoteParent) {
-    Span currentSpan = TracingContextUtils.getCurrentSpan();
     switch (parentType) {
       case NO_PARENT:
         return null;
-      case CURRENT_SPAN:
-        return currentSpan != null ? currentSpan.getContext() : null;
+      case CURRENT_CONTEXT:
+        return TracingContextUtils.getCurrentSpan().getContext();
       case EXPLICIT_PARENT:
         return explicitParent.getContext();
       case EXPLICIT_REMOTE_PARENT:
@@ -277,8 +277,8 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
-      case CURRENT_SPAN:
-        return TracingContextUtils.getCurrentSpan();
+      case CURRENT_CONTEXT:
+        return TracingContextUtils.getSpanWithoutDefault(Context.current());
       case EXPLICIT_PARENT:
         return explicitParent;
       default:
@@ -287,7 +287,7 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   private enum ParentType {
-    CURRENT_SPAN,
+    CURRENT_CONTEXT,
     EXPLICIT_PARENT,
     EXPLICIT_REMOTE_PARENT,
     NO_PARENT,

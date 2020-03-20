@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,11 +63,6 @@ public class TracerSdkTest {
   @Test
   public void defaultSpanBuilder() {
     assertThat(tracer.spanBuilder(SPAN_NAME)).isInstanceOf(SpanBuilderSdk.class);
-  }
-
-  @Test
-  public void defaultHttpTextFormat() {
-    assertThat(tracer.getHttpTextFormat()).isInstanceOf(HttpTraceContext.class);
   }
 
   @Test
