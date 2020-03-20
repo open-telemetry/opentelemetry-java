@@ -17,18 +17,18 @@
 package io.opentelemetry.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.trace.TracingContextUtils.getSpanContext;
-import static io.opentelemetry.trace.TracingContextUtils.withSpanContext;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
 import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -72,6 +72,14 @@ public class B3PropagatorTest {
   private final B3Propagator b3Propagator = new B3Propagator();
   private final B3Propagator b3PropagatorSingleHeader = new B3Propagator(true);
   @Rule public ExpectedException thrown = ExpectedException.none();
+
+  private static SpanContext getSpanContext(Context context) {
+    return TracingContextUtils.getSpan(context).getContext();
+  }
+
+  private static Context withSpanContext(SpanContext spanContext, Context context) {
+    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+  }
 
   @Test
   public void inject_SampledContext() {

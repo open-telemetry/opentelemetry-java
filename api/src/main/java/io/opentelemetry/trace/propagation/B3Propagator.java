@@ -21,6 +21,8 @@ import static io.opentelemetry.internal.Utils.checkNotNull;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -86,11 +88,12 @@ public class B3Propagator implements HttpTextFormat {
     checkNotNull(setter, "setter");
     checkNotNull(carrier, "carrier");
 
-    SpanContext spanContext = TracingContextUtils.getEffectiveSpanContext(context);
-    if (spanContext == null) {
+    Span span = TracingContextUtils.getSpanWithoutDefault(context);
+    if (span == null) {
       return;
     }
 
+    SpanContext spanContext = span.getContext();
     String sampled = spanContext.getTraceFlags().isSampled() ? TRUE_INT : FALSE_INT;
 
     if (singleHeader) {
@@ -122,7 +125,7 @@ public class B3Propagator implements HttpTextFormat {
       spanContext = getSpanContextFromMultipleHeaders(carrier, getter);
     }
 
-    return TracingContextUtils.withSpanContext(spanContext, context);
+    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
   }
 
   @SuppressWarnings("StringSplitter")

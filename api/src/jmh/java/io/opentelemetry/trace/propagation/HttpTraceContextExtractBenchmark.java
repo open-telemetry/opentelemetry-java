@@ -18,7 +18,7 @@ package io.opentelemetry.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
-import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -71,8 +71,8 @@ public class HttpTraceContextExtractBenchmark {
   @Measurement(iterations = 15, time = 1)
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
-  public SpanContext measureExtract() {
-    return TracingContextUtils.getSpanContext(
+  public Span measureExtract() {
+    return TracingContextUtils.getSpan(
         httpTraceContext.extract(Context.current(), carrier, getter));
   }
 

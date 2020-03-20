@@ -18,6 +18,7 @@ package io.opentelemetry.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
+import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -71,7 +72,8 @@ public class HttpTraceContextInjectBenchmark {
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
   public Map<String, String> measureInject() {
-    Context context = TracingContextUtils.withSpanContext(contextToTest, Context.current());
+    Context context =
+        TracingContextUtils.withSpan(DefaultSpan.create(contextToTest), Context.current());
     httpTraceContext.inject(context, carrier, setter);
     return carrier;
   }

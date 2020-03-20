@@ -252,7 +252,7 @@ final class SpanBuilderSdk implements Span.Builder {
       case NO_PARENT:
         return null;
       case CURRENT_CONTEXT:
-        return TracingContextUtils.getEffectiveSpanContext(Context.current());
+        return TracingContextUtils.getCurrentSpan().getContext();
       case EXPLICIT_PARENT:
         return explicitParent.getContext();
       case EXPLICIT_REMOTE_PARENT:

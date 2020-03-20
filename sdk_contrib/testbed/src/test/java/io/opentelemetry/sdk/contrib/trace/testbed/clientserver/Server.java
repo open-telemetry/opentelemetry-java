@@ -52,7 +52,7 @@ final class Server extends Thread {
                     return carrier.get(key);
                   }
                 });
-    SpanContext spanContext = TracingContextUtils.getSpanContext(context);
+    SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
     Span span =
         tracer.spanBuilder("receive").setSpanKind(Kind.SERVER).setParent(spanContext).startSpan();
     span.setAttribute("component", "example-server");

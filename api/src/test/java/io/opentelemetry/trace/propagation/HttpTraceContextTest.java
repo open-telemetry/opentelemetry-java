@@ -17,9 +17,6 @@
 package io.opentelemetry.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.trace.TracingContextUtils.getSpanContext;
-import static io.opentelemetry.trace.TracingContextUtils.withSpan;
-import static io.opentelemetry.trace.TracingContextUtils.withSpanContext;
 import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACE_PARENT;
 import static io.opentelemetry.trace.propagation.HttpTraceContext.TRACE_STATE;
 
@@ -27,12 +24,12 @@ import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -82,6 +79,14 @@ public class HttpTraceContextTest {
       "bar=baz   ,    foo=bar";
   private final HttpTraceContext httpTraceContext = new HttpTraceContext();
   @Rule public ExpectedException thrown = ExpectedException.none();
+
+  private static SpanContext getSpanContext(Context context) {
+    return TracingContextUtils.getSpan(context).getContext();
+  }
+
+  private static Context withSpanContext(SpanContext spanContext, Context context) {
+    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+  }
 
   @Test
   public void inject_Nothing() {
@@ -139,35 +144,6 @@ public class HttpTraceContextTest {
             TRACEPARENT_HEADER_NOT_SAMPLED,
             TRACE_STATE,
             TRACESTATE_NOT_DEFAULT_ENCODING);
-  }
-
-  @Test
-  public void inject_Span() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
-    Span span =
-        DefaultSpan.create(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT));
-    Context context = withSpan(span, Context.current());
-    httpTraceContext.inject(context, carrier, setter);
-    assertThat(carrier)
-        .containsExactly(
-            TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED, TRACE_STATE, TRACESTATE_NOT_DEFAULT_ENCODING);
-  }
-
-  @Test
-  public void inject_Span_SpanContextPresent() {
-    // Span has higher priority than SpanContext.
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
-    Span span =
-        DefaultSpan.create(
-            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_NOT_DEFAULT));
-    SpanContext spanContext =
-        SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT);
-    Context context = withSpanContext(spanContext, withSpan(span, Context.current()));
-    httpTraceContext.inject(context, carrier, setter);
-    assertThat(carrier)
-        .containsExactly(
-            TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED, TRACE_STATE, TRACESTATE_NOT_DEFAULT_ENCODING);
   }
 
   @Test

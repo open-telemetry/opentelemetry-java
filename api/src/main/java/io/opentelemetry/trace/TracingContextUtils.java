@@ -31,9 +31,6 @@ import javax.annotation.concurrent.Immutable;
 public final class TracingContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
       Context.<Span>keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.getInvalid());
-  private static final Context.Key<SpanContext> CONTEXT_SPANCONTEXT_KEY =
-      Context.<SpanContext>keyWithDefault(
-          "opentelemetry-trace-spancontext-key", SpanContext.getInvalid());
 
   /**
    * Returns the {@link Span} from the current {@code Context}, falling back to a default, no-op
@@ -59,18 +56,6 @@ public final class TracingContextUtils {
   }
 
   /**
-   * Creates a new {@code Context} with the given {@link SpanContext} set.
-   *
-   * @param spanContext the value to be set.
-   * @param context the parent {@code Context}.
-   * @return a new context with the given value set.
-   * @since 0.3.0
-   */
-  public static Context withSpanContext(SpanContext spanContext, Context context) {
-    return context.withValue(CONTEXT_SPANCONTEXT_KEY, spanContext);
-  }
-
-  /**
    * Returns the {@link Span} from the specified {@code Context}, falling back to a default, no-op
    * {@link Span}.
    *
@@ -93,50 +78,7 @@ public final class TracingContextUtils {
   @Nullable
   public static Span getSpanWithoutDefault(Context context) {
     Span span = CONTEXT_SPAN_KEY.get(context);
-    return span == DefaultSpan.getInvalid() ? null : span;
-  }
-
-  /**
-   * Returns the {@link SpanContext} from the specified {@code Context}, falling back to a default,
-   * no-op {@link SpanContext}.
-   *
-   * @param context the specified {@code Context}.
-   * @return the {@link SpanContext} from the specified {@code Context}.
-   * @since 0.3.0
-   */
-  public static SpanContext getSpanContext(Context context) {
-    return CONTEXT_SPANCONTEXT_KEY.get(context);
-  }
-
-  /**
-   * Returns the {@link SpanContext} from the specified {@code Context}. If none is found, this
-   * method returns {@code null}.
-   *
-   * @param context the specified {@code Context}.
-   * @return the {@link SpanContext} from the specified {@code Context}.
-   * @since 0.3.0
-   */
-  @Nullable
-  public static SpanContext getSpanContextWithoutDefault(Context context) {
-    SpanContext spanContext = CONTEXT_SPANCONTEXT_KEY.get(context);
-    return spanContext == SpanContext.getInvalid() ? null : spanContext;
-  }
-
-  /**
-   * Returns the effective {@link SpanContext} from the specified {@code Context}.
-   *
-   * <p>This method tries to get any effective non-null {@link SpanContext} in {@code Context},
-   * giving higher priority to {@link Span#getContext()} and then falling back to {@link
-   * SpanContext}. If none is found, this method returns {@code null}.
-   *
-   * @param context the specified {@code Context}.
-   * @return the value from the specified {@code Context}.
-   * @since 0.3.0
-   */
-  @Nullable
-  public static SpanContext getEffectiveSpanContext(Context context) {
-    Span span = getSpanWithoutDefault(context);
-    return span != null ? span.getContext() : getSpanContextWithoutDefault(context);
+    return DefaultSpan.getInvalid().equals(span) ? null : span;
   }
 
   /**
