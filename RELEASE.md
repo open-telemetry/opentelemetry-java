@@ -2,28 +2,27 @@
 
 This repository uses semantic versioning. Please keep this in mind when choosing version numbers.
 
-1. **Alert others you are releasing**
+1. **Crease a version branch to release from.**
 
-   There should be no commits made to master while the release is in progress (about 10 minutes). Before you start
-   a release, alert others on [gitter](https://gitter.im/open-telemetry/opentelemetry-java) so that they don't accidentally
-   merge anything. If they do, and the build fails because of that, you'll have to recreate the release tag described below.
+   A version branch must be used to do the release in order to prevent commit race conditions.
 
-1. **Update CHANGELOG**
+1. **Update CHANGELOG.**
 
    Update CHANGELOG.md with a list changes since the last release. Each entry must include the release number,
-   date and a bulleted list of changes where each change is summarized in a single sentence.
+   date and a bulleted list of changes where each change is summarized in a single sentence, e.g.
+   "- Updated the Jaeger exporter to use the last gRPC version".
 
-1. **Update the version**
+1. **Update the version.**
 
    Update the version to the desired value in `build.gradle`, e.g. `version = "1.2.3"`. Make sure no `SNAPSHOT`
    sufix is appended (that is **only** used during development and when deploying snapshots, as the word implies).
-   Commit, merge to `master`, and update your local `master` branch with this update.
 
-1. **Push a git tag**
+1. **Push a git tag.**
 
-   The tag should be of the format `vN.M.L`, e.g. `git tag v1.2.3; git push origin v1.2.3`.
+   The tag should be of the format `vN.M.L`, e.g. `git tag v1.2.3; git push origin v1.2.3`. It is recommended
+   to have this tag marked in Github along with the CHANGELOG for this version.
 
-1. **Wait for Circle CI**
+1. **Wait for Circle CI.**
 
    This part is controlled by the Bintray plugin. It publishes the artifacts and syncs to Maven Central.
 
