@@ -30,18 +30,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class TracingContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
-      Context.<Span>keyWithDefault("opentelemetry-trace-span-key", DefaultSpan.getInvalid());
-
-  /**
-   * Returns the {@link Span} from the current {@code Context}, falling back to a default, no-op
-   * {@link Span}.
-   *
-   * @return the {@link Span} from the current {@code Context}.
-   * @since 0.3.0
-   */
-  public static Span getCurrentSpan() {
-    return getSpan(Context.current());
-  }
+      Context.<Span>key("opentelemetry-trace-span-key");
 
   /**
    * Creates a new {@code Context} with the given {@link Span} set.
@@ -56,6 +45,17 @@ public final class TracingContextUtils {
   }
 
   /**
+   * Returns the {@link Span} from the current {@code Context}, falling back to a default, no-op
+   * {@link Span}.
+   *
+   * @return the {@link Span} from the current {@code Context}.
+   * @since 0.3.0
+   */
+  public static Span getCurrentSpan() {
+    return getSpan(Context.current());
+  }
+
+  /**
    * Returns the {@link Span} from the specified {@code Context}, falling back to a default, no-op
    * {@link Span}.
    *
@@ -64,7 +64,8 @@ public final class TracingContextUtils {
    * @since 0.3.0
    */
   public static Span getSpan(Context context) {
-    return CONTEXT_SPAN_KEY.get(context);
+    Span span = CONTEXT_SPAN_KEY.get(context);
+    return span == null ? DefaultSpan.getInvalid() : span;
   }
 
   /**
@@ -77,8 +78,7 @@ public final class TracingContextUtils {
    */
   @Nullable
   public static Span getSpanWithoutDefault(Context context) {
-    Span span = CONTEXT_SPAN_KEY.get(context);
-    return DefaultSpan.getInvalid().equals(span) ? null : span;
+    return CONTEXT_SPAN_KEY.get(context);
   }
 
   /**
