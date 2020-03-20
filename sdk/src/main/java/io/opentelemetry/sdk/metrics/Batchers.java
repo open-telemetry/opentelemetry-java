@@ -44,13 +44,44 @@ final class Batchers {
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       AggregatorFactory aggregatorFactory,
       Clock clock) {
-    return new AllLabels(
+    return getAllLabelsBatcher(
         descriptor,
         resource,
         instrumentationLibraryInfo,
         aggregatorFactory,
         clock,
         /* delta= */ false);
+  }
+
+  static Batcher getDeltaAllLabels(
+      Descriptor descriptor,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      AggregatorFactory aggregatorFactory,
+      Clock clock) {
+    return getAllLabelsBatcher(
+        descriptor,
+        resource,
+        instrumentationLibraryInfo,
+        aggregatorFactory,
+        clock,
+        /* delta= */ true);
+  }
+
+  private static Batcher getAllLabelsBatcher(
+      Descriptor descriptor,
+      Resource resource,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      AggregatorFactory aggregatorFactory,
+      Clock clock,
+      boolean delta) {
+    return new AllLabels(
+        descriptor,
+        resource,
+        instrumentationLibraryInfo,
+        aggregatorFactory,
+        clock,
+        /* delta= */ delta);
   }
 
   private static final class Noop implements Batcher {

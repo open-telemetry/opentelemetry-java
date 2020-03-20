@@ -152,7 +152,7 @@ public class DoubleMeasureSdkTest {
                   555.9d,
                   valueAtPercentiles(111.1d, 321.5d)));
 
-      // Repeat to prove we keep previous values.
+      // Repeat to prove we delta vs. the previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(222d);
       doubleMeasure.record(11d);
@@ -164,19 +164,19 @@ public class DoubleMeasureSdkTest {
       assertThat(metricData.getPoints())
           .containsExactly(
               SummaryPoint.create(
-                  startTime,
+                  firstCollect,
                   secondCollect,
                   emptyLabelSet.getLabels(),
-                  3,
-                  44.5d,
-                  valueAtPercentiles(11d, 21.4d)),
+                  1,
+                  11d,
+                  valueAtPercentiles(11d, 11d)),
               SummaryPoint.create(
-                  startTime,
+                  firstCollect,
                   secondCollect,
                   labelSet.getLabels(),
-                  4,
-                  777.9d,
-                  valueAtPercentiles(111.1d, 321.5d)));
+                  1,
+                  222d,
+                  valueAtPercentiles(222d, 222d)));
     } finally {
       boundMeasure.unbind();
     }

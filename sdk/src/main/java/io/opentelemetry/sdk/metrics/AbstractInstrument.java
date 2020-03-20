@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.TemporalQuality;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -182,6 +183,15 @@ abstract class AbstractInstrument implements Instrument {
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       Aggregation defaultAggregation) {
+    if (defaultAggregation.getTemporalQuality() == TemporalQuality.DELTA) {
+      return Batchers.getDeltaAllLabels(
+          getDefaultMetricDescriptor(
+              descriptor, instrumentType, instrumentValueType, defaultAggregation),
+          meterProviderSharedState.getResource(),
+          meterSharedState.getInstrumentationLibraryInfo(),
+          defaultAggregation.getAggregatorFactory(instrumentValueType),
+          meterProviderSharedState.getClock());
+    }
     return Batchers.getCumulativeAllLabels(
         getDefaultMetricDescriptor(
             descriptor, instrumentType, instrumentValueType, defaultAggregation),

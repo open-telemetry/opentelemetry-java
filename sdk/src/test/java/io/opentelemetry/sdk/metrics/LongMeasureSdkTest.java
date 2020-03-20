@@ -154,7 +154,7 @@ public class LongMeasureSdkTest {
                   555,
                   valueAtPercentiles(111, 321)));
 
-      // Repeat to prove we keep previous values.
+      // Repeat to prove we delta vs. the previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(222);
       longMeasure.record(11);
@@ -167,19 +167,19 @@ public class LongMeasureSdkTest {
       assertThat(metricData.getPoints())
           .containsExactly(
               SummaryPoint.create(
-                  startTime,
+                  firstCollect,
                   secondCollect,
                   emptyLabelSet.getLabels(),
-                  3,
-                  44,
-                  valueAtPercentiles(11, 21)),
+                  1,
+                  11,
+                  valueAtPercentiles(11, 11)),
               SummaryPoint.create(
-                  startTime,
+                  firstCollect,
                   secondCollect,
                   labelSet.getLabels(),
-                  4,
-                  777,
-                  valueAtPercentiles(111, 321)));
+                  1,
+                  222,
+                  valueAtPercentiles(222, 222)));
     } finally {
       boundMeasure.unbind();
     }
