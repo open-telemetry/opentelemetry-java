@@ -176,20 +176,18 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   private static boolean isRemovedValue(AttributeValue value) {
-    boolean remove = true;
-    if (value != null) {
-      switch (value.getType()) {
-        case STRING:
-          remove = value.getStringValue() == null;
-          break;
-        case BOOLEAN:
-        case LONG:
-        case DOUBLE:
-          remove = false;
-          break;
-      }
+    if (value == null) {
+      return true;
     }
-    return remove;
+    switch (value.getType()) {
+      case STRING:
+        return value.getStringValue() == null;
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return false;
+    }
+    return false;
   }
 
   @Override
