@@ -36,7 +36,7 @@ public class ServiceResourceFactoryTest {
     String appName = "junit";
     ServiceResourceFactory factory = new ServiceResourceFactory(appName, null, null);
     Resource resource = factory.getObject();
-    assertThat(resource.getLabels().get(ResourceConstants.SERVICE_NAME).getStringValue())
+    assertThat(resource.getAttributes().get(ResourceConstants.SERVICE_NAME).getStringValue())
         .isEqualTo(appName);
   }
 
@@ -45,7 +45,7 @@ public class ServiceResourceFactoryTest {
     String appName = null;
     ServiceResourceFactory factory = new ServiceResourceFactory(appName, null, null);
     Resource resource = factory.getObject();
-    assertThat(resource.getLabels().isEmpty()).isTrue();
+    assertThat(resource.getAttributes().isEmpty()).isTrue();
   }
 
   @Test
@@ -61,11 +61,11 @@ public class ServiceResourceFactoryTest {
     BuildProperties buildProperties = new BuildProperties(properties);
     ServiceResourceFactory factory = new ServiceResourceFactory(appName, buildProperties, null);
     Resource resource = factory.getObject();
-    assertThat(resource.getLabels().get(ResourceConstants.SERVICE_NAME).getStringValue())
+    assertThat(resource.getAttributes().get(ResourceConstants.SERVICE_NAME).getStringValue())
         .isEqualTo(artifact);
-    assertThat(resource.getLabels().get(ResourceConstants.SERVICE_NAMESPACE).getStringValue())
+    assertThat(resource.getAttributes().get(ResourceConstants.SERVICE_NAMESPACE).getStringValue())
         .isEqualTo(group);
-    assertThat(resource.getLabels().get(ResourceConstants.SERVICE_VERSION).getStringValue())
+    assertThat(resource.getAttributes().get(ResourceConstants.SERVICE_VERSION).getStringValue())
         .isEqualTo("semver:" + version);
   }
 
@@ -87,11 +87,11 @@ public class ServiceResourceFactoryTest {
     ServiceResourceFactory factory =
         new ServiceResourceFactory(appName, buildProperties, gitProperties);
     Resource resource = factory.getObject();
-    assertThat(resource.getLabels().get(ResourceConstants.SERVICE_NAME).getStringValue())
+    assertThat(resource.getAttributes().get(ResourceConstants.SERVICE_NAME).getStringValue())
         .isEqualTo(artifact);
-    assertThat(resource.getLabels().get(ResourceConstants.SERVICE_NAMESPACE).getStringValue())
+    assertThat(resource.getAttributes().get(ResourceConstants.SERVICE_NAMESPACE).getStringValue())
         .isEqualTo(group);
-    assertThat(resource.getLabels().get(ResourceConstants.SERVICE_VERSION).getStringValue())
+    assertThat(resource.getAttributes().get(ResourceConstants.SERVICE_VERSION).getStringValue())
         .isEqualTo("git:" + gitHash);
   }
 }

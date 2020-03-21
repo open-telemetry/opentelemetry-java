@@ -16,8 +16,8 @@
 
 package io.opentelemetry.contrib.spring.boot;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.Sampler;
-import io.opentelemetry.trace.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;

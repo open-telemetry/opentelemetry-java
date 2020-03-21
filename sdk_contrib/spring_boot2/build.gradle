@@ -22,7 +22,7 @@ dependencies {
     implementation project(':opentelemetry-sdk')
     implementation project(':opentelemetry-exporters-logging')
     implementation project(':opentelemetry-exporters-inmemory')
-    implementation project(':opentelemetry-exporters-otprotocol')
+    implementation project(':opentelemetry-exporters-otlp')
     implementation project(':opentelemetry-exporters-jaeger')
     implementation libraries.guava
 

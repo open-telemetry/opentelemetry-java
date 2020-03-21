@@ -18,9 +18,9 @@ package io.opentelemetry.contrib.spring.boot;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;

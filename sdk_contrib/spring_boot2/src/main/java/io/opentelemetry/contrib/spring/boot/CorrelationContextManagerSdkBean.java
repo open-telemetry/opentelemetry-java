@@ -62,7 +62,7 @@ public class CorrelationContextManagerSdkBean
   private CorrelationContextManager initializeCorrelationContextManager() {
     CorrelationContextManagerSdk manager = new CorrelationContextManagerSdk();
     if (properties.isEnabled()) {
-      manager.getHttpTextFormat();
+      manager.contextBuilder();
     }
     return manager;
   }
