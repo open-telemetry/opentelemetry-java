@@ -22,7 +22,9 @@ import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with string values. */
 @Immutable
-public class StringAttributeSetter extends AbstractAttributeSetter<String> {
+public class StringAttributeSetter {
+
+  private final String attributeKey;
 
   /**
    * Constructs an attribute object.
@@ -30,10 +32,25 @@ public class StringAttributeSetter extends AbstractAttributeSetter<String> {
    * @param attributeKey the attribute name/key
    */
   public StringAttributeSetter(String attributeKey) {
-    super(attributeKey);
+    super();
+    this.attributeKey = attributeKey;
   }
 
-  @Override
+  /**
+   * Returns the attribute name.
+   *
+   * @return the attribute map key
+   */
+  public String key() {
+    return attributeKey;
+  }
+
+  /**
+   * Sets the attribute on the provided span.
+   *
+   * @param span the span to add the attribute to
+   * @param value the value for this attribute
+   */
   public void set(Span span, @Nullable String value) {
     span.setAttribute(key(), value);
   }

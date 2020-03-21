@@ -17,12 +17,13 @@
 package io.opentelemetry.trace.attributes;
 
 import io.opentelemetry.trace.Span;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with long values. */
 @Immutable
-public class LongAttributeSetter extends AbstractAttributeSetter<Long> {
+public class LongAttributeSetter {
+
+  private final String attributeKey;
 
   /**
    * Constructs an attribute object.
@@ -30,15 +31,61 @@ public class LongAttributeSetter extends AbstractAttributeSetter<Long> {
    * @param attributeKey the attribute name/key
    */
   public LongAttributeSetter(String attributeKey) {
-    super(attributeKey);
+    super();
+    this.attributeKey = attributeKey;
   }
 
-  @Override
-  public void set(Span span, @Nullable Long value) {
+  /**
+   * Returns the attribute name.
+   *
+   * @return the attribute map key
+   */
+  public String key() {
+    return attributeKey;
+  }
+
+  /**
+   * Sets the attribute on the provided span.
+   *
+   * @param span the span to add the attribute to
+   * @param value the value for this attribute
+   */
+  public void set(Span span, long value) {
+    span.setAttribute(key(), value);
+  }
+
+  /**
+   * Sets the attribute on the provided span if provided a parsable long integer else does nothing.
+   *
+   * @param span the span to add the attribute to
+   * @param value the value for this attribute
+   */
+  public void trySetParsed(Span span, String value) {
     if (value != null) {
-      span.setAttribute(key(), value);
+      try {
+        span.setAttribute(key(), Long.parseLong(value));
+      } catch (NumberFormatException ignore) {
+        // NoOp
+      }
+    }
+  }
+
+  /**
+   * Sets the attribute on the provided span to either a long if provided string is parsable or else
+   * the raw string.
+   *
+   * @param span the span to add the attribute to
+   * @param value the value for this attribute
+   */
+  public void setParsedOrRaw(Span span, String value) {
+    if (value != null) {
+      try {
+        span.setAttribute(key(), Long.parseLong(value));
+      } catch (NumberFormatException ignore) {
+        span.setAttribute(key(), value);
+      }
     } else {
-      span.setAttribute(key(), (String) null);
+      span.setAttribute(key(), value);
     }
   }
 }
