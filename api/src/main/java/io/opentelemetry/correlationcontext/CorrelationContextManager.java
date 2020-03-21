@@ -17,7 +17,6 @@
 package io.opentelemetry.correlationcontext;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -63,53 +62,4 @@ public interface CorrelationContextManager {
    * @since 0.1.0
    */
   Scope withContext(CorrelationContext distContext);
-
-  /**
-   * Returns the {@link HttpTextFormat} for this implementation.
-   *
-   * <p>Usually this will be the W3C Correlation Context as the HTTP text format. For more details,
-   * see <a href="https://github.com/w3c/correlation-context">correlation-context</a>.
-   *
-   * <p>Example of usage on the client:
-   *
-   * <pre>{@code
-   * private static final CorrelationContextManager contextManager =
-   *     OpenTelemetry.getCorrelationContextManager();
-   * private static final HttpTextFormat textFormat = contextManager.getHttpTextFormat();
-   *
-   * private static final HttpTextFormat.Setter setter =
-   *     new HttpTextFormat.Setter<HttpURLConnection>() {
-   *       public void put(HttpURLConnection carrier, String key, String value) {
-   *         carrier.setRequestProperty(field, value);
-   *       }
-   *     };
-   *
-   * void makeHttpRequest() {
-   *   HttpURLConnection connection =
-   *       (HttpURLConnection) new URL("http://myserver").openConnection();
-   *   textFormat.inject(contextManager.getCurrentContext(), connection, httpURLConnectionSetter);
-   *   // Send the request, wait for response and maybe set the status if not ok.
-   * }
-   * }</pre>
-   *
-   * <p>Example of usage on the server:
-   *
-   * <pre>{@code
-   * private static final CorrelationContextManager contextManager =
-   *     OpenTelemetry.getCorrelationContextManager();
-   * private static final HttpTextFormat textFormat = contextManager.getHttpTextFormat();
-   * private static final HttpTextFormat.Getter<HttpRequest> getter = ...;
-   *
-   * void onRequestReceived(HttpRequest request) {
-   *   CorrelationContext distContext = textFormat.extract(request, getter);
-   *   try (Scope s = contextManager.withContext(distContext)) {
-   *     // Handle request and send response back.
-   *   }
-   * }
-   * }</pre>
-   *
-   * @return the {@code HttpTextFormat} for this implementation.
-   * @since 0.1.0
-   */
-  HttpTextFormat<CorrelationContext> getHttpTextFormat();
 }

@@ -19,6 +19,7 @@ package io.opentelemetry.exporters.inmemory;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -84,7 +85,7 @@ public final class InMemorySpanExporter implements SpanExporter {
   }
 
   @Override
-  public ResultCode export(List<SpanData> spans) {
+  public ResultCode export(Collection<SpanData> spans) {
     synchronized (this) {
       if (isStopped) {
         return ResultCode.FAILED_NOT_RETRYABLE;

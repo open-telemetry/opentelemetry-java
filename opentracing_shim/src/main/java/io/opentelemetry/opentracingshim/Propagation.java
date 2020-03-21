@@ -16,7 +16,11 @@
 
 package io.opentelemetry.opentracingshim;
 
+import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
+import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.TracingContextUtils;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 import java.util.HashMap;
@@ -29,12 +33,14 @@ final class Propagation extends BaseShimObject {
   }
 
   public void injectTextFormat(SpanContextShim contextShim, TextMapInject carrier) {
-    tracer()
-        .getHttpTextFormat()
-        .inject(contextShim.getSpanContext(), carrier, TextMapSetter.INSTANCE);
-    contextManager()
-        .getHttpTextFormat()
-        .inject(contextShim.getCorrelationContext(), carrier, TextMapSetter.INSTANCE);
+    Context context =
+        TracingContextUtils.withSpan(
+            DefaultSpan.create(contextShim.getSpanContext()), Context.current());
+    context =
+        CorrelationsContextUtils.withCorrelationContext(
+            contextShim.getCorrelationContext(), context);
+
+    propagators().getHttpTextFormat().inject(context, carrier, TextMapSetter.INSTANCE);
   }
 
   @Nullable
@@ -44,14 +50,18 @@ final class Propagation extends BaseShimObject {
       carrierMap.put(entry.getKey(), entry.getValue());
     }
 
-    io.opentelemetry.trace.SpanContext context =
-        tracer().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
-    io.opentelemetry.correlationcontext.CorrelationContext distContext =
-        contextManager().getHttpTextFormat().extract(carrierMap, TextMapGetter.INSTANCE);
-    if (!context.isValid()) {
+    Context context =
+        propagators()
+            .getHttpTextFormat()
+            .extract(Context.current(), carrierMap, TextMapGetter.INSTANCE);
+
+    io.opentelemetry.trace.Span span = TracingContextUtils.getSpan(context);
+    if (!span.getContext().isValid()) {
       return null;
     }
-    return new SpanContextShim(telemetryInfo, context, distContext);
+
+    return new SpanContextShim(
+        telemetryInfo, span.getContext(), CorrelationsContextUtils.getCorrelationContext(context));
   }
 
   static final class TextMapSetter implements HttpTextFormat.Setter<TextMapInject> {
