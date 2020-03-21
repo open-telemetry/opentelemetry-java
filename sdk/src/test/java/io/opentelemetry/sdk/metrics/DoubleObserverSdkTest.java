@@ -16,12 +16,19 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.DoubleObserver.ResultDoubleObserver;
 import io.opentelemetry.metrics.Observer.Callback;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
+import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
+import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
+import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,6 +41,7 @@ import org.junit.runners.JUnit4;
 public class DoubleObserverSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+  private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
           Collections.singletonMap(
@@ -47,10 +55,102 @@ public class DoubleObserverSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
+  public void collectMetrics_NoCallback() {
+    DoubleObserverSdk doubleObserver =
+        testSdk
+            .doubleObserverBuilder("testObserver")
+            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own measure")
+            .setUnit("ms")
+            .build();
+    assertThat(doubleObserver.collectAll()).isEmpty();
+  }
+
+  @Test
+  public void collectMetrics_NoRecords() {
+    DoubleObserverSdk doubleObserver =
+        testSdk
+            .doubleObserverBuilder("testObserver")
+            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setLabelKeys(Collections.singletonList("sk1"))
+            .setDescription("My very own measure")
+            .setUnit("ms")
+            .build();
+    doubleObserver.setCallback(
+        new Callback<ResultDoubleObserver>() {
+          @Override
+          public void update(ResultDoubleObserver result) {
+            // Do nothing.
+          }
+        });
+    assertThat(doubleObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testObserver",
+                    "My very own measure",
+                    "ms",
+                    Type.NON_MONOTONIC_DOUBLE,
+                    Collections.singletonMap("sk1", "sv1")),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>emptyList()));
+  }
+
+  @Test
+  public void collectMetrics_WithOneRecord() {
+    DoubleObserverSdk doubleObserver =
+        testSdk.doubleObserverBuilder("testObserver").setMonotonic(true).build();
+    doubleObserver.setCallback(
+        new Callback<ResultDoubleObserver>() {
+          @Override
+          public void update(ResultDoubleObserver result) {
+            result.observe(12.1d, "k", "v");
+          }
+        });
+    testClock.advanceNanos(SECOND_NANOS);
+    assertThat(doubleObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testObserver",
+                    "",
+                    "1",
+                    Type.MONOTONIC_DOUBLE,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    DoublePoint.create(
+                        testClock.now() - SECOND_NANOS,
+                        testClock.now(),
+                        Collections.singletonMap("k", "v"),
+                        12.1d))));
+    testClock.advanceNanos(SECOND_NANOS);
+    assertThat(doubleObserver.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testObserver",
+                    "",
+                    "1",
+                    Type.MONOTONIC_DOUBLE,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    DoublePoint.create(
+                        testClock.now() - 2 * SECOND_NANOS,
+                        testClock.now(),
+                        Collections.singletonMap("k", "v"),
+                        12.1d))));
+  }
+
+  @Test
   public void observeMonotonic_NegativeValue() {
     DoubleObserverSdk doubleObserver =
-        (DoubleObserverSdk)
-            testSdk.doubleObserverBuilder("testObserver").setMonotonic(true).build();
+        testSdk.doubleObserverBuilder("testObserver").setMonotonic(true).build();
 
     doubleObserver.setCallback(
         new Callback<ResultDoubleObserver>() {
@@ -58,7 +158,7 @@ public class DoubleObserverSdkTest {
           public void update(ResultDoubleObserver result) {
             thrown.expect(IllegalArgumentException.class);
             thrown.expectMessage("monotonic observers can only record positive values");
-            result.observe(-45.0, testSdk.createLabelSet());
+            result.observe(-45.0);
           }
         });
     doubleObserver.collectAll();

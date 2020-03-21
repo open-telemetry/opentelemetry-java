@@ -77,8 +77,8 @@ abstract class AbstractCounter<B extends AbstractBoundInstrument>
     return result;
   }
 
-  abstract static class Builder<B extends Counter.Builder<B, V>, V>
-      extends AbstractInstrument.Builder<B, V> implements Counter.Builder<B, V> {
+  abstract static class Builder<B extends AbstractCounter.Builder<B>>
+      extends AbstractInstrument.Builder<B> implements Counter.Builder {
     private boolean monotonic = true;
 
     Builder(

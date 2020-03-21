@@ -16,7 +16,6 @@
 
 package io.opentelemetry.exporters.jaeger;
 
-import static io.opentelemetry.exporters.otprotocol.TraceProtoUtils.toProtoTraceId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalAnswers.delegatesTo;
@@ -32,9 +31,8 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
-import io.opentelemetry.exporters.otprotocol.TraceProtoUtils;
+import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -44,9 +42,13 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 
+/** Unit tests for {@link JaegerGrpcSpanExporter}. */
+@RunWith(JUnit4.class)
 public class JaegerGrpcSpanExporterTest {
   private static final String TRACE_ID = "00000000000000000000000000abc123";
   private static final String SPAN_ID = "0000000000def456";
@@ -87,10 +89,9 @@ public class JaegerGrpcSpanExporterTest {
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
             .setStatus(Status.OK)
             .setKind(Kind.CONSUMER)
-            .setLinks(Collections.<Link>emptyList())
+            .setLinks(Collections.<SpanData.Link>emptyList())
             .setTotalRecordedLinks(0)
             .setTotalRecordedEvents(0)
-            .setNumberOfChildren(0)
             .build();
 
     // test
@@ -108,7 +109,8 @@ public class JaegerGrpcSpanExporterTest {
     assertEquals(1, batch.getSpansCount());
     assertEquals("GET /api/endpoint", batch.getSpans(0).getOperationName());
     assertEquals(
-        toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)), batch.getSpans(0).getTraceId());
+        TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)),
+        batch.getSpans(0).getTraceId());
     assertEquals(
         TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(SPAN_ID, 0)),
         batch.getSpans(0).getSpanId());

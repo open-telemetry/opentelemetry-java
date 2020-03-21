@@ -69,7 +69,7 @@ public interface SpanProcessor {
   /**
    * Processes all span events that have not yet been processed.
    *
-   * <p>This method is called synchronously on the execution thread, and should not throw
+   * <p>This method is executed synchronously on the calling thread, and should not throw
    * exceptions.
    */
   void forceFlush();

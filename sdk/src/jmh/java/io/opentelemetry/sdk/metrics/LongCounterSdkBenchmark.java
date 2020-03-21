@@ -55,8 +55,7 @@ public class LongCounterSdkBenchmark {
       new MeterSdk(METER_PROVIDER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
   private static final LongCounter longCounter =
       meter.longCounterBuilder("benchmark_long_counter").build();
-  private static final BoundLongCounter boundLongCounter =
-      longCounter.bind(meter.createLabelSet(KEY, VALUE));
+  private static final BoundLongCounter boundLongCounter = longCounter.bind(KEY, VALUE);
 
   @State(Scope.Thread)
   public static class ThreadState {
@@ -64,7 +63,7 @@ public class LongCounterSdkBenchmark {
     @Setup(Level.Trial)
     public void doSetup() {
       threadKey = KEY + "_" + Thread.currentThread().getId();
-      boundLongCounter = longCounter.bind(meter.createLabelSet(threadKey, VALUE));
+      boundLongCounter = longCounter.bind(threadKey, VALUE);
     }
 
     @TearDown(Level.Trial)
@@ -79,19 +78,19 @@ public class LongCounterSdkBenchmark {
   @Benchmark
   @Threads(value = 1)
   public void add_1Threads() {
-    longCounter.add(100, meter.createLabelSet(KEY, VALUE));
+    longCounter.add(100, KEY, VALUE);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void add_8Threads_SameLabelSet() {
-    longCounter.add(100, meter.createLabelSet(KEY, VALUE));
+    longCounter.add(100, KEY, VALUE);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void add_8Threads_DifferentLabelSet(ThreadState state) {
-    longCounter.add(100, meter.createLabelSet(state.threadKey, VALUE));
+    longCounter.add(100, state.threadKey, VALUE);
   }
 
   @Benchmark

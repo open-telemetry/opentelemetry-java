@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.internal.StringUtils;
+import io.grpc.Context;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -25,8 +26,6 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.AttributeValue;
-import io.opentelemetry.trace.AttributeValue.Type;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -36,7 +35,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.unsafe.ContextUtils;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -64,7 +63,7 @@ final class SpanBuilderSdk implements Span.Builder {
   private final AttributesWithCapacity attributes;
   private List<Link> links;
   private int totalNumberOfLinksAdded = 0;
-  private ParentType parentType = ParentType.CURRENT_SPAN;
+  private ParentType parentType = ParentType.CURRENT_CONTEXT;
   private long startEpochNanos = 0;
 
   SpanBuilderSdk(
@@ -169,12 +168,27 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
-    Utils.checkNotNull(value, "value");
-    if (value.getType() == Type.STRING && StringUtils.isNullOrEmpty(value.getStringValue())) {
-      return this;
+    if (isRemovedValue(value)) {
+      attributes.remove(key);
+    } else {
+      attributes.putAttribute(key, value);
     }
-    attributes.putAttribute(key, value);
     return this;
+  }
+
+  private static boolean isRemovedValue(AttributeValue value) {
+    if (value == null) {
+      return true;
+    }
+    switch (value.getType()) {
+      case STRING:
+        return value.getStringValue() == null;
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return false;
+    }
+    return false;
   }
 
   @Override
@@ -238,7 +252,6 @@ final class SpanBuilderSdk implements Span.Builder {
   private static Clock getClock(Span parent, Clock clock) {
     if (parent instanceof RecordEventsReadableSpan) {
       RecordEventsReadableSpan parentRecordEventsSpan = (RecordEventsReadableSpan) parent;
-      parentRecordEventsSpan.addChild();
       return parentRecordEventsSpan.getClock();
     } else {
       return MonotonicClock.create(clock);
@@ -248,12 +261,11 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static SpanContext parent(
       ParentType parentType, Span explicitParent, SpanContext remoteParent) {
-    Span currentSpan = ContextUtils.getValue();
     switch (parentType) {
       case NO_PARENT:
         return null;
-      case CURRENT_SPAN:
-        return currentSpan != null ? currentSpan.getContext() : null;
+      case CURRENT_CONTEXT:
+        return TracingContextUtils.getCurrentSpan().getContext();
       case EXPLICIT_PARENT:
         return explicitParent.getContext();
       case EXPLICIT_REMOTE_PARENT:
@@ -265,8 +277,8 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
-      case CURRENT_SPAN:
-        return ContextUtils.getValue();
+      case CURRENT_CONTEXT:
+        return TracingContextUtils.getSpanWithoutDefault(Context.current());
       case EXPLICIT_PARENT:
         return explicitParent;
       default:
@@ -275,7 +287,7 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   private enum ParentType {
-    CURRENT_SPAN,
+    CURRENT_CONTEXT,
     EXPLICIT_PARENT,
     EXPLICIT_REMOTE_PARENT,
     NO_PARENT,

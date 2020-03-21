@@ -55,8 +55,7 @@ public class DoubleCounterSdkBenchmark {
       new MeterSdk(METER_PROVIDER_SHARED_STATE, INSTRUMENTATION_LIBRARY_INFO);
   private static final DoubleCounter doubleCounter =
       meter.doubleCounterBuilder("benchmark_double_counter").build();
-  private static final BoundDoubleCounter boundDoubleCounter =
-      doubleCounter.bind(meter.createLabelSet(KEY, VALUE));
+  private static final BoundDoubleCounter boundDoubleCounter = doubleCounter.bind(KEY, VALUE);
 
   @State(Scope.Thread)
   public static class ThreadState {
@@ -64,7 +63,7 @@ public class DoubleCounterSdkBenchmark {
     @Setup(Level.Trial)
     public void doSetup() {
       threadKey = KEY + "_" + Thread.currentThread().getId();
-      boundDoubleCounter = doubleCounter.bind(meter.createLabelSet(threadKey, VALUE));
+      boundDoubleCounter = doubleCounter.bind(threadKey, VALUE);
     }
 
     @TearDown(Level.Trial)
@@ -79,19 +78,19 @@ public class DoubleCounterSdkBenchmark {
   @Benchmark
   @Threads(value = 1)
   public void add_1Threads() {
-    doubleCounter.add(100.1d, meter.createLabelSet(KEY, VALUE));
+    doubleCounter.add(100.1d, KEY, VALUE);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void add_8Threads_SameLabelSet() {
-    doubleCounter.add(100.1d, meter.createLabelSet(KEY, VALUE));
+    doubleCounter.add(100.1d, KEY, VALUE);
   }
 
   @Benchmark
   @Threads(value = 8)
   public void add_8Threads_DifferentLabelSet(ThreadState state) {
-    doubleCounter.add(100.1d, meter.createLabelSet(state.threadKey, VALUE));
+    doubleCounter.add(100.1d, state.threadKey, VALUE);
   }
 
   @Benchmark

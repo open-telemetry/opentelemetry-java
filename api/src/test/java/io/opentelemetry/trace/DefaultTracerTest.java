@@ -18,8 +18,9 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.grpc.Context;
+import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -74,11 +75,6 @@ public class DefaultTracerTest {
   }
 
   @Test
-  public void defaultHttpTextFormat() {
-    assertThat(defaultTracer.getHttpTextFormat()).isInstanceOf(HttpTraceContext.class);
-  }
-
-  @Test
   public void testInProcessContext() {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
     Scope scope = defaultTracer.withSpan(span);
@@ -116,6 +112,19 @@ public class DefaultTracerTest {
   public void testSpanContextPropagationCurrentSpan() {
     DefaultSpan parent = new DefaultSpan(spanContext);
     Scope scope = defaultTracer.withSpan(parent);
+    try {
+      Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
+      assertThat(span.getContext()).isSameInstanceAs(spanContext);
+    } finally {
+      scope.close();
+    }
+  }
+
+  @Test
+  public void testSpanContextPropagationCurrentSpanContext() {
+    Context context =
+        TracingContextUtils.withSpan(DefaultSpan.create(spanContext), Context.current());
+    Scope scope = ContextUtils.withScopedContext(context);
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);

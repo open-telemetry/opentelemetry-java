@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.sdk.metrics.LongMeasureSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
@@ -33,16 +32,19 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
   }
 
   @Override
-  public void record(long value, LabelSet labelSet) {
+  public void record(long value, String... labelKeyValuePairs) {
+    record(value, LabelSetSdk.create(labelKeyValuePairs));
+  }
+
+  void record(long value, LabelSetSdk labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
     boundInstrument.record(value);
     boundInstrument.unbind();
   }
 
   @Override
-  public BoundInstrument bind(LabelSet labelSet) {
-
-    return bindInternal(labelSet);
+  public BoundInstrument bind(String... labelKeyValuePairs) {
+    return bind(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override
@@ -69,7 +71,7 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     }
   }
 
-  static final class Builder extends AbstractMeasure.Builder<LongMeasure.Builder, LongMeasure>
+  static final class Builder extends AbstractMeasure.Builder<LongMeasureSdk.Builder>
       implements LongMeasure.Builder {
 
     Builder(

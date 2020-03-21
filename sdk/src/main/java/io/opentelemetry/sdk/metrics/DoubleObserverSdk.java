@@ -18,16 +18,17 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DoubleObserver;
-import io.opentelemetry.metrics.LabelSet;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
 final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver {
   @Nullable private volatile Callback<ResultDoubleObserver> metricUpdater = null;
+  private final ReentrantLock collectLock = new ReentrantLock();
 
   DoubleObserverSdk(
       InstrumentDescriptor descriptor,
@@ -36,7 +37,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
       boolean monotonic) {
     super(
         descriptor,
-        InstrumentValueType.LONG,
+        InstrumentValueType.DOUBLE,
         meterProviderSharedState,
         meterSharedState,
         monotonic);
@@ -48,9 +49,14 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     if (currentMetricUpdater == null) {
       return Collections.emptyList();
     }
-    final ActiveBatcher activeBatcher = getActiveBatcher();
-    currentMetricUpdater.update(new ResultDoubleObserverSdk(activeBatcher, isMonotonic()));
-    return activeBatcher.completeCollectionCycle();
+    collectLock.lock();
+    try {
+      final ActiveBatcher activeBatcher = getActiveBatcher();
+      currentMetricUpdater.update(new ResultDoubleObserverSdk(activeBatcher, isMonotonic()));
+      return activeBatcher.completeCollectionCycle();
+    } finally {
+      collectLock.unlock();
+    }
   }
 
   @Override
@@ -58,8 +64,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     this.metricUpdater = Utils.checkNotNull(metricUpdater, "metricUpdater");
   }
 
-  static final class Builder
-      extends AbstractObserver.Builder<DoubleObserver.Builder, DoubleObserver>
+  static final class Builder extends AbstractObserver.Builder<DoubleObserverSdk.Builder>
       implements DoubleObserver.Builder {
 
     Builder(
@@ -96,13 +101,14 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     }
 
     @Override
-    public void observe(double value, LabelSet labelSet) {
+    public void observe(double value, String... keyValueLabelPairs) {
       if (monotonic && value < 0) {
         throw new IllegalArgumentException("monotonic observers can only record positive values");
       }
       Aggregator aggregator = activeBatcher.getAggregator();
       aggregator.recordDouble(value);
-      activeBatcher.batch(labelSet, aggregator, /* mappedAggregator= */ false);
+      activeBatcher.batch(
+          LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
     }
   }
 }

@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.correlationcontext.unsafe.ContextUtils;
 import java.util.Arrays;
 import java.util.Collection;
 import javax.annotation.Nullable;
@@ -68,7 +67,8 @@ public final class DefaultCorrelationContextManagerTest {
 
   @Test
   public void getCurrentContext_ContextSetToNull() {
-    Context orig = ContextUtils.withValue(null).attach();
+    Context orig =
+        CorrelationsContextUtils.withCorrelationContext(null, Context.current()).attach();
     try {
       CorrelationContext distContext = defaultCorrelationContextManager.getCurrentContext();
       assertThat(distContext).isNotNull();

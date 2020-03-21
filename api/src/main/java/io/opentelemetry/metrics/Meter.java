@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -117,34 +116,12 @@ public interface Meter {
 
   /**
    * Utility method that allows users to atomically record measurements to a set of Measures with a
-   * common LabelSet.
+   * common set of labels.
    *
-   * @param labelSet The labels to associate with this recorder and all it's recordings.
+   * @param keyValuePairs The set of labels to associate with this recorder and all it's recordings.
    * @return a {@code MeasureBatchRecorder} that can be use to atomically record a set of
    *     measurements associated with different Measures.
    * @since 0.1.0
    */
-  BatchRecorder newBatchRecorder(LabelSet labelSet);
-
-  /**
-   * Returns a new {@link LabelSet} with the given labels.
-   *
-   * <p>The arguments must are in key, value pairs, so an even number of arguments are required.
-   *
-   * <p>If no arguments are provided, the resulting LabelSet will be the empty one.
-   *
-   * @param keyValuePairs pairs of keys and values for the labels.
-   * @return a new {@link LabelSet} with the given labels.
-   * @throws IllegalArgumentException if there aren't an even number of arguments.
-   */
-  LabelSet createLabelSet(String... keyValuePairs);
-
-  /**
-   * Returns a new {@link LabelSet} with labels built from the keys and values in the provided Map.
-   *
-   * @param labels The key-value pairs to turn into labels.
-   * @return a new {@link LabelSet} with the given labels.
-   * @throws NullPointerException if the map is null.
-   */
-  LabelSet createLabelSet(Map<String, String> labels);
+  BatchRecorder newBatchRecorder(String... keyValuePairs);
 }

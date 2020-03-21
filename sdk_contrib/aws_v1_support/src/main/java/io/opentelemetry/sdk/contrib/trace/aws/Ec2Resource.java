@@ -20,9 +20,9 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.amazonaws.util.EC2MetadataUtils;
 import com.amazonaws.util.EC2MetadataUtils.InstanceInfo;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
-import io.opentelemetry.trace.AttributeValue;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;

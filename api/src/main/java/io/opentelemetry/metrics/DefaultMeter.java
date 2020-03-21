@@ -91,28 +91,9 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public BatchRecorder newBatchRecorder(LabelSet labelSet) {
-    Utils.checkNotNull(labelSet, "labelSet");
+  public BatchRecorder newBatchRecorder(String... keyValuePairs) {
+    Utils.validateLabelPairs(keyValuePairs);
     return new NoopBatchRecorder();
-  }
-
-  @Override
-  public LabelSet createLabelSet(String... keyValuePairs) {
-    Utils.checkArgument(
-        keyValuePairs.length % 2 == 0,
-        "You must provide an even number of key/value pair arguments.");
-    for (int i = 0; i < keyValuePairs.length; i += 2) {
-      String key = keyValuePairs[i];
-      Utils.checkNotNull(key, "You cannot provide null keys for LabelSet creation.");
-    }
-    return NoopLabelSet.INSTANCE;
-  }
-
-  @Override
-  public LabelSet createLabelSet(Map<String, String> labels) {
-    Utils.checkNotNull(labels, "labels");
-    Utils.checkMapKeysNotNull(labels, "Null map keys are not allowed for LabelSet creation");
-    return NoopLabelSet.INSTANCE;
   }
 
   private DefaultMeter() {}
@@ -125,11 +106,13 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleCounter() {}
 
     @Override
-    public void add(double delta, LabelSet labelSet) {}
+    public void add(double delta, String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
+    }
 
     @Override
-    public NoopBoundDoubleCounter bind(LabelSet labelSet) {
-      Utils.checkNotNull(labelSet, "labelSet");
+    public NoopBoundDoubleCounter bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundDoubleCounter.INSTANCE;
     }
 
@@ -145,11 +128,11 @@ public final class DefaultMeter implements Meter {
       public void unbind() {}
     }
 
-    private static final class NoopBuilder
-        extends NoopAbstractCounterBuilder<Builder, DoubleCounter> implements Builder {
+    private static final class NoopBuilder extends NoopAbstractCounterBuilder<NoopBuilder>
+        implements Builder {
 
       @Override
-      protected Builder getThis() {
+      protected NoopBuilder getThis() {
         return this;
       }
 
@@ -168,11 +151,11 @@ public final class DefaultMeter implements Meter {
     private NoopLongCounter() {}
 
     @Override
-    public void add(long delta, LabelSet labelSet) {}
+    public void add(long delta, String... labelKeyValuePairs) {}
 
     @Override
-    public NoopBoundLongCounter bind(LabelSet labelSet) {
-      Utils.checkNotNull(labelSet, "labelSet");
+    public NoopBoundLongCounter bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundLongCounter.INSTANCE;
     }
 
@@ -188,11 +171,11 @@ public final class DefaultMeter implements Meter {
       public void unbind() {}
     }
 
-    private static final class NoopBuilder extends NoopAbstractCounterBuilder<Builder, LongCounter>
+    private static final class NoopBuilder extends NoopAbstractCounterBuilder<NoopBuilder>
         implements Builder {
 
       @Override
-      protected Builder getThis() {
+      protected NoopBuilder getThis() {
         return this;
       }
 
@@ -210,13 +193,14 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleMeasure() {}
 
     @Override
-    public void record(double value, LabelSet labelSet) {
+    public void record(double value, String... labelKeyValuePairs) {
       Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
+      Utils.validateLabelPairs(labelKeyValuePairs);
     }
 
     @Override
-    public NoopBoundDoubleMeasure bind(LabelSet labelSet) {
-      Utils.checkNotNull(labelSet, "labelSet");
+    public NoopBoundDoubleMeasure bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundDoubleMeasure.INSTANCE;
     }
 
@@ -234,11 +218,11 @@ public final class DefaultMeter implements Meter {
       public void unbind() {}
     }
 
-    private static final class NoopBuilder
-        extends NoopAbstractInstrumentBuilder<Builder, DoubleMeasure> implements Builder {
+    private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
+        implements Builder {
 
       @Override
-      protected Builder getThis() {
+      protected NoopBuilder getThis() {
         return this;
       }
 
@@ -260,13 +244,14 @@ public final class DefaultMeter implements Meter {
     private NoopLongMeasure() {}
 
     @Override
-    public void record(long value, LabelSet labelSet) {
+    public void record(long value, String... labelKeyValuePairs) {
       Utils.checkArgument(value >= 0, "Unsupported negative values.");
+      Utils.validateLabelPairs(labelKeyValuePairs);
     }
 
     @Override
-    public NoopBoundLongMeasure bind(LabelSet labelSet) {
-      Utils.checkNotNull(labelSet, "labelSet");
+    public NoopBoundLongMeasure bind(String... labelKeyValuePairs) {
+      Utils.validateLabelPairs(labelKeyValuePairs);
       return NoopBoundLongMeasure.INSTANCE;
     }
 
@@ -284,11 +269,11 @@ public final class DefaultMeter implements Meter {
       public void unbind() {}
     }
 
-    private static final class NoopBuilder
-        extends NoopAbstractInstrumentBuilder<Builder, LongMeasure> implements Builder {
+    private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
+        implements Builder {
 
       @Override
-      protected Builder getThis() {
+      protected NoopBuilder getThis() {
         return this;
       }
 
@@ -314,11 +299,11 @@ public final class DefaultMeter implements Meter {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
-    private static final class NoopBuilder
-        extends NoopAbstractObserverBuilder<Builder, DoubleObserver> implements Builder {
+    private static final class NoopBuilder extends NoopAbstractObserverBuilder<NoopBuilder>
+        implements Builder {
 
       @Override
-      protected Builder getThis() {
+      protected NoopBuilder getThis() {
         return this;
       }
 
@@ -339,11 +324,11 @@ public final class DefaultMeter implements Meter {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
-    private static final class NoopBuilder
-        extends NoopAbstractObserverBuilder<Builder, LongObserver> implements Builder {
+    private static final class NoopBuilder extends NoopAbstractObserverBuilder<NoopBuilder>
+        implements Builder {
 
       @Override
-      protected Builder getThis() {
+      protected NoopBuilder getThis() {
         return this;
       }
 
@@ -386,8 +371,8 @@ public final class DefaultMeter implements Meter {
     public void record() {}
   }
 
-  private abstract static class NoopAbstractCounterBuilder<B extends Counter.Builder<B, V>, V>
-      extends NoopAbstractInstrumentBuilder<B, V> implements Counter.Builder<B, V> {
+  private abstract static class NoopAbstractCounterBuilder<B extends NoopAbstractCounterBuilder<B>>
+      extends NoopAbstractInstrumentBuilder<B> implements Counter.Builder {
 
     @Override
     public B setMonotonic(boolean monotonic) {
@@ -395,8 +380,9 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  private abstract static class NoopAbstractObserverBuilder<B extends Observer.Builder<B, V>, V>
-      extends NoopAbstractInstrumentBuilder<B, V> implements Observer.Builder<B, V> {
+  private abstract static class NoopAbstractObserverBuilder<
+          B extends NoopAbstractObserverBuilder<B>>
+      extends NoopAbstractInstrumentBuilder<B> implements Observer.Builder {
 
     @Override
     public B setMonotonic(boolean monotonic) {
@@ -404,8 +390,9 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  private abstract static class NoopAbstractInstrumentBuilder<B extends Instrument.Builder<B, V>, V>
-      implements Instrument.Builder<B, V> {
+  private abstract static class NoopAbstractInstrumentBuilder<
+          B extends NoopAbstractInstrumentBuilder<B>>
+      implements Instrument.Builder {
 
     @Override
     public B setDescription(String description) {
@@ -433,9 +420,5 @@ public final class DefaultMeter implements Meter {
     }
 
     protected abstract B getThis();
-  }
-
-  private enum NoopLabelSet implements LabelSet {
-    INSTANCE
   }
 }

@@ -17,11 +17,7 @@
 package io.opentelemetry.correlationcontext;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.correlationcontext.unsafe.ContextUtils;
 import io.opentelemetry.internal.Utils;
-import java.util.Collections;
-import java.util.List;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -34,8 +30,6 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class DefaultCorrelationContextManager implements CorrelationContextManager {
   private static final DefaultCorrelationContextManager INSTANCE =
       new DefaultCorrelationContextManager();
-  private static final HttpTextFormat<CorrelationContext> HTTP_TEXT_FORMAT =
-      new NoopHttpTextFormat();
 
   /**
    * Returns a {@code CorrelationContextManager} singleton that is the default implementation for
@@ -50,7 +44,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public CorrelationContext getCurrentContext() {
-    return ContextUtils.getValue();
+    return CorrelationsContextUtils.getCurrentCorrelationContext();
   }
 
   @Override
@@ -60,12 +54,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
   @Override
   public Scope withContext(CorrelationContext distContext) {
-    return ContextUtils.withCorrelationContext(distContext);
-  }
-
-  @Override
-  public HttpTextFormat<CorrelationContext> getHttpTextFormat() {
-    return HTTP_TEXT_FORMAT;
+    return CorrelationsContextUtils.currentContextWith(distContext);
   }
 
   @Immutable
@@ -83,10 +72,10 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
     @Override
     public CorrelationContext.Builder put(
-        EntryKey key, EntryValue value, EntryMetadata tagMetadata) {
+        EntryKey key, EntryValue value, EntryMetadata entryMetadata) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");
-      Utils.checkNotNull(tagMetadata, "tagMetadata");
+      Utils.checkNotNull(entryMetadata, "entryMetadata");
       return this;
     }
 
@@ -98,28 +87,6 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
 
     @Override
     public CorrelationContext build() {
-      return EmptyCorrelationContext.getInstance();
-    }
-  }
-
-  @Immutable
-  private static final class NoopHttpTextFormat implements HttpTextFormat<CorrelationContext> {
-    @Override
-    public List<String> fields() {
-      return Collections.emptyList();
-    }
-
-    @Override
-    public <C> void inject(CorrelationContext distContext, C carrier, Setter<C> setter) {
-      Utils.checkNotNull(distContext, "distContext");
-      Utils.checkNotNull(carrier, "carrier");
-      Utils.checkNotNull(setter, "setter");
-    }
-
-    @Override
-    public <C> CorrelationContext extract(C carrier, Getter<C> getter) {
-      Utils.checkNotNull(carrier, "carrier");
-      Utils.checkNotNull(getter, "getter");
       return EmptyCorrelationContext.getInstance();
     }
   }
