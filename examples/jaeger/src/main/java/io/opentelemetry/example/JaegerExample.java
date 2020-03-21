@@ -16,7 +16,7 @@ public class JaegerExample {
 
   // OTel API
   private Tracer tracer =
-      OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.JaegerExample");
+      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.JaegerExample");
   // Export traces to Jaeger
   private JaegerGrpcSpanExporter jaegerExporter;
 
@@ -33,11 +33,11 @@ public class JaegerExample {
         JaegerGrpcSpanExporter.newBuilder()
             .setServiceName("example")
             .setChannel(jaegerChannel)
-            .setDeadline(30000)
+            .setDeadlineMs(30000)
             .build();
 
     // Set to process the spans by the Jaeger Exporter
-    OpenTelemetrySdk.getTracerFactory()
+    OpenTelemetrySdk.getTracerProvider()
         .addSpanProcessor(SimpleSpansProcessor.newBuilder(this.jaegerExporter).build());
   }
 
