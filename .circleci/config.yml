@@ -19,6 +19,7 @@ publish_release_task: &publish_release_task
   name: Publish Release Artifacts
   command: make publish-release-artifacts
 
+executorType: machine
 jobs:
   build:
     environment:
