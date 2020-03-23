@@ -36,7 +36,8 @@ import java.util.Map;
 
 class ConfigureTraceExample {
 
-  // Class that showcases how to implement your own SpanProcessor
+  // Class that prints in the console information about the spans.
+  // For more example about SpanProcessor, refer to ConfigureSpanProcessorExample.java
   private static class MyProcessor implements SpanProcessor {
 
     @Override
@@ -72,47 +73,72 @@ class ConfigureTraceExample {
     @Override
     public void forceFlush() {}
   }
+  // Configure a tracer for these examples
+  static TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+  static TracerSdk tracer = tracerProvider.get("ConfigureTraceExample");
+
+  static {
+    tracerProvider.addSpanProcessor(new MyProcessor());
+  }
 
   public static void main(String[] args) {
-    // Configure a tracer for these examples
-    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
-    TracerSdk tracer = tracerProvider.get("example");
-    tracerProvider.addSpanProcessor(new MyProcessor());
 
     // TraceConfig handles the global tracing configuration
     TraceConfig config = TraceConfig.getDefault();
+    System.out.println(">Default configuration<");
     printTraceConfig();
 
-    // We can have a maximum of 32 Attributes by default. Let's add some to a span and verify they
-    // are stored
-    // correctly.
+    // OpenTelemetry has a maximum of 32 Attributes by default for Spans, Links, and Events.
     Span multiAttrSpan = tracer.spanBuilder("Example Span Attributes").startSpan();
     multiAttrSpan.setAttribute("Attribute 1", "first attribute value");
     multiAttrSpan.setAttribute("Attribute 2", "second attribute value");
     multiAttrSpan.end();
 
-    // The configuration can be changed in the trace provider
-    // For example, we can change the maximum number of Attributes per span to 1
+    // The configuration can be changed in the trace provider.
+    // For example, we can change the maximum number of Attributes per span to 1.
     TraceConfig newConf = config.toBuilder().setMaxNumberOfAttributes(1).build();
     tracerProvider.updateActiveTraceConfig(newConf);
     printTraceConfig();
 
-    // Let check that now only one attribute is stored in the Span
+    // If more attributes than allowed by the configuration are set, they are dropped.
     Span singleAttrSpan = tracer.spanBuilder("Example Span Attributes").startSpan();
     singleAttrSpan.setAttribute("Attribute 1", "first attribute value");
     singleAttrSpan.setAttribute("Attribute 2", "second attribute value");
     singleAttrSpan.end();
 
-    // For example, we can configure that all spans are dropped using the "always off" sampler.
+    // OpenTelemetry offers three different default samplers:
+    //  - alwaysOn: it samples all traces
+    //  - alwaysOff: it rejects all traces
+    //  - probability: it samples traces based on the probability passed in input
     TraceConfig alwaysOff =
         TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOff()).build();
+    TraceConfig alwaysOn =
+        TraceConfig.getDefault().toBuilder().setSampler(Samplers.alwaysOn()).build();
+    TraceConfig probability =
+        TraceConfig.getDefault().toBuilder().setSampler(Samplers.probability(0.5)).build();
+
+    // We update the configuration to use the alwaysOff sampler.
     tracerProvider.updateActiveTraceConfig(alwaysOff);
     printTraceConfig();
     tracer.spanBuilder("Not forwarded to any processors").startSpan().end();
     tracer.spanBuilder("Not forwarded to any processors").startSpan().end();
-    tracer.spanBuilder("Not forwarded to any processors").startSpan().end();
-    tracer.spanBuilder("Not forwarded to any processors").startSpan().end();
-    tracer.spanBuilder("Not forwarded to any processors").startSpan().end();
+
+    // We update the configuration to use the alwaysOn sampler.
+    tracerProvider.updateActiveTraceConfig(alwaysOn);
+    printTraceConfig();
+    tracer.spanBuilder("Forwarded to all processors").startSpan().end();
+    tracer.spanBuilder("Forwarded to all processors").startSpan().end();
+
+    // We update the configuration to use the probability sampler which was configured to sample
+    // only 50% of the spans.
+    tracerProvider.updateActiveTraceConfig(probability);
+    printTraceConfig();
+    for (int i = 0; i < 10; i++) {
+      tracer
+          .spanBuilder(String.format("Span %d might be forwarded to all processors", i))
+          .startSpan()
+          .end();
+    }
 
     // We can also implement our own sampler. We need to implement the
     // io.opentelemetry.sdk.trace.Sampler interface.
@@ -127,7 +153,7 @@ class ConfigureTraceExample {
           Span.Kind spanKind,
           Map<String, AttributeValue> attributes,
           List<Link> parentLinks) {
-        // We sample only if the name contains "SAMPLE"
+        // We sample only if the Span name contains "SAMPLE"
         return new Decision() {
 
           @Override
@@ -155,14 +181,18 @@ class ConfigureTraceExample {
         TraceConfig.getDefault().toBuilder().setSampler(new MySampler()).build();
     tracerProvider.updateActiveTraceConfig(mySampler);
     printTraceConfig();
+
     tracer.spanBuilder("#1 - SamPleD").startSpan().end();
     tracer.spanBuilder("#2 - SAMPLED").startSpan().end();
     tracer.spanBuilder("#3 - Smth").startSpan().end();
     tracer
-        .spanBuilder("#4 - SAMPLED this trace will be shown in the console output")
+        .spanBuilder("#4 - SAMPLED this trace will be the only one shown in the console output")
         .startSpan()
         .end();
     tracer.spanBuilder("#5").startSpan().end();
+
+    // Example's over! We can release the resources of OpenTelemetry calling the shutdown method.
+    OpenTelemetrySdk.getTracerProvider().shutdown();
   }
 
   private static void printTraceConfig() {

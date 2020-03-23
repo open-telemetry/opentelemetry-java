@@ -33,23 +33,66 @@ class ConfigureSpanProcessorExample {
 
   static LoggingSpanExporter exporter = new LoggingSpanExporter();
 
+  // Get the Tracer Provider
+  static TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
+  // Acquire a tracer
+  static TracerSdk tracer = tracerProvider.get("ConfigureSpanProcessorExample");
+
   public static void main(String[] args) throws Exception {
-    // Get the Tracer Provider
-    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
 
-    // Configure the simple spans processor.
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
-
-    // Now we can acquire a tracer
-    TracerSdk tracer = tracerProvider.get("ConfigureSpanProcessorExample");
+    // Example how to configure the default SpanProcessors.
+    defaultSpanProcessors();
     // Print to the console the list of span processors enabled.
     DemoUtils.printProcessorList(tracer);
 
-    // Processors that are plugged after the tracer creation are still propagated to the tracer.
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    // Example how to create your own SpanProcessor.
+    customSpanProcessor();
     // Print to the console the list of span processors enabled.
     DemoUtils.printProcessorList(tracer);
 
+    // We generate some Spans so we can see some output on the console.
+    tracer.spanBuilder("Span #1").startSpan().end();
+    tracer.spanBuilder("Span #2").startSpan().end();
+    tracer.spanBuilder("Span #3").startSpan().end();
+
+    // When exiting, it is recommended to call the shutdown method. This method calls `shutdown` on
+    // all configured SpanProcessors. This way, the configured exporters can release all resources
+    // and terminate their job sending the remaining traces to their back end.
+    OpenTelemetrySdk.getTracerProvider().shutdown();
+  }
+
+  private static void defaultSpanProcessors() throws Exception {
+    // OpenTelemetry offers 3 different default span processors:
+    //   - SimpleSpanProcessor
+    //   - BatchSpanProcessor
+    //   - MultiSpanProcessor
+    // Default span processors require an exporter as parameter. In this example we use the
+    // LoggingSpanExporter which prints on the console output the spans.
+
+    // Configure the simple spans processor. This span processor exports span immediately after they
+    // are ended.
+    SimpleSpansProcessor simpleSpansProcessor = SimpleSpansProcessor.newBuilder(exporter).build();
+    tracerProvider.addSpanProcessor(simpleSpansProcessor);
+
+    // Configure the batch spans processor. This span processor exports span in batches.
+    BatchSpansProcessor batchSpansProcessor =
+        BatchSpansProcessor.newBuilder(exporter)
+            .reportOnlySampled(true) // send to the exporter only spans that have been sampled
+            .setMaxExportBatchSize(512) // set the maximum batch size to use
+            .setMaxQueueSize(2048) // set the queue size. This must be >= the export batch size
+            .setExporterTimeoutMillis(
+                30_000) // set the max amount of time an export can run before getting interrupted
+            .setScheduleDelayMillis(5000) // set time between two different exports
+            .build();
+    tracerProvider.addSpanProcessor(batchSpansProcessor);
+
+    // Configure the multi spans processor. A MultiSpanProcessor accepts a list of Span Processors.
+    SpanProcessor multiSpanProcessor =
+        MultiSpanProcessor.create(Arrays.asList(simpleSpansProcessor, batchSpansProcessor));
+    tracerProvider.addSpanProcessor(multiSpanProcessor);
+  }
+
+  private static void customSpanProcessor() throws Exception {
     // We can also implement our own SpanProcessor. It is only necessary to implement the respective
     // interface which requires three methods that are called during the lifespan of Spans.
     class MySpanProcessor implements SpanProcessor {
@@ -100,26 +143,7 @@ class ConfigureSpanProcessorExample {
       }
     }
 
-    // We can also configure multiple span processors at the same time using the MultiSpanProcessor
-    // class. MultiSpanProcessor can be nested.
-    tracerProvider.addSpanProcessor(
-        MultiSpanProcessor.create(
-            Arrays.asList(
-                new MySpanProcessor(),
-                MultiSpanProcessor.create(
-                    Arrays.asList(
-                        SimpleSpansProcessor.newBuilder(exporter).build(),
-                        BatchSpansProcessor.newBuilder(exporter).build())))));
-    // Print to the console the list of span processors enabled.
-    DemoUtils.printProcessorList(tracer);
-
-    // We generate some Spans so we can test MySpanProcessor implementation
-    tracer.spanBuilder("Span #1").startSpan().end();
-    tracer.spanBuilder("Span #2").startSpan().end();
-    tracer.spanBuilder("Span #3").startSpan().end();
-
-    // We shutdown the OpenTelemetry library
-    // This also calls `shutdown` on all configured SpanProcessors.
-    OpenTelemetrySdk.getTracerProvider().shutdown();
+    // Attach to the configuration like any other SpanProcessor
+    tracerProvider.addSpanProcessor(new MySpanProcessor());
   }
 }
