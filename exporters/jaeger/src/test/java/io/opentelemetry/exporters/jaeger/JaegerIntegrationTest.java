@@ -45,7 +45,7 @@ public class JaegerIntegrationTest {
   private static final int COLLECTOR_PORT = 14250;
   private static final String JAEGER_VERSION = "1.17";
   private static final String SERVICE_NAME = "E2E-test";
-  private static final String JAEGER_IP = "http://localhost";
+  private static final String JAEGER_URL = "http://localhost";
   private final Tracer tracer =
       OpenTelemetry.getTracerProvider()
           .get("io.opentelemetry.exporters.jaeger.JaegerIntegrationTest");
