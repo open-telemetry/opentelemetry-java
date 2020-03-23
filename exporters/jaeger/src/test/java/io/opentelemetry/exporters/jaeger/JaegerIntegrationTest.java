@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,12 +47,18 @@ public class JaegerIntegrationTest {
   private static final String JAEGER_VERSION = "1.17";
   private static final String SERVICE_NAME = "E2E-test";
   private static final String JAEGER_URL = "http://localhost";
-  private final Tracer tracer =
-      OpenTelemetry.getTracerProvider()
-          .get("io.opentelemetry.exporters.jaeger.JaegerIntegrationTest");
+  private final Tracer tracer = OpenTelemetry.getTracerProvider().get(getClass().getCanonicalName());
   private JaegerGrpcSpanExporter jaegerExporter;
 
-  private void setupJaegerExporter() {
+  @SuppressWarnings("rawtypes")
+  @ClassRule
+  public static GenericContainer jaeger =
+      new GenericContainer("jaegertracing/all-in-one:" + JAEGER_VERSION)
+          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
+          .waitingFor(new HttpWaitStrategy().forPath("/"));
+
+  @Before
+  public void setupJaegerExporter() {
     ManagedChannel jaegerChannel =
         ManagedChannelBuilder.forAddress("127.0.0.1", jaeger.getMappedPort(COLLECTOR_PORT))
             .usePlaintext()
@@ -65,13 +72,6 @@ public class JaegerIntegrationTest {
     OpenTelemetrySdk.getTracerProvider()
         .addSpanProcessor(SimpleSpansProcessor.newBuilder(this.jaegerExporter).build());
   }
-
-  @SuppressWarnings("rawtypes")
-  @ClassRule
-  public static GenericContainer jaeger =
-      new GenericContainer("jaegertracing/all-in-one:" + JAEGER_VERSION)
-          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
-          .waitingFor(new HttpWaitStrategy().forPath("/"));
 
   @Test
   public void testJaegerIntegration() {
@@ -99,7 +99,8 @@ public class JaegerIntegrationTest {
           String url =
               String.format(
                   "%s/api/traces?service=%s",
-                  String.format(JAEGER_IP + ":%d", jaeger.getMappedPort(QUERY_PORT)), SERVICE_NAME);
+                  String.format(JAEGER_URL + ":%d", jaeger.getMappedPort(QUERY_PORT)),
+                  SERVICE_NAME);
           Response response =
               given()
                   .headers("Content-Type", ContentType.JSON, "Accept", ContentType.JSON)
