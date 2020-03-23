@@ -91,8 +91,8 @@ final class SpanAdapter {
     builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(spanData.getParentSpanId()));
     builder.setName(spanData.getName());
     builder.setKind(toProtoSpanKind(spanData.getKind()));
-    builder.setStartTimeUnixnano(spanData.getStartEpochNanos());
-    builder.setEndTimeUnixnano(spanData.getEndEpochNanos());
+    builder.setStartTimeUnixNano(spanData.getStartEpochNanos());
+    builder.setEndTimeUnixNano(spanData.getEndEpochNanos());
     for (Map.Entry<String, AttributeValue> resourceEntry : spanData.getAttributes().entrySet()) {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
@@ -131,7 +131,7 @@ final class SpanAdapter {
   static Span.Event toProtoSpanEvent(TimedEvent timedEvent) {
     Span.Event.Builder builder = Span.Event.newBuilder();
     builder.setName(timedEvent.getName());
-    builder.setTimeUnixnano(timedEvent.getEpochNanos());
+    builder.setTimeUnixNano(timedEvent.getEpochNanos());
     for (Map.Entry<String, AttributeValue> resourceEntry : timedEvent.getAttributes().entrySet()) {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
