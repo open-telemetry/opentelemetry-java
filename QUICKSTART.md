@@ -47,10 +47,16 @@ Tracer tracer =
 To create a basic span, you only need to specify the name of the span.
 The start and end time of the span is automatically set by the OpenTelemetry SDK.
 ```java
-Span span = tracer.spanBuilder("SpanName").startSpan();
-// your use case
-...
-span.end();
+Span span = tracer.spanBuilder("my span").startSpan();
+try (Scope scope = tracer.withSpan(span)) {
+	// your use case
+	...
+} catch (Throwable t) {
+    Status status = Status.UNKNOWN.withDescription("Change it to your error message");
+    span.setStatus(status);
+} finally {
+    span.end(); // closing the scope does not end the span, this has to be done manually
+}
 ```
 
 ### Create nested Spans

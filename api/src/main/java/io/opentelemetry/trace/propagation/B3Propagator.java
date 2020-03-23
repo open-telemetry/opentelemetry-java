@@ -18,13 +18,17 @@ package io.opentelemetry.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
+import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +41,7 @@ import javax.annotation.concurrent.Immutable;
  * href=https://github.com/openzipkin/b3-propagation>openzipkin/b3-propagation</a>.
  */
 @Immutable
-public class B3Propagator implements HttpTextFormat<SpanContext> {
+public class B3Propagator implements HttpTextFormat {
   private static final Logger logger = Logger.getLogger(HttpTraceContext.class.getName());
 
   static final String TRACE_ID_HEADER = "X-B3-TraceId";
@@ -79,11 +83,17 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
   }
 
   @Override
-  public <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter) {
-    checkNotNull(spanContext, "spanContext");
+  public <C> void inject(Context context, C carrier, Setter<C> setter) {
+    checkNotNull(context, "context");
     checkNotNull(setter, "setter");
     checkNotNull(carrier, "carrier");
 
+    Span span = TracingContextUtils.getSpanWithoutDefault(context);
+    if (span == null) {
+      return;
+    }
+
+    SpanContext spanContext = span.getContext();
     String sampled = spanContext.getTraceFlags().isSampled() ? TRUE_INT : FALSE_INT;
 
     if (singleHeader) {
@@ -103,15 +113,19 @@ public class B3Propagator implements HttpTextFormat<SpanContext> {
   }
 
   @Override
-  public <C> SpanContext extract(C carrier, Getter<C> getter) {
+  public <C> Context extract(Context context, C carrier, Getter<C> getter) {
     checkNotNull(carrier, "carrier");
     checkNotNull(getter, "getter");
 
+    SpanContext spanContext = null;
+
     if (singleHeader) {
-      return getSpanContextFromSingleHeader(carrier, getter);
+      spanContext = getSpanContextFromSingleHeader(carrier, getter);
     } else {
-      return getSpanContextFromMultipleHeaders(carrier, getter);
+      spanContext = getSpanContextFromMultipleHeaders(carrier, getter);
     }
+
+    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
   }
 
   @SuppressWarnings("StringSplitter")

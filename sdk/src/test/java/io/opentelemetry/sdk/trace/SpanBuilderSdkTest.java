@@ -180,6 +180,29 @@ public class SpanBuilderSdkTest {
     spanBuilder.setAttribute("nullStringAttributeValue", AttributeValue.stringAttributeValue(null));
     spanBuilder.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
+    spanBuilder.setAttribute("emptyString", (String) null);
+    spanBuilder.setAttribute("emptyStringAttributeValue", (String) null);
+    assertThat(span.toSpanData().getAttributes()).isEmpty();
+  }
+
+  @Test
+  public void setAttribute_nullAttributeValue() throws Exception {
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    spanBuilder.setAttribute("emptyString", "");
+    spanBuilder.setAttribute("nullString", (AttributeValue) null);
+    spanBuilder.setAttribute("nullStringAttributeValue", AttributeValue.stringAttributeValue(null));
+    spanBuilder.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
+    spanBuilder.setAttribute("longAttribute", 0L);
+    spanBuilder.setAttribute("boolAttribute", false);
+    spanBuilder.setAttribute("doubleAttribute", 0.12345f);
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(5);
+    spanBuilder.setAttribute("emptyString", (AttributeValue) null);
+    spanBuilder.setAttribute("emptyStringAttributeValue", (AttributeValue) null);
+    spanBuilder.setAttribute("longAttribute", (AttributeValue) null);
+    spanBuilder.setAttribute("boolAttribute", (AttributeValue) null);
+    spanBuilder.setAttribute("doubleAttribute", (AttributeValue) null);
     assertThat(span.toSpanData().getAttributes()).isEmpty();
   }
 

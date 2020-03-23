@@ -63,6 +63,16 @@ public class TimedEventTest {
     assertThat(event.getEpochNanos()).isEqualTo(1234567890L);
     assertThat(event.getName()).isEqualTo(NAME);
     assertThat(event.getAttributes()).isEqualTo(ATTRIBUTES);
+    assertThat(event.getTotalAttributeCount()).isEqualTo(ATTRIBUTES.size());
+  }
+
+  @Test
+  public void rawTimedEventWithNameAndAttributesAndTotalAttributeCount() {
+    TimedEvent event = TimedEvent.create(1234567890L, NAME, ATTRIBUTES, ATTRIBUTES.size() + 2);
+    assertThat(event.getEpochNanos()).isEqualTo(1234567890L);
+    assertThat(event.getName()).isEqualTo(NAME);
+    assertThat(event.getAttributes()).isEqualTo(ATTRIBUTES);
+    assertThat(event.getTotalAttributeCount()).isEqualTo(ATTRIBUTES.size() + 2);
   }
 
   @Test

@@ -30,12 +30,13 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 final class SpanAdapter {
-  static List<ResourceSpans> toProtoResourceSpans(List<SpanData> spanDataList) {
+  static List<ResourceSpans> toProtoResourceSpans(Collection<SpanData> spanDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> resourceAndLibraryMap =
         groupByResourceAndLibrary(spanDataList);
     List<ResourceSpans> resourceSpans = new ArrayList<>(resourceAndLibraryMap.size());
@@ -62,7 +63,7 @@ final class SpanAdapter {
   }
 
   private static Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>>
-      groupByResourceAndLibrary(List<SpanData> spanDataList) {
+      groupByResourceAndLibrary(Collection<SpanData> spanDataList) {
     Map<Resource, Map<InstrumentationLibraryInfo, List<Span>>> result = new HashMap<>();
     for (SpanData spanData : spanDataList) {
       Resource resource = spanData.getResource();
@@ -96,7 +97,8 @@ final class SpanAdapter {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
-    builder.setDroppedAttributesCount(spanData.getDroppedAttributeCount());
+    builder.setDroppedAttributesCount(
+        spanData.getTotalAttributeCount() - spanData.getAttributes().size());
     for (TimedEvent timedEvent : spanData.getTimedEvents()) {
       builder.addEvents(toProtoSpanEvent(timedEvent));
     }
@@ -134,7 +136,8 @@ final class SpanAdapter {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
-    builder.setDroppedAttributesCount(timedEvent.getDroppedAttributeCount());
+    builder.setDroppedAttributesCount(
+        timedEvent.getTotalAttributeCount() - timedEvent.getAttributes().size());
     return builder.build();
   }
 
@@ -147,7 +150,7 @@ final class SpanAdapter {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
-    builder.setDroppedAttributesCount(link.getDroppedAttributeCount());
+    builder.setDroppedAttributesCount(link.getTotalAttributeCount() - link.getAttributes().size());
     return builder.build();
   }
 

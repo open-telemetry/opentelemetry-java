@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -267,7 +268,7 @@ public class BatchSpansProcessorTest {
     WaitingSpanExporter waitingSpanExporter =
         new WaitingSpanExporter(1) {
           @Override
-          public ResultCode export(List<SpanData> spans) {
+          public ResultCode export(Collection<SpanData> spans) {
             ResultCode result = super.export(spans);
             try {
               // sleep longer than the configured timout of 100ms
@@ -381,7 +382,7 @@ public class BatchSpansProcessorTest {
     State state = State.WAIT_TO_BLOCK;
 
     @Override
-    public ResultCode export(List<SpanData> spanDataList) {
+    public ResultCode export(Collection<SpanData> spanDataList) {
       synchronized (monitor) {
         while (state != State.UNBLOCKED) {
           try {
@@ -462,7 +463,7 @@ public class BatchSpansProcessorTest {
     }
 
     @Override
-    public ResultCode export(List<SpanData> spans) {
+    public ResultCode export(Collection<SpanData> spans) {
       this.spanDataList.addAll(spans);
       for (int i = 0; i < spans.size(); i++) {
         countDownLatch.countDown();

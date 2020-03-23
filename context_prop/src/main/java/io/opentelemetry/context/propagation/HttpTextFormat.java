@@ -16,6 +16,7 @@
 
 package io.opentelemetry.context.propagation;
 
+import io.grpc.Context;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -29,13 +30,31 @@ import javax.annotation.concurrent.ThreadSafe;
  * usually an http request. Propagation is usually implemented via library- specific request
  * interceptors, where the client-side injects values and the server-side extracts them.
  *
+ * <p>Specific concern values (traces, correlations, etc) will be read from the specified {@code
+ * Context}, and resulting values will be stored in a new {@code Context} upon extraction. It is
+ * recommended to use a single {@code Context.Key} to store the entire concern data:
+ *
+ * <pre>{@code
+ * public static final Context.Key CONCERN_KEY = Context.key("my-concern-key");
+ * public MyConcernPropagator implements HttpTextFormat {
+ *   public <C> void inject(Context context, C carrier, Setter<C> setter) {
+ *     Object concern = CONCERN_KEY.get(context);
+ *     // Use concern in the specified context to propagate data.
+ *   }
+ *   public <C> Context extract(Context context, C carrier, Getter<C> setter) {
+ *     // Use setter to get the data from the carrier.
+ *     return context.withValue(CONCERN_KEY, concern);
+ *   }
+ * }
+ * }</pre>
+ *
  * @since 0.1.0
  */
 @ThreadSafe
-public interface HttpTextFormat<V> {
+public interface HttpTextFormat {
   /**
    * The propagation fields defined. If your carrier is reused, you should delete the fields here
-   * before calling {@link #inject(Object, Object, Setter)} )}.
+   * before calling {@link #inject(Context, Object, Setter)} )}.
    *
    * <p>For example, if the carrier is a single-use or immutable request object, you don't need to
    * clear fields as they couldn't have been set before. If it is a mutable, retryable object,
@@ -52,13 +71,13 @@ public interface HttpTextFormat<V> {
   /**
    * Injects the value downstream. For example, as http headers.
    *
-   * @param value the value to be injected.
+   * @param context the {@code Context} containing the value to be injected.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param setter invoked for each propagation key to add or remove.
    * @param <C> carrier of propagation fields, such as an http request
    * @since 0.1.0
    */
-  <C> void inject(V value, C carrier, Setter<C> setter);
+  <C> void inject(Context context, C carrier, Setter<C> setter);
 
   /**
    * Class that allows a {@code HttpTextFormat} to set propagated fields into a carrier.
@@ -88,18 +107,18 @@ public interface HttpTextFormat<V> {
   /**
    * Extracts the value from upstream. For example, as http headers.
    *
-   * <p>If the value could not be parsed, the underlying implementation will decide to return an
-   * object representing either an empty value, an invalid value, or a valid value. Implementation
-   * must not return {@code null}.
+   * <p>If the value could not be parsed, the underlying implementation will decide to set an object
+   * representing either an empty value, an invalid value, or a valid value. Implementation must not
+   * set {@code null}.
    *
+   * @param context the {@code Context} used to store the extracted value.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
    * @param getter invoked for each propagation key to get.
    * @param <C> carrier of propagation fields, such as an http request.
-   * @return the extracted value or an invalid span context if getter returned {@code null}, never
-   *     {@code null}.
+   * @return the {@code Context} containing the extracted value.
    * @since 0.1.0
    */
-  <C> V extract(C carrier, Getter<C> getter);
+  <C> Context extract(Context context, C carrier, Getter<C> getter);
 
   /**
    * Interface that allows a {@code HttpTextFormat} to read propagated fields from a carrier.

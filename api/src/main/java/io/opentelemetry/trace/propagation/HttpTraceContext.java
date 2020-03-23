@@ -19,12 +19,16 @@ package io.opentelemetry.trace.propagation;
 import static io.opentelemetry.internal.Utils.checkArgument;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
+import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +41,7 @@ import javax.annotation.concurrent.Immutable;
  * href=https://github.com/w3c/distributed-tracing>w3c/distributed-tracing</a>.
  */
 @Immutable
-public class HttpTraceContext implements HttpTextFormat<SpanContext> {
+public class HttpTraceContext implements HttpTextFormat {
   private static final Logger logger = Logger.getLogger(HttpTraceContext.class.getName());
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
@@ -72,10 +76,20 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   }
 
   @Override
-  public <C> void inject(SpanContext spanContext, C carrier, Setter<C> setter) {
-    checkNotNull(spanContext, "spanContext");
+  public <C> void inject(Context context, C carrier, Setter<C> setter) {
+    checkNotNull(context, "context");
     checkNotNull(setter, "setter");
     checkNotNull(carrier, "carrier");
+
+    Span span = TracingContextUtils.getSpanWithoutDefault(context);
+    if (span == null) {
+      return;
+    }
+
+    injectImpl(span.getContext(), carrier, setter);
+  }
+
+  private static <C> void injectImpl(SpanContext spanContext, C carrier, Setter<C> setter) {
     char[] chars = new char[TRACEPARENT_HEADER_SIZE];
     chars[0] = VERSION.charAt(0);
     chars[1] = VERSION.charAt(1);
@@ -105,9 +119,17 @@ public class HttpTraceContext implements HttpTextFormat<SpanContext> {
   }
 
   @Override
-  public <C /*>>> extends @NonNull Object*/> SpanContext extract(C carrier, Getter<C> getter) {
+  public <C /*>>> extends @NonNull Object*/> Context extract(
+      Context context, C carrier, Getter<C> getter) {
+    checkNotNull(carrier, "context");
     checkNotNull(carrier, "carrier");
     checkNotNull(getter, "getter");
+
+    SpanContext spanContext = extractImpl(carrier, getter);
+    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+  }
+
+  private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {
     String traceparent = getter.get(carrier, TRACE_PARENT);
     if (traceparent == null) {
       return SpanContext.getInvalid();

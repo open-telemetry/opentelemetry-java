@@ -85,43 +85,43 @@ public class SpanDataTest {
   }
 
   @Test
-  public void defaultDroppedAttributeCountIsZero() {
+  public void defaultTotalAttributeCountIsZero() {
     SpanData spanData = createSpanDataWithMutableCollections();
-    assertThat(spanData.getDroppedAttributeCount()).isEqualTo(0);
+    assertThat(spanData.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
-  public void canSetDroppedAttributecountWithBuilder() {
-    SpanData spanData = createBasicSpanBuilder().setDroppedAttributeCount(123).build();
-    assertThat(spanData.getDroppedAttributeCount()).isEqualTo(123);
+  public void canSetTotalAttributeCountWithBuilder() {
+    SpanData spanData = createBasicSpanBuilder().setTotalAttributeCount(123).build();
+    assertThat(spanData.getTotalAttributeCount()).isEqualTo(123);
   }
 
   @Test
-  public void link_defaultDroppedAttributeCountIsZero() {
+  public void link_defaultTotalAttributeCountIsZero() {
     SpanData.Link link = SpanData.Link.create(SpanContext.getInvalid());
-    assertThat(link.getDroppedAttributeCount()).isEqualTo(0);
+    assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
-  public void link_canSetDroppedAttributeCountIsZero() {
+  public void link_canSetTotalAttributeCount() {
     SpanData.Link link = SpanData.Link.create(SpanContext.getInvalid());
-    assertThat(link.getDroppedAttributeCount()).isEqualTo(0);
+    assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
-  public void timedEvent_defaultDroppedAttributeCountIsZero() {
+  public void timedEvent_defaultTotalAttributeCountIsZero() {
     SpanData.TimedEvent event =
         SpanData.TimedEvent.create(
             START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap());
-    assertThat(event.getDroppedAttributeCount()).isEqualTo(0);
+    assertThat(event.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
-  public void timedEvent_canSetDroppedAttributeCountIsZero() {
+  public void timedEvent_canSetTotalAttributeCount() {
     SpanData.TimedEvent event =
         SpanData.TimedEvent.create(
             START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap(), 123);
-    assertThat(event.getDroppedAttributeCount()).isEqualTo(123);
+    assertThat(event.getTotalAttributeCount()).isEqualTo(123);
   }
 
   private static SpanData createSpanDataWithMutableCollections() {

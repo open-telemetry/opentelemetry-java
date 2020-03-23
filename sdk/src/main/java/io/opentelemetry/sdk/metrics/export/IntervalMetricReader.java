@@ -54,6 +54,8 @@ public final class IntervalMetricReader {
       scheduler.shutdownNow();
       // reset the interrupted status
       Thread.currentThread().interrupt();
+    } finally {
+      exporter.shutdown();
     }
   }
 
@@ -156,6 +158,10 @@ public final class IntervalMetricReader {
         metricsList.addAll(metricProducer.getAllMetrics());
       }
       internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
+    }
+
+    void shutdown() {
+      internalState.getMetricExporter().shutdown();
     }
   }
 

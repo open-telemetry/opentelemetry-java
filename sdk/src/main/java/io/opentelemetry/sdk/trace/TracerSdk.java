@@ -17,18 +17,14 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracingContextUtils;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
 public final class TracerSdk implements Tracer {
-  private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
   private final TracerSharedState sharedState;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
@@ -60,11 +56,6 @@ public final class TracerSdk implements Tracer {
         sharedState.getResource(),
         sharedState.getIdsGenerator(),
         sharedState.getClock());
-  }
-
-  @Override
-  public HttpTextFormat<SpanContext> getHttpTextFormat() {
-    return HTTP_TEXT_FORMAT;
   }
 
   /**

@@ -28,7 +28,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -108,7 +108,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
    * @return the result of the operation
    */
   @Override
-  public ResultCode export(List<SpanData> spans) {
+  public ResultCode export(Collection<SpanData> spans) {
     Collector.PostSpansRequest request =
         Collector.PostSpansRequest.newBuilder()
             .setBatch(

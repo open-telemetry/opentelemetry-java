@@ -15,6 +15,9 @@ verify_task: &verify_task
 publish_snapshots_task: &publish_snapshots_task
   name: Publish Snapshot Artifacts
   command: make publish-snapshots
+publish_release_task: &publish_release_task
+  name: Publish Release Artifacts
+  command: make publish-release-artifacts
 
 jobs:
   build:
@@ -76,6 +79,31 @@ jobs:
           paths:
             - ~/.gradle
           key: java11-gradle-{{ checksum "build.gradle" }}
+# Publish the released artifacts using the `build` job env.
+  release_job:
+    environment:
+      # Configure the JVM and Gradle to avoid OOM errors
+      _JAVA_OPTIONS: "-Xmx1g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - gradle-{{ checksum "build.gradle" }}
+      - run:
+          <<: *init_task
+      - run:
+          <<: *verify_task
+      - run:
+          <<: *build_task
+      - run:
+          <<: *publish_release_task
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-{{ checksum "build.gradle" }}
 
 workflows:
   version: 2
@@ -83,3 +111,11 @@ workflows:
     jobs:
       - build
       - java11
+  build_and_release:
+    jobs:
+      - release_job:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/

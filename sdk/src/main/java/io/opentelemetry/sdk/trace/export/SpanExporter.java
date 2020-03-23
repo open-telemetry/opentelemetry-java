@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * An interface that allows different tracing services to export recorded data for sampled spans in
@@ -27,8 +27,6 @@ import java.util.List;
  * <p>To export data this MUST be register to the {@code TracerSdk} using a {@link
  * SimpleSpansProcessor} or a {@code BatchSampledSpansProcessor}.
  */
-// TODO: Change {@code BatchSampledSpansExporter} to {@link BatchSampledSpansExporter} when the
-//  class is available.
 public interface SpanExporter {
 
   /** The possible results for the export method. */
@@ -49,10 +47,10 @@ public interface SpanExporter {
   /**
    * Called to export sampled {@code Span}s.
    *
-   * @param spans the list of sampled Spans to be exported.
+   * @param spans the collection of sampled Spans to be exported.
    * @return the result of the export.
    */
-  ResultCode export(List<SpanData> spans);
+  ResultCode export(Collection<SpanData> spans);
 
   /**
    * Called when {@link TracerSdkProvider#shutdown()} is called, if this {@code SpanExporter} is

@@ -16,9 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.AttributeValue.Type;
-import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -64,7 +63,7 @@ final class SpanBuilderSdk implements Span.Builder {
   private final AttributesWithCapacity attributes;
   private List<Link> links;
   private int totalNumberOfLinksAdded = 0;
-  private ParentType parentType = ParentType.CURRENT_SPAN;
+  private ParentType parentType = ParentType.CURRENT_CONTEXT;
   private long startEpochNanos = 0;
 
   SpanBuilderSdk(
@@ -169,12 +168,27 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
-    Utils.checkNotNull(value, "value");
-    if (value.getType() == Type.STRING && StringUtils.isNullOrEmpty(value.getStringValue())) {
-      return this;
+    if (isRemovedValue(value)) {
+      attributes.remove(key);
+    } else {
+      attributes.putAttribute(key, value);
     }
-    attributes.putAttribute(key, value);
     return this;
+  }
+
+  private static boolean isRemovedValue(AttributeValue value) {
+    if (value == null) {
+      return true;
+    }
+    switch (value.getType()) {
+      case STRING:
+        return value.getStringValue() == null;
+      case BOOLEAN:
+      case LONG:
+      case DOUBLE:
+        return false;
+    }
+    return false;
   }
 
   @Override
@@ -247,12 +261,11 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static SpanContext parent(
       ParentType parentType, Span explicitParent, SpanContext remoteParent) {
-    Span currentSpan = TracingContextUtils.getCurrentSpan();
     switch (parentType) {
       case NO_PARENT:
         return null;
-      case CURRENT_SPAN:
-        return currentSpan != null ? currentSpan.getContext() : null;
+      case CURRENT_CONTEXT:
+        return TracingContextUtils.getCurrentSpan().getContext();
       case EXPLICIT_PARENT:
         return explicitParent.getContext();
       case EXPLICIT_REMOTE_PARENT:
@@ -264,8 +277,8 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
-      case CURRENT_SPAN:
-        return TracingContextUtils.getCurrentSpan();
+      case CURRENT_CONTEXT:
+        return TracingContextUtils.getSpanWithoutDefault(Context.current());
       case EXPLICIT_PARENT:
         return explicitParent;
       default:
@@ -274,7 +287,7 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   private enum ParentType {
-    CURRENT_SPAN,
+    CURRENT_CONTEXT,
     EXPLICIT_PARENT,
     EXPLICIT_REMOTE_PARENT,
     NO_PARENT,

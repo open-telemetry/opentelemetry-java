@@ -18,10 +18,9 @@ package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.trace.propagation.HttpTraceContext;
 import java.util.Map;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -32,7 +31,6 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public final class DefaultTracer implements Tracer {
   private static final DefaultTracer INSTANCE = new DefaultTracer();
-  private static final HttpTextFormat<SpanContext> HTTP_TEXT_FORMAT = new HttpTraceContext();
 
   /**
    * Returns a {@code Tracer} singleton that is the default implementations for {@link Tracer}.
@@ -56,30 +54,24 @@ public final class DefaultTracer implements Tracer {
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return NoopSpanBuilder.create(this, spanName);
-  }
-
-  @Override
-  public HttpTextFormat<SpanContext> getHttpTextFormat() {
-    return HTTP_TEXT_FORMAT;
+    return NoopSpanBuilder.create(spanName);
   }
 
   private DefaultTracer() {}
 
   // Noop implementation of Span.Builder.
   private static final class NoopSpanBuilder implements Span.Builder {
-    static NoopSpanBuilder create(Tracer tracer, String spanName) {
-      return new NoopSpanBuilder(tracer, spanName);
+    static NoopSpanBuilder create(String spanName) {
+      return new NoopSpanBuilder(spanName);
     }
 
-    private final Tracer tracer;
     private boolean isRootSpan;
-    private SpanContext spanContext;
+    @Nullable private SpanContext spanContext;
 
     @Override
     public Span startSpan() {
       if (spanContext == null && !isRootSpan) {
-        spanContext = tracer.getCurrentSpan().getContext();
+        spanContext = TracingContextUtils.getCurrentSpan().getContext();
       }
 
       return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
@@ -165,9 +157,8 @@ public final class DefaultTracer implements Tracer {
       return this;
     }
 
-    private NoopSpanBuilder(Tracer tracer, String name) {
+    private NoopSpanBuilder(String name) {
       Utils.checkNotNull(name, "name");
-      this.tracer = tracer;
     }
   }
 }

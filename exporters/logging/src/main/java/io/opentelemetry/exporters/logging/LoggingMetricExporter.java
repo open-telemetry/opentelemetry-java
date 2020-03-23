@@ -33,4 +33,9 @@ public class LoggingMetricExporter implements MetricExporter {
     }
     return ResultCode.SUCCESS;
   }
+
+  @Override
+  public void shutdown() {
+    // no-op
+  }
 }
