@@ -46,7 +46,7 @@ public class MetricsBenchmarks {
 
     @Param MetricsTestOperationBuilder opBuilder;
 
-    MetricsTestOperationBuilder.Operation<?, ?> op;
+    MetricsTestOperationBuilder.Operation op;
     final String[] sharedLabelSet = {"KEY", "VALUE"};
     String[] threadUniqueLabelSet;
 

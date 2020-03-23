@@ -24,7 +24,7 @@ import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.resources.Resource;
 
 public enum TestSdk {
-  NO_SDK(
+  API_ONLY(
       new SdkBuilder() {
         @Override
         Meter build() {
