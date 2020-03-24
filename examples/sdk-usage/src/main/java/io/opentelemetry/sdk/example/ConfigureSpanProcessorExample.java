@@ -20,7 +20,6 @@ import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.example.unsafe.DemoUtils;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
-import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -45,11 +44,6 @@ class ConfigureSpanProcessorExample {
     // Print to the console the list of span processors enabled.
     DemoUtils.printProcessorList(tracer);
 
-    // Example how to create your own SpanProcessor.
-    customSpanProcessor();
-    // Print to the console the list of span processors enabled.
-    DemoUtils.printProcessorList(tracer);
-
     // We generate some Spans so we can see some output on the console.
     tracer.spanBuilder("Span #1").startSpan().end();
     tracer.spanBuilder("Span #2").startSpan().end();
@@ -61,7 +55,7 @@ class ConfigureSpanProcessorExample {
     OpenTelemetrySdk.getTracerProvider().shutdown();
   }
 
-  private static void defaultSpanProcessors() throws Exception {
+  private static void defaultSpanProcessors() {
     // OpenTelemetry offers 3 different default span processors:
     //   - SimpleSpanProcessor
     //   - BatchSpanProcessor
@@ -90,60 +84,5 @@ class ConfigureSpanProcessorExample {
     SpanProcessor multiSpanProcessor =
         MultiSpanProcessor.create(Arrays.asList(simpleSpansProcessor, batchSpansProcessor));
     tracerProvider.addSpanProcessor(multiSpanProcessor);
-  }
-
-  private static void customSpanProcessor() throws Exception {
-    // We can also implement our own SpanProcessor. It is only necessary to implement the respective
-    // interface which requires three methods that are called during the lifespan of Spans.
-    class MySpanProcessor implements SpanProcessor {
-
-      @Override
-      public void onStart(ReadableSpan span) {
-        // This method is called when a span is created;
-        System.out.printf("Span %s - Started\n", span.getName());
-      }
-
-      @Override
-      public boolean isStartRequired() {
-        // This method is called at initialization of the current SpanProcessor.
-        // If this method returns true, onStart() will be called for every created span.
-        return true;
-      }
-
-      @Override
-      public void onEnd(ReadableSpan span) {
-        // This method is called when a span is ended;
-        System.out.printf("Span %s - Ended\n", span.getName());
-      }
-
-      @Override
-      public boolean isEndRequired() {
-        // This method is called at initialization of the current SpanProcessor.
-        // If this method returns true, onEnd() will be called for every ended span.
-        return true;
-      }
-
-      @Override
-      public void shutdown() {
-        // This method is called when the OpenTelemetry library is shutting down;
-        System.out.printf("Goodbye by %s\n", this.getClass().getSimpleName());
-      }
-
-      @Override
-      public void forceFlush() {
-        // This method is useful for async Span Processors.
-        // When this method is called, spans that are ended but not yet processed must be processed.
-        System.out.println(
-            "This is a sync implementation, so every span is processed within the onEnd() method");
-      }
-
-      @Override
-      public String toString() {
-        return "MySpanProcessor{}";
-      }
-    }
-
-    // Attach to the configuration like any other SpanProcessor
-    tracerProvider.addSpanProcessor(new MySpanProcessor());
   }
 }

@@ -36,8 +36,9 @@ import java.util.Map;
 
 class ConfigureTraceExample {
 
-  // Class that prints in the console information about the spans.
-  // For more example about SpanProcessor, refer to ConfigureSpanProcessorExample.java
+  // Class that prints in the console custom information about the spans for the sake of the
+  // example. For more details about the default SpanProcessor, refer to
+  // ConfigureSpanProcessorExample.java
   private static class MyProcessor implements SpanProcessor {
 
     @Override
@@ -47,7 +48,8 @@ class ConfigureTraceExample {
 
     @Override
     public boolean isStartRequired() {
-      // We don't need onStart() events in this example.
+      // This method is called at initialization of the current SpanProcessor.
+      // If this method returns true, onStart() will be called for every created span.
       return false;
     }
 
@@ -63,15 +65,24 @@ class ConfigureTraceExample {
 
     @Override
     public boolean isEndRequired() {
-      // onEnd() events are required by this example.
+      // This method is called at initialization of the current SpanProcessor.
+      // If this method returns true, onEnd() will be called for every ended span.
       return true;
     }
 
     @Override
-    public void shutdown() {}
+    public void shutdown() {
+      // This method is called when the OpenTelemetry library is shutting down;
+      System.out.printf("Goodbye by %s\n", this.getClass().getSimpleName());
+    }
 
     @Override
-    public void forceFlush() {}
+    public void forceFlush() {
+      // This method is useful for async Span Processors.
+      // When this method is called, spans that are ended but not yet processed must be processed.
+      System.out.println(
+          "This is a sync implementation, so every span is processed within the onEnd() method");
+    }
   }
   // Configure a tracer for these examples
   static TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
