@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.example;
 
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.example.unsafe.DemoUtils;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdk;
@@ -28,7 +27,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import java.util.Arrays;
 
 /** This example shows how to instantiate different Span Processors. */
-class ConfigureSpanProcessorExample {
+public class ConfigureSpanProcessorExample {
 
   static LoggingSpanExporter exporter = new LoggingSpanExporter();
 
@@ -41,18 +40,21 @@ class ConfigureSpanProcessorExample {
 
     // Example how to configure the default SpanProcessors.
     defaultSpanProcessors();
-    // Print to the console the list of span processors enabled.
-    DemoUtils.printProcessorList(tracer);
+    // After this method, the following SpanProcessors are registered:
+    // - SimpleSpansProcessor
+    // - BatchSpansProcessor
+    // - MultiSpanProcessor <- this is a container for other SpanProcessors
+    // |-- SimpleSpansProcessor
+    // |-- BatchSpansProcessor
 
-    // We generate some Spans so we can see some output on the console.
+    // We generate a single Span so we can see some output on the console.
+    // Since there are 4 different SpanProcessor registered, this Span is exported 4 times.
     tracer.spanBuilder("Span #1").startSpan().end();
-    tracer.spanBuilder("Span #2").startSpan().end();
-    tracer.spanBuilder("Span #3").startSpan().end();
 
     // When exiting, it is recommended to call the shutdown method. This method calls `shutdown` on
     // all configured SpanProcessors. This way, the configured exporters can release all resources
     // and terminate their job sending the remaining traces to their back end.
-    OpenTelemetrySdk.getTracerProvider().shutdown();
+    tracerProvider.shutdown();
   }
 
   private static void defaultSpanProcessors() {
