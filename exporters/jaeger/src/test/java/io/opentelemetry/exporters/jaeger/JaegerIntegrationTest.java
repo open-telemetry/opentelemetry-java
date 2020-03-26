@@ -76,7 +76,6 @@ public class JaegerIntegrationTest {
 
   @Test
   public void testJaegerIntegration() {
-    setupJaegerExporter();
     imitateWork();
     Awaitility.await().atMost(30, TimeUnit.SECONDS).until(assertJaegerHaveTrace());
   }
