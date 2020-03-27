@@ -237,7 +237,7 @@ The following is an example of metric usage:
 
 ```java
 // Gets or creates a named meter instance
-Meter meter = OpenTelemetry.getMeterProvider().get("library_name");
+Meter meter = OpenTelemetry.getMeterProvider().get("instrumentation-library-name","semver:1.0.0");
 
 // Build counter e.g. LongCounter 
 LongCounter counter = meter
@@ -248,10 +248,10 @@ LongCounter counter = meter
         .build();
 
 // It is recommended that the API user keep a reference to a Bound Counter
-BoundLongCounter someWorkBound = counter.bind("SomeWork");
+BoundLongCounter someWorkCounter = counter.bind("Key", "SomeWork");
 
 // Record data
-someWorkBound.add(123);
+someWorkCounter.add(123);
 
 ```
 
