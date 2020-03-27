@@ -225,6 +225,36 @@ public void handle(HttpExchange he) {
 
 ## Metrics
 
+Spans are a great way to get detailed information about what your application is doing, but
+what about a more aggregated perspective? OpenTelemetry provides supports for metrics, a time series
+of numbers that might express things such as CPU utilization, request count for an HTTP server, or a
+business metric such as transactions.
+
+All metrics can be annotated with labels: additional qualifiers that help describe what
+subdivision of the measurements the metric represents.
+
+The following is an example of metric usage:
+
+```java
+// Gets or creates a named meter instance
+Meter meter = OpenTelemetry.getMeterProvider().get("library_name");
+
+// Build counter e.g. LongCounter 
+LongCounter counter = meter
+        .longCounterBuilder("processed_jobs")
+        .setDescription("Processed jobs")
+        .setUnit("1")
+        .setLabelKeys(Collections.singletonList("Key"))
+        .build();
+
+// It is recommended that the API user keep a reference to a Bound Counter
+BoundLongCounter someWorkBound = counter.bind("SomeWork");
+
+// Record data
+someWorkBound.add(123);
+
+```
+
 ## Tracing SDK Configuration
 
 The configuration examples reported in this document only apply to the SDK provided by
