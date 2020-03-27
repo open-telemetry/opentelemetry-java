@@ -132,7 +132,7 @@ class ConfigureTraceExample {
           public Map<String, AttributeValue> attributes() {
             // This method MUST return an immutable list of Attributes
             // that will be added to the generated Span.
-            return Collections.unmodifiableMap(Collections.emptyMap());
+            return Collections.emptyMap();
           }
         };
       }
