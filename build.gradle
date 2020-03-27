@@ -125,6 +125,8 @@ subprojects {
                 truth                : 'com.google.truth:truth:1.0.1',
                 slf4jsimple          : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
                 awaitility           : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
+                testcontainers       : 'org.testcontainers:testcontainers:1.13.0',
+                rest_assured         : 'io.rest-assured:rest-assured:4.2.0',
         ]
     }
 
