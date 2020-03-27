@@ -89,12 +89,12 @@ subprojects {
         errorProneVersion = '2.3.3'
         errorProneJavacVersion = '9+181-r4173-1'
         findBugsJsr305Version = '3.0.2'
-        grpcVersion = '1.24.0'
-        guavaVersion = '28.1-android'
+        grpcVersion = '1.28.0'
+        guavaVersion = '28.2-android'
         jmhVersion = '1.19'
         opentracingVersion = '0.33.0'
-        protobufVersion = '3.9.0'
-        protocVersion = '3.9.0'
+        protobufVersion = '3.11.4'
+        protocVersion = '3.11.4'
 
         libraries = [
                 auto_value           : "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -121,8 +121,8 @@ subprojects {
                 // Test dependencies.
                 guava_testlib        : "com.google.guava:guava-testlib:${guavaVersion}",
                 junit                : 'junit:junit:4.12',
-                mockito              : 'org.mockito:mockito-core:2.25.1',
-                truth                : 'com.google.truth:truth:1.0',
+                mockito              : 'org.mockito:mockito-core:2.28.2',
+                truth                : 'com.google.truth:truth:1.0.1',
                 slf4jsimple          : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
                 awaitility           : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
         ]
