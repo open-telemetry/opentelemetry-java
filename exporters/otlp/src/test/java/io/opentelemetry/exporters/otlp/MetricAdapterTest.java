@@ -102,8 +102,8 @@ public class MetricAdapterTest {
                     MetricData.LongPoint.create(123, 456, Collections.singletonMap("k", "v"), 5))))
         .containsExactly(
             Int64DataPoint.newBuilder()
-                .setStartTimeUnixnano(123)
-                .setTimestampUnixnano(456)
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
                 .addAllLabels(
                     Collections.singletonList(
                         StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
@@ -117,13 +117,13 @@ public class MetricAdapterTest {
                     MetricData.LongPoint.create(321, 654, Collections.singletonMap("k", "v"), 7))))
         .containsExactly(
             Int64DataPoint.newBuilder()
-                .setStartTimeUnixnano(123)
-                .setTimestampUnixnano(456)
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
                 .setValue(5)
                 .build(),
             Int64DataPoint.newBuilder()
-                .setStartTimeUnixnano(321)
-                .setTimestampUnixnano(654)
+                .setStartTimeUnixNano(321)
+                .setTimeUnixNano(654)
                 .addAllLabels(
                     Collections.singletonList(
                         StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
@@ -142,8 +142,8 @@ public class MetricAdapterTest {
                         123, 456, Collections.singletonMap("k", "v"), 5.1))))
         .containsExactly(
             DoubleDataPoint.newBuilder()
-                .setStartTimeUnixnano(123)
-                .setTimestampUnixnano(456)
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
                 .addAllLabels(
                     Collections.singletonList(
                         StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
@@ -158,13 +158,13 @@ public class MetricAdapterTest {
                         321, 654, Collections.singletonMap("k", "v"), 7.1))))
         .containsExactly(
             DoubleDataPoint.newBuilder()
-                .setStartTimeUnixnano(123)
-                .setTimestampUnixnano(456)
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
                 .setValue(5.1)
                 .build(),
             DoubleDataPoint.newBuilder()
-                .setStartTimeUnixnano(321)
-                .setTimestampUnixnano(654)
+                .setStartTimeUnixNano(321)
+                .setTimeUnixNano(654)
                 .addAllLabels(
                     Collections.singletonList(
                         StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
@@ -188,8 +188,8 @@ public class MetricAdapterTest {
                         Collections.singletonList(MetricData.ValueAtPercentile.create(0.9, 1.1))))))
         .containsExactly(
             SummaryDataPoint.newBuilder()
-                .setStartTimeUnixnano(123)
-                .setTimestampUnixnano(456)
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
                 .addAllLabels(
                     Collections.singletonList(
                         StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
@@ -220,14 +220,14 @@ public class MetricAdapterTest {
                             MetricData.ValueAtPercentile.create(0.99, 20.3))))))
         .containsExactly(
             SummaryDataPoint.newBuilder()
-                .setStartTimeUnixnano(123)
-                .setTimestampUnixnano(456)
+                .setStartTimeUnixNano(123)
+                .setTimeUnixNano(456)
                 .setCount(7)
                 .setSum(15.3)
                 .build(),
             SummaryDataPoint.newBuilder()
-                .setStartTimeUnixnano(321)
-                .setTimestampUnixnano(654)
+                .setStartTimeUnixNano(321)
+                .setTimeUnixNano(654)
                 .addAllLabels(
                     Collections.singletonList(
                         StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
@@ -308,8 +308,8 @@ public class MetricAdapterTest {
                 .addAllInt64DataPoints(
                     Collections.singletonList(
                         Int64DataPoint.newBuilder()
-                            .setStartTimeUnixnano(123)
-                            .setTimestampUnixnano(456)
+                            .setStartTimeUnixNano(123)
+                            .setTimeUnixNano(456)
                             .addAllLabels(
                                 Collections.singletonList(
                                     StringKeyValue.newBuilder().setKey("k").setValue("v").build()))
@@ -345,8 +345,8 @@ public class MetricAdapterTest {
                 .addAllDoubleDataPoints(
                     Collections.singletonList(
                         DoubleDataPoint.newBuilder()
-                            .setStartTimeUnixnano(123)
-                            .setTimestampUnixnano(456)
+                            .setStartTimeUnixNano(123)
+                            .setTimeUnixNano(456)
                             .addAllLabels(
                                 Collections.singletonList(
                                     StringKeyValue.newBuilder().setKey("k").setValue("v").build()))

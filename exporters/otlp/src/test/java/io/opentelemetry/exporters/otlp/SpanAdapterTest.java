@@ -84,8 +84,8 @@ public class SpanAdapterTest {
     assertThat(span.getParentSpanId().toByteArray()).isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0});
     assertThat(span.getName()).isEqualTo("GET /api/endpoint");
     assertThat(span.getKind()).isEqualTo(SpanKind.SERVER);
-    assertThat(span.getStartTimeUnixnano()).isEqualTo(12345);
-    assertThat(span.getEndTimeUnixnano()).isEqualTo(12349);
+    assertThat(span.getStartTimeUnixNano()).isEqualTo(12345);
+    assertThat(span.getEndTimeUnixNano()).isEqualTo(12349);
     assertThat(span.getAttributesList())
         .containsExactly(
             AttributeKeyValue.newBuilder()
@@ -96,7 +96,7 @@ public class SpanAdapterTest {
     assertThat(span.getDroppedAttributesCount()).isEqualTo(1);
     assertThat(span.getEventsList())
         .containsExactly(
-            Span.Event.newBuilder().setTimeUnixnano(12347).setName("my_event").build());
+            Span.Event.newBuilder().setTimeUnixNano(12347).setName("my_event").build());
     assertThat(span.getDroppedEventsCount()).isEqualTo(2); // 3 - 1
     assertThat(span.getLinksList())
         .containsExactly(
@@ -240,7 +240,7 @@ public class SpanAdapterTest {
                     Collections.<String, AttributeValue>emptyMap())))
         .isEqualTo(
             Span.Event.newBuilder()
-                .setTimeUnixnano(12345)
+                .setTimeUnixNano(12345)
                 .setName("test_without_attributes")
                 .build());
   }
@@ -257,7 +257,7 @@ public class SpanAdapterTest {
                     5)))
         .isEqualTo(
             Span.Event.newBuilder()
-                .setTimeUnixnano(12345)
+                .setTimeUnixNano(12345)
                 .setName("test_with_attributes")
                 .addAttributes(
                     AttributeKeyValue.newBuilder()
