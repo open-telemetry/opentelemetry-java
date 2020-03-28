@@ -16,7 +16,7 @@
 
 package io.opentelemetry.trace.attributes;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.Span;
@@ -54,32 +54,23 @@ public class SemanticAttributesTest {
       } else if (attribute instanceof LongAttributeSetter) {
         keys.add(((LongAttributeSetter) attribute).key());
         ((LongAttributeSetter) attribute).set(span, 42L);
-        ((LongAttributeSetter) attribute).trySetParsed(span, "42");
-        ((LongAttributeSetter) attribute).trySetParsed(span, "BAD");
-        ((LongAttributeSetter) attribute).trySetParsed(span, null);
-        ((LongAttributeSetter) attribute).setParsedOrRaw(span, "42");
-        ((LongAttributeSetter) attribute).setParsedOrRaw(span, "BAD");
-        ((LongAttributeSetter) attribute).setParsedOrRaw(span, null);
       } else if (attribute instanceof DoubleAttributeSetter) {
         keys.add(((DoubleAttributeSetter) attribute).key());
         ((DoubleAttributeSetter) attribute).set(span, 3.14);
-        ((DoubleAttributeSetter) attribute).trySetParsed(span, "3.14");
-        ((DoubleAttributeSetter) attribute).trySetParsed(span, "BAD");
-        ((DoubleAttributeSetter) attribute).trySetParsed(span, null);
-        ((DoubleAttributeSetter) attribute).setParsedOrRaw(span, "3.14");
-        ((DoubleAttributeSetter) attribute).setParsedOrRaw(span, "BAD");
-        ((DoubleAttributeSetter) attribute).setParsedOrRaw(span, null);
       } else if (attribute instanceof BooleanAttributeSetter) {
         keys.add(((BooleanAttributeSetter) attribute).key());
         ((BooleanAttributeSetter) attribute).set(span, true);
-        ((BooleanAttributeSetter) attribute).trySetParsed(span, "true");
-        ((BooleanAttributeSetter) attribute).trySetParsed(span, "BAD");
-        ((BooleanAttributeSetter) attribute).trySetParsed(span, null);
-        ((BooleanAttributeSetter) attribute).setParsedOrRaw(span, "true");
-        ((BooleanAttributeSetter) attribute).setParsedOrRaw(span, "BAD");
-        ((BooleanAttributeSetter) attribute).setParsedOrRaw(span, null);
       }
     }
-    assertEquals(fields.length, keys.size());
+    assertThat(keys.size()).isEqualTo(fields.length);
+  }
+
+  @Test
+  public void shouldCreateAllSetterTypes() {
+    assertThat(BooleanAttributeSetter.create("attr.one"))
+        .isInstanceOf(BooleanAttributeSetter.class);
+    assertThat(DoubleAttributeSetter.create("attr.two")).isInstanceOf(DoubleAttributeSetter.class);
+    assertThat(LongAttributeSetter.create("attr.three")).isInstanceOf(LongAttributeSetter.class);
+    assertThat(StringAttributeSetter.create("attr.four")).isInstanceOf(StringAttributeSetter.class);
   }
 }

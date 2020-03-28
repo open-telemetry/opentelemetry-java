@@ -23,15 +23,23 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public class LongAttributeSetter {
 
+  /**
+   * Returns a new attribute setter.
+   *
+   * @param attributeKey the attribute name
+   * @return the setter object
+   */
+  public static LongAttributeSetter create(String attributeKey) {
+    return new LongAttributeSetter(attributeKey);
+  }
+
   private final String attributeKey;
 
-  /**
-   * Constructs an attribute object.
-   *
-   * @param attributeKey the attribute name/key
-   */
-  public LongAttributeSetter(String attributeKey) {
+  private LongAttributeSetter(String attributeKey) {
     super();
+    if (attributeKey == null || attributeKey.length() == 0) {
+      throw new IllegalArgumentException("attributeKey cannot be empty");
+    }
     this.attributeKey = attributeKey;
   }
 
@@ -52,40 +60,5 @@ public class LongAttributeSetter {
    */
   public void set(Span span, long value) {
     span.setAttribute(key(), value);
-  }
-
-  /**
-   * Sets the attribute on the provided span if provided a parsable long integer else does nothing.
-   *
-   * @param span the span to add the attribute to
-   * @param value the value for this attribute
-   */
-  public void trySetParsed(Span span, String value) {
-    if (value != null) {
-      try {
-        span.setAttribute(key(), Long.parseLong(value));
-      } catch (NumberFormatException ignore) {
-        // NoOp
-      }
-    }
-  }
-
-  /**
-   * Sets the attribute on the provided span to either a long if provided string is parsable or else
-   * the raw string.
-   *
-   * @param span the span to add the attribute to
-   * @param value the value for this attribute
-   */
-  public void setParsedOrRaw(Span span, String value) {
-    if (value != null) {
-      try {
-        span.setAttribute(key(), Long.parseLong(value));
-      } catch (NumberFormatException ignore) {
-        span.setAttribute(key(), value);
-      }
-    } else {
-      span.setAttribute(key(), value);
-    }
   }
 }

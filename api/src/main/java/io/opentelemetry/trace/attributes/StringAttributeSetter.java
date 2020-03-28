@@ -24,15 +24,23 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public class StringAttributeSetter {
 
+  /**
+   * Returns a new attribute setter.
+   *
+   * @param attributeKey the attribute name
+   * @return the setter object
+   */
+  public static StringAttributeSetter create(String attributeKey) {
+    return new StringAttributeSetter(attributeKey);
+  }
+
   private final String attributeKey;
 
-  /**
-   * Constructs an attribute object.
-   *
-   * @param attributeKey the attribute name/key
-   */
-  public StringAttributeSetter(String attributeKey) {
+  private StringAttributeSetter(String attributeKey) {
     super();
+    if (attributeKey == null || attributeKey.length() == 0) {
+      throw new IllegalArgumentException("attributeKey cannot be empty");
+    }
     this.attributeKey = attributeKey;
   }
 

@@ -23,15 +23,23 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public class DoubleAttributeSetter {
 
+  /**
+   * Returns a new attribute setter.
+   *
+   * @param attributeKey the attribute name
+   * @return the setter object
+   */
+  public static DoubleAttributeSetter create(String attributeKey) {
+    return new DoubleAttributeSetter(attributeKey);
+  }
+
   private final String attributeKey;
 
-  /**
-   * Constructs an attribute object.
-   *
-   * @param attributeKey the attribute name/key
-   */
-  public DoubleAttributeSetter(String attributeKey) {
+  private DoubleAttributeSetter(String attributeKey) {
     super();
+    if (attributeKey == null || attributeKey.length() == 0) {
+      throw new IllegalArgumentException("attributeKey cannot be empty");
+    }
     this.attributeKey = attributeKey;
   }
 
@@ -52,40 +60,5 @@ public class DoubleAttributeSetter {
    */
   public void set(Span span, double value) {
     span.setAttribute(key(), value);
-  }
-
-  /**
-   * Sets the attribute on the provided span if provided a parsable double else does nothing.
-   *
-   * @param span the span to add the attribute to
-   * @param value the value for this attribute
-   */
-  public void trySetParsed(Span span, String value) {
-    if (value != null) {
-      try {
-        span.setAttribute(key(), Double.parseDouble(value));
-      } catch (NumberFormatException ignore) {
-        // NoOp
-      }
-    }
-  }
-
-  /**
-   * Sets the attribute on the provided span to either a double if provided string is parsable or
-   * else the raw string.
-   *
-   * @param span the span to add the attribute to
-   * @param value the value for this attribute
-   */
-  public void setParsedOrRaw(Span span, String value) {
-    if (value != null) {
-      try {
-        span.setAttribute(key(), Double.parseDouble(value));
-      } catch (NumberFormatException ignore) {
-        span.setAttribute(key(), value);
-      }
-    } else {
-      span.setAttribute(key(), value);
-    }
   }
 }
