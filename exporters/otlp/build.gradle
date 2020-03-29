@@ -6,13 +6,12 @@ plugins {
 }
 
 description = 'OpenTelemetry Protocol Exporter'
-ext.moduleName = "io.opentelemetry.exporters.otprotocol"
+ext.moduleName = "io.opentelemetry.exporters.otlp"
 
 dependencies {
     api project(':opentelemetry-sdk')
 
     implementation project(':opentelemetry-sdk-contrib-otproto'),
-            project(':opentelemetry-sdk'),
             libraries.grpc_api,
             libraries.grpc_protobuf,
             libraries.grpc_stub,

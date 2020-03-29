@@ -92,9 +92,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   }
 
   /**
-   * Creates a new builder instance.
+   * Returns a new builder instance for this exporter.
    *
-   * @return a new instance builder for this exporter
+   * @return a new builder instance for this exporter.
    */
   public static Builder newBuilder() {
     return new Builder();
@@ -148,5 +148,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     public OtlpGrpcSpanExporter build() {
       return new OtlpGrpcSpanExporter(channel, deadlineMs);
     }
+
+    private Builder() {}
   }
 }
