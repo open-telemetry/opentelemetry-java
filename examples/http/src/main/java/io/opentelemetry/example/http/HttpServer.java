@@ -16,13 +16,17 @@
 
 package io.opentelemetry.example.http;
 
+import io.grpc.Context;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.context.ContextUtils;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.exporters.logging.LoggingExporter;
+import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.*;
 
@@ -43,15 +47,14 @@ public class HttpServer {
       // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
       Span.Builder spanBuilder = tracer.spanBuilder("/").setSpanKind(Span.Kind.SERVER);
       Span span = null;
-      try {
-        // Extract the context from the HTTP request
-        SpanContext ctx = tracer.getHttpTextFormat().extract(he, getter);
-        // Rebuild a span with the received context
-        span = spanBuilder.setParent(ctx).startSpan();
-      } catch (StringIndexOutOfBoundsException e) {
-        // msg without ctx
+
+      // Extract the context from the HTTP request
+      Context ctx = OpenTelemetry.getPropagators().getHttpTextFormat().extract(Context.current(), he, getter);
+      try (Scope scope = ContextUtils.withScopedContext(ctx)) {
+        // Build a span automatically using the received context
         span = spanBuilder.startSpan();
       }
+
       // Set the Semantic Convention
       span.setAttribute("component", "http");
       span.setAttribute("http.method", "GET");
@@ -98,9 +101,9 @@ public class HttpServer {
 
   // OTel API
   private static Tracer tracer =
-      OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.http.HttpServer");
+      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.http.HttpServer");
   // Export traces to log
-  private static LoggingExporter loggingExporter = new LoggingExporter();
+  private static LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
   // Extract the context from http headers
   private static HttpTextFormat.Getter<HttpExchange> getter =
       new HttpTextFormat.Getter<HttpExchange>() {
@@ -128,11 +131,11 @@ public class HttpServer {
 
   private void initTracer() {
     // Get the tracer
-    TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
+    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Show that multiple exporters can be used
 
     // Set to export the traces also to a log file
-    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
   }
 
   private void stop() {
