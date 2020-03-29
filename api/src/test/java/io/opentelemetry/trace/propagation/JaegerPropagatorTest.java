@@ -22,8 +22,9 @@ import static io.opentelemetry.trace.propagation.JaegerPropagator.SEPARATOR;
 import static io.opentelemetry.trace.propagation.JaegerPropagator.TRACE_ID_HEADER;
 
 import io.grpc.Context;
+import io.jaegertracing.internal.JaegerSpanContext;
+import io.jaegertracing.internal.propagation.TextMapCodec;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -45,13 +46,17 @@ import org.junit.runners.JUnit4;
 public class JaegerPropagatorTest {
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
-  private static final String TRACE_ID_BASE16 = "ff000000000000000000000000000041";
-  private static final TraceId TRACE_ID = TraceId.fromLowerBase16(TRACE_ID_BASE16, 0);
-  private static final String SHORT_TRACE_ID_BASE16 = "ff00000000000000";
-  private static final TraceId SHORT_TRACE_ID =
-      TraceId.fromLowerBase16(StringUtils.padLeft(SHORT_TRACE_ID_BASE16, 32), 0);
-  private static final String SPAN_ID_BASE16 = "ff00000000000041";
-  private static final SpanId SPAN_ID = SpanId.fromLowerBase16(SPAN_ID_BASE16, 0);
+  private static final long TRACE_ID_HI = 77L;
+  private static final long TRACE_ID_LOW = 22L;
+  private static final String TRACE_ID_BASE16 = "000000000000004d0000000000000016";
+  private static final TraceId TRACE_ID = new TraceId(TRACE_ID_HI, TRACE_ID_LOW);
+  private static final long SHORT_TRACE_ID_HI = 0L;
+  private static final long SHORT_TRACE_ID_LOW = 2322222L;
+  private static final TraceId SHORT_TRACE_ID = new TraceId(SHORT_TRACE_ID_HI, SHORT_TRACE_ID_LOW);
+  private static final String SPAN_ID_BASE16 = "0000000000017c29";
+  private static final long SPAN_ID_LONG = 97321L;
+  private static final SpanId SPAN_ID = new SpanId(SPAN_ID_LONG);
+  private static final long DEPRECATED_PARENT_SPAN_LONG = 0L;
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
   private static final TraceFlags SAMPLED_TRACE_OPTIONS =
       TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
@@ -85,6 +90,7 @@ public class JaegerPropagatorTest {
 
   @Test
   public void inject_SampledContext() {
+
     Map<String, String> carrier = new LinkedHashMap<>();
     jaegerPropagator.inject(
         withSpanContext(
@@ -92,6 +98,7 @@ public class JaegerPropagatorTest {
             Context.current()),
         carrier,
         setter);
+
     assertThat(carrier)
         .containsEntry(
             TRACE_ID_HEADER,
@@ -228,9 +235,10 @@ public class JaegerPropagatorTest {
   @Test
   public void extract_SampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(
-        TRACE_ID_HEADER,
-        generateTraceIdHeaderValue(TRACE_ID_BASE16, SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, "1"));
+    JaegerSpanContext context =
+        new JaegerSpanContext(
+            TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, (byte) 5);
+    carrier.put(TRACE_ID_HEADER, TextMapCodec.contextAsString(context));
 
     assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -241,9 +249,10 @@ public class JaegerPropagatorTest {
   @Test
   public void extract_NotSampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(
-        TRACE_ID_HEADER,
-        generateTraceIdHeaderValue(TRACE_ID_BASE16, SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, "0"));
+    JaegerSpanContext context =
+        new JaegerSpanContext(
+            TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, (byte) 0);
+    carrier.put(TRACE_ID_HEADER, TextMapCodec.contextAsString(context));
 
     assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
@@ -254,10 +263,14 @@ public class JaegerPropagatorTest {
   @Test
   public void extract_SampledContext_Short_TraceId() {
     Map<String, String> carrier = new LinkedHashMap<>();
-    carrier.put(
-        TRACE_ID_HEADER,
-        generateTraceIdHeaderValue(
-            SHORT_TRACE_ID_BASE16, SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, "1"));
+    JaegerSpanContext context =
+        new JaegerSpanContext(
+            SHORT_TRACE_ID_HI,
+            SHORT_TRACE_ID_LOW,
+            SPAN_ID_LONG,
+            DEPRECATED_PARENT_SPAN_LONG,
+            (byte) 1);
+    carrier.put(TRACE_ID_HEADER, TextMapCodec.contextAsString(context));
 
     assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(

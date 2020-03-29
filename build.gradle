@@ -125,6 +125,7 @@ subprojects {
                 truth                : 'com.google.truth:truth:1.0',
                 slf4jsimple          : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
                 awaitility           : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
+                jaeger_client        : 'io.jaegertracing:jaeger-client:1.2.0' // Jaeger Client
         ]
     }
 
@@ -158,7 +159,8 @@ subprojects {
         testImplementation libraries.junit,
                 libraries.mockito,
                 libraries.truth,
-                libraries.guava_testlib
+                libraries.guava_testlib,
+                libraries.jaeger_client
 
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check
