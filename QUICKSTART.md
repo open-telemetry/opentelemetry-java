@@ -187,7 +187,8 @@ HttpTextFormat.Setter<HttpURLConnection> setter =
 URL url = new URL("http://127.0.0.1:8080/resource");
 Span outGoing = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.CLIENT).startSpan();
 try (Scope scope = tracer.withSpan(outGoing)) {
-  // Semantic Convention
+  // Semantic Convention.
+  // (Observe that to set these, Span does not *need* to be the current instance.)
   outGoing.setAttribute("http.method", "GET");
   outGoing.setAttribute("http.url", url.toString());
   HttpURLConnection transportLayer = (HttpURLConnection) url.openConnection();
@@ -201,7 +202,8 @@ try (Scope scope = tracer.withSpan(outGoing)) {
 ```
 
 Similarly, the text-based approach can be used to read the W3C Trace Context from incoming requests.
-The following presents an example of processing an incoming HTTP request using `HttpExchange`.
+The following presents an example of processing an incoming HTTP request using
+[HttpExchange](https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpExchange.html).
 
 ```java
 HttpTextFormat.Getter<HttpExchange> getter =
@@ -215,10 +217,10 @@ HttpTextFormat.Getter<HttpExchange> getter =
     }
 };
 ...
-public void handle(HttpExchange he) {
+public void handle(HttpExchange httpExchange) {
   // Extract the SpanContext and other elements from the request.
-  Context ctx = tracer.getHttpTextFormat().extract(Context.current(), he, getter);
-  try (Scope scope = ContextUtils.withScopedContext(ctx)) {
+  Context extractedContext = tracer.getHttpTextFormat().extract(Context.current(), httpExchange, getter);
+  try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {
     // Automatically use the extracted SpanContext as parent.
     Span serverSpan = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.SERVER)
         .startSpan();
