@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import jdk.nashorn.internal.ir.annotations.Immutable;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Wraps a list of {@link MetricProducer}s and automatically reads and exports the metrics every

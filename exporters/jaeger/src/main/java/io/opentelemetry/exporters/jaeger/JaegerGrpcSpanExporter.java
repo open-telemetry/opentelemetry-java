@@ -142,9 +142,9 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   }
 
   /**
-   * Creates a new builder instance.
+   * Returns a new builder instance for this exporter.
    *
-   * @return a new instance builder for this exporter
+   * @return a new builder instance for this exporter.
    */
   public static Builder newBuilder() {
     return new Builder();
@@ -234,6 +234,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       BatchSpansProcessor spansProcessor = BatchSpansProcessor.newBuilder(this.build()).build();
       tracerSdkProvider.addSpanProcessor(spansProcessor);
     }
+
+    private Builder() {}
   }
 
   private static String getProperty(String name, String defaultValue) {

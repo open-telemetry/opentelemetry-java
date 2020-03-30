@@ -139,8 +139,8 @@ final class MetricAdapter {
       LongPoint longPoint = (LongPoint) point;
       Int64DataPoint.Builder builder =
           Int64DataPoint.newBuilder()
-              .setStartTimeUnixnano(longPoint.getStartEpochNanos())
-              .setTimestampUnixnano(longPoint.getEpochNanos())
+              .setStartTimeUnixNano(longPoint.getStartEpochNanos())
+              .setTimeUnixNano(longPoint.getEpochNanos())
               .setValue(longPoint.getValue());
       // Not calling directly addAllLabels because that generates couple of unnecessary allocations.
       Collection<StringKeyValue> labels = toProtoLabels(longPoint.getLabels());
@@ -158,8 +158,8 @@ final class MetricAdapter {
       DoublePoint doublePoint = (DoublePoint) point;
       DoubleDataPoint.Builder builder =
           DoubleDataPoint.newBuilder()
-              .setStartTimeUnixnano(doublePoint.getStartEpochNanos())
-              .setTimestampUnixnano(doublePoint.getEpochNanos())
+              .setStartTimeUnixNano(doublePoint.getStartEpochNanos())
+              .setTimeUnixNano(doublePoint.getEpochNanos())
               .setValue(doublePoint.getValue());
       // Not calling directly addAllLabels because that generates couple of unnecessary allocations.
       Collection<StringKeyValue> labels = toProtoLabels(doublePoint.getLabels());
@@ -177,8 +177,8 @@ final class MetricAdapter {
       SummaryPoint summaryPoint = (SummaryPoint) point;
       SummaryDataPoint.Builder builder =
           SummaryDataPoint.newBuilder()
-              .setStartTimeUnixnano(summaryPoint.getStartEpochNanos())
-              .setTimestampUnixnano(summaryPoint.getEpochNanos())
+              .setStartTimeUnixNano(summaryPoint.getStartEpochNanos())
+              .setTimeUnixNano(summaryPoint.getEpochNanos())
               .setCount(summaryPoint.getCount())
               .setSum(summaryPoint.getSum());
       // Not calling directly addAllLabels because that generates couple of unnecessary allocations
