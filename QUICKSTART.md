@@ -169,11 +169,9 @@ a well established context propagation library, contained in a small artifact, w
 entire gRPC engine.
 
 OpenTelemetry provides a text-based approach to propagate context to remote services using the
-[W3C Trace Context](https://www.w3.org/TR/trace-context/) HTTP headers. For doing in-process
-propagation, [gRPC Context]() is used (contained in a single, small artifact non-dependent on
+[W3C Trace Context](https://www.w3.org/TR/trace-context/) HTTP headers.
 
-The following presents an
-example of an outgoing HTTP request using `HttpURLConnection`.
+The following presents an example of an outgoing HTTP request using `HttpURLConnection`.
  
 ```java
 // Tell OpenTelemetry to inject the context in the HTTP headers
