@@ -244,7 +244,6 @@ LongCounter counter = meter
         .longCounterBuilder("processed_jobs")
         .setDescription("Processed jobs")
         .setUnit("1")
-        .setLabelKeys(Collections.singletonList("Key"))
         .build();
 
 // It is recommended that the API user keep a reference to a Bound Counter
