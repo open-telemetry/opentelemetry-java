@@ -36,7 +36,6 @@ public final class BooleanAttributeSetter {
   private final String attributeKey;
 
   private BooleanAttributeSetter(String attributeKey) {
-    super();
     if (attributeKey == null || attributeKey.length() == 0) {
       throw new IllegalArgumentException("attributeKey cannot be empty");
     }

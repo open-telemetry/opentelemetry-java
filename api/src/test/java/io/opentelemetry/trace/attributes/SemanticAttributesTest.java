@@ -45,8 +45,8 @@ public class SemanticAttributesTest {
   public void shouldEnableSetAttributeOnSpan() throws IllegalAccessException {
     Set<String> keys = new HashSet<>();
     Field[] fields = SemanticAttributes.class.getFields();
-    for (int i = 0; i < fields.length; i++) {
-      Object attribute = fields[i].get(null);
+    for (Field field : fields) {
+      Object attribute = field.get(null);
       if (attribute instanceof StringAttributeSetter) {
         keys.add(((StringAttributeSetter) attribute).key());
         ((StringAttributeSetter) attribute).set(span, "TestValue");

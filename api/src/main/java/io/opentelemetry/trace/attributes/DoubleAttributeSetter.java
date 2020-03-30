@@ -36,7 +36,6 @@ public final class DoubleAttributeSetter {
   private final String attributeKey;
 
   private DoubleAttributeSetter(String attributeKey) {
-    super();
     if (attributeKey == null || attributeKey.length() == 0) {
       throw new IllegalArgumentException("attributeKey cannot be empty");
     }
