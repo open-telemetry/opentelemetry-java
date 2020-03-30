@@ -5,8 +5,9 @@ plugins {
 }
 
 group 'io.opentelemetry'
-version '0.3.0'
+version '0.1.0-SNAPSHOT'
 
+def opentelemetryVersion = '0.3.0'
 
 //create a single Jar with all dependencies
 task fatJar(type: Jar) {
@@ -31,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    compile "io.opentelemetry:opentelemetry-sdk:${version}"
-    compile "io.opentelemetry:opentelemetry-exporters-logging:${version}"
+    compile "io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}"
+    compile "io.opentelemetry:opentelemetry-exporters-logging:${opentelemetryVersion}"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
