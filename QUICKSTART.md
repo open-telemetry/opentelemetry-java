@@ -164,9 +164,14 @@ For more details how to read context from remote processes, see
 
 ### Context Propagation
 
+In-process propagation leverages [gRPC Context](https://grpc.github.io/grpc-java/javadoc/io/grpc/Context.html),
+a well established context propagation library, contained in a small artifact, which is non-dependent on the
+entire gRPC engine.
+
 OpenTelemetry provides a text-based approach to propagate context to remote services using the
-[W3C Trace Context](https://www.w3.org/TR/trace-context/) HTTP headers. The following presents an
-example of an outgoing HTTP request using `HttpURLConnection`.
+[W3C Trace Context](https://www.w3.org/TR/trace-context/) HTTP headers.
+
+The following presents an example of an outgoing HTTP request using `HttpURLConnection`.
  
 ```java
 // Tell OpenTelemetry to inject the context in the HTTP headers
@@ -181,18 +186,24 @@ HttpTextFormat.Setter<HttpURLConnection> setter =
 
 URL url = new URL("http://127.0.0.1:8080/resource");
 Span outGoing = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.CLIENT).startSpan();
-// Semantic Convention
-outGoing.setAttribute("http.method", "GET");
-outGoing.setAttribute("http.url", url.toString());
-HttpURLConnection transportLayer = (HttpURLConnection) url.openConnection();
-// Inject the request with the context
-tracer.getHttpTextFormat().inject(outGoing.getContext(), transportLayer, setter);
-// Make outgoing call
+try (Scope scope = tracer.withSpan(outGoing)) {
+  // Semantic Convention.
+  // (Observe that to set these, Span does not *need* to be the current instance.)
+  outGoing.setAttribute("http.method", "GET");
+  outGoing.setAttribute("http.url", url.toString());
+  HttpURLConnection transportLayer = (HttpURLConnection) url.openConnection();
+  // Inject the request with the *current*  Context, which contains our current Span.
+  tracer.getHttpTextFormat().inject(Context.current(), transportLayer, setter);
+  // Make outgoing call
+} finally {
+  outGoing.end();
+}
 ...
 ```
 
 Similarly, the text-based approach can be used to read the W3C Trace Context from incoming requests.
-The following presents an example of processing an incoming HTTP request using `HttpExchange`.
+The following presents an example of processing an incoming HTTP request using
+[HttpExchange](https://docs.oracle.com/javase/8/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpExchange.html).
 
 ```java
 HttpTextFormat.Getter<HttpExchange> getter =
@@ -206,11 +217,12 @@ HttpTextFormat.Getter<HttpExchange> getter =
     }
 };
 ...
-public void handle(HttpExchange he) {
-    // Extract the context from the request
-    SpanContext ctx = tracer.getHttpTextFormat().extract(he, getter);
+public void handle(HttpExchange httpExchange) {
+  // Extract the SpanContext and other elements from the request.
+  Context extractedContext = tracer.getHttpTextFormat().extract(Context.current(), httpExchange, getter);
+  try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {
+    // Automatically use the extracted SpanContext as parent.
     Span serverSpan = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.SERVER)
-        .setParent(ctx)
         .startSpan();
     // Add the attributes defined in the Semantic Conventions
     serverSpan.setAttribute("http.method", "GET");
@@ -219,7 +231,9 @@ public void handle(HttpExchange he) {
     serverSpan.setAttribute("http.target", "/resource");
     // Serve the request
     ...
+  } finally {
     serverSpan.end();
+  }
 }
 ```
 
