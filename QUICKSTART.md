@@ -246,7 +246,8 @@ LongCounter counter = meter
         .setUnit("1")
         .build();
 
-// It is recommended that the API user keep a reference to a Bound Counter
+// It is recommended that the API user keep a reference to a Bound Counter for the entire time or 
+// call unbind when no-longer needed.
 BoundLongCounter someWorkCounter = counter.bind("Key", "SomeWork");
 
 // Record data
