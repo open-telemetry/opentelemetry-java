@@ -115,6 +115,39 @@ public class OpenTelemetryTest {
   }
 
   @Test
+  public void testSetupExplicit() {
+    final SecondTraceProvider tracerProvider = new SecondTraceProvider();
+    final SecondMetricsProvider meterProvider = new SecondMetricsProvider();
+    final SecondCorrelationContextManager contextManager = new SecondCorrelationContextManager();
+    OpenTelemetry.setupExplicitImplementations(tracerProvider, meterProvider, contextManager);
+    assertThat(OpenTelemetry.getTracerProvider()).isSameInstanceAs(tracerProvider);
+    assertThat(OpenTelemetry.getMeterProvider()).isSameInstanceAs(meterProvider);
+    assertThat(OpenTelemetry.getCorrelationContextManager()).isSameInstanceAs(contextManager);
+  }
+
+  @Test
+  public void testSetupDefault() {
+    OpenTelemetry.setupExplicitImplementations(null, null, null);
+    testDefault();
+  }
+
+  @Test
+  public void testSetupTwice() {
+    OpenTelemetry.setupExplicitImplementations(null, null, null);
+    thrown.expect(IllegalStateException.class);
+    thrown.expectMessage("already initialized");
+    OpenTelemetry.setupExplicitImplementations(null, null, null);
+  }
+
+  @Test
+  public void testSetupTooLate() {
+    OpenTelemetry.getTracerProvider(); // Triggers init
+    thrown.expect(IllegalStateException.class);
+    thrown.expectMessage("already initialized");
+    OpenTelemetry.setupExplicitImplementations(null, null, null);
+  }
+
+  @Test
   public void testTracerNotFound() {
     System.setProperty(TraceProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);

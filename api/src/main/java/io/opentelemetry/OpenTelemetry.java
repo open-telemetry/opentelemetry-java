@@ -138,24 +138,39 @@ public final class OpenTelemetry {
     return instance;
   }
 
-  private OpenTelemetry() {
-    TraceProvider traceProvider = loadSpi(TraceProvider.class);
-    this.tracerProvider =
-        traceProvider != null
-            ? traceProvider.create()
-            : DefaultTraceProvider.getInstance().create();
-
-    MetricsProvider metricsProvider = loadSpi(MetricsProvider.class);
-    meterProvider =
-        metricsProvider != null
-            ? metricsProvider.create()
-            : DefaultMetricsProvider.getInstance().create();
+  private static CorrelationContextManager loadCorrelationContextManager() {
     CorrelationContextManagerProvider contextManagerProvider =
         loadSpi(CorrelationContextManagerProvider.class);
-    contextManager =
-        contextManagerProvider != null
-            ? contextManagerProvider.create()
-            : DefaultCorrelationContextManagerProvider.getInstance().create();
+    return contextManagerProvider != null
+        ? contextManagerProvider.create()
+        : DefaultCorrelationContextManagerProvider.getInstance().create();
+  }
+
+  private static MeterProvider loadMeterProvider() {
+    MetricsProvider metricsProvider = loadSpi(MetricsProvider.class);
+    return metricsProvider != null
+        ? metricsProvider.create()
+        : DefaultMetricsProvider.getInstance().create();
+  }
+
+  private static TracerProvider loadTracerProvider() {
+    TraceProvider traceProvider = loadSpi(TraceProvider.class);
+    return traceProvider != null
+        ? traceProvider.create()
+        : DefaultTraceProvider.getInstance().create();
+  }
+
+  private OpenTelemetry(
+      @Nullable TracerProvider tracerProvider,
+      @Nullable MeterProvider meterProvider,
+      @Nullable CorrelationContextManager contextManager) {
+    this.tracerProvider = tracerProvider != null ? tracerProvider : loadTracerProvider();
+    this.meterProvider = meterProvider != null ? meterProvider : loadMeterProvider();
+    this.contextManager = contextManager != null ? contextManager : loadCorrelationContextManager();
+  }
+
+  private OpenTelemetry() {
+    this(null, null, null);
   }
 
   /**
@@ -181,6 +196,40 @@ public final class OpenTelemetry {
           String.format("Service provider %s not found", specifiedProvider));
     }
     return null;
+  }
+
+  /**
+   * Sets up the OpenTelemetry API to use the given implementation objects.
+   *
+   * <p>This method must not be called after attempting to access an API implementation object via
+   * this class (i.e., after calling methods such as {@link #getTracerProvider()}). Basically this
+   * means that the one who is in control of the main method is the only one who may call this
+   * method. Consequently, If another method calls this, this requirement applies to that method
+   * too, recursively.
+   *
+   * <p>This method must only be called once, even if you use any {@code null} arguments. Any null
+   * arguments are defaulted using the usual mechanism, falling back to the default (no-op)
+   * implementations if no SPI can be found.
+   *
+   * @param tracerProvider The {@link TracerProvider} instance to use, or {@code null} to load using
+   *     default mechanism.
+   * @param meterProvider The {@link MeterProvider} instance to use, or {@code null} to load using
+   *     default mechanism.
+   * @param contextManager The {@link CorrelationContextManager} instance to use, or {@code null} to
+   *     load using default mechanism.
+   * @throws IllegalStateException if OpenTelemetry is already initialized.
+   */
+  public static void setupExplicitImplementations(
+      @Nullable TracerProvider tracerProvider,
+      @Nullable MeterProvider meterProvider,
+      @Nullable CorrelationContextManager contextManager) {
+    synchronized (OpenTelemetry.class) { // No double-checked locking, not performance-sensitive.
+      if (instance == null) {
+        instance = new OpenTelemetry(tracerProvider, meterProvider, contextManager);
+        return;
+      }
+    }
+    throw new IllegalStateException("OpenTelemetry is already initialized.");
   }
 
   // for testing
