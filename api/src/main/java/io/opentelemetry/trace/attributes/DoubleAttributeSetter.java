@@ -21,7 +21,7 @@ import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with double values. */
 @Immutable
-public class DoubleAttributeSetter {
+public final class DoubleAttributeSetter {
 
   /**
    * Returns a new attribute setter.

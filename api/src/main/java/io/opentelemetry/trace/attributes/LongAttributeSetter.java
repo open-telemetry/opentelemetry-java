@@ -21,7 +21,7 @@ import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with long values. */
 @Immutable
-public class LongAttributeSetter {
+public final class LongAttributeSetter {
 
   /**
    * Returns a new attribute setter.

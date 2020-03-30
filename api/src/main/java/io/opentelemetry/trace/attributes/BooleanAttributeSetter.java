@@ -21,7 +21,7 @@ import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with boolean values. */
 @Immutable
-public class BooleanAttributeSetter {
+public final class BooleanAttributeSetter {
 
   /**
    * Returns a new attribute setter.

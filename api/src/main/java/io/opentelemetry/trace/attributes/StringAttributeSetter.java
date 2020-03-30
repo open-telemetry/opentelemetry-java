@@ -22,7 +22,7 @@ import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with string values. */
 @Immutable
-public class StringAttributeSetter {
+public final class StringAttributeSetter {
 
   /**
    * Returns a new attribute setter.
