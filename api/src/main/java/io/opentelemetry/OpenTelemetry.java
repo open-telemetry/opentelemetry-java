@@ -204,7 +204,7 @@ public final class OpenTelemetry {
    * <p>This method must not be called after attempting to access an API implementation object via
    * this class (i.e., after calling methods such as {@link #getTracerProvider()}). Basically this
    * means that the one who is in control of the main method is the only one who may call this
-   * method. Consequently, If another method calls this, this requirement applies to that method
+   * method. Consequently, if another method calls this, this requirement applies to that method
    * too, recursively.
    *
    * <p>This method must only be called once, even if you use any {@code null} arguments. Any null
