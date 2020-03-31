@@ -15,7 +15,7 @@ Before any push to the upstream repository you need to create a
 1.  Create the release branch and push it to GitHub:
 
     ```bash
-    $ MAJOR=0 MINOR=4 PATCH=0 # Set appropriately for new release
+    $ MAJOR=0 MINOR=3 PATCH=0 # Set appropriately for new release
     $ VERSION_FILES=(
       build.gradle
       )
@@ -33,7 +33,7 @@ Before any push to the upstream repository you need to create a
     ```bash
     $ git checkout -b bump-version master
     # Change version to next minor (and keep -SNAPSHOT)
-    $ sed -i 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/'$MAJOR.$((MINOR+1)).0'\1/' \
+    $ sed -i "" 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/'$MAJOR.$((MINOR+1)).0'\1/' \
       "${VERSION_FILES[@]}"
     $ ./gradlew build
     $ git commit -a -m "Start $MAJOR.$((MINOR+1)).0 development cycle"
@@ -49,7 +49,7 @@ Before any push to the upstream repository you need to create a
     ```bash
     $ git checkout -b release v$MAJOR.$MINOR.x
     # Change version to remove -SNAPSHOT
-    $ sed -i 's/-SNAPSHOT\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/\1/' "${VERSION_FILES[@]}"
+    $ sed -i "" 's/-SNAPSHOT\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/\1/' "${VERSION_FILES[@]}"
     $ ./gradlew build
     $ git commit -a -m "Bump version to $MAJOR.$MINOR.$PATCH"
     $ git tag -a v$MAJOR.$MINOR.$PATCH -m "Version $MAJOR.$MINOR.$PATCH"
@@ -60,7 +60,7 @@ Before any push to the upstream repository you need to create a
 
     ```bash
     # Change version to next patch and add -SNAPSHOT
-    $ sed -i 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/'$MAJOR.$MINOR.$((PATCH+1))-SNAPSHOT'\1/' \
+    $ sed -i "" 's/[0-9]\+\.[0-9]\+\.[0-9]\+\(.*CURRENT_OPEN_TELEMETRY_VERSION\)/'$MAJOR.$MINOR.$((PATCH+1))-SNAPSHOT'\1/' \
      "${VERSION_FILES[@]}"
     $ ./gradlew build
     $ git commit -a -m "Bump version to $MAJOR.$MINOR.$((PATCH+1))-SNAPSHOT"
@@ -73,8 +73,8 @@ Before any push to the upstream repository you need to create a
     ```bash
     $ git checkout v$MAJOR.$MINOR.x
     $ git merge --ff-only release
-    $ git push upstream v$MAJOR.$MINOR.$PATCH
     $ git push upstream v$MAJOR.$MINOR.x
+    $ git push upstream v$MAJOR.$MINOR.$PATCH
     ```
 
 ## Announcement
