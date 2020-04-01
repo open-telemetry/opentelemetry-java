@@ -221,9 +221,10 @@ public void handle(HttpExchange httpExchange) {
   // Extract the SpanContext and other elements from the request.
   Context extractedContext = OpenTelemetry.getPropagators().getHttpTextFormat()
         .extract(Context.current(), httpExchange, getter);
+  Span serverSpan = null;
   try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {
     // Automatically use the extracted SpanContext as parent.
-    Span serverSpan = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.SERVER)
+    serverSpan = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.SERVER)
         .startSpan();
     // Add the attributes defined in the Semantic Conventions
     serverSpan.setAttribute("http.method", "GET");
@@ -233,7 +234,9 @@ public void handle(HttpExchange httpExchange) {
     // Serve the request
     ...
   } finally {
-    serverSpan.end();
+    if (serverSpan != null) {
+      serverSpan.end();
+    }
   }
 }
 ```
