@@ -232,6 +232,7 @@ public void handle(HttpExchange httpExchange) {
     serverSpan.setAttribute("http.target", "/resource");
     // Serve the request
     ...
+  } finally {
     serverSpan.end();
   }
 }
