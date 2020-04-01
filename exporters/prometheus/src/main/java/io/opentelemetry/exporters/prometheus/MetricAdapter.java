@@ -142,27 +142,7 @@ final class MetricAdapter {
           samples.add(new Sample(name, labelNames, labelValues, longPoint.getValue()));
           break;
         case SUMMARY:
-          SummaryPoint summaryPoint = (SummaryPoint) point;
-          samples.add(
-              new Sample(
-                  name + SAMPLE_SUFFIX_COUNT, labelNames, labelValues, summaryPoint.getCount()));
-          samples.add(
-              new Sample(name + SAMPLE_SUFFIX_SUM, labelNames, labelValues, summaryPoint.getSum()));
-          List<ValueAtPercentile> valueAtPercentiles = summaryPoint.getPercentileValues();
-          List<String> labelNamesWithQuantile = new ArrayList<>(labelNames.size());
-          labelNamesWithQuantile.addAll(labelNames);
-          labelNamesWithQuantile.add(LABEL_NAME_QUANTILE);
-          for (ValueAtPercentile valueAtPercentile : valueAtPercentiles) {
-            List<String> labelValuesWithQuantile = new ArrayList<>(labelValues.size());
-            labelValuesWithQuantile.addAll(labelValues);
-            labelValuesWithQuantile.add(doubleToGoString(valueAtPercentile.getPercentile()));
-            samples.add(
-                new Sample(
-                    name,
-                    labelNamesWithQuantile,
-                    labelValuesWithQuantile,
-                    valueAtPercentile.getValue()));
-          }
+          addSummarySamples((SummaryPoint) point, name, labelNames, labelValues, samples);
           break;
       }
     }
@@ -172,6 +152,30 @@ final class MetricAdapter {
   // Converts a label keys to a label names. Sanitizes the label keys.
   static String toLabelName(String labelKey) {
     return Collector.sanitizeMetricName(labelKey);
+  }
+
+  private static void addSummarySamples(
+      SummaryPoint summaryPoint,
+      String name,
+      List<String> labelNames,
+      List<String> labelValues,
+      List<Sample> samples) {
+    samples.add(
+        new Sample(name + SAMPLE_SUFFIX_COUNT, labelNames, labelValues, summaryPoint.getCount()));
+    samples.add(
+        new Sample(name + SAMPLE_SUFFIX_SUM, labelNames, labelValues, summaryPoint.getSum()));
+    List<ValueAtPercentile> valueAtPercentiles = summaryPoint.getPercentileValues();
+    List<String> labelNamesWithQuantile = new ArrayList<>(labelNames.size());
+    labelNamesWithQuantile.addAll(labelNames);
+    labelNamesWithQuantile.add(LABEL_NAME_QUANTILE);
+    for (ValueAtPercentile valueAtPercentile : valueAtPercentiles) {
+      List<String> labelValuesWithQuantile = new ArrayList<>(labelValues.size());
+      labelValuesWithQuantile.addAll(labelValues);
+      labelValuesWithQuantile.add(doubleToGoString(valueAtPercentile.getPercentile()));
+      samples.add(
+          new Sample(
+              name, labelNamesWithQuantile, labelValuesWithQuantile, valueAtPercentile.getValue()));
+    }
   }
 
   private static int estimateNumSamples(int numPoints, Descriptor.Type type) {
