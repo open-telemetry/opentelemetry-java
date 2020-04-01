@@ -21,6 +21,7 @@ import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
 import io.grpc.ClientInterceptor;
+import io.grpc.Context;
 import io.grpc.ForwardingClientCall;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -31,12 +32,11 @@ import io.grpc.stub.StreamObserver;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.exporters.logging.LoggingExporter;
+import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 
@@ -55,19 +55,18 @@ public class HelloWorldClientStream {
 
   // OTel API
   Tracer tracer =
-      OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.HelloWorldClient");;
+      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.HelloWorldClient");;
   // Export traces as log
-  LoggingExporter exporter = new LoggingExporter();
+  LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text headers
-  HttpTextFormat<SpanContext> textFormat = tracer.getHttpTextFormat();
+  HttpTextFormat textFormat = OpenTelemetry.getPropagators().getHttpTextFormat();
   // Inject context into the gRPC request metadata
-  HttpTextFormat.Setter<Metadata> setter =
-      new HttpTextFormat.Setter<Metadata>() {
-        @Override
-        public void put(Metadata carrier, String key, String value) {
-          carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
-        }
-      };
+  HttpTextFormat.Setter<Metadata> setter = new HttpTextFormat.Setter<Metadata>() {
+    @Override
+    public void set(Metadata carrier, String key, String value) {
+      carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
+    }
+  };
 
   /** Construct client connecting to HelloWorld server at {@code host:port}. */
   public HelloWorldClientStream(String host, int port) {
@@ -88,9 +87,9 @@ public class HelloWorldClientStream {
 
   private void initTracer() {
     // Use the OpenTelemetry SDK
-    TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
+    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Set to process the spans by the log exporter
-    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
   }
 
   public void shutdown() throws InterruptedException {
@@ -104,7 +103,6 @@ public class HelloWorldClientStream {
     // Start a span
     Span span =
             tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(Span.Kind.CLIENT).startSpan();
-    // TODO provide attributes to Span.Builder
     span.setAttribute("component", "grpc");
     span.setAttribute("rpc.service", "Greeter");
     span.setAttribute("net.peer.ip", this.serverHostname);
@@ -176,10 +174,8 @@ public class HelloWorldClientStream {
           channel.newCall(methodDescriptor, callOptions)) {
         @Override
         public void start(Listener<RespT> responseListener, Metadata headers) {
-          // Extract from the Context the current span
-          Span span = tracer.getCurrentSpan();
-          // Inject the request with the span context
-          textFormat.inject(span.getContext(), headers, setter);
+          // Inject the request with the current context
+          textFormat.inject(Context.current(), headers, setter);
           // Perform the gRPC request
           super.start(responseListener, headers);
         }

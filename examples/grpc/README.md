@@ -20,15 +20,15 @@ gradlew fatJar
 
 ## 2 - Start the Server
 ```bash
-java -cp .\build\libs\opentelemetry-example-grpc-all-0.2.0.jar io.opentelemetry.example.HelloWorldServer
+java -cp ./build/libs/opentelemetry-example-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.HelloWorldServer
 ```
  
 ## 3 - Start the normal Client
 ```bash
-java -cp .\build\libs\opentelemetry-example-grpc-all-0.2.0.jar io.opentelemetry.example.HelloWorldClient
+java -cp ./build/libs/opentelemetry-example-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.HelloWorldClient
 ```
 
 ## 4 - Start the streamed Client
 ```bash
-java -cp .\build\libs\opentelemetry-example-grpc-all-0.2.0.jar io.opentelemetry.example.HelloWorldClientStream
+java -cp ./build/libs/opentelemetry-example-grpc-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.HelloWorldClientStream
 ```

@@ -27,13 +27,14 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.context.ContextUtils;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.exporters.logging.LoggingExporter;
+import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.TracerSdkFactory;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 
@@ -48,11 +49,11 @@ public class HelloWorldServer {
   private final int port = 50051;
 
   // OTel API
-  Tracer tracer = OpenTelemetry.getTracerFactory().get("io.opentelemetry.example.HelloWorldServer");
+  Tracer tracer = OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.HelloWorldServer");
   // Export traces as log
-  LoggingExporter exporter = new LoggingExporter();
+  LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text
-  HttpTextFormat<SpanContext> textFormat = this.tracer.getHttpTextFormat();;
+  HttpTextFormat textFormat = OpenTelemetry.getPropagators().getHttpTextFormat();;
 
   // Extract the Distributed Context from the gRPC metadata
   HttpTextFormat.Getter<Metadata> getter =
@@ -107,9 +108,9 @@ public class HelloWorldServer {
 
   private void initTracer() {
     // Get the tracer
-    TracerSdkFactory tracerFactory = OpenTelemetrySdk.getTracerFactory();
+    TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Set to process the the spans by the LogExporter
-    tracerFactory.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
   }
 
   /** Await termination on the main thread since the grpc library uses daemon threads. */
@@ -160,27 +161,27 @@ public class HelloWorldServer {
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
         ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
       // Extract the Span Context from the metadata of the gRPC request
-      SpanContext sctx = textFormat.extract(headers, getter);
+      Context extractedContext = textFormat.extract(Context.current(),headers, getter);
       InetSocketAddress clientInfo =
           (InetSocketAddress) call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
       // Build a span based on the received context
-      Span span =
-          tracer
-              .spanBuilder("helloworld.Greeter/SayHello")
-              .setParent(sctx)
-              .setSpanKind(Span.Kind.SERVER)
-              .startSpan();
-      // TODO provide attributes to Span.Builder
-      span.setAttribute("component", "grpc");
-      span.setAttribute("rpc.service", "Greeter");
-      span.setAttribute("net.peer.ip", clientInfo.getHostString());
-      span.setAttribute("net.peer.port", clientInfo.getPort());
-      // Process the gRPC call normally
-      try {
-        span.setStatus(Status.OK);
-        return Contexts.interceptCall(Context.current(), call, headers, next);
-      } finally {
-        span.end();
+      try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {
+        Span span =
+                tracer
+                        .spanBuilder("helloworld.Greeter/SayHello")
+                        .setSpanKind(Span.Kind.SERVER)
+                        .startSpan();
+        span.setAttribute("component", "grpc");
+        span.setAttribute("rpc.service", "Greeter");
+        span.setAttribute("net.peer.ip", clientInfo.getHostString());
+        span.setAttribute("net.peer.port", clientInfo.getPort());
+        // Process the gRPC call normally
+        try {
+          span.setStatus(Status.OK);
+          return Contexts.interceptCall(Context.current(), call, headers, next);
+        } finally {
+          span.end();
+        }
       }
     }
   }
