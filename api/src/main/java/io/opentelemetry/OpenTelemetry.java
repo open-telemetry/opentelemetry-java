@@ -35,7 +35,9 @@ import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.spi.TraceProvider;
 import java.util.ServiceLoader;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -50,8 +52,11 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OpenTelemetry {
+  private static final ReentrantLock mutex = new ReentrantLock();
 
-  @Nullable private static volatile OpenTelemetry instance;
+  @GuardedBy("lock")
+  @Nullable
+  private static OpenTelemetry instance;
 
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
@@ -128,14 +133,16 @@ public final class OpenTelemetry {
 
   /** Lazy loads an instance. */
   private static OpenTelemetry getInstance() {
-    if (instance == null) {
-      synchronized (OpenTelemetry.class) {
-        if (instance == null) {
-          instance = new OpenTelemetry();
-        }
+    mutex.lock();
+    try {
+      if (instance != null) {
+        return instance;
       }
+      instance = new OpenTelemetry();
+      return instance;
+    } finally {
+      mutex.unlock();
     }
-    return instance;
   }
 
   private OpenTelemetry() {
@@ -185,6 +192,11 @@ public final class OpenTelemetry {
 
   // for testing
   static void reset() {
-    instance = null;
+    mutex.lock();
+    try {
+      instance = null;
+    } finally {
+      mutex.unlock();
+    }
   }
 }
