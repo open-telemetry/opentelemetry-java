@@ -113,6 +113,8 @@ public class JaegerPropagator implements HttpTextFormat {
     }
 
     try {
+      // the propagation value may contain UTF-8 encoded SEPARATOR's (:), so we need to decode it
+      // before attempting to split it.
       value = URLDecoder.decode(value, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       logger.info(
