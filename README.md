@@ -49,7 +49,7 @@ Snapshots based out the `master` branch are available for `opentelemetry-api`, `
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.2.0-SNAPSHOT</version>
+      <version>0.4.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -121,7 +121,7 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 
 Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-telemetry/teams/java-maintainers)):
 
-- [Bogdan Drutu](https://github.com/BogdanDrutu), Google
+- [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
 - [Carlos Alberto](https://github.com/carlosalberto), LightStep
 - [John Watson](https://github.com/jkwatson), New Relic
 
