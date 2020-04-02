@@ -72,11 +72,13 @@ $ git commit -m "Update javadoc for API."
 Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.
 
-1. From the root project directory, initialize repository dependencies
+1. Note: Currently, to run the full suite of tests, you'll need to be running a docker daemon.
+
+2. From the root project directory, initialize repository dependencies
 
    `make init-git-submodules`
 
-2. Run the following commands to build, run tests and most static analysis, and
+3. Run the following commands to build, run tests and most static analysis, and
 check formatting:
 
     ##### OS X or Linux
