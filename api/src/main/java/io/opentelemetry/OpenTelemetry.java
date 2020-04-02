@@ -54,7 +54,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public final class OpenTelemetry {
   private static final ReentrantLock mutex = new ReentrantLock();
 
-  @GuardedBy("lock")
+  @GuardedBy("mutex")
   @Nullable
   private static OpenTelemetry instance;
 
