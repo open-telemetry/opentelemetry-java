@@ -123,7 +123,7 @@ Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-tel
 
 - [Bogdan Drutu](https://github.com/BogdanDrutu), Google
 - [Carlos Alberto](https://github.com/carlosalberto), LightStep
-- [John Watson](https://github.com/jkwatson), NewRelic
+- [John Watson](https://github.com/jkwatson), New Relic
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
 
