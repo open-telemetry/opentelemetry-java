@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.opentelemetry.common.Acceptor;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
@@ -154,6 +155,12 @@ public final class DefaultTracer implements Tracer {
     @Override
     public NoopSpanBuilder setStartTimestamp(long startTimestamp) {
       Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
+      return this;
+    }
+
+    @Override
+    public Span.Builder apply(Acceptor<Span.Builder> acceptor) {
+      acceptor.exec(this);
       return this;
     }
 

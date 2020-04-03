@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import io.grpc.Context;
+import io.opentelemetry.common.Acceptor;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
@@ -195,6 +196,12 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span.Builder setStartTimestamp(long startTimestamp) {
     Utils.checkArgument(startTimestamp >= 0, "Negative startTimestamp");
     startEpochNanos = startTimestamp;
+    return this;
+  }
+
+  @Override
+  public Span.Builder apply(Acceptor<Span.Builder> acceptor) {
+    acceptor.exec(this);
     return this;
   }
 

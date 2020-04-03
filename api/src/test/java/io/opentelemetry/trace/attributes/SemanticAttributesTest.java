@@ -17,6 +17,7 @@
 package io.opentelemetry.trace.attributes;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.trace.attributes.SemanticAttributes.HTTP_METHOD;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.Span;
@@ -33,16 +34,17 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class SemanticAttributesTest {
 
-  private Span span;
+  private Span.Builder spanBuilder;
 
   @Before
   public void setUp() {
     Tracer tracer = OpenTelemetry.getTracerProvider().get("io.telemetry.api");
-    span = tracer.spanBuilder("junit").startSpan();
+    spanBuilder = tracer.spanBuilder("junit");
   }
 
   @Test
   public void shouldEnableSetAttributeOnSpan() throws IllegalAccessException {
+    Span span = spanBuilder.startSpan();
     Set<String> keys = new HashSet<>();
     Field[] fields = SemanticAttributes.class.getFields();
     for (Field field : fields) {
@@ -63,6 +65,35 @@ public class SemanticAttributesTest {
       }
     }
     assertThat(keys.size()).isEqualTo(fields.length);
+  }
+
+  @Test
+  public void shouldEnableSetAttributeOnSpanBuilder() throws IllegalAccessException {
+    Set<String> keys = new HashSet<>();
+    Field[] fields = SemanticAttributes.class.getFields();
+    for (Field field : fields) {
+      Object attribute = field.get(null);
+      if (attribute instanceof StringAttributeSetter) {
+        keys.add(((StringAttributeSetter) attribute).key());
+        spanBuilder.apply(((StringAttributeSetter) attribute).set("TestValue"));
+        spanBuilder.apply(((StringAttributeSetter) attribute).set(null));
+      } else if (attribute instanceof LongAttributeSetter) {
+        keys.add(((LongAttributeSetter) attribute).key());
+        spanBuilder.apply(((LongAttributeSetter) attribute).set(42));
+      } else if (attribute instanceof DoubleAttributeSetter) {
+        keys.add(((DoubleAttributeSetter) attribute).key());
+        spanBuilder.apply(((DoubleAttributeSetter) attribute).set(3.14));
+      } else if (attribute instanceof BooleanAttributeSetter) {
+        keys.add(((BooleanAttributeSetter) attribute).key());
+        spanBuilder.apply(((BooleanAttributeSetter) attribute).set(true));
+      }
+    }
+    assertThat(keys.size()).isEqualTo(fields.length);
+  }
+
+  @Test
+  public void setBuilderDemo() {
+    spanBuilder.apply(HTTP_METHOD.set("GET"));
   }
 
   @Test

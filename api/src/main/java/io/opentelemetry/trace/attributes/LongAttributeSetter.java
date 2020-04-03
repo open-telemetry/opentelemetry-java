@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace.attributes;
 
+import io.opentelemetry.common.Acceptor;
 import io.opentelemetry.trace.Span;
 import javax.annotation.concurrent.Immutable;
 
@@ -59,5 +60,22 @@ public final class LongAttributeSetter {
    */
   public void set(Span span, long value) {
     span.setAttribute(key(), value);
+  }
+
+  /**
+   * Returns a {@link Acceptor} for use set {@link Span.Builder#apply(Acceptor)} that sets the
+   * attribute to {@code value}.
+   *
+   * @param value the value for this attribute
+   * @return A {@link Acceptor} for use set {@link Span.Builder#apply(Acceptor)}.
+   */
+  @SuppressWarnings("InconsistentOverloads")
+  public Acceptor<Span.Builder> set(final long value) {
+    return new Acceptor<Span.Builder>() {
+      @Override
+      public void exec(Span.Builder arg) {
+        arg.setAttribute(key(), value);
+      }
+    };
   }
 }

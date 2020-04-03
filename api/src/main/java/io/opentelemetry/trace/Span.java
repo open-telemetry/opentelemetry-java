@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.opentelemetry.common.Acceptor;
 import io.opentelemetry.common.AttributeValue;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -543,6 +544,17 @@ public interface Span {
      * @since 0.1.0
      */
     Builder setStartTimestamp(long startTimestamp);
+
+    /**
+     * Applies the given consumer to this {@link Builder}.
+     *
+     * <p>This is indented to be used with {@link
+     * io.opentelemetry.trace.attributes.StringAttributeSetter#set(String)}, etc.
+     *
+     * @param acceptor The {@link Acceptor} to apply to this
+     * @return this.
+     */
+    Builder apply(Acceptor<Builder> acceptor);
 
     /**
      * Starts a new {@link Span}.
