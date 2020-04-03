@@ -63,7 +63,7 @@ public final class DoubleAttributeSetter {
   }
 
   /**
-   * Returns a {@link Acceptor} for use set {@link Span.Builder#apply(Acceptor)} that sets the
+   * Returns an {@link Acceptor} for use with {@link Span.Builder#apply(Acceptor)} that sets the
    * attribute to {@code value}.
    *
    * @param value the value for this attribute

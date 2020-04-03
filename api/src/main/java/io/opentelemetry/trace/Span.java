@@ -548,7 +548,7 @@ public interface Span {
     /**
      * Applies the given consumer to this {@link Builder}.
      *
-     * <p>This is indented to be used with {@link
+     * <p>This is intended to be used with {@link
      * io.opentelemetry.trace.attributes.StringAttributeSetter#set(String)}, etc.
      *
      * @param acceptor The {@link Acceptor} to apply to this
