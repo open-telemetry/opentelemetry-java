@@ -516,15 +516,4 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.maxNumberOfAttributes = traceConfig.getMaxNumberOfAttributes();
     this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
   }
-
-  @SuppressWarnings("NoFinalizer")
-  @Override
-  protected void finalize() throws Throwable {
-    synchronized (lock) {
-      if (!hasEnded) {
-        logger.log(Level.SEVERE, "Span " + name + " is GC'ed without being ended.");
-      }
-    }
-    super.finalize();
-  }
 }
