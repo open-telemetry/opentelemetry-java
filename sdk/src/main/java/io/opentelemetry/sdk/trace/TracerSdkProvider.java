@@ -120,6 +120,15 @@ public class TracerSdkProvider implements TracerProvider {
   }
 
   /**
+   * Requests the active span processor to process all span events that have not yet been processed.
+   *
+   * @see SpanProcessor#forceFlush()
+   */
+  public void forceFlush() {
+    sharedState.getActiveSpanProcessor().forceFlush();
+  }
+
+  /**
    * Builder class for the TracerSdkFactory. Has fully functional default implementations of all
    * three required interfaces.
    *

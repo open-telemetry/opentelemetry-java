@@ -121,6 +121,12 @@ public class TracerSdkProviderTest {
   }
 
   @Test
+  public void forceFlush() {
+    tracerFactory.forceFlush();
+    Mockito.verify(spanProcessor, Mockito.times(1)).forceFlush();
+  }
+
+  @Test
   public void shutdownTwice_OnlyFlushSpanProcessorOnce() {
     tracerFactory.shutdown();
     Mockito.verify(spanProcessor, Mockito.times(1)).shutdown();
