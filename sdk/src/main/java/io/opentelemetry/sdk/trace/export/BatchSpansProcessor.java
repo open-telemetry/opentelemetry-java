@@ -22,12 +22,14 @@ import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,6 +39,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Implementation of the {@link SpanProcessor} that batches spans exported by the SDK then pushes
@@ -80,6 +83,33 @@ public final class BatchSpansProcessor implements SpanProcessor {
     this.workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     this.workerThread.start();
     this.sampled = sampled;
+  }
+
+  /**
+   * Creates a {@code BatchSpansProcessor} instance using the default configuration.
+   *
+   * @param spanExporter The {@link SpanExporter} to use
+   * @return a {@code BatchSpansProcessor} instance.
+   */
+  public static BatchSpansProcessor create(SpanExporter spanExporter) {
+    return create(spanExporter, Config.getDefault());
+  }
+
+  /**
+   * Creates a {@code BatchSpansProcessor} instance.
+   *
+   * @param spanExporter The {@link SpanExporter} to use
+   * @param config The {@link Config} to use
+   * @return a {@code BatchSpansProcessor} instance.
+   */
+  public static BatchSpansProcessor create(SpanExporter spanExporter, Config config) {
+    return new BatchSpansProcessor(
+        spanExporter,
+        config.sampled,
+        config.scheduleDelayMillis,
+        config.maxQueueSize,
+        config.maxExportBatchSize,
+        config.exporterTimeoutMillis);
   }
 
   @Override
@@ -391,6 +421,186 @@ public final class BatchSpansProcessor implements SpanProcessor {
       } catch (TimeoutException e) {
         logger.log(Level.WARNING, "Export timed out. Cancelling execution.", e);
         submission.cancel(true);
+      }
+    }
+  }
+
+  @Immutable
+  public static final class Config {
+    private final long scheduleDelayMillis;
+    private final int maxQueueSize;
+    private final int maxExportBatchSize;
+    private final int exporterTimeoutMillis;
+    private final boolean sampled;
+
+    private Config(
+        boolean sampled,
+        long scheduleDelayMillis,
+        int maxQueueSize,
+        int maxExportBatchSize,
+        int exporterTimeoutMillis) {
+      this.sampled = sampled;
+      this.scheduleDelayMillis = scheduleDelayMillis;
+      this.maxQueueSize = maxQueueSize;
+      this.maxExportBatchSize = maxExportBatchSize;
+      this.exporterTimeoutMillis = exporterTimeoutMillis;
+    }
+
+    public long getScheduleDelayMillis() {
+      return scheduleDelayMillis;
+    }
+
+    public int getMaxQueueSize() {
+      return maxQueueSize;
+    }
+
+    public int getMaxExportBatchSize() {
+      return maxExportBatchSize;
+    }
+
+    public int getExporterTimeoutMillis() {
+      return exporterTimeoutMillis;
+    }
+
+    public boolean isReportOnlySampled() {
+      return sampled;
+    }
+
+    public static Config getDefault() {
+      return new Builder().build();
+    }
+
+    public static Builder newBuilder() {
+      return new Builder();
+    }
+
+    public static class Builder extends ConfigBuilder {
+
+      private static final String KEY_SCHEDULE_DELAY_MILLIS = "OTEL_BSP_SCHEDULE_DELAY";
+      private static final String KEY_MAX_QUEUE_SIZE = "OTEL_BSP_MAX_QUEUE";
+      private static final String KEY_MAX_EXPORT_BATCH_SIZE = "OTEL_BSP_MAX_EXPORT_BATCH";
+      private static final String KEY_EXPORT_TIMEOUT_MILLIS = "OTEL_BSP_EXPORT_TIMEOUT";
+      private static final String KEY_SAMPLED = "OTEL_BSP_REPORT_SAMPLED";
+
+      private static final long SCHEDULE_DELAY_MILLIS = 5000;
+      private static final int MAX_QUEUE_SIZE = 2048;
+      private static final int MAX_EXPORT_BATCH_SIZE = 512;
+      private static final int EXPORT_TIMEOUT_MILLIS = 30_000;
+      private static final boolean REPORT_ONLY_SAMPLED = true;
+
+      private long scheduleDelayMillis = SCHEDULE_DELAY_MILLIS;
+      private int maxQueueSize = MAX_QUEUE_SIZE;
+      private int maxExportBatchSize = MAX_EXPORT_BATCH_SIZE;
+      private int exporterTimeoutMillis = EXPORT_TIMEOUT_MILLIS;
+      private boolean sampled = REPORT_ONLY_SAMPLED;
+
+      /**
+       * Sets the configuration values from the given configuration map.
+       *
+       * @param configMap {@link Map} holding the configuration values.
+       * @return this.
+       */
+      @Override
+      public Builder fromConfigMap(Map<String, String> configMap) {
+        this.setScheduleDelayMillis(
+            getProperty(KEY_SCHEDULE_DELAY_MILLIS, configMap, SCHEDULE_DELAY_MILLIS));
+        this.setMaxQueueSize(getProperty(KEY_MAX_QUEUE_SIZE, configMap, MAX_QUEUE_SIZE));
+        this.setMaxExportBatchSize(
+            getProperty(KEY_MAX_EXPORT_BATCH_SIZE, configMap, MAX_EXPORT_BATCH_SIZE));
+        this.setExporterTimeoutMillis(
+            getProperty(KEY_EXPORT_TIMEOUT_MILLIS, configMap, EXPORT_TIMEOUT_MILLIS));
+        this.reportOnlySampled(getProperty(KEY_SAMPLED, configMap, REPORT_ONLY_SAMPLED));
+        return this;
+      }
+
+      /**
+       * Sets the configuration values from environment variables.
+       *
+       * @return this.
+       */
+      @Override
+      public Builder fromEnv() {
+        return fromConfigMap(System.getenv());
+      }
+
+      /**
+       * Set whether only sampled spans should be reported.
+       *
+       * @param sampled report only sampled spans.
+       * @return this.
+       */
+      public Builder reportOnlySampled(boolean sampled) {
+        this.sampled = sampled;
+        return this;
+      }
+
+      /**
+       * Sets the delay interval between two consecutive exports. The actual interval may be shorter
+       * if the batch size is getting larger than {@code maxQueuedSpans / 2}.
+       *
+       * <p>Default value is {@code 5000}ms.
+       *
+       * @param scheduleDelayMillis the delay interval between two consecutive exports.
+       * @return this.
+       */
+      public Builder setScheduleDelayMillis(long scheduleDelayMillis) {
+        Utils.checkArgument(
+            scheduleDelayMillis >= 0, "scheduleDelayMillis must greater than or equal 0.");
+        this.scheduleDelayMillis = scheduleDelayMillis;
+        return this;
+      }
+
+      /**
+       * Sets the maximum time an exporter will be allowed to run before being cancelled.
+       *
+       * <p>Default value is {@code 30000}ms
+       *
+       * @param exporterTimeoutMillis the timeout for exports in milliseconds.
+       * @return this
+       */
+      public Builder setExporterTimeoutMillis(int exporterTimeoutMillis) {
+        Utils.checkArgument(
+            exporterTimeoutMillis >= 0, "exporterTimeoutMillis must greater than or equal 0.");
+        this.exporterTimeoutMillis = exporterTimeoutMillis;
+        return this;
+      }
+
+      /**
+       * Sets the maximum number of Spans that are kept in the queue before start dropping.
+       *
+       * <p>See the BatchSampledSpansProcessor class description for a high-level design description
+       * of this class.
+       *
+       * <p>Default value is {@code 2048}.
+       *
+       * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
+       *     dropping.
+       * @return this.
+       */
+      public Builder setMaxQueueSize(int maxQueueSize) {
+        Utils.checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
+        this.maxQueueSize = maxQueueSize;
+        return this;
+      }
+
+      /**
+       * Sets the maximum batch size for every export. This must be smaller or equal to {@code
+       * maxQueuedSpans}.
+       *
+       * <p>Default value is {@code 512}.
+       *
+       * @param maxExportBatchSize the maximum batch size for every export.
+       * @return this.
+       */
+      public Builder setMaxExportBatchSize(int maxExportBatchSize) {
+        Utils.checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
+        this.maxExportBatchSize = maxExportBatchSize;
+        return this;
+      }
+
+      public Config build() {
+        return new Config(
+            sampled, scheduleDelayMillis, maxQueueSize, maxExportBatchSize, exporterTimeoutMillis);
       }
     }
   }
