@@ -72,7 +72,7 @@ public final class MemoryPools {
     // TODO: Set this as non-monotonic.
     final LongObserver areaMetric =
         this.meter
-            .longObserverBuilder("area")
+            .longObserverBuilder("jvm.memory.area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
@@ -107,7 +107,7 @@ public final class MemoryPools {
     // TODO: Set this as non-monotonic.
     final LongObserver poolMetric =
         this.meter
-            .longObserverBuilder("pool")
+            .longObserverBuilder("jvm.memory.pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
             .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))

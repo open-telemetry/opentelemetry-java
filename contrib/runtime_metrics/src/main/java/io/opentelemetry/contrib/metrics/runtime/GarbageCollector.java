@@ -58,7 +58,7 @@ public final class GarbageCollector {
   public void exportAll() {
     final LongObserver gcMetric =
         meter
-            .longObserverBuilder("collection")
+            .longObserverBuilder("jvm.gc.collection")
             .setDescription("Time spent in a given JVM garbage collector in milliseconds.")
             .setUnit("ms")
             .setLabelKeys(Collections.singletonList(GC_LABEL_KEY))
