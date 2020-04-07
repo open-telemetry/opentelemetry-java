@@ -25,6 +25,7 @@ import io.grpc.Context;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -90,7 +91,6 @@ public class JaegerPropagatorTest {
 
   @Test
   public void inject_SampledContext() {
-
     Map<String, String> carrier = new LinkedHashMap<>();
     jaegerPropagator.inject(
         withSpanContext(
@@ -98,6 +98,29 @@ public class JaegerPropagatorTest {
             Context.current()),
         carrier,
         setter);
+
+    assertThat(carrier)
+        .containsEntry(
+            TRACE_ID_HEADER,
+            generateTraceIdHeaderValue(
+                TRACE_ID_BASE16, SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, "1"));
+  }
+
+  @Test
+  public void inject_SampledContext_nullCarrierUsage() {
+    final Map<String, String> carrier = new LinkedHashMap<>();
+
+    jaegerPropagator.inject(
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+            Context.current()),
+        null,
+        new Setter<Map<String, String>>() {
+          @Override
+          public void set(Map<String, String> ignored, String key, String value) {
+            carrier.put(key, value);
+          }
+        });
 
     assertThat(carrier)
         .containsEntry(
