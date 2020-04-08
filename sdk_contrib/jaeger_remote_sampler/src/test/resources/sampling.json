@@ -1,0 +1,30 @@
+{
+  "service_strategies": [
+    {
+      "service": "E2E-test",
+      "type": "probabilistic",
+      "param": 0.33,
+      "operation_strategies": [
+        {
+          "operation": "op1",
+          "type": "probabilistic",
+          "param": 0.2
+        },
+        {
+          "operation": "op2",
+          "type": "probabilistic",
+          "param": 0.4
+        }
+      ]
+    },
+    {
+      "service": "bar",
+      "type": "ratelimiting",
+      "param": 150
+    }
+  ],
+  "default_strategy": {
+    "type": "probabilistic",
+    "param": 0.8
+  }
+}
