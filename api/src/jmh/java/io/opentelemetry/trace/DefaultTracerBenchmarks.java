@@ -36,6 +36,7 @@ public class DefaultTracerBenchmarks {
   private final Tracer tracer = DefaultTracer.getInstance();
   @Nullable private Span span = null;
 
+  /** Benchmark the full span lifecycle. */
   @Benchmark
   @BenchmarkMode({Mode.AverageTime})
   @Fork(1)
@@ -44,8 +45,12 @@ public class DefaultTracerBenchmarks {
   @Warmup(iterations = 5, time = 1)
   public void measureFullSpanLifecycle() {
     span = tracer.spanBuilder("span").startSpan();
-    try (io.opentelemetry.context.Scope ignored = tracer.withSpan(span)) {
-      //no-op
+    io.opentelemetry.context.Scope ignored = tracer.withSpan(span);
+    try {
+      // no-op
+    } finally {
+      ignored.close();
+      span.end();
     }
   }
 
@@ -59,6 +64,7 @@ public class DefaultTracerBenchmarks {
     span = tracer.spanBuilder("span").startSpan();
   }
 
+  /** Benchmark just the scope lifecycle. */
   @Benchmark
   @BenchmarkMode({Mode.AverageTime})
   @Fork(1)
@@ -66,8 +72,11 @@ public class DefaultTracerBenchmarks {
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
   public void measureScopeLifecycle() {
-    try (io.opentelemetry.context.Scope ignored = tracer.withSpan(span)) {
-      //no-op
+    io.opentelemetry.context.Scope ignored = tracer.withSpan(span);
+    try {
+      // no-op
+    } finally {
+      ignored.close();
     }
   }
 
@@ -87,7 +96,4 @@ public class DefaultTracerBenchmarks {
       span.end();
     }
   }
-
-
-
 }
