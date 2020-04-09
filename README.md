@@ -75,7 +75,7 @@ OpenTelemetry Java is under active development. Releases aren't guaranteed
 to conform to a specific version of the specification. Future releases will
 not attempt to maintain backwards compatibility with previous releases.
 
-The latest version of the library was released on March 12th, 2020.
+The latest version of the library was released on March 27th, 2020.
 See the [v0.3.0 alpha release](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v0.3.0).
 
 This is a **current** feature status list:
