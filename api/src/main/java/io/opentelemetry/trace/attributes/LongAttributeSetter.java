@@ -16,12 +16,13 @@
 
 package io.opentelemetry.trace.attributes;
 
+import io.opentelemetry.common.LongValuedKey;
 import io.opentelemetry.trace.Span;
 import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with long values. */
 @Immutable
-public final class LongAttributeSetter {
+public final class LongAttributeSetter implements LongValuedKey {
 
   /**
    * Returns a new attribute setter.
@@ -47,6 +48,7 @@ public final class LongAttributeSetter {
    *
    * @return the attribute map key
    */
+  @Override
   public String key() {
     return attributeKey;
   }

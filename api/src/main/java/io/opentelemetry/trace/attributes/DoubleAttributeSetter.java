@@ -16,12 +16,13 @@
 
 package io.opentelemetry.trace.attributes;
 
+import io.opentelemetry.common.DoubleValuedKey;
 import io.opentelemetry.trace.Span;
 import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with double values. */
 @Immutable
-public final class DoubleAttributeSetter {
+public final class DoubleAttributeSetter implements DoubleValuedKey {
 
   /**
    * Returns a new attribute setter.
@@ -47,6 +48,7 @@ public final class DoubleAttributeSetter {
    *
    * @return the attribute map key
    */
+  @Override
   public String key() {
     return attributeKey;
   }

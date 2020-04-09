@@ -17,6 +17,10 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.BooleanValuedKey;
+import io.opentelemetry.common.DoubleValuedKey;
+import io.opentelemetry.common.LongValuedKey;
+import io.opentelemetry.common.StringValuedKey;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
@@ -143,6 +147,30 @@ public final class DefaultTracer implements Tracer {
     public NoopSpanBuilder setAttribute(String key, AttributeValue value) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");
+      return this;
+    }
+
+    @Override
+    public NoopSpanBuilder setAttribute(StringValuedKey key, String value) {
+      Utils.checkNotNull(key, "key");
+      return this;
+    }
+
+    @Override
+    public NoopSpanBuilder setAttribute(DoubleValuedKey key, double value) {
+      Utils.checkNotNull(key, "key");
+      return this;
+    }
+
+    @Override
+    public NoopSpanBuilder setAttribute(BooleanValuedKey key, boolean value) {
+      Utils.checkNotNull(key, "key");
+      return this;
+    }
+
+    @Override
+    public NoopSpanBuilder setAttribute(LongValuedKey key, long value) {
+      Utils.checkNotNull(key, "key");
       return this;
     }
 

@@ -20,6 +20,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.AttributeValue.Type;
+import io.opentelemetry.common.BooleanValuedKey;
+import io.opentelemetry.common.DoubleValuedKey;
+import io.opentelemetry.common.LongValuedKey;
+import io.opentelemetry.common.StringValuedKey;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -351,6 +355,26 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
       attributes.putAttribute(key, value);
     }
+  }
+
+  @Override
+  public void setAttribute(StringValuedKey key, String value) {
+    setAttribute(key.key(), value);
+  }
+
+  @Override
+  public void setAttribute(DoubleValuedKey key, double value) {
+    setAttribute(key.key(), value);
+  }
+
+  @Override
+  public void setAttribute(BooleanValuedKey key, boolean value) {
+    setAttribute(key.key(), value);
+  }
+
+  @Override
+  public void setAttribute(LongValuedKey key, long value) {
+    setAttribute(key.key(), value);
   }
 
   @Override

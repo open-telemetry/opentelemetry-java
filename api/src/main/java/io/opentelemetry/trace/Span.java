@@ -17,6 +17,10 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.BooleanValuedKey;
+import io.opentelemetry.common.DoubleValuedKey;
+import io.opentelemetry.common.LongValuedKey;
+import io.opentelemetry.common.StringValuedKey;
 import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -132,6 +136,14 @@ public interface Span {
    * @since 0.1.0
    */
   void setAttribute(String key, AttributeValue value);
+
+  void setAttribute(StringValuedKey key, String value);
+
+  void setAttribute(DoubleValuedKey key, double value);
+
+  void setAttribute(BooleanValuedKey key, boolean value);
+
+  void setAttribute(LongValuedKey key, long value);
 
   /**
    * Adds an event to the {@code Span}.
@@ -518,6 +530,14 @@ public interface Span {
      * @since 0.3.0
      */
     Builder setAttribute(String key, AttributeValue value);
+
+    Builder setAttribute(StringValuedKey key, String value);
+
+    Builder setAttribute(DoubleValuedKey key, double value);
+
+    Builder setAttribute(BooleanValuedKey key, boolean value);
+
+    Builder setAttribute(LongValuedKey key, long value);
 
     /**
      * Sets the {@link Span.Kind} for the newly created {@code Span}. If not called, the

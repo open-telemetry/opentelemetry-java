@@ -16,13 +16,14 @@
 
 package io.opentelemetry.trace.attributes;
 
+import io.opentelemetry.common.StringValuedKey;
 import io.opentelemetry.trace.Span;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with string values. */
 @Immutable
-public final class StringAttributeSetter {
+public final class StringAttributeSetter implements StringValuedKey {
 
   /**
    * Returns a new attribute setter.
@@ -48,6 +49,7 @@ public final class StringAttributeSetter {
    *
    * @return the attribute map key
    */
+  @Override
   public String key() {
     return attributeKey;
   }

@@ -16,12 +16,13 @@
 
 package io.opentelemetry.trace.attributes;
 
+import io.opentelemetry.common.BooleanValuedKey;
 import io.opentelemetry.trace.Span;
 import javax.annotation.concurrent.Immutable;
 
 /** Defines the behavior for a span attribute with boolean values. */
 @Immutable
-public final class BooleanAttributeSetter {
+public final class BooleanAttributeSetter implements BooleanValuedKey {
 
   /**
    * Returns a new attribute setter.
@@ -47,6 +48,7 @@ public final class BooleanAttributeSetter {
    *
    * @return the attribute map key
    */
+  @Override
   public String key() {
     return attributeKey;
   }

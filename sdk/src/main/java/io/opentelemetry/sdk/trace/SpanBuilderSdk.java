@@ -18,6 +18,10 @@ package io.opentelemetry.sdk.trace;
 
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.BooleanValuedKey;
+import io.opentelemetry.common.DoubleValuedKey;
+import io.opentelemetry.common.LongValuedKey;
+import io.opentelemetry.common.StringValuedKey;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -163,6 +167,26 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span.Builder setAttribute(String key, boolean value) {
     return setAttribute(key, AttributeValue.booleanAttributeValue(value));
+  }
+
+  @Override
+  public Span.Builder setAttribute(StringValuedKey key, String value) {
+    return setAttribute(key.key(), value);
+  }
+
+  @Override
+  public Span.Builder setAttribute(DoubleValuedKey key, double value) {
+    return setAttribute(key.key(), value);
+  }
+
+  @Override
+  public Span.Builder setAttribute(BooleanValuedKey key, boolean value) {
+    return setAttribute(key.key(), value);
+  }
+
+  @Override
+  public Span.Builder setAttribute(LongValuedKey key, long value) {
+    return setAttribute(key.key(), value);
   }
 
   @Override

@@ -17,6 +17,10 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.BooleanValuedKey;
+import io.opentelemetry.common.DoubleValuedKey;
+import io.opentelemetry.common.LongValuedKey;
+import io.opentelemetry.common.StringValuedKey;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
 import java.util.Random;
@@ -96,6 +100,26 @@ public final class DefaultSpan implements Span {
   public void setAttribute(String key, AttributeValue value) {
     Utils.checkNotNull(key, "key");
     Utils.checkNotNull(value, "value");
+  }
+
+  @Override
+  public void setAttribute(StringValuedKey key, String value) {
+    Utils.checkNotNull(key, "key");
+  }
+
+  @Override
+  public void setAttribute(DoubleValuedKey key, double value) {
+    Utils.checkNotNull(key, "key");
+  }
+
+  @Override
+  public void setAttribute(BooleanValuedKey key, boolean value) {
+    Utils.checkNotNull(key, "key");
+  }
+
+  @Override
+  public void setAttribute(LongValuedKey key, long value) {
+    Utils.checkNotNull(key, "key");
   }
 
   @Override
