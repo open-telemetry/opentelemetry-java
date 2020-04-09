@@ -17,6 +17,10 @@
 package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.trace.attributes.BooleanAttributeSetter.booleanKey;
+import static io.opentelemetry.trace.attributes.DoubleAttributeSetter.doubleKey;
+import static io.opentelemetry.trace.attributes.LongAttributeSetter.longKey;
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.trace.Span.Kind;
@@ -57,10 +61,10 @@ public class SpanBuilderTest {
             return Collections.emptyMap();
           }
         });
-    spanBuilder.setAttribute("key", "value");
-    spanBuilder.setAttribute("key", 12345L);
-    spanBuilder.setAttribute("key", .12345);
-    spanBuilder.setAttribute("key", true);
+    spanBuilder.setAttribute(stringKey("key"), "value");
+    spanBuilder.setAttribute(longKey("key"), 12345L);
+    spanBuilder.setAttribute(doubleKey("key"), .12345);
+    spanBuilder.setAttribute(booleanKey("key"), true);
     spanBuilder.setAttribute("key", AttributeValue.stringAttributeValue("value"));
     spanBuilder.setStartTimestamp(12345L);
     assertThat(spanBuilder.startSpan()).isInstanceOf(DefaultSpan.class);

@@ -67,10 +67,12 @@ public class SemanticAttributesTest {
 
   @Test
   public void shouldCreateAllSetterTypes() {
-    assertThat(BooleanAttributeSetter.create("attr.one"))
+    assertThat(BooleanAttributeSetter.booleanKey("attr.one"))
         .isInstanceOf(BooleanAttributeSetter.class);
-    assertThat(DoubleAttributeSetter.create("attr.two")).isInstanceOf(DoubleAttributeSetter.class);
-    assertThat(LongAttributeSetter.create("attr.three")).isInstanceOf(LongAttributeSetter.class);
-    assertThat(StringAttributeSetter.create("attr.four")).isInstanceOf(StringAttributeSetter.class);
+    assertThat(DoubleAttributeSetter.doubleKey("attr.two"))
+        .isInstanceOf(DoubleAttributeSetter.class);
+    assertThat(LongAttributeSetter.longKey("attr.three")).isInstanceOf(LongAttributeSetter.class);
+    assertThat(StringAttributeSetter.stringKey("attr.four"))
+        .isInstanceOf(StringAttributeSetter.class);
   }
 }

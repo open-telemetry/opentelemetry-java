@@ -30,7 +30,7 @@ public final class DoubleAttributeSetter implements DoubleValuedKey {
    * @param attributeKey the attribute name
    * @return the setter object
    */
-  public static DoubleAttributeSetter create(String attributeKey) {
+  public static DoubleAttributeSetter doubleKey(String attributeKey) {
     return new DoubleAttributeSetter(attributeKey);
   }
 
@@ -60,6 +60,6 @@ public final class DoubleAttributeSetter implements DoubleValuedKey {
    * @param value the value for this attribute
    */
   public void set(Span span, double value) {
-    span.setAttribute(key(), value);
+    span.setAttribute(doubleKey(attributeKey), value);
   }
 }

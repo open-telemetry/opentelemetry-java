@@ -150,43 +150,23 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder setAttribute(String key, String value) {
-    return setAttribute(key, AttributeValue.stringAttributeValue(value));
-  }
-
-  @Override
-  public Span.Builder setAttribute(String key, long value) {
-    return setAttribute(key, AttributeValue.longAttributeValue(value));
-  }
-
-  @Override
-  public Span.Builder setAttribute(String key, double value) {
-    return setAttribute(key, AttributeValue.doubleAttributeValue(value));
-  }
-
-  @Override
-  public Span.Builder setAttribute(String key, boolean value) {
-    return setAttribute(key, AttributeValue.booleanAttributeValue(value));
-  }
-
-  @Override
   public Span.Builder setAttribute(StringValuedKey key, String value) {
-    return setAttribute(key.key(), value);
+    return setAttribute(key.key(), AttributeValue.stringAttributeValue(value));
   }
 
   @Override
   public Span.Builder setAttribute(DoubleValuedKey key, double value) {
-    return setAttribute(key.key(), value);
+    return setAttribute(key.key(), AttributeValue.doubleAttributeValue(value));
   }
 
   @Override
   public Span.Builder setAttribute(BooleanValuedKey key, boolean value) {
-    return setAttribute(key.key(), value);
+    return setAttribute(key.key(), AttributeValue.booleanAttributeValue(value));
   }
 
   @Override
   public Span.Builder setAttribute(LongValuedKey key, long value) {
-    return setAttribute(key.key(), value);
+    return setAttribute(key.key(), AttributeValue.longAttributeValue(value));
   }
 
   @Override

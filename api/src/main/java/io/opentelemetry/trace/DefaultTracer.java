@@ -120,30 +120,6 @@ public final class DefaultTracer implements Tracer {
     }
 
     @Override
-    public NoopSpanBuilder setAttribute(String key, String value) {
-      Utils.checkNotNull(key, "key");
-      return this;
-    }
-
-    @Override
-    public NoopSpanBuilder setAttribute(String key, long value) {
-      Utils.checkNotNull(key, "key");
-      return this;
-    }
-
-    @Override
-    public NoopSpanBuilder setAttribute(String key, double value) {
-      Utils.checkNotNull(key, "key");
-      return this;
-    }
-
-    @Override
-    public NoopSpanBuilder setAttribute(String key, boolean value) {
-      Utils.checkNotNull(key, "key");
-      return this;
-    }
-
-    @Override
     public NoopSpanBuilder setAttribute(String key, AttributeValue value) {
       Utils.checkNotNull(key, "key");
       Utils.checkNotNull(value, "value");

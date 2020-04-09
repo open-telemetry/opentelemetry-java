@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.promisepropagation;
 
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
+
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -54,7 +56,7 @@ final class Promise<T> {
             @Override
             public void run() {
               Span childSpan = tracer.spanBuilder("success").setParent(parentSpan).startSpan();
-              childSpan.setAttribute("component", "success");
+              childSpan.setAttribute(stringKey("component"), "success");
               try (Scope ignored = tracer.withSpan(childSpan)) {
                 callback.accept(result);
               } finally {
@@ -74,7 +76,7 @@ final class Promise<T> {
             @Override
             public void run() {
               Span childSpan = tracer.spanBuilder("error").setParent(parentSpan).startSpan();
-              childSpan.setAttribute("component", "error");
+              childSpan.setAttribute(stringKey("component"), "error");
               try (Scope ignored = tracer.withSpan(childSpan)) {
                 callback.accept(error);
               } finally {

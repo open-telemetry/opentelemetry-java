@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.clientserver;
 
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
+
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
@@ -39,7 +41,7 @@ final class Client {
     Message message = new Message();
 
     Span span = tracer.spanBuilder("send").setSpanKind(Kind.CLIENT).startSpan();
-    span.setAttribute("component", "example-client");
+    span.setAttribute(stringKey("component"), "example-client");
 
     try (Scope ignored = tracer.withSpan(span)) {
       OpenTelemetry.getPropagators()

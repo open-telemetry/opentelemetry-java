@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.contrib.trace.testbed.promisepropagation;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
@@ -60,7 +61,7 @@ public class PromisePropagationTest {
 
     try (PromiseContext context = new PromiseContext(phaser, 3)) {
       Span parentSpan = tracer.spanBuilder("promises").startSpan();
-      parentSpan.setAttribute("component", "example-promises");
+      parentSpan.setAttribute(stringKey("component"), "example-promises");
 
       try (Scope ignored = tracer.withSpan(parentSpan)) {
         Promise<String> successPromise = new Promise<>(context, tracer);

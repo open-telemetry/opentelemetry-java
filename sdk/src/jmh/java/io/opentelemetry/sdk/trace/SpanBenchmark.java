@@ -16,6 +16,9 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.trace.attributes.LongAttributeSetter.longKey;
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
+
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
@@ -44,7 +47,7 @@ public class SpanBenchmark {
             tracerSdk
                 .spanBuilder("benchmarkSpan")
                 .setSpanKind(Kind.CLIENT)
-                .setAttribute("key", "value");
+                .setAttribute(stringKey("key"), "value");
     span = (RecordEventsReadableSpan) spanBuilderSdk.startSpan();
   }
 
@@ -89,8 +92,8 @@ public class SpanBenchmark {
   }
 
   private static void doSpanWork(RecordEventsReadableSpan span) {
-    span.setAttribute("longAttribute", 33L);
-    span.setAttribute("stringAttribute", "test_value");
+    span.setAttribute(longKey("longAttribute"), 33L);
+    span.setAttribute(stringKey("stringAttribute"), "test_value");
     span.setStatus(Status.OK);
 
     span.addEvent("testEvent");

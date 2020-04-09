@@ -314,26 +314,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
-  public void setAttribute(String key, String value) {
-    setAttribute(key, AttributeValue.stringAttributeValue(value));
-  }
-
-  @Override
-  public void setAttribute(String key, long value) {
-    setAttribute(key, AttributeValue.longAttributeValue(value));
-  }
-
-  @Override
-  public void setAttribute(String key, double value) {
-    setAttribute(key, AttributeValue.doubleAttributeValue(value));
-  }
-
-  @Override
-  public void setAttribute(String key, boolean value) {
-    setAttribute(key, AttributeValue.booleanAttributeValue(value));
-  }
-
-  @Override
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
     Preconditions.checkNotNull(value, "value");
@@ -359,22 +339,22 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void setAttribute(StringValuedKey key, String value) {
-    setAttribute(key.key(), value);
+    setAttribute(key.key(), AttributeValue.stringAttributeValue(value));
   }
 
   @Override
   public void setAttribute(DoubleValuedKey key, double value) {
-    setAttribute(key.key(), value);
+    setAttribute(key.key(), AttributeValue.doubleAttributeValue(value));
   }
 
   @Override
   public void setAttribute(BooleanValuedKey key, boolean value) {
-    setAttribute(key.key(), value);
+    setAttribute(key.key(), AttributeValue.booleanAttributeValue(value));
   }
 
   @Override
   public void setAttribute(LongValuedKey key, long value) {
-    setAttribute(key.key(), value);
+    setAttribute(key.key(), AttributeValue.longAttributeValue(value));
   }
 
   @Override

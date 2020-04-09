@@ -16,6 +16,11 @@
 
 package io.opentelemetry.opentracingshim;
 
+import static io.opentelemetry.trace.attributes.BooleanAttributeSetter.booleanKey;
+import static io.opentelemetry.trace.attributes.DoubleAttributeSetter.doubleKey;
+import static io.opentelemetry.trace.attributes.LongAttributeSetter.longKey;
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
+
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Span;
@@ -75,7 +80,7 @@ final class SpanShim extends BaseShimObject implements Span {
       Status status = Boolean.parseBoolean(value) ? Status.UNKNOWN : Status.OK;
       span.setStatus(status);
     } else {
-      span.setAttribute(key, value);
+      span.setAttribute(stringKey(key), value);
     }
 
     return this;
@@ -87,7 +92,7 @@ final class SpanShim extends BaseShimObject implements Span {
       Status status = value ? Status.UNKNOWN : Status.OK;
       span.setStatus(status);
     } else {
-      span.setAttribute(key, value);
+      span.setAttribute(booleanKey(key), value);
     }
 
     return this;
@@ -100,9 +105,9 @@ final class SpanShim extends BaseShimObject implements Span {
         || value instanceof Long
         || value instanceof Short
         || value instanceof Byte) {
-      span.setAttribute(key, value.longValue());
+      span.setAttribute(longKey(key), value.longValue());
     } else if (value instanceof Float || value instanceof Double) {
-      span.setAttribute(key, value.doubleValue());
+      span.setAttribute(doubleKey(key), value.doubleValue());
     } else {
       throw new IllegalArgumentException("Number type not supported");
     }

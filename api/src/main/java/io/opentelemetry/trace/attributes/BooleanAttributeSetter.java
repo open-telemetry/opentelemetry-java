@@ -30,7 +30,7 @@ public final class BooleanAttributeSetter implements BooleanValuedKey {
    * @param attributeKey the attribute name
    * @return the setter object
    */
-  public static BooleanAttributeSetter create(String attributeKey) {
+  public static BooleanAttributeSetter booleanKey(String attributeKey) {
     return new BooleanAttributeSetter(attributeKey);
   }
 
@@ -60,6 +60,6 @@ public final class BooleanAttributeSetter implements BooleanValuedKey {
    * @param value the value for this attribute
    */
   public void set(Span span, boolean value) {
-    span.setAttribute(key(), value);
+    span.setAttribute(booleanKey(attributeKey), value);
   }
 }

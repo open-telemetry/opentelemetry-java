@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.clientserver;
 
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
+
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
@@ -55,7 +57,7 @@ final class Server extends Thread {
     SpanContext spanContext = TracingContextUtils.getSpan(context).getContext();
     Span span =
         tracer.spanBuilder("receive").setSpanKind(Kind.SERVER).setParent(spanContext).startSpan();
-    span.setAttribute("component", "example-server");
+    span.setAttribute(stringKey("component"), "example-server");
 
     try (Scope ignored = tracer.withSpan(span)) {
       // Simulate work.

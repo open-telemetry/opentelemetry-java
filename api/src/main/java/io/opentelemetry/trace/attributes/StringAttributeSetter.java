@@ -31,7 +31,7 @@ public final class StringAttributeSetter implements StringValuedKey {
    * @param attributeKey the attribute name
    * @return the setter object
    */
-  public static StringAttributeSetter create(String attributeKey) {
+  public static StringAttributeSetter stringKey(String attributeKey) {
     return new StringAttributeSetter(attributeKey);
   }
 
@@ -61,6 +61,6 @@ public final class StringAttributeSetter implements StringValuedKey {
    * @param value the value for this attribute
    */
   public void set(Span span, @Nullable String value) {
-    span.setAttribute(key(), value);
+    span.setAttribute(stringKey(attributeKey), value);
   }
 }

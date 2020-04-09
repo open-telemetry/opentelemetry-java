@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.suspendresumepropagation;
 
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
+
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -29,7 +31,7 @@ final class SuspendResume {
     this.tracer = tracer;
 
     Span span = tracer.spanBuilder("job " + id).startSpan();
-    span.setAttribute("component", "suspend-resume");
+    span.setAttribute(stringKey("component"), "suspend-resume");
     try (Scope scope = tracer.withSpan(span)) {
       this.span = span;
     }

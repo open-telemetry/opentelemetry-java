@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.contrib.trace.testbed.actorpropagation;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
 
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
@@ -59,7 +60,7 @@ public class ActorPropagationTest {
     try (Actor actor = new Actor(tracer, phaser)) {
       phaser.register();
       Span parent = tracer.spanBuilder("actorTell").setSpanKind(Kind.PRODUCER).startSpan();
-      parent.setAttribute("component", "example-actor");
+      parent.setAttribute(stringKey("component"), "example-actor");
       try (Scope ignored = tracer.withSpan(parent)) {
         actor.tell("my message 1");
         actor.tell("my message 2");
@@ -95,7 +96,7 @@ public class ActorPropagationTest {
       Future<String> future1;
       Future<String> future2;
       Span span = tracer.spanBuilder("actorAsk").setSpanKind(Kind.PRODUCER).startSpan();
-      span.setAttribute("component", "example-actor");
+      span.setAttribute(stringKey("component"), "example-actor");
 
       try (Scope ignored = tracer.withSpan(span)) {
         future1 = actor.ask("my message 1");

@@ -88,6 +88,16 @@ public interface Span {
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
    * the key, the old value is replaced by the specified value.
    *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
+  void setAttribute(String key, AttributeValue value);
+
+  /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
    * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
    * dropped. Note: this behavior could change in the future.
    *
@@ -95,7 +105,7 @@ public interface Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  void setAttribute(String key, @Nullable String value);
+  void setAttribute(StringValuedKey key, @Nullable String value);
 
   /**
    * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
@@ -105,44 +115,26 @@ public interface Span {
    * @param value the value for this attribute.
    * @since 0.1.0
    */
-  void setAttribute(String key, long value);
-
-  /**
-   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
-   * the key, the old value is replaced by the specified value.
-   *
-   * @param key the key for this attribute.
-   * @param value the value for this attribute.
-   * @since 0.1.0
-   */
-  void setAttribute(String key, double value);
-
-  /**
-   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
-   * the key, the old value is replaced by the specified value.
-   *
-   * @param key the key for this attribute.
-   * @param value the value for this attribute.
-   * @since 0.1.0
-   */
-  void setAttribute(String key, boolean value);
-
-  /**
-   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
-   * the key, the old value is replaced by the specified value.
-   *
-   * @param key the key for this attribute.
-   * @param value the value for this attribute.
-   * @since 0.1.0
-   */
-  void setAttribute(String key, AttributeValue value);
-
-  void setAttribute(StringValuedKey key, String value);
-
   void setAttribute(DoubleValuedKey key, double value);
 
+  /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
   void setAttribute(BooleanValuedKey key, boolean value);
 
+  /**
+   * Sets an attribute to the {@code Span}. If the {@code Span} previously contained a mapping for
+   * the key, the old value is replaced by the specified value.
+   *
+   * @param key the key for this attribute.
+   * @param value the value for this attribute.
+   * @since 0.1.0
+   */
   void setAttribute(LongValuedKey key, long value);
 
   /**
@@ -275,7 +267,7 @@ public interface Span {
 
   /**
    * Returns {@code true} if this {@code Span} records tracing events (e.g. {@link
-   * #addEvent(String)}, {@link #setAttribute(String, long)}).
+   * #addEvent(String)}, {@link #setAttribute(StringValuedKey, long)}).
    *
    * @return {@code true} if this {@code Span} records tracing events.
    * @since 0.1.0
@@ -471,57 +463,6 @@ public interface Span {
      * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
      * contained a mapping for the key, the old value is replaced by the specified value.
      *
-     * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
-     * dropped. Note: this behavior could change in the future.
-     *
-     * @param key the key for this attribute.
-     * @param value the value for this attribute.
-     * @return this.
-     * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.3.0
-     */
-    Builder setAttribute(String key, @Nullable String value);
-
-    /**
-     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
-     * contained a mapping for the key, the old value is replaced by the specified value.
-     *
-     * @param key the key for this attribute.
-     * @param value the value for this attribute.
-     * @return this.
-     * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.3.0
-     */
-    Builder setAttribute(String key, long value);
-
-    /**
-     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
-     * contained a mapping for the key, the old value is replaced by the specified value.
-     *
-     * @param key the key for this attribute.
-     * @param value the value for this attribute.
-     * @return this.
-     * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.3.0
-     */
-    Builder setAttribute(String key, double value);
-
-    /**
-     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
-     * contained a mapping for the key, the old value is replaced by the specified value.
-     *
-     * @param key the key for this attribute.
-     * @param value the value for this attribute.
-     * @return this.
-     * @throws NullPointerException if {@code key} is {@code null}.
-     * @since 0.3.0
-     */
-    Builder setAttribute(String key, boolean value);
-
-    /**
-     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
-     * contained a mapping for the key, the old value is replaced by the specified value.
-     *
      * @param key the key for this attribute.
      * @param value the value for this attribute.
      * @return this.
@@ -531,12 +472,55 @@ public interface Span {
      */
     Builder setAttribute(String key, AttributeValue value);
 
-    Builder setAttribute(StringValuedKey key, String value);
+    /**
+     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+     * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * <p>If a null or empty String {@code value} is passed in, the attribute will be silently
+     * dropped. Note: this behavior could change in the future.
+     *
+     * @param key the key for this attribute.
+     * @param value the value for this attribute.
+     * @return this.
+     * @throws NullPointerException if {@code key} is {@code null}.
+     * @since 0.3.0
+     */
+    Builder setAttribute(StringValuedKey key, @Nullable String value);
 
+    /**
+     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+     * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * @param key the key for this attribute.
+     * @param value the value for this attribute.
+     * @return this.
+     * @throws NullPointerException if {@code key} is {@code null}.
+     * @since 0.3.0
+     */
     Builder setAttribute(DoubleValuedKey key, double value);
 
+    /**
+     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+     * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * @param key the key for this attribute.
+     * @param value the value for this attribute.
+     * @return this.
+     * @throws NullPointerException if {@code key} is {@code null}.
+     * @since 0.3.0
+     */
     Builder setAttribute(BooleanValuedKey key, boolean value);
 
+    /**
+     * Sets an attribute to the newly created {@code Span}. If {@code Span.Builder} previously
+     * contained a mapping for the key, the old value is replaced by the specified value.
+     *
+     * @param key the key for this attribute.
+     * @param value the value for this attribute.
+     * @return this.
+     * @throws NullPointerException if {@code key} is {@code null}.
+     * @since 0.3.0
+     */
     Builder setAttribute(LongValuedKey key, long value);
 
     /**

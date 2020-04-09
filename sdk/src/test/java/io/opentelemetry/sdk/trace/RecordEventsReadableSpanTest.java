@@ -17,6 +17,10 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.trace.attributes.BooleanAttributeSetter.booleanKey;
+import static io.opentelemetry.trace.attributes.DoubleAttributeSetter.doubleKey;
+import static io.opentelemetry.trace.attributes.LongAttributeSetter.longKey;
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -286,14 +290,14 @@ public class RecordEventsReadableSpanTest {
   public void setAttribute() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
-      span.setAttribute("StringKey", "StringVal");
-      span.setAttribute("NullStringKey", (String) null);
-      span.setAttribute("EmptyStringKey", "");
+      span.setAttribute(stringKey("StringKey"), "StringVal");
+      span.setAttribute(stringKey("NullStringKey"), (String) null);
+      span.setAttribute(stringKey("EmptyStringKey"), "");
       span.setAttribute("NullStringAttributeValue", AttributeValue.stringAttributeValue(null));
       span.setAttribute("EmptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
-      span.setAttribute("LongKey", 1000L);
-      span.setAttribute("DoubleKey", 10.0);
-      span.setAttribute("BooleanKey", false);
+      span.setAttribute(longKey("LongKey"), 1000L);
+      span.setAttribute(doubleKey("DoubleKey"), 10.0);
+      span.setAttribute(booleanKey("BooleanKey"), false);
     } finally {
       span.end();
     }
@@ -615,7 +619,7 @@ public class RecordEventsReadableSpanTest {
               @Override
               public void run() {
                 for (int i = 0; i < 5096 * 5; ++i) {
-                  span.setAttribute("hey" + i, "");
+                  span.setAttribute(stringKey("hey" + i), "");
                 }
               }
             });

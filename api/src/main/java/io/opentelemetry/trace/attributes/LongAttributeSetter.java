@@ -30,7 +30,7 @@ public final class LongAttributeSetter implements LongValuedKey {
    * @param attributeKey the attribute name
    * @return the setter object
    */
-  public static LongAttributeSetter create(String attributeKey) {
+  public static LongAttributeSetter longKey(String attributeKey) {
     return new LongAttributeSetter(attributeKey);
   }
 
@@ -60,6 +60,6 @@ public final class LongAttributeSetter implements LongValuedKey {
    * @param value the value for this attribute
    */
   public void set(Span span, long value) {
-    span.setAttribute(key(), value);
+    span.setAttribute(longKey(attributeKey), value);
   }
 }

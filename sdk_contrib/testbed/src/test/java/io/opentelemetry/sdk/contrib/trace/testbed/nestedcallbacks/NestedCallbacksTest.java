@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.contrib.trace.testbed.nestedcallbacks;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -75,21 +76,21 @@ public final class NestedCallbacksTest {
           @Override
           public void run() {
             try (Scope ignored = tracer.withSpan(span)) {
-              span.setAttribute("key1", "1");
+              span.setAttribute(stringKey("key1"), "1");
 
               executor.submit(
                   new Runnable() {
                     @Override
                     public void run() {
                       try (Scope ignored = tracer.withSpan(span)) {
-                        span.setAttribute("key2", "2");
+                        span.setAttribute(stringKey("key2"), "2");
 
                         executor.submit(
                             new Runnable() {
                               @Override
                               public void run() {
                                 try (Scope ignored = tracer.withSpan(span)) {
-                                  span.setAttribute("key3", "3");
+                                  span.setAttribute(stringKey("key3"), "3");
                                 } finally {
                                   span.end();
                                 }

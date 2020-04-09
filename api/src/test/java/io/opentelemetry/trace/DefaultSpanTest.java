@@ -17,6 +17,7 @@
 package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.trace.attributes.StringAttributeSetter.stringKey;
 
 import io.opentelemetry.common.AttributeValue;
 import java.util.Collections;
@@ -54,8 +55,8 @@ public class DefaultSpanTest {
         "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
     span.setAttribute("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true));
     span.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
-    span.setAttribute("NullString", (String) null);
-    span.setAttribute("EmptyString", "");
+    span.setAttribute(stringKey("NullString"), null);
+    span.setAttribute(stringKey("EmptyString"), "");
     span.addEvent("event");
     span.addEvent("event", 0);
     span.addEvent(
