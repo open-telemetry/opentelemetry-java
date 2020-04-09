@@ -267,7 +267,7 @@ public interface Span {
 
   /**
    * Returns {@code true} if this {@code Span} records tracing events (e.g. {@link
-   * #addEvent(String)}, {@link #setAttribute(StringValuedKey, long)}).
+   * #addEvent(String)}, {@link #setAttribute(LongValuedKey, long)}).
    *
    * @return {@code true} if this {@code Span} records tracing events.
    * @since 0.1.0
