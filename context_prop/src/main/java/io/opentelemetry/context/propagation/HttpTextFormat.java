@@ -71,7 +71,7 @@ public interface HttpTextFormat {
   /**
    * Injects the value downstream, for example as HTTP headers. The carrier may be null to
    * facilitate calling this method with a lambda for the {@link Setter}, in which case that
-   * null will be passed to your {@link Setter} implementation.
+   * null will be passed to the {@link Setter} implementation.
    *
    * @param context the {@code Context} containing the value to be injected.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
