@@ -69,38 +69,34 @@ dependencies {
 Libraries will usually only need `opentelemetry-api`, while applications
 may want to use `opentelemetry-sdk`.
 
-## Release Schedule
+## Releases
 
-OpenTelemetry Java is under active development. Our goal is to release an
-_alpha_ version of the library by middle October 2019. This release isn't
-guaranteed to conform to a specific version of the specification, and future
-releases will not attempt to maintain backwards compatibility with the alpha
-release.
+OpenTelemetry Java is under active development. Releases aren't guaranteed
+to conform to a specific version of the specification. Future releases will
+not attempt to maintain backwards compatibility with previous releases.
 
-| Component                   | Version | Target Date       |
-| --------------------------- | ------- | ----------------- |
-| Tracing API                 | Alpha   | October 21 2019   |
-| Tracing SDK                 | Alpha   | October 21 2019   |
-| Metrics API                 | Alpha   | October 21 2019   |
-| Metrics SDK                 | Alpha   | October 21 2019   |
-| Jaeger Trace Exporter       | Alpha   | October 21 2019   |
-| Zipkin Trace Exporter       | Alpha   | Unknown           |
-| Prometheus Metrics Exporter | Alpha   | Unknown           |
-| Context Propagation         | Alpha   | October 21 2019   |
-| OpenTracing Bridge          | Alpha   | October 21 2019   |
-| OpenCensus Bridge           | Alpha   | Unknown           |
+The latest version of the libraries were released on March 27th, 2020.
+See the [v0.3.0 alpha release](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v0.3.0).
 
-### Kick off the work towards 1.0
+This is a **current** feature status list:
 
-After beta release we will encourage customers and tracing vendors to start
-using the new project, providing feedback as they go. So we can ensure a high
-quality v1.0 for the merged project:
+| Component                   | Version |
+| --------------------------- | ------- |
+| Tracing API                 | v0.3.0  |
+| Tracing SDK                 | v0.3.0  |
+| Metrics API                 | v0.3.0  |
+| Metrics SDK                 | v0.3.0  |
+| OTLP Exporter               | v0.3.0  |
+| Jaeger Trace Exporter       | v0.3.0  |
+| Zipkin Trace Exporter       | N/A     |
+| Prometheus Metrics Exporter | dev     |
+| Context Propagation         | v0.3.0  |
+| OpenTracing Bridge          | v0.3.0  |
+| OpenCensus Bridge           | N/A     |
 
-- We will allow ourselves to break *implementations*, but not people using the
-  public Interfaces.
-- Additions (into interfaces for instance) will involve a best-effort attempt at
-  backwards compatibility (again, for implementations – callers of the public
-  APIs should not be negatively affected by these additions).
+See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
+for details on upcoming releases. The dates and features described in issues
+and milestones are estimates, and subject to change.
 
 ### Summary
 
