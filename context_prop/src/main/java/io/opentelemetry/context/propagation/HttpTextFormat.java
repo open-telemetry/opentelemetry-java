@@ -69,7 +69,7 @@ public interface HttpTextFormat {
   List<String> fields();
 
   /**
-   * Injects the value downstream. For example, as http headers. The carrier may be null to
+   * Injects the value downstream, for example as HTTP headers. The carrier may be null to
    * facilitate calling this method with a java lambda for the {@link Setter}, in which case that
    * null will be passed to your {@link Setter} implementation.
    *
