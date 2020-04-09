@@ -86,6 +86,7 @@ This is a **current** feature status list:
 | Tracing SDK                 | v0.3.0  |
 | Metrics API                 | v0.3.0  |
 | Metrics SDK                 | v0.3.0  |
+| OTLP Exporter               | v0.3.0  |
 | Jaeger Trace Exporter       | v0.3.0  |
 | Zipkin Trace Exporter       | N/A     |
 | Prometheus Metrics Exporter | dev     |
