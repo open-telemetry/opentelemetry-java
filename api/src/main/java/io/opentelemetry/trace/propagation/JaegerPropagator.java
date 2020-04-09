@@ -73,7 +73,6 @@ public class JaegerPropagator implements HttpTextFormat {
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
     checkNotNull(context, "context");
     checkNotNull(setter, "setter");
-    checkNotNull(carrier, "carrier");
 
     Span span = TracingContextUtils.getSpanWithoutDefault(context);
     if (span == null) {

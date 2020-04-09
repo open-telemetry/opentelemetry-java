@@ -69,7 +69,9 @@ public interface HttpTextFormat {
   List<String> fields();
 
   /**
-   * Injects the value downstream. For example, as http headers.
+   * Injects the value downstream, for example as HTTP headers. The carrier may be null to
+   * facilitate calling this method with a lambda for the {@link Setter}, in which case that null
+   * will be passed to the {@link Setter} implementation.
    *
    * @param context the {@code Context} containing the value to be injected.
    * @param carrier holds propagation fields. For example, an outgoing message or http request.
@@ -77,7 +79,7 @@ public interface HttpTextFormat {
    * @param <C> carrier of propagation fields, such as an http request
    * @since 0.1.0
    */
-  <C> void inject(Context context, C carrier, Setter<C> setter);
+  <C> void inject(Context context, @Nullable C carrier, Setter<C> setter);
 
   /**
    * Class that allows a {@code HttpTextFormat} to set propagated fields into a carrier.
@@ -96,12 +98,13 @@ public interface HttpTextFormat {
      * <p>For example, a setter for an {@link java.net.HttpURLConnection} would be the method
      * reference {@link java.net.HttpURLConnection#addRequestProperty(String, String)}
      *
-     * @param carrier holds propagation fields. For example, an outgoing message or http request.
+     * @param carrier holds propagation fields. For example, an outgoing message or http request. To
+     *     facilitate implementations as java lambdas, this parameter may be null.
      * @param key the key of the field.
      * @param value the value of the field.
      * @since 0.1.0
      */
-    void set(C carrier, String key, String value);
+    void set(@Nullable C carrier, String key, String value);
   }
 
   /**
