@@ -91,7 +91,7 @@ public class AdapterTest {
     assertEquals(4, jaegerSpan.getTagsCount());
     Model.KeyValue keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_KIND);
     assertNotNull(keyValue);
-    assertEquals("SERVER", keyValue.getVStr());
+    assertEquals("server", keyValue.getVStr());
     keyValue = getValue(jaegerSpan.getTagsList(), Adapter.KEY_SPAN_STATUS_CODE);
     assertNotNull(keyValue);
     assertEquals(0, keyValue.getVInt64());
