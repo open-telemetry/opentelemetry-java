@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.concurrent.ThreadSafe;
@@ -89,7 +90,10 @@ final class Adapter {
 
     if (span.getKind() != null) {
       target.addTags(
-          Model.KeyValue.newBuilder().setKey(KEY_SPAN_KIND).setVStr(span.getKind().name()).build());
+          Model.KeyValue.newBuilder()
+              .setKey(KEY_SPAN_KIND)
+              .setVStr(span.getKind().name().toLowerCase(Locale.ROOT))
+              .build());
     }
 
     target.addTags(
