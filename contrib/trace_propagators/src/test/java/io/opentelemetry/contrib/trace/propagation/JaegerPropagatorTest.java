@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.propagation;
+package io.opentelemetry.contrib.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.trace.propagation.JaegerPropagator.DEPRECATED_PARENT_SPAN;
-import static io.opentelemetry.trace.propagation.JaegerPropagator.SEPARATOR;
-import static io.opentelemetry.trace.propagation.JaegerPropagator.TRACE_ID_HEADER;
+import static io.opentelemetry.contrib.trace.propagation.JaegerPropagator.DEPRECATED_PARENT_SPAN;
+import static io.opentelemetry.contrib.trace.propagation.JaegerPropagator.SEPARATOR;
+import static io.opentelemetry.contrib.trace.propagation.JaegerPropagator.TRACE_ID_HEADER;
 
 import io.grpc.Context;
 import io.jaegertracing.internal.JaegerSpanContext;

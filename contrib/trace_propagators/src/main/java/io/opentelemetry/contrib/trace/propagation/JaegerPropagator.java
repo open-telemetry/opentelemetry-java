@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.propagation;
+package io.opentelemetry.contrib.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
@@ -45,7 +45,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public class JaegerPropagator implements HttpTextFormat {
 
-  private static final Logger logger = Logger.getLogger(HttpTraceContext.class.getName());
+  private static final Logger logger = Logger.getLogger(JaegerPropagator.class.getName());
 
   static final String TRACE_ID_HEADER = "uber-trace-id";
   // Parent span has been deprecated but Jaeger propagation protocol requires it

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.propagation;
+package io.opentelemetry.contrib.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
 

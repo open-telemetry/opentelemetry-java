@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.propagation;
+package io.opentelemetry.contrib.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
@@ -42,7 +42,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public class B3Propagator implements HttpTextFormat {
-  private static final Logger logger = Logger.getLogger(HttpTraceContext.class.getName());
+  private static final Logger logger = Logger.getLogger(B3Propagator.class.getName());
 
   static final String TRACE_ID_HEADER = "X-B3-TraceId";
   static final String SPAN_ID_HEADER = "X-B3-SpanId";
