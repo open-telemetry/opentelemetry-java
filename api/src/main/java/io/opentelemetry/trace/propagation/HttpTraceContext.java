@@ -120,7 +120,7 @@ public class HttpTraceContext implements HttpTextFormat {
   @Override
   public <C /*>>> extends @NonNull Object*/> Context extract(
       Context context, C carrier, Getter<C> getter) {
-    checkNotNull(carrier, "context");
+    checkNotNull(context, "context");
     checkNotNull(carrier, "carrier");
     checkNotNull(getter, "getter");
 
@@ -129,12 +129,12 @@ public class HttpTraceContext implements HttpTextFormat {
   }
 
   private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {
-    String traceparent = getter.get(carrier, TRACE_PARENT);
-    if (traceparent == null) {
+    String traceParent = getter.get(carrier, TRACE_PARENT);
+    if (traceParent == null) {
       return SpanContext.getInvalid();
     }
 
-    SpanContext contextFromParentHeader = extractContextFromTraceParent(traceparent);
+    SpanContext contextFromParentHeader = extractContextFromTraceParent(traceParent);
     if (!contextFromParentHeader.isValid()) {
       return contextFromParentHeader;
     }
@@ -161,10 +161,10 @@ public class HttpTraceContext implements HttpTextFormat {
     // TODO(bdrutu): Do we need to verify that version is hex and that
     // for the version the length is the expected one?
     boolean isValid =
-        traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER
-            && (traceparent.length() == TRACEPARENT_HEADER_SIZE
+        (traceparent.length() == TRACEPARENT_HEADER_SIZE
                 || (traceparent.length() > TRACEPARENT_HEADER_SIZE
                     && traceparent.charAt(TRACEPARENT_HEADER_SIZE) == TRACEPARENT_DELIMITER))
+            && traceparent.charAt(TRACE_ID_OFFSET - 1) == TRACEPARENT_DELIMITER
             && traceparent.charAt(SPAN_ID_OFFSET - 1) == TRACEPARENT_DELIMITER
             && traceparent.charAt(TRACE_OPTION_OFFSET - 1) == TRACEPARENT_DELIMITER;
     if (!isValid) {
