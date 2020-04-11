@@ -240,6 +240,14 @@ public class HttpTraceContextTest {
   }
 
   @Test
+  public void extract_EmptyHeader() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(TRACE_PARENT, "");
+    assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
+        .isSameInstanceAs(SpanContext.getInvalid());
+  }
+
+  @Test
   public void extract_InvalidTraceId() {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(
