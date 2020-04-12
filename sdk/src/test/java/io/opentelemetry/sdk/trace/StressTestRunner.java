@@ -35,7 +35,6 @@ abstract class StressTestRunner {
   abstract SpanProcessor getSpanProcessor();
 
   final void run() {
-
     List<Operation> operations = getOperations();
     int numThreads = operations.size();
     final CountDownLatch countDownLatch = new CountDownLatch(numThreads);

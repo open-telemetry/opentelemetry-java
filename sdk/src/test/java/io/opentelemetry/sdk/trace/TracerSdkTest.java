@@ -23,9 +23,13 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.export.BatchSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
 import org.junit.Test;
@@ -132,6 +136,27 @@ public class TracerSdkTest {
     assertThat(spanProcessor.numberOfSpansStarted.get()).isEqualTo(8_000);
   }
 
+  @Test
+  public void stressTest_withBatchSpanProcessor() {
+    CountingSpanExporter countingSpanExporter = new CountingSpanExporter();
+    SpanProcessor spanProcessor = BatchSpansProcessor.newBuilder(countingSpanExporter).build();
+    TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
+    tracerSdkProvider.addSpanProcessor(spanProcessor);
+    TracerSdk tracer =
+        tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
+
+    StressTestRunner.Builder stressTestBuilder =
+        StressTestRunner.builder().setTracer(tracer).setSpanProcessor(spanProcessor);
+
+    for (int i = 0; i < 4; i++) {
+      stressTestBuilder.addOperation(
+          StressTestRunner.Operation.create(2_000, 1, new SimpleSpanOperation(tracer)));
+    }
+
+    stressTestBuilder.build().run();
+    assertThat(countingSpanExporter.numberOfSpansExported.get()).isEqualTo(8_000);
+  }
+
   private static class CountingSpanProcessor implements SpanProcessor {
     private final AtomicLong numberOfSpansStarted = new AtomicLong();
     private final AtomicLong numberOfSpansFinished = new AtomicLong();
@@ -182,6 +207,22 @@ public class TracerSdkTest {
       } finally {
         span.end();
       }
+    }
+  }
+
+  private static class CountingSpanExporter implements SpanExporter {
+
+    public AtomicLong numberOfSpansExported = new AtomicLong();
+
+    @Override
+    public ResultCode export(Collection<SpanData> spans) {
+      numberOfSpansExported.addAndGet(spans.size());
+      return ResultCode.SUCCESS;
+    }
+
+    @Override
+    public void shutdown() {
+      // no-op
     }
   }
 }
