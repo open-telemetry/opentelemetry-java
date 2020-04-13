@@ -41,7 +41,12 @@ import zipkin2.Span;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.Sender;
 
+/**
+ * This class was based on the OpenCensus zipkin exporter code at
+ * https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin
+ */
 final class ZipkinSpanExporter implements SpanExporter {
+
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
   // The naming follows Zipkin convention. As an example see:
@@ -179,4 +184,15 @@ final class ZipkinSpanExporter implements SpanExporter {
 
   @Override
   public void shutdown() {}
+
+  /**
+   * Create a new {@link ZipkinSpanExporter} from the given configuration.
+   *
+   * @param configuration a {@link ZipkinExporterConfiguration} instance.
+   * @return A ready-to-use {@link ZipkinSpanExporter}
+   */
+  public static ZipkinSpanExporter create(ZipkinExporterConfiguration configuration) {
+    return new ZipkinSpanExporter(
+        configuration.getEncoder(), configuration.getSender(), configuration.getServiceName());
+  }
 }

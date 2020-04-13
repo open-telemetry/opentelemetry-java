@@ -26,7 +26,7 @@ import zipkin2.reporter.Sender;
 /**
  * Configurations for {@link ZipkinSpanExporter}.
  *
- * @since 0.22
+ * @since 0.3.0
  */
 @AutoValue
 @Immutable
@@ -38,7 +38,7 @@ public abstract class ZipkinExporterConfiguration {
    * Returns the service name.
    *
    * @return the service name.
-   * @since 0.22
+   * @since 0.3.0
    */
   public abstract String getServiceName();
 
@@ -46,7 +46,7 @@ public abstract class ZipkinExporterConfiguration {
    * Returns the Zipkin V2 URL.
    *
    * @return the Zipkin V2 URL.
-   * @since 0.22
+   * @since 0.3.0
    */
   public abstract String getV2Url();
 
@@ -54,7 +54,7 @@ public abstract class ZipkinExporterConfiguration {
    * Returns the Zipkin sender.
    *
    * @return the Zipkin sender.
-   * @since 0.22
+   * @since 0.3.0
    */
   @Nullable
   public abstract Sender getSender();
@@ -65,7 +65,7 @@ public abstract class ZipkinExporterConfiguration {
    * <p>Default is {@link SpanBytesEncoder#JSON_V2}.
    *
    * @return the {@code SpanBytesEncoder}
-   * @since 0.22
+   * @since 0.3.0
    */
   public abstract SpanBytesEncoder getEncoder();
 
@@ -73,7 +73,7 @@ public abstract class ZipkinExporterConfiguration {
    * Returns a new {@link Builder}.
    *
    * @return a {@code Builder}.
-   * @since 0.22
+   * @since 0.3.0
    */
   public static Builder builder() {
     return new AutoValue_ZipkinExporterConfiguration.Builder()
@@ -84,7 +84,7 @@ public abstract class ZipkinExporterConfiguration {
   /**
    * Builder for {@link ZipkinExporterConfiguration}.
    *
-   * @since 0.22
+   * @since 0.3.0
    */
   @AutoValue.Builder
   public abstract static class Builder {
@@ -96,7 +96,7 @@ public abstract class ZipkinExporterConfiguration {
      *
      * @param serviceName the service name.
      * @return this.
-     * @since 0.22
+     * @since 0.3.0
      */
     public abstract Builder setServiceName(String serviceName);
 
@@ -108,7 +108,7 @@ public abstract class ZipkinExporterConfiguration {
      *
      * @param v2Url the Zipkin V2 URL.
      * @return this.
-     * @since 0.22
+     * @since 0.3.0
      */
     public abstract Builder setV2Url(String v2Url);
 
@@ -120,7 +120,7 @@ public abstract class ZipkinExporterConfiguration {
      *
      * @param sender the Zipkin sender.
      * @return this.
-     * @since 0.22
+     * @since 0.3.0
      */
     public abstract Builder setSender(Sender sender);
 
@@ -129,7 +129,7 @@ public abstract class ZipkinExporterConfiguration {
      *
      * @param encoder the {@code SpanBytesEncoder}.
      * @return this
-     * @since 0.22
+     * @since 0.3.0
      */
     public abstract Builder setEncoder(SpanBytesEncoder encoder);
 
