@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020, OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 plugins {
     id "com.github.sherter.google-java-format" apply false
     id "com.jfrog.artifactory" apply false
@@ -96,6 +112,7 @@ subprojects {
         prometheusVersion = '0.8.1'
         protobufVersion = '3.11.4'
         protocVersion = '3.11.4'
+        zipkinReporterVersion = '2.7.14'
 
         libraries = [
                 auto_value              : "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -117,6 +134,8 @@ subprojects {
                 prometheus_client_common: "io.prometheus:simpleclient_common:${prometheusVersion}",
                 protobuf                : "com.google.protobuf:protobuf-java:${protobufVersion}",
                 protobuf_util           : "com.google.protobuf:protobuf-java-util:${protobufVersion}",
+                zipkin_reporter         : "io.zipkin.reporter2:zipkin-reporter:${zipkinReporterVersion}",
+                zipkin_urlconnection    : "io.zipkin.reporter2:zipkin-sender-urlconnection:${zipkinReporterVersion}",
 
                 // Compatibility layer
                 opentracing          : "io.opentracing:opentracing-api:${opentracingVersion}",
