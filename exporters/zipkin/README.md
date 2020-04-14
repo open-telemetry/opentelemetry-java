@@ -2,7 +2,13 @@
 
 [![Javadocs][javadoc-image]][javadoc-url]
 
-This is the OpenTelemetry exporter, which sends span data to Zipkin.
+This is an OpenTelemetry exporter that sends span data using the [io.zipkin.reporter2:zipkin-reporter](https://github.com/openzipkin/zipkin-reporter-java") library.
+
+By default, this POSTs json in [Zipkin format](https://zipkin.io/zipkin-api/#/default/post_spans) to
+a specified HTTP URL. This could be to a [Zipkin](https://zipkin.io) service, or anything that
+consumes the same format.
+
+You can alternatively use other formats, such as protobuf, or override the `Sender` to use a non-HTTP transport, such as Kafka.
 
 ## Configuration
 
