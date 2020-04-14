@@ -16,8 +16,7 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILED_NOT_RETRYABLE;
-import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILED_RETRYABLE;
+import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.FAILURE;
 import static io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode.SUCCESS;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -56,7 +55,7 @@ public final class MultiSpanExporter implements SpanExporter {
       } catch (Throwable t) {
         // If an exception was thrown by the exporter
         logger.log(Level.WARNING, "Exception thrown by the export.", t);
-        currentResultCode = FAILED_NOT_RETRYABLE;
+        currentResultCode = FAILURE;
       }
     }
     return currentResultCode;
@@ -77,14 +76,7 @@ public final class MultiSpanExporter implements SpanExporter {
       return SUCCESS;
     }
 
-    // If any of the codes is none retryable then return none_retryable;
-    if (currentResultCode == FAILED_NOT_RETRYABLE || newResultCode == FAILED_NOT_RETRYABLE) {
-      return FAILED_NOT_RETRYABLE;
-    }
-
-    // At this point at least one of the code is FAILED_RETRYABLE and none are
-    // FAILED_NOT_RETRYABLE, so return FAILED_RETRYABLE.
-    return FAILED_RETRYABLE;
+    return FAILURE;
   }
 
   private MultiSpanExporter(List<SpanExporter> spanExporters) {
