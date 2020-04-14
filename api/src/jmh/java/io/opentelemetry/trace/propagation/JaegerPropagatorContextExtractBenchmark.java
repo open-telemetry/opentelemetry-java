@@ -17,7 +17,6 @@
 package io.opentelemetry.trace.propagation;
 
 import io.grpc.Context;
-import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
@@ -53,7 +52,7 @@ public class JaegerPropagatorContextExtractBenchmark {
   private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
   private final Map<String, String> carrier = new HashMap<>();
   private final JaegerPropagator.Getter<Map<String, String>> getter =
-      new HttpTextFormat.Getter<Map<String, String>>() {
+      new JaegerPropagator.Getter<Map<String, String>>() {
         @Override
         public String get(Map<String, String> carrier, String key) {
           return carrier.get(key);
