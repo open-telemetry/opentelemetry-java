@@ -17,7 +17,7 @@
 package io.opentelemetry.exporters.zipkin;
 
 import com.google.auto.value.AutoValue;
-import com.google.common.base.Preconditions;
+import io.opentelemetry.internal.Utils;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import zipkin2.codec.SpanBytesEncoder;
@@ -147,7 +147,7 @@ public abstract class ZipkinExporterConfiguration {
      * @since 0.22
      */
     public ZipkinExporterConfiguration build() {
-      Preconditions.checkArgument(
+      Utils.checkArgument(
           !getV2Url().isEmpty() || getSender() != null,
           "Neither Zipkin V2 URL nor Zipkin sender is specified.");
       return autoBuild();

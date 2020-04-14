@@ -76,11 +76,7 @@ public class ZipkinSpanExporterTest {
 
   @Test
   public void generateSpan_ServerKind() {
-    SpanData data =
-        buildStandardSpan()
-            .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
-            .setKind(Kind.SERVER)
-            .build();
+    SpanData data = buildStandardSpan().setKind(Kind.SERVER).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(buildZipkinSpan(Span.Kind.SERVER, "OK"));
@@ -88,14 +84,26 @@ public class ZipkinSpanExporterTest {
 
   @Test
   public void generateSpan_ClientKind() {
-    SpanData data =
-        buildStandardSpan()
-            .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
-            .setKind(Kind.CLIENT)
-            .build();
+    SpanData data = buildStandardSpan().setKind(Kind.CLIENT).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(buildZipkinSpan(Span.Kind.CLIENT, "OK"));
+  }
+
+  @Test
+  public void generateSpan_ConsumeKind() {
+    SpanData data = buildStandardSpan().setKind(Kind.CONSUMER).build();
+
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(buildZipkinSpan(Span.Kind.CONSUMER, "OK"));
+  }
+
+  @Test
+  public void generateSpan_ProducerKind() {
+    SpanData data = buildStandardSpan().setKind(Kind.PRODUCER).build();
+
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(buildZipkinSpan(Span.Kind.PRODUCER, "OK"));
   }
 
   @Test
@@ -105,13 +113,7 @@ public class ZipkinSpanExporterTest {
     attributeMap.put("boolean", AttributeValue.booleanAttributeValue(false));
     attributeMap.put("long", AttributeValue.longAttributeValue(9999L));
     attributeMap.put("double", AttributeValue.doubleAttributeValue(222.333));
-    SpanData data =
-        buildStandardSpan()
-            .setAttributes(attributeMap)
-            .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
-            .setKind(Kind.CLIENT)
-            .setStatus(Status.OK)
-            .build();
+    SpanData data = buildStandardSpan().setAttributes(attributeMap).setKind(Kind.CLIENT).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
@@ -131,8 +133,6 @@ public class ZipkinSpanExporterTest {
     SpanData data =
         buildStandardSpan()
             .setStatus(Status.DEADLINE_EXCEEDED.withDescription(errorMessage))
-            .setKind(Kind.SERVER)
-            .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
             .build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))

@@ -19,7 +19,6 @@ package io.opentelemetry.exporters.zipkin;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 import zipkin2.codec.SpanBytesEncoder;
@@ -51,9 +51,10 @@ final class ZipkinSpanExporter implements SpanExporter {
 
   // The naming follows Zipkin convention. As an example see:
   // https://github.com/openzipkin/brave/blob/eee993f998ae57b08644cc357a6d478827428710/instrumentation/http/src/main/java/brave/http/HttpTags.java
-  @VisibleForTesting static final String STATUS_CODE = "otel.status_code";
-  @VisibleForTesting static final String STATUS_DESCRIPTION = "otel.status_description";
-  @VisibleForTesting static final String STATUS_ERROR = "error";
+  // Note: these 3 fields are non-private for testing
+  static final String STATUS_CODE = "otel.status_code";
+  static final String STATUS_DESCRIPTION = "otel.status_description";
+  static final String STATUS_ERROR = "error";
 
   private final SpanBytesEncoder encoder;
   private final Sender sender;
@@ -133,7 +134,7 @@ final class ZipkinSpanExporter implements SpanExporter {
     return spanBuilder.build();
   }
 
-  @javax.annotation.Nullable
+  @Nullable
   private static Span.Kind toSpanKind(SpanData spanData) {
     // This is a hack because the Span API did not have SpanKind.
     if (spanData.getKind() == Kind.SERVER
@@ -144,6 +145,13 @@ final class ZipkinSpanExporter implements SpanExporter {
     // This is a hack because the Span API did not have SpanKind.
     if (spanData.getKind() == Kind.CLIENT || spanData.getName().startsWith("Sent.")) {
       return Span.Kind.CLIENT;
+    }
+
+    if (spanData.getKind() == Kind.PRODUCER) {
+      return Span.Kind.PRODUCER;
+    }
+    if (spanData.getKind() == Kind.CONSUMER) {
+      return Span.Kind.CONSUMER;
     }
 
     return null;
@@ -170,7 +178,7 @@ final class ZipkinSpanExporter implements SpanExporter {
 
   @Override
   public ResultCode export(final Collection<SpanData> spanDataList) {
-    List<byte[]> encodedSpans = new ArrayList<byte[]>(spanDataList.size());
+    List<byte[]> encodedSpans = new ArrayList<>(spanDataList.size());
     for (SpanData spanData : spanDataList) {
       encodedSpans.add(encoder.encode(generateSpan(spanData, localEndpoint)));
     }
