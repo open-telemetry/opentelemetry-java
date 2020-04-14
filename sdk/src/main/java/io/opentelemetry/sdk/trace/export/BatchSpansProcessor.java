@@ -16,20 +16,25 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+
+import com.google.auto.value.AutoValue;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Maps;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
-import io.opentelemetry.sdk.common.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +43,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.Immutable;
 
@@ -105,11 +112,11 @@ public final class BatchSpansProcessor implements SpanProcessor {
   public static BatchSpansProcessor create(SpanExporter spanExporter, Config config) {
     return new BatchSpansProcessor(
         spanExporter,
-        config.sampled,
-        config.scheduleDelayMillis,
-        config.maxQueueSize,
-        config.maxExportBatchSize,
-        config.exporterTimeoutMillis);
+        config.isExportOnlySampled(),
+        config.getScheduleDelayMillis(),
+        config.getMaxQueueSize(),
+        config.getMaxExportBatchSize(),
+        config.getExporterTimeoutMillis());
   }
 
   @Override
@@ -426,113 +433,211 @@ public final class BatchSpansProcessor implements SpanProcessor {
   }
 
   @Immutable
-  public static final class Config {
-    private final long scheduleDelayMillis;
-    private final int maxQueueSize;
-    private final int maxExportBatchSize;
-    private final int exporterTimeoutMillis;
-    private final boolean sampled;
+  @AutoValue
+  public abstract static class Config {
 
-    private Config(
-        boolean sampled,
-        long scheduleDelayMillis,
-        int maxQueueSize,
-        int maxExportBatchSize,
-        int exporterTimeoutMillis) {
-      this.sampled = sampled;
-      this.scheduleDelayMillis = scheduleDelayMillis;
-      this.maxQueueSize = maxQueueSize;
-      this.maxExportBatchSize = maxExportBatchSize;
-      this.exporterTimeoutMillis = exporterTimeoutMillis;
-    }
+    private static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
+    private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
+    private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
+    private static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+    private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
 
-    public long getScheduleDelayMillis() {
-      return scheduleDelayMillis;
-    }
+    public abstract boolean isExportOnlySampled();
 
-    public int getMaxQueueSize() {
-      return maxQueueSize;
-    }
+    public abstract long getScheduleDelayMillis();
 
-    public int getMaxExportBatchSize() {
-      return maxExportBatchSize;
-    }
+    public abstract int getMaxQueueSize();
 
-    public int getExporterTimeoutMillis() {
-      return exporterTimeoutMillis;
-    }
+    public abstract int getMaxExportBatchSize();
 
-    public boolean isReportOnlySampled() {
-      return sampled;
-    }
+    public abstract int getExporterTimeoutMillis();
 
+    /**
+     * Creates a {@link Config} object using the default configuration.
+     *
+     * @return The {@link Config} object.
+     * @since 0.4.0
+     */
     public static Config getDefault() {
-      return new Builder().build();
+      return newBuilder().build();
     }
 
+    /**
+     * Creates a {@link Config} object reading the configuration values from the environment and
+     * from system properties. System properties override values defined in the environment. If a
+     * configuration value is missing, it uses the default value.
+     *
+     * @return The {@link Config} object.
+     * @since 0.4.0
+     */
+    public static Config loadFromDefaultSources() {
+      return newBuilder().readEnvironment().readSystemProperties().build();
+    }
+
+    /**
+     * Returns a new {@link Builder} with default options.
+     *
+     * @return a new {@code Builder} with default options.
+     * @since 0.4.0
+     */
     public static Builder newBuilder() {
-      return new Builder();
+      return new AutoValue_BatchSpansProcessor_Config.Builder()
+          .setScheduleDelayMillis(DEFAULT_SCHEDULE_DELAY_MILLIS)
+          .setMaxQueueSize(DEFAULT_MAX_QUEUE_SIZE)
+          .setMaxExportBatchSize(DEFAULT_MAX_EXPORT_BATCH_SIZE)
+          .setExporterTimeoutMillis(DEFAULT_EXPORT_TIMEOUT_MILLIS)
+          .setExportOnlySampled(DEFAULT_EXPORT_ONLY_SAMPLED);
     }
 
-    public static class Builder extends ConfigBuilder {
+    @AutoValue.Builder
+    public abstract static class Builder {
 
-      private static final String KEY_SCHEDULE_DELAY_MILLIS = "OTEL_BSP_SCHEDULE_DELAY";
-      private static final String KEY_MAX_QUEUE_SIZE = "OTEL_BSP_MAX_QUEUE";
-      private static final String KEY_MAX_EXPORT_BATCH_SIZE = "OTEL_BSP_MAX_EXPORT_BATCH";
-      private static final String KEY_EXPORT_TIMEOUT_MILLIS = "OTEL_BSP_EXPORT_TIMEOUT";
-      private static final String KEY_SAMPLED = "OTEL_BSP_REPORT_SAMPLED";
+      private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay";
+      private static final String KEY_MAX_QUEUE_SIZE = "otel.bsp.max.queue";
+      private static final String KEY_MAX_EXPORT_BATCH_SIZE = "otel.bsp.max.export.batch";
+      private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.bsp.export.timeout";
+      private static final String KEY_SAMPLED = "otel.bsp.export.sampled";
 
-      private static final long SCHEDULE_DELAY_MILLIS = 5000;
-      private static final int MAX_QUEUE_SIZE = 2048;
-      private static final int MAX_EXPORT_BATCH_SIZE = 512;
-      private static final int EXPORT_TIMEOUT_MILLIS = 30_000;
-      private static final boolean REPORT_ONLY_SAMPLED = true;
+      @VisibleForTesting
+      protected enum NamingConvention {
+        DOT {
+          @Override
+          public String normalize(@Nonnull String key) {
+            return key.toLowerCase();
+          }
+        },
+        ENV_VAR {
+          @Override
+          public String normalize(@Nonnull String key) {
+            return key.toLowerCase().replace("_", ".");
+          }
+        };
 
-      private long scheduleDelayMillis = SCHEDULE_DELAY_MILLIS;
-      private int maxQueueSize = MAX_QUEUE_SIZE;
-      private int maxExportBatchSize = MAX_EXPORT_BATCH_SIZE;
-      private int exporterTimeoutMillis = EXPORT_TIMEOUT_MILLIS;
-      private boolean sampled = REPORT_ONLY_SAMPLED;
+        public abstract String normalize(@Nonnull String key);
+
+        public Map<String, String> normalize(@Nonnull Map<String, String> map) {
+          Map<String, String> properties = new HashMap<>();
+          for (Map.Entry<String, String> entry : map.entrySet()) {
+            properties.put(normalize(entry.getKey()), entry.getValue());
+          }
+          return Collections.unmodifiableMap(properties);
+        }
+      }
 
       /**
-       * Sets the configuration values from the given configuration map.
+       * Sets the configuration values from the given configuration map for only the available keys.
+       * This method looks for the following keys:
+       *
+       * <ul>
+       *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
+       *       exports.
+       *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
+       *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
+       *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
+       *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be
+       *       exported.
+       * </ul>
        *
        * @param configMap {@link Map} holding the configuration values.
        * @return this.
        */
-      @Override
-      public Builder fromConfigMap(Map<String, String> configMap) {
-        this.setScheduleDelayMillis(
-            getProperty(KEY_SCHEDULE_DELAY_MILLIS, configMap, SCHEDULE_DELAY_MILLIS));
-        this.setMaxQueueSize(getProperty(KEY_MAX_QUEUE_SIZE, configMap, MAX_QUEUE_SIZE));
-        this.setMaxExportBatchSize(
-            getProperty(KEY_MAX_EXPORT_BATCH_SIZE, configMap, MAX_EXPORT_BATCH_SIZE));
-        this.setExporterTimeoutMillis(
-            getProperty(KEY_EXPORT_TIMEOUT_MILLIS, configMap, EXPORT_TIMEOUT_MILLIS));
-        this.reportOnlySampled(getProperty(KEY_SAMPLED, configMap, REPORT_ONLY_SAMPLED));
+      @VisibleForTesting
+      Builder fromConfigMap(Map<String, String> configMap, NamingConvention namingConvention) {
+        configMap = namingConvention.normalize(configMap);
+        Long longValue = getLongProperty(KEY_SCHEDULE_DELAY_MILLIS, configMap);
+        if (longValue != null) {
+          this.setScheduleDelayMillis(longValue);
+        }
+        Integer intValue = getIntProperty(KEY_MAX_QUEUE_SIZE, configMap);
+        if (intValue != null) {
+          this.setMaxQueueSize(intValue);
+        }
+        intValue = getIntProperty(KEY_MAX_EXPORT_BATCH_SIZE, configMap);
+        if (intValue != null) {
+          this.setMaxExportBatchSize(intValue);
+        }
+        intValue = getIntProperty(KEY_EXPORT_TIMEOUT_MILLIS, configMap);
+        if (intValue != null) {
+          this.setExporterTimeoutMillis(intValue);
+        }
+        Boolean boolValue = getBooleanProperty(KEY_SAMPLED, configMap);
+        if (boolValue != null) {
+          this.setExportOnlySampled(boolValue);
+        }
         return this;
       }
 
       /**
-       * Sets the configuration values from environment variables.
+       * Sets the configuration values from the given properties object for only the available keys.
+       * This method looks for the following keys:
        *
+       * <ul>
+       *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
+       *       exports.
+       *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
+       *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
+       *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
+       *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be
+       *       exported.
+       * </ul>
+       *
+       * @param properties {@link Properties} holding the configuration values.
        * @return this.
        */
-      @Override
-      public Builder fromEnv() {
-        return fromConfigMap(System.getenv());
+      public Builder readProperties(Properties properties) {
+        return fromConfigMap(Maps.fromProperties(properties), NamingConvention.DOT);
       }
 
       /**
-       * Set whether only sampled spans should be reported.
+       * Sets the configuration values from environment variables for only the available keys. This
+       * method looks for the following keys:
        *
+       * <ul>
+       *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: to set the delay interval between two consecutive
+       *       exports.
+       *   <li>{@code OTEL_BSP_MAX_QUEUE}: to set the maximum queue size.
+       *   <li>{@code OTEL_BSP_MAX_EXPORT_BATCH}: to set the maximum batch size.
+       *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT}: to set the maximum allowed time to export data.
+       *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: to set whether only sampled spans should be
+       *       exported.
+       * </ul>
+       *
+       * @return this.
+       */
+      public Builder readEnvironment() {
+        return fromConfigMap(System.getenv(), NamingConvention.ENV_VAR);
+      }
+
+      /**
+       * Sets the configuration values from system properties for only the available keys. This
+       * method looks for the following keys:
+       *
+       * <ul>
+       *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
+       *       exports.
+       *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
+       *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
+       *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
+       *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be
+       *       reported.
+       * </ul>
+       *
+       * @return this.
+       */
+      public Builder readSystemProperties() {
+        return readProperties(System.getProperties());
+      }
+
+      /**
+       * Set whether only sampled spans should be exported.
+       *
+       * <p>Default value is {@code true}.
+       *
+       * @see BatchSpansProcessor.Config#DEFAULT_EXPORT_ONLY_SAMPLED
        * @param sampled report only sampled spans.
        * @return this.
        */
-      public Builder reportOnlySampled(boolean sampled) {
-        this.sampled = sampled;
-        return this;
-      }
+      public abstract Builder setExportOnlySampled(boolean sampled);
 
       /**
        * Sets the delay interval between two consecutive exports. The actual interval may be shorter
@@ -540,30 +645,22 @@ public final class BatchSpansProcessor implements SpanProcessor {
        *
        * <p>Default value is {@code 5000}ms.
        *
+       * @see BatchSpansProcessor.Config#DEFAULT_SCHEDULE_DELAY_MILLIS
        * @param scheduleDelayMillis the delay interval between two consecutive exports.
        * @return this.
        */
-      public Builder setScheduleDelayMillis(long scheduleDelayMillis) {
-        Utils.checkArgument(
-            scheduleDelayMillis >= 0, "scheduleDelayMillis must greater than or equal 0.");
-        this.scheduleDelayMillis = scheduleDelayMillis;
-        return this;
-      }
+      public abstract Builder setScheduleDelayMillis(long scheduleDelayMillis);
 
       /**
        * Sets the maximum time an exporter will be allowed to run before being cancelled.
        *
        * <p>Default value is {@code 30000}ms
        *
+       * @see BatchSpansProcessor.Config#DEFAULT_EXPORT_TIMEOUT_MILLIS
        * @param exporterTimeoutMillis the timeout for exports in milliseconds.
        * @return this
        */
-      public Builder setExporterTimeoutMillis(int exporterTimeoutMillis) {
-        Utils.checkArgument(
-            exporterTimeoutMillis >= 0, "exporterTimeoutMillis must greater than or equal 0.");
-        this.exporterTimeoutMillis = exporterTimeoutMillis;
-        return this;
-      }
+      public abstract Builder setExporterTimeoutMillis(int exporterTimeoutMillis);
 
       /**
        * Sets the maximum number of Spans that are kept in the queue before start dropping.
@@ -573,15 +670,12 @@ public final class BatchSpansProcessor implements SpanProcessor {
        *
        * <p>Default value is {@code 2048}.
        *
+       * @see BatchSpansProcessor.Config#DEFAULT_MAX_QUEUE_SIZE
        * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
        *     dropping.
        * @return this.
        */
-      public Builder setMaxQueueSize(int maxQueueSize) {
-        Utils.checkArgument(maxQueueSize > 0, "maxQueueSize must be positive.");
-        this.maxQueueSize = maxQueueSize;
-        return this;
-      }
+      public abstract Builder setMaxQueueSize(int maxQueueSize);
 
       /**
        * Sets the maximum batch size for every export. This must be smaller or equal to {@code
@@ -589,18 +683,57 @@ public final class BatchSpansProcessor implements SpanProcessor {
        *
        * <p>Default value is {@code 512}.
        *
+       * @see BatchSpansProcessor.Config#DEFAULT_MAX_EXPORT_BATCH_SIZE
        * @param maxExportBatchSize the maximum batch size for every export.
        * @return this.
        */
-      public Builder setMaxExportBatchSize(int maxExportBatchSize) {
-        Utils.checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
-        this.maxExportBatchSize = maxExportBatchSize;
-        return this;
+      public abstract Builder setMaxExportBatchSize(int maxExportBatchSize);
+
+      abstract Config autoBuild(); // not public
+
+      /**
+       * Builds the {@link Config} object.
+       *
+       * @return the {@link Config} object.
+       */
+      public Config build() {
+        Config config = autoBuild();
+        Utils.checkArgument(
+            config.getScheduleDelayMillis() >= 0,
+            "scheduleDelayMillis must greater than or equal 0.");
+        Utils.checkArgument(
+            config.getExporterTimeoutMillis() >= 0,
+            "exporterTimeoutMillis must greater than or equal 0.");
+        Utils.checkArgument(config.getMaxQueueSize() > 0, "maxQueueSize must be positive.");
+        Utils.checkArgument(
+            config.getMaxExportBatchSize() > 0, "maxExportBatchSize must be positive.");
+        return config;
       }
 
-      public Config build() {
-        return new Config(
-            sampled, scheduleDelayMillis, maxQueueSize, maxExportBatchSize, exporterTimeoutMillis);
+      @Nullable
+      private static Boolean getBooleanProperty(String name, Map<String, String> map) {
+        if (map.containsKey(name)) {
+          return Boolean.parseBoolean(map.get(name));
+        }
+        return null;
+      }
+
+      @Nullable
+      private static Integer getIntProperty(String name, Map<String, String> map) {
+        try {
+          return Integer.parseInt(map.get(name));
+        } catch (NumberFormatException ex) {
+          return null;
+        }
+      }
+
+      @Nullable
+      private static Long getLongProperty(String name, Map<String, String> map) {
+        try {
+          return Long.parseLong(map.get(name));
+        } catch (NumberFormatException ex) {
+          return null;
+        }
       }
     }
   }

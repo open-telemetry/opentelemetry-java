@@ -28,7 +28,10 @@ import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,7 +39,10 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentMatchers;
@@ -65,12 +71,208 @@ public class BatchSpansProcessorTest {
     tracerSdkFactory.shutdown();
   }
 
+  @RunWith(JUnit4.class)
+  public static class ConfigurationSystemPropertiesTest {
+    @Rule
+    public final ProvideSystemProperty systemProperties =
+        new ProvideSystemProperty("otel.bsp.schedule.delay", "5")
+            .and("otel.bsp.max.queue", "5")
+            .and("otel.bsp.export.timeout", "5")
+            .and("otel.bsp.export.sampled", "false");
+
+    @Test
+    public void testSystemProperties() {
+      BatchSpansProcessor.Config config = BatchSpansProcessor.Config.loadFromDefaultSources();
+      assertThat(config.getScheduleDelayMillis()).isEqualTo(5);
+      assertThat(config.getMaxQueueSize()).isEqualTo(5);
+      // This is not defined and should be equal to the default values
+      assertThat(config.getMaxExportBatchSize())
+          .isEqualTo(BatchSpansProcessor.Config.getDefault().getMaxExportBatchSize());
+      assertThat(config.getExporterTimeoutMillis()).isEqualTo(5);
+      assertThat(config.isExportOnlySampled()).isEqualTo(false);
+    }
+  }
+
+  @RunWith(JUnit4.class)
+  public static class ConfigurationEnvironmentVariablesTest {
+    @Rule
+    public final EnvironmentVariables environmentVariables =
+        new EnvironmentVariables()
+            .set("OTEL_BSP_MAX_QUEUE", "22")
+            .set("OTEL_BSP_EXPORT_TIMEOUT", "22")
+            .set("OTEL_BSP_EXPORT_SAMPLED", "true");
+
+    @Test
+    public void testEnvironmentVariables() {
+      BatchSpansProcessor.Config config = BatchSpansProcessor.Config.loadFromDefaultSources();
+      BatchSpansProcessor.Config defaultConf = BatchSpansProcessor.Config.getDefault();
+      // This is not defined and should be equal to the default values
+      assertThat(config.getScheduleDelayMillis()).isEqualTo(defaultConf.getScheduleDelayMillis());
+      assertThat(config.getMaxQueueSize()).isEqualTo(22);
+      // This is not defined and should be equal to the default values
+      assertThat(config.getMaxExportBatchSize()).isEqualTo(defaultConf.getMaxExportBatchSize());
+      assertThat(config.getExporterTimeoutMillis()).isEqualTo(22);
+      assertThat(config.isExportOnlySampled()).isEqualTo(true);
+    }
+  }
+
+  @RunWith(JUnit4.class)
+  public static class ConfigurationSystemAndEnvironmentTest {
+    @Rule
+    public final ProvideSystemProperty systemProperties =
+        new ProvideSystemProperty("otel.bsp.max.queue", "5")
+            .and("otel.bsp.export.timeout", "5")
+            .and("otel.bsp.export.sampled", "false");
+
+    @Rule
+    public final EnvironmentVariables environmentVariables =
+        new EnvironmentVariables()
+            .set("OTEL_BSP_SCHEDULE_DELAY", "22")
+            .set("OTEL_BSP_MAX_QUEUE", "22")
+            .set("OTEL_BSP_EXPORT_TIMEOUT", "22")
+            .set("OTEL_BSP_EXPORT_SAMPLED", "true");
+
+    @Test
+    public void testSystemAndEnv() {
+      BatchSpansProcessor.Config config = BatchSpansProcessor.Config.loadFromDefaultSources();
+      BatchSpansProcessor.Config defaultConf = BatchSpansProcessor.Config.getDefault();
+      assertThat(config.getScheduleDelayMillis()).isEqualTo(22);
+      assertThat(config.getMaxQueueSize()).isEqualTo(5);
+      // This is not defined and should be equal to the default values
+      assertThat(config.getMaxExportBatchSize()).isEqualTo(defaultConf.getMaxExportBatchSize());
+      assertThat(config.getExporterTimeoutMillis()).isEqualTo(5);
+      assertThat(config.isExportOnlySampled()).isEqualTo(false);
+    }
+  }
+
   private ReadableSpan createSampledEndedSpan(String spanName) {
     io.opentelemetry.trace.Span span =
         TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOn())
             .startSpan();
     span.end();
     return (ReadableSpan) span;
+  }
+
+  @Test
+  public void testConfiguration() {
+    BatchSpansProcessor.Config config;
+    BatchSpansProcessor.Config defConfig = BatchSpansProcessor.Config.getDefault();
+
+    config = BatchSpansProcessor.Config.newBuilder().build();
+    // check defaults
+    assertThat(config.getScheduleDelayMillis()).isEqualTo(defConfig.getScheduleDelayMillis());
+    assertThat(config.getMaxQueueSize()).isEqualTo(defConfig.getMaxQueueSize());
+    assertThat(config.getMaxExportBatchSize()).isEqualTo(defConfig.getMaxExportBatchSize());
+    assertThat(config.getExporterTimeoutMillis()).isEqualTo(defConfig.getExporterTimeoutMillis());
+    assertThat(config.isExportOnlySampled()).isEqualTo(defConfig.isExportOnlySampled());
+
+    // check system configuration
+    Map<String, String> configMap = new HashMap<>();
+    configMap.put("otel.bsp.schedule.delay", "1");
+    configMap.put("otel.bsp.max.queue", "1");
+    configMap.put("otel.bsp.max.export.batch", "1");
+    configMap.put("otel.bsp.export.timeout", "1");
+    configMap.put("otel.bsp.export.sampled", "false");
+    config =
+        BatchSpansProcessor.Config.newBuilder()
+            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.DOT)
+            .build();
+    assertThat(config.getScheduleDelayMillis()).isEqualTo(1);
+    assertThat(config.getMaxQueueSize()).isEqualTo(1);
+    assertThat(config.getMaxExportBatchSize()).isEqualTo(1);
+    assertThat(config.getExporterTimeoutMillis()).isEqualTo(1);
+    assertThat(config.isExportOnlySampled()).isEqualTo(false);
+
+    // check properties
+    Properties properties = new Properties();
+    for (Map.Entry<String, String> entry : configMap.entrySet()) {
+      properties.put(entry.getKey(), entry.getValue());
+    }
+    config = BatchSpansProcessor.Config.newBuilder().readProperties(properties).build();
+    assertThat(config.getScheduleDelayMillis()).isEqualTo(1);
+    assertThat(config.getMaxQueueSize()).isEqualTo(1);
+    assertThat(config.getMaxExportBatchSize()).isEqualTo(1);
+    assertThat(config.getExporterTimeoutMillis()).isEqualTo(1);
+    assertThat(config.isExportOnlySampled()).isEqualTo(false);
+
+    // Check env vars
+    configMap.clear();
+    configMap.put("OTEL_BSP_SCHEDULE_DELAY", "2");
+    configMap.put("OTEL_BSP_MAX_QUEUE", "2");
+    configMap.put("OTEL_BSP_MAX_EXPORT_BATCH", "2");
+    configMap.put("OTEL_BSP_EXPORT_TIMEOUT", "2");
+    configMap.put("OTEL_BSP_EXPORT_SAMPLED", "true");
+    config =
+        BatchSpansProcessor.Config.newBuilder()
+            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.ENV_VAR)
+            .build();
+    assertThat(config.getScheduleDelayMillis()).isEqualTo(2);
+    assertThat(config.getMaxQueueSize()).isEqualTo(2);
+    assertThat(config.getMaxExportBatchSize()).isEqualTo(2);
+    assertThat(config.getExporterTimeoutMillis()).isEqualTo(2);
+    assertThat(config.isExportOnlySampled()).isEqualTo(true);
+
+    // Check mixing conventions
+    configMap.clear();
+    configMap.put("OTEL_BSP_schedule_DELAY", "3");
+    configMap.put("OTEL.BSP.MAX_QUEUE", "3");
+    configMap.put("OTEL_bsp.MAX_EXPORT_BATCH", "3");
+    configMap.put("OTEL_BSP_ExPoRt_TIMEOUT", "3");
+    configMap.put("OTEL_bSp.EXPORT.SAmpleD", "false");
+    config =
+        BatchSpansProcessor.Config.newBuilder()
+            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.ENV_VAR)
+            .build();
+    assertThat(config.getScheduleDelayMillis()).isEqualTo(3);
+    assertThat(config.getMaxQueueSize()).isEqualTo(3);
+    assertThat(config.getMaxExportBatchSize()).isEqualTo(3);
+    assertThat(config.getExporterTimeoutMillis()).isEqualTo(3);
+    assertThat(config.isExportOnlySampled()).isEqualTo(false);
+  }
+
+  @Test
+  public void testOnlySetPropertiesOverrideDefaults() {
+    BatchSpansProcessor.Config config;
+    Map<String, String> configMap = new HashMap<>();
+    // check only set values are written
+    configMap.clear();
+    configMap.put("OTEL_BSP_SCHEDULE_DELAY", "1");
+    config =
+        BatchSpansProcessor.Config.newBuilder()
+            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.ENV_VAR)
+            .build();
+    assertThat(config.getScheduleDelayMillis()).isEqualTo(1);
+    assertThat(config.getMaxQueueSize()).isEqualTo(2048);
+    assertThat(config.getMaxExportBatchSize()).isEqualTo(512);
+    assertThat(config.getExporterTimeoutMillis()).isEqualTo(30_000);
+    assertThat(config.isExportOnlySampled()).isEqualTo(true);
+  }
+
+  @Test
+  public void testUserSetPropertiesOverrideDefaults() {
+    BatchSpansProcessor.Config config;
+    Map<String, String> configMap = new HashMap<>();
+    // check only set values are written
+    configMap.clear();
+    configMap.put("otel.bsp.schedule.delay", "1");
+    configMap.put("otel.bsp.max.queue", "1");
+    configMap.put("otel.bsp.max.export.batch", "1");
+    configMap.put("otel.bsp.export.timeout", "1");
+    configMap.put("otel.bsp.export.sampled", "false");
+    config =
+        BatchSpansProcessor.Config.newBuilder()
+            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.DOT)
+            .setScheduleDelayMillis(2)
+            .setMaxQueueSize(2)
+            .setMaxExportBatchSize(2)
+            .setExporterTimeoutMillis(2)
+            .setExportOnlySampled(true)
+            .build();
+    assertThat(config.getScheduleDelayMillis()).isEqualTo(2);
+    assertThat(config.getMaxQueueSize()).isEqualTo(2);
+    assertThat(config.getMaxExportBatchSize()).isEqualTo(2);
+    assertThat(config.getExporterTimeoutMillis()).isEqualTo(2);
+    assertThat(config.isExportOnlySampled()).isEqualTo(true);
   }
 
   // TODO(bdrutu): Fix this when Sampler return RECORD option.
