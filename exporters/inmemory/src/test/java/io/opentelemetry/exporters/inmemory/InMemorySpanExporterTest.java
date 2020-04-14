@@ -92,11 +92,11 @@ public class InMemorySpanExporterTest {
     exporter.shutdown();
     // After shutdown no more export.
     assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
-        .isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
+        .isEqualTo(ResultCode.FAILURE);
     exporter.reset();
     // Reset does not do anything if already shutdown.
     assertThat(exporter.export(Collections.singletonList(makeBasicSpan())))
-        .isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
+        .isEqualTo(ResultCode.FAILURE);
   }
 
   static SpanData makeBasicSpan() {

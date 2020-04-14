@@ -34,14 +34,8 @@ public interface SpanExporter {
     /** The export operation finished successfully. */
     SUCCESS,
 
-    /** The export operation finished with an error, but retrying may succeed. */
-    FAILED_RETRYABLE,
-
-    /**
-     * The export operation finished with an error, the caller should not try to export the same
-     * data again.
-     */
-    FAILED_NOT_RETRYABLE
+    /** The export operation finished with an error. */
+    FAILURE
   }
 
   /**

@@ -106,8 +106,7 @@ public class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     exporter.shutdown();
     // TODO: This probably should not be retryable because we never restart the channel.
-    assertThat(exporter.export(Collections.singletonList(span)))
-        .isEqualTo(ResultCode.FAILED_RETRYABLE);
+    assertThat(exporter.export(Collections.singletonList(span))).isEqualTo(ResultCode.FAILURE);
   }
 
   @Test
@@ -117,7 +116,7 @@ public class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -130,7 +129,7 @@ public class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -143,7 +142,7 @@ public class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -156,7 +155,7 @@ public class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -169,7 +168,7 @@ public class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -182,7 +181,7 @@ public class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -195,7 +194,7 @@ public class OtlpGrpcSpanExporterTest {
         OtlpGrpcSpanExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeSpan())))
-          .isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }

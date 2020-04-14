@@ -18,7 +18,6 @@ package io.opentelemetry.exporters.jaeger;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
@@ -128,16 +127,8 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
       //noinspection ResultOfMethodCallIgnored
       stub.postSpans(request);
       return ResultCode.SUCCESS;
-    } catch (StatusRuntimeException e) {
-      switch (e.getStatus().getCode()) {
-        case DEADLINE_EXCEEDED:
-        case UNAVAILABLE:
-          return ResultCode.FAILED_RETRYABLE;
-        default:
-          return ResultCode.FAILED_NOT_RETRYABLE;
-      }
-    } catch (Throwable t) {
-      return ResultCode.FAILED_NOT_RETRYABLE;
+    } catch (Throwable e) {
+      return ResultCode.FAILURE;
     }
   }
 
