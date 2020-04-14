@@ -96,7 +96,7 @@ subprojects {
         prometheusVersion = '0.8.1'
         protobufVersion = '3.11.4'
         protocVersion = '3.11.4'
-        zipkinReporterVersion = '2.7.14'
+        zipkinReporterVersion = '2.12.2'
 
         libraries = [
                 auto_value              : "com.google.auto.value:auto-value:${autoValueVersion}",
