@@ -30,7 +30,9 @@ import io.restassured.response.Response;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.awaitility.Awaitility;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -53,13 +55,22 @@ public class JaegerIntegrationTest {
 
   @SuppressWarnings("rawtypes")
   @ClassRule
-  public static GenericContainer jaeger =
-      new GenericContainer("jaegertracing/all-in-one:" + JAEGER_VERSION)
-          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
-          .waitingFor(new HttpWaitStrategy().forPath("/"));
+  @Nullable
+  public static GenericContainer jaeger = null;
+
+  static {
+    // make sure that the user hasn't disabled the docker-based tests
+    if (!Boolean.parseBoolean(System.getProperty("disable.docker.tests"))) {
+      jaeger =
+          new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
+              .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
+              .waitingFor(new HttpWaitStrategy().forPath("/"));
+    }
+  }
 
   @Before
   public void setupJaegerExporter() {
+    Assume.assumeNotNull(jaeger);
     ManagedChannel jaegerChannel =
         ManagedChannelBuilder.forAddress("127.0.0.1", jaeger.getMappedPort(COLLECTOR_PORT))
             .usePlaintext()
@@ -76,6 +87,7 @@ public class JaegerIntegrationTest {
 
   @Test
   public void testJaegerIntegration() {
+    Assume.assumeNotNull(jaegerExporter);
     imitateWork();
     Awaitility.await().atMost(30, TimeUnit.SECONDS).until(assertJaegerHaveTrace());
   }
