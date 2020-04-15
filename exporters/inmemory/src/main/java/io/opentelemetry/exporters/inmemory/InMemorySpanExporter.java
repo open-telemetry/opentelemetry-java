@@ -96,7 +96,8 @@ public final class InMemorySpanExporter implements SpanExporter {
   }
 
   /**
-   * The InMemory exporter does not batch spans, so this method will immediately return with success.
+   * The InMemory exporter does not batch spans, so this method will immediately return with
+   * success.
    *
    * @return always Success
    */
