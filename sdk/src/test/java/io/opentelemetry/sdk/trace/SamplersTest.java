@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 
 import com.google.common.truth.Truth;
 import io.opentelemetry.common.AttributeValue;
@@ -267,7 +268,8 @@ public class SamplersTest {
             Collections.<String, AttributeValue>emptyMap(),
             Collections.<Link>emptyList());
     assertThat(decision1.isSampled()).isFalse();
-    assertThat(decision1.attributes()).isEmpty();
+    assertThat(decision1.attributes())
+        .containsExactly("samplingProbability", doubleAttributeValue(0.0001));
     // This traceId will be sampled by the Probability Sampler because the first 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     TraceId sampledtraceId =
@@ -301,6 +303,7 @@ public class SamplersTest {
             Collections.<String, AttributeValue>emptyMap(),
             Collections.<Link>emptyList());
     assertThat(decision2.isSampled()).isTrue();
-    assertThat(decision2.attributes()).isEmpty();
+    assertThat(decision1.attributes())
+        .containsExactly("samplingProbability", doubleAttributeValue(0.0001));
   }
 }

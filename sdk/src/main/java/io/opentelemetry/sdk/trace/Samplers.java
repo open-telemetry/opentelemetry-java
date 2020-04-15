@@ -16,6 +16,9 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static java.util.Collections.singletonMap;
+
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
 import io.opentelemetry.common.AttributeValue;
@@ -162,12 +165,20 @@ public final class Samplers {
       } else {
         idUpperBound = (long) (probability * Long.MAX_VALUE);
       }
-      return new AutoValue_Samplers_Probability(probability, idUpperBound);
+      return new AutoValue_Samplers_Probability(
+          probability,
+          idUpperBound,
+          ProbabilityDecision.create(/* decision= */ true, probability),
+          ProbabilityDecision.create(/* decision= */ false, probability));
     }
 
     abstract double getProbability();
 
     abstract long getIdUpperBound();
+
+    abstract Decision getPositiveDecision();
+
+    abstract Decision getNegativeDecision();
 
     @Override
     public final Decision shouldSample(
@@ -198,8 +209,8 @@ public final class Samplers {
       // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
       // code is executed in-line for every Span creation).
       return Math.abs(traceId.getLowerLong()) < getIdUpperBound()
-          ? ALWAYS_ON_DECISION
-          : ALWAYS_OFF_DECISION;
+          ? getPositiveDecision()
+          : getNegativeDecision();
     }
 
     @Override
@@ -231,6 +242,35 @@ public final class Samplers {
     @Override
     public Map<String, AttributeValue> attributes() {
       return Collections.emptyMap();
+    }
+  }
+
+  /** Probability-based sampling decision with a single attribute for the probability. */
+  @Immutable
+  @AutoValue
+  static abstract class ProbabilityDecision implements Decision {
+
+    ProbabilityDecision() {}
+
+    /**
+     * Creates sampling decision without attributes.
+     *
+     * @param decision sampling decision
+     * @param probability the probability that was used for the decision.
+     */
+    static ProbabilityDecision create(boolean decision, double probability) {
+      return new AutoValue_Samplers_ProbabilityDecision(decision, singletonMap
+          ("samplingProbability", doubleAttributeValue(probability)));
+    }
+
+    @Override
+    public abstract boolean isSampled();
+
+    public abstract Map<String, AttributeValue> getAttributes();
+
+    @Override
+    public Map<String, AttributeValue> attributes() {
+      return getAttributes();
     }
   }
 }
