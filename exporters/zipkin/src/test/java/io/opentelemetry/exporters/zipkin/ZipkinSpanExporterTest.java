@@ -30,6 +30,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -131,6 +132,28 @@ public class ZipkinSpanExporterTest {
                 .putTag("boolean", "false")
                 .putTag("long", "9999")
                 .putTag("double", "222.333")
+                .build());
+  }
+
+  @Test
+  public void generateSpan_AlreadyHasHttpStatusInfo() {
+    Map<String, AttributeValue> attributeMap = new HashMap<>();
+    attributeMap.put(SemanticAttributes.HTTP_STATUS_CODE.key(),
+        AttributeValue.longAttributeValue(404));
+    attributeMap.put(SemanticAttributes.HTTP_STATUS_TEXT.key(),
+        AttributeValue.stringAttributeValue("NOT FOUND"));
+    attributeMap.put("error", AttributeValue.stringAttributeValue("A user provided error"));
+    SpanData data = buildStandardSpan().setAttributes(attributeMap).setKind(Kind.CLIENT)
+        .setStatus(Status.NOT_FOUND).build();
+
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(
+            buildZipkinSpan(Span.Kind.CLIENT, "Status.UNKNOWN")
+                .toBuilder()
+                .clearTags()
+                .putTag(SemanticAttributes.HTTP_STATUS_CODE.key(), "404")
+                .putTag(SemanticAttributes.HTTP_STATUS_TEXT.key(), "NOT FOUND")
+                .putTag("error", "A user provided error")
                 .build());
   }
 

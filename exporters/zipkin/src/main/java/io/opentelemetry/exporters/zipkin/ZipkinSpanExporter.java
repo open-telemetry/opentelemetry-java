@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -52,8 +53,8 @@ final class ZipkinSpanExporter implements SpanExporter {
   // The naming follows Zipkin convention. As an example see:
   // https://github.com/openzipkin/brave/blob/eee993f998ae57b08644cc357a6d478827428710/instrumentation/http/src/main/java/brave/http/HttpTags.java
   // Note: these 3 fields are non-private for testing
-  static final String STATUS_CODE = "otel.status_code";
-  static final String STATUS_DESCRIPTION = "otel.status_description";
+  static final String STATUS_CODE = "grpc.status_code";
+  static final String STATUS_DESCRIPTION = "grpc.status_description";
   static final String STATUS_ERROR = "error";
 
   private final SpanBytesEncoder encoder;
@@ -113,16 +114,20 @@ final class ZipkinSpanExporter implements SpanExporter {
       spanBuilder.parentId(spanData.getParentSpanId().toLowerBase16());
     }
 
-    for (Map.Entry<String, AttributeValue> label : spanData.getAttributes().entrySet()) {
+    Map<String, AttributeValue> spanAttributes = spanData.getAttributes();
+    for (Map.Entry<String, AttributeValue> label : spanAttributes.entrySet()) {
       spanBuilder.putTag(label.getKey(), attributeValueToString(label.getValue()));
     }
     Status status = spanData.getStatus();
     if (status != null) {
-      spanBuilder.putTag(STATUS_CODE, status.getCanonicalCode().toString());
-      if (status.getDescription() != null) {
+      if (!spanAttributes.containsKey(SemanticAttributes.HTTP_STATUS_CODE.key())) {
+        spanBuilder.putTag(STATUS_CODE, status.getCanonicalCode().toString());
+      }
+      if (status.getDescription() != null &&
+          !spanAttributes.containsKey(SemanticAttributes.HTTP_STATUS_TEXT.key())) {
         spanBuilder.putTag(STATUS_DESCRIPTION, status.getDescription());
       }
-      if (!status.isOk()) {
+      if (!status.isOk() && !spanAttributes.containsKey(STATUS_ERROR)) {
         spanBuilder.putTag(STATUS_ERROR, status.getCanonicalCode().toString());
       }
     }
