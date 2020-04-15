@@ -52,6 +52,14 @@ public interface MetricExporter {
    */
   ResultCode export(Collection<MetricData> metrics);
 
+  /**
+   * Processes the collection of {@link MetricData} that have not yet been processed.
+   *
+   * @return the result of the flush.
+   * @since 0.4.0
+   */
+  ResultCode flush();
+
   /** Called when the associated IntervalMetricReader is shutdown. */
   void shutdown();
 }

@@ -19,6 +19,7 @@ package io.opentelemetry.exporters.logging;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +31,18 @@ public class LoggingSpanExporter implements SpanExporter {
   public ResultCode export(Collection<SpanData> spans) {
     for (SpanData span : spans) {
       logger.log(Level.INFO, "span: {0}", span);
+    }
+    return ResultCode.SUCCESS;
+  }
+
+  @Override
+  public ResultCode flush() {
+    for (Handler handler : logger.getHandlers()) {
+      try {
+        handler.flush();
+      } catch (Throwable t) {
+        return ResultCode.FAILURE;
+      }
     }
     return ResultCode.SUCCESS;
   }

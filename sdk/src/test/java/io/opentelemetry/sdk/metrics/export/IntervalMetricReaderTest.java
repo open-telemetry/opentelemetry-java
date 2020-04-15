@@ -126,6 +126,11 @@ public class IntervalMetricReaderTest {
     }
 
     @Override
+    public ResultCode flush() {
+      return ResultCode.SUCCESS;
+    }
+
+    @Override
     public void shutdown() {
       hasShutdown.set(true);
     }

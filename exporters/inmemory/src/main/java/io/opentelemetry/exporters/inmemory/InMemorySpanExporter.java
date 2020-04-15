@@ -96,6 +96,11 @@ public final class InMemorySpanExporter implements SpanExporter {
   }
 
   @Override
+  public ResultCode flush() {
+    return ResultCode.SUCCESS;
+  }
+
+  @Override
   public void shutdown() {
     synchronized (this) {
       finishedSpanItems.clear();

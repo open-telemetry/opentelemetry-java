@@ -221,6 +221,11 @@ public class TracerSdkTest {
     }
 
     @Override
+    public ResultCode flush() {
+      return ResultCode.SUCCESS;
+    }
+
+    @Override
     public void shutdown() {
       // no-op
     }

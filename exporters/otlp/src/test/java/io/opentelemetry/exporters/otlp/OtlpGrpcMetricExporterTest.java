@@ -198,6 +198,17 @@ public class OtlpGrpcMetricExporterTest {
     }
   }
 
+  @Test
+  public void testExport_flush() {
+    OtlpGrpcMetricExporter exporter =
+        OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
+    try {
+      assertThat(exporter.flush()).isEqualTo(ResultCode.SUCCESS);
+    } finally {
+      exporter.shutdown();
+    }
+  }
+
   private static MetricData generateFakeMetric() {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);

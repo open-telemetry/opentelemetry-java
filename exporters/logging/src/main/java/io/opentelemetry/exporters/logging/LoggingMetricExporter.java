@@ -19,6 +19,7 @@ package io.opentelemetry.exporters.logging;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +31,18 @@ public class LoggingMetricExporter implements MetricExporter {
     logger.info("Received a collection of " + metrics.size() + " metrics for export.");
     for (MetricData metricData : metrics) {
       logger.log(Level.INFO, "metric: {0}", metricData);
+    }
+    return ResultCode.SUCCESS;
+  }
+
+  @Override
+  public ResultCode flush() {
+    for (Handler handler : logger.getHandlers()) {
+      try {
+        handler.flush();
+      } catch (Throwable t) {
+        return ResultCode.FAILURE;
+      }
     }
     return ResultCode.SUCCESS;
   }
