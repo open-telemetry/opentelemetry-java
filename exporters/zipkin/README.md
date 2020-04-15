@@ -27,6 +27,10 @@ spans will be sent to a Zipkin endpoint running on `localhost`:
     ZipkinSpanExporter exporter = ZipkinSpanExporter.create(configuration);
 ```
 
+## Compatibility
+
+As with the OpenTelemetry SDK itself, this exporter is compatible with Java 7+ and Android API level 24+.
+
 ## Attribution
 
 The code in this module is based on the [OpenCensus Zipkin exporter][oc-origin] code.
