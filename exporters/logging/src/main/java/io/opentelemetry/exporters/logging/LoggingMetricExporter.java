@@ -35,6 +35,11 @@ public class LoggingMetricExporter implements MetricExporter {
     return ResultCode.SUCCESS;
   }
 
+  /**
+   * Flushes the data.
+   *
+   * @return the result of the operation
+   */
   @Override
   public ResultCode flush() {
     for (Handler handler : logger.getHandlers()) {

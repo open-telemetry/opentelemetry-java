@@ -95,6 +95,11 @@ public final class InMemorySpanExporter implements SpanExporter {
     return ResultCode.SUCCESS;
   }
 
+  /**
+   * The InMemory exporter does not batch spans, so this method will immediately return with success.
+   *
+   * @return always Success
+   */
   @Override
   public ResultCode flush() {
     return ResultCode.SUCCESS;

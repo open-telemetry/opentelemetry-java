@@ -35,6 +35,11 @@ public class LoggingSpanExporter implements SpanExporter {
     return ResultCode.SUCCESS;
   }
 
+  /**
+   * Flushes the data.
+   *
+   * @return the result of the operation
+   */
   @Override
   public ResultCode flush() {
     for (Handler handler : logger.getHandlers()) {

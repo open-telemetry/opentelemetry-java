@@ -61,6 +61,11 @@ public final class MultiSpanExporter implements SpanExporter {
     return currentResultCode;
   }
 
+  /**
+   * Flushes the data of all registered {@link SpanExporter}s.
+   *
+   * @return the result of the operation
+   */
   @Override
   public ResultCode flush() {
     ResultCode currentResultCode = SUCCESS;
