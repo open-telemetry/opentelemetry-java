@@ -248,7 +248,7 @@ public final class Samplers {
   /** Probability-based sampling decision with a single attribute for the probability. */
   @Immutable
   @AutoValue
-  static abstract class ProbabilityDecision implements Decision {
+  abstract static class ProbabilityDecision implements Decision {
 
     ProbabilityDecision() {}
 
@@ -259,8 +259,8 @@ public final class Samplers {
      * @param probability the probability that was used for the decision.
      */
     static ProbabilityDecision create(boolean decision, double probability) {
-      return new AutoValue_Samplers_ProbabilityDecision(decision, singletonMap
-          ("samplingProbability", doubleAttributeValue(probability)));
+      return new AutoValue_Samplers_ProbabilityDecision(
+          decision, singletonMap("samplingProbability", doubleAttributeValue(probability)));
     }
 
     @Override
