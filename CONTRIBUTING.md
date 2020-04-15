@@ -72,9 +72,10 @@ $ git commit -m "Update javadoc for API."
 Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.
 
-1. Note: Currently, to run the full suite of tests, you'll need to be running a docker daemon. If
-you cannot run the docker daemon, you can disable the docker tests by setting a gradle property of
-``"disable.docker.tests"`` to true. See the gradle.properties file in the root of the project
+1. Note: Currently, to run the full suite of tests, you'll need to be running a docker daemon.
+The tests that require docker are disabled by default. If you wish to run them,
+you can enable the docker tests by setting a gradle property of
+``"enable.docker.tests"`` to true. See the gradle.properties file in the root of the project
 for more details.
 
 2. From the root project directory, initialize repository dependencies

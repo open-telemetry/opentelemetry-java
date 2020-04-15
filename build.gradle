@@ -179,7 +179,7 @@ subprojects {
         }
 
         test {
-            systemProperties project.properties.subMap(["disable.docker.tests"])
+            systemProperties project.properties.subMap(["enable.docker.tests"])
         }
     }
 
