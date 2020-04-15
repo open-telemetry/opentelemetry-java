@@ -123,8 +123,8 @@ final class ZipkinSpanExporter implements SpanExporter {
       if (!spanAttributes.containsKey(SemanticAttributes.HTTP_STATUS_CODE.key())) {
         spanBuilder.putTag(STATUS_CODE, status.getCanonicalCode().toString());
       }
-      if (status.getDescription() != null &&
-          !spanAttributes.containsKey(SemanticAttributes.HTTP_STATUS_TEXT.key())) {
+      if (status.getDescription() != null
+          && !spanAttributes.containsKey(SemanticAttributes.HTTP_STATUS_TEXT.key())) {
         spanBuilder.putTag(STATUS_DESCRIPTION, status.getDescription());
       }
       if (!status.isOk() && !spanAttributes.containsKey(STATUS_ERROR)) {

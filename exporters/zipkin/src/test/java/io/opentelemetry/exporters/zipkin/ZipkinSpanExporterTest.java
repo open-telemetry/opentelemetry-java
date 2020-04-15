@@ -138,13 +138,18 @@ public class ZipkinSpanExporterTest {
   @Test
   public void generateSpan_AlreadyHasHttpStatusInfo() {
     Map<String, AttributeValue> attributeMap = new HashMap<>();
-    attributeMap.put(SemanticAttributes.HTTP_STATUS_CODE.key(),
-        AttributeValue.longAttributeValue(404));
-    attributeMap.put(SemanticAttributes.HTTP_STATUS_TEXT.key(),
+    attributeMap.put(
+        SemanticAttributes.HTTP_STATUS_CODE.key(), AttributeValue.longAttributeValue(404));
+    attributeMap.put(
+        SemanticAttributes.HTTP_STATUS_TEXT.key(),
         AttributeValue.stringAttributeValue("NOT FOUND"));
     attributeMap.put("error", AttributeValue.stringAttributeValue("A user provided error"));
-    SpanData data = buildStandardSpan().setAttributes(attributeMap).setKind(Kind.CLIENT)
-        .setStatus(Status.NOT_FOUND).build();
+    SpanData data =
+        buildStandardSpan()
+            .setAttributes(attributeMap)
+            .setKind(Kind.CLIENT)
+            .setStatus(Status.NOT_FOUND)
+            .build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
