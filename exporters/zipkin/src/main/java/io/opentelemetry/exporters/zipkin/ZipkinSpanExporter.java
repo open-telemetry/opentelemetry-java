@@ -191,7 +191,13 @@ final class ZipkinSpanExporter implements SpanExporter {
   }
 
   @Override
-  public void shutdown() {}
+  public void shutdown() {
+    try {
+      sender.close();
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Exception while closing the Zipkin Sender instance", e);
+    }
+  }
 
   /**
    * Create a new {@link ZipkinSpanExporter} from the given configuration.

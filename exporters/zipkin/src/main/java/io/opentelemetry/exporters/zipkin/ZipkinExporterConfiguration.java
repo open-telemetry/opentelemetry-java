@@ -118,6 +118,9 @@ public abstract class ZipkinExporterConfiguration {
      * <p>At least one of {@code V2Url} and {@code Sender} needs to be specified. If both {@code
      * V2Url} and {@code Sender} are set, {@code Sender} takes precedence.
      *
+     * Note: if you provide a {@link Sender} instance via this method, the {@link Sender#close()}
+     * method will be called when the exporter is shut down.
+     *
      * @param sender the Zipkin sender.
      * @return this Builder instance.
      * @since 0.4.0

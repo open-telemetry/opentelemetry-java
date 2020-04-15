@@ -91,6 +91,14 @@ public class ZipkinSpanExporterTest {
   }
 
   @Test
+  public void generateSpan_InternalKind() {
+    SpanData data = buildStandardSpan().setKind(Kind.INTERNAL).build();
+
+    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+        .isEqualTo(buildZipkinSpan(null, "OK"));
+  }
+
+  @Test
   public void generateSpan_ConsumeKind() {
     SpanData data = buildStandardSpan().setKind(Kind.CONSUMER).build();
 
@@ -185,6 +193,20 @@ public class ZipkinSpanExporterTest {
 
     ZipkinSpanExporter exporter = ZipkinSpanExporter.create(configuration);
     assertThat(exporter).isNotNull();
+  }
+
+  @Test
+  public void testShutdown() throws IOException {
+    ZipkinExporterConfiguration configuration =
+        ZipkinExporterConfiguration.builder()
+            .setV2Url("https://zipkin.endpoint.com/v2")
+            .setServiceName("myGreatService")
+            .setSender(mockSender)
+            .build();
+
+    ZipkinSpanExporter exporter = ZipkinSpanExporter.create(configuration);
+    exporter.shutdown();
+    verify(mockSender).close();
   }
 
   private static SpanData.Builder buildStandardSpan() {
