@@ -5,7 +5,7 @@ init_task: &init_task
   command: make init-git-submodules
 build_task: &build_task
   name: Build
-  command: make test
+  command: make test-with-docker
 compile_benchmark_task: &compile_benchmark_task
   name: Compile JMH
   command: make benchmark
