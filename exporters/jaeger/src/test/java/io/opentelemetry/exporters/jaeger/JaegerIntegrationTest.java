@@ -23,6 +23,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import io.restassured.http.ContentType;
@@ -33,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.awaitility.Awaitility;
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,45 +51,43 @@ public class JaegerIntegrationTest {
   private static final String JAEGER_URL = "http://localhost";
   private final Tracer tracer =
       OpenTelemetry.getTracerProvider().get(getClass().getCanonicalName());
-  private JaegerGrpcSpanExporter jaegerExporter;
 
   @SuppressWarnings("rawtypes")
   @ClassRule
   @Nullable
-  public static GenericContainer jaeger = null;
+  public static GenericContainer jaegerContainer = null;
 
   static {
     // make sure that the user has enabled the docker-based tests
     if (Boolean.getBoolean("enable.docker.tests")) {
-      jaeger =
+      jaegerContainer =
           new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
               .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
               .waitingFor(new HttpWaitStrategy().forPath("/"));
     }
   }
 
-  @Before
-  public void setupJaegerExporter() {
-    Assume.assumeNotNull(jaeger);
+  @Test
+  public void testJaegerIntegration() {
+    Assume.assumeNotNull(jaegerContainer);
+    setupJaegerExporter();
+    imitateWork();
+    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(assertJaegerHaveTrace());
+  }
+
+  private static void setupJaegerExporter() {
     ManagedChannel jaegerChannel =
-        ManagedChannelBuilder.forAddress("127.0.0.1", jaeger.getMappedPort(COLLECTOR_PORT))
+        ManagedChannelBuilder.forAddress("127.0.0.1", jaegerContainer.getMappedPort(COLLECTOR_PORT))
             .usePlaintext()
             .build();
-    this.jaegerExporter =
+    SpanExporter jaegerExporter =
         JaegerGrpcSpanExporter.newBuilder()
             .setServiceName(SERVICE_NAME)
             .setChannel(jaegerChannel)
             .setDeadlineMs(30000)
             .build();
     OpenTelemetrySdk.getTracerProvider()
-        .addSpanProcessor(SimpleSpansProcessor.newBuilder(this.jaegerExporter).build());
-  }
-
-  @Test
-  public void testJaegerIntegration() {
-    Assume.assumeNotNull(jaegerExporter);
-    imitateWork();
-    Awaitility.await().atMost(30, TimeUnit.SECONDS).until(assertJaegerHaveTrace());
+        .addSpanProcessor(SimpleSpansProcessor.newBuilder(jaegerExporter).build());
   }
 
   private void imitateWork() {
@@ -111,7 +109,7 @@ public class JaegerIntegrationTest {
           String url =
               String.format(
                   "%s/api/traces?service=%s",
-                  String.format(JAEGER_URL + ":%d", jaeger.getMappedPort(QUERY_PORT)),
+                  String.format(JAEGER_URL + ":%d", jaegerContainer.getMappedPort(QUERY_PORT)),
                   SERVICE_NAME);
           Response response =
               given()
