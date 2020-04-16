@@ -1,0 +1,62 @@
+plugins {
+    // ASSUMES GRADLE 2.12 OR HIGHER. Use plugin version 0.7.5 with earlier gradle versions
+    id 'com.google.protobuf' version '0.8.8'
+    // Generate IntelliJ IDEA's .idea & .iml project files
+    id 'java'
+}
+
+apply plugin: 'com.google.protobuf'
+
+group 'io.opentelemetry'
+version '0.1.0-SNAPSHOT'
+
+def opentelemetryVersion = '0.3.0'
+
+
+def grpcVersion = '1.24.0' // CURRENT_GRPC_VERSION
+def protobufVersion = '3.10.0'
+def protocVersion = protobufVersion
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "io.opentelemetry:opentelemetry-api:${opentelemetryVersion}"
+    compile "io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}"
+    compile "io.opentelemetry:opentelemetry-exporters-logging:${opentelemetryVersion}"
+
+    compile "io.grpc:grpc-protobuf:${grpcVersion}"
+    compile "io.grpc:grpc-stub:${grpcVersion}"
+    compile "io.grpc:grpc-netty-shaded:${grpcVersion}"
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+protobuf {
+    protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+}
+
+// Inform IDEs like IntelliJ IDEA, Eclipse or NetBeans about the generated code.
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+//create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.propagation;
+package io.opentelemetry.contrib.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -90,6 +90,25 @@ public class B3PropagatorTest {
             Context.current()),
         carrier,
         setter);
+    assertThat(carrier).containsEntry(B3Propagator.TRACE_ID_HEADER, TRACE_ID_BASE16);
+    assertThat(carrier).containsEntry(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
+    assertThat(carrier).containsEntry(B3Propagator.SAMPLED_HEADER, "1");
+  }
+
+  @Test
+  public void inject_SampledContext_nullCarrierUsage() {
+    final Map<String, String> carrier = new LinkedHashMap<>();
+    b3Propagator.inject(
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+            Context.current()),
+        null,
+        new Setter<Map<String, String>>() {
+          @Override
+          public void set(Map<String, String> ignored, String key, String value) {
+            carrier.put(key, value);
+          }
+        });
     assertThat(carrier).containsEntry(B3Propagator.TRACE_ID_HEADER, TRACE_ID_BASE16);
     assertThat(carrier).containsEntry(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
     assertThat(carrier).containsEntry(B3Propagator.SAMPLED_HEADER, "1");

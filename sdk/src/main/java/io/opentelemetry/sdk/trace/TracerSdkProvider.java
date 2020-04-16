@@ -77,7 +77,13 @@ public class TracerSdkProvider implements TracerProvider {
   /**
    * Updates the active {@link TraceConfig}.
    *
+   * <p>Note: To update the {@link TraceConfig} associated with this instance you should use the
+   * {@link TraceConfig#toBuilder()} method on the {@link TraceConfig} returned from {@link
+   * #getActiveTraceConfig()}, make the changes desired to the {@link TraceConfig.Builder} instance,
+   * then use this method with the resulting {@link TraceConfig} instance.
+   *
    * @param traceConfig the new active {@code TraceConfig}.
+   * @see TraceConfig
    */
   public void updateActiveTraceConfig(TraceConfig traceConfig) {
     sharedState.updateActiveTraceConfig(traceConfig);
@@ -111,6 +117,15 @@ public class TracerSdkProvider implements TracerProvider {
       return;
     }
     sharedState.stop();
+  }
+
+  /**
+   * Requests the active span processor to process all span events that have not yet been processed.
+   *
+   * @see SpanProcessor#forceFlush()
+   */
+  public void forceFlush() {
+    sharedState.getActiveSpanProcessor().forceFlush();
   }
 
   /**

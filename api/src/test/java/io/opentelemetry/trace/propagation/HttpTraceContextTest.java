@@ -90,9 +90,28 @@ public class HttpTraceContextTest {
 
   @Test
   public void inject_Nothing() {
-    Map<String, String> carrier = new LinkedHashMap<String, String>();
+    Map<String, String> carrier = new LinkedHashMap<>();
     httpTraceContext.inject(Context.current(), carrier, setter);
     assertThat(carrier).hasSize(0);
+  }
+
+  @Test
+  public void inject_NullCarrierUsage() {
+    final Map<String, String> carrier = new LinkedHashMap<>();
+    Context context =
+        withSpanContext(
+            SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
+            Context.current());
+    httpTraceContext.inject(
+        context,
+        null,
+        new Setter<Map<String, String>>() {
+          @Override
+          public void set(Map<String, String> ignored, String key, String value) {
+            carrier.put(key, value);
+          }
+        });
+    assertThat(carrier).containsExactly(TRACE_PARENT, TRACEPARENT_HEADER_SAMPLED);
   }
 
   @Test
@@ -218,6 +237,14 @@ public class HttpTraceContextTest {
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_NOT_DEFAULT));
+  }
+
+  @Test
+  public void extract_EmptyHeader() {
+    Map<String, String> invalidHeaders = new LinkedHashMap<>();
+    invalidHeaders.put(TRACE_PARENT, "");
+    assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
+        .isSameInstanceAs(SpanContext.getInvalid());
   }
 
   @Test

@@ -115,7 +115,7 @@ public final class SemanticAttributes {
   /** Database type. For any SQL database, "sql". For others, the lower-case database category. */
   public static final StringAttributeSetter DB_TYPE = StringAttributeSetter.create("db.type");
   /** Database instance name. */
-  public static final StringAttributeSetter DB_ISNTANCE =
+  public static final StringAttributeSetter DB_INSTANCE =
       StringAttributeSetter.create("db.instance");
   /** Database statement for the given database type. */
   public static final StringAttributeSetter DB_STATEMENT =

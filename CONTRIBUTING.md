@@ -1,16 +1,18 @@
 # Contributing
 
-We welcome contributions to this repository!
+Welcome to OpenTelemetry Java repository!
 
-Have a look at our [community repo](https://github.com/open-telemetry/community) to get started with OpenTelemetry.
+Before you start - see OpenTelemetry general
+[contributing](https://github.com/open-telemetry/community/blob/master/CONTRIBUTING.md)
+requirements and recommendations.
 
-If you want to add new features or change behavior, please make sure your changes follow the [OpenTelemetry Specification](https://github.com/open-telemetry/opentelemetry-specification).
+If you want to add new features or change behavior, please make sure your changes follow the
+[OpenTelemetry Specification](https://github.com/open-telemetry/opentelemetry-specification).
 Otherwise file an issue or submit a PR to the specification repo first.
 
-Make sure to review the projects [license](LICENSE) and sign the [CNCF CLA](https://identity.linuxfoundation.org/projects/cncf).
-A signed CLA will be enforced by an automatic check once you submit a PR, but you can also sign it after opening your PR.
-
-See our general [contribution guidelines](https://github.com/open-telemetry/community/blob/master/CONTRIBUTING.md) for more information.
+Make sure to review the projects [license](LICENSE) and sign the
+[CNCF CLA](https://identity.linuxfoundation.org/projects/cncf). A signed CLA will be enforced by an
+automatic check once you submit a PR, but you can also sign it after opening your PR.
 
 ## Style guideline
 
@@ -70,11 +72,13 @@ $ git commit -m "Update javadoc for API."
 Continuous integration builds the project, runs the tests, and runs multiple
 types of static analysis.
 
-1. From the root project directory, initialize repository dependencies
+1. Note: Currently, to run the full suite of tests, you'll need to be running a docker daemon.
+
+2. From the root project directory, initialize repository dependencies
 
    `make init-git-submodules`
 
-2. Run the following commands to build, run tests and most static analysis, and
+3. Run the following commands to build, run tests and most static analysis, and
 check formatting:
 
     ##### OS X or Linux

@@ -17,7 +17,6 @@
 package io.opentelemetry.exporters.otlp;
 
 import io.grpc.ManagedChannel;
-import io.grpc.StatusRuntimeException;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -73,21 +72,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
       // noinspection ResultOfMethodCallIgnored
       stub.export(exportMetricsServiceRequest);
       return ResultCode.SUCCESS;
-    } catch (StatusRuntimeException e) {
-      // Retryable codes from https://github.com/open-telemetry/oteps/pull/65
-      switch (e.getStatus().getCode()) {
-        case CANCELLED:
-        case DEADLINE_EXCEEDED:
-        case RESOURCE_EXHAUSTED:
-        case OUT_OF_RANGE:
-        case UNAVAILABLE:
-        case DATA_LOSS:
-          return ResultCode.FAILED_RETRYABLE;
-        default:
-          return ResultCode.FAILED_NOT_RETRYABLE;
-      }
-    } catch (Throwable t) {
-      return ResultCode.FAILED_NOT_RETRYABLE;
+    } catch (Throwable e) {
+      return ResultCode.FAILURE;
     }
   }
 

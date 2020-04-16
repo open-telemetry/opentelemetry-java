@@ -18,6 +18,5 @@ dependencies {
             libraries.awaitility
 }
 test {
-    dependsOn cleanTest
     testLogging.showStandardStreams = true
 }

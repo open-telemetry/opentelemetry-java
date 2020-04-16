@@ -104,9 +104,7 @@ public class OtlpGrpcMetricExporterTest {
     OtlpGrpcMetricExporter exporter =
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     exporter.shutdown();
-    // TODO: This probably should not be retryable because we never restart the channel.
-    assertThat(exporter.export(Collections.singletonList(span)))
-        .isEqualTo(ResultCode.FAILED_RETRYABLE);
+    assertThat(exporter.export(Collections.singletonList(span))).isEqualTo(ResultCode.FAILURE);
   }
 
   @Test
@@ -116,7 +114,7 @@ public class OtlpGrpcMetricExporterTest {
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -129,7 +127,7 @@ public class OtlpGrpcMetricExporterTest {
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -142,7 +140,7 @@ public class OtlpGrpcMetricExporterTest {
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -155,7 +153,7 @@ public class OtlpGrpcMetricExporterTest {
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -168,7 +166,7 @@ public class OtlpGrpcMetricExporterTest {
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -181,7 +179,7 @@ public class OtlpGrpcMetricExporterTest {
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
-          .isEqualTo(ResultCode.FAILED_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }
@@ -194,7 +192,7 @@ public class OtlpGrpcMetricExporterTest {
         OtlpGrpcMetricExporter.newBuilder().setChannel(inProcessChannel).build();
     try {
       assertThat(exporter.export(Collections.singletonList(generateFakeMetric())))
-          .isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
+          .isEqualTo(ResultCode.FAILURE);
     } finally {
       exporter.shutdown();
     }

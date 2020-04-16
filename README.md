@@ -49,7 +49,7 @@ Snapshots based out the `master` branch are available for `opentelemetry-api`, `
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>0.2.0-SNAPSHOT</version>
+      <version>0.4.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -69,38 +69,34 @@ dependencies {
 Libraries will usually only need `opentelemetry-api`, while applications
 may want to use `opentelemetry-sdk`.
 
-## Release Schedule
+## Releases
 
-OpenTelemetry Java is under active development. Our goal is to release an
-_alpha_ version of the library by middle October 2019. This release isn't
-guaranteed to conform to a specific version of the specification, and future
-releases will not attempt to maintain backwards compatibility with the alpha
-release.
+OpenTelemetry Java is under active development. Releases aren't guaranteed
+to conform to a specific version of the specification. Future releases will
+not attempt to maintain backwards compatibility with previous releases.
 
-| Component                   | Version | Target Date       |
-| --------------------------- | ------- | ----------------- |
-| Tracing API                 | Alpha   | October 21 2019   |
-| Tracing SDK                 | Alpha   | October 21 2019   |
-| Metrics API                 | Alpha   | October 21 2019   |
-| Metrics SDK                 | Alpha   | October 21 2019   |
-| Jaeger Trace Exporter       | Alpha   | October 21 2019   |
-| Zipkin Trace Exporter       | Alpha   | Unknown           |
-| Prometheus Metrics Exporter | Alpha   | Unknown           |
-| Context Propagation         | Alpha   | October 21 2019   |
-| OpenTracing Bridge          | Alpha   | October 21 2019   |
-| OpenCensus Bridge           | Alpha   | Unknown           |
+The latest version of the libraries were released on March 27th, 2020.
+See the [v0.3.0 alpha release](https://github.com/open-telemetry/opentelemetry-java/releases/tag/v0.3.0).
 
-### Kick off the work towards 1.0
+This is a **current** feature status list:
 
-After beta release we will encourage customers and tracing vendors to start
-using the new project, providing feedback as they go. So we can ensure a high
-quality v1.0 for the merged project:
+| Component                   | Version |
+| --------------------------- | ------- |
+| Tracing API                 | v0.3.0  |
+| Tracing SDK                 | v0.3.0  |
+| Metrics API                 | v0.3.0  |
+| Metrics SDK                 | v0.3.0  |
+| OTLP Exporter               | v0.3.0  |
+| Jaeger Trace Exporter       | v0.3.0  |
+| Zipkin Trace Exporter       | N/A     |
+| Prometheus Metrics Exporter | dev     |
+| Context Propagation         | v0.3.0  |
+| OpenTracing Bridge          | v0.3.0  |
+| OpenCensus Bridge           | N/A     |
 
-- We will allow ourselves to break *implementations*, but not people using the
-  public Interfaces.
-- Additions (into interfaces for instance) will involve a best-effort attempt at
-  backwards compatibility (again, for implementations – callers of the public
-  APIs should not be negatively affected by these additions).
+See the project [milestones](https://github.com/open-telemetry/opentelemetry-java/milestones)
+for details on upcoming releases. The dates and features described in issues
+and milestones are estimates, and subject to change.
 
 ### Summary
 
@@ -116,14 +112,14 @@ Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemet
 - [Yang Song](https://github.com/songy23), Google
 - [Tyler Benson](https://github.com/tylerbenson), DataDog
 - [Armin Ruech](https://github.com/arminru), Dynatrace
-- [John Watson](https://github.com/jkwatson), NewRelic
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
 
 Maintainers ([@open-telemetry/java-maintainers](https://github.com/orgs/open-telemetry/teams/java-maintainers)):
 
-- [Bogdan Drutu](https://github.com/BogdanDrutu), Google
+- [Bogdan Drutu](https://github.com/BogdanDrutu), Splunk
 - [Carlos Alberto](https://github.com/carlosalberto), LightStep
+- [John Watson](https://github.com/jkwatson), New Relic
 
 *Find more about the maintainer role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#maintainer).*
 

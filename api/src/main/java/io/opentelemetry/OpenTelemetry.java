@@ -50,6 +50,7 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class OpenTelemetry {
+  private static final Object mutex = new Object();
 
   @Nullable private static volatile OpenTelemetry instance;
 
@@ -129,7 +130,7 @@ public final class OpenTelemetry {
   /** Lazy loads an instance. */
   private static OpenTelemetry getInstance() {
     if (instance == null) {
-      synchronized (OpenTelemetry.class) {
+      synchronized (mutex) {
         if (instance == null) {
           instance = new OpenTelemetry();
         }
