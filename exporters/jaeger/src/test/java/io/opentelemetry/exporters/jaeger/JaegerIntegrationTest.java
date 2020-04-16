@@ -60,7 +60,7 @@ public class JaegerIntegrationTest {
 
   static {
     // make sure that the user has enabled the docker-based tests
-    if (Boolean.parseBoolean(System.getProperty("enable.docker.tests"))) {
+    if (Boolean.getBoolean("enable.docker.tests"))) {
       jaeger =
           new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
               .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
