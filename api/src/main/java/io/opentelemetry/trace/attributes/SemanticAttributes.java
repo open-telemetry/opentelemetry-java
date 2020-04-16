@@ -125,5 +125,9 @@ public final class SemanticAttributes {
   /** JDBC substring like "mysql://db.example.com:3306" */
   public static final StringAttributeSetter DB_URL = StringAttributeSetter.create("db.url");
 
+  /** Probability value used by a probability-based Span sampling strategy. */
+  public static final DoubleAttributeSetter SAMPLING_PROBABILITY =
+      DoubleAttributeSetter.create("sampling.probability");
+
   private SemanticAttributes() {}
 }

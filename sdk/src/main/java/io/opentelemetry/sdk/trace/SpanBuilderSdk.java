@@ -230,7 +230,7 @@ final class SpanBuilderSdk implements Span.Builder {
       return DefaultSpan.create(spanContext);
     }
 
-    attributes.putAllAttributes(samplingDecision.attributes());
+    attributes.putAllAttributes(samplingDecision.getAttributes());
 
     return RecordEventsReadableSpan.startSpan(
         spanContext,

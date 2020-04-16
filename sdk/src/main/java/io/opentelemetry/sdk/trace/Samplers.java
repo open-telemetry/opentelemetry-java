@@ -28,6 +28,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -240,7 +241,7 @@ public final class Samplers {
     }
 
     @Override
-    public Map<String, AttributeValue> attributes() {
+    public Map<String, AttributeValue> getAttributes() {
       return Collections.emptyMap();
     }
   }
@@ -260,17 +261,15 @@ public final class Samplers {
      */
     static ProbabilityDecision create(boolean decision, double probability) {
       return new AutoValue_Samplers_ProbabilityDecision(
-          decision, singletonMap("samplingProbability", doubleAttributeValue(probability)));
+          decision,
+          singletonMap(
+              SemanticAttributes.SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
     }
 
     @Override
     public abstract boolean isSampled();
 
-    public abstract Map<String, AttributeValue> getAttributes();
-
     @Override
-    public Map<String, AttributeValue> attributes() {
-      return getAttributes();
-    }
+    public abstract Map<String, AttributeValue> getAttributes();
   }
 }

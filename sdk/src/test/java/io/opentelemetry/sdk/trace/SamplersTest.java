@@ -30,6 +30,7 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Rule;
@@ -268,8 +269,9 @@ public class SamplersTest {
             Collections.<String, AttributeValue>emptyMap(),
             Collections.<Link>emptyList());
     assertThat(decision1.isSampled()).isFalse();
-    assertThat(decision1.attributes())
-        .containsExactly("samplingProbability", doubleAttributeValue(0.0001));
+    assertThat(decision1.getAttributes())
+        .containsExactly(
+            SemanticAttributes.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
     // This traceId will be sampled by the Probability Sampler because the first 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     TraceId sampledtraceId =
@@ -303,7 +305,8 @@ public class SamplersTest {
             Collections.<String, AttributeValue>emptyMap(),
             Collections.<Link>emptyList());
     assertThat(decision2.isSampled()).isTrue();
-    assertThat(decision1.attributes())
-        .containsExactly("samplingProbability", doubleAttributeValue(0.0001));
+    assertThat(decision1.getAttributes())
+        .containsExactly(
+            SemanticAttributes.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
   }
 }
