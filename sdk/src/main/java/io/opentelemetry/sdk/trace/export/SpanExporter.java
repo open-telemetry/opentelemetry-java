@@ -47,7 +47,7 @@ public interface SpanExporter {
   ResultCode export(Collection<SpanData> spans);
 
   /**
-   * Processes the collection of sampled {@code Span}s that have not yet been processed.
+   * Exports the collection of sampled {@code Span}s that have not yet been exported.
    *
    * @return the result of the flush.
    * @since 0.4.0

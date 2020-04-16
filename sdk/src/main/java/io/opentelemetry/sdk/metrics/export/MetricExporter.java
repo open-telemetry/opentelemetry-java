@@ -53,7 +53,7 @@ public interface MetricExporter {
   ResultCode export(Collection<MetricData> metrics);
 
   /**
-   * Processes the collection of {@link MetricData} that have not yet been processed.
+   * Exports the collection of {@link MetricData} that have not yet been exported.
    *
    * @return the result of the flush.
    * @since 0.4.0

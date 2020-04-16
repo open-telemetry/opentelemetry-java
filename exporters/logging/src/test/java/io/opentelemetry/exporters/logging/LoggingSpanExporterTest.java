@@ -16,6 +16,7 @@
 
 package io.opentelemetry.exporters.logging;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertEquals;
@@ -28,13 +29,31 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /** Tests for the {@link LoggingSpanExporter}. */
 public class LoggingSpanExporterTest {
+
+  LoggingSpanExporter exporter;
+
+  @Before
+  public void setUp() throws Exception {
+    exporter = new LoggingSpanExporter();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    exporter.shutdown();
+  }
+
   @Test
   public void returnCode() {
-    LoggingSpanExporter exporter = new LoggingSpanExporter();
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     SpanData spanData =
         SpanData.newBuilder()
@@ -57,5 +76,20 @@ public class LoggingSpanExporterTest {
             .build();
     ResultCode resultCode = exporter.export(singletonList(spanData));
     assertEquals(ResultCode.SUCCESS, resultCode);
+  }
+
+  @Test
+  public void testFlush() {
+    final AtomicBoolean flushed = new AtomicBoolean(false);
+    Logger.getLogger(LoggingSpanExporter.class.getName())
+        .addHandler(
+            new StreamHandler(System.err, new SimpleFormatter()) {
+              @Override
+              public synchronized void flush() {
+                flushed.set(true);
+              }
+            });
+    exporter.flush();
+    assertThat(flushed.get()).isTrue();
   }
 }
