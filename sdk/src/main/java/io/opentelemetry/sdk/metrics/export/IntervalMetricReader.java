@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics.export;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayList;
@@ -135,7 +136,13 @@ public final class IntervalMetricReader {
   @SuppressWarnings("FutureReturnValueIgnored")
   private IntervalMetricReader(InternalState internalState) {
     this.exporter = new Exporter(internalState);
-    this.scheduler = Executors.newScheduledThreadPool(1, MoreExecutors.platformThreadFactory());
+    this.scheduler =
+        Executors.newScheduledThreadPool(
+            1,
+            new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setThreadFactory(MoreExecutors.platformThreadFactory())
+                .build());
     this.scheduler.scheduleAtFixedRate(
         exporter,
         internalState.getExportIntervalMillis(),

@@ -237,6 +237,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
 
   private static Thread newThread(Runnable runnable) {
     Thread thread = MoreExecutors.platformThreadFactory().newThread(runnable);
+    thread.setDaemon(true);
     try {
       thread.setName(WORKER_THREAD_NAME);
     } catch (SecurityException e) {
