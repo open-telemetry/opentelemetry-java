@@ -122,6 +122,7 @@ public final class IntervalMetricReader {
      * Builds a new {@link IntervalMetricReader} with current settings.
      *
      * @return a {@code IntervalMetricReader}.
+     * @throws java.lang.SecurityException if permission to set Threads as daemon is revoked
      * @since 0.3.0
      */
     public IntervalMetricReader build() {
