@@ -120,14 +120,14 @@ final class ZipkinSpanExporter implements SpanExporter {
       spanBuilder.putTag(label.getKey(), attributeValueToString(label.getValue()));
     }
     Status status = spanData.getStatus();
-    //for GRPC spans, include status code & description.
+    // for GRPC spans, include status code & description.
     if (status != null && spanAttributes.containsKey(SemanticAttributes.RPC_SERVICE.key())) {
-        spanBuilder.putTag(GRPC_STATUS_CODE, status.getCanonicalCode().toString());
+      spanBuilder.putTag(GRPC_STATUS_CODE, status.getCanonicalCode().toString());
       if (status.getDescription() != null) {
         spanBuilder.putTag(GRPC_STATUS_DESCRIPTION, status.getDescription());
       }
     }
-    //add the error tag, if it isn't already in the source span.
+    // add the error tag, if it isn't already in the source span.
     if (status != null && !status.isOk() && !spanAttributes.containsKey(STATUS_ERROR)) {
       spanBuilder.putTag(STATUS_ERROR, status.getCanonicalCode().toString());
     }

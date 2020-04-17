@@ -165,7 +165,9 @@ public class ZipkinSpanExporterTest {
   @Test
   public void generateSpan_WithRpcErrorStatus() {
     Map<String, AttributeValue> attributeMap = new HashMap<>();
-    attributeMap.put(SemanticAttributes.RPC_SERVICE.key(), AttributeValue.stringAttributeValue("my service name"));
+    attributeMap.put(
+        SemanticAttributes.RPC_SERVICE.key(),
+        AttributeValue.stringAttributeValue("my service name"));
 
     String errorMessage = "timeout";
 
@@ -274,7 +276,7 @@ public class ZipkinSpanExporterTest {
         .localEndpoint(localEndpoint)
         .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
         .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT")
-//        .putTag(ZipkinSpanExporter.STATUS_CODE, status)
+        //        .putTag(ZipkinSpanExporter.STATUS_CODE, status)
         .build();
   }
 }
