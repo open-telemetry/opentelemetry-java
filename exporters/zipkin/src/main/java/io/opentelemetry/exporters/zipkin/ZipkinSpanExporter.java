@@ -50,8 +50,9 @@ final class ZipkinSpanExporter implements SpanExporter {
 
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
-  // The naming follows Zipkin convention. As an example see:
+  // The naming follows Zipkin convention. For http see here:
   // https://github.com/openzipkin/brave/blob/eee993f998ae57b08644cc357a6d478827428710/instrumentation/http/src/main/java/brave/http/HttpTags.java
+  // For discussion about GRPC errors/tags, see here:  https://github.com/openzipkin/brave/pull/999
   // Note: these 3 fields are non-private for testing
   static final String GRPC_STATUS_CODE = "grpc.status_code";
   static final String GRPC_STATUS_DESCRIPTION = "grpc.status_description";
