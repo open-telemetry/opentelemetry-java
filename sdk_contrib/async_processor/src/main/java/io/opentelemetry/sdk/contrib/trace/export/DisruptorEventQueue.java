@@ -249,9 +249,9 @@ final class DisruptorEventQueue {
     @Override
     public Thread newThread(Runnable runnable) {
       Thread thread = MoreExecutors.platformThreadFactory().newThread(runnable);
-      thread.setDaemon(true);
       try {
         thread.setName(threadName);
+        thread.setDaemon(true);
       } catch (SecurityException e) {
         // OK if we can't set the name in this environment.
       }
