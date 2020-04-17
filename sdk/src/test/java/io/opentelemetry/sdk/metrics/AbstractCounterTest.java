@@ -60,11 +60,7 @@ public class AbstractCounterTest {
   private static final class TestCounterInstrument extends AbstractCounter<TestBoundCounter> {
     private static final InstrumentDescriptor INSTRUMENT_DESCRIPTOR =
         InstrumentDescriptor.create(
-            "name",
-            "description",
-            "1",
-            Collections.singletonMap("key_2", "value_2"),
-            Collections.singletonList("key"));
+            "name", "description", "1", Collections.singletonMap("key_2", "value_2"));
     private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
         MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
     private static final MeterSharedState METER_SHARED_STATE =

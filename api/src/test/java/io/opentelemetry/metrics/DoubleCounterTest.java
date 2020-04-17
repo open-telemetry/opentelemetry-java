@@ -19,8 +19,6 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,7 +33,6 @@ public class DoubleCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final List<String> LABEL_KEY = Collections.singletonList("key");
 
   private final Meter meter = OpenTelemetry.getMeterProvider().get("counter_double_test");
 
@@ -71,13 +68,6 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void preventNull_LabelKeys() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelKeys");
-    meter.doubleCounterBuilder("metric").setLabelKeys(null).build();
-  }
-
-  @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
@@ -85,24 +75,9 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void preventNull_LabelKey() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelKey");
-    meter
-        .doubleCounterBuilder("metric")
-        .setLabelKeys(Collections.<String>singletonList(null))
-        .build();
-  }
-
-  @Test
   public void noopBind_WithBadLabelSet() {
     DoubleCounter doubleCounter =
-        meter
-            .doubleCounterBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
+        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("key/value");
     doubleCounter.bind("key");
@@ -111,12 +86,7 @@ public class DoubleCounterTest {
   @Test
   public void doesNotThrow() {
     DoubleCounter doubleCounter =
-        meter
-            .doubleCounterBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setLabelKeys(LABEL_KEY)
-            .setUnit(UNIT)
-            .build();
+        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     doubleCounter.bind().add(1.0);
   }
 }

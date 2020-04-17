@@ -61,7 +61,6 @@ public class DoubleCounterSdkTest {
         testSdk
             .doubleCounterBuilder("testCounter")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .setMonotonic(true)

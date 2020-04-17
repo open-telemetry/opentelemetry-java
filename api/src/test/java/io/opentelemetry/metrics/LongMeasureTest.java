@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import java.util.Arrays;
-import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -59,23 +58,6 @@ public final class LongMeasureTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
     meter.longMeasureBuilder("metric").setUnit(null).build();
-  }
-
-  @Test
-  public void preventNull_LabelKeys() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelKeys");
-    meter.longMeasureBuilder("metric").setLabelKeys(null).build();
-  }
-
-  @Test
-  public void preventNull_LabelKey() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelKey");
-    meter
-        .longMeasureBuilder("metric")
-        .setLabelKeys(Collections.<String>singletonList(null))
-        .build();
   }
 
   @Test

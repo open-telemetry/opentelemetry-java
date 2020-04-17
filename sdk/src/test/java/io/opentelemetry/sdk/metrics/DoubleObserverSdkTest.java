@@ -60,7 +60,6 @@ public class DoubleObserverSdkTest {
         testSdk
             .doubleObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();
@@ -73,7 +72,6 @@ public class DoubleObserverSdkTest {
         testSdk
             .doubleObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();

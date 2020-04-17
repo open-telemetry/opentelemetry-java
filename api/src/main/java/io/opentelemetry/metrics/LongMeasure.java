@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -92,9 +91,6 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setLabelKeys(List<String> labelKeys);
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);

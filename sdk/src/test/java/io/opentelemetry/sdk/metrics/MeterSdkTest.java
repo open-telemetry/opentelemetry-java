@@ -63,7 +63,6 @@ public class MeterSdkTest {
         testSdk
             .longCounterBuilder("testLongCounter")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .setMonotonic(true)
@@ -74,7 +73,6 @@ public class MeterSdkTest {
             testSdk
                 .longCounterBuilder("testLongCounter")
                 .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-                .setLabelKeys(Collections.singletonList("sk1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .setMonotonic(true)
@@ -92,7 +90,6 @@ public class MeterSdkTest {
         testSdk
             .longMeasureBuilder("testLongMeasure")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .setAbsolute(true)
@@ -103,7 +100,6 @@ public class MeterSdkTest {
             testSdk
                 .longMeasureBuilder("testLongMeasure")
                 .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-                .setLabelKeys(Collections.singletonList("sk1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .setAbsolute(true)
@@ -121,7 +117,6 @@ public class MeterSdkTest {
         testSdk
             .longObserverBuilder("testLongObserver")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .setMonotonic(true)
@@ -132,7 +127,6 @@ public class MeterSdkTest {
             testSdk
                 .longObserverBuilder("testLongObserver")
                 .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-                .setLabelKeys(Collections.singletonList("sk1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .setMonotonic(true)
@@ -150,7 +144,6 @@ public class MeterSdkTest {
         testSdk
             .doubleCounterBuilder("testDoubleCounter")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .setMonotonic(true)
@@ -161,7 +154,6 @@ public class MeterSdkTest {
             testSdk
                 .doubleCounterBuilder("testDoubleCounter")
                 .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-                .setLabelKeys(Collections.singletonList("sk1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .setMonotonic(true)
@@ -179,7 +171,6 @@ public class MeterSdkTest {
         testSdk
             .doubleMeasureBuilder("testDoubleMeasure")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own Measure")
             .setUnit("metric tonnes")
             .setAbsolute(true)
@@ -190,7 +181,6 @@ public class MeterSdkTest {
             testSdk
                 .doubleMeasureBuilder("testDoubleMeasure")
                 .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-                .setLabelKeys(Collections.singletonList("sk1"))
                 .setDescription("My very own Measure")
                 .setUnit("metric tonnes")
                 .setAbsolute(true)
@@ -208,7 +198,6 @@ public class MeterSdkTest {
         testSdk
             .doubleObserverBuilder("testDoubleObserver")
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-            .setLabelKeys(Collections.singletonList("sk1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .setMonotonic(true)
@@ -219,7 +208,6 @@ public class MeterSdkTest {
             testSdk
                 .doubleObserverBuilder("testDoubleObserver")
                 .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
-                .setLabelKeys(Collections.singletonList("sk1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .setMonotonic(true)

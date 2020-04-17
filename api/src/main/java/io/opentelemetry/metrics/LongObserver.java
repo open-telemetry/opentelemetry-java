@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -64,9 +63,6 @@ public interface LongObserver extends Observer<ResultLongObserver> {
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setLabelKeys(List<String> labelKeys);
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);

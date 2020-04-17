@@ -40,7 +40,6 @@ public class AbstractInstrumentBuilderTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final List<String> LABEL_KEY = Collections.singletonList("key");
   private static final Map<String, String> CONSTANT_LABELS =
       Collections.singletonMap("key_2", "value_2");
   private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
@@ -108,24 +107,6 @@ public class AbstractInstrumentBuilderTest {
   }
 
   @Test
-  public void preventNull_LabelKeys() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelKeys");
-    new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
-        .setLabelKeys(null)
-        .build();
-  }
-
-  @Test
-  public void preventNull_LabelKey() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelKey");
-    new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
-        .setLabelKeys(Collections.<String>singletonList(null))
-        .build();
-  }
-
-  @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
@@ -143,7 +124,6 @@ public class AbstractInstrumentBuilderTest {
     assertThat(testInstrument.getDescriptor().getName()).isEqualTo(NAME);
     assertThat(testInstrument.getDescriptor().getDescription()).isEmpty();
     assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo("1");
-    assertThat(testInstrument.getDescriptor().getLabelKeys()).isEmpty();
     assertThat(testInstrument.getDescriptor().getConstantLabels()).isEmpty();
   }
 
@@ -153,7 +133,6 @@ public class AbstractInstrumentBuilderTest {
         new TestInstrumentBuilder(NAME, METER_PROVIDER_SHARED_STATE, METER_SHARED_STATE)
             .setDescription(DESCRIPTION)
             .setUnit(UNIT)
-            .setLabelKeys(LABEL_KEY)
             .setConstantLabels(CONSTANT_LABELS);
     assertThat(testInstrumentBuilder.getMeterProviderSharedState())
         .isSameInstanceAs(METER_PROVIDER_SHARED_STATE);
@@ -164,7 +143,6 @@ public class AbstractInstrumentBuilderTest {
     assertThat(testInstrument.getDescriptor().getName()).isEqualTo(NAME);
     assertThat(testInstrument.getDescriptor().getDescription()).isEqualTo(DESCRIPTION);
     assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo(UNIT);
-    assertThat(testInstrument.getDescriptor().getLabelKeys()).isEqualTo(LABEL_KEY);
     assertThat(testInstrument.getDescriptor().getConstantLabels()).isEqualTo(CONSTANT_LABELS);
   }
 

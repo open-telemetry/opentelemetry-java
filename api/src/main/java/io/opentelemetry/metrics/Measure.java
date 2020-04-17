@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -37,9 +36,6 @@ public interface Measure<H extends BoundInstrument> extends InstrumentWithBindin
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setLabelKeys(List<String> labelKeys);
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);

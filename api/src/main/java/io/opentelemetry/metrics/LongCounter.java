@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -36,7 +35,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .longCounterBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
- *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
  *   // It is recommended that the API user keep a reference to a Bound Counter.
  *   private static final BoundLongCounter someWorkBound =
@@ -99,9 +97,6 @@ public interface LongCounter extends Counter<BoundLongCounter> {
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setLabelKeys(List<String> labelKeys);
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);

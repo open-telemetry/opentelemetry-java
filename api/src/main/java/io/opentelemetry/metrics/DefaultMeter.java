@@ -18,7 +18,6 @@ package io.opentelemetry.metrics;
 
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -403,12 +402,6 @@ public final class DefaultMeter implements Meter {
     @Override
     public B setUnit(String unit) {
       Utils.checkNotNull(unit, "unit");
-      return getThis();
-    }
-
-    @Override
-    public B setLabelKeys(List<String> labelKeys) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
       return getThis();
     }
 

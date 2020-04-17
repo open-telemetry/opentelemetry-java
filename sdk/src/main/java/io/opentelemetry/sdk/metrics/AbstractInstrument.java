@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -99,7 +98,6 @@ abstract class AbstractInstrument implements Instrument {
     private final MeterSharedState meterSharedState;
     private String description = "";
     private String unit = "1";
-    private List<String> labelKeys = Collections.emptyList();
     private Map<String, String> constantLabels = Collections.emptyMap();
 
     Builder(
@@ -128,13 +126,6 @@ abstract class AbstractInstrument implements Instrument {
     }
 
     @Override
-    public final B setLabelKeys(List<String> labelKeys) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-      this.labelKeys = Collections.unmodifiableList(new ArrayList<>(labelKeys));
-      return getThis();
-    }
-
-    @Override
     public final B setConstantLabels(Map<String, String> constantLabels) {
       Utils.checkMapKeysNotNull(
           Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
@@ -151,7 +142,7 @@ abstract class AbstractInstrument implements Instrument {
     }
 
     final InstrumentDescriptor getInstrumentDescriptor() {
-      return InstrumentDescriptor.create(name, description, unit, constantLabels, labelKeys);
+      return InstrumentDescriptor.create(name, description, unit, constantLabels);
     }
 
     abstract B getThis();
