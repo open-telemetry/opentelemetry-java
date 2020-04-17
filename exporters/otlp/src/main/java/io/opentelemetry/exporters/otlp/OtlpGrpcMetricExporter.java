@@ -78,6 +78,16 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   }
 
   /**
+   * The OTLP exporter does not batch metrics, so this method will immediately return with success.
+   *
+   * @return always Success
+   */
+  @Override
+  public ResultCode flush() {
+    return ResultCode.SUCCESS;
+  }
+
+  /**
    * Returns a new builder instance for this exporter.
    *
    * @return a new builder instance for this exporter.

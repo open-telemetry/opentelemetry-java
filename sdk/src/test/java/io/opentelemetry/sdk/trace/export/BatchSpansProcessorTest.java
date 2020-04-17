@@ -398,6 +398,11 @@ public class BatchSpansProcessorTest {
       return ResultCode.SUCCESS;
     }
 
+    @Override
+    public ResultCode flush() {
+      return ResultCode.SUCCESS;
+    }
+
     private void waitUntilIsBlocked() {
       synchronized (monitor) {
         while (state != State.BLOCKED) {
@@ -468,6 +473,11 @@ public class BatchSpansProcessorTest {
       for (int i = 0; i < spans.size(); i++) {
         countDownLatch.countDown();
       }
+      return ResultCode.SUCCESS;
+    }
+
+    @Override
+    public ResultCode flush() {
       return ResultCode.SUCCESS;
     }
 

@@ -48,6 +48,11 @@ public class MultiSpanExporterBenchmark {
     }
 
     @Override
+    public ResultCode flush() {
+      return ResultCode.SUCCESS;
+    }
+
+    @Override
     public void shutdown() {}
   }
 

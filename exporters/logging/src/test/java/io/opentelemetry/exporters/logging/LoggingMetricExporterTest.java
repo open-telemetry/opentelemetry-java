@@ -16,6 +16,8 @@
 
 package io.opentelemetry.exporters.logging;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -30,14 +32,31 @@ import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /** Tests for the {@link LoggingMetricExporter}. */
 public class LoggingMetricExporterTest {
 
+  LoggingMetricExporter exporter;
+
+  @Before
+  public void setUp() throws Exception {
+    exporter = new LoggingMetricExporter();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    exporter.shutdown();
+  }
+
   @Test
   public void testExport() {
-    LoggingMetricExporter exporter = new LoggingMetricExporter();
 
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
     Resource resource =
@@ -95,5 +114,20 @@ public class LoggingMetricExporterTest {
                         nowEpochNanos + 245,
                         ImmutableMap.of("1", "2", "3", "4"),
                         33.7767)))));
+  }
+
+  @Test
+  public void testFlush() {
+    final AtomicBoolean flushed = new AtomicBoolean(false);
+    Logger.getLogger(LoggingMetricExporter.class.getName())
+        .addHandler(
+            new StreamHandler(System.err, new SimpleFormatter()) {
+              @Override
+              public synchronized void flush() {
+                flushed.set(true);
+              }
+            });
+    exporter.flush();
+    assertThat(flushed.get()).isTrue();
   }
 }

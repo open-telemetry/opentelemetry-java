@@ -61,6 +61,26 @@ public final class MultiSpanExporter implements SpanExporter {
     return currentResultCode;
   }
 
+  /**
+   * Flushes the data of all registered {@link SpanExporter}s.
+   *
+   * @return the result of the operation
+   */
+  @Override
+  public ResultCode flush() {
+    ResultCode currentResultCode = SUCCESS;
+    for (SpanExporter spanExporter : spanExporters) {
+      try {
+        currentResultCode = mergeResultCode(currentResultCode, spanExporter.flush());
+      } catch (Throwable t) {
+        // If an exception was thrown by the exporter
+        logger.log(Level.WARNING, "Exception thrown by the export.", t);
+        currentResultCode = FAILURE;
+      }
+    }
+    return currentResultCode;
+  }
+
   @Override
   public void shutdown() {
     for (SpanExporter spanExporter : spanExporters) {
