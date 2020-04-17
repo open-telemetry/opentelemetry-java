@@ -53,8 +53,8 @@ final class ZipkinSpanExporter implements SpanExporter {
   // The naming follows Zipkin convention. As an example see:
   // https://github.com/openzipkin/brave/blob/eee993f998ae57b08644cc357a6d478827428710/instrumentation/http/src/main/java/brave/http/HttpTags.java
   // Note: these 3 fields are non-private for testing
-  static final String STATUS_CODE = "grpc.status_code";
-  static final String STATUS_DESCRIPTION = "grpc.status_description";
+  static final String GRPC_STATUS_CODE = "grpc.status_code";
+  static final String GRPC_STATUS_DESCRIPTION = "grpc.status_description";
   static final String STATUS_ERROR = "error";
 
   private final SpanBytesEncoder encoder;
@@ -119,17 +119,16 @@ final class ZipkinSpanExporter implements SpanExporter {
       spanBuilder.putTag(label.getKey(), attributeValueToString(label.getValue()));
     }
     Status status = spanData.getStatus();
-    if (status != null) {
-      if (!spanAttributes.containsKey(SemanticAttributes.HTTP_STATUS_CODE.key())) {
-        spanBuilder.putTag(STATUS_CODE, status.getCanonicalCode().toString());
+    //for GRPC spans, include status code & description.
+    if (status != null && spanAttributes.containsKey(SemanticAttributes.RPC_SERVICE.key())) {
+        spanBuilder.putTag(GRPC_STATUS_CODE, status.getCanonicalCode().toString());
+      if (status.getDescription() != null) {
+        spanBuilder.putTag(GRPC_STATUS_DESCRIPTION, status.getDescription());
       }
-      if (status.getDescription() != null
-          && !spanAttributes.containsKey(SemanticAttributes.HTTP_STATUS_TEXT.key())) {
-        spanBuilder.putTag(STATUS_DESCRIPTION, status.getDescription());
-      }
-      if (!status.isOk() && !spanAttributes.containsKey(STATUS_ERROR)) {
-        spanBuilder.putTag(STATUS_ERROR, status.getCanonicalCode().toString());
-      }
+    }
+    //add the error tag, if it isn't already in the source span.
+    if (status != null && !status.isOk() && !spanAttributes.containsKey(STATUS_ERROR)) {
+      spanBuilder.putTag(STATUS_ERROR, status.getCanonicalCode().toString());
     }
 
     for (SpanData.TimedEvent annotation : spanData.getTimedEvents()) {
@@ -178,7 +177,7 @@ final class ZipkinSpanExporter implements SpanExporter {
       case DOUBLE:
         return String.valueOf(attributeValue.getDoubleValue());
     }
-    return "";
+    throw new IllegalStateException("Unknown attribute type: " + type);
   }
 
   @Override
