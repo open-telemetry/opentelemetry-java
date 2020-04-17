@@ -18,8 +18,6 @@ package io.opentelemetry.exporters.logging;
 
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.sdk.trace.export.SpanExporter;
-
 import java.util.Collection;
 import java.util.logging.Handler;
 import java.util.logging.Level;
