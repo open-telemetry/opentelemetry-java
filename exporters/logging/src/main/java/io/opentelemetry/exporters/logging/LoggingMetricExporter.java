@@ -18,6 +18,8 @@ package io.opentelemetry.exporters.logging;
 
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
+
 import java.util.Collection;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -42,18 +44,20 @@ public class LoggingMetricExporter implements MetricExporter {
    */
   @Override
   public ResultCode flush() {
+    ResultCode resultCode = ResultCode.SUCCESS;
     for (Handler handler : logger.getHandlers()) {
       try {
         handler.flush();
       } catch (Throwable t) {
-        return ResultCode.FAILURE;
+        resultCode = ResultCode.FAILURE;
       }
     }
-    return ResultCode.SUCCESS;
+    return resultCode;
   }
 
   @Override
   public void shutdown() {
     // no-op
+    this.flush();
   }
 }

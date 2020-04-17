@@ -42,16 +42,19 @@ public class LoggingSpanExporter implements SpanExporter {
    */
   @Override
   public ResultCode flush() {
+    ResultCode resultCode = ResultCode.SUCCESS;
     for (Handler handler : logger.getHandlers()) {
       try {
         handler.flush();
       } catch (Throwable t) {
-        return ResultCode.FAILURE;
+        resultCode = ResultCode.FAILURE;
       }
     }
-    return ResultCode.SUCCESS;
+    return resultCode;
   }
 
   @Override
-  public void shutdown() {}
+  public void shutdown() {
+    this.flush();
+  }
 }
