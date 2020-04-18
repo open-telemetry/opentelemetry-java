@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.contrib.trace.export;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.EventTranslatorThreeArg;
@@ -24,6 +23,7 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
+import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.concurrent.CountDownLatch;
@@ -248,10 +248,9 @@ final class DisruptorEventQueue {
 
     @Override
     public Thread newThread(Runnable runnable) {
-      Thread thread = MoreExecutors.platformThreadFactory().newThread(runnable);
+      Thread thread = new DaemonThreadFactory().newThread(runnable);
       try {
         thread.setName(threadName);
-        thread.setDaemon(true);
       } catch (SecurityException e) {
         // OK if we can't set the name in this environment.
       }

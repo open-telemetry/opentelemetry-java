@@ -16,12 +16,12 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -236,10 +236,9 @@ public final class BatchSpansProcessor implements SpanProcessor {
   }
 
   private static Thread newThread(Runnable runnable) {
-    Thread thread = MoreExecutors.platformThreadFactory().newThread(runnable);
+    Thread thread = new DaemonThreadFactory().newThread(runnable);
     try {
       thread.setName(WORKER_THREAD_NAME);
-      thread.setDaemon(true);
     } catch (SecurityException e) {
       // OK if we can't set the name in this environment.
     }

@@ -17,9 +17,8 @@
 package io.opentelemetry.sdk.metrics.export;
 
 import com.google.auto.value.AutoValue;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -122,7 +121,6 @@ public final class IntervalMetricReader {
      * Builds a new {@link IntervalMetricReader} with current settings.
      *
      * @return a {@code IntervalMetricReader}.
-     * @throws java.lang.SecurityException if permission to set Threads as daemon is revoked
      * @since 0.3.0
      */
     public IntervalMetricReader build() {
@@ -137,13 +135,7 @@ public final class IntervalMetricReader {
   @SuppressWarnings("FutureReturnValueIgnored")
   private IntervalMetricReader(InternalState internalState) {
     this.exporter = new Exporter(internalState);
-    this.scheduler =
-        Executors.newScheduledThreadPool(
-            1,
-            new ThreadFactoryBuilder()
-                .setDaemon(true)
-                .setThreadFactory(MoreExecutors.platformThreadFactory())
-                .build());
+    this.scheduler = Executors.newScheduledThreadPool(1, new DaemonThreadFactory());
     this.scheduler.scheduleAtFixedRate(
         exporter,
         internalState.getExportIntervalMillis(),
