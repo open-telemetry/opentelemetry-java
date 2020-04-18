@@ -133,6 +133,16 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
   }
 
   /**
+   * The Jaeger exporter does not batch spans, so this method will immediately return with success.
+   *
+   * @return always Success
+   */
+  @Override
+  public ResultCode flush() {
+    return ResultCode.SUCCESS;
+  }
+
+  /**
    * Returns a new builder instance for this exporter.
    *
    * @return a new builder instance for this exporter.

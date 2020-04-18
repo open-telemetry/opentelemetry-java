@@ -47,6 +47,14 @@ public interface SpanExporter {
   ResultCode export(Collection<SpanData> spans);
 
   /**
+   * Exports the collection of sampled {@code Span}s that have not yet been exported.
+   *
+   * @return the result of the flush.
+   * @since 0.4.0
+   */
+  ResultCode flush();
+
+  /**
    * Called when {@link TracerSdkProvider#shutdown()} is called, if this {@code SpanExporter} is
    * register to a {@code TracerSdkProvider} object.
    */
