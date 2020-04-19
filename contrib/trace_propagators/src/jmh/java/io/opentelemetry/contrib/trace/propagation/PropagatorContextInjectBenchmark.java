@@ -45,6 +45,11 @@ public class PropagatorContextInjectBenchmark {
 
   private PropagatorContextInjectBenchmark() {}
 
+  /**
+   * Abstract class containing common setup and teardown logic along with a benchmark to measure
+   * injecting trace context. Implementing subclasses will provide the actual call to the
+   * propagator.
+   */
   @State(Scope.Thread)
   public abstract static class AbstractContextInjectBenchmark {
 
@@ -94,6 +99,7 @@ public class PropagatorContextInjectBenchmark {
     }
   }
 
+  /** Benchmark for injecting trace context into Jaeger headers. */
   public static class JaegerContextInjectBenchmark extends AbstractContextInjectBenchmark {
 
     private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
@@ -111,7 +117,27 @@ public class PropagatorContextInjectBenchmark {
     }
   }
 
-  public static class B3ContextInjectBenchmark extends AbstractContextInjectBenchmark {
+  /** Benchmark for injecting trace context into a single B3 header. */
+  public static class B3SingleHeaderContextInjectBenchmark extends AbstractContextInjectBenchmark {
+
+    private final B3Propagator b3Propagator = new B3Propagator(true);
+    private final B3Propagator.Setter<Map<String, String>> setter =
+        new B3Propagator.Setter<Map<String, String>>() {
+          @Override
+          public void set(Map<String, String> carrier, String key, String value) {
+            carrier.put(key, value);
+          }
+        };
+
+    @Override
+    protected void doInject(Context context, Map<String, String> carrier) {
+      b3Propagator.inject(context, carrier, setter);
+    }
+  }
+
+  /** Benchmark for injecting trace context into multiple B3 headers. */
+  public static class B3MultipleHeaderContextInjectBenchmark
+      extends AbstractContextInjectBenchmark {
 
     private final B3Propagator b3Propagator = new B3Propagator();
     private final B3Propagator.Setter<Map<String, String>> setter =

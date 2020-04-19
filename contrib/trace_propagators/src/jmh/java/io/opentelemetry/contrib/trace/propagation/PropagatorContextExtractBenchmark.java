@@ -42,6 +42,11 @@ public class PropagatorContextExtractBenchmark {
 
   private PropagatorContextExtractBenchmark() {}
 
+  /**
+   * Abstract class containing common setup and teardown logic along with a benchmark to measure
+   * extracting propagated trace context. Implementing subclasses will provide the sample headers
+   * and the actual call to the propagator.
+   */
   @State(Scope.Thread)
   public abstract static class AbstractContextExtractBenchmark {
 
@@ -77,6 +82,7 @@ public class PropagatorContextExtractBenchmark {
     }
   }
 
+  /** Benchmark for extracting context from Jaeger headers. */
   public static class JaegerContextExtractBenchmark extends AbstractContextExtractBenchmark {
 
     private static final List<Map<String, String>> traceHeaders =
@@ -118,6 +124,7 @@ public class PropagatorContextExtractBenchmark {
     }
   }
 
+  /** Benchmark for extracting context from a single B3 header. */
   public static class B3SingleHeaderContextExtractBenchmark
       extends AbstractContextExtractBenchmark {
 
@@ -160,6 +167,7 @@ public class PropagatorContextExtractBenchmark {
     }
   }
 
+  /** Benchmark for extracting context from multiple B3 headers. */
   public static class B3MultipleHeaderContextExtractBenchmark
       extends AbstractContextExtractBenchmark {
 
