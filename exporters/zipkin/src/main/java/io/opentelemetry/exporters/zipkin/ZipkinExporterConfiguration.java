@@ -115,7 +115,7 @@ public abstract class ZipkinExporterConfiguration {
     /**
      * Sets the Zipkin sender.
      *
-     * <p>At least one of {@code V2Url} and {@code Sender} needs to be specified. If both {@code
+     * <p>At least one of {@code V2Url} or {@code Sender} needs to be specified. If both {@code
      * V2Url} and {@code Sender} are set, {@code Sender} takes precedence.
      *
      * <p>Note: if you provide a {@link Sender} instance via this method, the {@link Sender#close()}
