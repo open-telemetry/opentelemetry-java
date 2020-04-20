@@ -44,11 +44,11 @@ public class ZipkinExporterConfigurationTest {
         ZipkinExporterConfiguration.builder()
             .setServiceName(SERVICE)
             .setSender(mockSender)
-            .setV2Url(END_POINT)
+            .setEndpoint(END_POINT)
             .setEncoder(SpanBytesEncoder.PROTO3)
             .build();
     assertThat(configuration.getServiceName()).isEqualTo(SERVICE);
-    assertThat(configuration.getV2Url()).isEqualTo(END_POINT);
+    assertThat(configuration.getEndpoint()).isEqualTo(END_POINT);
     assertThat(configuration.getSender()).isEqualTo(mockSender);
     assertThat(configuration.getEncoder()).isEqualTo(SpanBytesEncoder.PROTO3);
   }
@@ -58,6 +58,22 @@ public class ZipkinExporterConfigurationTest {
     ZipkinExporterConfiguration.Builder builder =
         ZipkinExporterConfiguration.builder().setServiceName(SERVICE);
     thrown.expect(IllegalArgumentException.class);
+    builder.build();
+  }
+
+  @Test
+  public void senderIsEnough() {
+    ZipkinExporterConfiguration.Builder builder =
+        ZipkinExporterConfiguration.builder().setSender(mockSender).setServiceName(SERVICE);
+    builder.build();
+  }
+
+  @Test
+  public void urlIsEnough() {
+    ZipkinExporterConfiguration.Builder builder =
+        ZipkinExporterConfiguration.builder()
+            .setEndpoint("https://test.url/v2")
+            .setServiceName(SERVICE);
     builder.build();
   }
 }

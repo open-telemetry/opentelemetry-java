@@ -20,8 +20,11 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import zipkin2.Span;
+import zipkin2.codec.BytesEncoder;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.Sender;
+import zipkin2.reporter.urlconnection.URLConnectionSender;
 
 /**
  * Configurations for {@link ZipkinSpanExporter}.
@@ -34,40 +37,14 @@ public abstract class ZipkinExporterConfiguration {
 
   ZipkinExporterConfiguration() {}
 
-  /**
-   * Returns the service name.
-   *
-   * @return the service name.
-   * @since 0.4.0
-   */
-  public abstract String getServiceName();
+  abstract String getServiceName();
 
-  /**
-   * Returns the Zipkin V2 URL.
-   *
-   * @return the Zipkin V2 URL.
-   * @since 0.4.0
-   */
-  public abstract String getV2Url();
+  abstract String getEndpoint();
 
-  /**
-   * Returns the Zipkin sender.
-   *
-   * @return the Zipkin sender.
-   * @since 0.4.0
-   */
-  @Nullable
-  public abstract Sender getSender();
+  @Nullable // note: this is needed to fool autovalue. It's not really nullable.
+  abstract Sender getSender();
 
-  /**
-   * Returns the {@link SpanBytesEncoder}.
-   *
-   * <p>Default is {@link SpanBytesEncoder#JSON_V2}.
-   *
-   * @return the {@code SpanBytesEncoder}
-   * @since 0.4.0
-   */
-  public abstract SpanBytesEncoder getEncoder();
+  abstract BytesEncoder<Span> getEncoder();
 
   /**
    * Returns a new {@link Builder}.
@@ -77,7 +54,9 @@ public abstract class ZipkinExporterConfiguration {
    */
   public static Builder builder() {
     return new AutoValue_ZipkinExporterConfiguration.Builder()
-        .setV2Url("")
+        // trick auto-value so that we can check if either this or the sender are set at
+        // build time
+        .setEndpoint("")
         .setEncoder(SpanBytesEncoder.JSON_V2);
   }
 
@@ -92,51 +71,53 @@ public abstract class ZipkinExporterConfiguration {
     Builder() {}
 
     /**
-     * Sets the service name.
+     * Label of the remote node in the service graph, such as "favstar". Avoid names with variables
+     * or unique identifiers embedded. Defaults to "unknown".
      *
-     * @param serviceName the service name.
-     * @return this Builder instance.
+     * <p>This is a primary label for trace lookup and aggregation, so it should be intuitive and
+     * consistent. Many use a name from service discovery.
+     *
      * @since 0.4.0
      */
     public abstract Builder setServiceName(String serviceName);
 
     /**
-     * Sets the Zipkin V2 URL, e.g.: "http://127.0.0.1:9411/api/v2/spans".
+     * Sets the Zipkin Endpoint URL, e.g.: "http://127.0.0.1:9411/api/v2/spans".
      *
-     * <p>At least one of {@code V2Url} or {@code Sender} needs to be specified. If both {@code
+     * <p>At least one of {@code endpoint} or {@code Sender} needs to be specified. If both {@code
      * V2Url} and {@code Sender} are set, {@code Sender} takes precedence.
      *
-     * @param v2Url the Zipkin V2 URL.
-     * @return this Builder instance.
+     * @param endpointUrl the Zipkin Endpoint URL.
      * @since 0.4.0
      */
-    public abstract Builder setV2Url(String v2Url);
+    public abstract Builder setEndpoint(String endpointUrl);
 
     /**
-     * Sets the Zipkin sender.
+     * Sets the Zipkin sender. Implements the client side of the span transport. Defaults to {@link
+     * URLConnectionSender} if unspecified.
      *
-     * <p>At least one of {@code V2Url} or {@code Sender} needs to be specified. If both {@code
+     * <p>At least one of {@code endpoint} or {@code Sender} needs to be specified. If both {@code
      * V2Url} and {@code Sender} are set, {@code Sender} takes precedence.
      *
      * <p>Note: if you provide a {@link Sender} instance via this method, the {@link Sender#close()}
      * method will be called when the exporter is shut down.
      *
-     * @param sender the Zipkin sender.
-     * @return this Builder instance.
+     * @param sender the Zipkin sender implementation.
      * @since 0.4.0
      */
     public abstract Builder setSender(Sender sender);
 
     /**
-     * Sets the {@link SpanBytesEncoder}.
+     * Sets the {@link BytesEncoder}, which controls the format used by the {@link Sender}. Defaults
+     * to the {@link SpanBytesEncoder#JSON_V2}.
      *
-     * @param encoder the {@code SpanBytesEncoder}.
-     * @return this Builder instance
+     * @param encoder the {@code BytesEncoder} to use.
      * @since 0.4.0
+     * @see SpanBytesEncoder
      */
-    public abstract Builder setEncoder(SpanBytesEncoder encoder);
+    public abstract Builder setEncoder(BytesEncoder<Span> encoder);
 
-    abstract String getV2Url();
+    abstract String getEndpoint();
 
     @Nullable
     abstract Sender getSender();
@@ -151,8 +132,11 @@ public abstract class ZipkinExporterConfiguration {
      */
     public ZipkinExporterConfiguration build() {
       Utils.checkArgument(
-          !getV2Url().isEmpty() || getSender() != null,
+          !getEndpoint().isEmpty() || getSender() != null,
           "Neither Zipkin V2 URL nor Zipkin sender is specified.");
+      if (getSender() == null) {
+        setSender(URLConnectionSender.create(getEndpoint()));
+      }
       return autoBuild();
     }
   }

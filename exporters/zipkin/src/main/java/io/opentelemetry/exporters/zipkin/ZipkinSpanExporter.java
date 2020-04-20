@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import zipkin2.Endpoint;
 import zipkin2.Span;
-import zipkin2.codec.SpanBytesEncoder;
+import zipkin2.codec.BytesEncoder;
 import zipkin2.reporter.Sender;
 
 /**
@@ -58,11 +58,11 @@ final class ZipkinSpanExporter implements SpanExporter {
   static final String GRPC_STATUS_DESCRIPTION = "grpc.status_description";
   static final String STATUS_ERROR = "error";
 
-  private final SpanBytesEncoder encoder;
+  private final BytesEncoder<Span> encoder;
   private final Sender sender;
   private final Endpoint localEndpoint;
 
-  ZipkinSpanExporter(SpanBytesEncoder encoder, Sender sender, String serviceName) {
+  ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender, String serviceName) {
     this.encoder = encoder;
     this.sender = sender;
     this.localEndpoint = produceLocalEndpoint(serviceName);
