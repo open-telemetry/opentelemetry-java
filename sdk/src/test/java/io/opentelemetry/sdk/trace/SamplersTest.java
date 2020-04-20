@@ -269,8 +269,7 @@ public class SamplersTest {
             Collections.<Link>emptyList());
     assertThat(decision1.isSampled()).isFalse();
     assertThat(decision1.getAttributes())
-        .containsExactly(
-            SamplingAttributes.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
+        .containsExactly(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
     // This traceId will be sampled by the Probability Sampler because the first 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     TraceId sampledtraceId =
@@ -305,7 +304,6 @@ public class SamplersTest {
             Collections.<Link>emptyList());
     assertThat(decision2.isSampled()).isTrue();
     assertThat(decision1.getAttributes())
-        .containsExactly(
-            SamplingAttributes.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
+        .containsExactly(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
   }
 }

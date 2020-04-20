@@ -28,6 +28,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.attributes.DoubleAttributeSetter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class Samplers {
+
   private static final Sampler ALWAYS_ON = new AlwaysOnSampler();
   private static final Sampler ALWAYS_OFF = new AlwaysOffSampler();
   private static final Decision ALWAYS_ON_DECISION = new SimpleDecision(/* decision= */ true);
@@ -245,6 +247,17 @@ public final class Samplers {
     }
   }
 
+  /**
+   * Probability value used by a probability-based Span sampling strategy.
+   *
+   * <p>Note: This will need to be updated if a specification for this value is merged which changes
+   * this proposed value. Also, once it's in the spec, we should move it somewhere more visible.
+   *
+   * <p>See https://github.com/open-telemetry/opentelemetry-specification/pull/570
+   */
+  static final DoubleAttributeSetter SAMPLING_PROBABILITY =
+      DoubleAttributeSetter.create("sampling.probability");
+
   /** Probability-based sampling decision with a single attribute for the probability. */
   @Immutable
   @AutoValue
@@ -260,9 +273,7 @@ public final class Samplers {
      */
     static ProbabilityDecision create(boolean decision, double probability) {
       return new AutoValue_Samplers_ProbabilityDecision(
-          decision,
-          singletonMap(
-              SamplingAttributes.SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
+          decision, singletonMap(SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
     }
 
     @Override
