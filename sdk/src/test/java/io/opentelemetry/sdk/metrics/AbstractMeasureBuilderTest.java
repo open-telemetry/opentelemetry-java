@@ -56,7 +56,6 @@ public class AbstractMeasureBuilderTest {
     assertThat(testInstrument.getDescriptor().getName()).isEqualTo(NAME);
     assertThat(testInstrument.getDescriptor().getDescription()).isEmpty();
     assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo("1");
-    assertThat(testInstrument.getDescriptor().getLabelKeys()).isEmpty();
     assertThat(testInstrument.getDescriptor().getConstantLabels()).isEmpty();
   }
 

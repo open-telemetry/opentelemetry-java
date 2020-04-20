@@ -19,7 +19,6 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
 import java.util.Arrays;
-import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -61,23 +60,6 @@ public class DoubleObserverTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
     meter.doubleObserverBuilder("metric").setUnit(null).build();
-  }
-
-  @Test
-  public void preventNull_LabelKeys() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelKeys");
-    meter.doubleObserverBuilder("metric").setLabelKeys(null).build();
-  }
-
-  @Test
-  public void preventNull_LabelKey() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("labelKey");
-    meter
-        .doubleObserverBuilder("metric")
-        .setLabelKeys(Collections.<String>singletonList(null))
-        .build();
   }
 
   @Test

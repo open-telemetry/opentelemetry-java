@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -55,9 +54,6 @@ public interface Observer<R> extends Instrument {
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setLabelKeys(List<String> labelKeys);
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);
