@@ -32,7 +32,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -78,7 +77,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
             maxQueueSize,
             maxExportBatchSize,
             exporterTimeoutMillis);
-    this.workerThread = newThread(worker);
+    this.workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     this.workerThread.start();
     this.sampled = sampled;
   }
@@ -235,16 +234,6 @@ public final class BatchSpansProcessor implements SpanProcessor {
     }
   }
 
-  private static Thread newThread(Runnable runnable) {
-    Thread thread = new DaemonThreadFactory().newThread(runnable);
-    try {
-      thread.setName(WORKER_THREAD_NAME);
-    } catch (SecurityException e) {
-      // OK if we can't set the name in this environment.
-    }
-    return thread;
-  }
-
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
   // the data.
   //
@@ -269,13 +258,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private static final BoundLongCounter droppedSpans;
 
     private final ExecutorService executorService =
-        Executors.newSingleThreadExecutor(
-            new ThreadFactory() {
-              @Override
-              public Thread newThread(Runnable r) {
-                return new Thread(r, EXPORTER_THREAD_NAME);
-              }
-            });
+        Executors.newSingleThreadExecutor(new DaemonThreadFactory(EXPORTER_THREAD_NAME));
 
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SpanExporter spanExporter;

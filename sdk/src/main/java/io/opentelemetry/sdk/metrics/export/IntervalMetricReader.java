@@ -135,7 +135,8 @@ public final class IntervalMetricReader {
   @SuppressWarnings("FutureReturnValueIgnored")
   private IntervalMetricReader(InternalState internalState) {
     this.exporter = new Exporter(internalState);
-    this.scheduler = Executors.newScheduledThreadPool(1, new DaemonThreadFactory());
+    this.scheduler =
+        Executors.newScheduledThreadPool(1, new DaemonThreadFactory("IntervalMetricReader"));
     this.scheduler.scheduleAtFixedRate(
         exporter,
         internalState.getExportIntervalMillis(),
