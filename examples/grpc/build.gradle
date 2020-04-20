@@ -5,7 +5,6 @@ plugins {
 description = 'OpenTelemetry Examples for gRPC'
 ext.moduleName = "io.opentelemetry.examples.grpc"
 
-
 def grpcVersion = '1.24.0' // CURRENT_GRPC_VERSION
 def protobufVersion = '3.10.0'
 def protocVersion = protobufVersion
@@ -14,7 +13,6 @@ dependencies {
     compile "io.opentelemetry:opentelemetry-api:${opentelemetryVersion}"
     compile "io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}"
     compile "io.opentelemetry:opentelemetry-exporters-logging:${opentelemetryVersion}"
-
     compile "io.grpc:grpc-protobuf:${grpcVersion}"
     compile "io.grpc:grpc-stub:${grpcVersion}"
     compile "io.grpc:grpc-netty-shaded:${grpcVersion}"
@@ -39,4 +37,3 @@ sourceSets {
         }
     }
 }
-

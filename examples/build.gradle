@@ -8,9 +8,7 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'idea'
-
     apply plugin: 'com.github.sherter.google-java-format'
-
 
     group = "io.opentelemetry"
     version = "0.4.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
@@ -39,7 +37,6 @@ subprojects {
         from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
         with jar
     }
-
 }
 
 wrapper {
