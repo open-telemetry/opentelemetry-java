@@ -26,54 +26,53 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.reporter.Sender;
+import zipkin2.reporter.urlconnection.URLConnectionSender;
 
 /** Unit tests for {@link ZipkinExporterConfiguration}. */
 @RunWith(MockitoJUnitRunner.class)
 public class ZipkinExporterConfigurationTest {
 
   private static final String SERVICE = "service";
-  private static final String END_POINT = "endpoint";
 
   @Mock private Sender mockSender;
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void updateConfigs() {
+  public void verifyOptionsAreApplied() {
     ZipkinExporterConfiguration configuration =
         ZipkinExporterConfiguration.builder()
             .setServiceName(SERVICE)
             .setSender(mockSender)
-            .setEndpoint(END_POINT)
             .setEncoder(SpanBytesEncoder.PROTO3)
             .build();
     assertThat(configuration.getServiceName()).isEqualTo(SERVICE);
-    assertThat(configuration.getEndpoint()).isEqualTo(END_POINT);
     assertThat(configuration.getSender()).isEqualTo(mockSender);
     assertThat(configuration.getEncoder()).isEqualTo(SpanBytesEncoder.PROTO3);
   }
 
   @Test
-  public void needEitherUrlOrSender() {
+  public void needToSpecifySender() {
     ZipkinExporterConfiguration.Builder builder =
         ZipkinExporterConfiguration.builder().setServiceName(SERVICE);
-    thrown.expect(IllegalArgumentException.class);
+    thrown.expect(IllegalStateException.class);
     builder.build();
   }
 
   @Test
   public void senderIsEnough() {
     ZipkinExporterConfiguration.Builder builder =
-        ZipkinExporterConfiguration.builder().setSender(mockSender).setServiceName(SERVICE);
+        ZipkinExporterConfiguration.builder().setSender(mockSender);
     builder.build();
   }
 
   @Test
   public void urlIsEnough() {
-    ZipkinExporterConfiguration.Builder builder =
-        ZipkinExporterConfiguration.builder()
-            .setEndpoint("https://test.url/v2")
-            .setServiceName(SERVICE);
-    builder.build();
+    ZipkinExporterConfiguration configuration =
+        ZipkinExporterConfiguration.create("https://myzipkin.endpoint");
+    assertThat(configuration).isNotNull();
+    assertThat(configuration.getSender()).isInstanceOf(URLConnectionSender.class);
+    assertThat(configuration.getServiceName()).isEqualTo("unknown");
+    assertThat(configuration.getEncoder()).isEqualTo(SpanBytesEncoder.JSON_V2);
   }
 }

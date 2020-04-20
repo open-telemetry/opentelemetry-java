@@ -223,7 +223,7 @@ public class ZipkinSpanExporterTest {
   public void testCreate() {
     ZipkinExporterConfiguration configuration =
         ZipkinExporterConfiguration.builder()
-            .setEndpoint("https://zipkin.endpoint.com/v2")
+            .setSender(mockSender)
             .setServiceName("myGreatService")
             .build();
 
@@ -235,7 +235,6 @@ public class ZipkinSpanExporterTest {
   public void testShutdown() throws IOException {
     ZipkinExporterConfiguration configuration =
         ZipkinExporterConfiguration.builder()
-            .setEndpoint("https://zipkin.endpoint.com/v2")
             .setServiceName("myGreatService")
             .setSender(mockSender)
             .build();
