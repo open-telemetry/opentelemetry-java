@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.jaeger.sampler;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalAnswers.delegatesTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -94,12 +95,12 @@ public class JaegerRemoteSamplerTest {
     ManagedChannel channel =
         grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build());
 
-    final JaegerRemoteSampler remoteSampler =
+    JaegerRemoteSampler sampler =
         JaegerRemoteSampler.newBuilder().setChannel(channel).setServiceName(SERVICE_NAME).build();
 
     Awaitility.await()
         .atMost(10, TimeUnit.SECONDS)
-        .until(samplerIsType(remoteSampler, RateLimitingSampler.class));
+        .until(samplerIsType(sampler, RateLimitingSampler.class));
 
     // verify
     verify(service)
@@ -107,9 +108,23 @@ public class JaegerRemoteSamplerTest {
             requestCaptor.capture(),
             ArgumentMatchers.<StreamObserver<SamplingStrategyResponse>>any());
     Assert.assertEquals(SERVICE_NAME, requestCaptor.getValue().getServiceName());
-    Assert.assertTrue(remoteSampler.getSampler() instanceof RateLimitingSampler);
+    Assert.assertTrue(sampler.getSampler() instanceof RateLimitingSampler);
     Assert.assertEquals(
-        RATE, ((RateLimitingSampler) remoteSampler.getSampler()).getMaxTracesPerSecond(), 0);
+        RATE, ((RateLimitingSampler) sampler.getSampler()).getMaxTracesPerSecond(), 0);
+  }
+
+  @Test
+  public void description() {
+    ManagedChannel channel =
+        grpcCleanup.register(
+            InProcessChannelBuilder.forName(SERVICE_NAME).directExecutor().build());
+    JaegerRemoteSampler sampler =
+        JaegerRemoteSampler.newBuilder().setChannel(channel).setServiceName(SERVICE_NAME).build();
+    assertTrue(
+        sampler
+            .getDescription()
+            .matches(
+                "JaegerRemoteSampler\\{Probability\\{probability=0.001, idUpperBound=.*\\}\\}"));
   }
 
   static Callable<Boolean> samplerIsType(

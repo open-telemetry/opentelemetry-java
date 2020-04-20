@@ -91,7 +91,7 @@ class RateLimitingSampler implements Sampler {
 
   @Override
   public String toString() {
-    return String.format("RateLimitingSampler{%f}", maxTracesPerSecond);
+    return String.format("RateLimitingSampler{%.2f}", maxTracesPerSecond);
   }
 
   @VisibleForTesting

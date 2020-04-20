@@ -22,8 +22,7 @@ dependencies {
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}",
             libraries.testcontainers,
-            libraries.awaitility,
-            libraries.rest_assured
+            libraries.awaitility
 
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
 

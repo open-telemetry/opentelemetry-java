@@ -108,4 +108,10 @@ public class RateLimitingSamplerTest {
         AttributeValue.stringAttributeValue(RateLimitingSampler.TYPE),
         decision.attributes().get(RateLimitingSampler.SAMPLER_TYPE));
   }
+
+  @Test
+  public void description() {
+    RateLimitingSampler sampler = new RateLimitingSampler(15);
+    assertEquals("RateLimitingSampler{15.00}", sampler.getDescription());
+  }
 }
