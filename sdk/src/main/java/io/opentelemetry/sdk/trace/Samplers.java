@@ -28,7 +28,6 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -263,7 +262,7 @@ public final class Samplers {
       return new AutoValue_Samplers_ProbabilityDecision(
           decision,
           singletonMap(
-              SemanticAttributes.SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
+              SamplingAttributes.SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
     }
 
     @Override
