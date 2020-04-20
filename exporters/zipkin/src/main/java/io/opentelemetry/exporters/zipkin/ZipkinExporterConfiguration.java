@@ -103,7 +103,7 @@ public abstract class ZipkinExporterConfiguration {
     /**
      * Sets the Zipkin V2 URL, e.g.: "http://127.0.0.1:9411/api/v2/spans".
      *
-     * <p>At least one of {@code V2Url} and {@code Sender} needs to be specified. If both {@code
+     * <p>At least one of {@code V2Url} or {@code Sender} needs to be specified. If both {@code
      * V2Url} and {@code Sender} are set, {@code Sender} takes precedence.
      *
      * @param v2Url the Zipkin V2 URL.
