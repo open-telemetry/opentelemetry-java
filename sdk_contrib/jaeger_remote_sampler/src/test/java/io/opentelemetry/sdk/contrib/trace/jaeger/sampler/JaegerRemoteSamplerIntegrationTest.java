@@ -20,8 +20,10 @@ import static io.opentelemetry.sdk.contrib.trace.jaeger.sampler.JaegerRemoteSamp
 
 import io.grpc.ManagedChannelBuilder;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,16 +44,26 @@ public class JaegerRemoteSamplerIntegrationTest {
 
   @SuppressWarnings("rawtypes")
   @ClassRule
-  public static GenericContainer jaeger =
-      new GenericContainer("jaegertracing/all-in-one:" + JAEGER_VERSION)
-          .withCommand("--sampling.strategies-file=/sampling.json")
-          .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
-          .waitingFor(new HttpWaitStrategy().forPath("/"))
-          .withClasspathResourceMapping("sampling.json", "/sampling.json", BindMode.READ_ONLY);
+  @Nullable
+  public static GenericContainer jaegerContainer;
+
+  static {
+    // make sure that the user has enabled the docker-based tests
+    if (Boolean.getBoolean("enable.docker.tests")) {
+      jaegerContainer =
+          new GenericContainer<>("jaegertracing/all-in-one:" + JAEGER_VERSION)
+              .withCommand("--sampling.strategies-file=/sampling.json")
+              .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
+              .waitingFor(new HttpWaitStrategy().forPath("/"))
+              .withClasspathResourceMapping("sampling.json", "/sampling.json", BindMode.READ_ONLY);
+    }
+  }
 
   @Test
   public void remoteSampling_perOperation() {
-    String jaegerHost = String.format("127.0.0.1:%d", jaeger.getMappedPort(COLLECTOR_PORT));
+    Assume.assumeNotNull(jaegerContainer);
+    String jaegerHost =
+        String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
     final JaegerRemoteSampler remoteSampler =
         JaegerRemoteSampler.newBuilder()
             .setChannel(ManagedChannelBuilder.forTarget(jaegerHost).usePlaintext().build())
@@ -68,7 +80,9 @@ public class JaegerRemoteSamplerIntegrationTest {
 
   @Test
   public void remoteSampling_rateLimiting() {
-    String jaegerHost = String.format("127.0.0.1:%d", jaeger.getMappedPort(COLLECTOR_PORT));
+    Assume.assumeNotNull(jaegerContainer);
+    String jaegerHost =
+        String.format("127.0.0.1:%d", jaegerContainer.getMappedPort(COLLECTOR_PORT));
     final JaegerRemoteSampler remoteSampler =
         JaegerRemoteSampler.newBuilder()
             .setChannel(ManagedChannelBuilder.forTarget(jaegerHost).usePlaintext().build())
