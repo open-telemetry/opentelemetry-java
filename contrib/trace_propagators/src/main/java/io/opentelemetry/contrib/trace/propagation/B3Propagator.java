@@ -58,6 +58,20 @@ public class B3Propagator implements HttpTextFormat {
   private static final TraceFlags NOT_SAMPLED_FLAGS =
       TraceFlags.builder().setIsSampled(false).build();
 
+  private static final char COMBINED_HEADER_DELIMITER_CHAR = '-';
+  private static final char IS_SAMPLED = '1';
+  private static final char NOT_SAMPLED = '0';
+
+  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
+  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
+  private static final int SAMPLED_FLAG_SIZE = 1;
+  private static final int COMBINED_HEADER_DELIMITER_SIZE = 1;
+
+  private static final int SPAN_ID_OFFSET = TRACE_ID_HEX_SIZE + COMBINED_HEADER_DELIMITER_SIZE;
+  private static final int SAMPLED_FLAG_OFFSET =
+      SPAN_ID_OFFSET + SPAN_ID_HEX_SIZE + COMBINED_HEADER_DELIMITER_SIZE;
+  private static final int COMBINED_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
+
   private static final List<String> FIELDS =
       Collections.unmodifiableList(Arrays.asList(TRACE_ID_HEADER, SPAN_ID_HEADER, SAMPLED_HEADER));
 
@@ -81,20 +95,6 @@ public class B3Propagator implements HttpTextFormat {
   public List<String> fields() {
     return FIELDS;
   }
-
-  private static final char COMBINED_HEADER_DELIMITER_CHAR = '-';
-  private static final char IS_SAMPLED = '1';
-  private static final char NOT_SAMPLED = '0';
-
-  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
-  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
-  private static final int SAMPLED_FLAG_SIZE = 1;
-  private static final int COMBINED_HEADER_DELIMITER_SIZE = 1;
-
-  private static final int SPAN_ID_OFFSET = TRACE_ID_HEX_SIZE + COMBINED_HEADER_DELIMITER_SIZE;
-  private static final int SAMPLED_FLAG_OFFSET =
-      SPAN_ID_OFFSET + SPAN_ID_HEX_SIZE + COMBINED_HEADER_DELIMITER_SIZE;
-  private static final int COMBINED_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
 
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
