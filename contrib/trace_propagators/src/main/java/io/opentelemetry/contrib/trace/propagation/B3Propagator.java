@@ -82,6 +82,20 @@ public class B3Propagator implements HttpTextFormat {
     return FIELDS;
   }
 
+  private static final char COMBINED_HEADER_DELIMITER_CHAR = '-';
+  private static final char IS_SAMPLED = '1';
+  private static final char NOT_SAMPLED = '0';
+
+  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
+  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
+  private static final int SAMPLED_FLAG_SIZE = 1;
+  private static final int COMBINED_HEADER_DELIMITER_SIZE = 1;
+
+  private static final int SPAN_ID_OFFSET = TRACE_ID_HEX_SIZE + COMBINED_HEADER_DELIMITER_SIZE;
+  private static final int SAMPLED_FLAG_OFFSET =
+      SPAN_ID_OFFSET + SPAN_ID_HEX_SIZE + COMBINED_HEADER_DELIMITER_SIZE;
+  private static final int COMBINED_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
+
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
     checkNotNull(context, "context");
@@ -96,14 +110,15 @@ public class B3Propagator implements HttpTextFormat {
     String sampled = spanContext.getTraceFlags().isSampled() ? TRUE_INT : FALSE_INT;
 
     if (singleHeader) {
-      setter.set(
-          carrier,
-          COMBINED_HEADER,
-          spanContext.getTraceId().toLowerBase16()
-              + COMBINED_HEADER_DELIMITER
-              + spanContext.getSpanId().toLowerBase16()
-              + COMBINED_HEADER_DELIMITER
-              + sampled);
+
+      char[] chars = new char[COMBINED_HEADER_SIZE];
+      spanContext.getTraceId().copyLowerBase16To(chars, 0);
+      chars[SPAN_ID_OFFSET - 1] = COMBINED_HEADER_DELIMITER_CHAR;
+      spanContext.getSpanId().copyLowerBase16To(chars, SPAN_ID_OFFSET);
+      chars[SAMPLED_FLAG_OFFSET - 1] = COMBINED_HEADER_DELIMITER_CHAR;
+      chars[SAMPLED_FLAG_OFFSET] =
+          spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
+      setter.set(carrier, COMBINED_HEADER, new String(chars));
     } else {
       setter.set(carrier, TRACE_ID_HEADER, spanContext.getTraceId().toLowerBase16());
       setter.set(carrier, SPAN_ID_HEADER, spanContext.getSpanId().toLowerBase16());
