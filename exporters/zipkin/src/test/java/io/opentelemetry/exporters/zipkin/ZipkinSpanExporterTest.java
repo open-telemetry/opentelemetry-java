@@ -118,8 +118,7 @@ public class ZipkinSpanExporterTest {
   @Test
   public void generateSpan_ResourceServiceNameMapping() {
     final Resource resource =
-        Resource.create(
-            singletonMap("service.name", stringAttributeValue("super-zipkin-service")));
+        Resource.create(singletonMap("service.name", stringAttributeValue("super-zipkin-service")));
     SpanData data = buildStandardSpan().setResource(resource).build();
 
     Endpoint expectedEndpoint = Endpoint.newBuilder().serviceName("super-zipkin-service").build();
@@ -151,11 +150,8 @@ public class ZipkinSpanExporterTest {
   @Test
   public void generateSpan_AlreadyHasHttpStatusInfo() {
     Map<String, AttributeValue> attributeMap = new HashMap<>();
-    attributeMap.put(
-        SemanticAttributes.HTTP_STATUS_CODE.key(), longAttributeValue(404));
-    attributeMap.put(
-        SemanticAttributes.HTTP_STATUS_TEXT.key(),
-        stringAttributeValue("NOT FOUND"));
+    attributeMap.put(SemanticAttributes.HTTP_STATUS_CODE.key(), longAttributeValue(404));
+    attributeMap.put(SemanticAttributes.HTTP_STATUS_TEXT.key(), stringAttributeValue("NOT FOUND"));
     attributeMap.put("error", stringAttributeValue("A user provided error"));
     SpanData data =
         buildStandardSpan()
@@ -178,9 +174,7 @@ public class ZipkinSpanExporterTest {
   @Test
   public void generateSpan_WithRpcErrorStatus() {
     Map<String, AttributeValue> attributeMap = new HashMap<>();
-    attributeMap.put(
-        SemanticAttributes.RPC_SERVICE.key(),
-        stringAttributeValue("my service name"));
+    attributeMap.put(SemanticAttributes.RPC_SERVICE.key(), stringAttributeValue("my service name"));
 
     String errorMessage = "timeout";
 
