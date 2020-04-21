@@ -173,6 +173,20 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
+  public void setAttribute_emptyArrayAttributeValue() throws Exception {
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    spanBuilder.setAttribute(
+        "stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
+    spanBuilder.setAttribute(
+        "boolArrayAttribute", AttributeValue.arrayAttributeValue(new Boolean[0]));
+    spanBuilder.setAttribute("longArrayAttribute", AttributeValue.arrayAttributeValue(new Long[0]));
+    spanBuilder.setAttribute(
+        "doubleArrayAttribute", AttributeValue.arrayAttributeValue(new Double[0]));
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(4);
+  }
+
+  @Test
   public void setAttribute_nullStringValue() throws Exception {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
@@ -196,13 +210,23 @@ public class SpanBuilderSdkTest {
     spanBuilder.setAttribute("longAttribute", 0L);
     spanBuilder.setAttribute("boolAttribute", false);
     spanBuilder.setAttribute("doubleAttribute", 0.12345f);
+    spanBuilder.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue("", null));
+    spanBuilder.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue(true, null));
+    spanBuilder.setAttribute(
+        "longArrayAttribute", AttributeValue.arrayAttributeValue(12345L, null));
+    spanBuilder.setAttribute(
+        "doubleArrayAttribute", AttributeValue.arrayAttributeValue(1.2345, null));
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
-    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(5);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
     spanBuilder.setAttribute("emptyString", (AttributeValue) null);
     spanBuilder.setAttribute("emptyStringAttributeValue", (AttributeValue) null);
     spanBuilder.setAttribute("longAttribute", (AttributeValue) null);
     spanBuilder.setAttribute("boolAttribute", (AttributeValue) null);
     spanBuilder.setAttribute("doubleAttribute", (AttributeValue) null);
+    spanBuilder.setAttribute("stringArrayAttribute", (AttributeValue) null);
+    spanBuilder.setAttribute("boolArrayAttribute", (AttributeValue) null);
+    spanBuilder.setAttribute("longArrayAttribute", (AttributeValue) null);
+    spanBuilder.setAttribute("doubleArrayAttribute", (AttributeValue) null);
     assertThat(span.toSpanData().getAttributes()).isEmpty();
   }
 
