@@ -33,8 +33,10 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -49,28 +51,40 @@ public class JaegerRemoteSampler implements Sampler {
   private final String serviceName;
   private final SamplingManagerBlockingStub stub;
   private Sampler sampler;
-  private final Timer pollTimer;
+  private final ScheduledExecutorService scheduledExecutorService;
 
+  @SuppressWarnings("FutureReturnValueIgnored")
   private JaegerRemoteSampler(
       String serviceName, ManagedChannel channel, int pollingIntervalMs, Sampler initialSampler) {
     this.serviceName = serviceName;
     this.stub = SamplingManagerGrpc.newBlockingStub(channel);
     this.sampler = initialSampler;
+    this.scheduledExecutorService =
+        Executors.newScheduledThreadPool(
+            1,
+            new ThreadFactory() {
+              @Override
+              public Thread newThread(Runnable runnable) {
+                Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+                thread.setDaemon(true);
+                return thread;
+              }
+            });
+    this.scheduledExecutorService.scheduleAtFixedRate(
+        updateSampleRunnable(), 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
+  }
 
-    pollTimer = new Timer(true); // true makes this a daemon thread
-    pollTimer.schedule(
-        new TimerTask() {
-          @Override
-          public void run() {
-            try {
-              updateSampler();
-            } catch (Exception e) { // keep the timer thread alive
-              logger.log(Level.WARNING, "Failed to update sampler", e);
-            }
-          }
-        },
-        0,
-        pollingIntervalMs);
+  private Runnable updateSampleRunnable() {
+    return new Runnable() {
+      @Override
+      public void run() {
+        try {
+          updateSampler();
+        } catch (Exception e) { // keep the timer thread alive
+          logger.log(Level.WARNING, "Failed to update sampler", e);
+        }
+      }
+    };
   }
 
   @Override
