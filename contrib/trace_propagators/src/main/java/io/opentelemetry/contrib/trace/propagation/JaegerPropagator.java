@@ -123,7 +123,7 @@ public class JaegerPropagator implements HttpTextFormat {
       return SpanContext.getInvalid();
     }
 
-    // if the delimiter (:) cannot be found then the propagation value could be UTF-8
+    // if the delimiter (:) cannot be found then the propagation value could be URL
     // encoded, so we need to decode it before attempting to split it.
     if (value.lastIndexOf(PROPAGATION_HEADER_DELIMITER) == -1) {
       try {
