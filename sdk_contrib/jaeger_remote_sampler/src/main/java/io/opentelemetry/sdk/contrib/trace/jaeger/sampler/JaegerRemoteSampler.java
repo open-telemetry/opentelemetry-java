@@ -24,6 +24,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyP
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.SamplingStrategyResponse;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.SamplingManagerGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.SamplingManagerGrpc.SamplingManagerBlockingStub;
+import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Link;
@@ -35,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,6 +45,8 @@ import javax.annotation.Nullable;
 public class JaegerRemoteSampler implements Sampler {
   private static final Logger logger = Logger.getLogger(JaegerRemoteSampler.class.getName());
 
+  private static final String WORKER_THREAD_NAME =
+      JaegerRemoteSampler.class.getSimpleName() + "_WorkerThread";
   private static final int DEFAULT_POLLING_INTERVAL_MS = 60000;
   private static final Sampler INITIAL_SAMPLER = Samplers.probability(0.001);
 
@@ -60,16 +62,7 @@ public class JaegerRemoteSampler implements Sampler {
     this.stub = SamplingManagerGrpc.newBlockingStub(channel);
     this.sampler = initialSampler;
     this.scheduledExecutorService =
-        Executors.newScheduledThreadPool(
-            1,
-            new ThreadFactory() {
-              @Override
-              public Thread newThread(Runnable runnable) {
-                Thread thread = Executors.defaultThreadFactory().newThread(runnable);
-                thread.setDaemon(true);
-                return thread;
-              }
-            });
+        Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
     this.scheduledExecutorService.scheduleAtFixedRate(
         updateSampleRunnable(), 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
   }
