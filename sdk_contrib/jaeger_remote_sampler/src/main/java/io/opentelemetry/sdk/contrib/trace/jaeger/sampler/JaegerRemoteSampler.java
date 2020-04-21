@@ -72,7 +72,7 @@ public class JaegerRemoteSampler implements Sampler {
       @Override
       public void run() {
         try {
-          updateSampler();
+          getAndUpdateSampler();
         } catch (Exception e) { // keep the timer thread alive
           logger.log(Level.WARNING, "Failed to update sampler", e);
         }
@@ -93,20 +93,14 @@ public class JaegerRemoteSampler implements Sampler {
         parentContext, traceId, spanId, name, spanKind, attributes, parentLinks);
   }
 
-  private void updateSampler() {
+  private void getAndUpdateSampler() {
     SamplingStrategyParameters params =
         SamplingStrategyParameters.newBuilder().setServiceName(this.serviceName).build();
     SamplingStrategyResponse response = stub.getSamplingStrategy(params);
-    this.sampler = getSampler(response);
+    this.sampler = updateSampler(response);
   }
 
-  @VisibleForTesting
-  Sampler getSampler() {
-    return this.sampler;
-  }
-
-  private static Sampler getSampler(SamplingStrategyResponse response) {
-
+  private static Sampler updateSampler(SamplingStrategyResponse response) {
     PerOperationSamplingStrategies operationSampling = response.getOperationSampling();
     if (operationSampling != null && operationSampling.getPerOperationStrategiesList().size() > 0) {
       Sampler defaultSampler =
@@ -133,6 +127,11 @@ public class JaegerRemoteSampler implements Sampler {
   @Override
   public String toString() {
     return String.format("JaegerRemoteSampler{%s}", this.sampler);
+  }
+
+  @VisibleForTesting
+  Sampler getSampler() {
+    return this.sampler;
   }
 
   public static Builder newBuilder() {
