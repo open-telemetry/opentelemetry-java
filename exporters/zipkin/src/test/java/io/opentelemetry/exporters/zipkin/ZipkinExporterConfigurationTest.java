@@ -32,8 +32,6 @@ import zipkin2.reporter.urlconnection.URLConnectionSender;
 @RunWith(MockitoJUnitRunner.class)
 public class ZipkinExporterConfigurationTest {
 
-  private static final String SERVICE = "service";
-
   @Mock private Sender mockSender;
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
@@ -42,19 +40,16 @@ public class ZipkinExporterConfigurationTest {
   public void verifyOptionsAreApplied() {
     ZipkinExporterConfiguration configuration =
         ZipkinExporterConfiguration.builder()
-            .setServiceName(SERVICE)
             .setSender(mockSender)
             .setEncoder(SpanBytesEncoder.PROTO3)
             .build();
-    assertThat(configuration.getServiceName()).isEqualTo(SERVICE);
     assertThat(configuration.getSender()).isEqualTo(mockSender);
     assertThat(configuration.getEncoder()).isEqualTo(SpanBytesEncoder.PROTO3);
   }
 
   @Test
   public void needToSpecifySender() {
-    ZipkinExporterConfiguration.Builder builder =
-        ZipkinExporterConfiguration.builder().setServiceName(SERVICE);
+    ZipkinExporterConfiguration.Builder builder = ZipkinExporterConfiguration.builder();
     thrown.expect(IllegalStateException.class);
     builder.build();
   }
@@ -72,7 +67,6 @@ public class ZipkinExporterConfigurationTest {
         ZipkinExporterConfiguration.create("https://myzipkin.endpoint");
     assertThat(configuration).isNotNull();
     assertThat(configuration.getSender()).isInstanceOf(URLConnectionSender.class);
-    assertThat(configuration.getServiceName()).isEqualTo("unknown");
     assertThat(configuration.getEncoder()).isEqualTo(SpanBytesEncoder.JSON_V2);
   }
 }

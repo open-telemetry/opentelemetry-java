@@ -17,11 +17,17 @@
 package io.opentelemetry.exporters.zipkin;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
+import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static io.opentelemetry.common.AttributeValue.longAttributeValue;
+import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static java.util.Collections.singletonMap;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
@@ -54,8 +60,6 @@ public class ZipkinSpanExporterTest {
   @Mock private SpanBytesEncoder mockEncoder;
   @Mock private Call<Void> mockZipkinCall;
 
-  private static final Endpoint localEndpoint =
-      ZipkinSpanExporter.produceLocalEndpoint("tweetiebird");
   private static final String TRACE_ID = "d239036e7d5cec116b562147388b35bf";
   private static final String SPAN_ID = "9cc1e3049173be09";
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
@@ -71,39 +75,35 @@ public class ZipkinSpanExporterTest {
   public void generateSpan_remoteParent() {
     SpanData data = buildStandardSpan().build();
 
-    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(buildZipkinSpan(Span.Kind.SERVER));
+    assertThat(ZipkinSpanExporter.generateSpan(data)).isEqualTo(buildZipkinSpan(Span.Kind.SERVER));
   }
 
   @Test
   public void generateSpan_ServerKind() {
     SpanData data = buildStandardSpan().setKind(Kind.SERVER).build();
 
-    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(buildZipkinSpan(Span.Kind.SERVER));
+    assertThat(ZipkinSpanExporter.generateSpan(data)).isEqualTo(buildZipkinSpan(Span.Kind.SERVER));
   }
 
   @Test
   public void generateSpan_ClientKind() {
     SpanData data = buildStandardSpan().setKind(Kind.CLIENT).build();
 
-    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(buildZipkinSpan(Span.Kind.CLIENT));
+    assertThat(ZipkinSpanExporter.generateSpan(data)).isEqualTo(buildZipkinSpan(Span.Kind.CLIENT));
   }
 
   @Test
   public void generateSpan_InternalKind() {
     SpanData data = buildStandardSpan().setKind(Kind.INTERNAL).build();
 
-    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
-        .isEqualTo(buildZipkinSpan(null));
+    assertThat(ZipkinSpanExporter.generateSpan(data)).isEqualTo(buildZipkinSpan(null));
   }
 
   @Test
   public void generateSpan_ConsumeKind() {
     SpanData data = buildStandardSpan().setKind(Kind.CONSUMER).build();
 
-    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+    assertThat(ZipkinSpanExporter.generateSpan(data))
         .isEqualTo(buildZipkinSpan(Span.Kind.CONSUMER));
   }
 
@@ -111,20 +111,33 @@ public class ZipkinSpanExporterTest {
   public void generateSpan_ProducerKind() {
     SpanData data = buildStandardSpan().setKind(Kind.PRODUCER).build();
 
-    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+    assertThat(ZipkinSpanExporter.generateSpan(data))
         .isEqualTo(buildZipkinSpan(Span.Kind.PRODUCER));
+  }
+
+  @Test
+  public void generateSpan_ResourceServiceNameMapping() {
+    final Resource resource =
+        Resource.create(
+            singletonMap("service.name", stringAttributeValue("super-zipkin-service")));
+    SpanData data = buildStandardSpan().setResource(resource).build();
+
+    Endpoint expectedEndpoint = Endpoint.newBuilder().serviceName("super-zipkin-service").build();
+    Span expectedZipkinSpan =
+        buildZipkinSpan(Span.Kind.SERVER).toBuilder().localEndpoint(expectedEndpoint).build();
+    assertThat(ZipkinSpanExporter.generateSpan(data)).isEqualTo(expectedZipkinSpan);
   }
 
   @Test
   public void generateSpan_WithAttributes() {
     Map<String, AttributeValue> attributeMap = new HashMap<>();
-    attributeMap.put("string", AttributeValue.stringAttributeValue("string value"));
-    attributeMap.put("boolean", AttributeValue.booleanAttributeValue(false));
-    attributeMap.put("long", AttributeValue.longAttributeValue(9999L));
-    attributeMap.put("double", AttributeValue.doubleAttributeValue(222.333));
+    attributeMap.put("string", stringAttributeValue("string value"));
+    attributeMap.put("boolean", booleanAttributeValue(false));
+    attributeMap.put("long", longAttributeValue(9999L));
+    attributeMap.put("double", doubleAttributeValue(222.333));
     SpanData data = buildStandardSpan().setAttributes(attributeMap).setKind(Kind.CLIENT).build();
 
-    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+    assertThat(ZipkinSpanExporter.generateSpan(data))
         .isEqualTo(
             buildZipkinSpan(Span.Kind.CLIENT)
                 .toBuilder()
@@ -139,11 +152,11 @@ public class ZipkinSpanExporterTest {
   public void generateSpan_AlreadyHasHttpStatusInfo() {
     Map<String, AttributeValue> attributeMap = new HashMap<>();
     attributeMap.put(
-        SemanticAttributes.HTTP_STATUS_CODE.key(), AttributeValue.longAttributeValue(404));
+        SemanticAttributes.HTTP_STATUS_CODE.key(), longAttributeValue(404));
     attributeMap.put(
         SemanticAttributes.HTTP_STATUS_TEXT.key(),
-        AttributeValue.stringAttributeValue("NOT FOUND"));
-    attributeMap.put("error", AttributeValue.stringAttributeValue("A user provided error"));
+        stringAttributeValue("NOT FOUND"));
+    attributeMap.put("error", stringAttributeValue("A user provided error"));
     SpanData data =
         buildStandardSpan()
             .setAttributes(attributeMap)
@@ -151,7 +164,7 @@ public class ZipkinSpanExporterTest {
             .setStatus(Status.NOT_FOUND)
             .build();
 
-    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+    assertThat(ZipkinSpanExporter.generateSpan(data))
         .isEqualTo(
             buildZipkinSpan(Span.Kind.CLIENT)
                 .toBuilder()
@@ -167,7 +180,7 @@ public class ZipkinSpanExporterTest {
     Map<String, AttributeValue> attributeMap = new HashMap<>();
     attributeMap.put(
         SemanticAttributes.RPC_SERVICE.key(),
-        AttributeValue.stringAttributeValue("my service name"));
+        stringAttributeValue("my service name"));
 
     String errorMessage = "timeout";
 
@@ -177,7 +190,7 @@ public class ZipkinSpanExporterTest {
             .setAttributes(attributeMap)
             .build();
 
-    assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
+    assertThat(ZipkinSpanExporter.generateSpan(data))
         .isEqualTo(
             buildZipkinSpan(Span.Kind.SERVER)
                 .toBuilder()
@@ -190,8 +203,7 @@ public class ZipkinSpanExporterTest {
 
   @Test
   public void testExport() throws IOException {
-    ZipkinSpanExporter zipkinSpanExporter =
-        new ZipkinSpanExporter(mockEncoder, mockSender, "tweetiebird");
+    ZipkinSpanExporter zipkinSpanExporter = new ZipkinSpanExporter(mockEncoder, mockSender);
 
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(buildZipkinSpan(Span.Kind.SERVER))).thenReturn(someBytes);
@@ -205,8 +217,7 @@ public class ZipkinSpanExporterTest {
 
   @Test
   public void testExport_failed() throws IOException {
-    ZipkinSpanExporter zipkinSpanExporter =
-        new ZipkinSpanExporter(mockEncoder, mockSender, "tweetiebird");
+    ZipkinSpanExporter zipkinSpanExporter = new ZipkinSpanExporter(mockEncoder, mockSender);
 
     byte[] someBytes = new byte[0];
     when(mockEncoder.encode(buildZipkinSpan(Span.Kind.SERVER))).thenReturn(someBytes);
@@ -222,10 +233,7 @@ public class ZipkinSpanExporterTest {
   @Test
   public void testCreate() {
     ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.builder()
-            .setSender(mockSender)
-            .setServiceName("myGreatService")
-            .build();
+        ZipkinExporterConfiguration.builder().setSender(mockSender).build();
 
     ZipkinSpanExporter exporter = ZipkinSpanExporter.create(configuration);
     assertThat(exporter).isNotNull();
@@ -234,10 +242,7 @@ public class ZipkinSpanExporterTest {
   @Test
   public void testShutdown() throws IOException {
     ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.builder()
-            .setServiceName("myGreatService")
-            .setSender(mockSender)
-            .build();
+        ZipkinExporterConfiguration.builder().setSender(mockSender).build();
 
     ZipkinSpanExporter exporter = ZipkinSpanExporter.create(configuration);
     exporter.shutdown();
@@ -272,7 +277,6 @@ public class ZipkinSpanExporterTest {
         .name("Recv.helloworld.Greeter.SayHello")
         .timestamp(1505855794000000L + 194009601L / 1000)
         .duration((1505855799000000L + 465726528L / 1000) - (1505855794000000L + 194009601L / 1000))
-        .localEndpoint(localEndpoint)
         .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
         .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT")
         //        .putTag(ZipkinSpanExporter.STATUS_CODE, status)

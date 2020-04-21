@@ -35,8 +35,6 @@ public abstract class ZipkinExporterConfiguration {
 
   ZipkinExporterConfiguration() {}
 
-  abstract String getServiceName();
-
   abstract Sender getSender();
 
   abstract BytesEncoder<Span> getEncoder();
@@ -49,23 +47,7 @@ public abstract class ZipkinExporterConfiguration {
    * @since 0.4.0
    */
   public static Builder builder() {
-    return new AutoValue_ZipkinExporterConfiguration.Builder()
-        .setEncoder(SpanBytesEncoder.JSON_V2)
-        .setServiceName("unknown");
-  }
-
-  /**
-   * Builds a HTTP exporter for <a href="https://zipkin.io/zipkin-api/#/">Zipkin V2</a> format.
-   *
-   * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
-   * @param serviceName The serviceName with which to identify Spans. See {@link
-   *     Builder#setServiceName(String)} for details.
-   */
-  public static ZipkinExporterConfiguration create(String endpoint, String serviceName) {
-    return ZipkinExporterConfiguration.builder()
-        .setSender(URLConnectionSender.create(endpoint))
-        .setServiceName(serviceName)
-        .build();
+    return new AutoValue_ZipkinExporterConfiguration.Builder().setEncoder(SpanBytesEncoder.JSON_V2);
   }
 
   /**
@@ -74,7 +56,9 @@ public abstract class ZipkinExporterConfiguration {
    * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
    */
   public static ZipkinExporterConfiguration create(String endpoint) {
-    return create(endpoint, "unknown");
+    return ZipkinExporterConfiguration.builder()
+        .setSender(URLConnectionSender.create(endpoint))
+        .build();
   }
 
   /**
@@ -86,17 +70,6 @@ public abstract class ZipkinExporterConfiguration {
   public abstract static class Builder {
 
     Builder() {}
-
-    /**
-     * Label of the remote node in the service graph, such as "favstar". Avoid names with variables
-     * or unique identifiers embedded. Defaults to "unknown".
-     *
-     * <p>This is a primary label for trace lookup and aggregation, so it should be intuitive and
-     * consistent. Many use a name from service discovery.
-     *
-     * @since 0.4.0
-     */
-    public abstract Builder setServiceName(String serviceName);
 
     /**
      * Sets the Zipkin sender. Implements the client side of the span transport. A {@link

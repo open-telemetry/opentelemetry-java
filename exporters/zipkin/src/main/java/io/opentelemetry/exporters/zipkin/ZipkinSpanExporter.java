@@ -27,11 +27,8 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -58,45 +55,24 @@ final class ZipkinSpanExporter implements SpanExporter {
   static final String GRPC_STATUS_DESCRIPTION = "grpc.status_description";
   static final String STATUS_ERROR = "error";
 
+  private static final Endpoint EMPTY_ENDPOINT = Endpoint.newBuilder().build();
+
   private final BytesEncoder<Span> encoder;
   private final Sender sender;
-  private final Endpoint localEndpoint;
 
-  ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender, String serviceName) {
+  ZipkinSpanExporter(BytesEncoder<Span> encoder, Sender sender) {
     this.encoder = encoder;
     this.sender = sender;
-    this.localEndpoint = produceLocalEndpoint(serviceName);
   }
 
-  /** Logic borrowed from brave.internal.Platform.produceLocalEndpoint */
-  static Endpoint produceLocalEndpoint(String serviceName) {
-    Endpoint.Builder builder = Endpoint.newBuilder().serviceName(serviceName);
-    try {
-      Enumeration<NetworkInterface> nics = NetworkInterface.getNetworkInterfaces();
-      if (nics == null) {
-        return builder.build();
-      }
-      while (nics.hasMoreElements()) {
-        NetworkInterface nic = nics.nextElement();
-        Enumeration<InetAddress> addresses = nic.getInetAddresses();
-        while (addresses.hasMoreElements()) {
-          InetAddress address = addresses.nextElement();
-          if (address.isSiteLocalAddress()) {
-            builder.ip(address);
-            break;
-          }
-        }
-      }
-    } catch (Exception e) {
-      // don't crash the caller if there was a problem reading nics.
-      if (logger.isLoggable(Level.FINE)) {
-        logger.log(Level.FINE, "error reading nics", e);
-      }
+  static Span generateSpan(SpanData spanData) {
+    Endpoint endpoint = EMPTY_ENDPOINT;
+    Map<String, AttributeValue> resourceAttributes = spanData.getResource().getAttributes();
+    AttributeValue serviceNameValue = resourceAttributes.get("service.name");
+    if (serviceNameValue != null) {
+      endpoint = Endpoint.newBuilder().serviceName(serviceNameValue.getStringValue()).build();
     }
-    return builder.build();
-  }
 
-  static Span generateSpan(SpanData spanData, Endpoint localEndpoint) {
     long startTimestamp = toEpochMicros(spanData.getStartEpochNanos());
 
     long endTimestamp = toEpochMicros(spanData.getEndEpochNanos());
@@ -109,7 +85,7 @@ final class ZipkinSpanExporter implements SpanExporter {
             .name(spanData.getName())
             .timestamp(toEpochMicros(spanData.getStartEpochNanos()))
             .duration(endTimestamp - startTimestamp)
-            .localEndpoint(localEndpoint);
+            .localEndpoint(endpoint);
 
     if (spanData.getParentSpanId().isValid()) {
       spanBuilder.parentId(spanData.getParentSpanId().toLowerBase16());
@@ -185,7 +161,7 @@ final class ZipkinSpanExporter implements SpanExporter {
   public ResultCode export(final Collection<SpanData> spanDataList) {
     List<byte[]> encodedSpans = new ArrayList<>(spanDataList.size());
     for (SpanData spanData : spanDataList) {
-      encodedSpans.add(encoder.encode(generateSpan(spanData, localEndpoint)));
+      encodedSpans.add(encoder.encode(generateSpan(spanData)));
     }
     try {
       sender.sendSpans(encodedSpans).execute();
@@ -211,7 +187,6 @@ final class ZipkinSpanExporter implements SpanExporter {
    * @return A ready-to-use {@link ZipkinSpanExporter}
    */
   public static ZipkinSpanExporter create(ZipkinExporterConfiguration configuration) {
-    return new ZipkinSpanExporter(
-        configuration.getEncoder(), configuration.getSender(), configuration.getServiceName());
+    return new ZipkinSpanExporter(configuration.getEncoder(), configuration.getSender());
   }
 }
