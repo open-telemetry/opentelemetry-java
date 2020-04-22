@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /** {@link SpanBuilderSdk} is SDK implementation of {@link Span.Builder}. */
@@ -87,7 +88,7 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setParent(Span parent) {
-    this.parent = Utils.checkNotNull(parent, "parent");
+    this.parent = Objects.requireNonNull(parent, "parent");
     this.remoteParent = null;
     this.parentType = ParentType.EXPLICIT_PARENT;
     return this;
@@ -95,7 +96,7 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setParent(SpanContext remoteParent) {
-    this.remoteParent = Utils.checkNotNull(remoteParent, "remoteParent");
+    this.remoteParent = Objects.requireNonNull(remoteParent, "remoteParent");
     this.parent = null;
     this.parentType = ParentType.EXPLICIT_REMOTE_PARENT;
     return this;
@@ -111,7 +112,7 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setSpanKind(Kind spanKind) {
-    this.spanKind = Utils.checkNotNull(spanKind, "spanKind");
+    this.spanKind = Objects.requireNonNull(spanKind, "spanKind");
     return this;
   }
 
@@ -129,7 +130,7 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder addLink(Link link) {
-    Utils.checkNotNull(link, "link");
+    Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     // don't bother doing anything with any links beyond the max.
     if (links.size() == traceConfig.getMaxNumberOfLinks()) {
@@ -167,7 +168,7 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder setAttribute(String key, AttributeValue value) {
-    Utils.checkNotNull(key, "key");
+    Objects.requireNonNull(key, "key");
     if (value == null
         || (value.getType().equals(AttributeValue.Type.STRING) && value.getStringValue() == null)) {
       attributes.remove(key);

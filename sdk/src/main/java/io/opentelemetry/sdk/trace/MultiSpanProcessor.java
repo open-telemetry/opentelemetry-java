@@ -16,9 +16,9 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.internal.Utils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Implementation of the {@code SpanProcessor} that simply forwards all received events to a list of
@@ -38,7 +38,7 @@ public final class MultiSpanProcessor implements SpanProcessor {
    */
   public static SpanProcessor create(List<SpanProcessor> spanProcessorList) {
     return new MultiSpanProcessor(
-        new ArrayList<>(Utils.checkNotNull(spanProcessorList, "spanProcessorList")));
+        new ArrayList<>(Objects.requireNonNull(spanProcessorList, "spanProcessorList")));
   }
 
   @Override

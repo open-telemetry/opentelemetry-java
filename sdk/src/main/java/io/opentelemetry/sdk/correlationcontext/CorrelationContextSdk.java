@@ -16,20 +16,18 @@
 
 package io.opentelemetry.sdk.correlationcontext;
 
-import static io.opentelemetry.internal.Utils.checkNotNull;
-
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
 import io.opentelemetry.correlationcontext.EntryValue;
-import io.opentelemetry.internal.Utils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -50,7 +48,8 @@ class CorrelationContextSdk implements CorrelationContext {
    */
   private CorrelationContextSdk(
       Map<? extends EntryKey, ? extends Entry> entries, CorrelationContext parent) {
-    this.entries = Collections.unmodifiableMap(new HashMap<>(checkNotNull(entries, "entries")));
+    this.entries =
+        Collections.unmodifiableMap(new HashMap<>(Objects.requireNonNull(entries, "entries")));
     this.parent = parent;
   }
 
@@ -123,7 +122,7 @@ class CorrelationContextSdk implements CorrelationContext {
 
     @Override
     public CorrelationContext.Builder setParent(CorrelationContext parent) {
-      this.parent = Utils.checkNotNull(parent, "parent");
+      this.parent = Objects.requireNonNull(parent, "parent");
       return this;
     }
 
@@ -138,15 +137,17 @@ class CorrelationContextSdk implements CorrelationContext {
     public CorrelationContext.Builder put(
         EntryKey key, EntryValue value, EntryMetadata entryMetadata) {
       entries.put(
-          checkNotNull(key, "key"),
+          Objects.requireNonNull(key, "key"),
           Entry.create(
-              key, checkNotNull(value, "value"), checkNotNull(entryMetadata, "entryMetadata")));
+              key,
+              Objects.requireNonNull(value, "value"),
+              Objects.requireNonNull(entryMetadata, "entryMetadata")));
       return this;
     }
 
     @Override
     public CorrelationContext.Builder remove(EntryKey key) {
-      entries.remove(checkNotNull(key, "key"));
+      entries.remove(Objects.requireNonNull(key, "key"));
       if (parent != null && parent.getEntryValue(key) != null) {
         entries.put(key, null);
       }

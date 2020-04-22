@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -177,7 +178,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private boolean sampled = true;
 
     private Builder(SpanExporter spanExporter) {
-      this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+      this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
     }
 
     // TODO: Consider to add support for constant Attributes and/or Resource.
