@@ -11,10 +11,13 @@ subprojects {
     apply plugin: 'com.github.sherter.google-java-format'
 
     group = "io.opentelemetry"
-    version = "0.4.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
+    version = "0.1.0-SNAPSHOT"
 
     ext {
-        opentelemetryVersion = version
+        opentelemetryVersion = "0.4.0-SNAPSHOT"
+        grpcVersion = '1.24.0' // CURRENT_GRPC_VERSION
+        protobufVersion = '3.10.0'
+        protocVersion = protobufVersion
     }
 
     repositories {
@@ -37,9 +40,4 @@ subprojects {
         from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
         with jar
     }
-}
-
-wrapper {
-    distributionType = Wrapper.DistributionType.ALL
-    gradleVersion = '6.0.1'
 }
