@@ -17,19 +17,46 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Attribute;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.BooleanValuedKey;
+import io.opentelemetry.common.LongValuedKey;
+import io.opentelemetry.common.MapBasedAttributes;
+import io.opentelemetry.common.StringValuedKey;
 import io.opentelemetry.context.Scope;
 import org.junit.Test;
 
 public class TracerExTest {
 
+  private static final LongValuedKey NUMBER_ATTRIBUTE = LongValuedKey.create("number");
+  private static final StringValuedKey STRING_ATTRIBUTE = StringValuedKey.create("string");
+  private static final LongValuedKey LONG_ATTRIBUTE = LongValuedKey.create("long");
+  private static final BooleanValuedKey BOOLEAN_ATTRIBUTE = BooleanValuedKey.create("boolean");
+
   @Test
   public void testTracerExApi() {
     TracerEx testTracer = new TracerEx(OpenTelemetry.getTracerProvider().get("testTracer"));
 
-    SpanEx testSpan = testTracer.spanBuilder("testSpan").startSpan();
+    SpanEx testSpan =
+        testTracer
+            .spanBuilder("testSpan")
+            .addLink(SpanContext.getInvalid(), testAttributes()) // option 1
+            .addLink(SpanContext.getInvalid()) // option 2 with no arg
+            .addLink(
+                SpanContext.getInvalid(), // option 2 with 2 args
+                Attribute.create(LONG_ATTRIBUTE, 109L),
+                Attribute.create(BOOLEAN_ATTRIBUTE, true))
+            .startSpan();
     try (Scope ignored = testTracer.withSpan(testSpan)) {
       // do some work
     }
     testSpan.end();
+  }
+
+  private static Attributes testAttributes() {
+    return MapBasedAttributes.newBuilder()
+        .put(NUMBER_ATTRIBUTE, 100)
+        .put(STRING_ATTRIBUTE, "hello, world")
+        .build();
   }
 }

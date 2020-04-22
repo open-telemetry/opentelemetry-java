@@ -16,7 +16,22 @@
 
 package io.opentelemetry.trace;
 
+import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
+import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static io.opentelemetry.common.AttributeValue.longAttributeValue;
+import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+
+import io.opentelemetry.common.Attribute;
+import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.BooleanValuedKey;
+import io.opentelemetry.common.DoubleValuedKey;
+import io.opentelemetry.common.LongValuedKey;
+import io.opentelemetry.common.StringValuedKey;
 import io.opentelemetry.trace.Span.Kind;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SpanEx {
 
@@ -66,28 +81,90 @@ public class SpanEx {
       builder = tracer.spanBuilder(spanName);
     }
 
-    public Span.Builder setParent(SpanEx parent) {
-      return builder.setParent(parent.span);
+    public SpanEx.Builder setParent(SpanEx parent) {
+      builder.setParent(parent.span);
+      return this;
     }
 
-    public Span.Builder setParent(SpanContext remoteParent) {
-      return builder.setParent(remoteParent);
+    public SpanEx.Builder setParent(SpanContext remoteParent) {
+      builder.setParent(remoteParent);
+      return this;
     }
 
-    public Span.Builder setNoParent() {
-      return builder.setNoParent();
+    public SpanEx.Builder setNoParent() {
+      builder.setNoParent();
+      return this;
     }
 
-    public Span.Builder setSpanKind(Kind spanKind) {
-      return builder.setSpanKind(spanKind);
+    // option 1... an interface that encapsulates the attribute nature
+    public SpanEx.Builder addLink(SpanContext context, Attributes attributes) {
+      builder.addLink(context, makeAttributeMap(attributes));
+      return this;
     }
 
-    public Span.Builder setStartTimestamp(long startTimestamp) {
-      return builder.setStartTimestamp(startTimestamp);
+    // option 2... a type-safe key-value pair with varargs parameters
+    public SpanEx.Builder addLink(SpanContext context, Attribute... attributes) {
+      builder.addLink(context, makeAttributeMap(attributes));
+      return this;
+    }
+
+    public SpanEx.Builder setSpanKind(Kind spanKind) {
+      builder.setSpanKind(spanKind);
+      return this;
+    }
+
+    public SpanEx.Builder setStartTimestamp(long startTimestamp) {
+      builder.setStartTimestamp(startTimestamp);
+      return this;
     }
 
     public SpanEx startSpan() {
       return new SpanEx(builder.startSpan());
     }
+  }
+
+  private static Map<String, AttributeValue> makeAttributeMap(Attribute[] attributes) {
+    Map<String, AttributeValue> result = new HashMap<>();
+    for (Attribute attribute : attributes) {
+      result.put(attribute.key().key(), makeValue(attribute));
+    }
+    return result;
+  }
+
+  private static Map<String, AttributeValue> makeAttributeMap(Attributes attributes) {
+    Map<String, AttributeValue> result = new HashMap<>();
+    for (AttributeKey key : attributes.getKeys()) {
+      result.put(key.key(), makeValue(attributes, key));
+    }
+    return result;
+  }
+
+  private static AttributeValue makeValue(Attribute attribute) {
+    AttributeKey key = attribute.key();
+    switch (key.getType()) {
+      case BOOLEAN:
+        return booleanAttributeValue(attribute.getBooleanValue());
+      case LONG:
+        return longAttributeValue(attribute.getLongValue());
+      case DOUBLE:
+        return doubleAttributeValue(attribute.getDoubleValue());
+      case STRING:
+        return stringAttributeValue(attribute.getStringValue());
+    }
+    throw new IllegalStateException("Unknown type: " + key.getType());
+  }
+
+  private static AttributeValue makeValue(Attributes attributes, AttributeKey key) {
+    switch (key.getType()) {
+      case BOOLEAN:
+        return booleanAttributeValue(attributes.getBooleanValue((BooleanValuedKey) key));
+      case LONG:
+        return longAttributeValue(attributes.getLongValue((LongValuedKey) key));
+      case DOUBLE:
+        return doubleAttributeValue(attributes.getDoubleValue((DoubleValuedKey) key));
+      case STRING:
+        return stringAttributeValue(attributes.getStringValue((StringValuedKey) key));
+    }
+    throw new IllegalStateException("Unknown type: " + key.getType());
   }
 }
