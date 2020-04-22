@@ -51,9 +51,10 @@ subprojects {
         // (https://github.com/google/error-prone/issues/1253).
         it.options.errorprone.disable("NullableDereference") // "-Xep:NullableDereference:OFF"
 
-        // ExpectedExceptionRefactoring and TestExceptionRefactoring suggest using
+        // ExpectedExceptionRefactoring, TestExceptionRefactoring and TryFailRefactoring suggest using
         // assertThrows, but assertThrows only works well with lambdas.
         it.options.errorprone.disable("ExpectedExceptionRefactoring") // "-Xep:ExpectedExceptionRefactoring:OFF"
+        it.options.errorprone.disable("TryFailRefactoring") // "-Xep:TryFailRefactoring:OFF"
 
         // AutoValueImmutableFields suggests returning Guava types from API methods
         it.options.errorprone.disable("AutoValueImmutableFields") // "-Xep:AutoValueImmutableFields:OFF"
