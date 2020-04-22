@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
