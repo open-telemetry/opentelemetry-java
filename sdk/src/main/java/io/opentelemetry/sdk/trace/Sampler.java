@@ -92,6 +92,6 @@ public interface Sampler {
      *     span or when sampling decision {@link #isSampled()} changes from false to true.
      * @since 0.1.0
      */
-    Map<String, AttributeValue> attributes();
+    Map<String, AttributeValue> getAttributes();
   }
 }

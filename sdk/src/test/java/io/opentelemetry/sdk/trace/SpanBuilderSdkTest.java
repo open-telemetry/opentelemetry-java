@@ -329,7 +329,7 @@ public class SpanBuilderSdkTest {
                           }
 
                           @Override
-                          public Map<String, AttributeValue> attributes() {
+                          public Map<String, AttributeValue> getAttributes() {
                             Map<String, AttributeValue> attributes = new LinkedHashMap<>();
                             attributes.put(
                                 samplerAttributeName, AttributeValue.stringAttributeValue("bar"));
