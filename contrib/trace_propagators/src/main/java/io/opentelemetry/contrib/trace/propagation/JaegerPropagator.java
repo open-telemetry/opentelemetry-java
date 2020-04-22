@@ -47,22 +47,36 @@ public class JaegerPropagator implements HttpTextFormat {
 
   private static final Logger logger = Logger.getLogger(JaegerPropagator.class.getName());
 
-  static final String TRACE_ID_HEADER = "uber-trace-id";
+  static final String PROPAGATION_HEADER = "uber-trace-id";
   // Parent span has been deprecated but Jaeger propagation protocol requires it
-  static final String DEPRECATED_PARENT_SPAN = "0";
-  static final String SEPARATOR = ":";
-
-  private static final String IS_SAMPLED = "1";
-  private static final String NOT_SAMPLED = "0";
+  static final char DEPRECATED_PARENT_SPAN = '0';
+  static final char PROPAGATION_HEADER_DELIMITER = ':';
 
   private static final int MAX_TRACE_ID_LENGTH = 2 * TraceId.getSize();
   private static final int MAX_SPAN_ID_LENGTH = 2 * SpanId.getSize();
   private static final int MAX_FLAGS_LENGTH = 2;
+
+  private static final char IS_SAMPLED = '1';
+  private static final char NOT_SAMPLED = '0';
+  private static final int PROPAGATION_HEADER_DELIMITER_SIZE = 1;
+
+  private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
+  private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
+  private static final int PARENT_SPAN_ID_SIZE = 1;
+  private static final int SAMPLED_FLAG_SIZE = 1;
+
+  private static final int SPAN_ID_OFFSET = TRACE_ID_HEX_SIZE + PROPAGATION_HEADER_DELIMITER_SIZE;
+  private static final int PARENT_SPAN_ID_OFFSET =
+      SPAN_ID_OFFSET + SPAN_ID_HEX_SIZE + PROPAGATION_HEADER_DELIMITER_SIZE;
+  private static final int SAMPLED_FLAG_OFFSET =
+      PARENT_SPAN_ID_OFFSET + PARENT_SPAN_ID_SIZE + PROPAGATION_HEADER_DELIMITER_SIZE;
+  private static final int PROPAGATION_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
+
   private static final TraceFlags SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(true).build();
   private static final TraceFlags NOT_SAMPLED_FLAGS =
       TraceFlags.builder().setIsSampled(false).build();
 
-  private static final List<String> FIELDS = Collections.singletonList(TRACE_ID_HEADER);
+  private static final List<String> FIELDS = Collections.singletonList(PROPAGATION_HEADER);
 
   @Override
   public List<String> fields() {
@@ -80,18 +94,16 @@ public class JaegerPropagator implements HttpTextFormat {
     }
 
     SpanContext spanContext = span.getContext();
-    String sampled = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
 
-    setter.set(
-        carrier,
-        TRACE_ID_HEADER,
-        spanContext.getTraceId().toLowerBase16()
-            + SEPARATOR
-            + spanContext.getSpanId().toLowerBase16()
-            + SEPARATOR
-            + DEPRECATED_PARENT_SPAN
-            + SEPARATOR
-            + sampled);
+    char[] chars = new char[PROPAGATION_HEADER_SIZE];
+    spanContext.getTraceId().copyLowerBase16To(chars, 0);
+    chars[SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
+    spanContext.getSpanId().copyLowerBase16To(chars, SPAN_ID_OFFSET);
+    chars[PARENT_SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
+    chars[PARENT_SPAN_ID_OFFSET] = DEPRECATED_PARENT_SPAN;
+    chars[SAMPLED_FLAG_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
+    chars[SAMPLED_FLAG_OFFSET] = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
+    setter.set(carrier, PROPAGATION_HEADER, new String(chars));
   }
 
   @Override
@@ -106,30 +118,33 @@ public class JaegerPropagator implements HttpTextFormat {
 
   @SuppressWarnings("StringSplitter")
   private static <C> SpanContext getSpanContextFromHeader(C carrier, Getter<C> getter) {
-    String value = getter.get(carrier, TRACE_ID_HEADER);
+    String value = getter.get(carrier, PROPAGATION_HEADER);
     if (Strings.isNullOrEmpty(value)) {
       return SpanContext.getInvalid();
     }
 
-    try {
-      // the propagation value may contain UTF-8 encoded SEPARATOR's (:), so we need to decode it
-      // before attempting to split it.
-      value = URLDecoder.decode(value, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      logger.info(
-          "Error decoding '"
-              + TRACE_ID_HEADER
-              + "' with value "
-              + value
-              + ". Returning INVALID span context.");
-      return SpanContext.getInvalid();
+    // if the delimiter (:) cannot be found then the propagation value could be URL
+    // encoded, so we need to decode it before attempting to split it.
+    if (value.lastIndexOf(PROPAGATION_HEADER_DELIMITER) == -1) {
+      try {
+        // the propagation value
+        value = URLDecoder.decode(value, "UTF-8");
+      } catch (UnsupportedEncodingException e) {
+        logger.info(
+            "Error decoding '"
+                + PROPAGATION_HEADER
+                + "' with value "
+                + value
+                + ". Returning INVALID span context.");
+        return SpanContext.getInvalid();
+      }
     }
 
-    String[] parts = value.split(SEPARATOR);
+    String[] parts = value.split(String.valueOf(PROPAGATION_HEADER_DELIMITER));
     if (parts.length != 4) {
       logger.info(
           "Invalid header '"
-              + TRACE_ID_HEADER
+              + PROPAGATION_HEADER
               + "' with value "
               + value
               + ". Returning INVALID span context.");
@@ -140,7 +155,7 @@ public class JaegerPropagator implements HttpTextFormat {
     if (!isTraceIdValid(traceId)) {
       logger.info(
           "Invalid TraceId in Jaeger header: '"
-              + TRACE_ID_HEADER
+              + PROPAGATION_HEADER
               + "' with traceId "
               + traceId
               + ". Returning INVALID span context.");
@@ -151,7 +166,7 @@ public class JaegerPropagator implements HttpTextFormat {
     if (!isSpanIdValid(spanId)) {
       logger.info(
           "Invalid SpanId in Jaeger header: '"
-              + TRACE_ID_HEADER
+              + PROPAGATION_HEADER
               + "'. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
@@ -160,7 +175,7 @@ public class JaegerPropagator implements HttpTextFormat {
     if (!isFlagsValid(flags)) {
       logger.info(
           "Invalid Flags in Jaeger header: '"
-              + TRACE_ID_HEADER
+              + PROPAGATION_HEADER
               + "'. Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
@@ -181,7 +196,7 @@ public class JaegerPropagator implements HttpTextFormat {
     } catch (Exception e) {
       logger.log(
           Level.INFO,
-          "Error parsing '" + TRACE_ID_HEADER + "' header. Returning INVALID span context.",
+          "Error parsing '" + PROPAGATION_HEADER + "' header. Returning INVALID span context.",
           e);
       return SpanContext.getInvalid();
     }

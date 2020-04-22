@@ -39,7 +39,6 @@ import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -61,12 +60,13 @@ public class HelloWorldClientStream {
   // Share context via text headers
   HttpTextFormat textFormat = OpenTelemetry.getPropagators().getHttpTextFormat();
   // Inject context into the gRPC request metadata
-  HttpTextFormat.Setter<Metadata> setter = new HttpTextFormat.Setter<Metadata>() {
-    @Override
-    public void set(Metadata carrier, String key, String value) {
-      carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
-    }
-  };
+  HttpTextFormat.Setter<Metadata> setter =
+      new HttpTextFormat.Setter<Metadata>() {
+        @Override
+        public void set(Metadata carrier, String key, String value) {
+          carrier.put(Metadata.Key.of(key, Metadata.ASCII_STRING_MARSHALLER), value);
+        }
+      };
 
   /** Construct client connecting to HelloWorld server at {@code host:port}. */
   public HelloWorldClientStream(String host, int port) {
@@ -102,7 +102,7 @@ public class HelloWorldClientStream {
 
     // Start a span
     Span span =
-            tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(Span.Kind.CLIENT).startSpan();
+        tracer.spanBuilder("helloworld.Greeter/SayHello").setSpanKind(Span.Kind.CLIENT).startSpan();
     span.setAttribute("component", "grpc");
     span.setAttribute("rpc.service", "Greeter");
     span.setAttribute("net.peer.ip", this.serverHostname);
@@ -114,7 +114,7 @@ public class HelloWorldClientStream {
     try (Scope scope = tracer.withSpan(span)) {
       HelloReplyStreamObserver replyObserver = new HelloReplyStreamObserver();
       requestObserver = asyncStub.sayHelloStream(replyObserver);
-      for(String name : names){
+      for (String name : names) {
         try {
           requestObserver.onNext(HelloRequest.newBuilder().setName(name).build());
           // Sleep for a bit before sending the next one.
@@ -127,7 +127,7 @@ public class HelloWorldClientStream {
       requestObserver.onCompleted();
       span.addEvent("Done sending");
       span.setStatus(Status.OK);
-    } catch (StatusRuntimeException e){
+    } catch (StatusRuntimeException e) {
       logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
       // TODO create mapping for io.grpc.Status<->io.opentelemetry.trace.Status
       span.setStatus(Status.UNKNOWN.withDescription("gRPC status: " + e.getStatus()));
@@ -160,8 +160,8 @@ public class HelloWorldClientStream {
 
     @Override
     public void onCompleted() {
-      //Since onCompleted is async and the span.end() is called in the main thread,
-      //it is recommended to set the span Status in the main thread.
+      // Since onCompleted is async and the span.end() is called in the main thread,
+      // it is recommended to set the span Status in the main thread.
     }
   }
 

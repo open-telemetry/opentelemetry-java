@@ -88,20 +88,63 @@ public class PropagatorContextExtractBenchmark {
     private static final List<Map<String, String>> traceHeaders =
         Arrays.asList(
             Collections.singletonMap(
-                JaegerPropagator.TRACE_ID_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "905734c59b913b4a905734c59b913b4a:9909983295041501:0:1"),
             Collections.singletonMap(
-                JaegerPropagator.TRACE_ID_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "21196a77f299580e21196a77f299580e:993a97ee3691eb26:0:0"),
             Collections.singletonMap(
-                JaegerPropagator.TRACE_ID_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "2e7d0ad2390617702e7d0ad239061770:d49582a2de984b86:0:1"),
             Collections.singletonMap(
-                JaegerPropagator.TRACE_ID_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "905734c59b913b4a905734c59b913b4a:776ff807b787538a:0:0"),
             Collections.singletonMap(
-                JaegerPropagator.TRACE_ID_HEADER,
+                JaegerPropagator.PROPAGATION_HEADER,
                 "68ec932c33b3f2ee68ec932c33b3f2ee:68ec932c33b3f2ee:0:0"));
+
+    private final JaegerPropagator.Getter<Map<String, String>> getter =
+        new JaegerPropagator.Getter<Map<String, String>>() {
+          @Override
+          public String get(Map<String, String> carrier, String key) {
+            return carrier.get(key);
+          }
+        };
+
+    private final JaegerPropagator jaegerPropagator = new JaegerPropagator();
+
+    @Override
+    protected Context doExtract() {
+      return jaegerPropagator.extract(Context.current(), getCarrier(), getter);
+    }
+
+    @Override
+    protected List<Map<String, String>> getHeaders() {
+      return traceHeaders;
+    }
+  }
+
+  /** Benchmark for extracting context from Jaeger headers which are url encoded. */
+  public static class JaegerUrlEncodedContextExtractBenchmark
+      extends AbstractContextExtractBenchmark {
+
+    private static final List<Map<String, String>> traceHeaders =
+        Arrays.asList(
+            Collections.singletonMap(
+                JaegerPropagator.PROPAGATION_HEADER,
+                "905734c59b913b4a905734c59b913b4a%3A9909983295041501%3A0%3A1"),
+            Collections.singletonMap(
+                JaegerPropagator.PROPAGATION_HEADER,
+                "21196a77f299580e21196a77f299580e%3A993a97ee3691eb26%3A0%3A0"),
+            Collections.singletonMap(
+                JaegerPropagator.PROPAGATION_HEADER,
+                "2e7d0ad2390617702e7d0ad239061770%3Ad49582a2de984b86%3A0%3A1"),
+            Collections.singletonMap(
+                JaegerPropagator.PROPAGATION_HEADER,
+                "905734c59b913b4a905734c59b913b4a%3A776ff807b787538a%3A0%3A0"),
+            Collections.singletonMap(
+                JaegerPropagator.PROPAGATION_HEADER,
+                "68ec932c33b3f2ee68ec932c33b3f2ee%3A68ec932c33b3f2ee%3A0%3A0"));
 
     private final JaegerPropagator.Getter<Map<String, String>> getter =
         new JaegerPropagator.Getter<Map<String, String>>() {

@@ -1,0 +1,43 @@
+plugins {
+    id 'com.github.sherter.google-java-format'  apply false
+    id "com.jfrog.artifactory" apply false
+}
+
+subprojects {
+    apply plugin: 'eclipse'
+    apply plugin: 'java'
+    apply plugin: 'java-library'
+    apply plugin: 'idea'
+    apply plugin: 'com.github.sherter.google-java-format'
+
+    group = "io.opentelemetry"
+    version = "0.1.0-SNAPSHOT"
+
+    ext {
+        opentelemetryVersion = "0.4.0-SNAPSHOT"
+        grpcVersion = '1.24.0' // CURRENT_GRPC_VERSION
+        protobufVersion = '3.10.0'
+        protocVersion = protobufVersion
+    }
+
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            // Add snapshot repository
+            url "https://oss.jfrog.org/artifactory/oss-snapshot-local"
+        }
+    }
+
+    googleJavaFormat {
+        toolVersion = '1.7'
+    }
+    compileJava.dependsOn(verifyGoogleJavaFormat)
+
+    //create a single Jar with all dependencies
+    task fatJar(type: Jar) {
+        baseName = project.name + '-all'
+        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+        with jar
+    }
+}

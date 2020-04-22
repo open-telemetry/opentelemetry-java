@@ -232,7 +232,7 @@ public final class JaegerGrpcSpanExporter implements SpanExporter {
      * @param tracerSdkProvider tracer SDK provider
      */
     public void install(TracerSdkProvider tracerSdkProvider) {
-      BatchSpansProcessor spansProcessor = BatchSpansProcessor.newBuilder(this.build()).build();
+      BatchSpansProcessor spansProcessor = BatchSpansProcessor.create(this.build());
       tracerSdkProvider.addSpanProcessor(spansProcessor);
     }
 

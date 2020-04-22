@@ -1,36 +1,19 @@
 plugins {
-    // ASSUMES GRADLE 2.12 OR HIGHER. Use plugin version 0.7.5 with earlier gradle versions
-    id 'com.google.protobuf' version '0.8.8'
-    // Generate IntelliJ IDEA's .idea & .iml project files
-    id 'java'
+    id "com.google.protobuf"
 }
 
-apply plugin: 'com.google.protobuf'
-
-group 'io.opentelemetry'
-version '0.1.0-SNAPSHOT'
-
-def opentelemetryVersion = '0.3.0'
+description = 'OpenTelemetry Examples for gRPC'
+ext.moduleName = "io.opentelemetry.examples.grpc"
 
 
-def grpcVersion = '1.24.0' // CURRENT_GRPC_VERSION
-def protobufVersion = '3.10.0'
-def protocVersion = protobufVersion
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     compile "io.opentelemetry:opentelemetry-api:${opentelemetryVersion}"
     compile "io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}"
     compile "io.opentelemetry:opentelemetry-exporters-logging:${opentelemetryVersion}"
-
     compile "io.grpc:grpc-protobuf:${grpcVersion}"
     compile "io.grpc:grpc-stub:${grpcVersion}"
     compile "io.grpc:grpc-netty-shaded:${grpcVersion}"
-
-    testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
 protobuf {
@@ -52,11 +35,3 @@ sourceSets {
         }
     }
 }
-
-//create a single Jar with all dependencies
-task fatJar(type: Jar) {
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
-
