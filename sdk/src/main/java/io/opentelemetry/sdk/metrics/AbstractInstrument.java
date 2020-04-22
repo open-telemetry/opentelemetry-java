@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 abstract class AbstractInstrument implements Instrument {
 
@@ -104,7 +105,7 @@ abstract class AbstractInstrument implements Instrument {
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
-      Utils.checkNotNull(name, "name");
+      Objects.requireNonNull(name, "name");
       Utils.checkArgument(
           StringUtils.isValidMetricName(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
@@ -115,20 +116,20 @@ abstract class AbstractInstrument implements Instrument {
 
     @Override
     public final B setDescription(String description) {
-      this.description = Utils.checkNotNull(description, "description");
+      this.description = Objects.requireNonNull(description, "description");
       return getThis();
     }
 
     @Override
     public final B setUnit(String unit) {
-      this.unit = Utils.checkNotNull(unit, "unit");
+      this.unit = Objects.requireNonNull(unit, "unit");
       return getThis();
     }
 
     @Override
     public final B setConstantLabels(Map<String, String> constantLabels) {
       Utils.checkMapKeysNotNull(
-          Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+          Objects.requireNonNull(constantLabels, "constantLabels"), "constantLabel");
       this.constantLabels = Collections.unmodifiableMap(new HashMap<>(constantLabels));
       return getThis();
     }

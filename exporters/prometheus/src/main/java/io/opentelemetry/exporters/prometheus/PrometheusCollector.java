@@ -16,13 +16,13 @@
 
 package io.opentelemetry.exporters.prometheus;
 
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.prometheus.client.Collector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public final class PrometheusCollector extends Collector {
   private final MetricProducer metricProducer;
@@ -71,7 +71,7 @@ public final class PrometheusCollector extends Collector {
      * @return a new {@code Collector} based on the builder's values.
      */
     public PrometheusCollector build() {
-      return new PrometheusCollector(Utils.checkNotNull(metricProducer, "metricProducer"));
+      return new PrometheusCollector(Objects.requireNonNull(metricProducer, "metricProducer"));
     }
 
     /**

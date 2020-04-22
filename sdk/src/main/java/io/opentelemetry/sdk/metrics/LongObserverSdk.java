@@ -16,13 +16,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
@@ -61,7 +61,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
 
   @Override
   public void setCallback(Callback<ResultLongObserver> metricUpdater) {
-    this.metricUpdater = Utils.checkNotNull(metricUpdater, "metricUpdater");
+    this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
   }
 
   static final class Builder extends AbstractObserver.Builder<LongObserverSdk.Builder>
