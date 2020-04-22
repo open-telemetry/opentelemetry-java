@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -76,7 +77,7 @@ public abstract class Resource {
    * @since 0.1.0
    */
   public static Resource create(Map<String, AttributeValue> attributes) {
-    checkAttributes(Utils.checkNotNull(attributes, "attributes"));
+    checkAttributes(Objects.requireNonNull(attributes, "attributes"));
     return new AutoValue_Resource(Collections.unmodifiableMap(new LinkedHashMap<>(attributes)));
   }
 
@@ -105,7 +106,7 @@ public abstract class Resource {
     for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
       Utils.checkArgument(
           isValidAndNotEmpty(entry.getKey()), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
-      Utils.checkNotNull(entry.getValue(), "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
+      Objects.requireNonNull(entry.getValue(), "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
     }
   }
 

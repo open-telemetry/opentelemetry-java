@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -26,6 +25,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -147,7 +147,7 @@ public class TracerSdkProvider implements TracerProvider {
      * @return this
      */
     public Builder setClock(Clock clock) {
-      Utils.checkNotNull(clock, "clock");
+      Objects.requireNonNull(clock, "clock");
       this.clock = clock;
       return this;
     }
@@ -160,7 +160,7 @@ public class TracerSdkProvider implements TracerProvider {
      * @return this
      */
     public Builder setIdsGenerator(IdsGenerator idsGenerator) {
-      Utils.checkNotNull(idsGenerator, "idsGenerator");
+      Objects.requireNonNull(idsGenerator, "idsGenerator");
       this.idsGenerator = idsGenerator;
       return this;
     }
@@ -172,7 +172,7 @@ public class TracerSdkProvider implements TracerProvider {
      * @return this
      */
     public Builder setResource(Resource resource) {
-      Utils.checkNotNull(resource, "resource");
+      Objects.requireNonNull(resource, "resource");
       this.resource = resource;
       return this;
     }
