@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.context.Scope;
 
+// go Speed Racer, go Speed Racer, go Speed Racer go!
 public class TracerEx {
 
   private final Tracer tracer;

@@ -16,6 +16,8 @@
 
 package io.opentelemetry.trace;
 
+import io.opentelemetry.trace.Span.Kind;
+
 public class SpanEx {
 
   private final Span span;
@@ -24,12 +26,24 @@ public class SpanEx {
     this.span = span;
   }
 
-  public static Builder newBuilder(Tracer tracer, String spanName) {
-    return new Builder(tracer, spanName);
-  }
-
   Span getSpan() {
     return span;
+  }
+
+  public void setStatus(Status status) {
+    span.setStatus(status);
+  }
+
+  public void updateName(String name) {
+    span.updateName(name);
+  }
+
+  public SpanContext getContext() {
+    return span.getContext();
+  }
+
+  public boolean isRecording() {
+    return span.isRecording();
   }
 
   public void end() {
@@ -40,12 +54,36 @@ public class SpanEx {
     span.end(endOptions);
   }
 
+  public static Builder newBuilder(Tracer tracer, String spanName) {
+    return new Builder(tracer, spanName);
+  }
+
   public static class Builder {
 
     private final Span.Builder builder;
 
     public Builder(Tracer tracer, String spanName) {
       builder = tracer.spanBuilder(spanName);
+    }
+
+    public Span.Builder setParent(SpanEx parent) {
+      return builder.setParent(parent.span);
+    }
+
+    public Span.Builder setParent(SpanContext remoteParent) {
+      return builder.setParent(remoteParent);
+    }
+
+    public Span.Builder setNoParent() {
+      return builder.setNoParent();
+    }
+
+    public Span.Builder setSpanKind(Kind spanKind) {
+      return builder.setSpanKind(spanKind);
+    }
+
+    public Span.Builder setStartTimestamp(long startTimestamp) {
+      return builder.setStartTimestamp(startTimestamp);
     }
 
     public SpanEx startSpan() {
