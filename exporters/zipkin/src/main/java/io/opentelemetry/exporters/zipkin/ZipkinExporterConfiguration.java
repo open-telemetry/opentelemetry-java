@@ -35,6 +35,8 @@ public abstract class ZipkinExporterConfiguration {
 
   ZipkinExporterConfiguration() {}
 
+  abstract String getServiceName();
+
   abstract Sender getSender();
 
   abstract BytesEncoder<Span> getEncoder();
@@ -47,7 +49,23 @@ public abstract class ZipkinExporterConfiguration {
    * @since 0.4.0
    */
   public static Builder builder() {
-    return new AutoValue_ZipkinExporterConfiguration.Builder().setEncoder(SpanBytesEncoder.JSON_V2);
+    return new AutoValue_ZipkinExporterConfiguration.Builder()
+        .setEncoder(SpanBytesEncoder.JSON_V2)
+        .setServiceName("unknown");
+  }
+
+  /**
+   * Builds a HTTP exporter for <a href="https://zipkin.io/zipkin-api/#/">Zipkin V2</a> format.
+   *
+   * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
+   * @param serviceName The serviceName with which to identify Spans. See {@link
+   *     Builder#setServiceName(String)} for details.
+   */
+  public static ZipkinExporterConfiguration create(String endpoint, String serviceName) {
+    return ZipkinExporterConfiguration.builder()
+        .setEndpoint(endpoint)
+        .setServiceName(serviceName)
+        .build();
   }
 
   /**
@@ -56,9 +74,7 @@ public abstract class ZipkinExporterConfiguration {
    * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
    */
   public static ZipkinExporterConfiguration create(String endpoint) {
-    return ZipkinExporterConfiguration.builder()
-        .setSender(URLConnectionSender.create(endpoint))
-        .build();
+    return create(endpoint, "unknown");
   }
 
   /**
@@ -70,6 +86,24 @@ public abstract class ZipkinExporterConfiguration {
   public abstract static class Builder {
 
     Builder() {}
+
+    /**
+     * Label of the remote node in the service graph, such as "favstar". Avoid names with variables
+     * or unique identifiers embedded. Defaults to "unknown".
+     *
+     * <p>This is a primary label for trace lookup and aggregation, so it should be intuitive and
+     * consistent. Many use a name from service discovery.
+     *
+     * <p>Note: this value, if set, will be superceded by the value of {@link
+     * io.opentelemetry.sdk.resources.ResourceConstants#SERVICE_NAME} if it has been set in the
+     * {@link io.opentelemetry.sdk.resources.Resource} associated with the Tracer that created the
+     * spans.
+     *
+     * @since 0.4.0
+     * @see io.opentelemetry.sdk.resources.Resource
+     * @see io.opentelemetry.sdk.resources.ResourceConstants
+     */
+    public abstract Builder setServiceName(String serviceName);
 
     /**
      * Sets the Zipkin sender. Implements the client side of the span transport. A {@link
@@ -91,6 +125,19 @@ public abstract class ZipkinExporterConfiguration {
      * @see SpanBytesEncoder
      */
     public abstract Builder setEncoder(BytesEncoder<Span> encoder);
+
+    /**
+     * Sets the zipkin endpoint. This will use the endpoint to assign a {@link URLConnectionSender}
+     * instance to this builder.
+     *
+     * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
+     * @since 0.4.0
+     * @see URLConnectionSender
+     */
+    public Builder setEndpoint(String endpoint) {
+      setSender(URLConnectionSender.create(endpoint));
+      return this;
+    }
 
     /**
      * Builds a {@link ZipkinExporterConfiguration}.
