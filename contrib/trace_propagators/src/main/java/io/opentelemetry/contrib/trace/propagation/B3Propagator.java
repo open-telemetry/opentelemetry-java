@@ -18,7 +18,6 @@ package io.opentelemetry.contrib.trace.propagation;
 
 import static java.util.Objects.requireNonNull;
 
-import com.google.common.base.Strings;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.DefaultSpan;
@@ -145,7 +144,7 @@ public class B3Propagator implements HttpTextFormat {
   @SuppressWarnings("StringSplitter")
   private static <C> SpanContext getSpanContextFromSingleHeader(C carrier, Getter<C> getter) {
     String value = getter.get(carrier, COMBINED_HEADER);
-    if (Strings.isNullOrEmpty(value)) {
+    if (StringUtils.isNullOrEmpty(value)) {
       logger.info(
           "Missing or empty combined header: "
               + COMBINED_HEADER
@@ -211,7 +210,7 @@ public class B3Propagator implements HttpTextFormat {
               : NOT_SAMPLED_FLAGS;
 
       return SpanContext.createFromRemoteParent(
-          TraceId.fromLowerBase16(Strings.padStart(traceId, MAX_TRACE_ID_LENGTH, '0'), 0),
+          TraceId.fromLowerBase16(StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH), 0),
           SpanId.fromLowerBase16(spanId, 0),
           traceFlags,
           TraceState.getDefault());
@@ -222,10 +221,10 @@ public class B3Propagator implements HttpTextFormat {
   }
 
   private static boolean isTraceIdValid(String value) {
-    return !(Strings.isNullOrEmpty(value) || value.length() > MAX_TRACE_ID_LENGTH);
+    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_TRACE_ID_LENGTH);
   }
 
   private static boolean isSpanIdValid(String value) {
-    return !(Strings.isNullOrEmpty(value) || value.length() > MAX_SPAN_ID_LENGTH);
+    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_SPAN_ID_LENGTH);
   }
 }

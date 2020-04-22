@@ -18,10 +18,8 @@ package io.opentelemetry.contrib.trace.propagation;
 
 import static java.util.Objects.requireNonNull;
 
-import com.google.common.base.Strings;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -120,7 +118,7 @@ public class JaegerPropagator implements HttpTextFormat {
   @SuppressWarnings("StringSplitter")
   private static <C> SpanContext getSpanContextFromHeader(C carrier, Getter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);
-    if (Strings.isNullOrEmpty(value)) {
+    if (StringUtils.isNullOrEmpty(value)) {
       return SpanContext.getInvalid();
     }
 
@@ -190,8 +188,8 @@ public class JaegerPropagator implements HttpTextFormat {
       TraceFlags traceFlags = ((flagsInt & 1) == 1) ? SAMPLED_FLAGS : NOT_SAMPLED_FLAGS;
 
       return SpanContext.createFromRemoteParent(
-          TraceId.fromLowerBase16(Strings.padStart(traceId, MAX_TRACE_ID_LENGTH, '0'), 0),
-          SpanId.fromLowerBase16(Strings.padStart(spanId, MAX_SPAN_ID_LENGTH, '0'), 0),
+          TraceId.fromLowerBase16(StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH), 0),
+          SpanId.fromLowerBase16(StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH), 0),
           traceFlags,
           TraceState.getDefault());
     } catch (Exception e) {
@@ -204,14 +202,14 @@ public class JaegerPropagator implements HttpTextFormat {
   }
 
   private static boolean isTraceIdValid(String value) {
-    return !(Strings.isNullOrEmpty(value) || value.length() > MAX_TRACE_ID_LENGTH);
+    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_TRACE_ID_LENGTH);
   }
 
   private static boolean isSpanIdValid(String value) {
-    return !(Strings.isNullOrEmpty(value) || value.length() > MAX_SPAN_ID_LENGTH);
+    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_SPAN_ID_LENGTH);
   }
 
   private static boolean isFlagsValid(String value) {
-    return !(Strings.isNullOrEmpty(value) || value.length() > MAX_FLAGS_LENGTH);
+    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_FLAGS_LENGTH);
   }
 }
