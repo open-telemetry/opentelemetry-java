@@ -191,8 +191,27 @@ final class ZipkinSpanExporter implements SpanExporter {
         return String.valueOf(attributeValue.getLongValue());
       case DOUBLE:
         return String.valueOf(attributeValue.getDoubleValue());
+      case STRING_ARRAY:
+        return commaSeparated(attributeValue.getStringArrayValue());
+      case BOOLEAN_ARRAY:
+        return commaSeparated(attributeValue.getBooleanArrayValue());
+      case LONG_ARRAY:
+        return commaSeparated(attributeValue.getLongArrayValue());
+      case DOUBLE_ARRAY:
+        return commaSeparated(attributeValue.getDoubleArrayValue());
     }
     throw new IllegalStateException("Unknown attribute type: " + type);
+  }
+
+  private static String commaSeparated(List<?> values) {
+    StringBuilder builder = new StringBuilder();
+    for (Object value : values) {
+      if (builder.length() != 0) {
+        builder.append(',');
+      }
+      builder.append(value);
+    }
+    return builder.toString();
   }
 
   @Override
@@ -204,8 +223,14 @@ final class ZipkinSpanExporter implements SpanExporter {
     try {
       sender.sendSpans(encodedSpans).execute();
     } catch (IOException e) {
-      return ResultCode.FAILED_NOT_RETRYABLE;
+      return ResultCode.FAILURE;
     }
+    return ResultCode.SUCCESS;
+  }
+
+  @Override
+  public ResultCode flush() {
+    // nothing required here
     return ResultCode.SUCCESS;
   }
 

@@ -140,6 +140,10 @@ public class ZipkinSpanExporterTest {
     attributeMap.put("boolean", AttributeValue.booleanAttributeValue(false));
     attributeMap.put("long", AttributeValue.longAttributeValue(9999L));
     attributeMap.put("double", AttributeValue.doubleAttributeValue(222.333));
+    attributeMap.put("booleanArray", AttributeValue.arrayAttributeValue(true, false));
+    attributeMap.put("stringArray", AttributeValue.arrayAttributeValue("Hello"));
+    attributeMap.put("doubleArray", AttributeValue.arrayAttributeValue(32.33d, -98.3d));
+    attributeMap.put("longArray", AttributeValue.arrayAttributeValue(33L, 999L));
     SpanData data = buildStandardSpan().setAttributes(attributeMap).setKind(Kind.CLIENT).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
@@ -150,6 +154,10 @@ public class ZipkinSpanExporterTest {
                 .putTag("boolean", "false")
                 .putTag("long", "9999")
                 .putTag("double", "222.333")
+                .putTag("booleanArray", "true,false")
+                .putTag("stringArray", "Hello")
+                .putTag("doubleArray", "32.33,-98.3")
+                .putTag("longArray", "33,999")
                 .build());
   }
 
@@ -230,7 +238,7 @@ public class ZipkinSpanExporterTest {
     ResultCode resultCode =
         zipkinSpanExporter.export(Collections.singleton(buildStandardSpan().build()));
 
-    assertThat(resultCode).isEqualTo(ResultCode.FAILED_NOT_RETRYABLE);
+    assertThat(resultCode).isEqualTo(ResultCode.FAILURE);
   }
 
   @Test
