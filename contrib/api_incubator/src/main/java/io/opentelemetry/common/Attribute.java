@@ -16,48 +16,46 @@
 
 package io.opentelemetry.common;
 
-public class Attribute {
-  private final AttributeKey key;
-  private final Object value;
+import com.google.auto.value.AutoValue;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 
-  private Attribute(AttributeKey key, Object value) {
-    this.key = key;
-    this.value = value;
-  }
+@AutoValue
+@Immutable
+public abstract class Attribute {
 
-  public static Attribute create(BooleanValuedKey key, boolean value) {
-    return new Attribute(key, value);
-  }
+  public abstract AttributeKey key();
 
-  public static Attribute create(LongValuedKey key, long value) {
-    return new Attribute(key, value);
-  }
-
-  public static Attribute create(DoubleValuedKey key, double value) {
-    return new Attribute(key, value);
-  }
-
-  public static Attribute create(StringValuedKey key, String value) {
-    return new Attribute(key, value);
-  }
-
-  public AttributeKey key() {
-    return key;
-  }
+  abstract Object value();
 
   public boolean getBooleanValue() {
-    return (boolean) value;
+    return (boolean) value();
   }
 
   public long getLongValue() {
-    return (long) value;
+    return (long) value();
   }
 
   public double getDoubleValue() {
-    return (double) value;
+    return (double) value();
   }
 
   public String getStringValue() {
-    return (String) value;
+    return (String) value();
+  }
+
+  public static Attribute create(BooleanValuedKey key, boolean value) {
+    return new AutoValue_Attribute(key, value);
+  }
+
+  public static Attribute create(LongValuedKey key, long value) {
+    return new AutoValue_Attribute(key, value);
+  }
+
+  public static Attribute create(DoubleValuedKey key, double value) {
+    return new AutoValue_Attribute(key, value);
+  }
+
+  public static Attribute create(StringValuedKey key, String value) {
+    return new AutoValue_Attribute(key, value);
   }
 }

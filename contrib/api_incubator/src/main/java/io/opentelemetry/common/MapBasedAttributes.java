@@ -16,42 +16,42 @@
 
 package io.opentelemetry.common;
 
+import com.google.auto.value.AutoValue;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 
-public class MapBasedAttributes implements Attributes {
+@AutoValue
+@Immutable
+public abstract class MapBasedAttributes implements Attributes {
 
-  private final Map<AttributeKey, Object> data;
-
-  private MapBasedAttributes(Map<AttributeKey, Object> data) {
-    this.data = data;
-  }
+  abstract Map<AttributeKey, Object> getData();
 
   @Override
   public Set<AttributeKey> getKeys() {
-    return data.keySet();
+    return getData().keySet();
   }
 
   @Override
   public boolean getBooleanValue(BooleanValuedKey key) {
-    return (boolean) data.get(key);
+    return (boolean) getData().get(key);
   }
 
   @Override
   public String getStringValue(StringValuedKey key) {
-    return (String) data.get(key);
+    return (String) getData().get(key);
   }
 
   @Override
   public long getLongValue(LongValuedKey key) {
-    return (long) data.get(key);
+    return (long) getData().get(key);
   }
 
   @Override
   public double getDoubleValue(DoubleValuedKey key) {
-    return (double) data.get(key);
+    return (double) getData().get(key);
   }
 
   public static Builder newBuilder() {
@@ -63,7 +63,7 @@ public class MapBasedAttributes implements Attributes {
     private final Map<AttributeKey, Object> data = new ConcurrentHashMap<>();
 
     public Attributes build() {
-      return new MapBasedAttributes(Collections.unmodifiableMap(data));
+      return new AutoValue_MapBasedAttributes(Collections.unmodifiableMap(data));
     }
 
     public Builder put(BooleanValuedKey key, boolean value) {

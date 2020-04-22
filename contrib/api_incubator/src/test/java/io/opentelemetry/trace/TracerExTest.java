@@ -46,6 +46,7 @@ public class TracerExTest {
                 SpanContext.getInvalid(), // option 2 with 2 args
                 Attribute.create(LONG_ATTRIBUTE, 109L),
                 Attribute.create(BOOLEAN_ATTRIBUTE, true))
+            .addLink(LinkEx.create(SpanContext.getInvalid(), testAttributes())) // option 3
             .startSpan();
     try (Scope ignored = testTracer.withSpan(testSpan)) {
       // do some work

@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.common;
+package io.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.common.Attributes;
 import jdk.nashorn.internal.ir.annotations.Immutable;
 
 @AutoValue
 @Immutable
-public abstract class BooleanValuedKey implements AttributeKey {
+public abstract class LinkEx {
 
-  public static BooleanValuedKey create(String key) {
-    return new AutoValue_BooleanValuedKey(key);
-  }
+  public abstract SpanContext getSpanContext();
 
-  @Override
-  public Type getType() {
-    return Type.BOOLEAN;
+  public abstract Attributes getAttributes();
+
+  public static LinkEx create(SpanContext spanContext, Attributes attributes) {
+    return new AutoValue_LinkEx(spanContext, attributes);
   }
 }

@@ -17,8 +17,10 @@
 package io.opentelemetry.common;
 
 import com.google.auto.value.AutoValue;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 
 @AutoValue
+@Immutable
 public abstract class LongValuedKey implements AttributeKey {
   public static LongValuedKey create(String key) {
     return new AutoValue_LongValuedKey(key);

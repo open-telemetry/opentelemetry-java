@@ -108,6 +108,11 @@ public class SpanEx {
       return this;
     }
 
+    // option 3... provide a concrete Link class.
+    public SpanEx.Builder addLink(LinkEx link) {
+      return addLink(link.getSpanContext(), link.getAttributes());
+    }
+
     public SpanEx.Builder setSpanKind(Kind spanKind) {
       builder.setSpanKind(spanKind);
       return this;
