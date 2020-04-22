@@ -1,0 +1,23 @@
+pluginManagement {
+    plugins {
+        id 'com.github.sherter.google-java-format' version "0.8"
+        id "com.jfrog.artifactory" version "4.13.0"
+        id 'com.google.protobuf' version '0.8.8'
+    }
+
+    repositories {
+        gradlePluginPortal()
+        google()
+    }
+}
+
+rootProject.name = "opentelemetry-java-examples"
+include ":opentelemetry-examples-grpc",
+        ":opentelemetry-examples-http",
+        ":opentelemetry-examples-jaeger",
+        ":opentelemetry-examples-sdk-usage"
+
+rootProject.children.each {
+    it.projectDir = "$rootDir/" + it.name
+       .replace("opentelemetry-examples-", "") as File
+}

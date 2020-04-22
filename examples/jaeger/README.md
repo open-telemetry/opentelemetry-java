@@ -12,12 +12,12 @@ to instrument a simple application using Jaeger as trace exporter.
 
 
 ## 1 - Compile 
-```bash
-gradlew fatJar
+```shell script
+../gradlew fatJar
 ```
 ## 2 - Run Jaeger
 
-```bash
+```shell script
 docker run --rm -it --name jaeger\
   -p 16686:16686 \
   -p 14250:14250 \
@@ -26,8 +26,8 @@ docker run --rm -it --name jaeger\
 
 
 ## 3 - Start the Application
-```bash
-java -cp build/libs/opentelemetry-example-jaeger-all-0.2.0.jar io.opentelemetry.example.JaegerExample localhost 14250
+```shell script
+java -cp build/libs/opentelemetry-examples-jaeger-all-0.1.0-SNAPSHOT.jar io.opentelemetry.example.JaegerExample localhost 14250
 ```
 ## 4 - Open the Jaeger UI
 
