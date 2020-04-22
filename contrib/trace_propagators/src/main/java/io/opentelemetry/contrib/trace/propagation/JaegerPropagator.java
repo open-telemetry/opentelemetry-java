@@ -16,8 +16,9 @@
 
 package io.opentelemetry.contrib.trace.propagation;
 
-import static io.opentelemetry.internal.Utils.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
+import com.google.common.base.Strings;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.StringUtils;
@@ -85,8 +86,8 @@ public class JaegerPropagator implements HttpTextFormat {
 
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
-    checkNotNull(context, "context");
-    checkNotNull(setter, "setter");
+    requireNonNull(context, "context");
+    requireNonNull(setter, "setter");
 
     Span span = TracingContextUtils.getSpanWithoutDefault(context);
     if (span == null) {
@@ -108,8 +109,8 @@ public class JaegerPropagator implements HttpTextFormat {
 
   @Override
   public <C> Context extract(Context context, C carrier, Getter<C> getter) {
-    checkNotNull(carrier, "carrier");
-    checkNotNull(getter, "getter");
+    requireNonNull(carrier, "carrier");
+    requireNonNull(getter, "getter");
 
     SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
 
@@ -119,7 +120,7 @@ public class JaegerPropagator implements HttpTextFormat {
   @SuppressWarnings("StringSplitter")
   private static <C> SpanContext getSpanContextFromHeader(C carrier, Getter<C> getter) {
     String value = getter.get(carrier, PROPAGATION_HEADER);
-    if (StringUtils.isNullOrEmpty(value)) {
+    if (Strings.isNullOrEmpty(value)) {
       return SpanContext.getInvalid();
     }
 
@@ -189,8 +190,8 @@ public class JaegerPropagator implements HttpTextFormat {
       TraceFlags traceFlags = ((flagsInt & 1) == 1) ? SAMPLED_FLAGS : NOT_SAMPLED_FLAGS;
 
       return SpanContext.createFromRemoteParent(
-          TraceId.fromLowerBase16(StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH), 0),
-          SpanId.fromLowerBase16(StringUtils.padLeft(spanId, MAX_SPAN_ID_LENGTH), 0),
+          TraceId.fromLowerBase16(Strings.padStart(traceId, MAX_TRACE_ID_LENGTH, '0'), 0),
+          SpanId.fromLowerBase16(Strings.padStart(spanId, MAX_SPAN_ID_LENGTH, '0'), 0),
           traceFlags,
           TraceState.getDefault());
     } catch (Exception e) {
@@ -203,14 +204,14 @@ public class JaegerPropagator implements HttpTextFormat {
   }
 
   private static boolean isTraceIdValid(String value) {
-    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_TRACE_ID_LENGTH);
+    return !(Strings.isNullOrEmpty(value) || value.length() > MAX_TRACE_ID_LENGTH);
   }
 
   private static boolean isSpanIdValid(String value) {
-    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_SPAN_ID_LENGTH);
+    return !(Strings.isNullOrEmpty(value) || value.length() > MAX_SPAN_ID_LENGTH);
   }
 
   private static boolean isFlagsValid(String value) {
-    return !(StringUtils.isNullOrEmpty(value) || value.length() > MAX_FLAGS_LENGTH);
+    return !(Strings.isNullOrEmpty(value) || value.length() > MAX_FLAGS_LENGTH);
   }
 }

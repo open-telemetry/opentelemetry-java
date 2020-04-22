@@ -134,7 +134,8 @@ subprojects {
                 awaitility           : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
                 testcontainers       : 'org.testcontainers:testcontainers:1.13.0',
                 rest_assured         : 'io.rest-assured:rest-assured:4.2.0',
-                jaeger_client        : 'io.jaegertracing:jaeger-client:1.2.0' // Jaeger Client
+                jaeger_client        : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
+                archunit             : 'com.tngtech.archunit:archunit-junit4:0.13.1' //Architectural constraints
         ]
     }
 

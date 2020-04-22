@@ -18,10 +18,10 @@ package io.opentelemetry.contrib.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.base.Strings;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
-import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -48,7 +48,7 @@ public class B3PropagatorTest {
   private static final TraceId TRACE_ID = TraceId.fromLowerBase16(TRACE_ID_BASE16, 0);
   private static final String SHORT_TRACE_ID_BASE16 = "ff00000000000000";
   private static final TraceId SHORT_TRACE_ID =
-      TraceId.fromLowerBase16(StringUtils.padLeft(SHORT_TRACE_ID_BASE16, 32), 0);
+      TraceId.fromLowerBase16(Strings.padStart(SHORT_TRACE_ID_BASE16, 32, '0'), 0);
   private static final String SPAN_ID_BASE16 = "ff00000000000041";
   private static final SpanId SPAN_ID = SpanId.fromLowerBase16(SPAN_ID_BASE16, 0);
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;

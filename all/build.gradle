@@ -36,6 +36,7 @@ for (subproject in rootProject.subprojects) {
 
 dependencies {
     compile subprojects
+    testCompile libraries.archunit
 }
 
 task jacocoMerge(type: JacocoMerge) {
