@@ -62,17 +62,24 @@ public class ZipkinExporterConfigurationTest {
   @Test
   public void senderIsEnough() {
     ZipkinExporterConfiguration.Builder builder =
-        ZipkinExporterConfiguration.builder().setSender(mockSender);
-    builder.build();
+        ZipkinExporterConfiguration.builder().setServiceName("myServiceName").setSender(mockSender);
+    ZipkinExporterConfiguration configuration = builder.build();
+    assertThat(configuration).isNotNull();
+    assertThat(configuration.getSender()).isSameInstanceAs(mockSender);
+    assertThat(configuration.getServiceName()).isEqualTo("myServiceName");
+    assertThat(configuration.getEncoder()).isEqualTo(SpanBytesEncoder.JSON_V2);
   }
 
   @Test
   public void urlIsEnough() {
     ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.create("https://myzipkin.endpoint");
+        ZipkinExporterConfiguration.builder()
+            .setEndpoint("https://myzipkin.endpoint")
+            .setServiceName("myServiceName")
+            .build();
     assertThat(configuration).isNotNull();
     assertThat(configuration.getSender()).isInstanceOf(URLConnectionSender.class);
-    assertThat(configuration.getServiceName()).isEqualTo("unknown");
+    assertThat(configuration.getServiceName()).isEqualTo("myServiceName");
     assertThat(configuration.getEncoder()).isEqualTo(SpanBytesEncoder.JSON_V2);
   }
 }

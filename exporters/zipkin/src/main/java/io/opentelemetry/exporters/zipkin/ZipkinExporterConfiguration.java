@@ -49,32 +49,7 @@ public abstract class ZipkinExporterConfiguration {
    * @since 0.4.0
    */
   public static Builder builder() {
-    return new AutoValue_ZipkinExporterConfiguration.Builder()
-        .setEncoder(SpanBytesEncoder.JSON_V2)
-        .setServiceName("unknown");
-  }
-
-  /**
-   * Builds a HTTP exporter for <a href="https://zipkin.io/zipkin-api/#/">Zipkin V2</a> format.
-   *
-   * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
-   * @param serviceName The serviceName with which to identify Spans. See {@link
-   *     Builder#setServiceName(String)} for details.
-   */
-  public static ZipkinExporterConfiguration create(String endpoint, String serviceName) {
-    return ZipkinExporterConfiguration.builder()
-        .setEndpoint(endpoint)
-        .setServiceName(serviceName)
-        .build();
-  }
-
-  /**
-   * Builds a HTTP exporter for <a href="https://zipkin.io/zipkin-api/#/">Zipkin V2</a> format.
-   *
-   * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
-   */
-  public static ZipkinExporterConfiguration create(String endpoint) {
-    return create(endpoint, "unknown");
+    return new AutoValue_ZipkinExporterConfiguration.Builder().setEncoder(SpanBytesEncoder.JSON_V2);
   }
 
   /**

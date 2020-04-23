@@ -20,7 +20,7 @@ spans will be sent to a Zipkin endpoint running on `localhost`:
 ```java
     ZipkinExporterConfiguration configuration =
         ZipkinExporterConfiguration.builder()
-            .setV2Url("http://localhost/api/v2/spans")
+            .setEndpoint("http://localhost/api/v2/spans")
             .setServiceName("my-service")
             .build();
 
