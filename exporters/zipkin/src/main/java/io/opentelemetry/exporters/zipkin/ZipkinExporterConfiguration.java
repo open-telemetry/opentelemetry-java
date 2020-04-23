@@ -75,9 +75,9 @@ public abstract class ZipkinExporterConfiguration {
      *
      * <p>This property is required to be set.
      *
-     * @since 0.4.0
      * @see io.opentelemetry.sdk.resources.Resource
      * @see io.opentelemetry.sdk.resources.ResourceConstants
+     * @since 0.4.0
      */
     public abstract Builder setServiceName(String serviceName);
 
@@ -97,8 +97,8 @@ public abstract class ZipkinExporterConfiguration {
      * to the {@link SpanBytesEncoder#JSON_V2}.
      *
      * @param encoder the {@code BytesEncoder} to use.
-     * @since 0.4.0
      * @see SpanBytesEncoder
+     * @since 0.4.0
      */
     public abstract Builder setEncoder(BytesEncoder<Span> encoder);
 
@@ -107,8 +107,8 @@ public abstract class ZipkinExporterConfiguration {
      * instance to this builder.
      *
      * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
-     * @since 0.4.0
      * @see URLConnectionSender
+     * @since 0.4.0
      */
     public Builder setEndpoint(String endpoint) {
       setSender(URLConnectionSender.create(endpoint));
