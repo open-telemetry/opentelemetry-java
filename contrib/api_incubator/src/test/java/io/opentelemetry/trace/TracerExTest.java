@@ -16,6 +16,11 @@
 
 package io.opentelemetry.trace;
 
+import static io.opentelemetry.common.AttributeKey.booleanKey;
+import static io.opentelemetry.common.AttributeKey.doubleKey;
+import static io.opentelemetry.common.AttributeKey.longKey;
+import static io.opentelemetry.common.AttributeKey.stringKey;
+
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Attribute;
 import io.opentelemetry.common.AttributeKey.BooleanValuedKey;
@@ -29,13 +34,13 @@ import org.junit.Test;
 
 public class TracerExTest {
 
-  private static final DoubleValuedKey DOUBLE_ATTRIBUTE = DoubleValuedKey.create("number");
-  private static final StringValuedKey STRING_ATTRIBUTE = StringValuedKey.create("string");
-  private static final LongValuedKey LONG_ATTRIBUTE = LongValuedKey.create("long");
-  private static final BooleanValuedKey BOOLEAN_ATTRIBUTE = BooleanValuedKey.create("boolean");
+  private static final DoubleValuedKey DOUBLE_ATTRIBUTE = doubleKey("number");
+  private static final StringValuedKey STRING_ATTRIBUTE = stringKey("string");
+  private static final LongValuedKey LONG_ATTRIBUTE = longKey("long");
+  private static final BooleanValuedKey BOOLEAN_ATTRIBUTE = booleanKey("boolean");
 
   @Test
-  public void testTracerExApi() {
+  public void testTracerExApi_linkOptions() {
     TracerEx testTracer = new TracerEx(OpenTelemetry.getTracerProvider().get("testTracer"));
 
     SpanEx testSpan =

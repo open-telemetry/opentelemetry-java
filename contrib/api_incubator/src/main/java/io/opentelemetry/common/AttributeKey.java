@@ -31,14 +31,25 @@ public interface AttributeKey {
 
   String key();
 
+  static BooleanValuedKey booleanKey(String key) {
+    return new AutoValue_AttributeKey_BooleanValuedKey(key);
+  }
+
+  static LongValuedKey longKey(String key) {
+    return new AutoValue_AttributeKey_LongValuedKey(key);
+  }
+
+  static DoubleValuedKey doubleKey(String key) {
+    return new AutoValue_AttributeKey_DoubleValuedKey(key);
+  }
+
+  static StringValuedKey stringKey(String key) {
+    return new AutoValue_AttributeKey_StringValuedKey(key);
+  }
+
   @AutoValue
   @Immutable
   abstract class BooleanValuedKey implements AttributeKey {
-
-    public static BooleanValuedKey create(String key) {
-      return new AutoValue_AttributeKey_BooleanValuedKey(key);
-    }
-
     @Override
     public Type getType() {
       return Type.BOOLEAN;
@@ -48,10 +59,6 @@ public interface AttributeKey {
   @AutoValue
   @Immutable
   abstract class DoubleValuedKey implements AttributeKey {
-    public static DoubleValuedKey create(String key) {
-      return new AutoValue_AttributeKey_DoubleValuedKey(key);
-    }
-
     @Override
     public Type getType() {
       return Type.DOUBLE;
@@ -61,10 +68,6 @@ public interface AttributeKey {
   @AutoValue
   @Immutable
   abstract class LongValuedKey implements AttributeKey {
-    public static LongValuedKey create(String key) {
-      return new AutoValue_AttributeKey_LongValuedKey(key);
-    }
-
     @Override
     public Type getType() {
       return Type.LONG;
@@ -74,10 +77,6 @@ public interface AttributeKey {
   @AutoValue
   @Immutable
   abstract class StringValuedKey implements AttributeKey {
-    public static StringValuedKey create(String key) {
-      return new AutoValue_AttributeKey_StringValuedKey(key);
-    }
-
     @Override
     public Type getType() {
       return Type.STRING;
