@@ -36,7 +36,8 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-contrib-auto-config",
         ":opentelemetry-sdk-contrib-aws-v1-support",
         ":opentelemetry-sdk-contrib-otproto",
-        ":opentelemetry-sdk-contrib-testbed"
+        ":opentelemetry-sdk-contrib-testbed",
+        ":opentelemetry-sdk-contrib-jaeger-remote-sampler"
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name
