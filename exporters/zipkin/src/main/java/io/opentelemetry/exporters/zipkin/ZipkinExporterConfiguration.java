@@ -42,7 +42,7 @@ public abstract class ZipkinExporterConfiguration {
   abstract BytesEncoder<Span> getEncoder();
 
   /**
-   * Returns a new {@link Builder} to us the {@link SpanBytesEncoder#JSON_V2} encoder.
+   * Returns a new {@link Builder}, defaulted to use the {@link SpanBytesEncoder#JSON_V2} encoder.
    *
    * @return a {@code Builder}.
    * @since 0.4.0
