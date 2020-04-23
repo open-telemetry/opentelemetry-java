@@ -42,8 +42,7 @@ public abstract class ZipkinExporterConfiguration {
   abstract BytesEncoder<Span> getEncoder();
 
   /**
-   * Returns a new {@link Builder} with defaults set to an "unknown" serviceName and using the
-   * {@link SpanBytesEncoder#JSON_V2} encoder.
+   * Returns a new {@link Builder} to us the {@link SpanBytesEncoder#JSON_V2} encoder.
    *
    * @return a {@code Builder}.
    * @since 0.4.0
@@ -69,10 +68,12 @@ public abstract class ZipkinExporterConfiguration {
      * <p>This is a primary label for trace lookup and aggregation, so it should be intuitive and
      * consistent. Many use a name from service discovery.
      *
-     * <p>Note: this value, if set, will be superceded by the value of {@link
+     * <p>Note: this value, will be superceded by the value of {@link
      * io.opentelemetry.sdk.resources.ResourceConstants#SERVICE_NAME} if it has been set in the
      * {@link io.opentelemetry.sdk.resources.Resource} associated with the Tracer that created the
      * spans.
+     *
+     * <p>This property is required to be set.
      *
      * @since 0.4.0
      * @see io.opentelemetry.sdk.resources.Resource
