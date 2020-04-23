@@ -43,19 +43,19 @@ public abstract class Attribute {
     return (String) value();
   }
 
-  public static Attribute create(BooleanValuedKey key, boolean value) {
+  public static Attribute create(AttributeKey.BooleanValuedKey key, boolean value) {
     return new AutoValue_Attribute(key, value);
   }
 
-  public static Attribute create(LongValuedKey key, long value) {
+  public static Attribute create(AttributeKey.LongValuedKey key, long value) {
     return new AutoValue_Attribute(key, value);
   }
 
-  public static Attribute create(DoubleValuedKey key, double value) {
+  public static Attribute create(AttributeKey.DoubleValuedKey key, double value) {
     return new AutoValue_Attribute(key, value);
   }
 
-  public static Attribute create(StringValuedKey key, String value) {
+  public static Attribute create(AttributeKey.StringValuedKey key, String value) {
     return new AutoValue_Attribute(key, value);
   }
 }

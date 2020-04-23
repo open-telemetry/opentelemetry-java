@@ -22,11 +22,11 @@ public interface Attributes {
 
   Set<AttributeKey> getKeys();
 
-  boolean getBooleanValue(BooleanValuedKey key);
+  boolean getBooleanValue(AttributeKey.BooleanValuedKey key);
 
-  String getStringValue(StringValuedKey key);
+  String getStringValue(AttributeKey.StringValuedKey key);
 
-  long getLongValue(LongValuedKey key);
+  long getLongValue(AttributeKey.LongValuedKey key);
 
-  double getDoubleValue(DoubleValuedKey key);
+  double getDoubleValue(AttributeKey.DoubleValuedKey key);
 }

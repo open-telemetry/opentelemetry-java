@@ -35,22 +35,22 @@ public abstract class MapBasedAttributes implements Attributes {
   }
 
   @Override
-  public boolean getBooleanValue(BooleanValuedKey key) {
+  public boolean getBooleanValue(AttributeKey.BooleanValuedKey key) {
     return (boolean) getData().get(key);
   }
 
   @Override
-  public String getStringValue(StringValuedKey key) {
+  public String getStringValue(AttributeKey.StringValuedKey key) {
     return (String) getData().get(key);
   }
 
   @Override
-  public long getLongValue(LongValuedKey key) {
+  public long getLongValue(AttributeKey.LongValuedKey key) {
     return (long) getData().get(key);
   }
 
   @Override
-  public double getDoubleValue(DoubleValuedKey key) {
+  public double getDoubleValue(AttributeKey.DoubleValuedKey key) {
     return (double) getData().get(key);
   }
 
@@ -66,22 +66,22 @@ public abstract class MapBasedAttributes implements Attributes {
       return new AutoValue_MapBasedAttributes(Collections.unmodifiableMap(data));
     }
 
-    public Builder put(BooleanValuedKey key, boolean value) {
+    public Builder put(AttributeKey.BooleanValuedKey key, boolean value) {
       data.put(key, value);
       return this;
     }
 
-    public Builder put(StringValuedKey key, String value) {
+    public Builder put(AttributeKey.StringValuedKey key, String value) {
       data.put(key, value);
       return this;
     }
 
-    public Builder put(LongValuedKey key, long value) {
+    public Builder put(AttributeKey.LongValuedKey key, long value) {
       data.put(key, value);
       return this;
     }
 
-    public Builder put(DoubleValuedKey key, double value) {
+    public Builder put(AttributeKey.DoubleValuedKey key, double value) {
       data.put(key, value);
       return this;
     }

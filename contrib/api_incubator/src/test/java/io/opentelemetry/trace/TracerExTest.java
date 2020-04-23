@@ -18,17 +18,18 @@ package io.opentelemetry.trace;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Attribute;
+import io.opentelemetry.common.AttributeKey.BooleanValuedKey;
+import io.opentelemetry.common.AttributeKey.DoubleValuedKey;
+import io.opentelemetry.common.AttributeKey.LongValuedKey;
+import io.opentelemetry.common.AttributeKey.StringValuedKey;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.BooleanValuedKey;
-import io.opentelemetry.common.LongValuedKey;
 import io.opentelemetry.common.MapBasedAttributes;
-import io.opentelemetry.common.StringValuedKey;
 import io.opentelemetry.context.Scope;
 import org.junit.Test;
 
 public class TracerExTest {
 
-  private static final LongValuedKey NUMBER_ATTRIBUTE = LongValuedKey.create("number");
+  private static final DoubleValuedKey DOUBLE_ATTRIBUTE = DoubleValuedKey.create("number");
   private static final StringValuedKey STRING_ATTRIBUTE = StringValuedKey.create("string");
   private static final LongValuedKey LONG_ATTRIBUTE = LongValuedKey.create("long");
   private static final BooleanValuedKey BOOLEAN_ATTRIBUTE = BooleanValuedKey.create("boolean");
@@ -57,7 +58,7 @@ public class TracerExTest {
 
   private static Attributes testAttributes() {
     return MapBasedAttributes.newBuilder()
-        .put(NUMBER_ATTRIBUTE, 100)
+        .put(DOUBLE_ATTRIBUTE, 100.777635353d)
         .put(STRING_ATTRIBUTE, "hello, world")
         .build();
   }

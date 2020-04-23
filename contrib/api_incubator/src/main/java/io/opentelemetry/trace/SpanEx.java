@@ -23,12 +23,12 @@ import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import io.opentelemetry.common.Attribute;
 import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.AttributeKey.BooleanValuedKey;
+import io.opentelemetry.common.AttributeKey.DoubleValuedKey;
+import io.opentelemetry.common.AttributeKey.LongValuedKey;
+import io.opentelemetry.common.AttributeKey.StringValuedKey;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.BooleanValuedKey;
-import io.opentelemetry.common.DoubleValuedKey;
-import io.opentelemetry.common.LongValuedKey;
-import io.opentelemetry.common.StringValuedKey;
 import io.opentelemetry.trace.Span.Kind;
 import java.util.HashMap;
 import java.util.Map;
