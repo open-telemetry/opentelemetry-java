@@ -42,8 +42,9 @@ public class TracerExTest {
             .spanBuilder("testSpan")
             .addLink(SpanContext.getInvalid(), testAttributes()) // option 1
             .addLink(SpanContext.getInvalid()) // option 2 with no arg
+            // option 2 with 2 args:
             .addLink(
-                SpanContext.getInvalid(), // option 2 with 2 args
+                SpanContext.getInvalid(),
                 Attribute.create(LONG_ATTRIBUTE, 109L),
                 Attribute.create(BOOLEAN_ATTRIBUTE, true))
             .addLink(LinkEx.create(SpanContext.getInvalid(), testAttributes())) // option 3
