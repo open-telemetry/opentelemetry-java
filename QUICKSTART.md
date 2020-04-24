@@ -352,6 +352,7 @@ Span processors are initialized with an exporter which is responsible for sendin
 a particular backend. OpenTelemetry offers four exporters out of the box:
 - In-Memory Exporter: keeps the data in memory, useful for debugging.
 - Jaeger Exporter: prepares and sends the collected telemetry data to a Jaeger backend via gRPC.
+- Zipkin Exporter: prepares and sends the collected telemetry data to a Zipkin backend via the Zipkin APIs.
 - Logging Exporter: saves the telemetry data into log streams.
 - OpenTelemetry Exporter: sends the data to the [OpenTelemetry Collector] (not yet implemented).
 
