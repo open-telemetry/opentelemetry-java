@@ -162,13 +162,13 @@ public class SpanEx {
   private static AttributeValue makeValue(Attributes attributes, AttributeKey key) {
     switch (key.getType()) {
       case BOOLEAN:
-        return booleanAttributeValue(attributes.getBooleanValue((BooleanValuedKey) key));
+        return booleanAttributeValue(attributes.getValue((BooleanValuedKey) key));
       case LONG:
-        return longAttributeValue(attributes.getLongValue((LongValuedKey) key));
+        return longAttributeValue(attributes.getValue((LongValuedKey) key));
       case DOUBLE:
-        return doubleAttributeValue(attributes.getDoubleValue((DoubleValuedKey) key));
+        return doubleAttributeValue(attributes.getValue((DoubleValuedKey) key));
       case STRING:
-        return stringAttributeValue(attributes.getStringValue((StringValuedKey) key));
+        return stringAttributeValue(attributes.getValue((StringValuedKey) key));
     }
     throw new IllegalStateException("Unknown type: " + key.getType());
   }

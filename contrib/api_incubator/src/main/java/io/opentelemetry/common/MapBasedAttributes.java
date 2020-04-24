@@ -23,6 +23,20 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import jdk.nashorn.internal.ir.annotations.Immutable;
 
+/**
+ * Commentary on allocations:
+ *
+ * <p>Per entry, we have:
+ *
+ * <p>1 allocation for the AttributeKey
+ *
+ * <p>1 Map.Entry (this is like 2 extra allocations)
+ *
+ * <p>1 primitive box for the 3 primitive types
+ *
+ * <p>Note: the attributeKey, for a lot of instrumentation, could be stored as a static instance in
+ * the instrumenting class.
+ */
 @AutoValue
 @Immutable
 public abstract class MapBasedAttributes implements Attributes {
@@ -35,22 +49,22 @@ public abstract class MapBasedAttributes implements Attributes {
   }
 
   @Override
-  public boolean getBooleanValue(AttributeKey.BooleanValuedKey key) {
+  public boolean getValue(AttributeKey.BooleanValuedKey key) {
     return (boolean) getData().get(key);
   }
 
   @Override
-  public String getStringValue(AttributeKey.StringValuedKey key) {
+  public String getValue(AttributeKey.StringValuedKey key) {
     return (String) getData().get(key);
   }
 
   @Override
-  public long getLongValue(AttributeKey.LongValuedKey key) {
+  public long getValue(AttributeKey.LongValuedKey key) {
     return (long) getData().get(key);
   }
 
   @Override
-  public double getDoubleValue(AttributeKey.DoubleValuedKey key) {
+  public double getValue(AttributeKey.DoubleValuedKey key) {
     return (double) getData().get(key);
   }
 

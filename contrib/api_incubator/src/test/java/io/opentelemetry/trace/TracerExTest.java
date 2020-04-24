@@ -22,13 +22,13 @@ import static io.opentelemetry.common.AttributeKey.longKey;
 import static io.opentelemetry.common.AttributeKey.stringKey;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.ArrayBasedAttributes;
 import io.opentelemetry.common.Attribute;
 import io.opentelemetry.common.AttributeKey.BooleanValuedKey;
 import io.opentelemetry.common.AttributeKey.DoubleValuedKey;
 import io.opentelemetry.common.AttributeKey.LongValuedKey;
 import io.opentelemetry.common.AttributeKey.StringValuedKey;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.MapBasedAttributes;
 import io.opentelemetry.context.Scope;
 import org.junit.Test;
 
@@ -62,7 +62,7 @@ public class TracerExTest {
   }
 
   private static Attributes testAttributes() {
-    return MapBasedAttributes.newBuilder()
+    return ArrayBasedAttributes.newBuilder()
         .put(DOUBLE_ATTRIBUTE, 100.777635353d)
         .put(STRING_ATTRIBUTE, "hello, world")
         .build();
