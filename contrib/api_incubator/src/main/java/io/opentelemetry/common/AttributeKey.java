@@ -19,6 +19,7 @@ package io.opentelemetry.common;
 import com.google.auto.value.AutoValue;
 import jdk.nashorn.internal.ir.annotations.Immutable;
 
+@SuppressWarnings("StaticOrDefaultInterfaceMethod")
 public interface AttributeKey {
   enum Type {
     BOOLEAN,
