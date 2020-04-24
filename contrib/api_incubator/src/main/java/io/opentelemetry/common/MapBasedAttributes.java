@@ -35,7 +35,7 @@ import jdk.nashorn.internal.ir.annotations.Immutable;
  * <p>1 primitive box for the 3 primitive types
  *
  * <p>Note: the attributeKey, for a lot of instrumentation, could be stored as a static instance in
- * the instrumenting class.
+ * the instrumenting class, which means this allocation can be "free" for the most common usages.
  */
 @AutoValue
 @Immutable
