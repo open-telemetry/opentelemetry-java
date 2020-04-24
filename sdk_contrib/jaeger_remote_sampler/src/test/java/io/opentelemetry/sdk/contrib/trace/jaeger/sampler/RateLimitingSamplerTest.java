@@ -100,13 +100,13 @@ public class RateLimitingSamplerTest {
                 Collections.<String, AttributeValue>emptyMap(),
                 Collections.<Link>emptyList())
             .isSampled());
-    assertEquals(2, decision.attributes().size());
+    assertEquals(2, decision.getAttributes().size());
     assertEquals(
         AttributeValue.doubleAttributeValue(1),
-        decision.attributes().get(RateLimitingSampler.SAMPLER_PARAM));
+        decision.getAttributes().get(RateLimitingSampler.SAMPLER_PARAM));
     assertEquals(
         AttributeValue.stringAttributeValue(RateLimitingSampler.TYPE),
-        decision.attributes().get(RateLimitingSampler.SAMPLER_TYPE));
+        decision.getAttributes().get(RateLimitingSampler.SAMPLER_TYPE));
   }
 
   @Test

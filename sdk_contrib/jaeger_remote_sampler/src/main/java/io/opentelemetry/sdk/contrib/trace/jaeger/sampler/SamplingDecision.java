@@ -36,7 +36,7 @@ class SamplingDecision implements Decision {
   }
 
   @Override
-  public Map<String, AttributeValue> attributes() {
+  public Map<String, AttributeValue> getAttributes() {
     return attributes;
   }
 }
