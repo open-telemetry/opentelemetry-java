@@ -256,6 +256,40 @@ public class AdapterTest {
     assertNotNull(Adapter.toJaeger(span));
   }
 
+  @Test
+  public void testSpanError() {
+    ImmutableMap<String, AttributeValue> attributes =
+        ImmutableMap.of(
+            "error.type",
+            AttributeValue.stringAttributeValue(this.getClass().getName()),
+            "error.message",
+            AttributeValue.stringAttributeValue("server error"));
+    long startMs = System.currentTimeMillis();
+    long endMs = startMs + 900;
+    SpanData span =
+        SpanData.newBuilder()
+            .setHasEnded(true)
+            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
+            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setName("GET /api/endpoint")
+            .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
+            .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
+            .setKind(Span.Kind.SERVER)
+            .setStatus(Status.UNKNOWN)
+            .setAttributes(attributes)
+            .setTotalRecordedEvents(0)
+            .setTotalRecordedLinks(0)
+            .build();
+
+    Model.Span jaegerSpan = Adapter.toJaeger(span);
+    Model.KeyValue errorType = getValue(jaegerSpan.getTagsList(), "error.type");
+    assertNotNull(errorType);
+    assertEquals(this.getClass().getName(), errorType.getVStr());
+    Model.KeyValue error = getValue(jaegerSpan.getTagsList(), "error");
+    assertNotNull(error);
+    assertEquals(true, error.getVBool());
+  }
+
   private static TimedEvent getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
