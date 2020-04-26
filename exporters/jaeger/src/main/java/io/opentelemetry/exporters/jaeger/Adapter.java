@@ -37,6 +37,7 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Adapts OpenTelemetry objects to Jaeger objects. */
 @ThreadSafe
 final class Adapter {
+  static final String KEY_ERROR = "error";
   static final String KEY_LOG_MESSAGE = "message";
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
@@ -110,6 +111,10 @@ final class Adapter {
             .setVInt64(span.getStatus().getCanonicalCode().value())
             .setVType(Model.ValueType.INT64)
             .build());
+
+    if (!span.getStatus().isOk()) {
+      target.addTags(toKeyValue(KEY_ERROR, AttributeValue.booleanAttributeValue(true)));
+    }
 
     return target.build();
   }
