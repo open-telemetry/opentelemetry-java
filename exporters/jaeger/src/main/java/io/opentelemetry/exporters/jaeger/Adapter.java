@@ -112,7 +112,7 @@ final class Adapter {
             .setVType(Model.ValueType.INT64)
             .build());
 
-    if (!span.getStatus().isOk() && !span.getAttributes().containsKey(KEY_ERROR)) {
+    if (!span.getStatus().isOk()) {
       target.addTags(toKeyValue(KEY_ERROR, AttributeValue.booleanAttributeValue(true)));
     }
 
