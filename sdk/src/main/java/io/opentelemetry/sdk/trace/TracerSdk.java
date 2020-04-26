@@ -24,7 +24,7 @@ import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracingContextUtils;
 
 /** {@link TracerSdk} is SDK implementation of {@link Tracer}. */
-public final class TracerSdk implements Tracer {
+final class TracerSdk implements Tracer {
   private final TracerSharedState sharedState;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
 
