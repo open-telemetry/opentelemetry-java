@@ -17,6 +17,7 @@
 package io.opentelemetry.common;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.trace.SpanContext;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +37,18 @@ import jdk.nashorn.internal.ir.annotations.Immutable;
  *
  * <p>Note: the attributeKey, for a lot of instrumentation, could be stored as a static instance in
  * the instrumenting class, which means this allocation can be "free" for the most common usages.
+ *
+ * <p>For completeness, the existing Map&lt;String, AttributeValue&gt; interface for attributes (
+ * {@link io.opentelemetry.trace.Span.Builder#addLink(SpanContext, Map)} ) will have the following
+ * allocation characteristics:
+ *
+ * <p>Per entry, we have:
+ *
+ * <p>1 allocation for the String (which can be allocated statically in instrumentation, as above)
+ *
+ * <p>1 Map.Entry (this is like 2 extra allocations)
+ *
+ * <p>1 allocation for the AttributeValue wrapper.
  */
 @AutoValue
 @Immutable

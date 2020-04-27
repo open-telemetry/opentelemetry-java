@@ -39,6 +39,9 @@ import jdk.nashorn.internal.ir.annotations.Immutable;
  *
  * <p>Note: the attributeKey, for a lot of instrumentation, could be stored as a static instance in
  * the instrumenting class, which means this allocation can be "free" for the most common usages.
+ *
+ * <p>See the documentation on the {@link MapBasedAttributes} class to compare with the existing
+ * implementation in the API.
  */
 @AutoValue
 @Immutable
