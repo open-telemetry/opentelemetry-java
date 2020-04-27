@@ -18,30 +18,29 @@ package io.opentelemetry.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
-import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.TracingContextUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OperationsPerInvocation;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
 public class HttpTraceContextExtractBenchmark {
 
   private static final String TRACEPARENT = "traceparent";
+  private static final int COUNT = 5;
   private static final List<String> traceparentsHeaders =
       Arrays.asList(
           "00-905734c59b913b4a905734c59b913b4a-9909983295041501-01",
@@ -50,7 +49,6 @@ public class HttpTraceContextExtractBenchmark {
           "00-905734c59b913b4a905734c59b913b4a-776ff807b787538a-00",
           "00-68ec932c33b3f2ee68ec932c33b3f2ee-68ec932c33b3f2ee-00");
   private final HttpTraceContext httpTraceContext = new HttpTraceContext();
-  private final Map<String, String> carrier = new HashMap<>();
   private final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {
         @Override
@@ -58,12 +56,8 @@ public class HttpTraceContextExtractBenchmark {
           return carrier.get(key);
         }
       };
-  private Integer iteration = 0;
-
-  @Setup
-  public void setup() {
-    carrier.put(TRACEPARENT, traceparentsHeaders.get(0));
-  }
+  private static final List<Map<String, String>> carriers =
+      getCarrierForHeader(traceparentsHeaders);
 
   @Benchmark
   @BenchmarkMode({Mode.AverageTime})
@@ -71,14 +65,23 @@ public class HttpTraceContextExtractBenchmark {
   @Measurement(iterations = 15, time = 1)
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
-  public Span measureExtract() {
-    return TracingContextUtils.getSpan(
-        httpTraceContext.extract(Context.current(), carrier, getter));
+  @OperationsPerInvocation(COUNT)
+  @Nullable
+  public Context measureExtract() {
+    Context result = null;
+    for (int i = 0; i < COUNT; i++) {
+      result = httpTraceContext.extract(Context.ROOT, carriers.get(i), getter);
+    }
+    return result;
   }
 
-  @TearDown(Level.Iteration)
-  public void tearDown() {
-    this.carrier.put(
-        TRACEPARENT, traceparentsHeaders.get(++iteration % traceparentsHeaders.size()));
+  private static List<Map<String, String>> getCarrierForHeader(List<String> headers) {
+    List<Map<String, String>> carriers = new ArrayList<>();
+    for (String header : headers) {
+      Map<String, String> carrier = new HashMap<>();
+      carrier.put(TRACEPARENT, header);
+      carriers.add(carrier);
+    }
+    return carriers;
   }
 }
