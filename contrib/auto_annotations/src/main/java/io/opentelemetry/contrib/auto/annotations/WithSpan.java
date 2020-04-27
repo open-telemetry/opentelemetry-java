@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  *
  * <p>If you are a library developer, then probably you should NOT use this annotation, because it
  * is non-functional without the OpenTelemetry auto-instrumentation agent, or some other annotation
- * processor.  
+ * processor.
  *
  * @see <a href="https://github.com/open-telemetry/opentelemetry-auto-instr-java">OpenTelemetry
  *     Auto-Instrumentation</a>
@@ -41,8 +41,8 @@ public @interface WithSpan {
   /**
    * Optional name of the created span.
    *
-   * <p>If not specified, an appropriate default name should be created by auto-instrumentation. E.g.
-   * {@code "className"."method"}
+   * <p>If not specified, an appropriate default name should be created by auto-instrumentation.
+   * E.g. {@code "className"."method"}
    */
   String value();
 }
