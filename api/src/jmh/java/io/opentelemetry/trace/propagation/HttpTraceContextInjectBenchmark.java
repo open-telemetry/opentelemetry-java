@@ -25,6 +25,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -61,13 +62,7 @@ public class HttpTraceContextInjectBenchmark {
           carrier.put(key, value);
         }
       };
-  private final List<Context> contexts =
-      Arrays.asList(
-          TracingContextUtils.withSpan(DefaultSpan.create(spanContexts.get(0)), Context.ROOT),
-          TracingContextUtils.withSpan(DefaultSpan.create(spanContexts.get(1)), Context.ROOT),
-          TracingContextUtils.withSpan(DefaultSpan.create(spanContexts.get(2)), Context.ROOT),
-          TracingContextUtils.withSpan(DefaultSpan.create(spanContexts.get(3)), Context.ROOT),
-          TracingContextUtils.withSpan(DefaultSpan.create(spanContexts.get(4)), Context.ROOT));
+  private final List<Context> contexts = createContexts(spanContexts);
 
   /** Benchmark for measuring inject with default trace state and sampled trace options. */
   @Benchmark
@@ -93,5 +88,13 @@ public class HttpTraceContextInjectBenchmark {
         SpanId.fromLowerBase16(spanId, 0),
         sampledTraceOptions,
         traceStateDefault);
+  }
+
+  private static List<Context> createContexts(List<SpanContext> spanContexts) {
+    List<Context> contexts = new ArrayList<>();
+    for (SpanContext context : spanContexts) {
+      contexts.add(TracingContextUtils.withSpan(DefaultSpan.create(context), Context.ROOT));
+    }
+    return contexts;
   }
 }
