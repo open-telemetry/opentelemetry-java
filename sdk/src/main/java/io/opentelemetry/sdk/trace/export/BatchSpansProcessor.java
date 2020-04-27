@@ -633,9 +633,9 @@ public final class BatchSpansProcessor implements SpanProcessor {
        *
        * <p>Default value is {@code true}.
        *
-       * @see BatchSpansProcessor.Config#DEFAULT_EXPORT_ONLY_SAMPLED
        * @param sampled report only sampled spans.
        * @return this.
+       * @see BatchSpansProcessor.Config#DEFAULT_EXPORT_ONLY_SAMPLED
        */
       public abstract Builder setExportOnlySampled(boolean sampled);
 
@@ -645,9 +645,9 @@ public final class BatchSpansProcessor implements SpanProcessor {
        *
        * <p>Default value is {@code 5000}ms.
        *
-       * @see BatchSpansProcessor.Config#DEFAULT_SCHEDULE_DELAY_MILLIS
        * @param scheduleDelayMillis the delay interval between two consecutive exports.
        * @return this.
+       * @see BatchSpansProcessor.Config#DEFAULT_SCHEDULE_DELAY_MILLIS
        */
       public abstract Builder setScheduleDelayMillis(long scheduleDelayMillis);
 
@@ -656,9 +656,9 @@ public final class BatchSpansProcessor implements SpanProcessor {
        *
        * <p>Default value is {@code 30000}ms
        *
-       * @see BatchSpansProcessor.Config#DEFAULT_EXPORT_TIMEOUT_MILLIS
        * @param exporterTimeoutMillis the timeout for exports in milliseconds.
        * @return this
+       * @see BatchSpansProcessor.Config#DEFAULT_EXPORT_TIMEOUT_MILLIS
        */
       public abstract Builder setExporterTimeoutMillis(int exporterTimeoutMillis);
 
@@ -670,10 +670,10 @@ public final class BatchSpansProcessor implements SpanProcessor {
        *
        * <p>Default value is {@code 2048}.
        *
-       * @see BatchSpansProcessor.Config#DEFAULT_MAX_QUEUE_SIZE
        * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
        *     dropping.
        * @return this.
+       * @see BatchSpansProcessor.Config#DEFAULT_MAX_QUEUE_SIZE
        */
       public abstract Builder setMaxQueueSize(int maxQueueSize);
 
@@ -683,9 +683,9 @@ public final class BatchSpansProcessor implements SpanProcessor {
        *
        * <p>Default value is {@code 512}.
        *
-       * @see BatchSpansProcessor.Config#DEFAULT_MAX_EXPORT_BATCH_SIZE
        * @param maxExportBatchSize the maximum batch size for every export.
        * @return this.
+       * @see BatchSpansProcessor.Config#DEFAULT_MAX_EXPORT_BATCH_SIZE
        */
       public abstract Builder setMaxExportBatchSize(int maxExportBatchSize);
 
