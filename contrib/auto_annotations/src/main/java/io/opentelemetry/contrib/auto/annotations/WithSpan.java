@@ -41,7 +41,7 @@ public @interface WithSpan {
   /**
    * Optional name of the created span.
    *
-   * <p>If not specified, an appropriate default name will be created by auto-instrumentation. E.g.
+   * <p>If not specified, an appropriate default name should be created by auto-instrumentation. E.g.
    * {@code "className"."method"}
    */
   String value();
