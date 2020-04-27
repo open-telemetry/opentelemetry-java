@@ -59,6 +59,7 @@ public class HttpTraceContextExtractBenchmark {
   private static final List<Map<String, String>> carriers =
       getCarrierForHeader(traceparentsHeaders);
 
+  /** Benchmark for measuring HttpTraceContext extract. */
   @Benchmark
   @BenchmarkMode({Mode.AverageTime})
   @Fork(1)
