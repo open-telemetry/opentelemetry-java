@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.contrib.annotations;
+package io.opentelemetry.contrib.auto.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -27,6 +27,10 @@ import java.lang.annotation.Target;
  *
  * <p>Application developers can use this annotation to signal OpenTelemetry auto-instrumentation
  * that a new span should be created whenever marked method is executed.
+ *
+ * <p>If you are a library developer, then probably you should NOT use this annotation. Because it
+ * is useless without OpenTelemetry auto-instrumentation agent. And you cannot guarantee that users
+ * of your library will use it in their production system.
  *
  * @see <a href="https://github.com/open-telemetry/opentelemetry-auto-instr-java">OpenTelemetry
  *     Auto-Instrumentation</a>

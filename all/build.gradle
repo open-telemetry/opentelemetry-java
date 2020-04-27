@@ -11,6 +11,7 @@ def subprojects = [
         project(':opentelemetry-contrib-runtime-metrics'),
         project(':opentelemetry-contrib-trace-propagators'),
         project(':opentelemetry-contrib-trace-utils'),
+        project(':opentelemetry-contrib-annotations'),
         project(':opentelemetry-exporters-logging'),
         project(':opentelemetry-exporters-inmemory'),
         project(':opentelemetry-exporters-jaeger'),
