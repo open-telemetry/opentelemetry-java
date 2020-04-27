@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.trace.spi;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -30,6 +30,6 @@ public class TraceProviderSdkTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(TracerSdkProvider.class);
+    assertThat(OpenTelemetry.getTracerProvider().get("")).isInstanceOf(TracerSdk.class);
   }
 }
