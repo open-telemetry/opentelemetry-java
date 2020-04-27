@@ -65,7 +65,7 @@ public class SimpleSpansProcessorTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    simpleSampledSpansProcessor = SimpleSpansProcessor.newBuilder(spanExporter).build();
+    simpleSampledSpansProcessor = SimpleSpansProcessor.create(spanExporter);
   }
 
   @Test
@@ -96,8 +96,7 @@ public class SimpleSpansProcessorTest {
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
-    SimpleSpansProcessor simpleSpansProcessor =
-        SimpleSpansProcessor.newBuilder(spanExporter).reportOnlySampled(true).build();
+    SimpleSpansProcessor simpleSpansProcessor = SimpleSpansProcessor.create(spanExporter);
     simpleSpansProcessor.onEnd(readableSpan);
     verifyZeroInteractions(spanExporter);
   }
@@ -108,8 +107,7 @@ public class SimpleSpansProcessorTest {
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
-    SimpleSpansProcessor simpleSpansProcessor =
-        SimpleSpansProcessor.newBuilder(spanExporter).reportOnlySampled(true).build();
+    SimpleSpansProcessor simpleSpansProcessor = SimpleSpansProcessor.create(spanExporter);
     simpleSpansProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(TestUtils.makeBasicSpan()));
   }

@@ -73,6 +73,7 @@ public final class IntervalMetricReader {
    *
    * @since 0.3.0
    */
+  // TODO: config
   public static final class Builder {
     private final InternalState.Builder optionsBuilder;
 

@@ -87,7 +87,7 @@ public class JaegerIntegrationTest {
             .setDeadlineMs(30000)
             .build();
     OpenTelemetrySdk.getTracerProvider()
-        .addSpanProcessor(SimpleSpansProcessor.newBuilder(jaegerExporter).build());
+        .addSpanProcessor(SimpleSpansProcessor.create(jaegerExporter));
   }
 
   private void imitateWork() {

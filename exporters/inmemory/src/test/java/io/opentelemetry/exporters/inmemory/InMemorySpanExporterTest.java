@@ -39,7 +39,7 @@ public class InMemorySpanExporterTest {
 
   @Before
   public void setup() {
-    tracerSdkProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    tracerSdkProvider.addSpanProcessor(SimpleSpansProcessor.create(exporter));
   }
 
   @Test
