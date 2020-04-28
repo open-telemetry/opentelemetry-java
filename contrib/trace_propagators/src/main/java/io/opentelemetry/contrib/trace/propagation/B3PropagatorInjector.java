@@ -27,7 +27,7 @@ import io.opentelemetry.trace.TracingContextUtils;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-class B3PropagatorInjector {
+final class B3PropagatorInjector {
   private static final int SAMPLED_FLAG_SIZE = 1;
   private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
   private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
@@ -39,11 +39,11 @@ class B3PropagatorInjector {
 
   private final boolean singleHeader;
 
-  public B3PropagatorInjector(boolean singleHeader) {
+  B3PropagatorInjector(boolean singleHeader) {
     this.singleHeader = singleHeader;
   }
 
-  public <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter) {
+  <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter) {
     Utils.checkNotNull(context, "context");
     Utils.checkNotNull(setter, "setter");
 

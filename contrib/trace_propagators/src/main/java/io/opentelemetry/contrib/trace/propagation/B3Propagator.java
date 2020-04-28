@@ -19,7 +19,6 @@ package io.opentelemetry.contrib.trace.propagation;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,8 +40,6 @@ public class B3Propagator implements HttpTextFormat {
   static final String COMBINED_HEADER_DELIMITER = "-";
   static final int MAX_TRACE_ID_LENGTH = 2 * TraceId.getSize();
   static final int MAX_SPAN_ID_LENGTH = 2 * SpanId.getSize();
-  static final TraceFlags SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(true).build();
-  static final TraceFlags NOT_SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(false).build();
 
   static final char COMBINED_HEADER_DELIMITER_CHAR = '-';
   static final char IS_SAMPLED = '1';

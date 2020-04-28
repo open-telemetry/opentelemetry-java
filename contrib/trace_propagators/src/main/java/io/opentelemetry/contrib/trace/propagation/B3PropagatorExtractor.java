@@ -20,8 +20,6 @@ import static io.opentelemetry.contrib.trace.propagation.B3Propagator.COMBINED_H
 import static io.opentelemetry.contrib.trace.propagation.B3Propagator.COMBINED_HEADER_DELIMITER;
 import static io.opentelemetry.contrib.trace.propagation.B3Propagator.MAX_SPAN_ID_LENGTH;
 import static io.opentelemetry.contrib.trace.propagation.B3Propagator.MAX_TRACE_ID_LENGTH;
-import static io.opentelemetry.contrib.trace.propagation.B3Propagator.NOT_SAMPLED_FLAGS;
-import static io.opentelemetry.contrib.trace.propagation.B3Propagator.SAMPLED_FLAGS;
 import static io.opentelemetry.contrib.trace.propagation.B3Propagator.SAMPLED_HEADER;
 import static io.opentelemetry.contrib.trace.propagation.B3Propagator.SPAN_ID_HEADER;
 import static io.opentelemetry.contrib.trace.propagation.B3Propagator.TRACE_ID_HEADER;
@@ -43,16 +41,19 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-class B3PropagatorExtractor {
+final class B3PropagatorExtractor {
+  private static final TraceFlags SAMPLED_FLAGS = TraceFlags.builder().setIsSampled(true).build();
+  private static final TraceFlags NOT_SAMPLED_FLAGS =
+      TraceFlags.builder().setIsSampled(false).build();
   private static final Logger logger = Logger.getLogger(B3PropagatorExtractor.class.getName());
 
   private final boolean isSingleHeader;
 
-  public B3PropagatorExtractor(boolean isSingleHeader) {
+  B3PropagatorExtractor(boolean isSingleHeader) {
     this.isSingleHeader = isSingleHeader;
   }
 
-  public <C> Context extract(Context context, C carrier, HttpTextFormat.Getter<C> getter) {
+  <C> Context extract(Context context, C carrier, HttpTextFormat.Getter<C> getter) {
     Utils.checkNotNull(carrier, "carrier");
     Utils.checkNotNull(getter, "getter");
 
