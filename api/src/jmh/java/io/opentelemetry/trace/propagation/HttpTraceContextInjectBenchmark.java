@@ -25,6 +25,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -33,13 +34,12 @@ import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OperationsPerInvocation;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
@@ -52,6 +52,7 @@ public class HttpTraceContextInjectBenchmark {
           createTestSpanContext("2e7d0ad2390617702e7d0ad239061770", "d49582a2de984b86"),
           createTestSpanContext("905734c59b913b4a905734c59b913b4a", "776ff807b787538a"),
           createTestSpanContext("68ec932c33b3f2ee68ec932c33b3f2ee", "68ec932c33b3f2ee"));
+  private static final int COUNT = 5; // spanContexts.size()
   private final HttpTraceContext httpTraceContext = new HttpTraceContext();
   private final Map<String, String> carrier = new HashMap<>();
   private final Setter<Map<String, String>> setter =
@@ -61,8 +62,7 @@ public class HttpTraceContextInjectBenchmark {
           carrier.put(key, value);
         }
       };
-  private Integer iteration = 0;
-  private SpanContext contextToTest = spanContexts.get(iteration);
+  private final List<Context> contexts = createContexts(spanContexts);
 
   /** Benchmark for measuring inject with default trace state and sampled trace options. */
   @Benchmark
@@ -71,16 +71,12 @@ public class HttpTraceContextInjectBenchmark {
   @Measurement(iterations = 15, time = 1)
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
+  @OperationsPerInvocation(COUNT)
   public Map<String, String> measureInject() {
-    Context context =
-        TracingContextUtils.withSpan(DefaultSpan.create(contextToTest), Context.current());
-    httpTraceContext.inject(context, carrier, setter);
+    for (int i = 0; i < COUNT; i++) {
+      httpTraceContext.inject(contexts.get(i), carrier, setter);
+    }
     return carrier;
-  }
-
-  @TearDown(Level.Iteration)
-  public void tearDown() {
-    this.contextToTest = spanContexts.get(++iteration % spanContexts.size());
   }
 
   private static SpanContext createTestSpanContext(String traceId, String spanId) {
@@ -92,5 +88,13 @@ public class HttpTraceContextInjectBenchmark {
         SpanId.fromLowerBase16(spanId, 0),
         sampledTraceOptions,
         traceStateDefault);
+  }
+
+  private static List<Context> createContexts(List<SpanContext> spanContexts) {
+    List<Context> contexts = new ArrayList<>();
+    for (SpanContext context : spanContexts) {
+      contexts.add(TracingContextUtils.withSpan(DefaultSpan.create(context), Context.ROOT));
+    }
+    return contexts;
   }
 }
