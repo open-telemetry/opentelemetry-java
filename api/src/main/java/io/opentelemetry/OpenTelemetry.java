@@ -190,7 +190,12 @@ public final class OpenTelemetry {
     instance = null;
   }
 
-  /** @see Obfuscated */
+  /**
+   * A {@link TracerProvider} wrapper that forces users to access the SDK specific implementation
+   * via the SDK, instead of via the API and casting it to the SDK specific implementation.
+   *
+   * @see Obfuscated
+   */
   @ThreadSafe
   private static class ObfuscatedTracerProvider implements TracerProvider, Obfuscated {
 
