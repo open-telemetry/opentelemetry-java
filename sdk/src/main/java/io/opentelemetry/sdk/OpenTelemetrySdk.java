@@ -41,7 +41,7 @@ public final class OpenTelemetrySdk {
    * @since 0.1.0
    */
   public static TracerSdkProvider getTracerProvider() {
-    return (TracerSdkProvider) ((Obfuscated) OpenTelemetry.getTracerProvider()).unobfuscate();
+    return (TracerSdkProvider) ((Obfuscated<?>) OpenTelemetry.getTracerProvider()).unobfuscate();
   }
 
   /**

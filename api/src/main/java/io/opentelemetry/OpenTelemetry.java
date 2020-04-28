@@ -197,7 +197,8 @@ public final class OpenTelemetry {
    * @see Obfuscated
    */
   @ThreadSafe
-  private static class ObfuscatedTracerProvider implements TracerProvider, Obfuscated {
+  private static class ObfuscatedTracerProvider
+      implements TracerProvider, Obfuscated<TracerProvider> {
 
     private final TracerProvider delegate;
 

@@ -32,7 +32,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.4.0
  */
 @ThreadSafe
-public interface Obfuscated {
+public interface Obfuscated<T> {
 
   /**
    * Returns the unobfuscated provider.
@@ -40,5 +40,5 @@ public interface Obfuscated {
    * @return the unobfuscated provider.
    * @since 0.4.0
    */
-  Object unobfuscate();
+  T unobfuscate();
 }
