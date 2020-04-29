@@ -44,5 +44,5 @@ public @interface WithSpan {
    * <p>If not specified, an appropriate default name should be created by auto-instrumentation.
    * E.g. {@code "className"."method"}
    */
-  String value();
+  String value() default "";
 }
