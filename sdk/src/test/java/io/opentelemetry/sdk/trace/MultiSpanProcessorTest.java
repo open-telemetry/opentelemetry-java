@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.trace.export.MultiSpanProcessor;
 import java.util.Arrays;
 import java.util.Collections;
 import org.junit.Before;

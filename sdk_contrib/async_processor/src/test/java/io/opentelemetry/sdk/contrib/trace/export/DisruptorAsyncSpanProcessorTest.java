@@ -18,9 +18,9 @@ package io.opentelemetry.sdk.contrib.trace.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.export.MultiSpanProcessor;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;

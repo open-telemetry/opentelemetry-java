@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.export.MultiSpanProcessor;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.concurrent.GuardedBy;
