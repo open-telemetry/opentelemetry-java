@@ -16,7 +16,7 @@
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.internal.Utils;
+import java.util.Objects;
 import java.util.Random;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -109,7 +109,7 @@ public final class TraceId implements Comparable<TraceId> {
    * @since 0.1.0
    */
   public static TraceId fromBytes(byte[] src, int srcOffset) {
-    Utils.checkNotNull(src, "src");
+    Objects.requireNonNull(src, "src");
     return new TraceId(
         BigendianEncoding.longFromByteArray(src, srcOffset),
         BigendianEncoding.longFromByteArray(src, srcOffset + BigendianEncoding.LONG_BYTES));
@@ -144,7 +144,7 @@ public final class TraceId implements Comparable<TraceId> {
    * @since 0.1.0
    */
   public static TraceId fromLowerBase16(CharSequence src, int srcOffset) {
-    Utils.checkNotNull(src, "src");
+    Objects.requireNonNull(src, "src");
     return new TraceId(
         BigendianEncoding.longFromBase16String(src, srcOffset),
         BigendianEncoding.longFromBase16String(src, srcOffset + BigendianEncoding.LONG_BASE16));

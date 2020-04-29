@@ -19,6 +19,7 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -49,42 +50,42 @@ public final class DefaultMeter implements Meter {
 
   @Override
   public DoubleCounter.Builder doubleCounterBuilder(String name) {
-    Utils.checkNotNull(name, "name");
+    Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleCounter.NoopBuilder();
   }
 
   @Override
   public LongCounter.Builder longCounterBuilder(String name) {
-    Utils.checkNotNull(name, "name");
+    Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongCounter.NoopBuilder();
   }
 
   @Override
   public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
-    Utils.checkNotNull(name, "name");
+    Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleMeasure.NoopBuilder();
   }
 
   @Override
   public LongMeasure.Builder longMeasureBuilder(String name) {
-    Utils.checkNotNull(name, "name");
+    Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongMeasure.NoopBuilder();
   }
 
   @Override
   public DoubleObserver.Builder doubleObserverBuilder(String name) {
-    Utils.checkNotNull(name, "name");
+    Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopDoubleObserver.NoopBuilder();
   }
 
   @Override
   public LongObserver.Builder longObserverBuilder(String name) {
-    Utils.checkNotNull(name, "name");
+    Objects.requireNonNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
     return new NoopLongObserver.NoopBuilder();
   }
@@ -295,7 +296,7 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void setCallback(Callback<ResultDoubleObserver> metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
+      Objects.requireNonNull(metricUpdater, "metricUpdater");
     }
 
     private static final class NoopBuilder extends NoopAbstractObserverBuilder<NoopBuilder>
@@ -320,7 +321,7 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void setCallback(Callback<ResultLongObserver> metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
+      Objects.requireNonNull(metricUpdater, "metricUpdater");
     }
 
     private static final class NoopBuilder extends NoopAbstractObserverBuilder<NoopBuilder>
@@ -344,25 +345,25 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public BatchRecorder put(LongMeasure measure, long value) {
-      Utils.checkNotNull(measure, "measure");
+      Objects.requireNonNull(measure, "measure");
       return this;
     }
 
     @Override
     public BatchRecorder put(DoubleMeasure measure, double value) {
-      Utils.checkNotNull(measure, "measure");
+      Objects.requireNonNull(measure, "measure");
       return this;
     }
 
     @Override
     public BatchRecorder put(LongCounter counter, long value) {
-      Utils.checkNotNull(counter, "counter");
+      Objects.requireNonNull(counter, "counter");
       return this;
     }
 
     @Override
     public BatchRecorder put(DoubleCounter counter, double value) {
-      Utils.checkNotNull(counter, "counter");
+      Objects.requireNonNull(counter, "counter");
       return this;
     }
 
@@ -395,20 +396,21 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public B setDescription(String description) {
-      Utils.checkNotNull(description, "description");
+      Objects.requireNonNull(description, "description");
       return getThis();
     }
 
     @Override
     public B setUnit(String unit) {
-      Utils.checkNotNull(unit, "unit");
+      Objects.requireNonNull(unit, "unit");
       return getThis();
     }
 
     @Override
     public B setConstantLabels(Map<String, String> constantLabels) {
-      Utils.checkMapKeysNotNull(
-          Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+      Map<String, String> result;
+      Objects.requireNonNull(constantLabels, "constantLabels");
+      Utils.checkMapKeysNotNull(result, "constantLabel");
       return getThis();
     }
 

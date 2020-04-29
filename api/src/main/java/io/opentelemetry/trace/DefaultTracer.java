@@ -20,6 +20,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -81,14 +82,14 @@ public final class DefaultTracer implements Tracer {
 
     @Override
     public NoopSpanBuilder setParent(Span parent) {
-      Utils.checkNotNull(parent, "parent");
+      Objects.requireNonNull(parent, "parent");
       spanContext = parent.getContext();
       return this;
     }
 
     @Override
     public NoopSpanBuilder setParent(SpanContext remoteParent) {
-      Utils.checkNotNull(remoteParent, "remoteParent");
+      Objects.requireNonNull(remoteParent, "remoteParent");
       spanContext = remoteParent;
       return this;
     }
@@ -117,32 +118,32 @@ public final class DefaultTracer implements Tracer {
 
     @Override
     public NoopSpanBuilder setAttribute(String key, String value) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, long value) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, double value) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, boolean value) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       return this;
     }
 
     @Override
     public NoopSpanBuilder setAttribute(String key, AttributeValue value) {
-      Utils.checkNotNull(key, "key");
-      Utils.checkNotNull(value, "value");
+      Objects.requireNonNull(key, "key");
+      Objects.requireNonNull(value, "value");
       return this;
     }
 
@@ -158,7 +159,7 @@ public final class DefaultTracer implements Tracer {
     }
 
     private NoopSpanBuilder(String name) {
-      Utils.checkNotNull(name, "name");
+      Objects.requireNonNull(name, "name");
     }
   }
 }

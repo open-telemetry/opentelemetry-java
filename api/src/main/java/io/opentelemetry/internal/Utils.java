@@ -17,6 +17,7 @@
 package io.opentelemetry.internal;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 /** General internal utility methods. */
@@ -98,23 +99,6 @@ public final class Utils {
   }
 
   /**
-   * Throws a {@link NullPointerException} if the argument is null. This method is similar to {@code
-   * Preconditions.checkNotNull(Object, Object)} from Guava.
-   *
-   * @param arg the argument to check for null.
-   * @param errorMessage the message to use for the exception. Will be converted to a string using
-   *     {@link String#valueOf(Object)}.
-   * @param <T> type of an argument to check.
-   * @return the argument, if it passes the null check.
-   */
-  public static <T> T checkNotNull(T arg, @javax.annotation.Nullable Object errorMessage) {
-    if (arg == null) {
-      throw new NullPointerException(String.valueOf(errorMessage));
-    }
-    return arg;
-  }
-
-  /**
    * Throws a {@link NullPointerException} if any of the map elements is null.
    *
    * @param map the argument map to check for null.
@@ -128,19 +112,6 @@ public final class Utils {
         throw new NullPointerException(String.valueOf(errorMessage));
       }
     }
-  }
-
-  /**
-   * Compares two Objects for equality. This functionality is provided by {@code
-   * Objects.equal(Object, Object)} in Java 7.
-   *
-   * @param x object to compare with.
-   * @param y object to compare to.
-   * @return {@code true} if x is the same as the y; {@code false} otherwise.
-   */
-  public static boolean equalsObjects(
-      @javax.annotation.Nullable Object x, @javax.annotation.Nullable Object y) {
-    return x == null ? y == null : x.equals(y);
   }
 
   /**
@@ -206,7 +177,7 @@ public final class Utils {
         "You must provide an even number of key/value pair arguments.");
     for (int i = 0; i < keyValuePairs.length; i += 2) {
       String key = keyValuePairs[i];
-      checkNotNull(key, "You cannot provide null keys for label creation.");
+      Objects.requireNonNull(key, "You cannot provide null keys for label creation.");
     }
   }
 }

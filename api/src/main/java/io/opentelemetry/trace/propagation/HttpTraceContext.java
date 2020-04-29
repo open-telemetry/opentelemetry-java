@@ -17,7 +17,6 @@
 package io.opentelemetry.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkArgument;
-import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
@@ -32,6 +31,7 @@ import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.annotation.concurrent.Immutable;
@@ -77,8 +77,8 @@ public class HttpTraceContext implements HttpTextFormat {
 
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
-    checkNotNull(context, "context");
-    checkNotNull(setter, "setter");
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(setter, "setter");
 
     Span span = TracingContextUtils.getSpanWithoutDefault(context);
     if (span == null) {
@@ -120,9 +120,9 @@ public class HttpTraceContext implements HttpTextFormat {
   @Override
   public <C /*>>> extends @NonNull Object*/> Context extract(
       Context context, C carrier, Getter<C> getter) {
-    checkNotNull(context, "context");
-    checkNotNull(carrier, "carrier");
-    checkNotNull(getter, "getter");
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(carrier, "carrier");
+    Objects.requireNonNull(getter, "getter");
 
     SpanContext spanContext = extractImpl(carrier, getter);
     return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);

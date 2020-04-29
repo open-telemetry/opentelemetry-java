@@ -22,7 +22,6 @@ import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManagerProvider;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DefaultMetricsProvider;
 import io.opentelemetry.metrics.Meter;
@@ -34,6 +33,7 @@ import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
 import io.opentelemetry.trace.spi.TraceProvider;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -123,7 +123,7 @@ public final class OpenTelemetry {
    * @since 0.3.0
    */
   public static void setPropagators(ContextPropagators propagators) {
-    Utils.checkNotNull(propagators, "propagators");
+    Objects.requireNonNull(propagators, "propagators");
     getInstance().propagators = propagators;
   }
 

@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
+import java.util.Objects;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -68,7 +69,7 @@ public final class UtilsTest {
 
   @Test
   public void checkState() {
-    Utils.checkNotNull(true, TEST_MESSAGE);
+    Objects.requireNonNull(true, TEST_MESSAGE);
     thrown.expect(IllegalStateException.class);
     thrown.expectMessage(TEST_MESSAGE);
     Utils.checkState(false, TEST_MESSAGE);
@@ -83,17 +84,17 @@ public final class UtilsTest {
 
   @Test
   public void checkNotNull() {
-    Utils.checkNotNull(new Object(), TEST_MESSAGE);
+    Objects.requireNonNull(new Object(), TEST_MESSAGE);
     thrown.expect(NullPointerException.class);
     thrown.expectMessage(TEST_MESSAGE);
-    Utils.checkNotNull(null, TEST_MESSAGE);
+    Objects.requireNonNull(null, TEST_MESSAGE);
   }
 
   @Test
   public void checkNotNull_NullErrorMessage() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("null");
-    Utils.checkNotNull(null, null);
+    Objects.requireNonNull(null, null);
   }
 
   @Test
@@ -131,14 +132,14 @@ public final class UtilsTest {
 
   @Test
   public void equalsObjects_Equal() {
-    assertTrue(Utils.equalsObjects(null, null));
-    assertTrue(Utils.equalsObjects(new Date(1L), new Date(1L)));
+    assertTrue(Objects.equals(null, null));
+    assertTrue(Objects.equals(new Date(1L), new Date(1L)));
   }
 
   @Test
   public void equalsObjects_Unequal() {
-    assertFalse(Utils.equalsObjects(null, new Object()));
-    assertFalse(Utils.equalsObjects(new Object(), null));
-    assertFalse(Utils.equalsObjects(new Object(), new Object()));
+    assertFalse(Objects.equals(null, new Object()));
+    assertFalse(Objects.equals(new Object(), null));
+    assertFalse(Objects.equals(new Object(), new Object()));
   }
 }

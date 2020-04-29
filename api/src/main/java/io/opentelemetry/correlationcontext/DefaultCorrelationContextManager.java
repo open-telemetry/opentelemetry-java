@@ -17,7 +17,7 @@
 package io.opentelemetry.correlationcontext;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.internal.Utils;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -61,7 +61,7 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
   private static final class NoopCorrelationContextBuilder implements CorrelationContext.Builder {
     @Override
     public CorrelationContext.Builder setParent(CorrelationContext parent) {
-      Utils.checkNotNull(parent, "parent");
+      Objects.requireNonNull(parent, "parent");
       return this;
     }
 
@@ -73,15 +73,15 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
     @Override
     public CorrelationContext.Builder put(
         EntryKey key, EntryValue value, EntryMetadata entryMetadata) {
-      Utils.checkNotNull(key, "key");
-      Utils.checkNotNull(value, "value");
-      Utils.checkNotNull(entryMetadata, "entryMetadata");
+      Objects.requireNonNull(key, "key");
+      Objects.requireNonNull(value, "value");
+      Objects.requireNonNull(entryMetadata, "entryMetadata");
       return this;
     }
 
     @Override
     public CorrelationContext.Builder remove(EntryKey key) {
-      Utils.checkNotNull(key, "key");
+      Objects.requireNonNull(key, "key");
       return this;
     }
 

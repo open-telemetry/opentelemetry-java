@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import javax.annotation.concurrent.Immutable;
 
@@ -74,28 +75,28 @@ public final class DefaultSpan implements Span {
 
   @Override
   public void setAttribute(String key, String value) {
-    Utils.checkNotNull(key, "key");
+    Objects.requireNonNull(key, "key");
   }
 
   @Override
   public void setAttribute(String key, long value) {
-    Utils.checkNotNull(key, "key");
+    Objects.requireNonNull(key, "key");
   }
 
   @Override
   public void setAttribute(String key, double value) {
-    Utils.checkNotNull(key, "key");
+    Objects.requireNonNull(key, "key");
   }
 
   @Override
   public void setAttribute(String key, boolean value) {
-    Utils.checkNotNull(key, "key");
+    Objects.requireNonNull(key, "key");
   }
 
   @Override
   public void setAttribute(String key, AttributeValue value) {
-    Utils.checkNotNull(key, "key");
-    Utils.checkNotNull(value, "value");
+    Objects.requireNonNull(key, "key");
+    Objects.requireNonNull(value, "value");
   }
 
   @Override
@@ -103,42 +104,42 @@ public final class DefaultSpan implements Span {
 
   @Override
   public void addEvent(String name, long timestamp) {
-    Utils.checkNotNull(name, "name");
+    Objects.requireNonNull(name, "name");
     Utils.checkArgument(timestamp >= 0, "Negative timestamp");
   }
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes) {
-    Utils.checkNotNull(name, "name");
-    Utils.checkNotNull(attributes, "attributes");
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(attributes, "attributes");
   }
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
-    Utils.checkNotNull(name, "name");
-    Utils.checkNotNull(attributes, "attributes");
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(attributes, "attributes");
     Utils.checkArgument(timestamp >= 0, "Negative timestamp");
   }
 
   @Override
   public void addEvent(Event event) {
-    Utils.checkNotNull(event, "event");
+    Objects.requireNonNull(event, "event");
   }
 
   @Override
   public void addEvent(Event event, long timestamp) {
-    Utils.checkNotNull(event, "event");
+    Objects.requireNonNull(event, "event");
     Utils.checkArgument(timestamp >= 0, "Negative timestamp");
   }
 
   @Override
   public void setStatus(Status status) {
-    Utils.checkNotNull(status, "status");
+    Objects.requireNonNull(status, "status");
   }
 
   @Override
   public void updateName(String name) {
-    Utils.checkNotNull(name, "name");
+    Objects.requireNonNull(name, "name");
   }
 
   @Override
@@ -146,7 +147,7 @@ public final class DefaultSpan implements Span {
 
   @Override
   public void end(EndSpanOptions endOptions) {
-    Utils.checkNotNull(endOptions, "endOptions");
+    Objects.requireNonNull(endOptions, "endOptions");
   }
 
   @Override

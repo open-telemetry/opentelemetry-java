@@ -16,8 +16,6 @@
 
 package io.opentelemetry.contrib.trace.propagation;
 
-import static io.opentelemetry.internal.Utils.checkNotNull;
-
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.StringUtils;
@@ -33,6 +31,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -85,8 +84,8 @@ public class JaegerPropagator implements HttpTextFormat {
 
   @Override
   public <C> void inject(Context context, C carrier, Setter<C> setter) {
-    checkNotNull(context, "context");
-    checkNotNull(setter, "setter");
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(setter, "setter");
 
     Span span = TracingContextUtils.getSpanWithoutDefault(context);
     if (span == null) {
@@ -108,8 +107,8 @@ public class JaegerPropagator implements HttpTextFormat {
 
   @Override
   public <C> Context extract(Context context, C carrier, Getter<C> getter) {
-    checkNotNull(carrier, "carrier");
-    checkNotNull(getter, "getter");
+    Objects.requireNonNull(carrier, "carrier");
+    Objects.requireNonNull(getter, "getter");
 
     SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
 
