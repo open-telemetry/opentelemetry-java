@@ -16,7 +16,7 @@
 
 package io.opentelemetry;
 
-import io.opentelemetry.context.GlobalPropagators;
+import io.opentelemetry.context.GlobalContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
@@ -43,13 +43,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
- * <p>At the time of lazy-loading the singletons, {@link GlobalPropagators} will be set to a
+ * <p>At the time of lazy-loading the singletons, {@link GlobalContextPropagators} will be set to a
  * propagator object containing {@link HttpTraceContext}.
  *
  * @see TracerProvider
  * @see MetricsProvider
  * @see CorrelationContextManagerProvider
- * @see GlobalPropagators
+ * @see GlobalContextPropagators
  */
 @ThreadSafe
 public final class OpenTelemetry {
@@ -129,7 +129,7 @@ public final class OpenTelemetry {
             ? contextManagerProvider.create()
             : DefaultCorrelationContextManagerProvider.getInstance().create();
 
-    GlobalPropagators.set(
+    GlobalContextPropagators.set(
         DefaultContextPropagators.builder().addHttpTextFormat(new HttpTraceContext()).build());
   }
 

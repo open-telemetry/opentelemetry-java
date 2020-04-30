@@ -29,41 +29,41 @@ import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link GlobalContextPropagators}. */
 @RunWith(JUnit4.class)
-public final class GlobalPropagatorsTest {
+public final class GlobalContextPropagatorsTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @After
   public void tearDown() {
-    GlobalPropagators.reset();
+    GlobalContextPropagators.reset();
   }
 
   @Test
   public void testDefault() {
-    assertThat(GlobalPropagators.get()).isInstanceOf(DefaultContextPropagators.class);
-    assertThat(GlobalPropagators.get()).isSameInstanceAs(GlobalPropagators.get());
+    assertThat(GlobalContextPropagators.get()).isInstanceOf(DefaultContextPropagators.class);
+    assertThat(GlobalContextPropagators.get()).isSameInstanceAs(GlobalContextPropagators.get());
   }
 
   @Test
   public void testSet() {
     ContextPropagators props = DefaultContextPropagators.builder().build();
-    GlobalPropagators.set(props);
-    assertThat(GlobalPropagators.get()).isSameInstanceAs(props);
+    GlobalContextPropagators.set(props);
+    assertThat(GlobalContextPropagators.get()).isSameInstanceAs(props);
   }
 
   @Test
   public void testSetMultiple() {
     ContextPropagators props = DefaultContextPropagators.builder().build();
-    GlobalPropagators.set(props);
-    assertThat(GlobalPropagators.get()).isSameInstanceAs(props);
+    GlobalContextPropagators.set(props);
+    assertThat(GlobalContextPropagators.get()).isSameInstanceAs(props);
 
     ContextPropagators props2 = DefaultContextPropagators.builder().build();
-    GlobalPropagators.set(props2);
-    assertThat(GlobalPropagators.get()).isSameInstanceAs(props2);
+    GlobalContextPropagators.set(props2);
+    assertThat(GlobalContextPropagators.get()).isSameInstanceAs(props2);
   }
 
   @Test
   public void testSetNull() {
     thrown.expect(NullPointerException.class);
-    GlobalPropagators.set(null);
+    GlobalContextPropagators.set(null);
   }
 }

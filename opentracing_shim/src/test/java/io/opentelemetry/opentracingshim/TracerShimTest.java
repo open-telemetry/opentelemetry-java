@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.context.GlobalPropagators;
+import io.opentelemetry.context.GlobalContextPropagators;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -45,7 +45,7 @@ public class TracerShimTest {
             new TelemetryInfo(
                 OpenTelemetry.getTracerProvider().get("opentracingshim"),
                 OpenTelemetry.getCorrelationContextManager(),
-                GlobalPropagators.get()));
+                GlobalContextPropagators.get()));
   }
 
   @Test

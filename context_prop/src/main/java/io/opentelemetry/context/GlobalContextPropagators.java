@@ -24,13 +24,13 @@ import io.opentelemetry.context.propagation.DefaultContextPropagators;
  *
  * <p>The default value is a no-op instance.
  */
-public final class GlobalPropagators {
+public final class GlobalContextPropagators {
   private static final ContextPropagators DEFAULT_INSTANCE =
       DefaultContextPropagators.builder().build();
 
   private static volatile ContextPropagators propagators = DEFAULT_INSTANCE;
 
-  private GlobalPropagators() {}
+  private GlobalContextPropagators() {}
 
   static void reset() {
     propagators = DEFAULT_INSTANCE;
