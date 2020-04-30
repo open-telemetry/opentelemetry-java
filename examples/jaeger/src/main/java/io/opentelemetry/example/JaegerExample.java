@@ -16,7 +16,7 @@ public class JaegerExample {
 
   // OTel API
   private Tracer tracer =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.JaegerExample");
+      OpenTelemetry.getTracer("io.opentelemetry.example.JaegerExample");
   // Export traces to Jaeger
   private JaegerGrpcSpanExporter jaegerExporter;
 

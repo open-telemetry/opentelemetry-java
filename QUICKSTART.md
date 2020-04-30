@@ -40,7 +40,7 @@ monitored. More information is available in the specification chapter [Obtaining
 
 ```java
 Tracer tracer =
-    OpenTelemetry.getTracerProvider().get("instrumentation-library-name","semver:1.0.0");
+    OpenTelemetry.getTracer("instrumentation-library-name","semver:1.0.0");
 ```
 
 ### Create basic Span
@@ -255,7 +255,7 @@ The following is an example of metric usage:
 
 ```java
 // Gets or creates a named meter instance
-Meter meter = OpenTelemetry.getMeterProvider().get("instrumentation-library-name","semver:1.0.0");
+Meter meter = OpenTelemetry.getMeter("instrumentation-library-name","semver:1.0.0");
 
 // Build counter e.g. LongCounter 
 LongCounter counter = meter
