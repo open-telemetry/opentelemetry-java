@@ -43,8 +43,8 @@
  *   <li>{@code otel.ssp.export.sampled}: sets whether only sampled spans should be exported.
  * </ul>
  *
- * <p>For Environment Variable, {@link io.opentelemetry.sdk.trace.export.SimpleSpansProcessor.Config}
- * will look for the following names:
+ * <p>For Environment Variable, {@link
+ * io.opentelemetry.sdk.trace.export.SimpleSpansProcessor.Config} will look for the following names:
  *
  * <ul>
  *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.

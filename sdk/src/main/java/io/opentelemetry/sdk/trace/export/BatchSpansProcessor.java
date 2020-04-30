@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace.export;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Maps;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
@@ -439,7 +438,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
        */
       @Override
       public Builder readProperties(Properties properties) {
-        return fromConfigMap(Maps.fromProperties(properties), Builder.NamingConvention.DOT);
+        return super.readProperties(properties);
       }
 
       /**
@@ -460,7 +459,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
        */
       @Override
       public Builder readEnvironment() {
-        return fromConfigMap(System.getenv(), Builder.NamingConvention.ENV_VAR);
+        return super.readEnvironment();
       }
 
       /**
@@ -481,7 +480,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
        */
       @Override
       public Builder readSystemProperties() {
-        return readProperties(System.getProperties());
+        return super.readSystemProperties();
       }
 
       /**

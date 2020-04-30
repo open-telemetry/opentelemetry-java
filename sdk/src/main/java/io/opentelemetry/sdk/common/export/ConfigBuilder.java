@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.common.export;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Maps;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,11 +63,17 @@ public abstract class ConfigBuilder<T> {
   protected abstract T fromConfigMap(
       Map<String, String> configMap, NamingConvention namingConvention);
 
-  public abstract T readProperties(Properties properties);
+  public T readProperties(Properties properties) {
+    return fromConfigMap(Maps.fromProperties(properties), NamingConvention.DOT);
+  }
 
-  public abstract T readEnvironment();
+  public T readEnvironment() {
+    return fromConfigMap(System.getenv(), NamingConvention.ENV_VAR);
+  }
 
-  public abstract T readSystemProperties();
+  public T readSystemProperties() {
+    return readProperties(System.getProperties());
+  }
 
   /**
    * Get a boolean property from the map, {@code null} if it cannot be found or it has a wrong type.
@@ -107,8 +114,8 @@ public abstract class ConfigBuilder<T> {
    *
    * @param name The property name
    * @param map The map where to look for the property
-   * @return the {@link Long} value of the property, {@code null} in case of error or if the property
-   *     cannot be found.
+   * @return the {@link Long} value of the property, {@code null} in case of error or if the
+   *     property cannot be found.
    */
   @Nullable
   protected static Long getLongProperty(String name, Map<String, String> map) {
