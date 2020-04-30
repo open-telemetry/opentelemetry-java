@@ -74,6 +74,32 @@ public final class OpenTelemetry {
   }
 
   /**
+   * Gets or creates a named tracer instance.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   * @return a tracer instance.
+   * @since 0.4.0
+   */
+  public static Tracer getTracer(String instrumentationName) {
+    return getTracerProvider().get(instrumentationName);
+  }
+
+  /**
+   * Gets or creates a named and versioned tracer instance.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   * @param instrumentationVersion The version of the instrumentation library (e.g.,
+   *     "semver:1.0.0").
+   * @return a tracer instance.
+   * @since 0.4.0
+   */
+  public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
+    return getTracerProvider().get(instrumentationName, instrumentationVersion);
+  }
+
+  /**
    * Returns a singleton {@link MeterProvider}.
    *
    * @return registered MeterProvider or default via {@link DefaultMeterProvider#getInstance()}.
@@ -83,6 +109,31 @@ public final class OpenTelemetry {
    */
   public static MeterProvider getMeterProvider() {
     return getInstance().meterProvider;
+  }
+
+  /**
+   * Gets or creates a named meter instance.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a tracer instance.
+   * @since 0.4.0
+   */
+  public static Meter getMeter(String instrumentationName) {
+    return getMeterProvider().get(instrumentationName);
+  }
+
+  /**
+   * Gets or creates a named and versioned meter instance.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @param instrumentationVersion The version of the instrumentation library.
+   * @return a tracer instance.
+   * @since 0.4.0
+   */
+  public static Meter getMeter(String instrumentationName, String instrumentationVersion) {
+    return getMeterProvider().get(instrumentationName, instrumentationVersion);
   }
 
   /**

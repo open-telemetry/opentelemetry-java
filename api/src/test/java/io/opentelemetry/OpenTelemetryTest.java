@@ -118,7 +118,7 @@ public class OpenTelemetryTest {
   public void testTracerNotFound() {
     System.setProperty(TraceProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getTracerProvider().get("testTracer");
+    OpenTelemetry.getTracer("testTracer");
   }
 
   @Test

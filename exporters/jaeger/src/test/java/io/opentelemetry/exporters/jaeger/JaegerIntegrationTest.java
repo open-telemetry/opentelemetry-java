@@ -49,8 +49,7 @@ public class JaegerIntegrationTest {
   private static final String JAEGER_VERSION = "1.17";
   private static final String SERVICE_NAME = "E2E-test";
   private static final String JAEGER_URL = "http://localhost";
-  private final Tracer tracer =
-      OpenTelemetry.getTracerProvider().get(getClass().getCanonicalName());
+  private final Tracer tracer = OpenTelemetry.getTracer(getClass().getCanonicalName());
 
   @SuppressWarnings("rawtypes")
   @ClassRule
