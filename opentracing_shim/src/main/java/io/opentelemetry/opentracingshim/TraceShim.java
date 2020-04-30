@@ -17,6 +17,7 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.context.GlobalPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
@@ -37,7 +38,7 @@ public final class TraceShim {
         new TelemetryInfo(
             getTracer(OpenTelemetry.getTracerProvider()),
             OpenTelemetry.getCorrelationContextManager(),
-            OpenTelemetry.getPropagators()));
+            GlobalPropagators.get()));
   }
 
   /**
@@ -55,7 +56,7 @@ public final class TraceShim {
         new TelemetryInfo(
             getTracer(Objects.requireNonNull(tracerProvider, "tracerProvider")),
             Objects.requireNonNull(contextManager, "contextManager"),
-            OpenTelemetry.getPropagators()));
+            GlobalPropagators.get()));
   }
 
   private static Tracer getTracer(TracerProvider tracerProvider) {

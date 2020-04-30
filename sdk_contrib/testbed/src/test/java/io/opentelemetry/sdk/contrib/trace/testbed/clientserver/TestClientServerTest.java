@@ -21,6 +21,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -46,6 +47,9 @@ public class TestClientServerTest {
 
   @Before
   public void before() {
+    // Force OpenTelemetry set up of the default Propagators.
+    OpenTelemetry.getTracerProvider();
+
     server = new Server(queue, tracer);
     server.start();
   }

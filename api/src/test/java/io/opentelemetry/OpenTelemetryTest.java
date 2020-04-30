@@ -20,8 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
@@ -85,8 +83,6 @@ public class OpenTelemetryTest {
         .isInstanceOf(DefaultCorrelationContextManager.class);
     assertThat(OpenTelemetry.getCorrelationContextManager())
         .isSameInstanceAs(OpenTelemetry.getCorrelationContextManager());
-    assertThat(OpenTelemetry.getPropagators()).isInstanceOf(DefaultContextPropagators.class);
-    assertThat(OpenTelemetry.getPropagators()).isSameInstanceAs(OpenTelemetry.getPropagators());
   }
 
   @Test
@@ -201,19 +197,6 @@ public class OpenTelemetryTest {
     System.setProperty(CorrelationContextManagerProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
     OpenTelemetry.getCorrelationContextManager();
-  }
-
-  @Test
-  public void testPropagatorsSet() {
-    ContextPropagators propagators = DefaultContextPropagators.builder().build();
-    OpenTelemetry.setPropagators(propagators);
-    assertThat(OpenTelemetry.getPropagators()).isEqualTo(propagators);
-  }
-
-  @Test
-  public void testPropagatorsSetNull() {
-    thrown.expect(NullPointerException.class);
-    OpenTelemetry.setPropagators(null);
   }
 
   private static File createService(Class<?> service, Class<?>... impls) throws IOException {

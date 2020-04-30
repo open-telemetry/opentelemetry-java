@@ -16,13 +16,12 @@
 
 package io.opentelemetry;
 
-import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.GlobalPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManagerProvider;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DefaultMetricsProvider;
 import io.opentelemetry.metrics.Meter;
@@ -44,9 +43,13 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
+ * <p>At the time of lazy-loading the singletons, {@link GlobalPropagators} will be set to a
+ * propagator object containing {@link HttpTraceContext}.
+ *
  * @see TracerProvider
  * @see MetricsProvider
  * @see CorrelationContextManagerProvider
+ * @see GlobalPropagators
  */
 @ThreadSafe
 public final class OpenTelemetry {
@@ -57,9 +60,6 @@ public final class OpenTelemetry {
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
   private final CorrelationContextManager contextManager;
-
-  private volatile ContextPropagators propagators =
-      DefaultContextPropagators.builder().addHttpTextFormat(new HttpTraceContext()).build();
 
   /**
    * Returns a singleton {@link TracerProvider}.
@@ -98,35 +98,6 @@ public final class OpenTelemetry {
     return getInstance().contextManager;
   }
 
-  /**
-   * Returns a {@link ContextPropagators} object, which can be used to access the set of registered
-   * propagators for each supported format.
-   *
-   * @return registered propagators container, defaulting to a {@link ContextPropagators} object
-   *     with {@link HttpTraceContext} registered.
-   * @throws IllegalStateException if a specified manager (via system properties) could not be
-   *     found.
-   * @since 0.3.0
-   */
-  public static ContextPropagators getPropagators() {
-    return getInstance().propagators;
-  }
-
-  /**
-   * Sets the {@link ContextPropagators} object, which can be used to access the set of registered
-   * propagators for each supported format.
-   *
-   * @param propagators the {@link ContextPropagators} object to be registered.
-   * @throws IllegalStateException if a specified manager (via system properties) could not be
-   *     found.
-   * @throws NullPointerException if {@code propagators} is {@code null}.
-   * @since 0.3.0
-   */
-  public static void setPropagators(ContextPropagators propagators) {
-    Utils.checkNotNull(propagators, "propagators");
-    getInstance().propagators = propagators;
-  }
-
   /** Lazy loads an instance. */
   private static OpenTelemetry getInstance() {
     if (instance == null) {
@@ -157,6 +128,9 @@ public final class OpenTelemetry {
         contextManagerProvider != null
             ? contextManagerProvider.create()
             : DefaultCorrelationContextManagerProvider.getInstance().create();
+
+    GlobalPropagators.set(
+        DefaultContextPropagators.builder().addHttpTextFormat(new HttpTraceContext()).build());
   }
 
   /**
