@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public abstract class ConfigBuilder<T> {
    *
    * @param name The property name
    * @param map The map where to look for the property
-   * @return the {@link Boolean} value of the property {@code null} in case of error or if the
+   * @return the {@link Boolean} value of the property, {@code null} in case of error or if the
    *     property cannot be found.
    */
   @Nullable
@@ -90,7 +90,7 @@ public abstract class ConfigBuilder<T> {
    *
    * @param name The property name
    * @param map The map where to look for the property
-   * @return the {@link Integer} value of the property {@code null} in case of error or if the
+   * @return the {@link Integer} value of the property, {@code null} in case of error or if the
    *     property cannot be found.
    */
   @Nullable
@@ -107,7 +107,7 @@ public abstract class ConfigBuilder<T> {
    *
    * @param name The property name
    * @param map The map where to look for the property
-   * @return the {@link Long} value of the property {@code null} in case of error or if the property
+   * @return the {@link Long} value of the property, {@code null} in case of error or if the property
    *     cannot be found.
    */
   @Nullable

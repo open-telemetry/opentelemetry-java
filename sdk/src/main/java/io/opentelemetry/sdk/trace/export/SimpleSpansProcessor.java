@@ -32,7 +32,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jdk.nashorn.internal.ir.annotations.Immutable;
 
-// TODO: Config
 /**
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
  * SpanData} and passes it to the configured exporter.
@@ -50,21 +49,21 @@ public final class SimpleSpansProcessor implements SpanProcessor {
   }
 
   /**
-   * Creates a {@code BatchSpansProcessor} instance using the default configuration.
+   * Creates a {@code SimpleSpansProcessor} instance using the default configuration.
    *
    * @param spanExporter The {@link SpanExporter} to use
-   * @return a {@code BatchSpansProcessor} instance.
+   * @return a {@code SimpleSpansProcessor} instance.
    */
   public static SimpleSpansProcessor create(SpanExporter spanExporter) {
     return create(spanExporter, Config.getDefault());
   }
 
   /**
-   * Creates a {@code BatchSpansProcessor} instance.
+   * Creates a {@code SimpleSpansProcessor} instance.
    *
    * @param spanExporter The {@link SpanExporter} to use
-   * @param config The {@link BatchSpansProcessor.Config} to use
-   * @return a {@code BatchSpansProcessor} instance.
+   * @param config The {@link SimpleSpansProcessor.Config} to use
+   * @return a {@code SimpleSpansProcessor} instance.
    */
   public static SimpleSpansProcessor create(SpanExporter spanExporter, Config config) {
     return new SimpleSpansProcessor(spanExporter, config.isExportOnlySampled());
@@ -140,7 +139,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
     }
 
     /**
-     * Returns a new {@link BatchSpansProcessor.Config.Builder} with default options.
+     * Returns a new {@link SimpleSpansProcessor.Config.Builder} with default options.
      *
      * @return a new {@code Builder} with default options.
      * @since 0.4.0
@@ -159,12 +158,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
        * This method looks for the following keys:
        *
        * <ul>
-       *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
-       *       exports.
-       *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
-       *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
-       *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
-       *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be
+       *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be
        *       exported.
        * </ul>
        *
@@ -188,12 +182,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
        * This method looks for the following keys:
        *
        * <ul>
-       *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
-       *       exports.
-       *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
-       *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
-       *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
-       *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be
+       *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be
        *       exported.
        * </ul>
        *
@@ -210,12 +199,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
        * method looks for the following keys:
        *
        * <ul>
-       *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: to set the delay interval between two consecutive
-       *       exports.
-       *   <li>{@code OTEL_BSP_MAX_QUEUE}: to set the maximum queue size.
-       *   <li>{@code OTEL_BSP_MAX_EXPORT_BATCH}: to set the maximum batch size.
-       *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT}: to set the maximum allowed time to export data.
-       *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: to set whether only sampled spans should be
+       *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: to set whether only sampled spans should be
        *       exported.
        * </ul>
        *
@@ -231,12 +215,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
        * method looks for the following keys:
        *
        * <ul>
-       *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
-       *       exports.
-       *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
-       *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
-       *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
-       *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be
+       *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be
        *       reported.
        * </ul>
        *
