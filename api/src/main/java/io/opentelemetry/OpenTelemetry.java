@@ -75,6 +75,8 @@ public final class OpenTelemetry {
 
   /**
    * Gets or creates a named tracer instance.
+   * <p/>
+   * This is a shortcut method for <code>getTracerProvider().get(instrumentationName)</code>.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
@@ -87,6 +89,9 @@ public final class OpenTelemetry {
 
   /**
    * Gets or creates a named and versioned tracer instance.
+   * <p/>
+   * This is a shortcut method for
+   * <code>getTracerProvider().get(instrumentationName, instrumentationVersion)</code>.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
@@ -113,6 +118,8 @@ public final class OpenTelemetry {
 
   /**
    * Gets or creates a named meter instance.
+   * <p/>
+   * This is a shortcut method for <code>getMeterProvider().get(instrumentationName)</code>.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
@@ -125,6 +132,9 @@ public final class OpenTelemetry {
 
   /**
    * Gets or creates a named and versioned meter instance.
+   * <p/>
+   * This is a shortcut method for
+   * <code>getMeterProvider().get(instrumentationName, instrumentationVersion)</code>.
    *
    * @param instrumentationName The name of the instrumentation library, not the name of the
    *     instrument*ed* library.
