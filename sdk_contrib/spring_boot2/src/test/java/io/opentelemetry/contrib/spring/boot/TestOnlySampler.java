@@ -84,7 +84,7 @@ public class TestOnlySampler implements Sampler {
     }
 
     @Override
-    public Map<String, AttributeValue> attributes() {
+    public Map<String, AttributeValue> getAttributes() {
       return Collections.emptyMap();
     }
   }
