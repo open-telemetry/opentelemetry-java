@@ -25,6 +25,11 @@ import java.util.Properties;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Base class for all the config builder classes (SimpleSpanProcessor, BatchSpanProcessor, etc).
+ *
+ * @param <T> the type of the config builder
+ */
 public abstract class ConfigBuilder<T> {
 
   @VisibleForTesting
@@ -60,17 +65,21 @@ public abstract class ConfigBuilder<T> {
     }
   }
 
+  /** Sets the configuration values from the given configuration map for only the available keys. */
   protected abstract T fromConfigMap(
       Map<String, String> configMap, NamingConvention namingConvention);
 
+  /** Sets the configuration values from the given {@link Properties} object. */
   public T readProperties(Properties properties) {
     return fromConfigMap(Maps.fromProperties(properties), NamingConvention.DOT);
   }
 
+  /** Sets the configuration values from environment variables. */
   public T readEnvironment() {
     return fromConfigMap(System.getenv(), NamingConvention.ENV_VAR);
   }
 
+  /** Sets the configuration values from system properties. */
   public T readSystemProperties() {
     return readProperties(System.getProperties());
   }
