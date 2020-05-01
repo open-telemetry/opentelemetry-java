@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace.export;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.doThrow;
 
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
@@ -60,6 +61,17 @@ public class BatchSpansProcessorTest {
   private final Tracer tracer = tracerSdkFactory.get("BatchSpansProcessorTest");
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
+
+  abstract static class ConfigTest extends BatchSpansProcessor.Config.Builder {
+
+    public static ConfigBuilder.NamingConvention getDot() {
+      return NamingConvention.DOT;
+    }
+
+    public static ConfigBuilder.NamingConvention getEnv() {
+      return NamingConvention.ENV_VAR;
+    }
+  }
 
   @Before
   public void setup() {
@@ -175,7 +187,7 @@ public class BatchSpansProcessorTest {
     configMap.put("otel.bsp.export.sampled", "false");
     config =
         BatchSpansProcessor.Config.newBuilder()
-            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.DOT)
+            .fromConfigMap(configMap, ConfigTest.getDot())
             .build();
     assertThat(config.getScheduleDelayMillis()).isEqualTo(1);
     assertThat(config.getMaxQueueSize()).isEqualTo(1);
@@ -204,7 +216,7 @@ public class BatchSpansProcessorTest {
     configMap.put("OTEL_BSP_EXPORT_SAMPLED", "true");
     config =
         BatchSpansProcessor.Config.newBuilder()
-            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.ENV_VAR)
+            .fromConfigMap(configMap, ConfigTest.getEnv())
             .build();
     assertThat(config.getScheduleDelayMillis()).isEqualTo(2);
     assertThat(config.getMaxQueueSize()).isEqualTo(2);
@@ -221,7 +233,7 @@ public class BatchSpansProcessorTest {
     configMap.put("OTEL_bSp.EXPORT.SAmpleD", "false");
     config =
         BatchSpansProcessor.Config.newBuilder()
-            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.ENV_VAR)
+            .fromConfigMap(configMap, ConfigTest.getEnv())
             .build();
     assertThat(config.getScheduleDelayMillis()).isEqualTo(3);
     assertThat(config.getMaxQueueSize()).isEqualTo(3);
@@ -239,7 +251,7 @@ public class BatchSpansProcessorTest {
     configMap.put("OTEL_BSP_SCHEDULE_DELAY", "1");
     config =
         BatchSpansProcessor.Config.newBuilder()
-            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.ENV_VAR)
+            .fromConfigMap(configMap, ConfigTest.getEnv())
             .build();
     assertThat(config.getScheduleDelayMillis()).isEqualTo(1);
     assertThat(config.getMaxQueueSize()).isEqualTo(2048);
@@ -261,7 +273,7 @@ public class BatchSpansProcessorTest {
     configMap.put("otel.bsp.export.sampled", "false");
     config =
         BatchSpansProcessor.Config.newBuilder()
-            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.DOT)
+            .fromConfigMap(configMap, ConfigTest.getEnv())
             .setScheduleDelayMillis(2)
             .setMaxQueueSize(2)
             .setMaxExportBatchSize(2)

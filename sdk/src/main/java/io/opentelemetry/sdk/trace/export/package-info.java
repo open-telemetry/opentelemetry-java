@@ -27,6 +27,29 @@
  *   <li>{@link io.opentelemetry.sdk.trace.export.MultiSpanExporter}
  * </ul>
  *
+ * <h2>Default values for {@link io.opentelemetry.sdk.trace.export.SimpleSpansProcessor.Config}</h2>
+ *
+ * <ul>
+ *   <li>{@code REPORT_ONLY_SAMPLED: true} *
+ * </ul>
+ *
+ * <p>Values for {@link io.opentelemetry.sdk.trace.export.SimpleSpansProcessor.Config} can be read
+ * from system properties, environment variables, or {@link java.util.Properties} objects.
+ *
+ * <p>For System Properties and {@link java.util.Properties} objects, {@link
+ * io.opentelemetry.sdk.trace.export.SimpleSpansProcessor.Config} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code otel.ssp.export.sampled}: sets whether only sampled spans should be exported.
+ * </ul>
+ *
+ * <p>For Environment Variable, {@link
+ * io.opentelemetry.sdk.trace.export.SimpleSpansProcessor.Config} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
+ * </ul>
+ *
  * <h2>Default values for {@link io.opentelemetry.sdk.trace.export.BatchSpansProcessor.Config}</h2>
  *
  * <ul>

@@ -96,7 +96,7 @@ public abstract class InMemoryTracing {
      */
     public final InMemoryTracing build() {
       InMemorySpanExporter exporter = InMemorySpanExporter.create();
-      getTracerProvider().addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+      getTracerProvider().addSpanProcessor(SimpleSpansProcessor.create(exporter));
       return setSpanExporter(exporter).autoBuild();
     }
   }

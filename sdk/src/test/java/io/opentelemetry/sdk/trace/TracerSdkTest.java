@@ -139,7 +139,7 @@ public class TracerSdkTest {
   @Test
   public void stressTest_withBatchSpanProcessor() {
     CountingSpanExporter countingSpanExporter = new CountingSpanExporter();
-    SpanProcessor spanProcessor = BatchSpansProcessor.newBuilder(countingSpanExporter).build();
+    SpanProcessor spanProcessor = BatchSpansProcessor.create(countingSpanExporter);
     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
     TracerSdk tracer =

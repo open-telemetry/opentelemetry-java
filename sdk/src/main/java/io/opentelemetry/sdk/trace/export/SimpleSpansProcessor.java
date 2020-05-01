@@ -16,14 +16,20 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import com.google.auto.value.AutoValue;
+import com.google.common.annotations.VisibleForTesting;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 
 /**
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
@@ -39,6 +45,27 @@ public final class SimpleSpansProcessor implements SpanProcessor {
   private SimpleSpansProcessor(SpanExporter spanExporter, boolean sampled) {
     this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
     this.sampled = sampled;
+  }
+
+  /**
+   * Creates a {@code SimpleSpansProcessor} instance using the default configuration.
+   *
+   * @param spanExporter The {@link SpanExporter} to use
+   * @return a {@code SimpleSpansProcessor} instance.
+   */
+  public static SimpleSpansProcessor create(SpanExporter spanExporter) {
+    return create(spanExporter, Config.getDefault());
+  }
+
+  /**
+   * Creates a {@code SimpleSpansProcessor} instance.
+   *
+   * @param spanExporter The {@link SpanExporter} to use
+   * @param config The {@link SimpleSpansProcessor.Config} to use
+   * @return a {@code SimpleSpansProcessor} instance.
+   */
+  public static SimpleSpansProcessor create(SpanExporter spanExporter, Config config) {
+    return new SimpleSpansProcessor(spanExporter, config.isExportOnlySampled());
   }
 
   @Override
@@ -79,50 +106,137 @@ public final class SimpleSpansProcessor implements SpanProcessor {
     // Do nothing.
   }
 
-  /**
-   * Returns a new Builder for {@link SimpleSpansProcessor}.
-   *
-   * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
-   * @return a new {@link SimpleSpansProcessor}.
-   * @throws NullPointerException if the {@code spanExporter} is {@code null}.
-   */
-  public static Builder newBuilder(SpanExporter spanExporter) {
-    return new Builder(spanExporter);
-  }
-
   /** Builder class for {@link SimpleSpansProcessor}. */
-  public static final class Builder {
+  @Immutable
+  @AutoValue
+  public abstract static class Config {
 
-    private final SpanExporter spanExporter;
-    private boolean sampled = true;
+    private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
 
-    private Builder(SpanExporter spanExporter) {
-      this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
+    public abstract boolean isExportOnlySampled();
+
+    /**
+     * Creates a {@link SimpleSpansProcessor.Config} object using the default configuration.
+     *
+     * @return The {@link SimpleSpansProcessor.Config} object.
+     * @since 0.4.0
+     */
+    public static Config getDefault() {
+      return newBuilder().build();
     }
 
     /**
-     * Set whether only sampled spans should be reported.
+     * Creates a {@link SimpleSpansProcessor.Config} object reading the configuration values from
+     * the environment and from system properties. System properties override values defined in the
+     * environment. If a configuration value is missing, it uses the default value.
      *
-     * @param sampled report only sampled spans.
-     * @return this.
+     * @return The {@link SimpleSpansProcessor.Config} object.
+     * @since 0.4.0
      */
-    public Builder reportOnlySampled(boolean sampled) {
-      this.sampled = sampled;
-      return this;
+    public static Config loadFromDefaultSources() {
+      return newBuilder().readEnvironment().readSystemProperties().build();
     }
 
-    // TODO: Add metrics for total exported spans.
-    // TODO: Consider to add support for constant Attributes and/or Resource.
-
     /**
-     * Returns a new {@link SimpleSpansProcessor} that converts spans to proto and forwards them to
-     * the given {@code spanExporter}.
+     * Returns a new {@link SimpleSpansProcessor.Config.Builder} with default options.
      *
-     * @return a new {@link SimpleSpansProcessor}.
-     * @throws NullPointerException if the {@code spanExporter} is {@code null}.
+     * @return a new {@code Builder} with default options.
+     * @since 0.4.0
      */
-    public SimpleSpansProcessor build() {
-      return new SimpleSpansProcessor(spanExporter, sampled);
+    public static Builder newBuilder() {
+      return new AutoValue_SimpleSpansProcessor_Config.Builder()
+          .setExportOnlySampled(DEFAULT_EXPORT_ONLY_SAMPLED);
+    }
+
+    @AutoValue.Builder
+    public abstract static class Builder extends ConfigBuilder<Builder> {
+      private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
+
+      /**
+       * Sets the configuration values from the given configuration map for only the available keys.
+       * This method looks for the following keys:
+       *
+       * <ul>
+       *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be
+       *       exported.
+       * </ul>
+       *
+       * @param configMap {@link Map} holding the configuration values.
+       * @return this.
+       */
+      @VisibleForTesting
+      @Override
+      protected Builder fromConfigMap(
+          Map<String, String> configMap, NamingConvention namingConvention) {
+        configMap = namingConvention.normalize(configMap);
+        Boolean boolValue = getBooleanProperty(KEY_SAMPLED, configMap);
+        if (boolValue != null) {
+          this.setExportOnlySampled(boolValue);
+        }
+        return this;
+      }
+
+      /**
+       * Sets the configuration values from the given properties object for only the available keys.
+       * This method looks for the following keys:
+       *
+       * <ul>
+       *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be
+       *       exported.
+       * </ul>
+       *
+       * @param properties {@link Properties} holding the configuration values.
+       * @return this.
+       */
+      @Override
+      public Builder readProperties(Properties properties) {
+        return super.readProperties(properties);
+      }
+
+      /**
+       * Sets the configuration values from environment variables for only the available keys. This
+       * method looks for the following keys:
+       *
+       * <ul>
+       *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: to set whether only sampled spans should be
+       *       exported.
+       * </ul>
+       *
+       * @return this.
+       */
+      @Override
+      public Builder readEnvironment() {
+        return super.readEnvironment();
+      }
+
+      /**
+       * Sets the configuration values from system properties for only the available keys. This
+       * method looks for the following keys:
+       *
+       * <ul>
+       *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be
+       *       reported.
+       * </ul>
+       *
+       * @return this.
+       */
+      @Override
+      public Builder readSystemProperties() {
+        return super.readSystemProperties();
+      }
+
+      /**
+       * Set whether only sampled spans should be exported.
+       *
+       * <p>Default value is {@code true}.
+       *
+       * @see SimpleSpansProcessor.Config#DEFAULT_EXPORT_ONLY_SAMPLED
+       * @param sampled report only sampled spans.
+       * @return this.
+       */
+      public abstract Builder setExportOnlySampled(boolean sampled);
+
+      abstract Config build();
     }
   }
 }
