@@ -20,10 +20,10 @@ import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.SpanProcessor;
-import io.opentelemetry.sdk.trace.TracerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.trace.Tracer;
 import java.util.Arrays;
 
 /** This example shows how to instantiate different Span Processors. */
@@ -34,7 +34,7 @@ public class ConfigureSpanProcessorExample {
   // Get the Tracer Provider
   static TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
   // Acquire a tracer
-  static TracerSdk tracer = tracerProvider.get("ConfigureSpanProcessorExample");
+  static Tracer tracer = tracerProvider.get("ConfigureSpanProcessorExample");
 
   public static void main(String[] args) throws Exception {
 

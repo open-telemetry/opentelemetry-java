@@ -16,22 +16,38 @@ automatic check once you submit a PR, but you can also sign it after opening you
 
 ## Style guideline
 
-We follow the [Google Java Style
-Guide](https://google.github.io/styleguide/javaguide.html). Our build
-automatically will provide warnings for simple style issues.
+We follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). 
+Our build will fail if source code is not formatted according to that style.
 
-Run the following command to format all files. This formatter uses
-[google-java-format](https://github.com/google/google-java-format):
+To verify code style manually run the following command, 
+which uses [google-java-format](https://github.com/google/google-java-format) library:
 
-### OS X or Linux
+`./gradlew verifyGoogleJavaFormat`
 
-`./gradlew goJF`
+or on Windows
 
-### Windows
+`gradlew.bat verifyGoogleJavaFormat`
 
-`gradlew.bat goJF`
+Instead of fixing style inconsistencies by hand, you can run gradle task `googleJavaFormat`
+to automatically fix all found issues:
 
-We also follow these project-specific guidelines:
+`./gradlew googleJavaFormat`
+
+or on Windows
+
+`gradlew.bat googleJavaFormat`
+
+### Pre-commit hook
+To completely delegate code style formatting to the machine, 
+you can add [git pre-commit hook](https://git-scm.com/docs/githooks).
+We provide an example script in `buildscripts/pre-commit` file.
+Just copy or symlink it into `.git/hooks` folder.
+
+
+### Editorconfig 
+As additional convenience for IntelliJ Idea users, we provide `.editorconfig` file.
+Idea will automatically use it to adjust its code formatting settings.
+It does not support all required rules, so you still have to run `googleJavaFormat` from time to time.
 
 ### Javadoc
 

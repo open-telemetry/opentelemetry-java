@@ -24,11 +24,11 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.view.Aggregation;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 abstract class AbstractInstrument implements Instrument {
 
@@ -99,14 +99,13 @@ abstract class AbstractInstrument implements Instrument {
     private final MeterSharedState meterSharedState;
     private String description = "";
     private String unit = "1";
-    private List<String> labelKeys = Collections.emptyList();
     private Map<String, String> constantLabels = Collections.emptyMap();
 
     Builder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
-      Utils.checkNotNull(name, "name");
+      Objects.requireNonNull(name, "name");
       Utils.checkArgument(
           StringUtils.isValidMetricName(name) && name.length() <= NAME_MAX_LENGTH,
           ERROR_MESSAGE_INVALID_NAME);
@@ -117,27 +116,20 @@ abstract class AbstractInstrument implements Instrument {
 
     @Override
     public final B setDescription(String description) {
-      this.description = Utils.checkNotNull(description, "description");
+      this.description = Objects.requireNonNull(description, "description");
       return getThis();
     }
 
     @Override
     public final B setUnit(String unit) {
-      this.unit = Utils.checkNotNull(unit, "unit");
-      return getThis();
-    }
-
-    @Override
-    public final B setLabelKeys(List<String> labelKeys) {
-      Utils.checkListElementNotNull(Utils.checkNotNull(labelKeys, "labelKeys"), "labelKey");
-      this.labelKeys = Collections.unmodifiableList(new ArrayList<>(labelKeys));
+      this.unit = Objects.requireNonNull(unit, "unit");
       return getThis();
     }
 
     @Override
     public final B setConstantLabels(Map<String, String> constantLabels) {
       Utils.checkMapKeysNotNull(
-          Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+          Objects.requireNonNull(constantLabels, "constantLabels"), "constantLabel");
       this.constantLabels = Collections.unmodifiableMap(new HashMap<>(constantLabels));
       return getThis();
     }
@@ -151,7 +143,7 @@ abstract class AbstractInstrument implements Instrument {
     }
 
     final InstrumentDescriptor getInstrumentDescriptor() {
-      return InstrumentDescriptor.create(name, description, unit, constantLabels, labelKeys);
+      return InstrumentDescriptor.create(name, description, unit, constantLabels);
     }
 
     abstract B getThis();

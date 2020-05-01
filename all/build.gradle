@@ -11,6 +11,7 @@ def subprojects = [
         project(':opentelemetry-contrib-runtime-metrics'),
         project(':opentelemetry-contrib-trace-propagators'),
         project(':opentelemetry-contrib-trace-utils'),
+        project(':opentelemetry-contrib-auto-annotations'),
         project(':opentelemetry-exporters-logging'),
         project(':opentelemetry-exporters-inmemory'),
         project(':opentelemetry-exporters-jaeger'),
@@ -22,6 +23,7 @@ def subprojects = [
         project(':opentelemetry-sdk-contrib-auto-config'),
         project(':opentelemetry-sdk-contrib-otproto'),
         project(':opentelemetry-sdk-contrib-testbed'),
+        project(':opentelemetry-sdk-contrib-jaeger-remote-sampler'),
 ]
 
 for (subproject in rootProject.subprojects) {

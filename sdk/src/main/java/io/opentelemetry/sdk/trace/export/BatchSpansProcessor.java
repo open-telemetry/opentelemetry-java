@@ -16,28 +16,37 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import com.google.common.util.concurrent.MoreExecutors;
+import com.google.auto.value.AutoValue;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Maps;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
+import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Implementation of the {@link SpanProcessor} that batches spans exported by the SDK then pushes
@@ -78,9 +87,36 @@ public final class BatchSpansProcessor implements SpanProcessor {
             maxQueueSize,
             maxExportBatchSize,
             exporterTimeoutMillis);
-    this.workerThread = newThread(worker);
+    this.workerThread = new DaemonThreadFactory(WORKER_THREAD_NAME).newThread(worker);
     this.workerThread.start();
     this.sampled = sampled;
+  }
+
+  /**
+   * Creates a {@code BatchSpansProcessor} instance using the default configuration.
+   *
+   * @param spanExporter The {@link SpanExporter} to use
+   * @return a {@code BatchSpansProcessor} instance.
+   */
+  public static BatchSpansProcessor create(SpanExporter spanExporter) {
+    return create(spanExporter, Config.getDefault());
+  }
+
+  /**
+   * Creates a {@code BatchSpansProcessor} instance.
+   *
+   * @param spanExporter The {@link SpanExporter} to use
+   * @param config The {@link Config} to use
+   * @return a {@code BatchSpansProcessor} instance.
+   */
+  public static BatchSpansProcessor create(SpanExporter spanExporter, Config config) {
+    return new BatchSpansProcessor(
+        spanExporter,
+        config.isExportOnlySampled(),
+        config.getScheduleDelayMillis(),
+        config.getMaxQueueSize(),
+        config.getMaxExportBatchSize(),
+        config.getExporterTimeoutMillis());
   }
 
   @Override
@@ -142,7 +178,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private boolean sampled = true;
 
     private Builder(SpanExporter spanExporter) {
-      this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+      this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
     }
 
     // TODO: Consider to add support for constant Attributes and/or Resource.
@@ -235,16 +271,6 @@ public final class BatchSpansProcessor implements SpanProcessor {
     }
   }
 
-  private static Thread newThread(Runnable runnable) {
-    Thread thread = MoreExecutors.platformThreadFactory().newThread(runnable);
-    try {
-      thread.setName(WORKER_THREAD_NAME);
-    } catch (SecurityException e) {
-      // OK if we can't set the name in this environment.
-    }
-    return thread;
-  }
-
   // Worker is a thread that batches multiple spans and calls the registered SpanExporter to export
   // the data.
   //
@@ -269,13 +295,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
     private static final BoundLongCounter droppedSpans;
 
     private final ExecutorService executorService =
-        Executors.newSingleThreadExecutor(
-            new ThreadFactory() {
-              @Override
-              public Thread newThread(Runnable r) {
-                return new Thread(r, EXPORTER_THREAD_NAME);
-              }
-            });
+        Executors.newSingleThreadExecutor(new DaemonThreadFactory(EXPORTER_THREAD_NAME));
 
     private static final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SpanExporter spanExporter;
@@ -408,6 +428,312 @@ public final class BatchSpansProcessor implements SpanProcessor {
       } catch (TimeoutException e) {
         logger.log(Level.WARNING, "Export timed out. Cancelling execution.", e);
         submission.cancel(true);
+      }
+    }
+  }
+
+  @Immutable
+  @AutoValue
+  public abstract static class Config {
+
+    private static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
+    private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
+    private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
+    private static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+    private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
+
+    public abstract boolean isExportOnlySampled();
+
+    public abstract long getScheduleDelayMillis();
+
+    public abstract int getMaxQueueSize();
+
+    public abstract int getMaxExportBatchSize();
+
+    public abstract int getExporterTimeoutMillis();
+
+    /**
+     * Creates a {@link Config} object using the default configuration.
+     *
+     * @return The {@link Config} object.
+     * @since 0.4.0
+     */
+    public static Config getDefault() {
+      return newBuilder().build();
+    }
+
+    /**
+     * Creates a {@link Config} object reading the configuration values from the environment and
+     * from system properties. System properties override values defined in the environment. If a
+     * configuration value is missing, it uses the default value.
+     *
+     * @return The {@link Config} object.
+     * @since 0.4.0
+     */
+    public static Config loadFromDefaultSources() {
+      return newBuilder().readEnvironment().readSystemProperties().build();
+    }
+
+    /**
+     * Returns a new {@link Builder} with default options.
+     *
+     * @return a new {@code Builder} with default options.
+     * @since 0.4.0
+     */
+    public static Builder newBuilder() {
+      return new AutoValue_BatchSpansProcessor_Config.Builder()
+          .setScheduleDelayMillis(DEFAULT_SCHEDULE_DELAY_MILLIS)
+          .setMaxQueueSize(DEFAULT_MAX_QUEUE_SIZE)
+          .setMaxExportBatchSize(DEFAULT_MAX_EXPORT_BATCH_SIZE)
+          .setExporterTimeoutMillis(DEFAULT_EXPORT_TIMEOUT_MILLIS)
+          .setExportOnlySampled(DEFAULT_EXPORT_ONLY_SAMPLED);
+    }
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+
+      private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay";
+      private static final String KEY_MAX_QUEUE_SIZE = "otel.bsp.max.queue";
+      private static final String KEY_MAX_EXPORT_BATCH_SIZE = "otel.bsp.max.export.batch";
+      private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.bsp.export.timeout";
+      private static final String KEY_SAMPLED = "otel.bsp.export.sampled";
+
+      @VisibleForTesting
+      protected enum NamingConvention {
+        DOT {
+          @Override
+          public String normalize(@Nonnull String key) {
+            return key.toLowerCase();
+          }
+        },
+        ENV_VAR {
+          @Override
+          public String normalize(@Nonnull String key) {
+            return key.toLowerCase().replace("_", ".");
+          }
+        };
+
+        public abstract String normalize(@Nonnull String key);
+
+        public Map<String, String> normalize(@Nonnull Map<String, String> map) {
+          Map<String, String> properties = new HashMap<>();
+          for (Map.Entry<String, String> entry : map.entrySet()) {
+            properties.put(normalize(entry.getKey()), entry.getValue());
+          }
+          return Collections.unmodifiableMap(properties);
+        }
+      }
+
+      /**
+       * Sets the configuration values from the given configuration map for only the available keys.
+       * This method looks for the following keys:
+       *
+       * <ul>
+       *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
+       *       exports.
+       *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
+       *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
+       *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
+       *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be
+       *       exported.
+       * </ul>
+       *
+       * @param configMap {@link Map} holding the configuration values.
+       * @return this.
+       */
+      @VisibleForTesting
+      Builder fromConfigMap(Map<String, String> configMap, NamingConvention namingConvention) {
+        configMap = namingConvention.normalize(configMap);
+        Long longValue = getLongProperty(KEY_SCHEDULE_DELAY_MILLIS, configMap);
+        if (longValue != null) {
+          this.setScheduleDelayMillis(longValue);
+        }
+        Integer intValue = getIntProperty(KEY_MAX_QUEUE_SIZE, configMap);
+        if (intValue != null) {
+          this.setMaxQueueSize(intValue);
+        }
+        intValue = getIntProperty(KEY_MAX_EXPORT_BATCH_SIZE, configMap);
+        if (intValue != null) {
+          this.setMaxExportBatchSize(intValue);
+        }
+        intValue = getIntProperty(KEY_EXPORT_TIMEOUT_MILLIS, configMap);
+        if (intValue != null) {
+          this.setExporterTimeoutMillis(intValue);
+        }
+        Boolean boolValue = getBooleanProperty(KEY_SAMPLED, configMap);
+        if (boolValue != null) {
+          this.setExportOnlySampled(boolValue);
+        }
+        return this;
+      }
+
+      /**
+       * Sets the configuration values from the given properties object for only the available keys.
+       * This method looks for the following keys:
+       *
+       * <ul>
+       *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
+       *       exports.
+       *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
+       *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
+       *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
+       *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be
+       *       exported.
+       * </ul>
+       *
+       * @param properties {@link Properties} holding the configuration values.
+       * @return this.
+       */
+      public Builder readProperties(Properties properties) {
+        return fromConfigMap(Maps.fromProperties(properties), NamingConvention.DOT);
+      }
+
+      /**
+       * Sets the configuration values from environment variables for only the available keys. This
+       * method looks for the following keys:
+       *
+       * <ul>
+       *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: to set the delay interval between two consecutive
+       *       exports.
+       *   <li>{@code OTEL_BSP_MAX_QUEUE}: to set the maximum queue size.
+       *   <li>{@code OTEL_BSP_MAX_EXPORT_BATCH}: to set the maximum batch size.
+       *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT}: to set the maximum allowed time to export data.
+       *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: to set whether only sampled spans should be
+       *       exported.
+       * </ul>
+       *
+       * @return this.
+       */
+      public Builder readEnvironment() {
+        return fromConfigMap(System.getenv(), NamingConvention.ENV_VAR);
+      }
+
+      /**
+       * Sets the configuration values from system properties for only the available keys. This
+       * method looks for the following keys:
+       *
+       * <ul>
+       *   <li>{@code otel.bsp.schedule.delay}: to set the delay interval between two consecutive
+       *       exports.
+       *   <li>{@code otel.bsp.max.queue}: to set the maximum queue size.
+       *   <li>{@code otel.bsp.max.export.batch}: to set the maximum batch size.
+       *   <li>{@code otel.bsp.export.timeout}: to set the maximum allowed time to export data.
+       *   <li>{@code otel.bsp.export.sampled}: to set whether only sampled spans should be
+       *       reported.
+       * </ul>
+       *
+       * @return this.
+       */
+      public Builder readSystemProperties() {
+        return readProperties(System.getProperties());
+      }
+
+      /**
+       * Set whether only sampled spans should be exported.
+       *
+       * <p>Default value is {@code true}.
+       *
+       * @param sampled report only sampled spans.
+       * @return this.
+       * @see BatchSpansProcessor.Config#DEFAULT_EXPORT_ONLY_SAMPLED
+       */
+      public abstract Builder setExportOnlySampled(boolean sampled);
+
+      /**
+       * Sets the delay interval between two consecutive exports. The actual interval may be shorter
+       * if the batch size is getting larger than {@code maxQueuedSpans / 2}.
+       *
+       * <p>Default value is {@code 5000}ms.
+       *
+       * @param scheduleDelayMillis the delay interval between two consecutive exports.
+       * @return this.
+       * @see BatchSpansProcessor.Config#DEFAULT_SCHEDULE_DELAY_MILLIS
+       */
+      public abstract Builder setScheduleDelayMillis(long scheduleDelayMillis);
+
+      /**
+       * Sets the maximum time an exporter will be allowed to run before being cancelled.
+       *
+       * <p>Default value is {@code 30000}ms
+       *
+       * @param exporterTimeoutMillis the timeout for exports in milliseconds.
+       * @return this
+       * @see BatchSpansProcessor.Config#DEFAULT_EXPORT_TIMEOUT_MILLIS
+       */
+      public abstract Builder setExporterTimeoutMillis(int exporterTimeoutMillis);
+
+      /**
+       * Sets the maximum number of Spans that are kept in the queue before start dropping.
+       *
+       * <p>See the BatchSampledSpansProcessor class description for a high-level design description
+       * of this class.
+       *
+       * <p>Default value is {@code 2048}.
+       *
+       * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
+       *     dropping.
+       * @return this.
+       * @see BatchSpansProcessor.Config#DEFAULT_MAX_QUEUE_SIZE
+       */
+      public abstract Builder setMaxQueueSize(int maxQueueSize);
+
+      /**
+       * Sets the maximum batch size for every export. This must be smaller or equal to {@code
+       * maxQueuedSpans}.
+       *
+       * <p>Default value is {@code 512}.
+       *
+       * @param maxExportBatchSize the maximum batch size for every export.
+       * @return this.
+       * @see BatchSpansProcessor.Config#DEFAULT_MAX_EXPORT_BATCH_SIZE
+       */
+      public abstract Builder setMaxExportBatchSize(int maxExportBatchSize);
+
+      abstract Config autoBuild(); // not public
+
+      /**
+       * Builds the {@link Config} object.
+       *
+       * @return the {@link Config} object.
+       */
+      public Config build() {
+        Config config = autoBuild();
+        Utils.checkArgument(
+            config.getScheduleDelayMillis() >= 0,
+            "scheduleDelayMillis must greater than or equal 0.");
+        Utils.checkArgument(
+            config.getExporterTimeoutMillis() >= 0,
+            "exporterTimeoutMillis must greater than or equal 0.");
+        Utils.checkArgument(config.getMaxQueueSize() > 0, "maxQueueSize must be positive.");
+        Utils.checkArgument(
+            config.getMaxExportBatchSize() > 0, "maxExportBatchSize must be positive.");
+        return config;
+      }
+
+      @Nullable
+      private static Boolean getBooleanProperty(String name, Map<String, String> map) {
+        if (map.containsKey(name)) {
+          return Boolean.parseBoolean(map.get(name));
+        }
+        return null;
+      }
+
+      @Nullable
+      private static Integer getIntProperty(String name, Map<String, String> map) {
+        try {
+          return Integer.parseInt(map.get(name));
+        } catch (NumberFormatException ex) {
+          return null;
+        }
+      }
+
+      @Nullable
+      private static Long getLongProperty(String name, Map<String, String> map) {
+        try {
+          return Long.parseLong(map.get(name));
+        } catch (NumberFormatException ex) {
+          return null;
+        }
       }
     }
   }

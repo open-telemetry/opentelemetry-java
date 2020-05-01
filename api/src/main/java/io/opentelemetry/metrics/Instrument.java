@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -50,16 +49,6 @@ public interface Instrument {
      * @return this.
      */
     Builder setUnit(String unit);
-
-    /**
-     * Sets the list of label keys for the Instrument.
-     *
-     * <p>Default value is {@link Collections#emptyList()}
-     *
-     * @param labelKeys the list of label keys for the Instrument.
-     * @return this.
-     */
-    Builder setLabelKeys(List<String> labelKeys);
 
     /**
      * Sets the map of constant labels (they will be added to all the Bound Instruments) for the

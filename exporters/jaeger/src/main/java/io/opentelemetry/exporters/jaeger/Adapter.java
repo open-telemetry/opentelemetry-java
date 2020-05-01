@@ -17,6 +17,7 @@
 package io.opentelemetry.exporters.jaeger;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.gson.Gson;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.common.AttributeValue;
@@ -36,6 +37,7 @@ import javax.annotation.concurrent.ThreadSafe;
 /** Adapts OpenTelemetry objects to Jaeger objects. */
 @ThreadSafe
 final class Adapter {
+  static final String KEY_ERROR = "error";
   static final String KEY_LOG_MESSAGE = "message";
   static final String KEY_SPAN_KIND = "span.kind";
   static final String KEY_SPAN_STATUS_MESSAGE = "span.status.message";
@@ -109,6 +111,10 @@ final class Adapter {
             .setVInt64(span.getStatus().getCanonicalCode().value())
             .setVType(Model.ValueType.INT64)
             .build());
+
+    if (!span.getStatus().isOk()) {
+      target.addTags(toKeyValue(KEY_ERROR, AttributeValue.booleanAttributeValue(true)));
+    }
 
     return target.build();
   }
@@ -193,8 +199,23 @@ final class Adapter {
         builder.setVFloat64(value.getDoubleValue());
         builder.setVType(Model.ValueType.FLOAT64);
         break;
+      case STRING_ARRAY:
+        builder.setVStr(new Gson().toJson(value.getStringArrayValue()));
+        builder.setVType(Model.ValueType.STRING);
+        break;
+      case LONG_ARRAY:
+        builder.setVStr(new Gson().toJson(value.getLongArrayValue()));
+        builder.setVType(Model.ValueType.STRING);
+        break;
+      case BOOLEAN_ARRAY:
+        builder.setVStr(new Gson().toJson(value.getBooleanArrayValue()));
+        builder.setVType(Model.ValueType.STRING);
+        break;
+      case DOUBLE_ARRAY:
+        builder.setVStr(new Gson().toJson(value.getDoubleArrayValue()));
+        builder.setVType(Model.ValueType.STRING);
+        break;
     }
-
     return builder.build();
   }
 

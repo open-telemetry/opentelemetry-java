@@ -24,7 +24,6 @@ import io.opentelemetry.metrics.Observer.Callback;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -61,7 +60,6 @@ public final class GarbageCollector {
             .longObserverBuilder("collection")
             .setDescription("Time spent in a given JVM garbage collector in milliseconds.")
             .setUnit("ms")
-            .setLabelKeys(Collections.singletonList(GC_LABEL_KEY))
             .setMonotonic(true)
             .build();
     final List<String[]> labelSets = new ArrayList<>(garbageCollectors.size());

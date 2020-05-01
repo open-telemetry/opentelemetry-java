@@ -26,7 +26,6 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -75,7 +74,6 @@ public final class MemoryPools {
             .longObserverBuilder("area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
-            .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, AREA_LABEL_KEY))
             .setMonotonic(false)
             .build();
     final String[] usedHeap = new String[] {TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP};
@@ -110,7 +108,6 @@ public final class MemoryPools {
             .longObserverBuilder("pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
-            .setLabelKeys(Arrays.asList(TYPE_LABEL_KEY, POOL_LABEL_KEY))
             .setMonotonic(false)
             .build();
     final List<String[]> usedLabelSets = new ArrayList<>(poolBeans.size());

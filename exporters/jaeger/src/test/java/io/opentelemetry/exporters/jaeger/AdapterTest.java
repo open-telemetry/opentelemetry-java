@@ -167,12 +167,20 @@ public class AdapterTest {
     AttributeValue valueD = AttributeValue.doubleAttributeValue(1.);
     AttributeValue valueI = AttributeValue.longAttributeValue(2);
     AttributeValue valueS = AttributeValue.stringAttributeValue("foobar");
+    AttributeValue valueArrayB = AttributeValue.arrayAttributeValue(true, false);
+    AttributeValue valueArrayD = AttributeValue.arrayAttributeValue(1.2345, 6.789);
+    AttributeValue valueArrayI = AttributeValue.arrayAttributeValue(12345L, 67890L);
+    AttributeValue valueArrayS = AttributeValue.arrayAttributeValue("foobar", "barfoo");
 
     // test
     Model.KeyValue kvB = Adapter.toKeyValue("valueB", valueB);
     Model.KeyValue kvD = Adapter.toKeyValue("valueD", valueD);
     Model.KeyValue kvI = Adapter.toKeyValue("valueI", valueI);
     Model.KeyValue kvS = Adapter.toKeyValue("valueS", valueS);
+    Model.KeyValue kvArrayB = Adapter.toKeyValue("valueArrayB", valueArrayB);
+    Model.KeyValue kvArrayD = Adapter.toKeyValue("valueArrayD", valueArrayD);
+    Model.KeyValue kvArrayI = Adapter.toKeyValue("valueArrayI", valueArrayI);
+    Model.KeyValue kvArrayS = Adapter.toKeyValue("valueArrayS", valueArrayS);
 
     // verify
     assertTrue(kvB.getVBool());
@@ -184,6 +192,18 @@ public class AdapterTest {
     assertEquals("foobar", kvS.getVStr());
     assertEquals("foobar", kvS.getVStrBytes().toStringUtf8());
     assertEquals(Model.ValueType.STRING, kvS.getVType());
+    assertEquals("[true,false]", kvArrayB.getVStr());
+    assertEquals("[true,false]", kvArrayB.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvArrayB.getVType());
+    assertEquals("[1.2345,6.789]", kvArrayD.getVStr());
+    assertEquals("[1.2345,6.789]", kvArrayD.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvArrayD.getVType());
+    assertEquals("[12345,67890]", kvArrayI.getVStr());
+    assertEquals("[12345,67890]", kvArrayI.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvArrayI.getVType());
+    assertEquals("[\"foobar\",\"barfoo\"]", kvArrayS.getVStr());
+    assertEquals("[\"foobar\",\"barfoo\"]", kvArrayS.getVStrBytes().toStringUtf8());
+    assertEquals(Model.ValueType.STRING, kvArrayS.getVType());
   }
 
   @Test
@@ -234,6 +254,40 @@ public class AdapterTest {
             .build();
 
     assertNotNull(Adapter.toJaeger(span));
+  }
+
+  @Test
+  public void testSpanError() {
+    ImmutableMap<String, AttributeValue> attributes =
+        ImmutableMap.of(
+            "error.type",
+            AttributeValue.stringAttributeValue(this.getClass().getName()),
+            "error.message",
+            AttributeValue.stringAttributeValue("server error"));
+    long startMs = System.currentTimeMillis();
+    long endMs = startMs + 900;
+    SpanData span =
+        SpanData.newBuilder()
+            .setHasEnded(true)
+            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
+            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setName("GET /api/endpoint")
+            .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
+            .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
+            .setKind(Span.Kind.SERVER)
+            .setStatus(Status.UNKNOWN)
+            .setAttributes(attributes)
+            .setTotalRecordedEvents(0)
+            .setTotalRecordedLinks(0)
+            .build();
+
+    Model.Span jaegerSpan = Adapter.toJaeger(span);
+    Model.KeyValue errorType = getValue(jaegerSpan.getTagsList(), "error.type");
+    assertNotNull(errorType);
+    assertEquals(this.getClass().getName(), errorType.getVStr());
+    Model.KeyValue error = getValue(jaegerSpan.getTagsList(), "error");
+    assertNotNull(error);
+    assertEquals(true, error.getVBool());
   }
 
   private static TimedEvent getTimedEvent() {

@@ -16,12 +16,12 @@
 
 package io.opentelemetry.sdk.trace.export;
 
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +37,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
   private final boolean sampled;
 
   private SimpleSpansProcessor(SpanExporter spanExporter, boolean sampled) {
-    this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+    this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
     this.sampled = sampled;
   }
 
@@ -97,7 +97,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
     private boolean sampled = true;
 
     private Builder(SpanExporter spanExporter) {
-      this.spanExporter = Utils.checkNotNull(spanExporter, "spanExporter");
+      this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
     }
 
     /**

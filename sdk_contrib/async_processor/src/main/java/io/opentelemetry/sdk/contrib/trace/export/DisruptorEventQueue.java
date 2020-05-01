@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.contrib.trace.export;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import com.lmax.disruptor.EventFactory;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.EventTranslatorThreeArg;
@@ -24,10 +23,10 @@ import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.WaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
+import io.opentelemetry.sdk.common.DaemonThreadFactory;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -94,7 +93,7 @@ final class DisruptorEventQueue {
         new Disruptor<>(
             EVENT_FACTORY,
             bufferSize,
-            new ThreadFactoryWithName(WORKER_THREAD_NAME),
+            new DaemonThreadFactory(WORKER_THREAD_NAME),
             ProducerType.MULTI,
             waitStrategy);
     disruptor.handleEventsWith(new DisruptorEventHandler(spanProcessor));
@@ -236,25 +235,6 @@ final class DisruptorEventQueue {
         // Remove the reference to the previous entry to allow the memory to be gc'ed.
         event.setEntry(null, null, null);
       }
-    }
-  }
-
-  private static final class ThreadFactoryWithName implements ThreadFactory {
-    private final String threadName;
-
-    private ThreadFactoryWithName(String threadName) {
-      this.threadName = threadName;
-    }
-
-    @Override
-    public Thread newThread(Runnable runnable) {
-      Thread thread = MoreExecutors.platformThreadFactory().newThread(runnable);
-      try {
-        thread.setName(threadName);
-      } catch (SecurityException e) {
-        // OK if we can't set the name in this environment.
-      }
-      return thread;
     }
   }
 }

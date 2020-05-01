@@ -16,9 +16,9 @@
 
 package io.opentelemetry.example.http;
 
-import io.grpc.Context;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.ContextUtils;
@@ -29,7 +29,6 @@ import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.*;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -49,7 +48,8 @@ public class HttpServer {
       Span span = null;
 
       // Extract the context from the HTTP request
-      Context ctx = OpenTelemetry.getPropagators().getHttpTextFormat().extract(Context.current(), he, getter);
+      Context ctx =
+          OpenTelemetry.getPropagators().getHttpTextFormat().extract(Context.current(), he, getter);
       try (Scope scope = ContextUtils.withScopedContext(ctx)) {
         // Build a span automatically using the received context
         span = spanBuilder.startSpan();

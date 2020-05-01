@@ -16,13 +16,13 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DoubleObserver;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
@@ -61,7 +61,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
 
   @Override
   public void setCallback(Callback<DoubleObserver.ResultDoubleObserver> metricUpdater) {
-    this.metricUpdater = Utils.checkNotNull(metricUpdater, "metricUpdater");
+    this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
   }
 
   static final class Builder extends AbstractObserver.Builder<DoubleObserverSdk.Builder>

@@ -43,7 +43,34 @@ public class AttributeValueTest {
     tester.addEqualityGroup(
         AttributeValue.doubleAttributeValue(1.23456), AttributeValue.doubleAttributeValue(1.23456));
     tester.addEqualityGroup(AttributeValue.doubleAttributeValue(1.234567));
+    tester.addEqualityGroup(
+        AttributeValue.arrayAttributeValue(
+            "MyArrayStringAttributeValue1", "MyArrayStringAttributeValue2"),
+        AttributeValue.arrayAttributeValue(
+            "MyArrayStringAttributeValue1", "MyArrayStringAttributeValue2"));
+    tester.addEqualityGroup(AttributeValue.arrayAttributeValue("MyArrayStringAttributeDiffValue"));
+    tester.addEqualityGroup(
+        AttributeValue.arrayAttributeValue(true, false, true),
+        AttributeValue.arrayAttributeValue(true, false, true));
+    tester.addEqualityGroup(AttributeValue.arrayAttributeValue(false));
+    tester.addEqualityGroup(
+        AttributeValue.arrayAttributeValue(123456L, 7890L),
+        AttributeValue.arrayAttributeValue(123456L, 7890L));
+    tester.addEqualityGroup(AttributeValue.arrayAttributeValue(1234567L));
+    tester.addEqualityGroup(
+        AttributeValue.arrayAttributeValue(1.23456, 7.890),
+        AttributeValue.arrayAttributeValue(1.23456, 7.890));
+    tester.addEqualityGroup(AttributeValue.arrayAttributeValue(1.234567));
     tester.testEquals();
+  }
+
+  @Test
+  public void doNotCrashOnNull() {
+    AttributeValue.stringAttributeValue(null);
+    AttributeValue.arrayAttributeValue((String[]) null);
+    AttributeValue.arrayAttributeValue((Boolean[]) null);
+    AttributeValue.arrayAttributeValue((Long[]) null);
+    AttributeValue.arrayAttributeValue((Double[]) null);
   }
 
   @Test
@@ -56,5 +83,36 @@ public class AttributeValueTest {
     assertThat(attribute.toString()).contains("123456");
     attribute = AttributeValue.doubleAttributeValue(1.23456);
     assertThat(attribute.toString()).contains("1.23456");
+    attribute =
+        AttributeValue.arrayAttributeValue(
+            "MyArrayStringAttributeValue1", "MyArrayStringAttributeValue2");
+    assertThat(attribute.toString()).contains("MyArrayStringAttributeValue1");
+    assertThat(attribute.toString()).contains("MyArrayStringAttributeValue2");
+    attribute = AttributeValue.arrayAttributeValue(true, false);
+    assertThat(attribute.toString()).contains("true");
+    assertThat(attribute.toString()).contains("false");
+    attribute = AttributeValue.arrayAttributeValue(12345L, 67890L);
+    assertThat(attribute.toString()).contains("12345");
+    assertThat(attribute.toString()).contains("67890");
+    attribute = AttributeValue.arrayAttributeValue(1.2345, 6.789);
+    assertThat(attribute.toString()).contains("1.2345");
+    assertThat(attribute.toString()).contains("6.789");
+  }
+
+  @Test
+  public void arrayAttributeValue_nullValuesWithinArray() {
+    AttributeValue attribute;
+
+    attribute = AttributeValue.arrayAttributeValue("string", null, "", "string");
+    assertThat(attribute.getStringArrayValue().size()).isEqualTo(4);
+
+    attribute = AttributeValue.arrayAttributeValue(10L, null, 20L);
+    assertThat(attribute.getLongArrayValue().size()).isEqualTo(3);
+
+    attribute = AttributeValue.arrayAttributeValue(true, null, false);
+    assertThat(attribute.getBooleanArrayValue().size()).isEqualTo(3);
+
+    attribute = AttributeValue.arrayAttributeValue(1.2, null, 3.4);
+    assertThat(attribute.getDoubleArrayValue().size()).isEqualTo(3);
   }
 }

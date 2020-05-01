@@ -16,7 +16,6 @@
 
 package io.opentelemetry.internal;
 
-import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
@@ -113,23 +112,6 @@ public final class Utils {
       throw new NullPointerException(String.valueOf(errorMessage));
     }
     return arg;
-  }
-
-  /**
-   * Throws a {@link NullPointerException} if any of the list elements is null.
-   *
-   * @param list the argument list to check for null.
-   * @param errorMessage the message to use for the exception. Will be converted to a string using
-   *     {@link String#valueOf(Object)}.
-   * @param <T> type of an argument to check.
-   */
-  public static <T> void checkListElementNotNull(
-      List<T> list, @javax.annotation.Nullable Object errorMessage) {
-    for (T element : list) {
-      if (element == null) {
-        throw new NullPointerException(String.valueOf(errorMessage));
-      }
-    }
   }
 
   /**

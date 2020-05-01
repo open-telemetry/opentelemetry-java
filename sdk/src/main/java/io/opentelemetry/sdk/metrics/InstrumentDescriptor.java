@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
@@ -25,12 +24,8 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 abstract class InstrumentDescriptor {
   static InstrumentDescriptor create(
-      String name,
-      String description,
-      String unit,
-      Map<String, String> constantLabels,
-      List<String> labelKeys) {
-    return new AutoValue_InstrumentDescriptor(name, description, unit, constantLabels, labelKeys);
+      String name, String description, String unit, Map<String, String> constantLabels) {
+    return new AutoValue_InstrumentDescriptor(name, description, unit, constantLabels);
   }
 
   abstract String getName();
@@ -40,6 +35,4 @@ abstract class InstrumentDescriptor {
   abstract String getUnit();
 
   abstract Map<String, String> getConstantLabels();
-
-  abstract List<String> getLabelKeys();
 }

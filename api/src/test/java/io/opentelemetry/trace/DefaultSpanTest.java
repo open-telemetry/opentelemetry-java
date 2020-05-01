@@ -56,6 +56,10 @@ public class DefaultSpanTest {
     span.setAttribute("MyLongAttributeKey", AttributeValue.longAttributeValue(123));
     span.setAttribute("NullString", (String) null);
     span.setAttribute("EmptyString", "");
+    span.setAttribute("NullArrayString", AttributeValue.arrayAttributeValue((String[]) null));
+    span.setAttribute("NullArrayBoolean", AttributeValue.arrayAttributeValue((Boolean[]) null));
+    span.setAttribute("NullArrayLong", AttributeValue.arrayAttributeValue((Long[]) null));
+    span.setAttribute("NullArrayDouble", AttributeValue.arrayAttributeValue((Double[]) null));
     span.addEvent("event");
     span.addEvent("event", 0);
     span.addEvent(

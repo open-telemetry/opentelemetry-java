@@ -17,7 +17,6 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -36,7 +35,6 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .doubleCounterBuilder("processed_jobs")
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
- *           .setLabelKeys(Collections.singletonList("Key"))
  *           .build();
  *   // It is recommended that the API user keep references to a Bound Counters.
  *   private static final BoundDoubleCounter someWorkBound =
@@ -98,9 +96,6 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
 
     @Override
     Builder setUnit(String unit);
-
-    @Override
-    Builder setLabelKeys(List<String> labelKeys);
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);

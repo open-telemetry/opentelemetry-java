@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -30,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /**
@@ -98,7 +98,7 @@ public final class MeterSdkProvider implements MeterProvider {
      * @return this
      */
     public Builder setClock(@Nonnull Clock clock) {
-      Utils.checkNotNull(clock, "clock");
+      Objects.requireNonNull(clock, "clock");
       this.clock = clock;
       return this;
     }
@@ -110,7 +110,7 @@ public final class MeterSdkProvider implements MeterProvider {
      * @return this
      */
     public Builder setResource(@Nonnull Resource resource) {
-      Utils.checkNotNull(resource, "resource");
+      Objects.requireNonNull(resource, "resource");
       this.resource = resource;
       return this;
     }

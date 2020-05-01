@@ -16,6 +16,9 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
+import static java.util.Collections.singletonMap;
+
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
 import io.opentelemetry.common.AttributeValue;
@@ -25,6 +28,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.attributes.DoubleAttributeSetter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +42,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public final class Samplers {
+
   private static final Sampler ALWAYS_ON = new AlwaysOnSampler();
   private static final Sampler ALWAYS_OFF = new AlwaysOffSampler();
   private static final Decision ALWAYS_ON_DECISION = new SimpleDecision(/* decision= */ true);
@@ -162,12 +167,20 @@ public final class Samplers {
       } else {
         idUpperBound = (long) (probability * Long.MAX_VALUE);
       }
-      return new AutoValue_Samplers_Probability(probability, idUpperBound);
+      return new AutoValue_Samplers_Probability(
+          probability,
+          idUpperBound,
+          ProbabilityDecision.create(/* decision= */ true, probability),
+          ProbabilityDecision.create(/* decision= */ false, probability));
     }
 
     abstract double getProbability();
 
     abstract long getIdUpperBound();
+
+    abstract Decision getPositiveDecision();
+
+    abstract Decision getNegativeDecision();
 
     @Override
     public final Decision shouldSample(
@@ -198,8 +211,8 @@ public final class Samplers {
       // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
       // code is executed in-line for every Span creation).
       return Math.abs(traceId.getLowerLong()) < getIdUpperBound()
-          ? ALWAYS_ON_DECISION
-          : ALWAYS_OFF_DECISION;
+          ? getPositiveDecision()
+          : getNegativeDecision();
     }
 
     @Override
@@ -229,8 +242,44 @@ public final class Samplers {
     }
 
     @Override
-    public Map<String, AttributeValue> attributes() {
+    public Map<String, AttributeValue> getAttributes() {
       return Collections.emptyMap();
     }
+  }
+
+  /**
+   * Probability value used by a probability-based Span sampling strategy.
+   *
+   * <p>Note: This will need to be updated if a specification for this value is merged which changes
+   * this proposed value. Also, once it's in the spec, we should move it somewhere more visible.
+   *
+   * <p>See https://github.com/open-telemetry/opentelemetry-specification/pull/570
+   */
+  static final DoubleAttributeSetter SAMPLING_PROBABILITY =
+      DoubleAttributeSetter.create("sampling.probability");
+
+  /** Probability-based sampling decision with a single attribute for the probability. */
+  @Immutable
+  @AutoValue
+  abstract static class ProbabilityDecision implements Decision {
+
+    ProbabilityDecision() {}
+
+    /**
+     * Creates sampling decision without attributes.
+     *
+     * @param decision sampling decision
+     * @param probability the probability that was used for the decision.
+     */
+    static ProbabilityDecision create(boolean decision, double probability) {
+      return new AutoValue_Samplers_ProbabilityDecision(
+          decision, singletonMap(SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
+    }
+
+    @Override
+    public abstract boolean isSampled();
+
+    @Override
+    public abstract Map<String, AttributeValue> getAttributes();
   }
 }

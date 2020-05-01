@@ -35,18 +35,10 @@ import org.junit.runners.JUnit4;
 public class InstrumentRegistryTest {
   private static final InstrumentDescriptor INSTRUMENT_DESCRIPTOR =
       InstrumentDescriptor.create(
-          "name",
-          "description",
-          "1",
-          Collections.singletonMap("key_2", "value_2"),
-          Collections.singletonList("key"));
+          "name", "description", "1", Collections.singletonMap("key_2", "value_2"));
   private static final InstrumentDescriptor OTHER_INSTRUMENT_DESCRIPTOR =
       InstrumentDescriptor.create(
-          "name",
-          "other_description",
-          "1",
-          Collections.singletonMap("key_2", "value_2"),
-          Collections.singletonList("key"));
+          "name", "other_description", "1", Collections.singletonMap("key_2", "value_2"));
   private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final ActiveBatcher ACTIVE_BATCHER = new ActiveBatcher(Batchers.getNoop());

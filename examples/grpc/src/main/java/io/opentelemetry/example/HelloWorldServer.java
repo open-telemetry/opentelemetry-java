@@ -37,7 +37,6 @@ import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.logging.Logger;
@@ -49,7 +48,8 @@ public class HelloWorldServer {
   private final int port = 50051;
 
   // OTel API
-  Tracer tracer = OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.HelloWorldServer");
+  Tracer tracer =
+      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.HelloWorldServer");
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text
@@ -133,13 +133,13 @@ public class HelloWorldServer {
 
     // We serve a stream gRPC call
     @Override
-    public StreamObserver<HelloRequest> sayHelloStream(final StreamObserver<HelloReply> responseObserver) {
+    public StreamObserver<HelloRequest> sayHelloStream(
+        final StreamObserver<HelloReply> responseObserver) {
       return new StreamObserver<HelloRequest>() {
         @Override
         public void onNext(HelloRequest value) {
           responseObserver.onNext(
-                  HelloReply.newBuilder().setMessage("Hello " + value.getName()).build()
-          );
+              HelloReply.newBuilder().setMessage("Hello " + value.getName()).build());
         }
 
         @Override
@@ -161,16 +161,16 @@ public class HelloWorldServer {
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
         ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
       // Extract the Span Context from the metadata of the gRPC request
-      Context extractedContext = textFormat.extract(Context.current(),headers, getter);
+      Context extractedContext = textFormat.extract(Context.current(), headers, getter);
       InetSocketAddress clientInfo =
           (InetSocketAddress) call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
       // Build a span based on the received context
       try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {
         Span span =
-                tracer
-                        .spanBuilder("helloworld.Greeter/SayHello")
-                        .setSpanKind(Span.Kind.SERVER)
-                        .startSpan();
+            tracer
+                .spanBuilder("helloworld.Greeter/SayHello")
+                .setSpanKind(Span.Kind.SERVER)
+                .startSpan();
         span.setAttribute("component", "grpc");
         span.setAttribute("rpc.service", "Greeter");
         span.setAttribute("net.peer.ip", clientInfo.getHostString());
