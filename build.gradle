@@ -96,6 +96,7 @@ subprojects {
         prometheusVersion = '0.8.1'
         protobufVersion = '3.11.4'
         protocVersion = '3.11.4'
+        zipkinReporterVersion = '2.12.2'
 
         libraries = [
                 auto_value              : "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -117,6 +118,8 @@ subprojects {
                 prometheus_client_common: "io.prometheus:simpleclient_common:${prometheusVersion}",
                 protobuf                : "com.google.protobuf:protobuf-java:${protobufVersion}",
                 protobuf_util           : "com.google.protobuf:protobuf-java-util:${protobufVersion}",
+                zipkin_reporter         : "io.zipkin.reporter2:zipkin-reporter:${zipkinReporterVersion}",
+                zipkin_urlconnection    : "io.zipkin.reporter2:zipkin-sender-urlconnection:${zipkinReporterVersion}",
 
                 // Compatibility layer
                 opentracing          : "io.opentracing:opentracing-api:${opentracingVersion}",

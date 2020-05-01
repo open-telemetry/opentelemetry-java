@@ -1,0 +1,32 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry - Zipkin Exporter'
+ext.moduleName = "io.opentelemetry.exporters.zipkin"
+
+dependencies {
+    compileOnly libraries.auto_value
+
+    api project(':opentelemetry-sdk')
+
+    annotationProcessor libraries.auto_value
+
+    implementation libraries.zipkin_reporter
+    implementation libraries.zipkin_urlconnection
+
+    testImplementation libraries.guava
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+}
+
+animalsniffer {
+    // Don't check sourceSets.jmh and sourceSets.test
+    sourceSets = [
+            sourceSets.main
+    ]
+}
