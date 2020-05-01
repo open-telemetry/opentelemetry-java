@@ -22,6 +22,7 @@ import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManagerProvider;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
+import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DefaultMetricsProvider;
@@ -143,7 +144,7 @@ public final class OpenTelemetry {
     TraceProvider traceProvider = loadSpi(TraceProvider.class);
     this.tracerProvider =
         traceProvider != null
-            ? traceProvider.create()
+            ? new ObfuscatedTracerProvider(traceProvider.create())
             : DefaultTraceProvider.getInstance().create();
 
     MetricsProvider metricsProvider = loadSpi(MetricsProvider.class);
@@ -187,5 +188,37 @@ public final class OpenTelemetry {
   // for testing
   static void reset() {
     instance = null;
+  }
+
+  /**
+   * A {@link TracerProvider} wrapper that forces users to access the SDK specific implementation
+   * via the SDK, instead of via the API and casting it to the SDK specific implementation.
+   *
+   * @see Obfuscated
+   */
+  @ThreadSafe
+  private static class ObfuscatedTracerProvider
+      implements TracerProvider, Obfuscated<TracerProvider> {
+
+    private final TracerProvider delegate;
+
+    private ObfuscatedTracerProvider(TracerProvider delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public Tracer get(String instrumentationName) {
+      return delegate.get(instrumentationName);
+    }
+
+    @Override
+    public Tracer get(String instrumentationName, String instrumentationVersion) {
+      return delegate.get(instrumentationName, instrumentationVersion);
+    }
+
+    @Override
+    public TracerProvider unobfuscate() {
+      return delegate;
+    }
   }
 }

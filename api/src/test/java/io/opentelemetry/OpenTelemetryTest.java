@@ -95,8 +95,8 @@ public class OpenTelemetryTest {
         createService(TraceProvider.class, FirstTraceProvider.class, SecondTraceProvider.class);
     try {
       assertTrue(
-          (OpenTelemetry.getTracerProvider() instanceof FirstTraceProvider)
-              || (OpenTelemetry.getTracerProvider() instanceof SecondTraceProvider));
+          (OpenTelemetry.getTracerProvider().get("") instanceof FirstTraceProvider)
+              || (OpenTelemetry.getTracerProvider().get("") instanceof SecondTraceProvider));
     } finally {
       serviceFile.delete();
     }
@@ -108,7 +108,7 @@ public class OpenTelemetryTest {
         createService(TraceProvider.class, FirstTraceProvider.class, SecondTraceProvider.class);
     System.setProperty(TraceProvider.class.getName(), SecondTraceProvider.class.getName());
     try {
-      assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(SecondTraceProvider.class);
+      assertThat(OpenTelemetry.getTracerProvider().get("")).isInstanceOf(SecondTraceProvider.class);
     } finally {
       serviceFile.delete();
     }
