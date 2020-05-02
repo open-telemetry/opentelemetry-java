@@ -19,9 +19,12 @@ package io.opentelemetry.exporters.otlp;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,6 +100,18 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   }
 
   /**
+   * Returns a new {@link OtlpGrpcSpanExporter} reading the configuration values from the
+   * environment and from system properties. System properties override values defined in the
+   * environment. If a configuration value is missing, it uses the default value.
+   *
+   * @return a new {@link OtlpGrpcSpanExporter} instance.
+   * @since 0.4.0
+   */
+  public static OtlpGrpcSpanExporter getDefault() {
+    return newBuilder().readEnvironment().readSystemProperties().build();
+  }
+
+  /**
    * Initiates an orderly shutdown in which preexisting calls continue but new calls are immediately
    * cancelled. The channel is forcefully closed after a timeout.
    */
@@ -110,7 +125,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   }
 
   /** Builder utility for this exporter. */
-  public static class Builder {
+  public static class Builder extends ConfigBuilder<Builder> {
+    private static final String KEY_SPAN_TIMEOUT = "otel.otlp.span.timeout";
     private ManagedChannel channel;
     private long deadlineMs = 1_000; // 1 second
 
@@ -146,5 +162,77 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     }
 
     private Builder() {}
+
+    /**
+     * Sets the configuration values from the given configuration map for only the available keys.
+     * This method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time for the collector to
+     *       process each span batch.
+     * </ul>
+     *
+     * @param configMap {@link Map} holding the configuration values.
+     * @return this.
+     */
+    @Override
+    protected Builder fromConfigMap(
+        Map<String, String> configMap, NamingConvention namingConvention) {
+      configMap = namingConvention.normalize(configMap);
+      Long value = getLongProperty(KEY_SPAN_TIMEOUT, configMap);
+      if (value != null) {
+        this.setDeadlineMs(value);
+      }
+      return this;
+    }
+
+    /**
+     * Sets the configuration values from the given properties object for only the available keys.
+     * This method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time for the collector to
+     *       process each span batch.
+     * </ul>
+     *
+     * @param properties {@link Properties} holding the configuration values.
+     * @return this.
+     */
+    @Override
+    public Builder readProperties(Properties properties) {
+      return super.readProperties(properties);
+    }
+
+    /**
+     * Sets the configuration values from environment variables for only the available keys. This
+     * method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code OTEL_OTLP_SPAN_TIMEOUT}: to set the max waiting time for the collector to
+     *       process each span batch.
+     * </ul>
+     *
+     * @return this.
+     */
+    @Override
+    public Builder readEnvironment() {
+      return super.readEnvironment();
+    }
+
+    /**
+     * Sets the configuration values from system properties for only the available keys. This method
+     * looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time for the collector to
+     *       process each span batch.
+     * </ul>
+     *
+     * @return this.
+     */
+    @Override
+    public Builder readSystemProperties() {
+      return super.readSystemProperties();
+    }
   }
 }
