@@ -18,12 +18,12 @@ package io.opentelemetry.contrib.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -44,8 +44,8 @@ final class B3PropagatorInjector {
   }
 
   <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter) {
-    Utils.checkNotNull(context, "context");
-    Utils.checkNotNull(setter, "setter");
+    Objects.requireNonNull(context, "context");
+    Objects.requireNonNull(setter, "setter");
 
     Span span = TracingContextUtils.getSpanWithoutDefault(context);
     if (span == null) {

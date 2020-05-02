@@ -28,7 +28,6 @@ import static io.opentelemetry.contrib.trace.propagation.B3Propagator.TRUE_INT;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.StringUtils;
-import io.opentelemetry.internal.Utils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -36,6 +35,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
@@ -54,8 +54,8 @@ final class B3PropagatorExtractor {
   }
 
   <C> Context extract(Context context, C carrier, HttpTextFormat.Getter<C> getter) {
-    Utils.checkNotNull(carrier, "carrier");
-    Utils.checkNotNull(getter, "getter");
+    Objects.requireNonNull(carrier, "carrier");
+    Objects.requireNonNull(getter, "getter");
 
     SpanContext spanContext;
 
