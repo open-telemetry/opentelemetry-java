@@ -41,7 +41,13 @@ public final class PushExporter {
   public PushExporter(Collection<MetricProducer> producers) {
     metricExporter = new PushMetricExporter();
     intervalMetricReader =
-        new IntervalMetricReader(producers, metricExporter, 60 /* export interval sec*/);
+        IntervalMetricReader.builder()
+                    .readEnvironment() // Read configuration from environment variables
+                    .readSystemProperties() // Read configuration from system properties
+                    .setExportIntervalMillis(100_000) 
+                    .setMetricExporter(metricExporter)
+                    .setMetricProducers(Collections.singletonList(producers))
+                    .build();
   }
   
   // Can be accessed by any "push based" library to export metrics.
