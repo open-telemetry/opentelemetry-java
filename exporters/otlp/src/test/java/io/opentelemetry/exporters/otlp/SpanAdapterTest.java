@@ -81,7 +81,7 @@ public class SpanAdapterTest {
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(span.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-    assertThat(span.getParentSpanId().toByteArray()).isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0});
+    assertThat(span.getParentSpanId().toByteArray()).isEqualTo(new byte[] {});
     assertThat(span.getName()).isEqualTo("GET /api/endpoint");
     assertThat(span.getKind()).isEqualTo(SpanKind.SERVER);
     assertThat(span.getStartTimeUnixNano()).isEqualTo(12345);
