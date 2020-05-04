@@ -53,15 +53,18 @@ subprojects {
 
         // ExpectedExceptionRefactoring and TestExceptionRefactoring suggest using
         // assertThrows, but assertThrows only works well with lambdas.
-        it.options.errorprone.disable("ExpectedExceptionRefactoring") // "-Xep:ExpectedExceptionRefactoring:OFF"
+        it.options.errorprone.disable("ExpectedExceptionRefactoring")
+        // "-Xep:ExpectedExceptionRefactoring:OFF"
 
         // AutoValueImmutableFields suggests returning Guava types from API methods
-        it.options.errorprone.disable("AutoValueImmutableFields") // "-Xep:AutoValueImmutableFields:OFF"
+        it.options.errorprone.disable("AutoValueImmutableFields")
+        // "-Xep:AutoValueImmutableFields:OFF"
 
         it.options.encoding = "UTF-8"
 
         // Ignore warnings for protobuf and jmh generated files.
-        it.options.errorprone.excludedPaths = ".*generated.*" // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
+        it.options.errorprone.excludedPaths = ".*generated.*"
+        // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
 
         // Enforce errorprone warnings to be errors.
         if (!JavaVersion.current().isJava9() && !JavaVersion.current().isJava10() && !JavaVersion.current().isJava11()) {
@@ -98,6 +101,13 @@ subprojects {
         protocVersion = '3.11.4'
         zipkinReporterVersion = '2.12.2'
 
+        boms = [
+                grpc           : "io.grpc:grpc-bom:${grpcVersion}",
+                guava          : "com.google.guava:guava-bom:${guavaVersion}",
+                protobuf       : "com.google.protobuf:protobuf-bom:${protobufVersion}",
+                zipkin_reporter: "io.zipkin.reporter2:zipkin-reporter-bom:${zipkinReporterVersion}"
+        ]
+
         libraries = [
                 auto_value              : "com.google.auto.value:auto-value:${autoValueVersion}",
                 auto_value_annotation   : "com.google.auto.value:auto-value-annotations:${autoValueVersion}",
@@ -105,36 +115,36 @@ subprojects {
                 errorprone_annotation   : "com.google.errorprone:error_prone_annotations:${errorProneVersion}",
                 errorprone_core         : "com.google.errorprone:error_prone_core:${errorProneVersion}",
                 errorprone_javac        : "com.google.errorprone:javac:${errorProneJavacVersion}",
-                grpc_api                : "io.grpc:grpc-api:${grpcVersion}",
-                grpc_context            : "io.grpc:grpc-context:${grpcVersion}",
-                grpc_protobuf           : "io.grpc:grpc-protobuf:${grpcVersion}",
-                grpc_stub               : "io.grpc:grpc-stub:${grpcVersion}",
-                guava                   : "com.google.guava:guava:${guavaVersion}",
+                grpc_api                : "io.grpc:grpc-api",
+                grpc_context            : "io.grpc:grpc-context",
+                grpc_protobuf           : "io.grpc:grpc-protobuf",
+                grpc_stub               : "io.grpc:grpc-stub",
+                guava                   : "com.google.guava:guava",
                 javax_annotations       : "javax.annotation:javax.annotation-api:1.3.2",
                 jmh_core                : "org.openjdk.jmh:jmh-core:${jmhVersion}",
                 jmh_bytecode            : "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
                 jsr305                  : "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
                 prometheus_client       : "io.prometheus:simpleclient:${prometheusVersion}",
                 prometheus_client_common: "io.prometheus:simpleclient_common:${prometheusVersion}",
-                protobuf                : "com.google.protobuf:protobuf-java:${protobufVersion}",
-                protobuf_util           : "com.google.protobuf:protobuf-java-util:${protobufVersion}",
-                zipkin_reporter         : "io.zipkin.reporter2:zipkin-reporter:${zipkinReporterVersion}",
-                zipkin_urlconnection    : "io.zipkin.reporter2:zipkin-sender-urlconnection:${zipkinReporterVersion}",
+                protobuf                : "com.google.protobuf:protobuf-java",
+                protobuf_util           : "com.google.protobuf:protobuf-java-util",
+                zipkin_reporter         : "io.zipkin.reporter2:zipkin-reporter",
+                zipkin_urlconnection    : "io.zipkin.reporter2:zipkin-sender-urlconnection",
 
                 // Compatibility layer
-                opentracing          : "io.opentracing:opentracing-api:${opentracingVersion}",
+                opentracing             : "io.opentracing:opentracing-api:${opentracingVersion}",
 
                 // Test dependencies.
-                guava_testlib        : "com.google.guava:guava-testlib:${guavaVersion}",
-                junit                : 'junit:junit:4.12',
-                mockito              : 'org.mockito:mockito-core:2.28.2',
-                truth                : 'com.google.truth:truth:1.0.1',
-                system_rules         : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
-                slf4jsimple          : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
-                awaitility           : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
-                testcontainers       : 'org.testcontainers:testcontainers:1.13.0',
-                rest_assured         : 'io.rest-assured:rest-assured:4.2.0',
-                jaeger_client        : 'io.jaegertracing:jaeger-client:1.2.0' // Jaeger Client
+                guava_testlib           : "com.google.guava:guava-testlib",
+                junit                   : 'junit:junit:4.12',
+                mockito                 : 'org.mockito:mockito-core:2.28.2',
+                truth                   : 'com.google.truth:truth:1.0.1',
+                system_rules            : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
+                slf4jsimple             : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
+                awaitility              : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
+                testcontainers          : 'org.testcontainers:testcontainers:1.13.0',
+                rest_assured            : 'io.rest-assured:rest-assured:4.2.0',
+                jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0' // Jaeger Client
         ]
     }
 
@@ -161,6 +171,12 @@ subprojects {
     }
 
     dependencies {
+
+        implementation platform(boms.grpc),
+                platform(boms.guava),
+                platform(boms.protobuf),
+                platform(boms.zipkin_reporter)
+
         compileOnly libraries.auto_value_annotation,
                 libraries.errorprone_annotation,
                 libraries.jsr305
