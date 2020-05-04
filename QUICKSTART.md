@@ -284,17 +284,17 @@ The following is an example of observer usage:
 ```java
 // Build observer e.g. LongObserver
 LongObserver observer = meter
-        .observerLongBuilder("doWork_latency")
-        .setDescription("gRPC Latency")
+        .observerLongBuilder("cpu_usage")
+        .setDescription("CPU Usage")
         .setUnit("ms")
         .build();
 
 observer.setCallback(
         new LongObserver.Callback<LongObserver.ResultLongObserver>() {
-          final AtomicInteger count = new AtomicInteger(0);
           @Override
           public void update(ResultLongObserver result) {
-            result.observe(count.addAndGet(1), "Key", "SomeWork");
+            // long getCpuUsage()
+            result.observe(getCpuUsage(), "Key", "SomeWork");
           }
         });
 ```
