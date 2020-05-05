@@ -19,7 +19,8 @@ dependencies {
     implementation libraries.zipkin_urlconnection
 
     testImplementation libraries.guava
-
+    testImplementation libraries.zipkin_junit
+    
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
