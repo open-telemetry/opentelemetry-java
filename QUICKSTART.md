@@ -251,7 +251,7 @@ business metric such as transactions.
 All metrics can be annotated with labels: additional qualifiers that help describe what
 subdivision of the measurements the metric represents.
 
-The following is an example of metric usage:
+The following is an example of counter usage:
 
 ```java
 // Gets or creates a named meter instance
@@ -271,6 +271,32 @@ BoundLongCounter someWorkCounter = counter.bind("Key", "SomeWork");
 // Record data
 someWorkCounter.add(123);
 
+// Alternatively, the user can use the unbounded counter and explicitly
+// specify the labels set at call-time:
+counter.add(123, "Key", "SomeWork");
+```
+
+`Observer` is an additional instrument supporting an asynchronous API and
+collecting metric data on demand, once per collection interval.
+
+The following is an example of observer usage:
+
+```java
+// Build observer e.g. LongObserver
+LongObserver observer = meter
+        .observerLongBuilder("cpu_usage")
+        .setDescription("CPU Usage")
+        .setUnit("ms")
+        .build();
+
+observer.setCallback(
+        new LongObserver.Callback<LongObserver.ResultLongObserver>() {
+          @Override
+          public void update(ResultLongObserver result) {
+            // long getCpuUsage()
+            result.observe(getCpuUsage(), "Key", "SomeWork");
+          }
+        });
 ```
 
 ## Tracing SDK Configuration

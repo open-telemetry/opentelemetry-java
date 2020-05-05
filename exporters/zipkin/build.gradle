@@ -25,6 +25,16 @@ dependencies {
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }
 
+configurations {
+    all {
+        resolutionStrategy {
+            // override the version of zipkin-junit provided by zipkin-reporter bom
+            // as newer versions use okhttp v4.x (which requires JVM >= 8).
+            force 'io.zipkin.zipkin2:zipkin-junit:2.18.3'
+        }
+    }
+}
+
 animalsniffer {
     // Don't check sourceSets.jmh and sourceSets.test
     sourceSets = [
