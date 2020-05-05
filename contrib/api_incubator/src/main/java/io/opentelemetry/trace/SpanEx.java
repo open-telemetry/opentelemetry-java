@@ -126,6 +126,32 @@ public class SpanEx {
     public SpanEx startSpan() {
       return new SpanEx(builder.startSpan());
     }
+
+    // option 1... provide a single attribute
+    public SpanEx.Builder setAttribute(Attribute attribute) {
+      builder.setAttribute(attribute.key().key(), makeValue(attribute));
+      return this;
+    }
+
+    // option 2... a type-safe key-value pair with varargs parameters
+
+    /** doc me. */
+    public SpanEx.Builder setAttribute(Attribute... attributes) {
+      for (Attribute attribute : attributes) {
+        builder.setAttribute(attribute.key().key(), makeValue(attribute));
+      }
+      return this;
+    }
+
+    // option 3... accept a bunch of attributes at once
+
+    /** doc me. */
+    public SpanEx.Builder setAttribute(Attributes attributes) {
+      for (AttributeKey key : attributes.getKeys()) {
+        builder.setAttribute(key.key(), makeValue(attributes, key));
+      }
+      return this;
+    }
   }
 
   private static Map<String, AttributeValue> makeAttributeMap(Attribute[] attributes) {

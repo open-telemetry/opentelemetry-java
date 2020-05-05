@@ -29,6 +29,7 @@ import io.opentelemetry.common.AttributeKey.DoubleValuedKey;
 import io.opentelemetry.common.AttributeKey.LongValuedKey;
 import io.opentelemetry.common.AttributeKey.StringValuedKey;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.SemanticAttributes;
 import io.opentelemetry.context.Scope;
 import org.junit.Test;
 
@@ -61,10 +62,45 @@ public class TracerExTest {
     testSpan.end();
   }
 
+  @Test
+  public void testTracerExApi_setAttributes() {
+    TracerEx testTracer = new TracerEx(OpenTelemetry.getTracerProvider().get("testTracer"));
+
+    SpanEx testSpan =
+        testTracer
+            .spanBuilder("testSpan")
+            // option 1 - single
+            .setAttribute(Attribute.create(SemanticAttributes.HTTP_METHOD, "GET"))
+            // option 2 - multiple
+            .setAttribute(
+                Attribute.create(SemanticAttributes.HTTP_METHOD, "GET"),
+                Attribute.create(SemanticAttributes.NET_HOST_PORT, 8080))
+            // option 3 - bunch
+            .setAttribute(httpAttribute())
+            .startSpan();
+    try (Scope ignored = testTracer.withSpan(testSpan)) {
+      // do some work
+    }
+    testSpan.end();
+  }
+
   private static Attributes testAttributes() {
     return ArrayBasedAttributes.newBuilder()
         .put(DOUBLE_ATTRIBUTE, 100.777635353d)
         .put(STRING_ATTRIBUTE, "hello, world")
+        .build();
+  }
+
+  private static Attributes httpAttribute() {
+    return ArrayBasedAttributes.newBuilder()
+        .put(SemanticAttributes.HTTP_METHOD, "GET")
+        .put(SemanticAttributes.HTTP_TARGET, "/my/example")
+        .put(SemanticAttributes.HTTP_HOST, "opentelemetry.io")
+        .put(SemanticAttributes.HTTP_SCHEME, "https")
+        .put(SemanticAttributes.NET_PEER_IP, "192.168.0.0")
+        .put(SemanticAttributes.NET_PEER_PORT, 3000)
+        .put(SemanticAttributes.NET_HOST_IP, "127.0.0.1")
+        .put(SemanticAttributes.NET_HOST_PORT, 8080)
         .build();
   }
 }
