@@ -65,7 +65,7 @@ public final class OpenTelemetry {
   /**
    * Returns a singleton {@link TracerProvider}.
    *
-   * @return registered TracerProvider of default via {@link DefaultTracerProvider#getInstance()}.
+   * @return registered TracerProvider or default via {@link DefaultTracerProvider#getInstance()}.
    * @throws IllegalStateException if a specified TracerProvider (via system properties) could not
    *     be found.
    * @since 0.1.0
