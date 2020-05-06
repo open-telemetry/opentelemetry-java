@@ -40,9 +40,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   private final long deadlineMs;
 
   /**
-   * Creates a new Jaeger gRPC Span Reporter with the given name, using the given channel.
+   * Creates a new OTLP gRPC Span Reporter with the given name, using the given channel.
    *
-   * @param channel the channel to use when communicating with the Jaeger Collector.
+   * @param channel the channel to use when communicating with the OpenTelemetry Collector.
    * @param deadlineMs max waiting time for the collector to process each span batch. When set to 0
    *     or to a negative value, the exporter will wait indefinitely.
    */
@@ -53,7 +53,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   }
 
   /**
-   * Submits all the given spans in a single batch to the Jaeger collector.
+   * Submits all the given spans in a single batch to the OpenTelemetry collector.
    *
    * @param spans the list of sampled Spans to be exported.
    * @return the result of the operation

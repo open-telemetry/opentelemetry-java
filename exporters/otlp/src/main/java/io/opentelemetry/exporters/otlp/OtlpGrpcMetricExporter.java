@@ -40,9 +40,9 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   private final long deadlineMs;
 
   /**
-   * Creates a new Jaeger gRPC Metric Reporter with the given name, using the given channel.
+   * Creates a new OTLP gRPC Metric Reporter with the given name, using the given channel.
    *
-   * @param channel the channel to use when communicating with the Jaeger Collector.
+   * @param channel the channel to use when communicating with the OpenTelemetry Collector.
    * @param deadlineMs max waiting time for the collector to process each metric batch. When set to
    *     0 or to a negative value, the exporter will wait indefinitely.
    */
@@ -53,7 +53,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   }
 
   /**
-   * Submits all the given metrics in a single batch to the Jaeger collector.
+   * Submits all the given metrics in a single batch to the OpenTelemetry collector.
    *
    * @param metrics the list of Metrics to be exported.
    * @return the result of the operation
