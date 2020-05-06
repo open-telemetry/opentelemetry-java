@@ -34,7 +34,7 @@ public class LongCounterTest {
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
 
-  private final Meter meter = OpenTelemetry.getMeterProvider().get("counter_long_test");
+  private final Meter meter = OpenTelemetry.getMeter("counter_long_test");
 
   @Test
   public void preventNonPrintableName() {
