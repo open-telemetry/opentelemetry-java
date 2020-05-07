@@ -16,7 +16,7 @@
 
 package io.opentelemetry.contrib.trace.propagation;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;

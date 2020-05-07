@@ -18,7 +18,7 @@ package io.opentelemetry.correlationcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.grpc.Context;
+import io.opentelemetry.context.CurrentContext;
 import io.opentelemetry.context.Scope;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,14 +67,13 @@ public final class DefaultCorrelationContextManagerTest {
 
   @Test
   public void getCurrentContext_ContextSetToNull() {
-    Context orig =
-        CorrelationsContextUtils.withCorrelationContext(null, Context.current()).attach();
+    Scope scope = CurrentContext.withCorrelationContext(null);
     try {
       CorrelationContext distContext = defaultCorrelationContextManager.getCurrentContext();
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
     } finally {
-      Context.current().detach(orig);
+      scope.close();
     }
   }
 
@@ -106,32 +105,6 @@ public final class DefaultCorrelationContextManagerTest {
     }
     assertThat(defaultCorrelationContextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-  }
-
-  @Test
-  public void withContextUsingWrap() {
-    Runnable runnable;
-    Scope wtm = defaultCorrelationContextManager.withContext(DIST_CONTEXT);
-    try {
-      assertThat(defaultCorrelationContextManager.getCurrentContext())
-          .isSameInstanceAs(DIST_CONTEXT);
-      runnable =
-          Context.current()
-              .wrap(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      assertThat(defaultCorrelationContextManager.getCurrentContext())
-                          .isSameInstanceAs(DIST_CONTEXT);
-                    }
-                  });
-    } finally {
-      wtm.close();
-    }
-    assertThat(defaultCorrelationContextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    // When we run the runnable we will have the CorrelationContext in the current Context.
-    runnable.run();
   }
 
   @Test

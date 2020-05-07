@@ -18,7 +18,7 @@ package io.opentelemetry.contrib.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
 import io.opentelemetry.internal.StringUtils;
@@ -28,7 +28,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -74,11 +73,11 @@ public class B3PropagatorTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static SpanContext getSpanContext(Context context) {
-    return TracingContextUtils.getSpan(context).getContext();
+    return context.getSpan().getContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return context.withSpan(DefaultSpan.create(spanContext));
   }
 
   @Test

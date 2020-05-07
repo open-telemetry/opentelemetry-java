@@ -19,7 +19,7 @@ package io.opentelemetry.trace.propagation;
 import static io.opentelemetry.internal.Utils.checkArgument;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
@@ -28,7 +28,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -80,7 +79,7 @@ public class HttpTraceContext implements HttpTextFormat {
     checkNotNull(context, "context");
     checkNotNull(setter, "setter");
 
-    Span span = TracingContextUtils.getSpanWithoutDefault(context);
+    Span span = context.getSpanWithoutDefault();
     if (span == null) {
       return;
     }
@@ -125,7 +124,7 @@ public class HttpTraceContext implements HttpTextFormat {
     checkNotNull(getter, "getter");
 
     SpanContext spanContext = extractImpl(carrier, getter);
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return context.withSpan(DefaultSpan.create(spanContext));
   }
 
   private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {

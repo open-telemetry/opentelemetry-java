@@ -16,6 +16,8 @@
 
 package io.opentelemetry.correlationcontext;
 
+import com.google.errorprone.annotations.MustBeClosed;
+import io.opentelemetry.context.CurrentContext;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
@@ -42,9 +44,10 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
     return INSTANCE;
   }
 
+  // TODO (trask) can we remove this now?
   @Override
   public CorrelationContext getCurrentContext() {
-    return CorrelationsContextUtils.getCurrentCorrelationContext();
+    return CurrentContext.getCorrelationContext();
   }
 
   @Override
@@ -52,9 +55,11 @@ public final class DefaultCorrelationContextManager implements CorrelationContex
     return new NoopCorrelationContextBuilder();
   }
 
+  // TODO (trask) can we remove this now?
   @Override
-  public Scope withContext(CorrelationContext distContext) {
-    return CorrelationsContextUtils.currentContextWith(distContext);
+  @MustBeClosed
+  public Scope withContext(CorrelationContext correlationContext) {
+    return CurrentContext.withCorrelationContext(correlationContext);
   }
 
   @Immutable

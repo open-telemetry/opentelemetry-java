@@ -116,7 +116,6 @@ subprojects {
                 errorprone_core         : "com.google.errorprone:error_prone_core:${errorProneVersion}",
                 errorprone_javac        : "com.google.errorprone:javac:${errorProneJavacVersion}",
                 grpc_api                : "io.grpc:grpc-api",
-                grpc_context            : "io.grpc:grpc-context",
                 grpc_protobuf           : "io.grpc:grpc-protobuf",
                 grpc_stub               : "io.grpc:grpc-stub",
                 guava                   : "com.google.guava:guava",

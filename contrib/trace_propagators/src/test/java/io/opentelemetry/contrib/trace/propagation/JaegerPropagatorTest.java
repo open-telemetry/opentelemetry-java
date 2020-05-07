@@ -21,9 +21,9 @@ import static io.opentelemetry.contrib.trace.propagation.JaegerPropagator.DEPREC
 import static io.opentelemetry.contrib.trace.propagation.JaegerPropagator.PROPAGATION_HEADER;
 import static io.opentelemetry.contrib.trace.propagation.JaegerPropagator.PROPAGATION_HEADER_DELIMITER;
 
-import io.grpc.Context;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
 import io.opentelemetry.trace.DefaultSpan;
@@ -32,7 +32,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.LinkedHashMap;
@@ -84,11 +83,11 @@ public class JaegerPropagatorTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static SpanContext getSpanContext(Context context) {
-    return TracingContextUtils.getSpan(context).getContext();
+    return context.getSpan().getContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+    return context.withSpan(DefaultSpan.create(spanContext));
   }
 
   @Test

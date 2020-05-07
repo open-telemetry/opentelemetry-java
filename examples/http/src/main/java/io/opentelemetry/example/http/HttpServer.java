@@ -18,9 +18,9 @@ package io.opentelemetry.example.http;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;

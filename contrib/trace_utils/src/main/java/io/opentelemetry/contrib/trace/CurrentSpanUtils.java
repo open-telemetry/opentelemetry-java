@@ -16,13 +16,16 @@
 
 package io.opentelemetry.contrib.trace;
 
-import io.grpc.Context;
+import io.opentelemetry.context.CurrentContext;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 
-/** Util methods/functionality to interact with the {@link Span} in the {@link io.grpc.Context}. */
+/**
+ * Util methods/functionality to interact with the {@link Span} in the {@link
+ * io.opentelemetry.context.Context}.
+ */
 public final class CurrentSpanUtils {
   // No instance of this class.
   private CurrentSpanUtils() {}
@@ -65,8 +68,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public void run() {
-      Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
-      try {
+      try (Scope ignored = CurrentContext.withSpan(span)) {
         runnable.run();
       } catch (Throwable t) {
         setErrorStatus(span, t);
@@ -77,7 +79,6 @@ public final class CurrentSpanUtils {
         }
         throw new RuntimeException("unexpected", t);
       } finally {
-        Context.current().detach(origContext);
         if (endSpan) {
           span.end();
         }
@@ -98,8 +99,7 @@ public final class CurrentSpanUtils {
 
     @Override
     public V call() throws Exception {
-      Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
-      try {
+      try (Scope ignored = CurrentContext.withSpan(span)) {
         return callable.call();
       } catch (Exception e) {
         setErrorStatus(span, e);
@@ -111,7 +111,6 @@ public final class CurrentSpanUtils {
         }
         throw new RuntimeException("unexpected", t);
       } finally {
-        Context.current().detach(origContext);
         if (endSpan) {
           span.end();
         }

@@ -16,19 +16,21 @@
 
 package io.opentelemetry.sdk.correlationcontext;
 
+import com.google.errorprone.annotations.MustBeClosed;
+import io.opentelemetry.context.CurrentContext;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 
 /**
  * {@link CorrelationContextManagerSdk} is SDK implementation of {@link CorrelationContextManager}.
  */
 public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
+  // TODO (trask) can we remove this now?
   @Override
   public CorrelationContext getCurrentContext() {
-    return CorrelationsContextUtils.getCurrentCorrelationContext();
+    return CurrentContext.getCorrelationContext();
   }
 
   @Override
@@ -36,8 +38,10 @@ public class CorrelationContextManagerSdk implements CorrelationContextManager {
     return new CorrelationContextSdk.Builder();
   }
 
+  // TODO (trask) can we remove this now?
   @Override
-  public Scope withContext(CorrelationContext distContext) {
-    return CorrelationsContextUtils.currentContextWith(distContext);
+  @MustBeClosed
+  public Scope withContext(CorrelationContext correlationContext) {
+    return CurrentContext.withCorrelationContext(correlationContext);
   }
 }

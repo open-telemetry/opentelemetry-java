@@ -18,10 +18,9 @@ package io.opentelemetry.sdk.correlationcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.grpc.Context;
+import io.opentelemetry.context.CurrentContext;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
-import io.opentelemetry.correlationcontext.CorrelationsContextUtils;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,14 +51,10 @@ public class CorrelationContextManagerSdkTest {
 
   @Test
   public void testGetCurrentContext_ContextSetToNull() {
-    Context orig =
-        CorrelationsContextUtils.withCorrelationContext(null, Context.current()).attach();
-    try {
+    try (Scope ignored = CurrentContext.withCorrelationContext(null)) {
       CorrelationContext distContext = contextManager.getCurrentContext();
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
-    } finally {
-      Context.current().detach(orig);
     }
   }
 
@@ -67,31 +62,10 @@ public class CorrelationContextManagerSdkTest {
   public void testWithCorrelationContext() {
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    try (Scope wtm = contextManager.withContext(distContext)) {
+    try (Scope ignored = contextManager.withContext(distContext)) {
       assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
     }
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-  }
-
-  @Test
-  public void testWithCorrelationContextUsingWrap() {
-    Runnable runnable;
-    try (Scope wtm = contextManager.withContext(distContext)) {
-      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
-      runnable =
-          Context.current()
-              .wrap(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
-                    }
-                  });
-    }
-    assertThat(contextManager.getCurrentContext())
-        .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    // When we run the runnable we will have the CorrelationContext in the current Context.
-    runnable.run();
   }
 }

@@ -17,7 +17,6 @@
 
 package io.opentelemetry.example;
 
-import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.Grpc;
 import io.grpc.Metadata;
@@ -27,6 +26,7 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;

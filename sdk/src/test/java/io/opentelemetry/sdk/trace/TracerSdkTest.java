@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.context.CurrentContext;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.trace.export.BatchSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
@@ -76,12 +75,8 @@ public class TracerSdkTest {
   @Test
   public void getCurrentSpan() {
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Context origContext = TracingContextUtils.withSpan(span, Context.current()).attach();
-    // Make sure context is detached even if test fails.
-    try {
+    try (Scope ignored = CurrentContext.withSpan(span)) {
       assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
-    } finally {
-      Context.current().detach(origContext);
     }
     assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.context.propagation;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;

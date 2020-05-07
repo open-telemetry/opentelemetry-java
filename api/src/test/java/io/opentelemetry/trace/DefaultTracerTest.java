@@ -18,8 +18,7 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.grpc.Context;
-import io.opentelemetry.context.ContextUtils;
+import io.opentelemetry.context.CurrentContext;
 import io.opentelemetry.context.Scope;
 import org.junit.Rule;
 import org.junit.Test;
@@ -122,9 +121,7 @@ public class DefaultTracerTest {
 
   @Test
   public void testSpanContextPropagationCurrentSpanContext() {
-    Context context =
-        TracingContextUtils.withSpan(DefaultSpan.create(spanContext), Context.current());
-    Scope scope = ContextUtils.withScopedContext(context);
+    Scope scope = CurrentContext.withSpan(DefaultSpan.create(spanContext));
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);

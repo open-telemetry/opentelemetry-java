@@ -20,10 +20,10 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
+import io.opentelemetry.context.CurrentContext;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
-import io.opentelemetry.trace.TracingContextUtils;
 import java.util.concurrent.Callable;
 import org.junit.Before;
 import org.junit.Test;
@@ -249,6 +249,6 @@ public class CurrentSpanUtilsTest {
   }
 
   private static Span getCurrentSpan() {
-    return TracingContextUtils.getCurrentSpan();
+    return CurrentContext.getSpan();
   }
 }
