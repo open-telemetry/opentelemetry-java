@@ -47,7 +47,7 @@ import zipkin2.reporter.Sender;
  * This class was based on the OpenCensus zipkin exporter code at
  * https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin
  */
-final class ZipkinSpanExporter implements SpanExporter {
+public final class ZipkinSpanExporter implements SpanExporter {
 
   private static final Logger logger = Logger.getLogger(ZipkinSpanExporter.class.getName());
 
