@@ -54,7 +54,7 @@ public class HelloWorldClientStream {
 
   // OTel API
   Tracer tracer =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.HelloWorldClient");;
+      OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");;
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text headers

@@ -31,7 +31,7 @@ public class TraceShimTest {
   @Test
   public void createTracerShim_default() {
     TracerShim tracerShim = (TracerShim) TraceShim.createTracerShim();
-    assertEquals(OpenTelemetry.getTracerProvider().get("opentracingshim"), tracerShim.tracer());
+    assertEquals(OpenTelemetry.getTracer("opentracingshim"), tracerShim.tracer());
     assertEquals(OpenTelemetry.getCorrelationContextManager(), tracerShim.contextManager());
   }
 

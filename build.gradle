@@ -187,7 +187,7 @@ subprojects {
                 libraries.mockito,
                 libraries.truth,
                 libraries.guava_testlib
-        
+
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check
         errorprone libraries.errorprone_core

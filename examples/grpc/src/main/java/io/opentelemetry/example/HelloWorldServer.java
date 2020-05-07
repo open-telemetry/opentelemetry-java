@@ -49,7 +49,7 @@ public class HelloWorldServer {
 
   // OTel API
   Tracer tracer =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.HelloWorldServer");
+      OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text
