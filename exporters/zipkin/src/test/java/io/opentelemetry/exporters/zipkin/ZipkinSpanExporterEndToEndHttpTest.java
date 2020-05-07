@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import zipkin2.Endpoint;
+import zipkin2.Span;
 import zipkin2.codec.Encoding;
 import zipkin2.codec.SpanBytesEncoder;
 import zipkin2.junit.ZipkinRule;
@@ -82,16 +83,8 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   public void testExportAsProtobuf() {
 
     ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.builder()
-            .setSender(
-                URLConnectionSender.newBuilder()
-                    .endpoint(zipkin.httpUrl() + ENDPOINT_V2_SPANS)
-                    .encoding(Encoding.PROTO3)
-                    .build())
-            .setServiceName(SERVICE_NAME)
-            .setEncoder(SpanBytesEncoder.PROTO3)
-            .build();
-
+        buildZipkinExporterConfiguration(
+            zipkin.httpUrl() + ENDPOINT_V2_SPANS, Encoding.PROTO3, SpanBytesEncoder.PROTO3);
     exportAndVerify(configuration);
   }
 
@@ -100,33 +93,16 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
     @SuppressWarnings("deprecation")
     ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.builder()
-            .setSender(
-                URLConnectionSender.newBuilder()
-                    .endpoint(zipkin.httpUrl() + ENDPOINT_V1_SPANS)
-                    .encoding(Encoding.THRIFT)
-                    .build())
-            .setServiceName(SERVICE_NAME)
-            .setEncoder(SpanBytesEncoder.THRIFT)
-            .build();
-
+        buildZipkinExporterConfiguration(
+            zipkin.httpUrl() + ENDPOINT_V1_SPANS, Encoding.THRIFT, SpanBytesEncoder.THRIFT);
     exportAndVerify(configuration);
   }
 
   @Test
   public void testExportAsJsonV1() {
-
     ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.builder()
-            .setSender(
-                URLConnectionSender.newBuilder()
-                    .endpoint(zipkin.httpUrl() + ENDPOINT_V1_SPANS)
-                    .encoding(Encoding.JSON)
-                    .build())
-            .setServiceName(SERVICE_NAME)
-            .setEncoder(SpanBytesEncoder.JSON_V1)
-            .build();
-
+        buildZipkinExporterConfiguration(
+            zipkin.httpUrl() + ENDPOINT_V1_SPANS, Encoding.JSON, SpanBytesEncoder.JSON_V1);
     exportAndVerify(configuration);
   }
 
@@ -134,15 +110,8 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   public void testExportFailedAsWrongEncoderUsed() {
 
     ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.builder()
-            .setSender(
-                URLConnectionSender.newBuilder()
-                    .endpoint(zipkin.httpUrl() + ENDPOINT_V2_SPANS)
-                    .encoding(Encoding.JSON)
-                    .build())
-            .setServiceName(SERVICE_NAME)
-            .setEncoder(SpanBytesEncoder.PROTO3)
-            .build();
+        buildZipkinExporterConfiguration(
+            zipkin.httpUrl() + ENDPOINT_V2_SPANS, Encoding.JSON, SpanBytesEncoder.PROTO3);
 
     ZipkinSpanExporter zipkinSpanExporter = ZipkinSpanExporter.create(configuration);
 
@@ -150,9 +119,18 @@ public class ZipkinSpanExporterEndToEndHttpTest {
     SpanExporter.ResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
 
     assertThat(resultCode).isEqualTo(SpanExporter.ResultCode.FAILURE);
-    List<zipkin2.Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
+    List<Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
     assertThat(zipkinSpans).isNotNull();
     assertThat(zipkinSpans).isEmpty();
+  }
+
+  private static ZipkinExporterConfiguration buildZipkinExporterConfiguration(
+      String endpoint, Encoding encoding, SpanBytesEncoder encoder) {
+    return ZipkinExporterConfiguration.builder()
+        .setSender(URLConnectionSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
+        .setServiceName(SERVICE_NAME)
+        .setEncoder(encoder)
+        .build();
   }
 
   /**
@@ -166,12 +144,11 @@ public class ZipkinSpanExporterEndToEndHttpTest {
     SpanExporter.ResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
 
     assertThat(resultCode).isEqualTo(SpanExporter.ResultCode.SUCCESS);
-    List<zipkin2.Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
+    List<Span> zipkinSpans = zipkin.getTrace(TRACE_ID);
 
     assertThat(zipkinSpans).isNotNull();
     assertThat(zipkinSpans.size()).isEqualTo(1);
-    assertThat(zipkinSpans.get(0))
-        .isEqualTo(ZipkinSpanExporter.generateSpan(spanData, localEndpoint));
+    assertThat(zipkinSpans.get(0)).isEqualTo(buildZipkinSpan());
   }
 
   private static SpanData.Builder buildStandardSpan() {
@@ -181,7 +158,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
         .setTraceFlags(TraceFlags.builder().setIsSampled(true).build())
         .setStatus(Status.OK)
-        .setKind(Span.Kind.SERVER)
+        .setKind(Kind.SERVER)
         .setHasRemoteParent(true)
         .setName("Recv.helloworld.Greeter.SayHello")
         .setStartEpochNanos(1505855794_194009601L)
@@ -191,5 +168,20 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setLinks(Collections.<SpanData.Link>emptyList())
         .setEndEpochNanos(1505855799_465726528L)
         .setHasEnded(true);
+  }
+
+  private static Span buildZipkinSpan() {
+    return Span.newBuilder()
+        .traceId(TRACE_ID)
+        .parentId(PARENT_SPAN_ID)
+        .id(SPAN_ID)
+        .kind(Span.Kind.SERVER)
+        .name("Recv.helloworld.Greeter.SayHello")
+        .timestamp(1505855794000000L + 194009601L / 1000)
+        .duration((1505855799000000L + 465726528L / 1000) - (1505855794000000L + 194009601L / 1000))
+        .localEndpoint(localEndpoint)
+        .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
+        .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT")
+        .build();
   }
 }
