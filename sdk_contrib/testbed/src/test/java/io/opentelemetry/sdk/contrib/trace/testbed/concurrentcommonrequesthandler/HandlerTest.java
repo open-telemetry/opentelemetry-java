@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.contrib.trace.testbed.concurrentcommonrequesthandle
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
@@ -70,14 +71,14 @@ public class HandlerTest {
     assertThat(finished.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
     assertThat(finished.get(1).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 
   /** Active parent is not picked up by child. */
   @Test
   public void parent_not_picked_up() throws Exception {
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
-    try (Scope ignored = tracer.withSpan(parentSpan)) {
+    try (Scope ignored = CurrentContext.withSpan(parentSpan)) {
       String response = client.send("no_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("no_parent:response");
     } finally {
@@ -107,7 +108,7 @@ public class HandlerTest {
   public void bad_solution_to_set_parent() throws Exception {
     Client client;
     Span parentSpan = tracer.spanBuilder("parent").startSpan();
-    try (Scope ignored = tracer.withSpan(parentSpan)) {
+    try (Scope ignored = CurrentContext.withSpan(parentSpan)) {
       client = new Client(new RequestHandler(tracer, parentSpan.getContext()));
       String response = client.send("correct_parent").get(15, TimeUnit.SECONDS);
       assertThat(response).isEqualTo("correct_parent:response");

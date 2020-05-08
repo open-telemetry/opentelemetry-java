@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
@@ -52,7 +53,7 @@ public class MultipleCallbacksTest {
     Client client = new Client(tracer, parentDoneLatch);
 
     Span span = tracer.spanBuilder("parent").startSpan();
-    try (Scope scope = tracer.withSpan(span)) {
+    try (Scope scope = CurrentContext.withSpan(span)) {
       client.send("task1");
       client.send("task2");
       client.send("task3");
@@ -75,6 +76,6 @@ public class MultipleCallbacksTest {
       assertThat(spans.get(i).getParentSpanId()).isEqualTo(parentSpan.getSpanId());
     }
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 }

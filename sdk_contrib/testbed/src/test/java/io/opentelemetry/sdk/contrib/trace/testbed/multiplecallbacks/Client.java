@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.multiplecallbacks;
 
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -36,14 +37,14 @@ class Client {
   }
 
   public Future<Object> send(final Object message) {
-    final Span parent = tracer.getCurrentSpan();
+    final Span parent = CurrentContext.getSpan();
 
     return executor.submit(
         new Callable<Object>() {
           @Override
           public Object call() throws Exception {
             Span span = tracer.spanBuilder("subtask").setParent(parent).startSpan();
-            try (Scope subtaskScope = tracer.withSpan(span)) {
+            try (Scope subtaskScope = CurrentContext.withSpan(span)) {
               // Simulate work - make sure we finish *after* the parent Span.
               parentDoneLatch.await();
             } finally {

@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.contrib.trace.testbed.clientserver;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -41,7 +42,7 @@ final class Client {
     Span span = tracer.spanBuilder("send").setSpanKind(Kind.CLIENT).startSpan();
     span.setAttribute("component", "example-client");
 
-    try (Scope ignored = tracer.withSpan(span)) {
+    try (Scope ignored = CurrentContext.withSpan(span)) {
       OpenTelemetry.getPropagators()
           .getHttpTextFormat()
           .inject(

@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.contrib.trace.testbed.clientserver;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -56,9 +57,9 @@ final class Server extends Thread {
         tracer.spanBuilder("receive").setSpanKind(Kind.SERVER).setParent(spanContext).startSpan();
     span.setAttribute("component", "example-server");
 
-    try (Scope ignored = tracer.withSpan(span)) {
+    try (Scope ignored = CurrentContext.withSpan(span)) {
       // Simulate work.
-      tracer.getCurrentSpan().addEvent("DoWork");
+      CurrentContext.getSpan().addEvent("DoWork");
     } finally {
       span.end();
     }

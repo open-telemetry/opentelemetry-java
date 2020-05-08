@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.promisepropagation;
 
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -35,7 +36,7 @@ final class Promise<T> {
 
     // Passed along here for testing. Normally should be referenced via GlobalTracer.get().
     this.tracer = tracer;
-    parentSpan = tracer.getCurrentSpan();
+    parentSpan = CurrentContext.getSpan();
   }
 
   void onSuccess(SuccessCallback<T> successCallback) {
@@ -55,7 +56,7 @@ final class Promise<T> {
             public void run() {
               Span childSpan = tracer.spanBuilder("success").setParent(parentSpan).startSpan();
               childSpan.setAttribute("component", "success");
-              try (Scope ignored = tracer.withSpan(childSpan)) {
+              try (Scope ignored = CurrentContext.withSpan(childSpan)) {
                 callback.accept(result);
               } finally {
                 childSpan.end();
@@ -75,7 +76,7 @@ final class Promise<T> {
             public void run() {
               Span childSpan = tracer.spanBuilder("error").setParent(parentSpan).startSpan();
               childSpan.setAttribute("component", "error");
-              try (Scope ignored = tracer.withSpan(childSpan)) {
+              try (Scope ignored = CurrentContext.withSpan(childSpan)) {
                 callback.accept(error);
               } finally {
                 childSpan.end();

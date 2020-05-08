@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.contrib.trace.testbed.listenerperrequest;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -44,6 +45,6 @@ public class ListenerTest {
     assertThat(finished).hasSize(1);
     assertThat(finished.get(0).getKind()).isEqualTo(Kind.CLIENT);
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 }

@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.opentelemetry.currentcontext.CurrentContext;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -45,7 +46,7 @@ public class DefaultTracerBenchmarks {
   @Warmup(iterations = 5, time = 1)
   public void measureFullSpanLifecycle() {
     span = tracer.spanBuilder("span").startSpan();
-    io.opentelemetry.currentcontext.Scope ignored = tracer.withSpan(span);
+    io.opentelemetry.currentcontext.Scope ignored = CurrentContext.withSpan(span);
     try {
       // no-op
     } finally {
@@ -72,7 +73,7 @@ public class DefaultTracerBenchmarks {
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
   public void measureScopeLifecycle() {
-    io.opentelemetry.currentcontext.Scope ignored = tracer.withSpan(span);
+    io.opentelemetry.currentcontext.Scope ignored = CurrentContext.withSpan(span);
     try {
       // no-op
     } finally {
@@ -87,7 +88,7 @@ public class DefaultTracerBenchmarks {
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
   public void measureGetCurrentSpan() {
-    tracer.getCurrentSpan();
+    CurrentContext.getSpan();
   }
 
   @TearDown(Level.Iteration)

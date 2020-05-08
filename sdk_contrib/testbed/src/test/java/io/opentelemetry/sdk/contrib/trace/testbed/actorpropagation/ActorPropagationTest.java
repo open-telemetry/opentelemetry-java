@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.contrib.trace.testbed.actorpropagation;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
@@ -60,7 +61,7 @@ public class ActorPropagationTest {
       phaser.register();
       Span parent = tracer.spanBuilder("actorTell").setSpanKind(Kind.PRODUCER).startSpan();
       parent.setAttribute("component", "example-actor");
-      try (Scope ignored = tracer.withSpan(parent)) {
+      try (Scope ignored = CurrentContext.withSpan(parent)) {
         actor.tell("my message 1");
         actor.tell("my message 2");
       } finally {
@@ -84,7 +85,7 @@ public class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+      assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
     }
   }
 
@@ -97,7 +98,7 @@ public class ActorPropagationTest {
       Span span = tracer.spanBuilder("actorAsk").setSpanKind(Kind.PRODUCER).startSpan();
       span.setAttribute("component", "example-actor");
 
-      try (Scope ignored = tracer.withSpan(span)) {
+      try (Scope ignored = CurrentContext.withSpan(span)) {
         future1 = actor.ask("my message 1");
         future2 = actor.ask("my message 2");
       } finally {
@@ -125,7 +126,7 @@ public class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+      assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
     }
   }
 }

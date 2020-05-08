@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.contrib.trace.testbed.latespanfinish;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
@@ -62,7 +63,7 @@ public final class LateSpanFinishTest {
 
     TestUtils.assertSameTrace(spans);
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 
   /*
@@ -77,9 +78,9 @@ public final class LateSpanFinishTest {
           public void run() {
             /* Alternative to calling activate() is to pass it manually to asChildOf() for each
              * created Span. */
-            try (Scope scope = tracer.withSpan(parentSpan)) {
+            try (Scope scope = CurrentContext.withSpan(parentSpan)) {
               Span childSpan = tracer.spanBuilder("task1").startSpan();
-              try (Scope childScope = tracer.withSpan(childSpan)) {
+              try (Scope childScope = CurrentContext.withSpan(childSpan)) {
                 TestUtils.sleep(55);
               } finally {
                 childSpan.end();
@@ -92,9 +93,9 @@ public final class LateSpanFinishTest {
         new Runnable() {
           @Override
           public void run() {
-            try (Scope scope = tracer.withSpan(parentSpan)) {
+            try (Scope scope = CurrentContext.withSpan(parentSpan)) {
               Span childSpan = tracer.spanBuilder("task2").startSpan();
-              try (Scope childScope = tracer.withSpan(childSpan)) {
+              try (Scope childScope = CurrentContext.withSpan(childSpan)) {
                 TestUtils.sleep(85);
               } finally {
                 childSpan.end();

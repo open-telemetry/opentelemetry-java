@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -53,7 +54,7 @@ public class OpenTelemetryInteroperabilityTest {
     } finally {
       otSpan.finish();
     }
-    assertEquals(tracer.getCurrentSpan().getClass(), DefaultSpan.class);
+    assertEquals(CurrentContext.getSpan().getClass(), DefaultSpan.class);
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
@@ -64,13 +65,13 @@ public class OpenTelemetryInteroperabilityTest {
   @Test
   public void openTracingContinuesSdkTrace() {
     io.opentelemetry.trace.Span otelSpan = tracer.spanBuilder("otel_span").startSpan();
-    try (io.opentelemetry.currentcontext.Scope scope = tracer.withSpan(otelSpan)) {
+    try (io.opentelemetry.currentcontext.Scope scope = CurrentContext.withSpan(otelSpan)) {
       otTracer.buildSpan("ot_span").start().finish();
     } finally {
       otelSpan.end();
     }
 
-    assertEquals(tracer.getCurrentSpan().getClass(), DefaultSpan.class);
+    assertEquals(CurrentContext.getSpan().getClass(), DefaultSpan.class);
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();

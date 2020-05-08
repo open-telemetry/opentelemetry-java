@@ -16,10 +16,8 @@
 
 package io.opentelemetry.trace;
 
-import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -42,19 +40,6 @@ public final class DefaultTracer implements Tracer {
    */
   public static Tracer getInstance() {
     return INSTANCE;
-  }
-
-  // TODO (trask) can we remove this now?
-  @Override
-  public Span getCurrentSpan() {
-    return CurrentContext.getSpan();
-  }
-
-  // TODO (trask) can we remove this now?
-  @Override
-  @MustBeClosed
-  public Scope withSpan(Span span) {
-    return CurrentContext.withSpan(span);
   }
 
   @Override

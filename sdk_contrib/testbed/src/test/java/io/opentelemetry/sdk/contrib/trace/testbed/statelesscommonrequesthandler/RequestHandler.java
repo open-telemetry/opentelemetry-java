@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.statelesscommonrequesthandler;
 
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
@@ -41,13 +42,13 @@ final class RequestHandler {
   /** beforeRequest handler....... */
   public void beforeRequest(Object request) {
     Span span = tracer.spanBuilder(OPERATION_NAME).setSpanKind(Kind.SERVER).startSpan();
-    tlsScope.set(tracer.withSpan(span));
+    tlsScope.set(CurrentContext.withSpan(span));
   }
 
   /** afterResponse handler....... */
   public void afterResponse(Object response) {
     // Finish the Span
-    tracer.getCurrentSpan().end();
+    CurrentContext.getSpan().end();
 
     // Deactivate the Span
     tlsScope.get().close();

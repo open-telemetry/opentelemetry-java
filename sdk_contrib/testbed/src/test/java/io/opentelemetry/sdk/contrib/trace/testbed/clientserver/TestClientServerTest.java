@@ -21,6 +21,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -73,6 +74,6 @@ public class TestClientServerTest {
     assertThat(finished.get(0).getKind()).isEqualTo(Kind.CLIENT);
     assertThat(finished.get(1).getKind()).isEqualTo(Kind.SERVER);
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 }

@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -374,7 +375,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void noParent() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope scope = tracerSdk.withSpan(parent)) {
+    try (Scope scope = CurrentContext.withSpan(parent)) {
       Span span = tracerSdk.spanBuilder(SPAN_NAME).setNoParent().startSpan();
       try {
         assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
@@ -456,7 +457,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentCurrentSpan() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope scope = tracerSdk.withSpan(parent)) {
+    try (Scope scope = CurrentContext.withSpan(parent)) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
       try {
@@ -508,7 +509,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentCurrentSpan_clockIsSame() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope scope = tracerSdk.withSpan(parent)) {
+    try (Scope scope = CurrentContext.withSpan(parent)) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
 

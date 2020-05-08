@@ -30,6 +30,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
+// TODO (trask) delete tests here that were designed to test Tracer methods that are now removed
 @SuppressWarnings("MustBeClosedChecker")
 public class DefaultTracerTest {
   private static final Tracer defaultTracer = DefaultTracer.getInstance();
@@ -47,19 +48,19 @@ public class DefaultTracerTest {
 
   @Test
   public void defaultGetCurrentSpan() {
-    assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void getCurrentSpan_WithSpan() {
-    assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    Scope ws = defaultTracer.withSpan(DefaultSpan.createRandom());
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    Scope ws = CurrentContext.withSpan(DefaultSpan.createRandom());
     try {
-      assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+      assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
     } finally {
       ws.close();
     }
-    assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -76,21 +77,21 @@ public class DefaultTracerTest {
   @Test
   public void testInProcessContext() {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-    Scope scope = defaultTracer.withSpan(span);
+    Scope scope = CurrentContext.withSpan(span);
     try {
-      assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
+      assertThat(CurrentContext.getSpan()).isEqualTo(span);
       Span secondSpan = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-      Scope secondScope = defaultTracer.withSpan(secondSpan);
+      Scope secondScope = CurrentContext.withSpan(secondSpan);
       try {
-        assertThat(defaultTracer.getCurrentSpan()).isEqualTo(secondSpan);
+        assertThat(CurrentContext.getSpan()).isEqualTo(secondSpan);
       } finally {
         secondScope.close();
-        assertThat(defaultTracer.getCurrentSpan()).isEqualTo(span);
+        assertThat(CurrentContext.getSpan()).isEqualTo(span);
       }
     } finally {
       scope.close();
     }
-    assertThat(defaultTracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -110,7 +111,7 @@ public class DefaultTracerTest {
   @Test
   public void testSpanContextPropagationCurrentSpan() {
     DefaultSpan parent = new DefaultSpan(spanContext);
-    Scope scope = defaultTracer.withSpan(parent);
+    Scope scope = CurrentContext.withSpan(parent);
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);

@@ -41,6 +41,7 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
+// TODO (trask) delete tests here that were designed to test Tracer methods that are now removed
 @SuppressWarnings("MustBeClosedChecker")
 public class TracerSdkTest {
 
@@ -64,7 +65,7 @@ public class TracerSdkTest {
 
   @Test
   public void defaultGetCurrentSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -74,29 +75,29 @@ public class TracerSdkTest {
 
   @Test
   public void getCurrentSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
     try (Scope ignored = CurrentContext.withSpan(span)) {
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
+      assertThat(CurrentContext.getSpan()).isSameInstanceAs(span);
     }
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpan_NullSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    try (Scope ignored = tracer.withSpan(null)) {
-      assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    try (Scope ignored = CurrentContext.withSpan(null)) {
+      assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
     }
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void getCurrentSpan_WithSpan() {
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
-    try (Scope ignored = tracer.withSpan(span)) {
-      assertThat(tracer.getCurrentSpan()).isSameInstanceAs(span);
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    try (Scope ignored = CurrentContext.withSpan(span)) {
+      assertThat(CurrentContext.getSpan()).isSameInstanceAs(span);
     }
-    assertThat(tracer.getCurrentSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -197,7 +198,7 @@ public class TracerSdkTest {
     @Override
     public void update() {
       Span span = tracer.spanBuilder("testSpan").startSpan();
-      try (Scope ignored = tracer.withSpan(span)) {
+      try (Scope ignored = CurrentContext.withSpan(span)) {
         span.setAttribute("testAttribute", AttributeValue.stringAttributeValue("testValue"));
       } finally {
         span.end();

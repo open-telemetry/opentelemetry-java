@@ -21,6 +21,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
@@ -65,7 +66,7 @@ public final class NestedCallbacksTest {
       assertThat(attrs.get("key" + i).getStringValue()).isEqualTo(Integer.toString(i));
     }
 
-    assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 
   private void submitCallbacks(final Span span) {
@@ -74,21 +75,21 @@ public final class NestedCallbacksTest {
         new Runnable() {
           @Override
           public void run() {
-            try (Scope ignored = tracer.withSpan(span)) {
+            try (Scope ignored = CurrentContext.withSpan(span)) {
               span.setAttribute("key1", "1");
 
               executor.submit(
                   new Runnable() {
                     @Override
                     public void run() {
-                      try (Scope ignored = tracer.withSpan(span)) {
+                      try (Scope ignored = CurrentContext.withSpan(span)) {
                         span.setAttribute("key2", "2");
 
                         executor.submit(
                             new Runnable() {
                               @Override
                               public void run() {
-                                try (Scope ignored = tracer.withSpan(span)) {
+                                try (Scope ignored = CurrentContext.withSpan(span)) {
                                   span.setAttribute("key3", "3");
                                 } finally {
                                   span.end();

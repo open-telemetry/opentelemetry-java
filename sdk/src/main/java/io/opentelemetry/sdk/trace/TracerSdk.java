@@ -16,9 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import com.google.errorprone.annotations.MustBeClosed;
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
@@ -32,19 +29,6 @@ final class TracerSdk implements Tracer {
   TracerSdk(TracerSharedState sharedState, InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.sharedState = sharedState;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-  }
-
-  // TODO (trask) can we remove this now?
-  @Override
-  public Span getCurrentSpan() {
-    return CurrentContext.getSpan();
-  }
-
-  // TODO (trask) can we remove this now?
-  @Override
-  @MustBeClosed
-  public Scope withSpan(Span span) {
-    return CurrentContext.withSpan(span);
   }
 
   @Override
