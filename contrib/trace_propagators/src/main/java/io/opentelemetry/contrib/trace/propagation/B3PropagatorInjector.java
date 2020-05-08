@@ -21,6 +21,7 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.SpanKey;
 import io.opentelemetry.trace.TraceId;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
@@ -46,7 +47,7 @@ final class B3PropagatorInjector {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    Span span = context.getSpan();
+    Span span = SpanKey.get(context);
     if (!span.getContext().isValid()) {
       return;
     }

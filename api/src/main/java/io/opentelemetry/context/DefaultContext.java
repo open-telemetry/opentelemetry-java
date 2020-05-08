@@ -16,45 +16,50 @@
 
 package io.opentelemetry.context;
 
-import io.opentelemetry.correlationcontext.CorrelationContext;
-import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
-import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Span;
+import javax.annotation.Nullable;
 
+// TODO (trask) replace naive implementation
 final class DefaultContext implements Context {
 
-  static final Context EMPTY =
-      new DefaultContext(DefaultSpan.getInvalid(), EmptyCorrelationContext.getInstance());
+  static final Context EMPTY = new EmptyContext();
 
-  private final Span span;
-  private final CorrelationContext correlationContext;
+  private final Context parent;
+  private final Key<?> key;
+  private final Object value;
 
-  DefaultContext(Span span, CorrelationContext correlationContext) {
-    this.span = span;
-    this.correlationContext = correlationContext;
+  DefaultContext(Key<?> key, Object value, Context parent) {
+    this.key = key;
+    this.value = value;
+    this.parent = parent;
   }
 
   @Override
-  public Context withSpan(Span span) {
-    // TODO (trask) can we checkNotNull(span)?
-    return new DefaultContext(span == null ? DefaultSpan.getInvalid() : span, correlationContext);
+  @Nullable
+  @SuppressWarnings("unchecked")
+  public <T> T get(Key<T> key) {
+    if (key.equals(this.key)) {
+      return (T) value;
+    } else {
+      return parent.get(key);
+    }
   }
 
   @Override
-  public Context withCorrelationContext(CorrelationContext correlationContext) {
-    // TODO (trask) can we checkNotNull(correlationContext)?
-    return new DefaultContext(
-        span,
-        correlationContext == null ? EmptyCorrelationContext.getInstance() : correlationContext);
+  public <T> Context put(Key<T> key, T value) {
+    return new DefaultContext(key, value, this);
   }
 
-  @Override
-  public Span getSpan() {
-    return span;
-  }
+  static class EmptyContext implements Context {
 
-  @Override
-  public CorrelationContext getCorrelationContext() {
-    return correlationContext;
+    @Override
+    @Nullable
+    public <T> T get(Key<T> key) {
+      return null;
+    }
+
+    @Override
+    public <T> Context put(Key<T> key, T value) {
+      return new DefaultContext(key, value, this);
+    }
   }
 }

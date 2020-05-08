@@ -14,30 +14,23 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context;
+package io.opentelemetry.trace;
 
-import javax.annotation.Nullable;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Context.Key;
 
-// TODO (trask) javadoc class and methods
-public interface Context {
+public class SpanKey {
 
-  Context EMPTY = DefaultContext.EMPTY;
+  private static final Key<Span> KEY = new Key<>("Span");
 
-  @Nullable
-  <T> T get(Key<T> key);
-
-  <T> Context put(Key<T> key, T value);
-
-  class Key<T> {
-    private final String name;
-
-    public Key(String name) {
-      this.name = name;
-    }
-
-    @Override
-    public String toString() {
-      return name;
-    }
+  public static Span get(Context context) {
+    Span span = context.get(KEY);
+    return span == null ? DefaultSpan.getInvalid() : span;
   }
+
+  public static Context put(Context context, Span span) {
+    return context.put(KEY, span);
+  }
+
+  private SpanKey() {}
 }

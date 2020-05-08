@@ -19,7 +19,9 @@ package io.opentelemetry.currentcontext;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.correlationcontext.CorrelationContext;
+import io.opentelemetry.correlationcontext.CorrelationContextKey;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanKey;
 
 /** Static methods for interacting with the current (thread-bound) context. */
 // TODO (trask) javadoc class and methods
@@ -27,12 +29,12 @@ public class CurrentContext {
 
   @MustBeClosed
   public static Scope withSpan(Span span) {
-    return withContext(get().withSpan(span));
+    return withContext(SpanKey.put(get(), span));
   }
 
   @MustBeClosed
   public static Scope withCorrelationContext(CorrelationContext correlationContext) {
-    return withContext(get().withCorrelationContext(correlationContext));
+    return withContext(CorrelationContextKey.put(get(), correlationContext));
   }
 
   /**
@@ -46,12 +48,12 @@ public class CurrentContext {
 
   /** Convenience method for {@code CurrentContext.get().getSpan()}. */
   public static Span getSpan() {
-    return get().getSpan();
+    return SpanKey.get(get());
   }
 
   /** Convenience method for {@code CurrentContext.get().getCorrelationContext()}. */
   public static CorrelationContext getCorrelationContext() {
-    return get().getCorrelationContext();
+    return CorrelationContextKey.get(get());
   }
 
   /** Returns the context bound to the current thread. */

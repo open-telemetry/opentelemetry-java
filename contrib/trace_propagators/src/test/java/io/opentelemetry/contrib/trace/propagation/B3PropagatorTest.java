@@ -26,6 +26,7 @@ import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.SpanKey;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
@@ -74,11 +75,11 @@ public class B3PropagatorTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static SpanContext getSpanContext(Context context) {
-    return context.getSpan().getContext();
+    return SpanKey.get(context).getContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return context.withSpan(DefaultSpan.create(spanContext));
+    return SpanKey.put(context, DefaultSpan.create(spanContext));
   }
 
   @Test

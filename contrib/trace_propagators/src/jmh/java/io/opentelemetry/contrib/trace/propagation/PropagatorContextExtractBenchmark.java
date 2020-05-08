@@ -19,6 +19,7 @@ package io.opentelemetry.contrib.trace.propagation;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.SpanKey;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,7 +66,7 @@ public class PropagatorContextExtractBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
     public Span measureExtract() {
-      return doExtract().getSpan();
+      return SpanKey.get(doExtract());
     }
 
     protected abstract Context doExtract();
