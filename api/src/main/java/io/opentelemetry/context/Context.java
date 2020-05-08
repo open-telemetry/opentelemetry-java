@@ -17,7 +17,6 @@
 package io.opentelemetry.context;
 
 import io.opentelemetry.correlationcontext.CorrelationContext;
-import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.trace.Span;
 
 // TODO (trask) once the current() method is removed (see below)
@@ -33,15 +32,6 @@ public abstract class Context {
 
   public static Context empty() {
     return DefaultContext.EMPTY;
-  }
-
-  // TODO (trask) remove this method and use CurrentContext.get() directly instead
-  //      so that this is a pure Context object, and has nothing to do with thread binding.
-  //      this changes was not done yet in order to reduce code churn
-  //      and make the PR easier to review as there are a lot of places
-  //      that call Context.current().
-  public static Context current() {
-    return CurrentContext.get();
   }
 
   /**

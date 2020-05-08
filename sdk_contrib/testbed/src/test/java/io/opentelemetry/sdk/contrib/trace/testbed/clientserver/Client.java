@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.contrib.trace.testbed.clientserver;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
 import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
@@ -46,7 +45,7 @@ final class Client {
       OpenTelemetry.getPropagators()
           .getHttpTextFormat()
           .inject(
-              Context.current(),
+              CurrentContext.get(),
               message,
               new Setter<Message>() {
                 @Override

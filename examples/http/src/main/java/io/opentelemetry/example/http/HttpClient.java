@@ -86,7 +86,7 @@ public class HttpClient {
       span.setAttribute("http.url", url.toString());
 
       // Inject the request with the current Context/Span.
-      OpenTelemetry.getPropagators().getHttpTextFormat().inject(Context.current(), con, setter);
+      OpenTelemetry.getPropagators().getHttpTextFormat().inject(CurrentContext.get(), con, setter);
 
       try {
         // Process the request

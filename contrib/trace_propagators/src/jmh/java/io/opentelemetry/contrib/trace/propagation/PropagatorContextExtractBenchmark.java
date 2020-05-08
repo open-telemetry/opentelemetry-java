@@ -17,6 +17,7 @@
 package io.opentelemetry.contrib.trace.propagation;
 
 import io.opentelemetry.context.Context;
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.trace.Span;
 import java.util.Arrays;
 import java.util.Collections;
@@ -114,7 +115,7 @@ public class PropagatorContextExtractBenchmark {
 
     @Override
     protected Context doExtract() {
-      return jaegerPropagator.extract(Context.current(), getCarrier(), getter);
+      return jaegerPropagator.extract(CurrentContext.get(), getCarrier(), getter);
     }
 
     @Override
@@ -157,7 +158,7 @@ public class PropagatorContextExtractBenchmark {
 
     @Override
     protected Context doExtract() {
-      return jaegerPropagator.extract(Context.current(), getCarrier(), getter);
+      return jaegerPropagator.extract(CurrentContext.get(), getCarrier(), getter);
     }
 
     @Override
@@ -200,7 +201,7 @@ public class PropagatorContextExtractBenchmark {
 
     @Override
     protected Context doExtract() {
-      return b3Propagator.extract(Context.current(), getCarrier(), getter);
+      return b3Propagator.extract(CurrentContext.get(), getCarrier(), getter);
     }
 
     @Override
@@ -246,7 +247,7 @@ public class PropagatorContextExtractBenchmark {
 
     @Override
     protected Context doExtract() {
-      return b3Propagator.extract(Context.current(), getCarrier(), getter);
+      return b3Propagator.extract(CurrentContext.get(), getCarrier(), getter);
     }
 
     @Override

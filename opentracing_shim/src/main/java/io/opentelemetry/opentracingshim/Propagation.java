@@ -50,7 +50,7 @@ final class Propagation extends BaseShimObject {
     Context context =
         propagators()
             .getHttpTextFormat()
-            .extract(Context.current(), carrierMap, TextMapGetter.INSTANCE);
+            .extract(CurrentContext.get(), carrierMap, TextMapGetter.INSTANCE);
 
     io.opentelemetry.trace.Span span = context.getSpan();
     if (!span.getContext().isValid()) {

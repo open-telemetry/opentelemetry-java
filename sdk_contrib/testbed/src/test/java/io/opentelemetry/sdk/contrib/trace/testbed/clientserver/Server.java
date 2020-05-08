@@ -43,7 +43,7 @@ final class Server extends Thread {
         OpenTelemetry.getPropagators()
             .getHttpTextFormat()
             .extract(
-                Context.current(),
+                CurrentContext.get(),
                 message,
                 new Getter<Message>() {
                   @Nullable

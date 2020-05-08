@@ -40,7 +40,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *     // Inject the span's SpanContext and other available concerns (such as correlations)
  *     // contained in the specified Context.
  *     Map<String, String> map = new HashMap<>();
- *     httpTextFormat.inject(Context.current(), map, new Setter<String, String>() {
+ *     httpTextFormat.inject(CurrentContext.get(), map, new Setter<String, String>() {
  *       public void put(Map<String, String> map, String key, String value) {
  *         map.put(key, value);
  *       }
@@ -60,7 +60,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   // Extract and store the propagated span's SpanContext and other available concerns
  *   // in the specified Context.
- *   Context context = textFormat.extract(Context.current(), request, new Getter<String, String>() {
+ *   Context context = textFormat.extract(CurrentContext.get(), request, new Getter<String, String>() {
  *     public String get(Object request, String key) {
  *       // Return the value associated to the key, if available.
  *     }

@@ -55,7 +55,7 @@ public class DefaultPropagatorsTest {
             .addHttpTextFormat(propagator2)
             .build();
 
-    Context context = Context.current();
+    Context context = CurrentContext.get();
     context = context.withValue(propagator1.getKey(), "value1");
     context = context.withValue(propagator2.getKey(), "value2");
 
@@ -82,7 +82,7 @@ public class DefaultPropagatorsTest {
     map.put(propagator2.getKeyName(), "value2");
 
     Context context =
-        propagators.getHttpTextFormat().extract(Context.current(), map, MapGetter.INSTANCE);
+        propagators.getHttpTextFormat().extract(CurrentContext.get(), map, MapGetter.INSTANCE);
     assertThat(propagator1.getKey().get(context)).isEqualTo("value1");
     assertThat(propagator2.getKey().get(context)).isEqualTo("value2");
     assertThat(propagator3.getKey().get(context)).isNull(); // Handle missing value.
@@ -92,7 +92,7 @@ public class DefaultPropagatorsTest {
   public void noopPropagator() {
     ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
-    Context context = Context.current();
+    Context context = CurrentContext.get();
     Map<String, String> map = new HashMap<>();
     propagators.getHttpTextFormat().inject(context, map, MapSetter.INSTANCE);
     assertThat(map).isEmpty();

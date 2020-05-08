@@ -133,7 +133,7 @@ public class HelloWorldClient {
         @Override
         public void start(Listener<RespT> responseListener, Metadata headers) {
           // Inject the request with the current context
-          textFormat.inject(Context.current(), headers, setter);
+          textFormat.inject(CurrentContext.get(), headers, setter);
           // Perform the gRPC request
           super.start(responseListener, headers);
         }
