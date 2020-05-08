@@ -105,7 +105,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * environment. If a configuration value is missing, it uses the default value.
    *
    * @return a new {@link OtlpGrpcMetricExporter} instance.
-   * @since 0.4.0
+   * @since 0.5.0
    */
   public static OtlpGrpcMetricExporter getDefault() {
     return newBuilder().readEnvironment().readSystemProperties().build();

@@ -105,7 +105,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    * environment. If a configuration value is missing, it uses the default value.
    *
    * @return a new {@link OtlpGrpcSpanExporter} instance.
-   * @since 0.4.0
+   * @since 0.5.0
    */
   public static OtlpGrpcSpanExporter getDefault() {
     return newBuilder().readEnvironment().readSystemProperties().build();
