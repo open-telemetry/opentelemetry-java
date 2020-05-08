@@ -100,6 +100,7 @@ subprojects {
         protobufVersion = '3.11.4'
         protocVersion = '3.11.4'
         zipkinReporterVersion = '2.12.2'
+        zipkinVersion = '2.18.3'
 
         boms = [
                 grpc           : "io.grpc:grpc-bom:${grpcVersion}",
@@ -144,7 +145,8 @@ subprojects {
                 awaitility              : 'org.awaitility:awaitility:3.0.0', // Compatibility layer
                 testcontainers          : 'org.testcontainers:testcontainers:1.13.0',
                 rest_assured            : 'io.rest-assured:rest-assured:4.2.0',
-                jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0' // Jaeger Client
+                jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
+                zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}"  // Zipkin JUnit rule
         ]
     }
 
