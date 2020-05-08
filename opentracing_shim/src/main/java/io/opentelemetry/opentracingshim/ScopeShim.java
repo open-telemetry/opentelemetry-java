@@ -19,9 +19,9 @@ package io.opentelemetry.opentracingshim;
 import io.opentracing.Scope;
 
 final class ScopeShim implements Scope {
-  final io.opentelemetry.context.Scope scope;
+  final io.opentelemetry.currentcontext.Scope scope;
 
-  public ScopeShim(io.opentelemetry.context.Scope scope) {
+  public ScopeShim(io.opentelemetry.currentcontext.Scope scope) {
     this.scope = scope;
   }
 

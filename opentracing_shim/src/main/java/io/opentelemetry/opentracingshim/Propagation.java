@@ -17,8 +17,8 @@
 package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.CurrentContext;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;

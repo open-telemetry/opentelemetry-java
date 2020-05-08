@@ -45,7 +45,7 @@ public class DefaultTracerBenchmarks {
   @Warmup(iterations = 5, time = 1)
   public void measureFullSpanLifecycle() {
     span = tracer.spanBuilder("span").startSpan();
-    io.opentelemetry.context.Scope ignored = tracer.withSpan(span);
+    io.opentelemetry.currentcontext.Scope ignored = tracer.withSpan(span);
     try {
       // no-op
     } finally {
@@ -72,7 +72,7 @@ public class DefaultTracerBenchmarks {
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
   @Warmup(iterations = 5, time = 1)
   public void measureScopeLifecycle() {
-    io.opentelemetry.context.Scope ignored = tracer.withSpan(span);
+    io.opentelemetry.currentcontext.Scope ignored = tracer.withSpan(span);
     try {
       // no-op
     } finally {

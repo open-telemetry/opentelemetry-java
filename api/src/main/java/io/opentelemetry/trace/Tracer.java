@@ -17,7 +17,7 @@
 package io.opentelemetry.trace;
 
 import com.google.errorprone.annotations.MustBeClosed;
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.Scope;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**

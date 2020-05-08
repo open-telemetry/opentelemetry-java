@@ -18,8 +18,8 @@ package io.opentelemetry.correlationcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.context.CurrentContext;
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import java.util.Arrays;
 import java.util.Collection;
 import javax.annotation.Nullable;

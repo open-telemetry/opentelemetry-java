@@ -19,13 +19,13 @@ package io.opentelemetry;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DoubleCounter;

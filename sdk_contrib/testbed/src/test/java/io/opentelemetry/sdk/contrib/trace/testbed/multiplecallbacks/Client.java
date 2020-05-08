@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.multiplecallbacks;
 
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.Callable;

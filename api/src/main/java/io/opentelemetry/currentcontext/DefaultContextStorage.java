@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context;
+package io.opentelemetry.currentcontext;
 
+import io.opentelemetry.context.Context;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,7 +62,7 @@ final class DefaultContextStorage {
   static Context current() {
     Context current = localContext.get();
     if (current == null) {
-      return DefaultContext.EMPTY;
+      return Context.empty();
     }
     return current;
   }

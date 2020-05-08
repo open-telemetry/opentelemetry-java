@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context;
+package io.opentelemetry.currentcontext;
 
 import com.google.errorprone.annotations.MustBeClosed;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.trace.Span;
 

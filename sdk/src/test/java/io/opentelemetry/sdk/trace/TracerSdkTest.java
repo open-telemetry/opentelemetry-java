@@ -19,8 +19,8 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.context.CurrentContext;
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;

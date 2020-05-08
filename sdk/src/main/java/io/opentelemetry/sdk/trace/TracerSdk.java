@@ -17,8 +17,8 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.errorprone.annotations.MustBeClosed;
-import io.opentelemetry.context.CurrentContext;
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;

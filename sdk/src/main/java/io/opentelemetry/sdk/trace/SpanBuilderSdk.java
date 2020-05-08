@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.context.CurrentContext;
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;

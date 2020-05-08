@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.suspendresumepropagation;
 
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 

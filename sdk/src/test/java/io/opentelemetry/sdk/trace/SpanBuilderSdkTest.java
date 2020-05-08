@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;

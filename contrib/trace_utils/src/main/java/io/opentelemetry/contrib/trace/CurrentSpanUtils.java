@@ -16,8 +16,8 @@
 
 package io.opentelemetry.contrib.trace;
 
-import io.opentelemetry.context.CurrentContext;
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import java.util.concurrent.Callable;

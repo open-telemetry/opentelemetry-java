@@ -18,8 +18,8 @@ package io.opentelemetry.trace;
 
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.context.CurrentContext;
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.internal.Utils;
 import java.util.Map;
 import javax.annotation.Nullable;

@@ -18,8 +18,8 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.context.CurrentContext;
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

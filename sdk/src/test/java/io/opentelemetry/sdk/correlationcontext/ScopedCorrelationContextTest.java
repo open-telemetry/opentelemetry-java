@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.correlationcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
@@ -26,6 +25,7 @@ import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
 import io.opentelemetry.correlationcontext.EntryValue;
+import io.opentelemetry.currentcontext.Scope;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

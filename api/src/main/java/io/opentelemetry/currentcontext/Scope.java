@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.context;
+package io.opentelemetry.currentcontext;
 
 import java.io.Closeable;
 import javax.annotation.concurrent.NotThreadSafe;

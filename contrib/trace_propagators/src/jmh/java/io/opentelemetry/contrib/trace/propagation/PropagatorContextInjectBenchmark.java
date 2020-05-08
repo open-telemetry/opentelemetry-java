@@ -17,7 +17,7 @@
 package io.opentelemetry.contrib.trace.propagation;
 
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.CurrentContext;
+import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;

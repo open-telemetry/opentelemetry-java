@@ -17,10 +17,10 @@
 package io.opentelemetry.sdk.correlationcontext;
 
 import com.google.errorprone.annotations.MustBeClosed;
-import io.opentelemetry.context.CurrentContext;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 
 /**
  * {@link CorrelationContextManagerSdk} is SDK implementation of {@link CorrelationContextManager}.

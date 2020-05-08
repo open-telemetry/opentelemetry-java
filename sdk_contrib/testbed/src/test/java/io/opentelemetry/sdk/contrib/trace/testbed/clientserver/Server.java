@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.contrib.trace.testbed.clientserver;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;

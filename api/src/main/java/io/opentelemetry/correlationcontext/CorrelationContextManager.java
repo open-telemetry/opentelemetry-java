@@ -16,7 +16,7 @@
 
 package io.opentelemetry.correlationcontext;
 
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.Scope;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**

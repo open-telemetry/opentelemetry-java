@@ -64,7 +64,7 @@ public class OpenTelemetryInteroperabilityTest {
   @Test
   public void openTracingContinuesSdkTrace() {
     io.opentelemetry.trace.Span otelSpan = tracer.spanBuilder("otel_span").startSpan();
-    try (io.opentelemetry.context.Scope scope = tracer.withSpan(otelSpan)) {
+    try (io.opentelemetry.currentcontext.Scope scope = tracer.withSpan(otelSpan)) {
       otTracer.buildSpan("ot_span").start().finish();
     } finally {
       otelSpan.end();

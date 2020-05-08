@@ -17,8 +17,8 @@
 package io.opentelemetry.correlationcontext;
 
 import com.google.errorprone.annotations.MustBeClosed;
-import io.opentelemetry.context.CurrentContext;
-import io.opentelemetry.context.Scope;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.internal.Utils;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;

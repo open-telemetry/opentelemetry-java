@@ -18,10 +18,10 @@ package io.opentelemetry.sdk.correlationcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.context.CurrentContext;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
