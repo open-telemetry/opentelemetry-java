@@ -51,13 +51,18 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final String TRACE_ID = "d239036e7d5cec116b562147388b35bf";
   private static final String SPAN_ID = "9cc1e3049173be09";
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
+  private static final String SPAN_NAME = "Recv.helloworld.Greeter.SayHello";
+  private static final long START_EPOCH_NANOS = 1505855794_194009601L;
+  private static final long END_EPOCH_NANOS = 1505855799_465726528L;
+  private static final long RECEIVED_TIMESTAMP_NANOS = 1505855799_433901068L;
+  private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
   private static final Map<String, AttributeValue> attributes = Collections.emptyMap();
   private static final List<SpanData.TimedEvent> annotations =
       ImmutableList.of(
           SpanData.TimedEvent.create(
-              1505855799_433901068L, "RECEIVED", Collections.<String, AttributeValue>emptyMap()),
+              RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Collections.<String, AttributeValue>emptyMap()),
           SpanData.TimedEvent.create(
-              1505855799_459486280L, "SENT", Collections.<String, AttributeValue>emptyMap()));
+              SENT_TIMESTAMP_NANOS, "SENT", Collections.<String, AttributeValue>emptyMap()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
@@ -160,13 +165,13 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)
         .setHasRemoteParent(true)
-        .setName("Recv.helloworld.Greeter.SayHello")
-        .setStartEpochNanos(1505855794_194009601L)
+        .setName(SPAN_NAME)
+        .setStartEpochNanos(START_EPOCH_NANOS)
         .setAttributes(attributes)
         .setTotalAttributeCount(attributes.size())
         .setTimedEvents(annotations)
         .setLinks(Collections.<SpanData.Link>emptyList())
-        .setEndEpochNanos(1505855799_465726528L)
+        .setEndEpochNanos(END_EPOCH_NANOS)
         .setHasEnded(true);
   }
 
@@ -176,12 +181,12 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .parentId(PARENT_SPAN_ID)
         .id(SPAN_ID)
         .kind(Span.Kind.SERVER)
-        .name("Recv.helloworld.Greeter.SayHello")
-        .timestamp(1505855794000000L + 194009601L / 1000)
-        .duration((1505855799000000L + 465726528L / 1000) - (1505855794000000L + 194009601L / 1000))
+        .name(SPAN_NAME)
+        .timestamp(START_EPOCH_NANOS / 1000)
+        .duration((END_EPOCH_NANOS / 1000) - (START_EPOCH_NANOS / 1000))
         .localEndpoint(localEndpoint)
-        .addAnnotation(1505855799000000L + 433901068L / 1000, "RECEIVED")
-        .addAnnotation(1505855799000000L + 459486280L / 1000, "SENT")
+        .addAnnotation(RECEIVED_TIMESTAMP_NANOS / 1000, "RECEIVED")
+        .addAnnotation(SENT_TIMESTAMP_NANOS / 1000, "SENT")
         .build();
   }
 }
