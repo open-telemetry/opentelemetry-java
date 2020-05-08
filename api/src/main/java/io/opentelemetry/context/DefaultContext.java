@@ -23,7 +23,8 @@ import io.opentelemetry.trace.Span;
 
 final class DefaultContext extends Context {
 
-  static final Context EMPTY = new DefaultContext(null, null);
+  static final Context EMPTY =
+      new DefaultContext(DefaultSpan.getInvalid(), EmptyCorrelationContext.getInstance());
 
   private final Span span;
   private final CorrelationContext correlationContext;
@@ -35,30 +36,25 @@ final class DefaultContext extends Context {
 
   @Override
   public Context withSpan(Span span) {
-    return new DefaultContext(span, correlationContext);
+    // TODO (trask) can we checkNotNull(span)?
+    return new DefaultContext(span == null ? DefaultSpan.getInvalid() : span, correlationContext);
   }
 
   @Override
   public Context withCorrelationContext(CorrelationContext correlationContext) {
-    return new DefaultContext(span, correlationContext);
+    // TODO (trask) can we checkNotNull(correlationContext)?
+    return new DefaultContext(
+        span,
+        correlationContext == null ? EmptyCorrelationContext.getInstance() : correlationContext);
   }
 
   @Override
   public Span getSpan() {
-    return span == null ? DefaultSpan.getInvalid() : span;
-  }
-
-  // TODO (trask) is this needed?
-  @Override
-  public Span getSpanWithoutDefault() {
     return span;
   }
 
-  // TODO (trask) do we need getCorrelationContextWithoutDefault()?
-  //      because if we don't need either of the  ..WithoutDefault() methods,
-  //      then we can just initialize span to invalid and correlationContext to empty
   @Override
   public CorrelationContext getCorrelationContext() {
-    return correlationContext == null ? EmptyCorrelationContext.getInstance() : correlationContext;
+    return correlationContext;
   }
 }

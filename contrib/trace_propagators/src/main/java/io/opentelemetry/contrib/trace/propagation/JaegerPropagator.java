@@ -87,8 +87,8 @@ public class JaegerPropagator implements HttpTextFormat {
     checkNotNull(context, "context");
     checkNotNull(setter, "setter");
 
-    Span span = context.getSpanWithoutDefault();
-    if (span == null) {
+    Span span = context.getSpan();
+    if (!span.getContext().isValid()) {
       return;
     }
 

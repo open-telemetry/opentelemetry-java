@@ -48,12 +48,6 @@ public class CurrentContext {
     return get().getSpan();
   }
 
-  // TODO (trask) is this needed?
-  /** Convenience method for {@code CurrentContext.get().getSpanWithoutDefault()}. */
-  public static Span getSpanWithoutDefault() {
-    return get().getSpanWithoutDefault();
-  }
-
   /** Convenience method for {@code CurrentContext.get().getCorrelationContext()}. */
   public static CorrelationContext getCorrelationContext() {
     return get().getCorrelationContext();

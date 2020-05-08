@@ -264,7 +264,7 @@ final class SpanBuilderSdk implements Span.Builder {
   private static Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
       case CURRENT_CONTEXT:
-        return CurrentContext.getSpanWithoutDefault();
+        return CurrentContext.getSpan();
       case EXPLICIT_PARENT:
         return explicitParent;
       default:

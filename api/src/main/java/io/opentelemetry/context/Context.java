@@ -69,9 +69,6 @@ public abstract class Context {
    */
   public abstract Span getSpan();
 
-  // TODO (trask) is this needed?
-  public abstract Span getSpanWithoutDefault();
-
   /**
    * Returns the {@link CorrelationContext} from this context, falling back to an empty {@link
    * CorrelationContext}.
@@ -79,6 +76,5 @@ public abstract class Context {
    * @return the {@link CorrelationContext} from this context.
    * @since 0.5.0
    */
-  // TODO (trask) do we need getCorrelationContextWithoutDefault()?
   public abstract CorrelationContext getCorrelationContext();
 }

@@ -46,8 +46,8 @@ final class B3PropagatorInjector {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    Span span = context.getSpanWithoutDefault();
-    if (span == null) {
+    Span span = context.getSpan();
+    if (!span.getContext().isValid()) {
       return;
     }
 
