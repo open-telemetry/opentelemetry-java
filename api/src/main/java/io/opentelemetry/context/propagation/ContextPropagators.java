@@ -60,7 +60,8 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   // Extract and store the propagated span's SpanContext and other available concerns
  *   // in the specified Context.
- *   Context context = textFormat.extract(CurrentContext.get(), request, new Getter<String, String>() {
+ *   Context context = textFormat.extract(CurrentContext.get(), request,
+ *                                        new Getter<String, String>() {
  *     public String get(Object request, String key) {
  *       // Return the value associated to the key, if available.
  *     }

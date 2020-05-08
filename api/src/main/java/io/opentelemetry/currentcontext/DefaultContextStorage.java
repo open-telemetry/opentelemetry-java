@@ -44,7 +44,7 @@ final class DefaultContextStorage {
           "Context was not attached when detaching",
           new Throwable().fillInStackTrace());
     }
-    if (toRestore != Context.empty()) {
+    if (toRestore != Context.EMPTY) {
       localContext.set(toRestore);
     } else {
       // Avoid leaking our ClassLoader via ROOT if this Thread is reused across multiple
@@ -62,7 +62,7 @@ final class DefaultContextStorage {
   static Context current() {
     Context current = localContext.get();
     if (current == null) {
-      return Context.empty();
+      return Context.EMPTY;
     }
     return current;
   }

@@ -71,7 +71,7 @@ public class HttpTraceContextExtractBenchmark {
   public Context measureExtract() {
     Context result = null;
     for (int i = 0; i < COUNT; i++) {
-      result = httpTraceContext.extract(Context.empty(), carriers.get(i), getter);
+      result = httpTraceContext.extract(Context.EMPTY, carriers.get(i), getter);
     }
     return result;
   }

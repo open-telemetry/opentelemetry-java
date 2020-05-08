@@ -19,20 +19,10 @@ package io.opentelemetry.context;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.trace.Span;
 
-// TODO (trask) once the current() method is removed (see below)
-//      this could be turned into an interface
-//      which improves interop possibilities with other libraries' contexts
-//      but also limits the ability to evolve this class with additional methods,
-//      e.g. withLoggingContext??? (insert sad Java 7 face here)
-//
-// TODO (trask) does this also need to support arbitrary key-values?
-//
 // TODO (trask) javadoc class and methods
-public abstract class Context {
+public interface Context {
 
-  public static Context empty() {
-    return DefaultContext.EMPTY;
-  }
+  Context EMPTY = DefaultContext.EMPTY;
 
   /**
    * Creates a new {@link Context} with the given {@link Span} set.
@@ -41,7 +31,7 @@ public abstract class Context {
    * @return a new context with the given {@link Span} set.
    * @since 0.5.0
    */
-  public abstract Context withSpan(Span span);
+  Context withSpan(Span span);
 
   /**
    * Creates a new {@link Context} with the given {@link CorrelationContext} set.
@@ -50,7 +40,7 @@ public abstract class Context {
    * @return a new context with the given {@link CorrelationContext} set.
    * @since 0.5.0
    */
-  public abstract Context withCorrelationContext(CorrelationContext correlationContext);
+  Context withCorrelationContext(CorrelationContext correlationContext);
 
   /**
    * Returns the {@link Span} from this context, falling back to an empty {@link Span}.
@@ -58,7 +48,7 @@ public abstract class Context {
    * @return the {@link Span} from this context.
    * @since 0.5.0
    */
-  public abstract Span getSpan();
+  Span getSpan();
 
   /**
    * Returns the {@link CorrelationContext} from this context, falling back to an empty {@link
@@ -67,5 +57,5 @@ public abstract class Context {
    * @return the {@link CorrelationContext} from this context.
    * @since 0.5.0
    */
-  public abstract CorrelationContext getCorrelationContext();
+  CorrelationContext getCorrelationContext();
 }

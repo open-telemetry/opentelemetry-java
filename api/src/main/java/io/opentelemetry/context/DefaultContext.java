@@ -21,7 +21,7 @@ import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 
-final class DefaultContext extends Context {
+final class DefaultContext implements Context {
 
   static final Context EMPTY =
       new DefaultContext(DefaultSpan.getInvalid(), EmptyCorrelationContext.getInstance());
