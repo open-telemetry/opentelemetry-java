@@ -25,7 +25,6 @@ import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
-import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DoubleCounter;
@@ -363,19 +362,7 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public CorrelationContext getCurrentContext() {
-      return null;
-    }
-
-    @Nullable
-    @Override
     public CorrelationContext.Builder contextBuilder() {
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public Scope withContext(CorrelationContext distContext) {
       return null;
     }
   }

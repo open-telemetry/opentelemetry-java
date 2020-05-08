@@ -16,32 +16,16 @@
 
 package io.opentelemetry.sdk.correlationcontext;
 
-import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
 
 /**
  * {@link CorrelationContextManagerSdk} is SDK implementation of {@link CorrelationContextManager}.
  */
 public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
-  // TODO (trask) can we remove this now?
-  @Override
-  public CorrelationContext getCurrentContext() {
-    return CurrentContext.getCorrelationContext();
-  }
-
   @Override
   public CorrelationContext.Builder contextBuilder() {
     return new CorrelationContextSdk.Builder();
-  }
-
-  // TODO (trask) can we remove this now?
-  @Override
-  @MustBeClosed
-  public Scope withContext(CorrelationContext correlationContext) {
-    return CurrentContext.withCorrelationContext(correlationContext);
   }
 }

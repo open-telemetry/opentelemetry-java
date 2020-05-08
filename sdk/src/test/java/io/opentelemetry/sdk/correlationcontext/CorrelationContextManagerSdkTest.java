@@ -33,10 +33,11 @@ import org.mockito.MockitoAnnotations;
 @RunWith(JUnit4.class)
 // Need to suppress warnings for MustBeClosed because Android 14 does not support
 // try-with-resources.
+// TODO (trask) delete tests here that were designed to test CorrelationContextManager methods that
+//      are now removed
 @SuppressWarnings("MustBeClosedChecker")
 public class CorrelationContextManagerSdkTest {
   @Mock private CorrelationContext distContext;
-  private final CorrelationContextManagerSdk contextManager = new CorrelationContextManagerSdk();
 
   @Before
   public void setUp() {
@@ -45,14 +46,14 @@ public class CorrelationContextManagerSdkTest {
 
   @Test
   public void testGetCurrentContext_DefaultContext() {
-    assertThat(contextManager.getCurrentContext())
+    assertThat(CurrentContext.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
   public void testGetCurrentContext_ContextSetToNull() {
     try (Scope ignored = CurrentContext.withCorrelationContext(null)) {
-      CorrelationContext distContext = contextManager.getCurrentContext();
+      CorrelationContext distContext = CurrentContext.getCorrelationContext();
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
     }
@@ -60,12 +61,12 @@ public class CorrelationContextManagerSdkTest {
 
   @Test
   public void testWithCorrelationContext() {
-    assertThat(contextManager.getCurrentContext())
+    assertThat(CurrentContext.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    try (Scope ignored = contextManager.withContext(distContext)) {
-      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
+    try (Scope ignored = CurrentContext.withCorrelationContext(distContext)) {
+      assertThat(CurrentContext.getCorrelationContext()).isSameInstanceAs(distContext);
     }
-    assertThat(contextManager.getCurrentContext())
+    assertThat(CurrentContext.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 }
