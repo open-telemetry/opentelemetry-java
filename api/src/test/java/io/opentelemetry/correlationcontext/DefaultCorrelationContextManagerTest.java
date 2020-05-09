@@ -36,21 +36,22 @@ import org.junit.runners.JUnit4;
 public final class DefaultCorrelationContextManagerTest {
   private static final CorrelationContextManager defaultCorrelationContextManager =
       DefaultCorrelationContextManager.getInstance();
-  private static final EntryKey KEY = EntryKey.create("key");
-  private static final EntryValue VALUE = EntryValue.create("value");
+  private static final EntryKey TEST_KEY = EntryKey.create("key");
+  private static final EntryValue TEST_VALUE = EntryValue.create("value");
 
   private static final CorrelationContext DIST_CONTEXT =
       new CorrelationContext() {
 
         @Override
         public Collection<Entry> getEntries() {
-          return Arrays.asList(Entry.create(KEY, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION));
+          return Arrays.asList(
+              Entry.create(TEST_KEY, TEST_VALUE, Entry.METADATA_UNLIMITED_PROPAGATION));
         }
 
         @Nullable
         @Override
         public EntryValue getEntryValue(EntryKey entryKey) {
-          return VALUE;
+          return TEST_VALUE;
         }
       };
 
@@ -119,21 +120,21 @@ public final class DefaultCorrelationContextManagerTest {
   public void noopContextBuilder_Put_DisallowsNullKey() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
-    noopBuilder.put(null, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION);
+    noopBuilder.put(null, TEST_VALUE, Entry.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopContextBuilder_Put_DisallowsNullValue() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
-    noopBuilder.put(KEY, null, Entry.METADATA_UNLIMITED_PROPAGATION);
+    noopBuilder.put(TEST_KEY, null, Entry.METADATA_UNLIMITED_PROPAGATION);
   }
 
   @Test
   public void noopContextBuilder_Put_DisallowsNullEntryMetadata() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
-    noopBuilder.put(KEY, VALUE, null);
+    noopBuilder.put(TEST_KEY, TEST_VALUE, null);
   }
 
   @Test

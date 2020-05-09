@@ -19,7 +19,6 @@ package io.opentelemetry.currentcontext;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.correlationcontext.CorrelationContext;
-import io.opentelemetry.correlationcontext.CorrelationContextKey;
 import io.opentelemetry.trace.Span;
 
 /** Static methods for interacting with the current (thread-bound) context. */
@@ -33,7 +32,7 @@ public class CurrentContext {
 
   @MustBeClosed
   public static Scope withCorrelationContext(CorrelationContext correlationContext) {
-    return withContext(CorrelationContextKey.put(get(), correlationContext));
+    return withContext(get().put(CorrelationContext.KEY, correlationContext));
   }
 
   /**
@@ -52,7 +51,7 @@ public class CurrentContext {
 
   /** Convenience method for {@code CurrentContext.get().getCorrelationContext()}. */
   public static CorrelationContext getCorrelationContext() {
-    return CorrelationContextKey.get(get());
+    return get().get(CorrelationContext.KEY);
   }
 
   /** Returns the context bound to the current thread. */
