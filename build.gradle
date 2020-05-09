@@ -7,7 +7,16 @@ plugins {
     id "io.morethan.jmhreport" apply false
 }
 
+ext {
+    opentelemetryProjects = subprojects - project(":opentelemetry-bom")
+}
+
 subprojects {
+    group = "io.opentelemetry"
+    version = "0.4.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
+}
+
+configure(opentelemetryProjects) {
     apply plugin: 'checkstyle'
     apply plugin: 'eclipse'
     apply plugin: 'java'
@@ -18,9 +27,6 @@ subprojects {
 
     apply plugin: 'com.github.sherter.google-java-format'
     apply plugin: 'net.ltgt.errorprone'
-
-    group = "io.opentelemetry"
-    version = "0.4.0-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
 
     repositories {
         mavenCentral()
