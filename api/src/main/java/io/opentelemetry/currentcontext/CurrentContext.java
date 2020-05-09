@@ -44,12 +44,10 @@ public class CurrentContext {
     return new DefaultScope(context);
   }
 
-  /** Convenience method for {@code CurrentContext.get().getSpan()}. */
   public static Span getSpan() {
     return get().get(Span.KEY);
   }
 
-  /** Convenience method for {@code CurrentContext.get().getCorrelationContext()}. */
   public static CorrelationContext getCorrelationContext() {
     return get().get(CorrelationContext.KEY);
   }
