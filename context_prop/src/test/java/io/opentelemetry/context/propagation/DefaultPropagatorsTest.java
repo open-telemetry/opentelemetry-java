@@ -18,8 +18,8 @@ package io.opentelemetry.context.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.truth.Truth;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.currentcontext.CurrentContext;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +50,7 @@ public class DefaultPropagatorsTest {
             .addHttpTextFormat(propagator2)
             .build();
 
-    Context context = CurrentContext.get();
+    Context context = Context.EMPTY;
     context = context.put(propagator1.getKey(), "value1");
     context = context.put(propagator2.getKey(), "value2");
 
@@ -77,7 +77,7 @@ public class DefaultPropagatorsTest {
     map.put(propagator2.getKeyName(), "value2");
 
     Context context =
-        propagators.getHttpTextFormat().extract(CurrentContext.get(), map, MapGetter.INSTANCE);
+        propagators.getHttpTextFormat().extract(Context.EMPTY, map, MapGetter.INSTANCE);
     assertThat(context.get(propagator1.getKey())).isEqualTo("value1");
     assertThat(context.get(propagator2.getKey())).isEqualTo("value2");
     assertThat(context.get(propagator3.getKey())).isNull(); // Handle missing value.
@@ -87,12 +87,12 @@ public class DefaultPropagatorsTest {
   public void noopPropagator() {
     ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
-    Context context = CurrentContext.get();
+    Context context = Context.EMPTY;
     Map<String, String> map = new HashMap<>();
     propagators.getHttpTextFormat().inject(context, map, MapSetter.INSTANCE);
     assertThat(map).isEmpty();
 
-    assertThat(propagators.getHttpTextFormat().extract(context, map, MapGetter.INSTANCE))
+    Truth.assertThat(propagators.getHttpTextFormat().extract(context, map, MapGetter.INSTANCE))
         .isSameInstanceAs(context);
   }
 
