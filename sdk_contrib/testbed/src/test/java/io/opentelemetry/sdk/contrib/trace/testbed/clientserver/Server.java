@@ -24,7 +24,6 @@ import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanKey;
 import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.annotation.Nullable;
@@ -53,7 +52,7 @@ final class Server extends Thread {
                     return carrier.get(key);
                   }
                 });
-    SpanContext spanContext = SpanKey.get(context).getContext();
+    SpanContext spanContext = context.get(Span.KEY).getContext();
     Span span =
         tracer.spanBuilder("receive").setSpanKind(Kind.SERVER).setParent(spanContext).startSpan();
     span.setAttribute("component", "example-server");

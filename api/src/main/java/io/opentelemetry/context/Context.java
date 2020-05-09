@@ -16,23 +16,31 @@
 
 package io.opentelemetry.context;
 
-import javax.annotation.Nullable;
-
 // TODO (trask) javadoc class and methods
 public interface Context {
 
   Context EMPTY = DefaultContext.EMPTY;
 
-  @Nullable
+  // returns default value from key
   <T> T get(Key<T> key);
 
   <T> Context put(Key<T> key, T value);
 
   class Key<T> {
     private final String name;
+    private final T defaultValue;
 
     public Key(String name) {
+      this(name, null);
+    }
+
+    public Key(String name, T defaultValue) {
       this.name = name;
+      this.defaultValue = defaultValue;
+    }
+
+    public T getDefaultValue() {
+      return defaultValue;
     }
 
     @Override

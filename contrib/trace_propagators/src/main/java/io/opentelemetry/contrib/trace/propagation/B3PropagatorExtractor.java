@@ -29,9 +29,9 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.SpanKey;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
@@ -65,7 +65,7 @@ final class B3PropagatorExtractor {
       spanContext = getSpanContextFromMultipleHeaders(carrier, getter);
     }
 
-    return SpanKey.put(context, DefaultSpan.create(spanContext));
+    return context.put(Span.KEY, DefaultSpan.create(spanContext));
   }
 
   @SuppressWarnings("StringSplitter")

@@ -21,7 +21,6 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextKey;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.SpanKey;
 
 /** Static methods for interacting with the current (thread-bound) context. */
 // TODO (trask) javadoc class and methods
@@ -29,7 +28,7 @@ public class CurrentContext {
 
   @MustBeClosed
   public static Scope withSpan(Span span) {
-    return withContext(SpanKey.put(get(), span));
+    return withContext(get().put(Span.KEY, span));
   }
 
   @MustBeClosed
@@ -48,7 +47,7 @@ public class CurrentContext {
 
   /** Convenience method for {@code CurrentContext.get().getSpan()}. */
   public static Span getSpan() {
-    return SpanKey.get(get());
+    return get().get(Span.KEY);
   }
 
   /** Convenience method for {@code CurrentContext.get().getCorrelationContext()}. */

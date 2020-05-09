@@ -21,7 +21,7 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.correlationcontext.CorrelationContextKey;
 import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.SpanKey;
+import io.opentelemetry.trace.Span;
 import io.opentracing.propagation.TextMapExtract;
 import io.opentracing.propagation.TextMapInject;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ final class Propagation extends BaseShimObject {
 
   public void injectTextFormat(SpanContextShim contextShim, TextMapInject carrier) {
     Context context =
-        SpanKey.put(CurrentContext.get(), DefaultSpan.create(contextShim.getSpanContext()));
+        CurrentContext.get().put(Span.KEY, DefaultSpan.create(contextShim.getSpanContext()));
     context = CorrelationContextKey.put(context, contextShim.getCorrelationContext());
 
     propagators().getHttpTextFormat().inject(context, carrier, TextMapSetter.INSTANCE);
@@ -53,7 +53,7 @@ final class Propagation extends BaseShimObject {
             .getHttpTextFormat()
             .extract(CurrentContext.get(), carrierMap, TextMapGetter.INSTANCE);
 
-    io.opentelemetry.trace.Span span = SpanKey.get(context);
+    io.opentelemetry.trace.Span span = context.get(Span.KEY);
     if (!span.getContext().isValid()) {
       return null;
     }

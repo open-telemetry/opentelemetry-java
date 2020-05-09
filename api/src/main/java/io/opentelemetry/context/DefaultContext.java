@@ -38,7 +38,7 @@ final class DefaultContext implements Context {
   @SuppressWarnings("unchecked")
   public <T> T get(Key<T> key) {
     if (key.equals(this.key)) {
-      return (T) value;
+      return value == null ? key.getDefaultValue() : (T) value;
     } else {
       return parent.get(key);
     }
@@ -54,7 +54,7 @@ final class DefaultContext implements Context {
     @Override
     @Nullable
     public <T> T get(Key<T> key) {
-      return null;
+      return key.getDefaultValue();
     }
 
     @Override

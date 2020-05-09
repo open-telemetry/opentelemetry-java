@@ -25,9 +25,9 @@ import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
 import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.trace.DefaultSpan;
+import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.SpanKey;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
@@ -82,11 +82,11 @@ public class HttpTraceContextTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static SpanContext getSpanContext(Context context) {
-    return SpanKey.get(context).getContext();
+    return context.get(Span.KEY).getContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return SpanKey.put(context, DefaultSpan.create(spanContext));
+    return context.put(Span.KEY, DefaultSpan.create(spanContext));
   }
 
   @Test
