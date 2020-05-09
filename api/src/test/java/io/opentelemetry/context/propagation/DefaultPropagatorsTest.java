@@ -16,10 +16,10 @@
 
 package io.opentelemetry.context.propagation;
 
-/*
 import static com.google.common.truth.Truth.assertThat;
 
-import io.grpc.Context;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.currentcontext.CurrentContext;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,16 +27,11 @@ import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-*/
 
-// TODO is this use case (arbitrary context values) needed?
 /** Unit tests for {@link DefaultContextPropagators}. */
 // @RunWith(JUnit4.class)
 public class DefaultPropagatorsTest {
 
-  /*
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
@@ -56,8 +51,8 @@ public class DefaultPropagatorsTest {
             .build();
 
     Context context = CurrentContext.get();
-    context = context.withValue(propagator1.getKey(), "value1");
-    context = context.withValue(propagator2.getKey(), "value2");
+    context = context.put(propagator1.getKey(), "value1");
+    context = context.put(propagator2.getKey(), "value2");
 
     Map<String, String> map = new HashMap<>();
     propagators.getHttpTextFormat().inject(context, map, MapSetter.INSTANCE);
@@ -83,9 +78,9 @@ public class DefaultPropagatorsTest {
 
     Context context =
         propagators.getHttpTextFormat().extract(CurrentContext.get(), map, MapGetter.INSTANCE);
-    assertThat(propagator1.getKey().get(context)).isEqualTo("value1");
-    assertThat(propagator2.getKey().get(context)).isEqualTo("value2");
-    assertThat(propagator3.getKey().get(context)).isNull(); // Handle missing value.
+    assertThat(context.get(propagator1.getKey())).isEqualTo("value1");
+    assertThat(context.get(propagator2.getKey())).isEqualTo("value2");
+    assertThat(context.get(propagator3.getKey())).isNull(); // Handle missing value.
   }
 
   @Test
@@ -107,7 +102,7 @@ public class DefaultPropagatorsTest {
 
     public CustomHttpTextFormat(String name) {
       this.name = name;
-      this.key = Context.key(name);
+      this.key = new Context.Key<>(name);
     }
 
     public Context.Key<String> getKey() {
@@ -125,7 +120,7 @@ public class DefaultPropagatorsTest {
 
     @Override
     public <C> void inject(Context context, C carrier, Setter<C> setter) {
-      Object payload = key.get(context);
+      Object payload = context.get(key);
       if (payload != null) {
         setter.set(carrier, name, payload.toString());
       }
@@ -135,7 +130,7 @@ public class DefaultPropagatorsTest {
     public <C> Context extract(Context context, C carrier, Getter<C> getter) {
       String payload = getter.get(carrier, name);
       if (payload != null) {
-        context = context.withValue(key, payload);
+        context = context.put(key, payload);
       }
 
       return context;
@@ -163,5 +158,4 @@ public class DefaultPropagatorsTest {
 
     private MapGetter() {}
   }
-  */
 }
