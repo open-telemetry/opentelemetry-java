@@ -25,7 +25,7 @@ import static io.opentelemetry.contrib.trace.propagation.B3Propagator.SPAN_ID_HE
 import static io.opentelemetry.contrib.trace.propagation.B3Propagator.TRACE_ID_HEADER;
 import static io.opentelemetry.contrib.trace.propagation.B3Propagator.TRUE_INT;
 
-import io.opentelemetry.context.Context;
+import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.DefaultSpan;
@@ -65,7 +65,7 @@ final class B3PropagatorExtractor {
       spanContext = getSpanContextFromMultipleHeaders(carrier, getter);
     }
 
-    return context.put(Span.KEY, DefaultSpan.create(spanContext));
+    return context.withValue(Span.KEY, DefaultSpan.create(spanContext));
   }
 
   @SuppressWarnings("StringSplitter")

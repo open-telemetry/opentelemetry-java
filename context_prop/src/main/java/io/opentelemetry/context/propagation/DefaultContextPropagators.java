@@ -16,7 +16,7 @@
 
 package io.opentelemetry.context.propagation;
 
-import io.opentelemetry.context.Context;
+import io.grpc.Context;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

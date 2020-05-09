@@ -16,8 +16,8 @@
 
 package io.opentelemetry.example.http;
 
+import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
@@ -87,7 +87,7 @@ public class HttpClient {
       span.setAttribute("http.url", url.toString());
 
       // Inject the request with the current Context/Span.
-      OpenTelemetry.getPropagators().getHttpTextFormat().inject(CurrentContext.get(), con, setter);
+      OpenTelemetry.getPropagators().getHttpTextFormat().inject(Context.current(), con, setter);
 
       try {
         // Process the request

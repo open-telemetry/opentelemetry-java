@@ -18,7 +18,7 @@ package io.opentelemetry.contrib.trace.propagation;
 
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
-import io.opentelemetry.context.Context;
+import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.DefaultSpan;
@@ -87,7 +87,7 @@ public class JaegerPropagator implements HttpTextFormat {
     checkNotNull(context, "context");
     checkNotNull(setter, "setter");
 
-    Span span = context.get(Span.KEY);
+    Span span = Span.KEY.get(context);
     if (!span.getContext().isValid()) {
       return;
     }
@@ -112,7 +112,7 @@ public class JaegerPropagator implements HttpTextFormat {
 
     SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
 
-    return context.put(Span.KEY, DefaultSpan.create(spanContext));
+    return context.withValue(Span.KEY, DefaultSpan.create(spanContext));
   }
 
   @SuppressWarnings("StringSplitter")

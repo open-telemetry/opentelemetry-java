@@ -16,8 +16,8 @@
 
 package io.opentelemetry.trace;
 
+import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.context.Context;
 import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -35,7 +35,7 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface Span {
 
   // TODO (trask) javadoc
-  Context.Key<Span> KEY = new Context.Key<Span>("Span", DefaultSpan.getInvalid());
+  Context.Key<Span> KEY = Context.<Span>keyWithDefault("Span", DefaultSpan.getInvalid());
 
   /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a

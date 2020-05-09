@@ -17,17 +17,17 @@
 /**
  * API for associating entries with scoped operations.
  *
- * <p>This package manages a set of entries in the {@link io.opentelemetry.context.Context}. The
- * entries can be used to label anything that is associated with a specific operation. For example,
- * the {@code opentelemetry.stats} package labels all stats with the current entries.
+ * <p>This package manages a set of entries in the {@code io.grpc.Context}. The entries can be used
+ * to label anything that is associated with a specific operation. For example, the {@code
+ * opentelemetry.stats} package labels all stats with the current entries.
  *
  * <p>{@link io.opentelemetry.correlationcontext.Entry Entrys} are key-value pairs. The {@link
  * io.opentelemetry.correlationcontext.EntryKey keys} and {@link
  * io.opentelemetry.correlationcontext.EntryValue values} are wrapped {@code String}s. They are
  * stored as a map in a {@link io.opentelemetry.correlationcontext.CorrelationContext}.
  *
- * <p>Note that entries are independent of the tracing data that is propagated in the {@link
- * io.opentelemetry.context.Context}, such as trace ID.
+ * <p>Note that entries are independent of the tracing data that is propagated in the {@code
+ * io.grpc.Context}, such as trace ID.
  */
 // TODO: Add code examples.
 package io.opentelemetry.correlationcontext;

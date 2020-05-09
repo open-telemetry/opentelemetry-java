@@ -17,7 +17,7 @@
 package io.opentelemetry.currentcontext;
 
 import com.google.errorprone.annotations.MustBeClosed;
-import io.opentelemetry.context.Context;
+import io.grpc.Context;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.trace.Span;
 
@@ -27,12 +27,12 @@ public class CurrentContext {
 
   @MustBeClosed
   public static Scope withSpan(Span span) {
-    return withContext(get().put(Span.KEY, span));
+    return withContext(get().withValue(Span.KEY, span));
   }
 
   @MustBeClosed
   public static Scope withCorrelationContext(CorrelationContext correlationContext) {
-    return withContext(get().put(CorrelationContext.KEY, correlationContext));
+    return withContext(get().withValue(CorrelationContext.KEY, correlationContext));
   }
 
   /**
@@ -45,16 +45,16 @@ public class CurrentContext {
   }
 
   public static Span getSpan() {
-    return get().get(Span.KEY);
+    return Span.KEY.get();
   }
 
   public static CorrelationContext getCorrelationContext() {
-    return get().get(CorrelationContext.KEY);
+    return CorrelationContext.KEY.get();
   }
 
   /** Returns the context bound to the current thread. */
   public static Context get() {
-    return DefaultContextStorage.current();
+    return Context.current();
   }
 
   private CurrentContext() {}
@@ -65,13 +65,13 @@ public class CurrentContext {
     private final Context context;
 
     DefaultScope(Context context) {
-      this.priorContext = DefaultContextStorage.doAttach(context);
+      this.priorContext = context.attach();
       this.context = context;
     }
 
     @Override
     public void close() {
-      DefaultContextStorage.detach(context, priorContext);
+      context.detach(priorContext);
     }
   }
 }

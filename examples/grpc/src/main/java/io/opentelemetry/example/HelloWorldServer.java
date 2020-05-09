@@ -161,7 +161,7 @@ public class HelloWorldServer {
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
         ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
       // Extract the Span Context from the metadata of the gRPC request
-      Context extractedContext = textFormat.extract(CurrentContext.get(), headers, getter);
+      Context extractedContext = textFormat.extract(Context.current(), headers, getter);
       InetSocketAddress clientInfo =
           (InetSocketAddress) call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
       // Build a span based on the received context
@@ -178,7 +178,7 @@ public class HelloWorldServer {
         // Process the gRPC call normally
         try {
           span.setStatus(Status.OK);
-          return Contexts.interceptCall(CurrentContext.get(), call, headers, next);
+          return Contexts.interceptCall(Context.current(), call, headers, next);
         } finally {
           span.end();
         }

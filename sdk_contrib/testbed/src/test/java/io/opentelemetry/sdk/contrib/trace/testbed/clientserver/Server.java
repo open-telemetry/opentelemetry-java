@@ -16,8 +16,8 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.clientserver;
 
+import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.currentcontext.Scope;
@@ -43,7 +43,7 @@ final class Server extends Thread {
         OpenTelemetry.getPropagators()
             .getHttpTextFormat()
             .extract(
-                CurrentContext.get(),
+                Context.current(),
                 message,
                 new Getter<Message>() {
                   @Nullable
@@ -52,7 +52,7 @@ final class Server extends Thread {
                     return carrier.get(key);
                   }
                 });
-    SpanContext spanContext = context.get(Span.KEY).getContext();
+    SpanContext spanContext = Span.KEY.get(context).getContext();
     Span span =
         tracer.spanBuilder("receive").setSpanKind(Kind.SERVER).setParent(spanContext).startSpan();
     span.setAttribute("component", "example-server");

@@ -19,7 +19,7 @@ package io.opentelemetry.context.propagation;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.truth.Truth;
-import io.opentelemetry.context.Context;
+import io.grpc.Context;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,9 +50,9 @@ public class DefaultPropagatorsTest {
             .addHttpTextFormat(propagator2)
             .build();
 
-    Context context = Context.EMPTY;
-    context = context.put(propagator1.getKey(), "value1");
-    context = context.put(propagator2.getKey(), "value2");
+    Context context = Context.ROOT;
+    context = context.withValue(propagator1.getKey(), "value1");
+    context = context.withValue(propagator2.getKey(), "value2");
 
     Map<String, String> map = new HashMap<>();
     propagators.getHttpTextFormat().inject(context, map, MapSetter.INSTANCE);
@@ -77,17 +77,17 @@ public class DefaultPropagatorsTest {
     map.put(propagator2.getKeyName(), "value2");
 
     Context context =
-        propagators.getHttpTextFormat().extract(Context.EMPTY, map, MapGetter.INSTANCE);
-    assertThat(context.get(propagator1.getKey())).isEqualTo("value1");
-    assertThat(context.get(propagator2.getKey())).isEqualTo("value2");
-    assertThat(context.get(propagator3.getKey())).isNull(); // Handle missing value.
+        propagators.getHttpTextFormat().extract(Context.ROOT, map, MapGetter.INSTANCE);
+    assertThat(propagator1.getKey().get(context)).isEqualTo("value1");
+    assertThat(propagator2.getKey().get(context)).isEqualTo("value2");
+    assertThat(propagator3.getKey().get(context)).isNull(); // Handle missing value.
   }
 
   @Test
   public void noopPropagator() {
     ContextPropagators propagators = DefaultContextPropagators.builder().build();
 
-    Context context = Context.EMPTY;
+    Context context = Context.ROOT;
     Map<String, String> map = new HashMap<>();
     propagators.getHttpTextFormat().inject(context, map, MapSetter.INSTANCE);
     assertThat(map).isEmpty();
@@ -102,7 +102,7 @@ public class DefaultPropagatorsTest {
 
     public CustomHttpTextFormat(String name) {
       this.name = name;
-      this.key = new Context.Key<>(name);
+      this.key = Context.key(name);
     }
 
     public Context.Key<String> getKey() {
@@ -120,7 +120,7 @@ public class DefaultPropagatorsTest {
 
     @Override
     public <C> void inject(Context context, C carrier, Setter<C> setter) {
-      Object payload = context.get(key);
+      Object payload = key.get(context);
       if (payload != null) {
         setter.set(carrier, name, payload.toString());
       }
@@ -130,7 +130,7 @@ public class DefaultPropagatorsTest {
     public <C> Context extract(Context context, C carrier, Getter<C> getter) {
       String payload = getter.get(carrier, name);
       if (payload != null) {
-        context = context.put(key, payload);
+        context = context.withValue(key, payload);
       }
 
       return context;

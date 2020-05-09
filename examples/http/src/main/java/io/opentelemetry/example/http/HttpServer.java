@@ -48,7 +48,7 @@ public class HttpServer {
 
       // Extract the context from the HTTP request
       Context ctx =
-          OpenTelemetry.getPropagators().getHttpTextFormat().extract(CurrentContext.get(), he, getter);
+          OpenTelemetry.getPropagators().getHttpTextFormat().extract(Context.current(), he, getter);
       try (Scope scope = CurrentContext.withContext(ctx)) {
         // Build a span automatically using the received context
         span = spanBuilder.startSpan();

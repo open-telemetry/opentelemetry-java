@@ -16,8 +16,7 @@
 
 package io.opentelemetry.contrib.trace.propagation;
 
-import io.opentelemetry.context.Context;
-import io.opentelemetry.currentcontext.CurrentContext;
+import io.grpc.Context;
 import io.opentelemetry.trace.Span;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,7 +64,7 @@ public class PropagatorContextExtractBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
     public Span measureExtract() {
-      return doExtract().get(Span.KEY);
+      return Span.KEY.get(doExtract());
     }
 
     protected abstract Context doExtract();
@@ -115,7 +114,7 @@ public class PropagatorContextExtractBenchmark {
 
     @Override
     protected Context doExtract() {
-      return jaegerPropagator.extract(CurrentContext.get(), getCarrier(), getter);
+      return jaegerPropagator.extract(Context.current(), getCarrier(), getter);
     }
 
     @Override
@@ -158,7 +157,7 @@ public class PropagatorContextExtractBenchmark {
 
     @Override
     protected Context doExtract() {
-      return jaegerPropagator.extract(CurrentContext.get(), getCarrier(), getter);
+      return jaegerPropagator.extract(Context.current(), getCarrier(), getter);
     }
 
     @Override
@@ -201,7 +200,7 @@ public class PropagatorContextExtractBenchmark {
 
     @Override
     protected Context doExtract() {
-      return b3Propagator.extract(CurrentContext.get(), getCarrier(), getter);
+      return b3Propagator.extract(Context.current(), getCarrier(), getter);
     }
 
     @Override
@@ -247,7 +246,7 @@ public class PropagatorContextExtractBenchmark {
 
     @Override
     protected Context doExtract() {
-      return b3Propagator.extract(CurrentContext.get(), getCarrier(), getter);
+      return b3Propagator.extract(Context.current(), getCarrier(), getter);
     }
 
     @Override

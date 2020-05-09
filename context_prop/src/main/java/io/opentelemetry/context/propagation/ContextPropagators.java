@@ -23,10 +23,9 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  * <p>This container can be used to access a single, composite propagator for each supported format,
  * which will be responsible for injecting and extracting data for each registered concern (traces,
- * correlations, etc). Propagation will happen through {@link io.opentelemetry.context.Context},
- * from which values will be read upon injection, and which will store values from the extraction
- * step. The resulting {@link io.opentelemetry.context.Context} can then be used implicitly or
- * explicitly by the OpenTelemetry API.
+ * correlations, etc). Propagation will happen through {@code io.grpc.Context}, from which values
+ * will be read upon injection, and which will store values from the extraction step. The resulting
+ * {@code Context} can then be used implicitly or explicitly by the OpenTelemetry API.
  *
  * <p>Example of usage on the client:
  *
@@ -40,7 +39,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *     // Inject the span's SpanContext and other available concerns (such as correlations)
  *     // contained in the specified Context.
  *     Map<String, String> map = new HashMap<>();
- *     httpTextFormat.inject(CurrentContext.get(), map, new Setter<String, String>() {
+ *     httpTextFormat.inject(Context.current(), map, new Setter<String, String>() {
  *       public void put(Map<String, String> map, String key, String value) {
  *         map.put(key, value);
  *       }
@@ -60,7 +59,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   // Extract and store the propagated span's SpanContext and other available concerns
  *   // in the specified Context.
- *   Context context = textFormat.extract(CurrentContext.get(), request,
+ *   Context context = textFormat.extract(Context.current(), request,
  *                                        new Getter<String, String>() {
  *     public String get(Object request, String key) {
  *       // Return the value associated to the key, if available.

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.correlationcontext;
 
-import io.opentelemetry.context.Context;
+import io.grpc.Context;
 import io.opentelemetry.currentcontext.CurrentContext;
 import java.util.Collection;
 import javax.annotation.Nullable;
@@ -36,7 +36,7 @@ public interface CorrelationContext {
 
   // TODO (trask) javadoc
   Context.Key<CorrelationContext> KEY =
-      new Context.Key<>("CorrelationContext", EmptyCorrelationContext.getInstance());
+      Context.keyWithDefault("CorrelationContext", EmptyCorrelationContext.getInstance());
 
   /**
    * Returns an immutable collection of the entries in this {@code CorrelationContext}. Order of

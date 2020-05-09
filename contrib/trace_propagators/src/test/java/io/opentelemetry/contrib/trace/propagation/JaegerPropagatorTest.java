@@ -21,12 +21,11 @@ import static io.opentelemetry.contrib.trace.propagation.JaegerPropagator.DEPREC
 import static io.opentelemetry.contrib.trace.propagation.JaegerPropagator.PROPAGATION_HEADER;
 import static io.opentelemetry.contrib.trace.propagation.JaegerPropagator.PROPAGATION_HEADER_DELIMITER;
 
+import io.grpc.Context;
 import io.jaegertracing.internal.JaegerSpanContext;
 import io.jaegertracing.internal.propagation.TextMapCodec;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
-import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -85,11 +84,11 @@ public class JaegerPropagatorTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static SpanContext getSpanContext(Context context) {
-    return context.get(Span.KEY).getContext();
+    return Span.KEY.get(context).getContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return context.put(Span.KEY, DefaultSpan.create(spanContext));
+    return context.withValue(Span.KEY, DefaultSpan.create(spanContext));
   }
 
   @Test
@@ -98,7 +97,7 @@ public class JaegerPropagatorTest {
     jaegerPropagator.inject(
         withSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
-            CurrentContext.get()),
+            Context.current()),
         carrier,
         setter);
 
@@ -116,7 +115,7 @@ public class JaegerPropagatorTest {
     jaegerPropagator.inject(
         withSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
-            CurrentContext.get()),
+            Context.current()),
         null,
         new Setter<Map<String, String>>() {
           @Override
@@ -138,7 +137,7 @@ public class JaegerPropagatorTest {
     jaegerPropagator.inject(
         withSpanContext(
             SpanContext.create(TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT),
-            CurrentContext.get()),
+            Context.current()),
         carrier,
         setter);
     assertThat(carrier)
@@ -153,8 +152,7 @@ public class JaegerPropagatorTest {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(PROPAGATION_HEADER, "");
 
-    assertThat(
-            getSpanContext(jaegerPropagator.extract(CurrentContext.get(), invalidHeaders, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
   }
 
@@ -163,8 +161,7 @@ public class JaegerPropagatorTest {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(PROPAGATION_HEADER, "aa:bb:cc");
 
-    assertThat(
-            getSpanContext(jaegerPropagator.extract(CurrentContext.get(), invalidHeaders, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
   }
 
@@ -173,8 +170,7 @@ public class JaegerPropagatorTest {
     Map<String, String> invalidHeaders = new LinkedHashMap<>();
     invalidHeaders.put(PROPAGATION_HEADER, "aa:bb:cc:dd:ee");
 
-    assertThat(
-            getSpanContext(jaegerPropagator.extract(CurrentContext.get(), invalidHeaders, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
   }
 
@@ -186,8 +182,7 @@ public class JaegerPropagatorTest {
         generateTraceIdHeaderValue(
             "abcdefghijklmnopabcdefghijklmnop", SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, "0"));
 
-    assertThat(
-            getSpanContext(jaegerPropagator.extract(CurrentContext.get(), invalidHeaders, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
   }
 
@@ -199,8 +194,7 @@ public class JaegerPropagatorTest {
         generateTraceIdHeaderValue(
             TRACE_ID_BASE16 + "00", SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, "0"));
 
-    assertThat(
-            getSpanContext(jaegerPropagator.extract(CurrentContext.get(), invalidHeaders, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
   }
 
@@ -212,8 +206,7 @@ public class JaegerPropagatorTest {
         generateTraceIdHeaderValue(
             TRACE_ID_BASE16, "abcdefghijklmnop", DEPRECATED_PARENT_SPAN, "0"));
 
-    assertThat(
-            getSpanContext(jaegerPropagator.extract(CurrentContext.get(), invalidHeaders, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
   }
 
@@ -225,8 +218,7 @@ public class JaegerPropagatorTest {
         generateTraceIdHeaderValue(
             TRACE_ID_BASE16, SPAN_ID_BASE16 + "00", DEPRECATED_PARENT_SPAN, "0"));
 
-    assertThat(
-            getSpanContext(jaegerPropagator.extract(CurrentContext.get(), invalidHeaders, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
   }
 
@@ -237,8 +229,7 @@ public class JaegerPropagatorTest {
         PROPAGATION_HEADER,
         generateTraceIdHeaderValue(TRACE_ID_BASE16, SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, ""));
 
-    assertThat(
-            getSpanContext(jaegerPropagator.extract(CurrentContext.get(), invalidHeaders, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
   }
 
@@ -250,8 +241,7 @@ public class JaegerPropagatorTest {
         generateTraceIdHeaderValue(
             TRACE_ID_BASE16, SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, "10220"));
 
-    assertThat(
-            getSpanContext(jaegerPropagator.extract(CurrentContext.get(), invalidHeaders, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
   }
 
@@ -263,8 +253,7 @@ public class JaegerPropagatorTest {
         generateTraceIdHeaderValue(
             TRACE_ID_BASE16, SPAN_ID_BASE16, DEPRECATED_PARENT_SPAN, "abcdefr"));
 
-    assertThat(
-            getSpanContext(jaegerPropagator.extract(CurrentContext.get(), invalidHeaders, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
   }
 
@@ -276,7 +265,7 @@ public class JaegerPropagatorTest {
             TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, (byte) 5);
     carrier.put(PROPAGATION_HEADER, TextMapCodec.contextAsString(context));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(CurrentContext.get(), carrier, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
@@ -290,7 +279,7 @@ public class JaegerPropagatorTest {
             TRACE_ID_HI, TRACE_ID_LOW, SPAN_ID_LONG, DEPRECATED_PARENT_SPAN_LONG, (byte) 0);
     carrier.put(PROPAGATION_HEADER, TextMapCodec.contextAsString(context));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(CurrentContext.get(), carrier, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TRACE_STATE_DEFAULT));
@@ -308,7 +297,7 @@ public class JaegerPropagatorTest {
             (byte) 1);
     carrier.put(PROPAGATION_HEADER, TextMapCodec.contextAsString(context));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(CurrentContext.get(), carrier, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 SHORT_TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));
@@ -323,7 +312,7 @@ public class JaegerPropagatorTest {
     carrier.put(
         PROPAGATION_HEADER, URLEncoder.encode(TextMapCodec.contextAsString(context), "UTF-8"));
 
-    assertThat(getSpanContext(jaegerPropagator.extract(CurrentContext.get(), carrier, getter)))
+    assertThat(getSpanContext(jaegerPropagator.extract(Context.current(), carrier, getter)))
         .isEqualTo(
             SpanContext.createFromRemoteParent(
                 TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT));

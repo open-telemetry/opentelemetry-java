@@ -16,7 +16,7 @@
 
 package io.opentelemetry.contrib.trace.propagation;
 
-import io.opentelemetry.context.Context;
+import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -46,7 +46,7 @@ final class B3PropagatorInjector {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
-    Span span = context.get(Span.KEY);
+    Span span = Span.KEY.get(context);
     if (!span.getContext().isValid()) {
       return;
     }

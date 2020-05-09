@@ -193,7 +193,7 @@ try (Scope scope = CurrentContext.withSpan(outGoing)) {
   outGoing.setAttribute("http.url", url.toString());
   HttpURLConnection transportLayer = (HttpURLConnection) url.openConnection();
   // Inject the request with the *current*  Context, which contains our current Span.
-  OpenTelemetry.getPropagators().getHttpTextFormat().inject(CurrentContext.get(), transportLayer, setter);
+  OpenTelemetry.getPropagators().getHttpTextFormat().inject(Context.current(), transportLayer, setter);
   // Make outgoing call
 } finally {
   outGoing.end();
@@ -220,7 +220,7 @@ HttpTextFormat.Getter<HttpExchange> getter =
 public void handle(HttpExchange httpExchange) {
   // Extract the SpanContext and other elements from the request.
   Context extractedContext = OpenTelemetry.getPropagators().getHttpTextFormat()
-        .extract(CurrentContext.get(), httpExchange, getter);
+        .extract(Context.current(), httpExchange, getter);
   Span serverSpan = null;
   try (Scope scope = CurrentContext.withContext(extractedContext)) {
     // Automatically use the extracted SpanContext as parent.

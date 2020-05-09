@@ -16,8 +16,7 @@
 
 package io.opentelemetry.contrib.trace.propagation;
 
-import io.opentelemetry.context.Context;
-import io.opentelemetry.currentcontext.CurrentContext;
+import io.grpc.Context;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -75,7 +74,7 @@ public class PropagatorContextInjectBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
     public Map<String, String> measureInject() {
-      Context context = CurrentContext.get().put(Span.KEY, DefaultSpan.create(contextToTest));
+      Context context = Context.current().withValue(Span.KEY, DefaultSpan.create(contextToTest));
       doInject(context, carrier);
       return carrier;
     }

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.trace.propagation;
 
-import io.opentelemetry.context.Context;
+import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,7 +71,7 @@ public class HttpTraceContextExtractBenchmark {
   public Context measureExtract() {
     Context result = null;
     for (int i = 0; i < COUNT; i++) {
-      result = httpTraceContext.extract(Context.EMPTY, carriers.get(i), getter);
+      result = httpTraceContext.extract(Context.ROOT, carriers.get(i), getter);
     }
     return result;
   }

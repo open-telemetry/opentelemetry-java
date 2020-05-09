@@ -22,10 +22,7 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import java.util.concurrent.Callable;
 
-/**
- * Util methods/functionality to interact with the {@link Span} in the {@link
- * io.opentelemetry.context.Context}.
- */
+/** Util methods/functionality to interact with the {@link Span} in the {@link io.grpc.Context}. */
 public final class CurrentSpanUtils {
   // No instance of this class.
   private CurrentSpanUtils() {}
