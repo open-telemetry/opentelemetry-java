@@ -27,9 +27,11 @@ import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link DefaultContextPropagators}. */
-// @RunWith(JUnit4.class)
+@RunWith(JUnit4.class)
 public class DefaultPropagatorsTest {
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
@@ -92,7 +94,7 @@ public class DefaultPropagatorsTest {
     propagators.getHttpTextFormat().inject(context, map, MapSetter.INSTANCE);
     assertThat(map).isEmpty();
 
-    Truth.assertThat(propagators.getHttpTextFormat().extract(context, map, MapGetter.INSTANCE))
+    assertThat(propagators.getHttpTextFormat().extract(context, map, MapGetter.INSTANCE))
         .isSameInstanceAs(context);
   }
 
