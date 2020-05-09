@@ -18,7 +18,6 @@ package io.opentelemetry.context.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.truth.Truth;
 import io.grpc.Context;
 import java.util.Collections;
 import java.util.HashMap;
