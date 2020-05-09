@@ -15,13 +15,24 @@ dependencies {
 
     annotationProcessor libraries.auto_value
 
-    implementation libraries.zipkin_reporter
-    implementation libraries.zipkin_urlconnection
+    implementation libraries.zipkin_reporter,
+            libraries.zipkin_urlconnection
 
-    testImplementation libraries.guava
-
+    testImplementation libraries.guava,
+            libraries.zipkin_junit
+    
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+}
+
+configurations {
+    all {
+        resolutionStrategy {
+            // override the version of zipkin-junit provided by zipkin-reporter bom
+            // as newer versions use okhttp v4.x (which requires JVM >= 8).
+            force 'io.zipkin.zipkin2:zipkin-junit:2.18.3'
+        }
+    }
 }
 
 animalsniffer {

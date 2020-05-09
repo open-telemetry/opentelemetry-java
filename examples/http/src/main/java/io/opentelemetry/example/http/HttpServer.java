@@ -28,7 +28,6 @@ import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
-import io.opentelemetry.trace.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -101,7 +100,7 @@ public class HttpServer {
 
   // OTel API
   private static Tracer tracer =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.http.HttpServer");
+      OpenTelemetry.getTracer("io.opentelemetry.example.http.HttpServer");
   // Export traces to log
   private static LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
   // Extract the context from http headers

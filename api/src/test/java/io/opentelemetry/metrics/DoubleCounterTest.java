@@ -34,7 +34,7 @@ public class DoubleCounterTest {
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
 
-  private final Meter meter = OpenTelemetry.getMeterProvider().get("counter_double_test");
+  private final Meter meter = OpenTelemetry.getMeter("counter_double_test");
 
   @Test
   public void preventNonPrintableName() {
