@@ -210,8 +210,8 @@ public final class TraceId implements Comparable<TraceId> {
    *
    * @return the lower 8 bytes of the trace-id as a long value, assuming little-endian order.
    */
-  public long getLowerLong() {
-    return (idHi < 0) ? -idHi : idHi;
+  public long getTraceRandomPart() {
+    return (idLo < 0) ? -idLo : idLo;
   }
 
   @Override
