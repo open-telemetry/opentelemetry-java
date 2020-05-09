@@ -53,7 +53,10 @@ public class CurrentContext {
   }
 
   /** Returns the context bound to the current thread. */
-  public static Context get() {
+  // TODO (trask) this method is not needed currently, in favor of using Context.current() directly,
+  //      but if we move to a Context object that doesn't have built-in thread-binding, then this is
+  //      the only additional method we would need
+  private static Context get() {
     return Context.current();
   }
 
