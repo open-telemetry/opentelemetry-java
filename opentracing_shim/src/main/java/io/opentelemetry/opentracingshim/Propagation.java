@@ -34,8 +34,9 @@ final class Propagation extends BaseShimObject {
 
   public void injectTextFormat(SpanContextShim contextShim, TextMapInject carrier) {
     Context context =
-        Context.current().withValue(Span.KEY, DefaultSpan.create(contextShim.getSpanContext()));
-    context = context.withValue(CorrelationContext.KEY, contextShim.getCorrelationContext());
+        Context.current()
+            .withValue(Span.KEY, DefaultSpan.create(contextShim.getSpanContext()))
+            .withValue(CorrelationContext.KEY, contextShim.getCorrelationContext());
 
     propagators().getHttpTextFormat().inject(context, carrier, TextMapSetter.INSTANCE);
   }
