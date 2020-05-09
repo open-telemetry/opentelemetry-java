@@ -29,8 +29,9 @@ import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -106,7 +107,7 @@ public class HelloWorldClient {
     span.setAttribute("net.peer.port", this.serverPort);
 
     // Set the context with the current span
-    try (Scope scope = tracer.withSpan(span)) {
+    try (Scope scope = CurrentContext.withSpan(span)) {
       HelloRequest request = HelloRequest.newBuilder().setName(name).build();
       try {
         HelloReply response = blockingStub.sayHello(request);

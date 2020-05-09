@@ -27,9 +27,9 @@ import io.grpc.ServerCallHandler;
 import io.grpc.stub.StreamObserver;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.ContextUtils;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -165,7 +165,7 @@ public class HelloWorldServer {
       InetSocketAddress clientInfo =
           (InetSocketAddress) call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR);
       // Build a span based on the received context
-      try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {
+      try (Scope scope = CurrentContext.withContext(extractedContext)) {
         Span span =
             tracer
                 .spanBuilder("helloworld.Greeter/SayHello")

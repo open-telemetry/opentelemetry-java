@@ -21,9 +21,9 @@ import com.sun.net.httpserver.HttpHandler;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.ContextUtils;
-import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
+import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -49,7 +49,7 @@ public class HttpServer {
       // Extract the context from the HTTP request
       Context ctx =
           OpenTelemetry.getPropagators().getHttpTextFormat().extract(CurrentContext.get(), he, getter);
-      try (Scope scope = ContextUtils.withScopedContext(ctx)) {
+      try (Scope scope = CurrentContext.withContext(ctx)) {
         // Build a span automatically using the received context
         span = spanBuilder.startSpan();
       }

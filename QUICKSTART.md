@@ -48,7 +48,7 @@ To create a basic span, you only need to specify the name of the span.
 The start and end time of the span is automatically set by the OpenTelemetry SDK.
 ```java
 Span span = tracer.spanBuilder("my span").startSpan();
-try (Scope scope = tracer.withSpan(span)) {
+try (Scope scope = CurrentContext.withSpan(span)) {
 	// your use case
 	...
 } catch (Throwable t) {
@@ -85,7 +85,7 @@ The OpenTelemetry API offers also an automated way to propagate the `parentSpan`
 ```java
 void a() {
   Span parentSpan = tracer.spanBuilder("a").startSpan();
-  try(Scope scope = tracer.withSpan(parentSpan)){
+  try(Scope scope = CurrentContext.withSpan(parentSpan)){
     b();
   } finally {
     parentSpan.end();
@@ -186,7 +186,7 @@ HttpTextFormat.Setter<HttpURLConnection> setter =
 
 URL url = new URL("http://127.0.0.1:8080/resource");
 Span outGoing = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.CLIENT).startSpan();
-try (Scope scope = tracer.withSpan(outGoing)) {
+try (Scope scope = CurrentContext.withSpan(outGoing)) {
   // Semantic Convention.
   // (Observe that to set these, Span does not *need* to be the current instance.)
   outGoing.setAttribute("http.method", "GET");
@@ -222,7 +222,7 @@ public void handle(HttpExchange httpExchange) {
   Context extractedContext = OpenTelemetry.getPropagators().getHttpTextFormat()
         .extract(CurrentContext.get(), httpExchange, getter);
   Span serverSpan = null;
-  try (Scope scope = ContextUtils.withScopedContext(extractedContext)) {
+  try (Scope scope = CurrentContext.withContext(extractedContext)) {
     // Automatically use the extracted SpanContext as parent.
     serverSpan = tracer.spanBuilder("/resource").setSpanKind(Span.Kind.SERVER)
         .startSpan();
