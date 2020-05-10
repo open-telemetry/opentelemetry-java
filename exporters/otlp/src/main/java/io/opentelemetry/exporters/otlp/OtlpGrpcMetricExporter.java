@@ -19,15 +19,18 @@ package io.opentelemetry.exporters.otlp;
 import io.grpc.ManagedChannel;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Exports spans using OTLP via gRPC, using OpenTelemetry's protobuf model. */
+/** Exports metrics using OTLP via gRPC, using OpenTelemetry's protobuf model. */
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
   private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
@@ -37,11 +40,11 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   private final long deadlineMs;
 
   /**
-   * Creates a new Jaeger gRPC Metric Reporter with the given name, using the given channel.
+   * Creates a new OTLP gRPC Metric Reporter with the given name, using the given channel.
    *
-   * @param channel the channel to use when communicating with the Jaeger Collector.
-   * @param deadlineMs max waiting time for the collector to process each span batch. When set to 0
-   *     or to a negative value, the exporter will wait indefinitely.
+   * @param channel the channel to use when communicating with the OpenTelemetry Collector.
+   * @param deadlineMs max waiting time for the collector to process each metric batch. When set to
+   *     0 or to a negative value, the exporter will wait indefinitely.
    */
   private OtlpGrpcMetricExporter(ManagedChannel channel, long deadlineMs) {
     this.managedChannel = channel;
@@ -50,7 +53,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   }
 
   /**
-   * Submits all the given spans in a single batch to the Jaeger collector.
+   * Submits all the given metrics in a single batch to the OpenTelemetry collector.
    *
    * @param metrics the list of Metrics to be exported.
    * @return the result of the operation
@@ -97,6 +100,18 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   }
 
   /**
+   * Returns a new {@link OtlpGrpcMetricExporter} reading the configuration values from the
+   * environment and from system properties. System properties override values defined in the
+   * environment. If a configuration value is missing, it uses the default value.
+   *
+   * @return a new {@link OtlpGrpcMetricExporter} instance.
+   * @since 0.5.0
+   */
+  public static OtlpGrpcMetricExporter getDefault() {
+    return newBuilder().readEnvironment().readSystemProperties().build();
+  }
+
+  /**
    * Initiates an orderly shutdown in which preexisting calls continue but new calls are immediately
    * cancelled. The channel is forcefully closed after a timeout.
    */
@@ -110,7 +125,9 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
   }
 
   /** Builder utility for this exporter. */
-  public static class Builder {
+  public static class Builder extends ConfigBuilder<Builder> {
+    private static final String KEY_METRIC_TIMEOUT = "otel.otlp.metric.timeout";
+
     private ManagedChannel channel;
     private long deadlineMs = 1_000; // 1 second
 
@@ -126,7 +143,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     }
 
     /**
-     * Sets the max waiting time for the collector to process each span batch. Optional.
+     * Sets the max waiting time for the collector to process each metric batch. Optional.
      *
      * @param deadlineMs the max waiting time
      * @return this builder's instance
@@ -146,5 +163,77 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     }
 
     private Builder() {}
+
+    /**
+     * Sets the configuration values from the given configuration map for only the available keys.
+     * This method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time for the collector to
+     *       process each metric batch.
+     * </ul>
+     *
+     * @param configMap {@link Map} holding the configuration values.
+     * @return this.
+     */
+    @Override
+    protected Builder fromConfigMap(
+        Map<String, String> configMap, NamingConvention namingConvention) {
+      configMap = namingConvention.normalize(configMap);
+      Long value = getLongProperty(KEY_METRIC_TIMEOUT, configMap);
+      if (value != null) {
+        this.setDeadlineMs(value);
+      }
+      return this;
+    }
+
+    /**
+     * Sets the configuration values from the given properties object for only the available keys.
+     * This method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time for the collector to
+     *       process each metric batch.
+     * </ul>
+     *
+     * @param properties {@link Properties} holding the configuration values.
+     * @return this.
+     */
+    @Override
+    public Builder readProperties(Properties properties) {
+      return super.readProperties(properties);
+    }
+
+    /**
+     * Sets the configuration values from environment variables for only the available keys. This
+     * method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code OTEL_OTLP_METRIC_TIMEOUT}: to set the max waiting time for the collector to
+     *       process each metric batch.
+     * </ul>
+     *
+     * @return this.
+     */
+    @Override
+    public Builder readEnvironment() {
+      return super.readEnvironment();
+    }
+
+    /**
+     * Sets the configuration values from system properties for only the available keys. This method
+     * looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time for the collector to
+     *       process each metric batch.
+     * </ul>
+     *
+     * @return this.
+     */
+    @Override
+    public Builder readSystemProperties() {
+      return super.readSystemProperties();
+    }
   }
 }
