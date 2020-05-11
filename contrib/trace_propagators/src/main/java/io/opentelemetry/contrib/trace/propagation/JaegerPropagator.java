@@ -87,7 +87,7 @@ public class JaegerPropagator implements HttpTextFormat {
     checkNotNull(context, "context");
     checkNotNull(setter, "setter");
 
-    Span span = Span.KEY.get(context);
+    Span span = Span.Key.get(context);
     if (!span.getContext().isValid()) {
       return;
     }
@@ -112,7 +112,7 @@ public class JaegerPropagator implements HttpTextFormat {
 
     SpanContext spanContext = getSpanContextFromHeader(carrier, getter);
 
-    return context.withValue(Span.KEY, DefaultSpan.create(spanContext));
+    return Span.Key.put(DefaultSpan.create(spanContext), context);
   }
 
   @SuppressWarnings("StringSplitter")

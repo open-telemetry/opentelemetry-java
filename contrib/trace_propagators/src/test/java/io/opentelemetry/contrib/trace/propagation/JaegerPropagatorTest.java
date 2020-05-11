@@ -84,11 +84,11 @@ public class JaegerPropagatorTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static SpanContext getSpanContext(Context context) {
-    return Span.KEY.get(context).getContext();
+    return Span.Key.get(context).getContext();
   }
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
-    return context.withValue(Span.KEY, DefaultSpan.create(spanContext));
+    return Span.Key.put(DefaultSpan.create(spanContext), context);
   }
 
   @Test

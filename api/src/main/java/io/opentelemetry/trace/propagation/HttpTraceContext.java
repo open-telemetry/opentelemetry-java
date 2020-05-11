@@ -79,7 +79,7 @@ public class HttpTraceContext implements HttpTextFormat {
     checkNotNull(context, "context");
     checkNotNull(setter, "setter");
 
-    Span span = Span.KEY.get(context);
+    Span span = Span.Key.get(context);
     if (!span.getContext().isValid()) {
       return;
     }
@@ -124,7 +124,7 @@ public class HttpTraceContext implements HttpTextFormat {
     checkNotNull(getter, "getter");
 
     SpanContext spanContext = extractImpl(carrier, getter);
-    return context.withValue(Span.KEY, DefaultSpan.create(spanContext));
+    return Span.Key.put(DefaultSpan.create(spanContext), context);
   }
 
   private static <C> SpanContext extractImpl(C carrier, Getter<C> getter) {

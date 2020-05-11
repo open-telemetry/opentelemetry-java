@@ -34,9 +34,6 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface Span {
 
-  // TODO (trask) javadoc
-  Context.Key<Span> KEY = Context.<Span>keyWithDefault("Span", DefaultSpan.getInvalid());
-
   /**
    * Type of span. Can be used to specify additional relationships between spans in addition to a
    * parent/child relationship.
@@ -273,6 +270,22 @@ public interface Span {
    * @since 0.1.0
    */
   boolean isRecording();
+
+  // TODO (trask) javadoc class and methods
+  class Key {
+    private static final Context.Key<Span> KEY =
+        Context.<Span>keyWithDefault("Span", DefaultSpan.getInvalid());
+
+    public static Span get(Context context) {
+      return KEY.get(context);
+    }
+
+    public static Context put(Span span, Context context) {
+      return context.withValue(KEY, span);
+    }
+
+    private Key() {}
+  }
 
   /**
    * {@link Builder} is used to construct {@link Span} instances which define arbitrary scopes of

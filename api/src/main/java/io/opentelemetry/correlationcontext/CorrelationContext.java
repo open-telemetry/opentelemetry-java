@@ -34,10 +34,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public interface CorrelationContext {
 
-  // TODO (trask) javadoc
-  Context.Key<CorrelationContext> KEY =
-      Context.keyWithDefault("CorrelationContext", EmptyCorrelationContext.getInstance());
-
   /**
    * Returns an immutable collection of the entries in this {@code CorrelationContext}. Order of
    * entries is not guaranteed.
@@ -56,6 +52,22 @@ public interface CorrelationContext {
    */
   @Nullable
   EntryValue getEntryValue(EntryKey entryKey);
+
+  // TODO (trask) javadoc class and methods
+  class Key {
+    private static final Context.Key<CorrelationContext> KEY =
+        Context.keyWithDefault("CorrelationContext", EmptyCorrelationContext.getInstance());
+
+    public static CorrelationContext get(Context context) {
+      return KEY.get(context);
+    }
+
+    public static Context put(CorrelationContext correlationContext, Context context) {
+      return context.withValue(KEY, correlationContext);
+    }
+
+    private Key() {}
+  }
 
   /**
    * Builder for the {@link CorrelationContext} class.

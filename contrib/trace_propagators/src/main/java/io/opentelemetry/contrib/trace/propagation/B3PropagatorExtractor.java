@@ -65,7 +65,7 @@ final class B3PropagatorExtractor {
       spanContext = getSpanContextFromMultipleHeaders(carrier, getter);
     }
 
-    return context.withValue(Span.KEY, DefaultSpan.create(spanContext));
+    return Span.Key.put(DefaultSpan.create(spanContext), context);
   }
 
   @SuppressWarnings("StringSplitter")

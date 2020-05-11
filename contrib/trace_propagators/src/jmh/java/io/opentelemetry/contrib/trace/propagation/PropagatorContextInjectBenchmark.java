@@ -74,7 +74,7 @@ public class PropagatorContextInjectBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
     public Map<String, String> measureInject() {
-      Context context = Context.current().withValue(Span.KEY, DefaultSpan.create(contextToTest));
+      Context context = Span.Key.put(DefaultSpan.create(contextToTest), Context.current());
       doInject(context, carrier);
       return carrier;
     }

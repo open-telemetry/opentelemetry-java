@@ -27,12 +27,12 @@ public class CurrentContext {
 
   @MustBeClosed
   public static Scope withSpan(Span span) {
-    return withContext(get().withValue(Span.KEY, span));
+    return withContext(Span.Key.put(span, Context.current()));
   }
 
   @MustBeClosed
   public static Scope withCorrelationContext(CorrelationContext correlationContext) {
-    return withContext(get().withValue(CorrelationContext.KEY, correlationContext));
+    return withContext(CorrelationContext.Key.put(correlationContext, Context.current()));
   }
 
   /**
@@ -45,20 +45,20 @@ public class CurrentContext {
   }
 
   public static Span getSpan() {
-    return Span.KEY.get();
+    return Span.Key.get(Context.current());
   }
 
   public static CorrelationContext getCorrelationContext() {
-    return CorrelationContext.KEY.get();
+    return CorrelationContext.Key.get(Context.current());
   }
 
   /** Returns the context bound to the current thread. */
   // TODO (trask) this method is not needed currently, in favor of using Context.current() directly,
   //      but if we move to a Context object that doesn't have built-in thread-binding, then this is
   //      the only additional method we would need
-  private static Context get() {
-    return Context.current();
-  }
+  // private static Context get() {
+  //   return Context.current();
+  // }
 
   private CurrentContext() {}
 

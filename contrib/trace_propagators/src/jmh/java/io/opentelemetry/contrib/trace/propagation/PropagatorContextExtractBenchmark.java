@@ -64,7 +64,7 @@ public class PropagatorContextExtractBenchmark {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(1)
     public Span measureExtract() {
-      return Span.KEY.get(doExtract());
+      return Span.Key.get(doExtract());
     }
 
     protected abstract Context doExtract();

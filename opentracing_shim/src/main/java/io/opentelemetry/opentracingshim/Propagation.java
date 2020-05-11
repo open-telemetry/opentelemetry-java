@@ -34,9 +34,8 @@ final class Propagation extends BaseShimObject {
 
   public void injectTextFormat(SpanContextShim contextShim, TextMapInject carrier) {
     Context context =
-        Context.current()
-            .withValue(Span.KEY, DefaultSpan.create(contextShim.getSpanContext()))
-            .withValue(CorrelationContext.KEY, contextShim.getCorrelationContext());
+        Span.Key.put(DefaultSpan.create(contextShim.getSpanContext()), Context.current());
+    context = CorrelationContext.Key.put(contextShim.getCorrelationContext(), context);
 
     propagators().getHttpTextFormat().inject(context, carrier, TextMapSetter.INSTANCE);
   }
@@ -53,13 +52,13 @@ final class Propagation extends BaseShimObject {
             .getHttpTextFormat()
             .extract(Context.current(), carrierMap, TextMapGetter.INSTANCE);
 
-    io.opentelemetry.trace.Span span = Span.KEY.get(context);
+    io.opentelemetry.trace.Span span = Span.Key.get(context);
     if (!span.getContext().isValid()) {
       return null;
     }
 
     return new SpanContextShim(
-        telemetryInfo, span.getContext(), CorrelationContext.KEY.get(context));
+        telemetryInfo, span.getContext(), CorrelationContext.Key.get(context));
   }
 
   static final class TextMapSetter implements HttpTextFormat.Setter<TextMapInject> {
