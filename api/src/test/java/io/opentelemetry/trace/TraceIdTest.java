@@ -50,13 +50,36 @@ public class TraceIdTest {
   }
 
   @Test
-  public void testCorrectGetRandomTracePart() {
+  public void testGetRandomTracePart() {
     byte[] id = {
-      0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8,
-      0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x0
+      0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x00
     };
     TraceId traceid = TraceId.fromBytes(id, 0);
-    assertThat(traceid.getTraceRandomPart()).isEqualTo(0x90A0B0C0D0E0F00L);
+    assertThat(traceid.getTraceRandomPart()).isEqualTo(0x090A0B0C0D0E0F00L);
+  }
+
+  @Test
+  public void testGetRandomTracePart_NegativeLongRepresentation() {
+    byte[] id = {
+      0x01,
+      0x02,
+      0x03,
+      0x04,
+      0x05,
+      0x06,
+      0x07,
+      0x08,
+      (byte) 0xFF, // force a negative value
+      0x0A,
+      0x0B,
+      0x0C,
+      0x0D,
+      0x0E,
+      0x0F,
+      0x00
+    };
+    TraceId traceid = TraceId.fromBytes(id, 0);
+    assertThat(traceid.getTraceRandomPart()).isEqualTo(0xFF0A0B0C0D0E0F00L);
   }
 
   @Test
