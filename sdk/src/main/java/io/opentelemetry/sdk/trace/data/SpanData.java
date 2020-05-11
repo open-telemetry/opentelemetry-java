@@ -220,7 +220,7 @@ public abstract class SpanData {
   public abstract static class Link implements io.opentelemetry.trace.Link {
 
     private static final Map<String, AttributeValue> DEFAULT_ATTRIBUTE_COLLECTION =
-        Collections.<String, AttributeValue>emptyMap();
+        Collections.emptyMap();
     private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
 
     /**

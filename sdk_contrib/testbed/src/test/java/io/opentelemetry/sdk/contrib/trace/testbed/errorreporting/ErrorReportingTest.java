@@ -100,11 +100,9 @@ public final class ErrorReportingTest {
   public void testErrorRecovery() {
     final int maxRetries = 1;
     int retries = 0;
-    Object res = null;
-
     Span span = tracer.spanBuilder("one").startSpan();
     try (Scope ignored = tracer.withSpan(span)) {
-      while (res == null && retries++ < maxRetries) {
+      while (retries++ < maxRetries) {
         try {
           throw new RuntimeException("No url could be fetched");
         } catch (final Exception exc) {
@@ -113,9 +111,7 @@ public final class ErrorReportingTest {
       }
     }
 
-    if (res == null) {
-      span.setStatus(Status.UNKNOWN); // Could not fetch anything.
-    }
+    span.setStatus(Status.UNKNOWN); // Could not fetch anything.
     span.end();
 
     assertThat(tracer.getCurrentSpan()).isSameInstanceAs(DefaultSpan.getInvalid());

@@ -20,9 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.grpc.Context;
 import io.opentelemetry.context.Scope;
-import java.util.Arrays;
 import java.util.Collection;
-import javax.annotation.Nullable;
+import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,10 +41,10 @@ public final class DefaultCorrelationContextManagerTest {
 
         @Override
         public Collection<Entry> getEntries() {
-          return Arrays.asList(Entry.create(KEY, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION));
+          return Collections.singletonList(
+              Entry.create(KEY, VALUE, Entry.METADATA_UNLIMITED_PROPAGATION));
         }
 
-        @Nullable
         @Override
         public EntryValue getEntryValue(EntryKey entryKey) {
           return VALUE;
@@ -138,7 +137,7 @@ public final class DefaultCorrelationContextManagerTest {
   public void noopContextBuilder_SetParent_DisallowsNullParent() {
     CorrelationContext.Builder noopBuilder = defaultCorrelationContextManager.contextBuilder();
     thrown.expect(NullPointerException.class);
-    noopBuilder.setParent((CorrelationContext) null);
+    noopBuilder.setParent(null);
   }
 
   @Test

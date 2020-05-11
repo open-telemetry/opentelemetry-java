@@ -287,7 +287,7 @@ public class AdapterTest {
     assertEquals(this.getClass().getName(), errorType.getVStr());
     Model.KeyValue error = getValue(jaegerSpan.getTagsList(), "error");
     assertNotNull(error);
-    assertEquals(true, error.getVBool());
+    assertTrue(error.getVBool());
   }
 
   private static TimedEvent getTimedEvent() {

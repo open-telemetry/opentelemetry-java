@@ -60,10 +60,10 @@ public final class PushExporter {
 **Pull backend:**
 
 ```java
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.data.MetricData;import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;import java.util.Collections;
 
 /**
  * Simple implementation of the MetricExporter that stores data in memory and makes them available
@@ -101,6 +101,10 @@ public final class PullExporter {
 
   private void OnPullRequest() {
     // Iterate over all producers and the PullMetricExporter and export all metrics.
+    for (MetricProducer metricProducer : producers) {
+      Collection<MetricData> metrics = metricProducer.getAllMetrics();
+      // Do something with metrics
+    }
   }
 }
 ```

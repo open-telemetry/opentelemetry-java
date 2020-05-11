@@ -357,9 +357,7 @@ public abstract class AttributeValue {
             Collections.<Boolean>emptyList());
       }
       List<Boolean> values = new ArrayList<>(booleanValues.length);
-      for (Boolean value : booleanValues) {
-        values.add(value);
-      }
+      values.addAll(Arrays.asList(booleanValues));
       return new AutoValue_AttributeValue_AttributeValueBooleanArray(
           Collections.unmodifiableList(values));
     }
@@ -384,9 +382,7 @@ public abstract class AttributeValue {
         return new AutoValue_AttributeValue_AttributeValueLongArray(Collections.<Long>emptyList());
       }
       List<Long> values = new ArrayList<>(longValues.length);
-      for (Long value : longValues) {
-        values.add(value);
-      }
+      values.addAll(Arrays.asList(longValues));
       return new AutoValue_AttributeValue_AttributeValueLongArray(
           Collections.unmodifiableList(values));
     }
@@ -412,9 +408,7 @@ public abstract class AttributeValue {
             Collections.<Double>emptyList());
       }
       List<Double> values = new ArrayList<>(doubleValues.length);
-      for (Double value : doubleValues) {
-        values.add(value);
-      }
+      values.addAll(Arrays.asList(doubleValues));
       return new AutoValue_AttributeValue_AttributeValueDoubleArray(
           Collections.unmodifiableList(values));
     }

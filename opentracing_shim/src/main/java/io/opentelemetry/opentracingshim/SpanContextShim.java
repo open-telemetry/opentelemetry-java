@@ -108,6 +108,9 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
         public Map.Entry<String, String> next() {
           return new BaggageEntry(iterator.next());
         }
+
+        @Override
+        public void remove() {}
       };
     }
   }
