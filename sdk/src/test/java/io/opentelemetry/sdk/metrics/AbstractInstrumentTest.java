@@ -20,6 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
@@ -33,7 +35,12 @@ import org.junit.runners.JUnit4;
 public class AbstractInstrumentTest {
   private static final InstrumentDescriptor INSTRUMENT_DESCRIPTOR =
       InstrumentDescriptor.create(
-          "name", "description", "1", Collections.singletonMap("key_2", "value_2"));
+          "name",
+          "description",
+          "1",
+          Collections.singletonMap("key_2", "value_2"),
+          InstrumentType.COUNTER_MONOTONIC,
+          InstrumentValueType.LONG);
   private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =

@@ -18,17 +18,14 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.Measure;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
-import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 abstract class AbstractMeasure<B extends AbstractBoundInstrument>
     extends AbstractInstrumentWithBinding<B> {
   private final boolean absolute;
-  private final InstrumentValueType instrumentValueType;
 
   AbstractMeasure(
       InstrumentDescriptor descriptor,
-      InstrumentValueType instrumentValueType,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       boolean absolute) {
@@ -39,42 +36,14 @@ abstract class AbstractMeasure<B extends AbstractBoundInstrument>
         new ActiveBatcher(
             getDefaultBatcher(
                 descriptor,
-                getInstrumentType(absolute),
-                instrumentValueType,
                 meterProviderSharedState,
                 meterSharedState,
                 Aggregations.minMaxSumCount())));
     this.absolute = absolute;
-    this.instrumentValueType = instrumentValueType;
   }
 
   final boolean isAbsolute() {
     return absolute;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof AbstractMeasure)) {
-      return false;
-    }
-    if (!super.equals(o)) {
-      return false;
-    }
-
-    AbstractMeasure<?> that = (AbstractMeasure<?>) o;
-
-    return absolute == that.absolute && instrumentValueType == that.instrumentValueType;
-  }
-
-  @Override
-  public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (absolute ? 1 : 0);
-    result = 31 * result + instrumentValueType.hashCode();
-    return result;
   }
 
   abstract static class Builder<B extends AbstractMeasure.Builder<B>>
@@ -99,7 +68,7 @@ abstract class AbstractMeasure<B extends AbstractBoundInstrument>
     }
   }
 
-  private static InstrumentType getInstrumentType(boolean absolute) {
+  static InstrumentType getInstrumentType(boolean absolute) {
     return absolute ? InstrumentType.MEASURE_ABSOLUTE : InstrumentType.MEASURE_NON_ABSOLUTE;
   }
 }

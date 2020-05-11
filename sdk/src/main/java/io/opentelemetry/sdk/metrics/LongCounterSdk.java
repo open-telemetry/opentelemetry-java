@@ -27,12 +27,7 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       boolean monotonic) {
-    super(
-        descriptor,
-        InstrumentValueType.LONG,
-        meterProviderSharedState,
-        meterSharedState,
-        monotonic);
+    super(descriptor, meterProviderSharedState, meterSharedState, monotonic);
   }
 
   @Override
@@ -94,7 +89,8 @@ final class LongCounterSdk extends AbstractCounter<BoundInstrument> implements L
     public LongCounterSdk build() {
       return register(
           new LongCounterSdk(
-              getInstrumentDescriptor(),
+              getInstrumentDescriptor(
+                  AbstractCounter.getInstrumentType(isMonotonic()), InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState(),
               isMonotonic()));

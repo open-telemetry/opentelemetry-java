@@ -27,12 +27,7 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
       boolean monotonic,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
-    super(
-        descriptor,
-        InstrumentValueType.DOUBLE,
-        meterProviderSharedState,
-        meterSharedState,
-        monotonic);
+    super(descriptor, meterProviderSharedState, meterSharedState, monotonic);
   }
 
   @Override
@@ -94,7 +89,8 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     public DoubleCounterSdk build() {
       return register(
           new DoubleCounterSdk(
-              getInstrumentDescriptor(),
+              getInstrumentDescriptor(
+                  AbstractCounter.getInstrumentType(isMonotonic()), InstrumentValueType.DOUBLE),
               isMonotonic(),
               getMeterProviderSharedState(),
               getMeterSharedState()));

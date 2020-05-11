@@ -35,12 +35,7 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       boolean monotonic) {
-    super(
-        descriptor,
-        InstrumentValueType.LONG,
-        meterProviderSharedState,
-        meterSharedState,
-        monotonic);
+    super(descriptor, meterProviderSharedState, meterSharedState, monotonic);
   }
 
   @Override
@@ -83,7 +78,8 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     public LongObserverSdk build() {
       return register(
           new LongObserverSdk(
-              getInstrumentDescriptor(),
+              getInstrumentDescriptor(
+                  AbstractObserver.getInstrumentType(isMonotonic()), InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState(),
               isMonotonic()));

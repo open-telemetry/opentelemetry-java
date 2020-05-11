@@ -27,12 +27,7 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       boolean absolute) {
-    super(
-        descriptor,
-        InstrumentValueType.DOUBLE,
-        meterProviderSharedState,
-        meterSharedState,
-        absolute);
+    super(descriptor, meterProviderSharedState, meterSharedState, absolute);
   }
 
   @Override
@@ -94,7 +89,8 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     public DoubleMeasureSdk build() {
       return register(
           new DoubleMeasureSdk(
-              getInstrumentDescriptor(),
+              getInstrumentDescriptor(
+                  AbstractMeasure.getInstrumentType(isAbsolute()), InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState(),
               isAbsolute()));

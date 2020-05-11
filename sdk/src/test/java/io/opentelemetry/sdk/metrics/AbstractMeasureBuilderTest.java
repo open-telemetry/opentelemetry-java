@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.Rule;
@@ -85,7 +86,7 @@ public class AbstractMeasureBuilderTest {
     @Override
     public TestInstrument build() {
       return new TestInstrument(
-          getInstrumentDescriptor(),
+          getInstrumentDescriptor(InstrumentType.MEASURE_ABSOLUTE, InstrumentValueType.DOUBLE),
           getMeterProviderSharedState(),
           getMeterSharedState(),
           isAbsolute());
@@ -100,12 +101,7 @@ public class AbstractMeasureBuilderTest {
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         boolean absolute) {
-      super(
-          descriptor,
-          InstrumentValueType.LONG,
-          meterProviderSharedState,
-          meterSharedState,
-          absolute);
+      super(descriptor, meterProviderSharedState, meterSharedState, absolute);
     }
 
     @Override

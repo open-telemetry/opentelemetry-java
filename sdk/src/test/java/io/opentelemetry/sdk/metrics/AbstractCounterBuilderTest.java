@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.Rule;
@@ -85,7 +86,7 @@ public class AbstractCounterBuilderTest {
     @Override
     public TestInstrument build() {
       return new TestInstrument(
-          getInstrumentDescriptor(),
+          getInstrumentDescriptor(InstrumentType.COUNTER_NON_MONOTONIC, InstrumentValueType.DOUBLE),
           getMeterProviderSharedState(),
           getMeterSharedState(),
           isMonotonic());
@@ -99,12 +100,7 @@ public class AbstractCounterBuilderTest {
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         boolean monotonic) {
-      super(
-          descriptor,
-          InstrumentValueType.LONG,
-          meterProviderSharedState,
-          meterSharedState,
-          monotonic);
+      super(descriptor, meterProviderSharedState, meterSharedState, monotonic);
     }
 
     @Override

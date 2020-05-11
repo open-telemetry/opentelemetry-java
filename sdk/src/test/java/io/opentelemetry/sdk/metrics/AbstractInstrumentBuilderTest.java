@@ -20,6 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Arrays;
@@ -144,6 +146,9 @@ public class AbstractInstrumentBuilderTest {
     assertThat(testInstrument.getDescriptor().getDescription()).isEqualTo(DESCRIPTION);
     assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo(UNIT);
     assertThat(testInstrument.getDescriptor().getConstantLabels()).isEqualTo(CONSTANT_LABELS);
+    assertThat(testInstrument.getDescriptor().getType())
+        .isEqualTo(InstrumentType.COUNTER_NON_MONOTONIC);
+    assertThat(testInstrument.getDescriptor().getValueType()).isEqualTo(InstrumentValueType.LONG);
   }
 
   private static final class TestInstrumentBuilder
@@ -161,7 +166,9 @@ public class AbstractInstrumentBuilderTest {
     @Override
     public TestInstrument build() {
       return new TestInstrument(
-          getInstrumentDescriptor(), getMeterProviderSharedState(), getMeterSharedState());
+          getInstrumentDescriptor(InstrumentType.COUNTER_NON_MONOTONIC, InstrumentValueType.LONG),
+          getMeterProviderSharedState(),
+          getMeterSharedState());
     }
   }
 
