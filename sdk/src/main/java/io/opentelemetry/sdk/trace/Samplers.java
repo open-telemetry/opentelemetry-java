@@ -210,7 +210,7 @@ public final class Samplers {
       // while allowing for a (very) small chance of *not* sampling if the id == Long.MAX_VALUE.
       // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
       // code is executed in-line for every Span creation).
-      return Math.abs(traceId.getLowerLong()) < getIdUpperBound()
+      return Math.abs(traceId.getTraceRandomPart()) < getIdUpperBound()
           ? getPositiveDecision()
           : getNegativeDecision();
     }

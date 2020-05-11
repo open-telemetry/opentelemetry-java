@@ -235,11 +235,19 @@ public class SamplersTest {
   @Test
   public void probabilitySampler_SampleBasedOnTraceId() {
     final Sampler defaultProbability = Samplers.Probability.create(0.0001);
-    // This traceId will not be sampled by the Probability Sampler because the first 8 bytes as long
+    // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
     TraceId notSampledtraceId =
         TraceId.fromBytes(
             new byte[] {
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
               (byte) 0x8F,
               (byte) 0xFF,
               (byte) 0xFF,
@@ -247,15 +255,7 @@ public class SamplersTest {
               (byte) 0xFF,
               (byte) 0xFF,
               (byte) 0xFF,
-              (byte) 0xFF,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0
+              (byte) 0xFF
             },
             0);
     Decision decision1 =
@@ -270,7 +270,7 @@ public class SamplersTest {
     assertThat(decision1.isSampled()).isFalse();
     assertThat(decision1.getAttributes())
         .containsExactly(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
-    // This traceId will be sampled by the Probability Sampler because the first 8 bytes as long
+    // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     TraceId sampledtraceId =
         TraceId.fromBytes(
