@@ -60,9 +60,11 @@ public final class PushExporter {
 **Pull backend:**
 
 ```java
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 /**
@@ -99,8 +101,12 @@ public final class PullExporter {
     return metricExporter;
   }
 
-  private void OnPullRequest() {
+  private void onPullRequest() {
     // Iterate over all producers and the PullMetricExporter and export all metrics.
+    for (MetricProducer metricProducer : producers) {
+      Collection<MetricData> metrics = metricProducer.getAllMetrics();
+      // Do something with metrics
+    }
   }
 }
 ```

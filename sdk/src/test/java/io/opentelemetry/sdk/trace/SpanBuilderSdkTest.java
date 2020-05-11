@@ -343,7 +343,7 @@ public class SpanBuilderSdkTest {
                         return "test sampler";
                       }
                     },
-                    Collections.<String, AttributeValue>singletonMap(
+                    Collections.singletonMap(
                         samplerAttributeName, AttributeValue.stringAttributeValue("none")))
                 .startSpan();
     try {

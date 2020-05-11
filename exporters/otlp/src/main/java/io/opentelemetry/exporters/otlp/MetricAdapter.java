@@ -101,6 +101,7 @@ final class MetricAdapter {
 
     switch (builder.getMetricDescriptor().getType()) {
       case UNSPECIFIED:
+      case UNRECOGNIZED:
         break;
       case GAUGE_INT64:
       case COUNTER_INT64:
@@ -116,8 +117,6 @@ final class MetricAdapter {
         break;
       case SUMMARY:
         builder.addAllSummaryDataPoints(toSummaryDataPoints(metricData.getPoints()));
-        break;
-      case UNRECOGNIZED:
         break;
     }
     return builder.build();

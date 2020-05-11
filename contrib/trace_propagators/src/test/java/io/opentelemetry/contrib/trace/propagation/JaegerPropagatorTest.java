@@ -320,14 +320,12 @@ public class JaegerPropagatorTest {
 
   private static String generateTraceIdHeaderValue(
       String traceId, String spanId, char parentSpan, String sampled) {
-    return new StringBuilder()
-        .append(traceId)
-        .append(PROPAGATION_HEADER_DELIMITER)
-        .append(spanId)
-        .append(PROPAGATION_HEADER_DELIMITER)
-        .append(parentSpan)
-        .append(PROPAGATION_HEADER_DELIMITER)
-        .append(sampled)
-        .toString();
+    return traceId
+        + PROPAGATION_HEADER_DELIMITER
+        + spanId
+        + PROPAGATION_HEADER_DELIMITER
+        + parentSpan
+        + PROPAGATION_HEADER_DELIMITER
+        + sampled;
   }
 }

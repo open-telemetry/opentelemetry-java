@@ -103,12 +103,10 @@ public final class ErrorReportingTest {
   public void testErrorRecovery() {
     final int maxRetries = 1;
     int retries = 0;
-    Object res = null;
 
     Span span = tracer.buildSpan("one").start();
     try (Scope scope = tracer.activateSpan(span)) {
-
-      while (res == null && retries++ < maxRetries) {
+      while (retries++ < maxRetries) {
         try {
           throw new RuntimeException("No url could be fetched");
         } catch (final Exception exc) {
@@ -120,9 +118,7 @@ public final class ErrorReportingTest {
       }
     }
 
-    if (res == null) {
-      Tags.ERROR.set(span, true); // Could not fetch anything.
-    }
+    Tags.ERROR.set(span, true); // Could not fetch anything.
     span.finish();
 
     assertNull(tracer.scopeManager().activeSpan());

@@ -136,6 +136,7 @@ public class DoubleMinMaxSumCountTest {
 
     SummaryPoint actual =
         (SummaryPoint) summarizer.toPoint(0, 100, Collections.<String, String>emptyMap());
+    assertThat(actual).isNotNull();
     assertThat(actual.getStartEpochNanos()).isEqualTo(0);
     assertThat(actual.getEpochNanos()).isEqualTo(100);
     assertThat(actual.getLabels()).isEqualTo(Collections.emptyMap());

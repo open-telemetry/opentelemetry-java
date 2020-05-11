@@ -97,26 +97,26 @@ public class DefaultPropagatorsTest {
         .isSameInstanceAs(context);
   }
 
-  class CustomHttpTextFormat implements HttpTextFormat {
+  private static class CustomHttpTextFormat implements HttpTextFormat {
     private final String name;
     private final Context.Key<String> key;
 
-    public CustomHttpTextFormat(String name) {
+    CustomHttpTextFormat(String name) {
       this.name = name;
       this.key = Context.key(name);
     }
 
-    public Context.Key<String> getKey() {
+    Context.Key<String> getKey() {
       return key;
     }
 
-    public String getKeyName() {
+    String getKeyName() {
       return name;
     }
 
     @Override
     public List<String> fields() {
-      return Collections.<String>singletonList(name);
+      return Collections.singletonList(name);
     }
 
     @Override
