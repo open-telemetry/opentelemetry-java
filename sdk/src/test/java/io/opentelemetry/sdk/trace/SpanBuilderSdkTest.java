@@ -272,8 +272,6 @@ public class SpanBuilderSdkTest {
   public void setAttribute_nullAttributeValue_afterEnd() throws Exception {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
-    spanBuilder.setAttribute("nullString", (AttributeValue) null);
-    spanBuilder.setAttribute("nullStringAttributeValue", AttributeValue.stringAttributeValue(null));
     spanBuilder.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
     spanBuilder.setAttribute("longAttribute", 0L);
     spanBuilder.setAttribute("boolAttribute", false);
