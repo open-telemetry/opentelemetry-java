@@ -127,7 +127,7 @@ public final class DefaultMeter implements Meter {
       public void unbind() {}
     }
 
-    private static final class NoopBuilder extends NoopAbstractCounterBuilder<NoopBuilder>
+    private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
         implements Builder {
 
       @Override
@@ -164,13 +164,13 @@ public final class DefaultMeter implements Meter {
       INSTANCE;
 
       @Override
-      public void add(long delta) {}
+      public void add(long increment) {}
 
       @Override
       public void unbind() {}
     }
 
-    private static final class NoopBuilder extends NoopAbstractCounterBuilder<NoopBuilder>
+    private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
         implements Builder {
 
       @Override
@@ -368,15 +368,6 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void record() {}
-  }
-
-  private abstract static class NoopAbstractCounterBuilder<B extends NoopAbstractCounterBuilder<B>>
-      extends NoopAbstractInstrumentBuilder<B> implements Counter.Builder {
-
-    @Override
-    public B setMonotonic(boolean monotonic) {
-      return getThis();
-    }
   }
 
   private abstract static class NoopAbstractObserverBuilder<

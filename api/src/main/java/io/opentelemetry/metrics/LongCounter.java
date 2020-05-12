@@ -50,7 +50,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongCounter extends Counter<BoundLongCounter> {
+public interface LongCounter extends SynchronousInstrument<BoundLongCounter> {
 
   /**
    * Adds the given {@code increment} to the current value. The values can be negative iff monotonic
@@ -81,17 +81,17 @@ public interface LongCounter extends Counter<BoundLongCounter> {
      *
      * <p>The value added is associated with the current {@code Context}.
      *
-     * @param delta the value to add.
+     * @param increment the value to add.
      * @since 0.1.0
      */
-    void add(long delta);
+    void add(long increment);
 
     @Override
     void unbind();
   }
 
   /** Builder class for {@link LongCounter}. */
-  interface Builder extends Counter.Builder {
+  interface Builder extends SynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
 
@@ -100,9 +100,6 @@ public interface LongCounter extends Counter<BoundLongCounter> {
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);
-
-    @Override
-    Builder setMonotonic(boolean monotonic);
 
     @Override
     LongCounter build();

@@ -50,7 +50,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleCounter extends Counter<BoundDoubleCounter> {
+public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter> {
 
   /**
    * Adds the given {@code increment} to the current value. The values can be negative iff monotonic
@@ -90,7 +90,7 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
   }
 
   /** Builder class for {@link DoubleCounter}. */
-  interface Builder extends Counter.Builder {
+  interface Builder extends SynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
 
@@ -99,9 +99,6 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);
-
-    @Override
-    Builder setMonotonic(boolean monotonic);
 
     @Override
     DoubleCounter build();
