@@ -21,7 +21,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * SynchronousInstrument is an interface that defines a type of instruments that are used to report
- * measurements synchronously, user reports individual measurements when they occur.
+ * measurements synchronously. That is, when the user reports individual measurements as they occur.
  *
  * <p>Synchronous instrument events additionally have a Context associated with them, describing
  * properties of the associated trace and distributed correlation values.
