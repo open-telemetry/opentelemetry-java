@@ -63,7 +63,6 @@ public class DoubleCounterSdkTest {
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
-            .setMonotonic(true)
             .build();
     List<MetricData> metricDataList = doubleCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
@@ -181,8 +180,7 @@ public class DoubleCounterSdkTest {
 
   @Test
   public void doubleCounterAdd_Monotonicity() {
-    DoubleCounterSdk doubleCounter =
-        testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
+    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 
     thrown.expect(IllegalArgumentException.class);
     doubleCounter.add(-45.77d);
@@ -190,8 +188,7 @@ public class DoubleCounterSdkTest {
 
   @Test
   public void boundDoubleCounterAdd_Monotonicity() {
-    DoubleCounterSdk doubleCounter =
-        testSdk.doubleCounterBuilder("testCounter").setMonotonic(true).build();
+    DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 
     thrown.expect(IllegalArgumentException.class);
     doubleCounter.bind().add(-9.3);

@@ -159,7 +159,6 @@ public final class BatchSpansProcessor implements SpanProcessor {
       LongCounter droppedSpansCounter =
           meter
               .longCounterBuilder("droppedSpans")
-              .setMonotonic(true)
               .setUnit("1")
               .setDescription(
                   "The number of spans dropped by the BatchSpansProcessor due to high throughput.")

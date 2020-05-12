@@ -63,7 +63,6 @@ public class LongCounterSdkTest {
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
-            .setMonotonic(true)
             .build();
     List<MetricData> metricDataList = longCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
@@ -179,8 +178,7 @@ public class LongCounterSdkTest {
 
   @Test
   public void longCounterAdd_MonotonicityCheck() {
-    LongCounterSdk longCounter =
-        testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
     thrown.expect(IllegalArgumentException.class);
     longCounter.add(-45);
@@ -188,8 +186,7 @@ public class LongCounterSdkTest {
 
   @Test
   public void boundLongCounterAdd_MonotonicityCheck() {
-    LongCounterSdk longCounter =
-        testSdk.longCounterBuilder("testCounter").setMonotonic(true).build();
+    LongCounterSdk longCounter = testSdk.longCounterBuilder("testCounter").build();
 
     thrown.expect(IllegalArgumentException.class);
     longCounter.bind().add(-9);
