@@ -27,8 +27,7 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       boolean absolute) {
-    super(
-        descriptor, InstrumentValueType.LONG, meterProviderSharedState, meterSharedState, absolute);
+    super(descriptor, meterProviderSharedState, meterSharedState, absolute);
   }
 
   @Override
@@ -90,7 +89,8 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     public LongMeasureSdk build() {
       return register(
           new LongMeasureSdk(
-              getInstrumentDescriptor(),
+              getInstrumentDescriptor(
+                  AbstractMeasure.getInstrumentType(isAbsolute()), InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState(),
               isAbsolute()));

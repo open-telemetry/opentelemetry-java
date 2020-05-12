@@ -35,12 +35,7 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       boolean monotonic) {
-    super(
-        descriptor,
-        InstrumentValueType.DOUBLE,
-        meterProviderSharedState,
-        meterSharedState,
-        monotonic);
+    super(descriptor, meterProviderSharedState, meterSharedState, monotonic);
   }
 
   @Override
@@ -83,7 +78,8 @@ final class DoubleObserverSdk extends AbstractObserver implements DoubleObserver
     public DoubleObserverSdk build() {
       return register(
           new DoubleObserverSdk(
-              getInstrumentDescriptor(),
+              getInstrumentDescriptor(
+                  AbstractObserver.getInstrumentType(isMonotonic()), InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState(),
               isMonotonic()));

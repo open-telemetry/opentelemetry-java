@@ -17,6 +17,9 @@
 package io.opentelemetry.sdk.metrics;
 
 import com.google.auto.value.AutoValue;
+import com.google.auto.value.extension.memoized.Memoized;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
+import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
@@ -24,8 +27,14 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 abstract class InstrumentDescriptor {
   static InstrumentDescriptor create(
-      String name, String description, String unit, Map<String, String> constantLabels) {
-    return new AutoValue_InstrumentDescriptor(name, description, unit, constantLabels);
+      String name,
+      String description,
+      String unit,
+      Map<String, String> constantLabels,
+      InstrumentType type,
+      InstrumentValueType valueType) {
+    return new AutoValue_InstrumentDescriptor(
+        name, description, unit, constantLabels, type, valueType);
   }
 
   abstract String getName();
@@ -35,4 +44,12 @@ abstract class InstrumentDescriptor {
   abstract String getUnit();
 
   abstract Map<String, String> getConstantLabels();
+
+  abstract InstrumentType getType();
+
+  abstract InstrumentValueType getValueType();
+
+  @Memoized
+  @Override
+  public abstract int hashCode();
 }

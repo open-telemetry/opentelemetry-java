@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.metrics.Observer;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -86,7 +87,7 @@ public class AbstractObserverBuilderTest {
     @Override
     public TestInstrument build() {
       return new TestInstrument(
-          getInstrumentDescriptor(),
+          getInstrumentDescriptor(InstrumentType.OBSERVER_MONOTONIC, InstrumentValueType.DOUBLE),
           getMeterProviderSharedState(),
           getMeterSharedState(),
           isMonotonic());
@@ -101,12 +102,7 @@ public class AbstractObserverBuilderTest {
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState,
         boolean monotonic) {
-      super(
-          descriptor,
-          InstrumentValueType.LONG,
-          meterProviderSharedState,
-          meterSharedState,
-          monotonic);
+      super(descriptor, meterProviderSharedState, meterSharedState, monotonic);
     }
 
     @Override
