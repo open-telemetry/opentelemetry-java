@@ -9,4 +9,6 @@ dependencies {
     compile("io.opentelemetry:opentelemetry-api:${opentelemetryVersion}")
     compile("io.opentelemetry:opentelemetry-sdk:${opentelemetryVersion}")
     compile("io.opentelemetry:opentelemetry-exporters-logging:${opentelemetryVersion}")
+    compile "io.grpc:grpc-context:${grpcVersion}"
+
 }

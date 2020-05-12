@@ -28,6 +28,9 @@ import io.opentelemetry.exporters.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.Tracer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -134,7 +137,7 @@ public class HttpServer {
     // Show that multiple exporters can be used
 
     // Set to export the traces also to a log file
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(loggingExporter));
   }
 
   private void stop() {
