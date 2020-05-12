@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -33,6 +34,9 @@ import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +51,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /** Implementation for the {@link Span} class that records trace events. */
 @ThreadSafe
-final class RecordEventsReadableSpan implements ReadableSpan, Span {
+final class RecordEventsReadableSpan implements ReadableSpan, Span, SpanData {
 
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
@@ -161,46 +165,15 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public SpanData toSpanData() {
-    // Copy immutable fields outside synchronized block.
-    SpanContext spanContext = getSpanContext();
-    SpanData.Builder builder =
-        SpanData.newBuilder()
-            .setName(getName())
-            .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
-            .setTraceId(spanContext.getTraceId())
-            .setSpanId(spanContext.getSpanId())
-            .setTraceFlags(spanContext.getTraceFlags())
-            .setLinks(getLinks())
-            .setTotalRecordedLinks(totalRecordedLinks)
-            .setKind(kind)
-            .setTraceState(spanContext.getTraceState())
-            .setParentSpanId(parentSpanId)
-            .setHasRemoteParent(hasRemoteParent)
-            .setResource(resource)
-            .setStartEpochNanos(startEpochNanos);
-
-    // Copy remainder within synchronized
-    synchronized (lock) {
-      return builder
-          .setEnded(hasEnded)
-          .setAttributes(attributes)
-          .setEndEpochNanos(getEndEpochNanos())
-          .setStatus(getStatusWithDefault())
-          .setTimedEvents(adaptTimedEvents())
-          .setTotalAttributeCount(attributes.getTotalAddedValues())
-          .setTotalRecordedEvents(totalRecordedEvents)
-          // build() does the actual copying of the collections: it needs to be synchronized
-          // because of the attributes and events collections.
-          .build();
-    }
+    return this;
   }
 
   @GuardedBy("lock")
-  private List<SpanData.TimedEvent> adaptTimedEvents() {
-    List<SpanData.TimedEvent> result = new ArrayList<>(events.size());
+  private List<SpanDataImpl.TimedEvent> adaptTimedEvents() {
+    List<SpanDataImpl.TimedEvent> result = new ArrayList<>(events.size());
     for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
       result.add(
-          SpanData.TimedEvent.create(
+          SpanDataImpl.TimedEvent.create(
               sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
     }
     return result;
@@ -248,7 +221,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the end nano time.
    */
-  private long getEndEpochNanos() {
+  @Override
+  public long getEndEpochNanos() {
     synchronized (lock) {
       return endEpochNanos;
     }
@@ -259,19 +233,20 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return A copy of the Links for this span.
    */
-  private List<SpanData.Link> getLinks() {
+  @Override
+  public List<SpanDataImpl.Link> getLinks() {
     if (links == null) {
       return Collections.emptyList();
     }
-    List<SpanData.Link> result = new ArrayList<>(links.size());
+    List<SpanDataImpl.Link> result = new ArrayList<>(links.size());
     for (Link link : links) {
-      SpanData.Link newLink;
-      if (!(link instanceof SpanData.Link)) {
+      SpanDataImpl.Link newLink;
+      if (!(link instanceof SpanDataImpl.Link)) {
         // Make a copy because the given Link may not be immutable and we may reference a lot of
         // memory.
-        newLink = SpanData.Link.create(link.getContext(), link.getAttributes());
+        newLink = SpanDataImpl.Link.create(link.getContext(), link.getAttributes());
       } else {
-        newLink = (SpanData.Link) link;
+        newLink = (SpanDataImpl.Link) link;
       }
       result.add(newLink);
     }
@@ -463,6 +438,103 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private Status getStatusWithDefault() {
     synchronized (lock) {
       return status == null ? Status.OK : status;
+    }
+  }
+
+  /// additional methods for the SpanData interface below
+
+  @Override
+  public TraceId getTraceId() {
+    return context.getTraceId();
+  }
+
+  @Override
+  public SpanId getSpanId() {
+    return context.getSpanId();
+  }
+
+  @Override
+  public TraceFlags getTraceFlags() {
+    return context.getTraceFlags();
+  }
+
+  @Override
+  public TraceState getTraceState() {
+    return context.getTraceState();
+  }
+
+  @Override
+  public SpanId getParentSpanId() {
+    return parentSpanId;
+  }
+
+  @Override
+  public Resource getResource() {
+    return resource;
+  }
+
+  @Override
+  public Kind getKind() {
+    synchronized (lock) {
+      return kind;
+    }
+  }
+
+  @Override
+  public long getStartEpochNanos() {
+    return startEpochNanos;
+  }
+
+  @Override
+  public Map<String, AttributeValue> getAttributes() {
+    synchronized (lock) {
+      return attributes;
+    }
+  }
+
+  @Override
+  public List<SpanDataImpl.TimedEvent> getTimedEvents() {
+    synchronized (lock) {
+      // todo instead do this adapting when we freeze the span.
+      return adaptTimedEvents();
+    }
+  }
+
+  @Override
+  public Status getStatus() {
+    synchronized (lock) {
+      return getStatusWithDefault();
+    }
+  }
+
+  @Override
+  public boolean getHasRemoteParent() {
+    return hasRemoteParent;
+  }
+
+  @Override
+  public boolean isEnded() {
+    synchronized (lock) {
+      return hasEnded;
+    }
+  }
+
+  @Override
+  public int getTotalRecordedEvents() {
+    synchronized (lock) {
+      return totalRecordedEvents;
+    }
+  }
+
+  @Override
+  public int getTotalRecordedLinks() {
+    return totalRecordedLinks;
+  }
+
+  @Override
+  public int getTotalAttributeCount() {
+    synchronized (lock) {
+      return totalAttributeCount;
     }
   }
 

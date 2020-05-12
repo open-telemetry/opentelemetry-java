@@ -23,6 +23,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.AttributeValue.Type;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
@@ -135,7 +136,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       spanBuilder.putTag(STATUS_ERROR, status.getCanonicalCode().toString());
     }
 
-    for (SpanData.TimedEvent annotation : spanData.getTimedEvents()) {
+    for (SpanDataImpl.TimedEvent annotation : spanData.getTimedEvents()) {
       spanBuilder.addAnnotation(toEpochMicros(annotation.getEpochNanos()), annotation.getName());
     }
 

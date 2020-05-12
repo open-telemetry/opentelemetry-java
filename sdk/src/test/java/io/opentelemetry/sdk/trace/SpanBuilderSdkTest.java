@@ -23,6 +23,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -81,7 +82,7 @@ public class SpanBuilderSdkTest {
   public void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    spanBuilder.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
+    spanBuilder.addLink(SpanDataImpl.Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
         DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
@@ -112,10 +113,10 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       SpanData spanData = span.toSpanData();
-      List<SpanData.Link> links = spanData.getLinks();
+      List<SpanDataImpl.Link> links = spanData.getLinks();
       assertThat(links.size()).isEqualTo(maxNumberOfLinks);
       for (int i = 0; i < maxNumberOfLinks; i++) {
-        assertThat(links.get(i)).isEqualTo(SpanData.Link.create(sampledSpanContext));
+        assertThat(links.get(i)).isEqualTo(SpanDataImpl.Link.create(sampledSpanContext));
         assertThat(spanData.getTotalRecordedLinks()).isEqualTo(2 * maxNumberOfLinks);
       }
     } finally {

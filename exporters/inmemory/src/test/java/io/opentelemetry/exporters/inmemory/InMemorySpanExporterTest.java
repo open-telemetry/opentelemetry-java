@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Tracer;
@@ -100,7 +101,7 @@ public class InMemorySpanExporterTest {
   }
 
   static SpanData makeBasicSpan() {
-    return SpanData.newBuilder()
+    return SpanDataImpl.newBuilder()
         .setEnded(true)
         .setTraceId(io.opentelemetry.trace.TraceId.getInvalid())
         .setSpanId(io.opentelemetry.trace.SpanId.getInvalid())

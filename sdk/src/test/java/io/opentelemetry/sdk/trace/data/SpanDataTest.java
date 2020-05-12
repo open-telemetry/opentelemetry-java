@@ -21,7 +21,7 @@ import static java.util.Collections.emptyList;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl.TimedEvent;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -37,7 +37,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link SpanData}. */
+/** Unit tests for {@link SpanDataImpl}. */
 @RunWith(JUnit4.class)
 public class SpanDataTest {
 
@@ -98,46 +98,46 @@ public class SpanDataTest {
 
   @Test
   public void link_defaultTotalAttributeCountIsZero() {
-    SpanData.Link link = SpanData.Link.create(SpanContext.getInvalid());
+    SpanDataImpl.Link link = SpanDataImpl.Link.create(SpanContext.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void link_canSetTotalAttributeCount() {
-    SpanData.Link link = SpanData.Link.create(SpanContext.getInvalid());
+    SpanDataImpl.Link link = SpanDataImpl.Link.create(SpanContext.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void timedEvent_defaultTotalAttributeCountIsZero() {
-    SpanData.TimedEvent event =
-        SpanData.TimedEvent.create(
+    SpanDataImpl.TimedEvent event =
+        SpanDataImpl.TimedEvent.create(
             START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap());
     assertThat(event.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void timedEvent_canSetTotalAttributeCount() {
-    SpanData.TimedEvent event =
-        SpanData.TimedEvent.create(
+    SpanDataImpl.TimedEvent event =
+        SpanDataImpl.TimedEvent.create(
             START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap(), 123);
     assertThat(event.getTotalAttributeCount()).isEqualTo(123);
   }
 
   private static SpanData createSpanDataWithMutableCollections() {
     return createBasicSpanBuilder()
-        .setLinks(new ArrayList<SpanData.Link>())
+        .setLinks(new ArrayList<SpanDataImpl.Link>())
         .setTimedEvents(new ArrayList<TimedEvent>())
         .setAttributes(new HashMap<String, AttributeValue>())
         .build();
   }
 
-  private static SpanData.Link emptyLink() {
-    return SpanData.Link.create(SpanContext.getInvalid());
+  private static SpanDataImpl.Link emptyLink() {
+    return SpanDataImpl.Link.create(SpanContext.getInvalid());
   }
 
-  private static SpanData.Builder createBasicSpanBuilder() {
-    return SpanData.newBuilder()
+  private static SpanDataImpl.Builder createBasicSpanBuilder() {
+    return SpanDataImpl.newBuilder()
         .setEnded(true)
         .setSpanId(SpanId.getInvalid())
         .setTraceId(TraceId.getInvalid())

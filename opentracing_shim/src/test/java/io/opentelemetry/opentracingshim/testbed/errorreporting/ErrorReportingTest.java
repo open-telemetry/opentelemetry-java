@@ -27,7 +27,7 @@ import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl.TimedEvent;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Scope;
 import io.opentracing.Span;

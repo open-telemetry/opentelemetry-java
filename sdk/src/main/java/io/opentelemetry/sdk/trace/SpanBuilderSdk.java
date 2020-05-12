@@ -25,7 +25,7 @@ import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
@@ -118,13 +118,13 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder addLink(SpanContext spanContext) {
-    addLink(SpanData.Link.create(spanContext));
+    addLink(SpanDataImpl.Link.create(spanContext));
     return this;
   }
 
   @Override
   public Span.Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-    addLink(SpanData.Link.create(spanContext, attributes));
+    addLink(SpanDataImpl.Link.create(spanContext, attributes));
     return this;
   }
 

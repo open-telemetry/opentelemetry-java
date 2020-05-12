@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -57,11 +58,11 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final long RECEIVED_TIMESTAMP_NANOS = 1505855799_433901068L;
   private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
   private static final Map<String, AttributeValue> attributes = Collections.emptyMap();
-  private static final List<SpanData.TimedEvent> annotations =
+  private static final List<SpanDataImpl.TimedEvent> annotations =
       ImmutableList.of(
-          SpanData.TimedEvent.create(
+          SpanDataImpl.TimedEvent.create(
               RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Collections.<String, AttributeValue>emptyMap()),
-          SpanData.TimedEvent.create(
+          SpanDataImpl.TimedEvent.create(
               SENT_TIMESTAMP_NANOS, "SENT", Collections.<String, AttributeValue>emptyMap()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
@@ -156,8 +157,8 @@ public class ZipkinSpanExporterEndToEndHttpTest {
     assertThat(zipkinSpans.get(0)).isEqualTo(buildZipkinSpan());
   }
 
-  private static SpanData.Builder buildStandardSpan() {
-    return SpanData.newBuilder()
+  private static SpanDataImpl.Builder buildStandardSpan() {
+    return SpanDataImpl.newBuilder()
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
         .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
@@ -170,7 +171,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setAttributes(attributes)
         .setTotalAttributeCount(attributes.size())
         .setTimedEvents(annotations)
-        .setLinks(Collections.<SpanData.Link>emptyList())
+        .setLinks(Collections.<SpanDataImpl.Link>emptyList())
         .setEndEpochNanos(END_EPOCH_NANOS)
         .setEnded(true);
   }

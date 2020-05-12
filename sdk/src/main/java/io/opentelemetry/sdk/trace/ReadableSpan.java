@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 
@@ -48,7 +49,7 @@ public interface ReadableSpan {
   /**
    * This converts this instance into an immutable SpanData instance, for use in export.
    *
-   * @return an immutable {@link SpanData} instance.
+   * @return an immutable {@link SpanDataImpl} instance.
    * @since 0.1.0
    */
   SpanData toSpanData();

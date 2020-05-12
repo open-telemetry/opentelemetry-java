@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -55,7 +56,7 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static SpanData makeBasicSpan() {
-    return SpanData.newBuilder()
+    return SpanDataImpl.newBuilder()
         .setEnded(true)
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())
