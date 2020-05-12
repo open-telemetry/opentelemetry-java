@@ -266,7 +266,7 @@ public class HttpTraceContextTest {
 
   @Test
   public void extract_InvalidSpanId() {
-    Map<String, String> invalidHeaders = new HashMap<String, String>();
+    Map<String, String> invalidHeaders = new HashMap<>();
     invalidHeaders.put(TRACE_PARENT, "00-" + TRACE_ID_BASE16 + "-" + "abcdefghijklmnop" + "-01");
     assertThat(getSpanContext(httpTraceContext.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());

@@ -84,7 +84,7 @@ public class TracerShimTest {
 
   @Test
   public void inject_nullContext() {
-    Map<String, String> map = new HashMap<String, String>();
+    Map<String, String> map = new HashMap<>();
     tracerShim.inject(null, Format.Builtin.TEXT_MAP, new TextMapAdapter(map));
     assertEquals(0, map.size());
   }

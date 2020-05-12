@@ -395,7 +395,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       return attributes;
     }
 
-    Map<String, AttributeValue> temp = new HashMap<String, AttributeValue>();
+    Map<String, AttributeValue> temp = new HashMap<>();
     for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
       if (temp.size() < this.maxNumberOfAttributesPerEvent) {
         temp.put(entry.getKey(), entry.getValue());
