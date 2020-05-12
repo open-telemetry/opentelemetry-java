@@ -34,7 +34,7 @@ public final class StringUtilsTest {
   }
 
   @Test
-  public void isNullOrEmpty() throws Exception {
+  public void isNullOrEmpty() {
     assertThat(StringUtils.isNullOrEmpty("")).isTrue();
     assertThat(StringUtils.isNullOrEmpty(null)).isTrue();
     assertThat(StringUtils.isNullOrEmpty("hello")).isFalse();

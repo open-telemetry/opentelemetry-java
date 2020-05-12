@@ -37,7 +37,7 @@ final class Client {
     return executor.submit(
         new Callable<Object>() {
           @Override
-          public Object call() throws Exception {
+          public Object call() {
             // send via wire and get response
             Object response = message + ":response";
             responseListener.onResponse(response);

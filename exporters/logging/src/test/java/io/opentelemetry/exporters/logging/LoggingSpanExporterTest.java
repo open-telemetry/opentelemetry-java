@@ -43,12 +43,12 @@ public class LoggingSpanExporterTest {
   LoggingSpanExporter exporter;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     exporter = new LoggingSpanExporter();
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     exporter.shutdown();
   }
 

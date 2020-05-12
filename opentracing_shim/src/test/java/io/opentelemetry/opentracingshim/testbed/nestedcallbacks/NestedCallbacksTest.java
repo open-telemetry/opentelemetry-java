@@ -48,7 +48,7 @@ public final class NestedCallbacksTest {
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Test
-  public void test() throws Exception {
+  public void test() {
 
     Span span = tracer.buildSpan("one").start();
     submitCallbacks(span);

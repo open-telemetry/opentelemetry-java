@@ -211,7 +211,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_emptyArrayAttributeValue() throws Exception {
+  public void setAttribute_emptyArrayAttributeValue() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute(
         "stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
@@ -225,7 +225,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_nullStringValue() throws Exception {
+  public void setAttribute_nullStringValue() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("nullString", (String) null);
@@ -239,7 +239,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_nullAttributeValue() throws Exception {
+  public void setAttribute_nullAttributeValue() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("nullString", (AttributeValue) null);
