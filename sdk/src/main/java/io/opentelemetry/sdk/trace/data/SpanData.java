@@ -179,7 +179,7 @@ public abstract class SpanData {
    * @return {@code true} if the span has already been ended, {@code false} if not.
    * @since 0.4.0
    */
-  public abstract boolean getHasEnded();
+  public abstract boolean isEnded();
 
   /**
    * The total number of {@link SpanData.TimedEvent} events that were recorded on this span. This
@@ -549,11 +549,11 @@ public abstract class SpanData {
     /**
      * Sets to true if the span has been ended.
      *
-     * @param hasEnded A boolean indicating if the span has been ended.
+     * @param ended A boolean indicating if the span has been ended.
      * @return this
      * @since 0.4.0
      */
-    public abstract Builder setHasEnded(boolean hasEnded);
+    public abstract Builder setEnded(boolean ended);
 
     /**
      * Set the total number of events recorded on this span.

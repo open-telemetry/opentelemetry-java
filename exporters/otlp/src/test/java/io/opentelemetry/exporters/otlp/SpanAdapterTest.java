@@ -58,7 +58,7 @@ public class SpanAdapterTest {
     Span span =
         SpanAdapter.toProtoSpan(
             SpanData.newBuilder()
-                .setHasEnded(true)
+                .setEnded(true)
                 .setTraceId(TRACE_ID)
                 .setSpanId(SPAN_ID)
                 .setParentSpanId(SpanId.getInvalid())

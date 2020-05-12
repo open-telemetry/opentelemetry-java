@@ -282,7 +282,7 @@ public class ZipkinSpanExporterTest {
         .setTimedEvents(annotations)
         .setLinks(Collections.<Link>emptyList())
         .setEndEpochNanos(1505855799_465726528L)
-        .setHasEnded(true);
+        .setEnded(true);
   }
 
   private static Span buildZipkinSpan(Span.Kind kind) {

@@ -241,7 +241,7 @@ public class AdapterTest {
     long endMs = startMs + 900;
     SpanData span =
         SpanData.newBuilder()
-            .setHasEnded(true)
+            .setEnded(true)
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
             .setName("GET /api/endpoint")
@@ -268,7 +268,7 @@ public class AdapterTest {
     long endMs = startMs + 900;
     SpanData span =
         SpanData.newBuilder()
-            .setHasEnded(true)
+            .setEnded(true)
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
             .setName("GET /api/endpoint")
@@ -304,7 +304,7 @@ public class AdapterTest {
     Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return SpanData.newBuilder()
-        .setHasEnded(true)
+        .setEnded(true)
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
         .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))

@@ -596,7 +596,7 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getStartEpochNanos()).isEqualTo(startEpochNanos);
     assertThat(spanData.getEndEpochNanos()).isEqualTo(endEpochNanos);
     assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
-    assertThat(spanData.getHasEnded()).isEqualTo(hasEnded);
+    assertThat(spanData.isEnded()).isEqualTo(hasEnded);
   }
 
   @Test
@@ -651,7 +651,7 @@ public class RecordEventsReadableSpanTest {
 
     SpanData expected =
         SpanData.newBuilder()
-            .setHasEnded(true)
+            .setEnded(true)
             .setName(name)
             .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
             .setKind(kind)

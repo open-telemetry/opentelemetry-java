@@ -57,7 +57,7 @@ public class LoggingSpanExporterTest {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     SpanData spanData =
         SpanData.newBuilder()
-            .setHasEnded(true)
+            .setEnded(true)
             .setTraceId(new TraceId(1234L, 6789L))
             .setSpanId(new SpanId(9876L))
             .setStartEpochNanos(epochNanos)

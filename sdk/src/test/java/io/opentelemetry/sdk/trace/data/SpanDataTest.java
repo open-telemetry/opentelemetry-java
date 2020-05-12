@@ -138,7 +138,7 @@ public class SpanDataTest {
 
   private static SpanData.Builder createBasicSpanBuilder() {
     return SpanData.newBuilder()
-        .setHasEnded(true)
+        .setEnded(true)
         .setSpanId(SpanId.getInvalid())
         .setTraceId(TraceId.getInvalid())
         .setName("spanName")

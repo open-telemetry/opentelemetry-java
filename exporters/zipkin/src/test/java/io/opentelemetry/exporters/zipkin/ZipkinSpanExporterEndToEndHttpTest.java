@@ -172,7 +172,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setTimedEvents(annotations)
         .setLinks(Collections.<SpanData.Link>emptyList())
         .setEndEpochNanos(END_EPOCH_NANOS)
-        .setHasEnded(true);
+        .setEnded(true);
   }
 
   private static Span buildZipkinSpan() {
