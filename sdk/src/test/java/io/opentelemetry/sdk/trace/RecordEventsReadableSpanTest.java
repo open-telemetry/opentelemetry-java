@@ -323,7 +323,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void setAttribute_emptyArrayAttributeValue() throws Exception {
+  public void setAttribute_emptyArrayAttributeValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
     span.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue(new Boolean[0]));
@@ -333,7 +333,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void setAttribute_nullStringValue() throws Exception {
+  public void setAttribute_nullStringValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("emptyString", "");
     span.setAttribute("nullString", (String) null);
@@ -346,7 +346,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void setAttribute_nullAttributeValue() throws Exception {
+  public void setAttribute_nullAttributeValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
     span.setAttribute("emptyString", "");
     span.setAttribute("nullString", (AttributeValue) null);

@@ -46,12 +46,12 @@ public class LoggingMetricExporterTest {
   LoggingMetricExporter exporter;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     exporter = new LoggingMetricExporter();
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     exporter.shutdown();
   }
 

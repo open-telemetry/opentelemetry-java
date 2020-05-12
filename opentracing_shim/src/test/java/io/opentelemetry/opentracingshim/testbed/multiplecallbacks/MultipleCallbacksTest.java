@@ -49,7 +49,7 @@ public class MultipleCallbacksTest {
   private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
 
   @Test
-  public void test() throws Exception {
+  public void test() {
     CountDownLatch parentDoneLatch = new CountDownLatch(1);
     Client client = new Client(tracer, parentDoneLatch);
 

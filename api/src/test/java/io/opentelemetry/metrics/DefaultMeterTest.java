@@ -99,7 +99,7 @@ public final class DefaultMeterTest {
   }
 
   @Test
-  public void testNewBatchRecorder_badLabelSet() throws Exception {
+  public void testNewBatchRecorder_badLabelSet() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("key/value");
     defaultMeter.newBatchRecorder("key");
