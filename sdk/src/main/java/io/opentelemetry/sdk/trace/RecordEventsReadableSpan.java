@@ -51,10 +51,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
-  @SuppressWarnings("checkstyle:LineLength")
-  private static final String MAX_SPAN_ATTRIBUTE_COUNT_LOG_MESSAGE =
-      "Span with name '%s' has reached the maximum number of attributes (%d). Dropping attribute with key '%s'";
-
   private static final String MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE =
       "Link has reached the maximum number of attributes (%d). Dropping %d attributes.";
 
@@ -71,8 +67,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final List<Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
-  // Max number of attibutes per span.
-  private final int maxNumberOfAttributes;
   // Max number of attributes per event.
   private final int maxNumberOfAttributesPerEvent;
 
@@ -93,13 +87,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final long startEpochNanos;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
   @GuardedBy("lock")
-  private final AttributesWithCapacity attributes;
+  private final AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
   private final EvictingQueue<TimedEvent> events;
-  // Number of attributes recorded.
-  @GuardedBy("lock")
-  private int totalAttributeCount = 0;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
@@ -142,7 +133,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
-      AttributesWithCapacity attributes,
+      AttributesMap attributes,
       List<Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
@@ -196,7 +187,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
           .setEndEpochNanos(getEndEpochNanos())
           .setStatus(getStatusWithDefault())
           .setTimedEvents(adaptTimedEvents())
-          .setTotalAttributeCount(totalAttributeCount)
+          .setTotalAttributeCount(attributes.getTotalAddedValues())
           .setTotalRecordedEvents(totalRecordedEvents)
           // build() does the actual copying of the collections: it needs to be synchronized
           // because of the attributes and events collections.
@@ -341,15 +332,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         attributes.remove(key);
         return;
       }
-      totalAttributeCount++;
-      if (attributes.get(key) == null && attributes.size() >= maxNumberOfAttributes) {
-        logger.log(
-            Level.FINE,
-            String.format(
-                MAX_SPAN_ATTRIBUTE_COUNT_LOG_MESSAGE, this.name, maxNumberOfAttributes, key));
-        return;
-      }
-      attributes.putAttribute(key, value);
+      attributes.put(key, value);
     }
   }
 
@@ -494,7 +477,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
-      AttributesWithCapacity attributes,
+      AttributesMap attributes,
       List<Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
@@ -511,9 +494,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.hasEnded = false;
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
+    // TODO: Do not always initialize the attributes.
     this.attributes = attributes;
     this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
-    this.maxNumberOfAttributes = traceConfig.getMaxNumberOfAttributes();
     this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
   }
 }

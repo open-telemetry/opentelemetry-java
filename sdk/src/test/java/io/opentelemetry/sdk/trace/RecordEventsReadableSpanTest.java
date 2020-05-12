@@ -195,9 +195,11 @@ public class RecordEventsReadableSpanTest {
   @Test
   public void toSpanData_WithInitialAttributes() {
     RecordEventsReadableSpan span = createTestSpanWithAttributes(attributes);
+    span.setAttribute("anotherKey", "anotherValue");
     span.end();
     SpanData spanData = span.toSpanData();
-    assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size());
+    assertThat(spanData.getAttributes().size()).isEqualTo(attributes.size() + 1);
+    assertThat(spanData.getTotalAttributeCount()).isEqualTo(attributes.size() + 1);
   }
 
   @Test
@@ -531,9 +533,8 @@ public class RecordEventsReadableSpanTest {
       TraceConfig config,
       @Nullable SpanId parentSpanId,
       Map<String, AttributeValue> attributes) {
-    AttributesWithCapacity attributesWithCapacity =
-        new AttributesWithCapacity(config.getMaxNumberOfAttributes());
-    attributesWithCapacity.putAllAttributes(attributes);
+    AttributesMap attributesWithCapacity = new AttributesMap(config.getMaxNumberOfAttributes());
+    attributesWithCapacity.putAll(attributes);
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
@@ -612,8 +613,8 @@ public class RecordEventsReadableSpanTest {
     attribute.put("foo", AttributeValue.stringAttributeValue("bar"));
     Resource resource = Resource.create(attribute);
     Map<String, AttributeValue> attributes = TestUtils.generateRandomAttributes();
-    AttributesWithCapacity attributesWithCapacity = new AttributesWithCapacity(32);
-    attributesWithCapacity.putAllAttributes(attributes);
+    AttributesMap attributesWithCapacity = new AttributesMap(32);
+    attributesWithCapacity.putAll(attributes);
     Map<String, AttributeValue> event1Attributes = TestUtils.generateRandomAttributes();
     Map<String, AttributeValue> event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
@@ -669,6 +670,7 @@ public class RecordEventsReadableSpanTest {
             .setTraceId(traceId)
             .setSpanId(spanId)
             .setAttributes(attributes)
+            .setTotalAttributeCount(1)
             .setHasRemoteParent(false)
             .build();
 

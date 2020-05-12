@@ -57,11 +57,11 @@ final class SpanBuilderSdk implements Span.Builder {
   private final Resource resource;
   private final IdsGenerator idsGenerator;
   private final Clock clock;
+  private final AttributesMap attributes;
 
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
-  private final AttributesWithCapacity attributes;
   private List<Link> links;
   private int totalNumberOfLinksAdded = 0;
   private ParentType parentType = ParentType.CURRENT_CONTEXT;
@@ -80,7 +80,7 @@ final class SpanBuilderSdk implements Span.Builder {
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
-    this.attributes = new AttributesWithCapacity(traceConfig.getMaxNumberOfAttributes());
+    this.attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
     this.links = Collections.emptyList();
     this.idsGenerator = idsGenerator;
     this.clock = clock;
@@ -170,10 +170,10 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span.Builder setAttribute(String key, AttributeValue value) {
     Objects.requireNonNull(key, "key");
     if (value == null
-        || (value.getType().equals(AttributeValue.Type.STRING) && value.getStringValue() == null)) {
+        || (value.getType() == AttributeValue.Type.STRING && value.getStringValue() == null)) {
       attributes.remove(key);
     } else {
-      attributes.putAttribute(key, value);
+      attributes.put(key, value);
     }
     return this;
   }
@@ -216,8 +216,7 @@ final class SpanBuilderSdk implements Span.Builder {
     if (!samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
     }
-
-    attributes.putAllAttributes(samplingDecision.getAttributes());
+    attributes.putAll(samplingDecision.getAttributes());
 
     return RecordEventsReadableSpan.startSpan(
         spanContext,
