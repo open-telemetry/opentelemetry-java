@@ -73,7 +73,7 @@ public interface LongCounter extends Counter<BoundLongCounter> {
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundLongCounter extends SyncInstrument.BoundInstrument {
+  interface BoundLongCounter extends SynchronousInstrument.BoundInstrument {
 
     /**
      * Adds the given {@code increment} to the current value. The values can be negative iff

@@ -73,7 +73,7 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundDoubleCounter extends SyncInstrument.BoundInstrument {
+  interface BoundDoubleCounter extends SynchronousInstrument.BoundInstrument {
     /**
      * Adds the given {@code increment} to the current value. The values can be negative iff
      * monotonic was set to {@code false}.
