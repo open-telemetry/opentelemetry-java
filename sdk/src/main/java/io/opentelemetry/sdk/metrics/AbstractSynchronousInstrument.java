@@ -22,12 +22,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-abstract class AbstractInstrumentWithBinding<B extends AbstractBoundInstrument>
+abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     extends AbstractInstrument {
   private final ConcurrentHashMap<LabelSetSdk, B> boundLabels;
   private final ReentrantLock collectLock;
 
-  AbstractInstrumentWithBinding(
+  AbstractSynchronousInstrument(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,

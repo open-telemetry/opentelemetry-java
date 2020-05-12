@@ -70,7 +70,7 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundLongMeasure extends InstrumentWithBinding.BoundInstrument {
+  interface BoundLongMeasure extends SynchronousInstrument.BoundInstrument {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *

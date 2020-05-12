@@ -16,17 +16,21 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+import io.opentelemetry.metrics.SynchronousInstrument.BoundInstrument;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Base interface for all metrics with bounds defined in this package.
+ * SynchronousInstrument is an interface that defines a type of instruments that are used to report
+ * measurements synchronously. That is, when the user reports individual measurements as they occur.
+ *
+ * <p>Synchronous instrument events additionally have a Context associated with them, describing
+ * properties of the associated trace and distributed correlation values.
  *
  * @param <B> the specific type of Bound Instrument this instrument can provide.
  * @since 0.3.0
  */
 @ThreadSafe
-public interface InstrumentWithBinding<B extends BoundInstrument> extends Instrument {
+public interface SynchronousInstrument<B extends BoundInstrument> extends Instrument {
   /**
    * Returns a {@code Bound Instrument} associated with the specified labels. Multiples requests
    * with the same set of labels may return the same {@code Bound Instrument} instance.

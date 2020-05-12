@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,15 +70,17 @@ public final class LongMeasureTest {
 
   @Test
   public void preventNegativeValue() {
-    LongMeasure myMeasure = meter.longMeasureBuilder("MyMeasure").build();
+    LongMeasure longMeasure = meter.longMeasureBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    myMeasure.bind().record(-5);
+    longMeasure.bind().record(-5);
   }
 
   @Test
   public void doesNotThrow() {
-    LongMeasure myMeasure = meter.longMeasureBuilder("MyMeasure").build();
-    myMeasure.bind().record(5);
+    LongMeasure longMeasure = meter.longMeasureBuilder("MyMeasure").build();
+    BoundLongMeasure bound = longMeasure.bind();
+    bound.record(5);
+    bound.unbind();
   }
 }

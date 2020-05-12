@@ -21,7 +21,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 abstract class AbstractCounter<B extends AbstractBoundInstrument>
-    extends AbstractInstrumentWithBinding<B> {
+    extends AbstractSynchronousInstrument<B> {
   private final boolean monotonic;
 
   AbstractCounter(

@@ -18,6 +18,7 @@ package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -87,6 +88,8 @@ public class DoubleCounterTest {
   public void doesNotThrow() {
     DoubleCounter doubleCounter =
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    doubleCounter.bind().add(1.0);
+    BoundDoubleCounter bound = doubleCounter.bind();
+    bound.add(1.0);
+    bound.unbind();
   }
 }
