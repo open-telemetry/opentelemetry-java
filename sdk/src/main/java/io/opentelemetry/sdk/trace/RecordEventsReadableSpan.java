@@ -332,15 +332,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
-    if (value == null || (value.getType().equals(STRING) && value.getStringValue() == null)) {
-      synchronized (lock) {
-        attributes.remove(key);
-      }
-      return;
-    }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
+        return;
+      }
+      if (value == null || (value.getType().equals(STRING) && value.getStringValue() == null)) {
+        attributes.remove(key);
         return;
       }
       totalAttributeCount++;
