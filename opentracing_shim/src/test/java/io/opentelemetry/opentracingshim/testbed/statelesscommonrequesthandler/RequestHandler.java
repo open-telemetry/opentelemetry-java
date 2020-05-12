@@ -35,7 +35,7 @@ final class RequestHandler {
 
   private final Tracer tracer;
 
-  private static final ThreadLocal<Scope> tlsScope = new ThreadLocal<Scope>();
+  private static final ThreadLocal<Scope> tlsScope = new ThreadLocal<>();
 
   public RequestHandler(Tracer tracer) {
     this.tracer = tracer;
