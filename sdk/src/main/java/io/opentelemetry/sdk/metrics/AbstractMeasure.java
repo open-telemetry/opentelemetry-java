@@ -22,7 +22,7 @@ import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 abstract class AbstractMeasure<B extends AbstractBoundInstrument>
-    extends AbstractInstrumentWithBinding<B> {
+    extends AbstractSyncInstrument<B> {
   private final boolean absolute;
   private final InstrumentValueType instrumentValueType;
 

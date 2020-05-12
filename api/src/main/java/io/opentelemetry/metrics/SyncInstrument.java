@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+import io.opentelemetry.metrics.SyncInstrument.BoundInstrument;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -26,7 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.3.0
  */
 @ThreadSafe
-public interface InstrumentWithBinding<B extends BoundInstrument> extends Instrument {
+public interface SyncInstrument<B extends BoundInstrument> extends Instrument {
   /**
    * Returns a {@code Bound Instrument} associated with the specified labels. Multiples requests
    * with the same set of labels may return the same {@code Bound Instrument} instance.

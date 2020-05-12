@@ -53,16 +53,16 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface LongCounter extends Counter<BoundLongCounter> {
 
   /**
-   * Adds the given {@code delta} to the current value. The values can be negative iff monotonic was
-   * set to {@code false}.
+   * Adds the given {@code increment} to the current value. The values can be negative iff monotonic
+   * was set to {@code false}.
    *
    * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
-   * @param delta the value to add.
+   * @param increment the value to add.
    * @param labelKeyValuePairs the set of labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(long delta, String... labelKeyValuePairs);
+  void add(long increment, String... labelKeyValuePairs);
 
   @Override
   BoundLongCounter bind(String... labelKeyValuePairs);
@@ -73,11 +73,11 @@ public interface LongCounter extends Counter<BoundLongCounter> {
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundLongCounter extends InstrumentWithBinding.BoundInstrument {
+  interface BoundLongCounter extends SyncInstrument.BoundInstrument {
 
     /**
-     * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
-     * was set to {@code false}.
+     * Adds the given {@code increment} to the current value. The values can be negative iff
+     * monotonic was set to {@code false}.
      *
      * <p>The value added is associated with the current {@code Context}.
      *

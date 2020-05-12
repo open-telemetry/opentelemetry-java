@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.InstrumentWithBinding.BoundInstrument;
+import io.opentelemetry.metrics.SyncInstrument.BoundInstrument;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -27,7 +27,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface Counter<H extends BoundInstrument> extends InstrumentWithBinding<H> {
+public interface Counter<H extends BoundInstrument> extends SyncInstrument<H> {
 
   /** Builder class for {@link Counter}. */
   interface Builder extends Instrument.Builder {

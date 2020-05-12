@@ -36,8 +36,8 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
   }
 
   @Override
-  public void add(double delta, String... labelKeyValuePairs) {
-    add(delta, LabelSetSdk.create(labelKeyValuePairs));
+  public void add(double increment, String... labelKeyValuePairs) {
+    add(increment, LabelSetSdk.create(labelKeyValuePairs));
   }
 
   void add(double delta, LabelSetSdk labelSet) {
@@ -67,11 +67,11 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     }
 
     @Override
-    public void add(double delta) {
-      if (monotonic && delta < 0) {
+    public void add(double increment) {
+      if (monotonic && increment < 0) {
         throw new IllegalArgumentException("monotonic counters can only increase");
       }
-      recordDouble(delta);
+      recordDouble(increment);
     }
   }
 

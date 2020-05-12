@@ -105,7 +105,7 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleCounter() {}
 
     @Override
-    public void add(double delta, String... labelKeyValuePairs) {
+    public void add(double increment, String... labelKeyValuePairs) {
       Utils.validateLabelPairs(labelKeyValuePairs);
     }
 
@@ -121,7 +121,7 @@ public final class DefaultMeter implements Meter {
       INSTANCE;
 
       @Override
-      public void add(double delta) {}
+      public void add(double increment) {}
 
       @Override
       public void unbind() {}
@@ -150,7 +150,7 @@ public final class DefaultMeter implements Meter {
     private NoopLongCounter() {}
 
     @Override
-    public void add(long delta, String... labelKeyValuePairs) {}
+    public void add(long increment, String... labelKeyValuePairs) {}
 
     @Override
     public NoopBoundLongCounter bind(String... labelKeyValuePairs) {

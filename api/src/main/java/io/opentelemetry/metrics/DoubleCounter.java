@@ -53,16 +53,16 @@ import javax.annotation.concurrent.ThreadSafe;
 public interface DoubleCounter extends Counter<BoundDoubleCounter> {
 
   /**
-   * Adds the given {@code delta} to the current value. The values can be negative iff monotonic was
-   * set to {@code false}.
+   * Adds the given {@code increment} to the current value. The values can be negative iff monotonic
+   * was set to {@code false}.
    *
    * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
-   * @param delta the value to add.
+   * @param increment the value to add.
    * @param labelKeyValuePairs the labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(double delta, String... labelKeyValuePairs);
+  void add(double increment, String... labelKeyValuePairs);
 
   @Override
   BoundDoubleCounter bind(String... labelKeyValuePairs);
@@ -73,17 +73,17 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundDoubleCounter extends InstrumentWithBinding.BoundInstrument {
+  interface BoundDoubleCounter extends SyncInstrument.BoundInstrument {
     /**
-     * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
-     * was set to {@code false}.
+     * Adds the given {@code increment} to the current value. The values can be negative iff
+     * monotonic was set to {@code false}.
      *
      * <p>The value added is associated with the current {@code Context}.
      *
-     * @param delta the value to add.
+     * @param increment the value to add.
      * @since 0.1.0
      */
-    void add(double delta);
+    void add(double increment);
 
     @Override
     void unbind();

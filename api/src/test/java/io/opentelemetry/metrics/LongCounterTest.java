@@ -18,6 +18,7 @@ package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -86,6 +87,8 @@ public class LongCounterTest {
   public void doesNotThrow() {
     LongCounter longCounter =
         meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    longCounter.bind().add(1);
+    BoundLongCounter bound = longCounter.bind();
+    bound.add(1);
+    bound.unbind();
   }
 }
