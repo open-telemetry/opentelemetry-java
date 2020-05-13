@@ -20,16 +20,13 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
-import io.opentelemetry.correlationcontext.DefaultCorrelationContextManagerProvider;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
 import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
-import io.opentelemetry.metrics.DefaultMetricsProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
-import io.opentelemetry.trace.DefaultTraceProvider;
 import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
@@ -206,19 +203,17 @@ public final class OpenTelemetry {
     this.tracerProvider =
         traceProvider != null
             ? new ObfuscatedTracerProvider(traceProvider.create())
-            : DefaultTraceProvider.getInstance().create();
+            : DefaultTracerProvider.getInstance();
 
     MetricsProvider metricsProvider = loadSpi(MetricsProvider.class);
     meterProvider =
-        metricsProvider != null
-            ? metricsProvider.create()
-            : DefaultMetricsProvider.getInstance().create();
+        metricsProvider != null ? metricsProvider.create() : DefaultMeterProvider.getInstance();
     CorrelationContextManagerProvider contextManagerProvider =
         loadSpi(CorrelationContextManagerProvider.class);
     contextManager =
         contextManagerProvider != null
             ? contextManagerProvider.create()
-            : DefaultCorrelationContextManagerProvider.getInstance().create();
+            : DefaultCorrelationContextManager.getInstance();
   }
 
   /**
