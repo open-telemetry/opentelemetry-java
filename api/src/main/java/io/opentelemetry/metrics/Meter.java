@@ -63,6 +63,32 @@ public interface Meter {
   LongCounter.Builder longCounterBuilder(String name);
 
   /**
+   * Returns a builder for a {@link DoubleUpDownCounter}.
+   *
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
+   * @return a {@code DoubleCounter.Builder}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
+   * @since 0.1.0
+   */
+  DoubleUpDownCounter.Builder doubleUpDownCounterBuilder(String name);
+
+  /**
+   * Returns a builder for a {@link LongUpDownCounter}.
+   *
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
+   * @return a {@code LongCounter.Builder}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
+   * @since 0.1.0
+   */
+  LongUpDownCounter.Builder longUpDownCounterBuilder(String name);
+
+  /**
    * Returns a new builder for a {@link DoubleMeasure}.
    *
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no

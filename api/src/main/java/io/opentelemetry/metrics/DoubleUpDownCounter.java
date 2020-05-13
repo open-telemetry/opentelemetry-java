@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,37 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
+import io.opentelemetry.metrics.DoubleUpDownCounter.BoundDoubleUpDownCounter;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Counter is the most common synchronous instrument. This instrument supports an {@link
- * #add(double, String...)}` function for reporting an increment, and is restricted to non-negative
- * increments. The default aggregation is `Sum`.
+ * UpDownCounter is a synchronous instrument and very similar to Counter except that Add(increment)
+ * supports negative increments. This makes UpDownCounter not useful for computing a rate
+ * aggregation. The default aggregation is `Sum`, only the sum is non-monotonic. It is generally
+ * useful for capturing changes in an amount of resources used, or any quantity that rises and falls
+ * during a request.
  *
  * <p>Example:
  *
  * <pre>{@code
  * class YourClass {
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
- *   private static final DoubleCounter counter =
+ *   private static final DoubleUpDownCounter counter =
  *       meter.
- *           .doubleCounterBuilder("allocated_resources")
- *           .setDescription("Total allocated resources")
+ *           .doubleUpDownCounterBuilder("resource_usage")
+ *           .setDescription("Current resource usage")
  *           .setUnit("1")
  *           .build();
  *
  *   // It is recommended that the API user keep references to a Bound Counters.
- *   private static final BoundDoubleCounter someWorkBound =
+ *   private static final BoundDoubleUpDownCounter someWorkBound =
  *       counter.bind(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
  *      someWorkBound.add(10.2);  // Resources needed for this task.
  *      // Your code here.
+ *      someWorkBound.add(-10.0);
  *   }
  * }
  * }</pre>
@@ -51,10 +54,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter> {
+public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUpDownCounter> {
 
   /**
-   * Adds the given {@code increment} to the current value. The values cannot be negative.
+   * Adds the given {@code increment} to the current value.
    *
    * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
@@ -65,17 +68,17 @@ public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter>
   void add(double increment, String... labelKeyValuePairs);
 
   @Override
-  BoundDoubleCounter bind(String... labelKeyValuePairs);
+  BoundDoubleUpDownCounter bind(String... labelKeyValuePairs);
 
   /**
-   * A {@code Bound Instrument} for a {@link DoubleCounter}.
+   * A {@code Bound Instrument} for a {@link DoubleUpDownCounter}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundDoubleCounter extends SynchronousInstrument.BoundInstrument {
+  interface BoundDoubleUpDownCounter extends BoundInstrument {
     /**
-     * Adds the given {@code increment} to the current value. The values cannot be negative.
+     * Adds the given {@code increment} to the current value.
      *
      * <p>The value added is associated with the current {@code Context}.
      *
@@ -88,7 +91,7 @@ public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter>
     void unbind();
   }
 
-  /** Builder class for {@link DoubleCounter}. */
+  /** Builder class for {@link DoubleUpDownCounter}. */
   interface Builder extends SynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
@@ -100,6 +103,6 @@ public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter>
     Builder setConstantLabels(Map<String, String> constantLabels);
 
     @Override
-    DoubleCounter build();
+    DoubleUpDownCounter build();
   }
 }

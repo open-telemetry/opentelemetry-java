@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.metrics.DoubleUpDownCounter;
+import io.opentelemetry.metrics.LongUpDownCounter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -47,6 +49,16 @@ final class MeterSdk implements Meter {
   @Override
   public LongCounterSdk.Builder longCounterBuilder(String name) {
     return new LongCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
+  }
+
+  @Override
+  public DoubleUpDownCounter.Builder doubleUpDownCounterBuilder(String name) {
+    throw new UnsupportedOperationException("Not yet implemented");
+  }
+
+  @Override
+  public LongUpDownCounter.Builder longUpDownCounterBuilder(String name) {
+    throw new UnsupportedOperationException("Not yet implemented");
   }
 
   @Override
