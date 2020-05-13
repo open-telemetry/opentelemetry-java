@@ -20,7 +20,6 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.TimedEvent;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -130,7 +129,7 @@ public interface SpanData {
    * @return links recorded for this {@code Span}.
    * @since 0.1.0
    */
-  List<SpanDataImpl.Link> getLinks();
+  List<ResolvedLink> getLinks();
 
   /**
    * Returns the {@code Status}.

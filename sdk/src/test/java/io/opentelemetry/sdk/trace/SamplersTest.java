@@ -22,7 +22,7 @@ import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 import com.google.common.truth.Truth;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.ResolvedLink;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -54,7 +54,7 @@ public class SamplersTest {
           traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), traceState);
   private final SpanContext notSampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
-  private final Link sampledParentLink = SpanDataImpl.Link.create(sampledSpanContext);
+  private final Link sampledParentLink = ResolvedLink.create(sampledSpanContext);
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 

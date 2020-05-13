@@ -20,8 +20,10 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.sdk.trace.data.ResolvedLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.TimedEvent;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -58,11 +60,11 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final long RECEIVED_TIMESTAMP_NANOS = 1505855799_433901068L;
   private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
   private static final Map<String, AttributeValue> attributes = Collections.emptyMap();
-  private static final List<SpanDataImpl.TimedEvent> annotations =
+  private static final List<TimedEvent> annotations =
       ImmutableList.of(
-          SpanDataImpl.TimedEvent.create(
+          TimedEvent.create(
               RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Collections.<String, AttributeValue>emptyMap()),
-          SpanDataImpl.TimedEvent.create(
+          TimedEvent.create(
               SENT_TIMESTAMP_NANOS, "SENT", Collections.<String, AttributeValue>emptyMap()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
@@ -171,7 +173,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setAttributes(attributes)
         .setTotalAttributeCount(attributes.size())
         .setTimedEvents(annotations)
-        .setLinks(Collections.<SpanDataImpl.Link>emptyList())
+        .setLinks(Collections.<ResolvedLink>emptyList())
         .setEndEpochNanos(END_EPOCH_NANOS)
         .setEnded(true);
   }

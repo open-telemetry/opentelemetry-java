@@ -25,8 +25,8 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.ResolvedLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -57,6 +58,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span, SpanData {
 
   private static final String MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE =
       "Link has reached the maximum number of attributes (%d). Dropping %d attributes.";
+
+  private final AtomicBoolean frozen = new AtomicBoolean(false);
 
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
@@ -108,6 +111,45 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span, SpanData {
   // True if the span is ended.
   @GuardedBy("lock")
   private boolean hasEnded;
+
+  // These two fields are filled in when the freeze() method is called, and are used by the
+  // relevant methods from the `SpanData` interface that this implements.
+  private volatile List<ResolvedLink> frozenLinks;
+  private volatile List<io.opentelemetry.sdk.trace.data.TimedEvent> frozenEvents;
+
+  private RecordEventsReadableSpan(
+      SpanContext context,
+      String name,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      Kind kind,
+      SpanId parentSpanId,
+      boolean hasRemoteParent,
+      TraceConfig traceConfig,
+      SpanProcessor spanProcessor,
+      Clock clock,
+      Resource resource,
+      AttributesMap attributes,
+      List<Link> links,
+      int totalRecordedLinks,
+      long startEpochNanos) {
+    this.context = context;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.parentSpanId = parentSpanId;
+    this.hasRemoteParent = hasRemoteParent;
+    this.links = links;
+    this.totalRecordedLinks = totalRecordedLinks;
+    this.name = name;
+    this.kind = kind;
+    this.spanProcessor = spanProcessor;
+    this.resource = resource;
+    this.hasEnded = false;
+    this.clock = clock;
+    this.startEpochNanos = startEpochNanos;
+    // TODO: Do not always initialize the attributes.
+    this.attributes = attributes;
+    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
+    this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
+  }
 
   /**
    * Creates and starts a span with the given configuration.
@@ -161,22 +203,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span, SpanData {
     // initialized.
     spanProcessor.onStart(span);
     return span;
-  }
-
-  @Override
-  public SpanData toSpanData() {
-    return this;
-  }
-
-  @GuardedBy("lock")
-  private List<SpanDataImpl.TimedEvent> adaptTimedEvents() {
-    List<SpanDataImpl.TimedEvent> result = new ArrayList<>(events.size());
-    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
-      result.add(
-          SpanDataImpl.TimedEvent.create(
-              sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
-    }
-    return result;
   }
 
   @Override
@@ -234,23 +260,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span, SpanData {
    * @return A copy of the Links for this span.
    */
   @Override
-  public List<SpanDataImpl.Link> getLinks() {
-    if (links == null) {
-      return Collections.emptyList();
+  public List<ResolvedLink> getLinks() {
+    // TODO: is the right behavior? Should we fail if not frozen, instead?
+    if (!frozen.get()) {
+      return createFrozenLinks();
     }
-    List<SpanDataImpl.Link> result = new ArrayList<>(links.size());
-    for (Link link : links) {
-      SpanDataImpl.Link newLink;
-      if (!(link instanceof SpanDataImpl.Link)) {
-        // Make a copy because the given Link may not be immutable and we may reference a lot of
-        // memory.
-        newLink = SpanDataImpl.Link.create(link.getContext(), link.getAttributes());
-      } else {
-        newLink = (SpanDataImpl.Link) link;
-      }
-      result.add(newLink);
-    }
-    return Collections.unmodifiableList(result);
+    return frozenLinks;
   }
 
   /**
@@ -493,11 +508,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span, SpanData {
   }
 
   @Override
-  public List<SpanDataImpl.TimedEvent> getTimedEvents() {
+  public List<io.opentelemetry.sdk.trace.data.TimedEvent> getTimedEvents() {
+    // TODO: is the right behavior? Should we fail if not frozen, instead?
     synchronized (lock) {
-      // todo instead do this adapting when we freeze the span.
-      return adaptTimedEvents();
+      if (!frozen.get()) {
+        return createFrozenEvents();
+      }
     }
+    return frozenEvents;
   }
 
   @Override
@@ -534,41 +552,55 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span, SpanData {
   @Override
   public int getTotalAttributeCount() {
     synchronized (lock) {
-      return totalAttributeCount;
+      return attributes.getTotalAddedValues();
     }
   }
 
-  private RecordEventsReadableSpan(
-      SpanContext context,
-      String name,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Kind kind,
-      SpanId parentSpanId,
-      boolean hasRemoteParent,
-      TraceConfig traceConfig,
-      SpanProcessor spanProcessor,
-      Clock clock,
-      Resource resource,
-      AttributesMap attributes,
-      List<Link> links,
-      int totalRecordedLinks,
-      long startEpochNanos) {
-    this.context = context;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.parentSpanId = parentSpanId;
-    this.hasRemoteParent = hasRemoteParent;
-    this.links = links;
-    this.totalRecordedLinks = totalRecordedLinks;
-    this.name = name;
-    this.kind = kind;
-    this.spanProcessor = spanProcessor;
-    this.resource = resource;
-    this.hasEnded = false;
-    this.clock = clock;
-    this.startEpochNanos = startEpochNanos;
-    // TODO: Do not always initialize the attributes.
-    this.attributes = attributes;
-    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
-    this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
+  @Override
+  public SpanData toSpanData() {
+    freeze();
+    return this;
+  }
+
+  // TODO: Who should call this, and when?
+  void freeze() {
+    if (frozen.get()) {
+      return;
+    }
+    synchronized (lock) {
+      this.frozenLinks = createFrozenLinks();
+      this.frozenEvents = createFrozenEvents();
+      frozen.set(true);
+    }
+  }
+
+  private List<ResolvedLink> createFrozenLinks() {
+    if (links == null) {
+      return Collections.emptyList();
+    }
+    List<ResolvedLink> result = new ArrayList<>(links.size());
+    for (Link link : links) {
+      ResolvedLink newLink;
+      if (!(link instanceof ResolvedLink)) {
+        // Make a copy because the given Link may not be immutable and we may reference a lot of
+        // memory.
+        newLink = ResolvedLink.create(link.getContext(), link.getAttributes());
+      } else {
+        newLink = (ResolvedLink) link;
+      }
+      result.add(newLink);
+    }
+    return Collections.unmodifiableList(result);
+  }
+
+  @GuardedBy("lock")
+  private List<io.opentelemetry.sdk.trace.data.TimedEvent> createFrozenEvents() {
+    List<io.opentelemetry.sdk.trace.data.TimedEvent> result = new ArrayList<>(events.size());
+    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
+      result.add(
+          io.opentelemetry.sdk.trace.data.TimedEvent.create(
+              sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
+    }
+    return result;
   }
 }

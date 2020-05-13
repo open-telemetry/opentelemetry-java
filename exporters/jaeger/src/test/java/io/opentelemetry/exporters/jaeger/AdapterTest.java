@@ -27,10 +27,10 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.ResolvedLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanDataImpl;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.TimedEvent;
+import io.opentelemetry.sdk.trace.data.TimedEvent;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -119,7 +119,7 @@ public class AdapterTest {
   @Test
   public void testJaegerLogs() {
     // prepare
-    SpanDataImpl.TimedEvent timedEvents = getTimedEvent();
+    TimedEvent timedEvents = getTimedEvent();
 
     // test
     Collection<Model.Log> logs = Adapter.toJaegerLogs(Collections.singletonList(timedEvents));
@@ -131,7 +131,7 @@ public class AdapterTest {
   @Test
   public void testJaegerLog() {
     // prepare
-    SpanDataImpl.TimedEvent timedEvent = getTimedEvent();
+    TimedEvent timedEvent = getTimedEvent();
 
     // test
     Model.Log log = Adapter.toJaegerLog(timedEvent);
@@ -210,8 +210,9 @@ public class AdapterTest {
   @Test
   public void testSpanRefs() {
     // prepare
-    Link link =
-        Link.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+    ResolvedLink link =
+        ResolvedLink.create(
+            createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -223,7 +224,7 @@ public class AdapterTest {
   @Test
   public void testSpanRef() {
     // prepare
-    Link link = Link.create(createSpanContext(TRACE_ID, SPAN_ID));
+    ResolvedLink link = ResolvedLink.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
@@ -302,7 +303,8 @@ public class AdapterTest {
     AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
     Map<String, AttributeValue> attributes = ImmutableMap.of("valueB", valueB);
 
-    Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+    ResolvedLink link =
+        ResolvedLink.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return SpanDataImpl.newBuilder()
         .setEnded(true)

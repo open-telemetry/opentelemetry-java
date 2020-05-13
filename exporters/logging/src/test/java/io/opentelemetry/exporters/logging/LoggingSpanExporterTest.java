@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.TimedEvent;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -68,7 +69,7 @@ public class LoggingSpanExporterTest {
             .setKind(Kind.INTERNAL)
             .setTimedEvents(
                 singletonList(
-                    SpanDataImpl.TimedEvent.create(
+                    TimedEvent.create(
                         epochNanos + 500,
                         "somethingHappenedHere",
                         singletonMap("important", AttributeValue.booleanAttributeValue(true)))))

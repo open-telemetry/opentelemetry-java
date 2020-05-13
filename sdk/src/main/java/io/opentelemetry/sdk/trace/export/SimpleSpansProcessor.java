@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,7 @@ import jdk.nashorn.internal.ir.annotations.Immutable;
 
 /**
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
- * SpanDataImpl} and passes it to the configured exporter.
+ * SpanData} and passes it to the configured exporter.
  */
 public final class SimpleSpansProcessor implements SpanProcessor {
 

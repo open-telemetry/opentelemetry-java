@@ -26,9 +26,9 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.proto.trace.v1.Status.StatusCode;
+import io.opentelemetry.sdk.trace.data.ResolvedLink;
 import io.opentelemetry.sdk.trace.data.SpanDataImpl;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.TimedEvent;
+import io.opentelemetry.sdk.trace.data.TimedEvent;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -74,7 +74,7 @@ public class SpanAdapterTest {
                         TimedEvent.create(
                             12347, "my_event", Collections.<String, AttributeValue>emptyMap())))
                 .setTotalRecordedEvents(3)
-                .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
+                .setLinks(Collections.singletonList(ResolvedLink.create(SPAN_CONTEXT)))
                 .setTotalRecordedLinks(2)
                 .setStatus(io.opentelemetry.trace.Status.OK)
                 .build());
@@ -271,7 +271,7 @@ public class SpanAdapterTest {
 
   @Test
   public void toProtoSpanLink_WithoutAttributes() {
-    assertThat(SpanAdapter.toProtoSpanLink(Link.create(SPAN_CONTEXT)))
+    assertThat(SpanAdapter.toProtoSpanLink(ResolvedLink.create(SPAN_CONTEXT)))
         .isEqualTo(
             Span.Link.newBuilder()
                 .setTraceId(ByteString.copyFrom(TRACE_ID_BYTES))
@@ -283,7 +283,7 @@ public class SpanAdapterTest {
   public void toProtoSpanLink_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanLink(
-                Link.create(
+                ResolvedLink.create(
                     SPAN_CONTEXT,
                     Collections.singletonMap(
                         "key_string", AttributeValue.stringAttributeValue("string")),

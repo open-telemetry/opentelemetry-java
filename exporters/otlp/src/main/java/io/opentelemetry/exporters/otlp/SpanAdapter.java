@@ -26,9 +26,9 @@ import io.opentelemetry.proto.trace.v1.Status.StatusCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.ResolvedLink;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.TimedEvent;
+import io.opentelemetry.sdk.trace.data.TimedEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -106,7 +106,7 @@ final class SpanAdapter {
     }
     builder.setDroppedEventsCount(
         spanData.getTotalRecordedEvents() - spanData.getTimedEvents().size());
-    for (Link link : spanData.getLinks()) {
+    for (ResolvedLink link : spanData.getLinks()) {
       builder.addLinks(toProtoSpanLink(link));
     }
     builder.setDroppedLinksCount(spanData.getTotalRecordedLinks() - spanData.getLinks().size());
@@ -143,7 +143,7 @@ final class SpanAdapter {
     return builder.build();
   }
 
-  static Span.Link toProtoSpanLink(Link link) {
+  static Span.Link toProtoSpanLink(ResolvedLink link) {
     Span.Link.Builder builder = Span.Link.newBuilder();
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceId()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanId()));
