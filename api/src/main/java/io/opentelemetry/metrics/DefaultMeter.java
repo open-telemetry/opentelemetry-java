@@ -91,17 +91,17 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public DoubleObserver.Builder doubleObserverBuilder(String name) {
+  public DoubleSumObserver.Builder doubleSumObserverBuilder(String name) {
     Utils.checkNotNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
-    return new NoopDoubleObserver.NoopBuilder();
+    return new NoopDoubleSumObserver.NoopBuilder();
   }
 
   @Override
-  public LongObserver.Builder longObserverBuilder(String name) {
+  public LongSumObserver.Builder longSumObserverBuilder(String name) {
     Utils.checkNotNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
-    return new NoopLongObserver.NoopBuilder();
+    return new NoopLongSumObserver.NoopBuilder();
   }
 
   @Override
@@ -400,9 +400,9 @@ public final class DefaultMeter implements Meter {
   }
 
   @Immutable
-  private static final class NoopDoubleObserver implements DoubleObserver {
+  private static final class NoopDoubleSumObserver implements DoubleSumObserver {
 
-    private NoopDoubleObserver() {}
+    private NoopDoubleSumObserver() {}
 
     @Override
     public void setCallback(Callback<ResultDoubleObserver> metricUpdater) {
@@ -418,16 +418,16 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public DoubleObserver build() {
-        return new NoopDoubleObserver();
+      public DoubleSumObserver build() {
+        return new NoopDoubleSumObserver();
       }
     }
   }
 
   @Immutable
-  private static final class NoopLongObserver implements LongObserver {
+  private static final class NoopLongSumObserver implements LongSumObserver {
 
-    private NoopLongObserver() {}
+    private NoopLongSumObserver() {}
 
     @Override
     public void setCallback(Callback<ResultLongObserver> metricUpdater) {
@@ -443,8 +443,8 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public LongObserver build() {
-        return new NoopLongObserver();
+      public LongSumObserver build() {
+        return new NoopLongSumObserver();
       }
     }
   }
@@ -496,7 +496,7 @@ public final class DefaultMeter implements Meter {
 
   private abstract static class NoopAbstractObserverBuilder<
           B extends NoopAbstractObserverBuilder<B>>
-      extends NoopAbstractInstrumentBuilder<B> implements Observer.Builder {
+      extends NoopAbstractInstrumentBuilder<B> implements AsynchronousInstrument.Builder {
 
     @Override
     public B setMonotonic(boolean monotonic) {

@@ -19,8 +19,8 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
-import io.opentelemetry.metrics.Observer.Callback;
+import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
+import io.opentelemetry.metrics.LongSumObserver.ResultLongObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -36,9 +36,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link LongObserverSdk}. */
+/** Unit tests for {@link LongSumObserverSdk}. */
 @RunWith(JUnit4.class)
-public class LongObserverSdkTest {
+public class LongSumObserverSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   private static final long SECOND_NANOS = 1_000_000_000;
@@ -56,9 +56,9 @@ public class LongObserverSdkTest {
 
   @Test
   public void collectMetrics_NoCallback() {
-    LongObserverSdk longObserver =
+    LongSumObserverSdk longObserver =
         testSdk
-            .longObserverBuilder("testObserver")
+            .longSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
@@ -68,9 +68,9 @@ public class LongObserverSdkTest {
 
   @Test
   public void collectMetrics_NoRecords() {
-    LongObserverSdk longObserver =
+    LongSumObserverSdk longObserver =
         testSdk
-            .longObserverBuilder("testObserver")
+            .longSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
@@ -98,8 +98,8 @@ public class LongObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    LongObserverSdk longObserver =
-        testSdk.longObserverBuilder("testObserver").setMonotonic(true).build();
+    LongSumObserverSdk longObserver =
+        testSdk.longSumObserverBuilder("testObserver").setMonotonic(true).build();
     longObserver.setCallback(
         new Callback<ResultLongObserver>() {
           @Override
@@ -147,8 +147,8 @@ public class LongObserverSdkTest {
 
   @Test
   public void observeMonotonic_NegativeValue() {
-    LongObserverSdk longObserver =
-        testSdk.longObserverBuilder("testObserver").setMonotonic(true).build();
+    LongSumObserverSdk longObserver =
+        testSdk.longSumObserverBuilder("testObserver").setMonotonic(true).build();
 
     longObserver.setCallback(
         new Callback<ResultLongObserver>() {

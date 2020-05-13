@@ -115,7 +115,7 @@ public interface Meter {
   LongMeasure.Builder longMeasureBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link DoubleObserver}.
+   * Returns a new builder for a {@link DoubleSumObserver}.
    *
    * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
@@ -125,10 +125,10 @@ public interface Meter {
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  DoubleObserver.Builder doubleObserverBuilder(String name);
+  DoubleSumObserver.Builder doubleSumObserverBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link LongObserver}.
+   * Returns a new builder for a {@link LongSumObserver}.
    *
    * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
@@ -138,7 +138,7 @@ public interface Meter {
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  LongObserver.Builder longObserverBuilder(String name);
+  LongSumObserver.Builder longSumObserverBuilder(String name);
 
   /**
    * Utility method that allows users to atomically record measurements to a set of Measures with a

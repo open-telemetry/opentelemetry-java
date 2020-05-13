@@ -17,10 +17,10 @@
 package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.metrics.LongObserver;
-import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
+import io.opentelemetry.metrics.LongSumObserver;
+import io.opentelemetry.metrics.LongSumObserver.ResultLongObserver;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.Observer.Callback;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
@@ -69,9 +69,9 @@ public final class MemoryPools {
   /** Export only the "area" metric. */
   public void exportMemoryAreaMetric() {
     // TODO: Set this as non-monotonic.
-    final LongObserver areaMetric =
+    final LongSumObserver areaMetric =
         this.meter
-            .longObserverBuilder("area")
+            .longSumObserverBuilder("area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
             .setMonotonic(false)
@@ -85,7 +85,7 @@ public final class MemoryPools {
     final String[] maxHeap = new String[] {TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP};
     final String[] maxNonHeap = new String[] {TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP};
     areaMetric.setCallback(
-        new LongObserver.Callback<ResultLongObserver>() {
+        new LongSumObserver.Callback<ResultLongObserver>() {
           @Override
           public void update(ResultLongObserver resultLongObserver) {
             MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
@@ -103,9 +103,9 @@ public final class MemoryPools {
   /** Export only the "pool" metric. */
   public void exportMemoryPoolMetric() {
     // TODO: Set this as non-monotonic.
-    final LongObserver poolMetric =
+    final LongSumObserver poolMetric =
         this.meter
-            .longObserverBuilder("pool")
+            .longSumObserverBuilder("pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
             .setMonotonic(false)

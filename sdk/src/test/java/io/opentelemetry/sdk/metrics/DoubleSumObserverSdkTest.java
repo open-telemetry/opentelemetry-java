@@ -19,8 +19,8 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.metrics.DoubleObserver.ResultDoubleObserver;
-import io.opentelemetry.metrics.Observer.Callback;
+import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
+import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -36,9 +36,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DoubleObserverSdk}. */
+/** Unit tests for {@link DoubleSumObserverSdk}. */
 @RunWith(JUnit4.class)
-public class DoubleObserverSdkTest {
+public class DoubleSumObserverSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   private static final long SECOND_NANOS = 1_000_000_000;
@@ -56,9 +56,9 @@ public class DoubleObserverSdkTest {
 
   @Test
   public void collectMetrics_NoCallback() {
-    DoubleObserverSdk doubleObserver =
+    DoubleSumObserverSdk doubleObserver =
         testSdk
-            .doubleObserverBuilder("testObserver")
+            .doubleSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
@@ -68,9 +68,9 @@ public class DoubleObserverSdkTest {
 
   @Test
   public void collectMetrics_NoRecords() {
-    DoubleObserverSdk doubleObserver =
+    DoubleSumObserverSdk doubleObserver =
         testSdk
-            .doubleObserverBuilder("testObserver")
+            .doubleSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
@@ -98,8 +98,8 @@ public class DoubleObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    DoubleObserverSdk doubleObserver =
-        testSdk.doubleObserverBuilder("testObserver").setMonotonic(true).build();
+    DoubleSumObserverSdk doubleObserver =
+        testSdk.doubleSumObserverBuilder("testObserver").setMonotonic(true).build();
     doubleObserver.setCallback(
         new Callback<ResultDoubleObserver>() {
           @Override
@@ -147,8 +147,8 @@ public class DoubleObserverSdkTest {
 
   @Test
   public void observeMonotonic_NegativeValue() {
-    DoubleObserverSdk doubleObserver =
-        testSdk.doubleObserverBuilder("testObserver").setMonotonic(true).build();
+    DoubleSumObserverSdk doubleObserver =
+        testSdk.doubleSumObserverBuilder("testObserver").setMonotonic(true).build();
 
     doubleObserver.setCallback(
         new Callback<ResultDoubleObserver>() {

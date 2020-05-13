@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LongObserver;
+import io.opentelemetry.metrics.DoubleSumObserver;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -26,11 +26,12 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
-final class LongObserverSdk extends AbstractObserver implements LongObserver {
-  @Nullable private volatile Callback<ResultLongObserver> metricUpdater = null;
+final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument
+    implements DoubleSumObserver {
+  @Nullable private volatile Callback<ResultDoubleObserver> metricUpdater = null;
   private final ReentrantLock collectLock = new ReentrantLock();
 
-  LongObserverSdk(
+  DoubleSumObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
@@ -40,14 +41,14 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
 
   @Override
   List<MetricData> collectAll() {
-    Callback<ResultLongObserver> currentMetricUpdater = metricUpdater;
+    Callback<ResultDoubleObserver> currentMetricUpdater = metricUpdater;
     if (currentMetricUpdater == null) {
       return Collections.emptyList();
     }
     collectLock.lock();
     try {
       final ActiveBatcher activeBatcher = getActiveBatcher();
-      currentMetricUpdater.update(new ResultLongObserverSdk(activeBatcher, isMonotonic()));
+      currentMetricUpdater.update(new ResultDoubleObserverSdk(activeBatcher, isMonotonic()));
       return activeBatcher.completeCollectionCycle();
     } finally {
       collectLock.unlock();
@@ -55,12 +56,13 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
   }
 
   @Override
-  public void setCallback(Callback<ResultLongObserver> metricUpdater) {
+  public void setCallback(Callback<DoubleSumObserver.ResultDoubleObserver> metricUpdater) {
     this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
   }
 
-  static final class Builder extends AbstractObserver.Builder<LongObserverSdk.Builder>
-      implements LongObserver.Builder {
+  static final class Builder
+      extends AbstractAsynchronousInstrument.Builder<DoubleSumObserverSdk.Builder>
+      implements DoubleSumObserver.Builder {
 
     Builder(
         String name,
@@ -75,34 +77,35 @@ final class LongObserverSdk extends AbstractObserver implements LongObserver {
     }
 
     @Override
-    public LongObserverSdk build() {
+    public DoubleSumObserverSdk build() {
       return register(
-          new LongObserverSdk(
+          new DoubleSumObserverSdk(
               getInstrumentDescriptor(
-                  AbstractObserver.getInstrumentType(isMonotonic()), InstrumentValueType.LONG),
+                  AbstractAsynchronousInstrument.getInstrumentType(isMonotonic()),
+                  InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState(),
               isMonotonic()));
     }
   }
 
-  private static final class ResultLongObserverSdk implements ResultLongObserver {
+  private static final class ResultDoubleObserverSdk implements ResultDoubleObserver {
 
     private final ActiveBatcher activeBatcher;
     private final boolean monotonic;
 
-    private ResultLongObserverSdk(ActiveBatcher activeBatcher, boolean monotonic) {
+    private ResultDoubleObserverSdk(ActiveBatcher activeBatcher, boolean monotonic) {
       this.activeBatcher = activeBatcher;
       this.monotonic = monotonic;
     }
 
     @Override
-    public void observe(long value, String... keyValueLabelPairs) {
-      if (monotonic && value < 0) {
+    public void observe(double sum, String... keyValueLabelPairs) {
+      if (monotonic && sum < 0) {
         throw new IllegalArgumentException("monotonic observers can only record positive values");
       }
       Aggregator aggregator = activeBatcher.getAggregator();
-      aggregator.recordLong(value);
+      aggregator.recordDouble(sum);
       activeBatcher.batch(
           LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
     }
