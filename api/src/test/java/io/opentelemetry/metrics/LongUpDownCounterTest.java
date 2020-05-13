@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
-import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
+import io.opentelemetry.metrics.LongUpDownCounter.BoundLongUpDownCounter;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,22 +26,21 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DoubleCounter}. */
+/** Unit tests for {@link LongUpDownCounter}. */
 @RunWith(JUnit4.class)
-public class DoubleCounterTest {
+public class LongUpDownCounterTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
 
-  private final Meter meter = OpenTelemetry.getMeter("counter_double_test");
+  private final Meter meter = OpenTelemetry.getMeter("counter_long_test");
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleCounterBuilder("\2").build();
+    meter.longUpDownCounterBuilder("\2").build();
   }
 
   @Test
@@ -51,75 +50,54 @@ public class DoubleCounterTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleCounterBuilder(longName).build();
+    meter.longUpDownCounterBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.doubleCounterBuilder("metric").setDescription(null).build();
+    meter.longUpDownCounterBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.doubleCounterBuilder("metric").setUnit(null).build();
+    meter.longUpDownCounterBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.doubleCounterBuilder("metric").setConstantLabels(null).build();
+    meter.longUpDownCounterBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
   public void noopBind_WithBadLabelSet() {
-    DoubleCounter doubleCounter =
-        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
+    LongUpDownCounter longUpDownCounter =
+        meter.longUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("key/value");
-    doubleCounter.bind("key");
+    longUpDownCounter.bind("key");
   }
 
   @Test
-  public void add_DoesNotThrow() {
-    DoubleCounter doubleCounter =
-        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    doubleCounter.add(1.0);
+  public void addDoesNotThrow() {
+    LongUpDownCounter longUpDownCounter =
+        meter.longUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
+    longUpDownCounter.add(1);
+    longUpDownCounter.add(-1);
   }
 
   @Test
-  public void add_PreventNegativeValue() {
-    DoubleCounter doubleCounter =
-        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Counters can only increase");
-    doubleCounter.add(-1.0);
-  }
-
-  @Test
-  public void bound_DoesNotThrow() {
-    DoubleCounter doubleCounter =
-        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    BoundDoubleCounter bound = doubleCounter.bind();
-    bound.add(1.0);
+  public void boundDoesNotThrow() {
+    LongUpDownCounter longUpDownCounter =
+        meter.longUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
+    BoundLongUpDownCounter bound = longUpDownCounter.bind();
+    bound.add(1);
+    bound.add(-1);
     bound.unbind();
-  }
-
-  @Test
-  public void bound_PreventNegativeValue() {
-    DoubleCounter doubleCounter =
-        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    BoundDoubleCounter bound = doubleCounter.bind();
-    try {
-      thrown.expect(IllegalArgumentException.class);
-      thrown.expectMessage("Counters can only increase");
-      bound.add(-1.0);
-    } finally {
-      bound.unbind();
-    }
   }
 }
