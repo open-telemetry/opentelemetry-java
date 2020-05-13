@@ -45,8 +45,11 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
 
   void add(long increment, LabelSetSdk labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
-    boundInstrument.add(increment);
-    boundInstrument.unbind();
+    try {
+      boundInstrument.add(increment);
+    } finally {
+      boundInstrument.unbind();
+    }
   }
 
   @Override

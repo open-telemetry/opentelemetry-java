@@ -45,8 +45,11 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
 
   void add(double increment, LabelSetSdk labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
-    boundInstrument.add(increment);
-    boundInstrument.unbind();
+    try {
+      boundInstrument.add(increment);
+    } finally {
+      boundInstrument.unbind();
+    }
   }
 
   @Override
