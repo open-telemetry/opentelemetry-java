@@ -63,12 +63,14 @@ final class BatchRecorderSdk implements BatchRecorder {
 
   @Override
   public BatchRecorder put(LongUpDownCounter upDownCounter, long value) {
-    throw new UnsupportedOperationException("Not yet implemented");
+    ((LongUpDownCounterSdk) upDownCounter).add(value, labelSet);
+    return this;
   }
 
   @Override
   public BatchRecorder put(DoubleUpDownCounter upDownCounter, double value) {
-    throw new UnsupportedOperationException("Not yet implemented");
+    ((DoubleUpDownCounterSdk) upDownCounter).add(value, labelSet);
+    return this;
   }
 
   @Override

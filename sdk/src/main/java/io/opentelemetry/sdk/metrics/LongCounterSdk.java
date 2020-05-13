@@ -69,7 +69,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
     @Override
     public void add(long increment) {
       if (increment < 0) {
-        throw new IllegalArgumentException("monotonic counters can only increase");
+        throw new IllegalArgumentException("Counters can only increase");
       }
       recordLong(increment);
     }

@@ -16,16 +16,16 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
+import io.opentelemetry.metrics.LongUpDownCounter;
+import io.opentelemetry.sdk.metrics.LongUpDownCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
-    implements DoubleCounter {
+final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
+    implements LongUpDownCounter {
 
-  private DoubleCounterSdk(
+  private LongUpDownCounterSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
@@ -39,12 +39,12 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
   }
 
   @Override
-  public void add(double increment, String... labelKeyValuePairs) {
+  public void add(long increment, String... labelKeyValuePairs) {
     add(increment, LabelSetSdk.create(labelKeyValuePairs));
   }
 
-  void add(double increment, LabelSetSdk labelSet) {
-    BoundInstrument boundInstrument = bind(labelSet);
+  public void add(long increment, LabelSetSdk labelSetSdk) {
+    BoundInstrument boundInstrument = bind(labelSetSdk);
     boundInstrument.add(increment);
     boundInstrument.unbind();
   }
@@ -60,23 +60,20 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
-      implements DoubleCounter.BoundDoubleCounter {
+      implements BoundLongUpDownCounter {
 
     BoundInstrument(Batcher batcher) {
       super(batcher.getAggregator());
     }
 
     @Override
-    public void add(double increment) {
-      if (increment < 0) {
-        throw new IllegalArgumentException("Counters can only increase");
-      }
-      recordDouble(increment);
+    public void add(long increment) {
+      recordLong(increment);
     }
   }
 
-  static final class Builder extends AbstractInstrument.Builder<DoubleCounterSdk.Builder>
-      implements DoubleCounter.Builder {
+  static final class Builder extends AbstractInstrument.Builder<LongUpDownCounterSdk.Builder>
+      implements LongUpDownCounter.Builder {
 
     Builder(
         String name,
@@ -91,10 +88,11 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
     }
 
     @Override
-    public DoubleCounterSdk build() {
+    public LongUpDownCounterSdk build() {
       return register(
-          new DoubleCounterSdk(
-              getInstrumentDescriptor(InstrumentType.COUNTER_MONOTONIC, InstrumentValueType.DOUBLE),
+          new LongUpDownCounterSdk(
+              getInstrumentDescriptor(
+                  InstrumentType.COUNTER_NON_MONOTONIC, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

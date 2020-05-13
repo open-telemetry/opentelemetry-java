@@ -83,6 +83,31 @@ public class MeterSdkTest {
   }
 
   @Test
+  public void testLongUpDownCounter() {
+    LongUpDownCounterSdk longUpDownCounter =
+        testSdk
+            .longUpDownCounterBuilder("testLongUpDownCounter")
+            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setDescription("My very own counter")
+            .setUnit("metric tonnes")
+            .build();
+    assertThat(longUpDownCounter).isNotNull();
+
+    assertThat(
+            testSdk
+                .longUpDownCounterBuilder("testLongUpDownCounter")
+                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setDescription("My very own counter")
+                .setUnit("metric tonnes")
+                .build())
+        .isSameInstanceAs(longUpDownCounter);
+
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Instrument with same name and different descriptor already created.");
+    testSdk.longUpDownCounterBuilder("testLongUpDownCounter").build();
+  }
+
+  @Test
   public void testLongMeasure() {
     LongMeasureSdk longMeasure =
         testSdk
@@ -159,6 +184,31 @@ public class MeterSdkTest {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Instrument with same name and different descriptor already created.");
     testSdk.doubleCounterBuilder("testDoubleCounter").build();
+  }
+
+  @Test
+  public void testDoubleUpDownCounter() {
+    DoubleUpDownCounterSdk doubleUpDownCounter =
+        testSdk
+            .doubleUpDownCounterBuilder("testDoubleUpDownCounter")
+            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setDescription("My very own counter")
+            .setUnit("metric tonnes")
+            .build();
+    assertThat(doubleUpDownCounter).isNotNull();
+
+    assertThat(
+            testSdk
+                .doubleUpDownCounterBuilder("testDoubleUpDownCounter")
+                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setDescription("My very own counter")
+                .setUnit("metric tonnes")
+                .build())
+        .isSameInstanceAs(doubleUpDownCounter);
+
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Instrument with same name and different descriptor already created.");
+    testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
   }
 
   @Test
