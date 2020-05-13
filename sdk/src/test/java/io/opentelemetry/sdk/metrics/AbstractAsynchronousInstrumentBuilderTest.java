@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.metrics.Observer;
+import io.opentelemetry.metrics.AsynchronousInstrument;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -33,9 +33,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link AbstractObserver.Builder}. */
+/** Unit tests for {@link AbstractAsynchronousInstrument.Builder}. */
 @RunWith(JUnit4.class)
-public class AbstractObserverBuilderTest {
+public class AbstractAsynchronousInstrumentBuilderTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -71,7 +71,7 @@ public class AbstractObserverBuilderTest {
   }
 
   private static final class TestInstrumentBuilder
-      extends AbstractObserver.Builder<TestInstrumentBuilder> {
+      extends AbstractAsynchronousInstrument.Builder<TestInstrumentBuilder> {
     TestInstrumentBuilder(
         String name,
         MeterProviderSharedState meterProviderSharedState,
@@ -94,8 +94,8 @@ public class AbstractObserverBuilderTest {
     }
   }
 
-  private static final class TestInstrument extends AbstractObserver
-      implements Observer<TestResult> {
+  private static final class TestInstrument extends AbstractAsynchronousInstrument
+      implements AsynchronousInstrument<TestResult> {
 
     TestInstrument(
         InstrumentDescriptor descriptor,

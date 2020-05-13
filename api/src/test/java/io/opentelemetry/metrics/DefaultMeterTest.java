@@ -88,14 +88,14 @@ public final class DefaultMeterTest {
   public void noopAddObserverDouble_EmptyName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Name");
-    defaultMeter.doubleObserverBuilder("");
+    defaultMeter.doubleSumObserverBuilder("");
   }
 
   @Test
   public void noopAddObserverLong_EmptyName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Name");
-    defaultMeter.longObserverBuilder("");
+    defaultMeter.longSumObserverBuilder("");
   }
 
   @Test

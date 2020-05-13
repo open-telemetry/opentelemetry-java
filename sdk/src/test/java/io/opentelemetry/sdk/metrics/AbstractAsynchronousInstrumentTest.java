@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 
-public class AbstractObserverTest {
+public class AbstractAsynchronousInstrumentTest {
   private static final boolean MONOTONIC = true;
   private static final boolean NON_MONOTONIC = false;
 
@@ -58,7 +58,7 @@ public class AbstractObserverTest {
     tester.testEquals();
   }
 
-  private static final class TestObserverInstrument extends AbstractObserver {
+  private static final class TestObserverInstrument extends AbstractAsynchronousInstrument {
     private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
         MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());
     private static final MeterSharedState METER_SHARED_STATE =
@@ -71,7 +71,7 @@ public class AbstractObserverTest {
               "description",
               "1",
               Collections.singletonMap("key_2", "value_2"),
-              AbstractObserver.getInstrumentType(monotonic),
+              AbstractAsynchronousInstrument.getInstrumentType(monotonic),
               instrumentValueType),
           METER_PROVIDER_SHARED_STATE,
           METER_SHARED_STATE,

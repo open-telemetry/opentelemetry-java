@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
+import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleObserver;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -29,20 +29,20 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
- *   private static final LongObserver observer =
+ *   private static final DoubleSumObserver observer =
  *       meter.
- *           .observerLongBuilder("doWork_latency")
+ *           .doubleSumObserverBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
  *
  *   void init() {
  *     observer.setCallback(
- *         new LongObserver.Callback<LongObserver.ResultLongObserver>() {
+ *         new DoubleSumObserver.Callback<DoubleObserver.ResultDoubleObserver>() {
  *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
- *           public void update(ResultLongObserver result) {
- *             result.observe(count.addAndGet(1), "my_label_key", "my_label_value");
+ *           public void update(Result result) {
+ *             result.observe(0.8 * count.addAndGet(1), "labelKey", "labelValue");
  *           }
  *         });
  *   }
@@ -52,12 +52,12 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongObserver extends Observer<ResultLongObserver> {
+public interface DoubleSumObserver extends AsynchronousInstrument<ResultDoubleObserver> {
   @Override
-  void setCallback(Callback<ResultLongObserver> metricUpdater);
+  void setCallback(Callback<ResultDoubleObserver> metricUpdater);
 
-  /** Builder class for {@link LongObserver}. */
-  interface Builder extends Observer.Builder {
+  /** Builder class for {@link DoubleSumObserver}. */
+  interface Builder extends AsynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
 
@@ -71,11 +71,11 @@ public interface LongObserver extends Observer<ResultLongObserver> {
     Builder setMonotonic(boolean monotonic);
 
     @Override
-    LongObserver build();
+    DoubleSumObserver build();
   }
 
-  /** The result for the {@link io.opentelemetry.metrics.Observer.Callback}. */
-  interface ResultLongObserver {
-    void observe(long value, String... keyValueLabelPairs);
+  /** The result for the {@link AsynchronousInstrument.Callback}. */
+  interface ResultDoubleObserver {
+    void observe(double sum, String... keyValueLabelPairs);
   }
 }

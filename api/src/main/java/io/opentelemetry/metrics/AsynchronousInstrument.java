@@ -20,15 +20,21 @@ import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Base interface for all the Observer metrics.
+ * {@code AsynchronousInstrument} is an interface that defines a type of instruments that are used
+ * to report measurements asynchronously.
+ *
+ * <p>They are reported by a callback, once per collection interval, and lack Context. They are
+ * permitted to report only one value per distinct label set per period. If the application observes
+ * multiple values for the same label set, in a single callback, the last value is the only value
+ * kept.
  *
  * @param <R> the callback Result type.
  * @since 0.1.0
  */
 @ThreadSafe
-public interface Observer<R> extends Instrument {
+public interface AsynchronousInstrument<R> extends Instrument {
   /**
-   * A {@code Callback} for a {@code Observer}.
+   * A {@code Callback} for a {@code AsynchronousInstrument}.
    *
    * @since 0.1.0
    */
@@ -37,17 +43,17 @@ public interface Observer<R> extends Instrument {
   }
 
   /**
-   * Sets a callback that gets executed every time before exporting this metric.
+   * Sets a callback that gets executed every collection interval.
    *
-   * <p>Evaluation is deferred until needed, if this {@code Observer} metric is not exported then it
-   * will never be called.
+   * <p>Evaluation is deferred until needed, if this {@code AsynchronousInstrument} metric is not
+   * exported then it will never be called.
    *
    * @param metricUpdater the callback to be executed before export.
    * @since 0.1.0
    */
   void setCallback(Callback<R> metricUpdater);
 
-  /** Builder class for {@link Observer}. */
+  /** Builder class for {@link AsynchronousInstrument}. */
   interface Builder extends Instrument.Builder {
     @Override
     Builder setDescription(String description);
@@ -70,6 +76,6 @@ public interface Observer<R> extends Instrument {
     Builder setMonotonic(boolean monotonic);
 
     @Override
-    Observer<?> build();
+    AsynchronousInstrument<?> build();
   }
 }

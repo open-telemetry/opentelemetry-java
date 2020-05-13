@@ -25,17 +25,17 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DoubleObserver}. */
+/** Unit tests for {@link LongSumObserver}. */
 @RunWith(JUnit4.class)
-public class DoubleObserverTest {
+public class LongSumObserverTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
-  private final Meter meter = OpenTelemetry.getMeter("observer_double_test");
+  private final Meter meter = OpenTelemetry.getMeter("observer_long_test");
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    meter.doubleObserverBuilder("\2").build();
+    meter.longSumObserverBuilder("\2").build();
   }
 
   @Test
@@ -45,27 +45,27 @@ public class DoubleObserverTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleObserverBuilder(longName).build();
+    meter.longSumObserverBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.doubleObserverBuilder("metric").setDescription(null).build();
+    meter.longSumObserverBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.doubleObserverBuilder("metric").setUnit(null).build();
+    meter.longSumObserverBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.doubleObserverBuilder("metric").setConstantLabels(null).build();
+    meter.longSumObserverBuilder("metric").setConstantLabels(null).build();
   }
 }

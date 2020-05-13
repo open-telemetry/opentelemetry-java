@@ -16,14 +16,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.Observer;
+import io.opentelemetry.metrics.AsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-abstract class AbstractObserver extends AbstractInstrument {
+abstract class AbstractAsynchronousInstrument extends AbstractInstrument {
   private final boolean monotonic;
 
-  AbstractObserver(
+  AbstractAsynchronousInstrument(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
@@ -46,8 +46,8 @@ abstract class AbstractObserver extends AbstractInstrument {
     return monotonic;
   }
 
-  abstract static class Builder<B extends AbstractObserver.Builder<B>>
-      extends AbstractInstrument.Builder<B> implements Observer.Builder {
+  abstract static class Builder<B extends AbstractAsynchronousInstrument.Builder<B>>
+      extends AbstractInstrument.Builder<B> implements AsynchronousInstrument.Builder {
     private boolean monotonic = false;
 
     Builder(
