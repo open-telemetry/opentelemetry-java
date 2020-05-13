@@ -45,8 +45,11 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
 
   void add(double increment, LabelSetSdk labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
-    boundInstrument.add(increment);
-    boundInstrument.unbind();
+    try {
+      boundInstrument.add(increment);
+    } finally {
+      boundInstrument.unbind();
+    }
   }
 
   @Override
@@ -69,7 +72,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
     @Override
     public void add(double increment) {
       if (increment < 0) {
-        throw new IllegalArgumentException("monotonic counters can only increase");
+        throw new IllegalArgumentException("Counters can only increase");
       }
       recordDouble(increment);
     }

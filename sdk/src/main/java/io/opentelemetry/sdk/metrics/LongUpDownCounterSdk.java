@@ -16,16 +16,16 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.sdk.metrics.LongCounterSdk.BoundInstrument;
+import io.opentelemetry.metrics.LongUpDownCounter;
+import io.opentelemetry.sdk.metrics.LongUpDownCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
-    implements LongCounter {
+final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
+    implements LongUpDownCounter {
 
-  private LongCounterSdk(
+  private LongUpDownCounterSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
@@ -43,13 +43,10 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
     add(increment, LabelSetSdk.create(labelKeyValuePairs));
   }
 
-  void add(long increment, LabelSetSdk labelSet) {
-    BoundInstrument boundInstrument = bind(labelSet);
-    try {
-      boundInstrument.add(increment);
-    } finally {
-      boundInstrument.unbind();
-    }
+  public void add(long increment, LabelSetSdk labelSetSdk) {
+    BoundInstrument boundInstrument = bind(labelSetSdk);
+    boundInstrument.add(increment);
+    boundInstrument.unbind();
   }
 
   @Override
@@ -63,7 +60,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
-      implements LongCounter.BoundLongCounter {
+      implements BoundLongUpDownCounter {
 
     BoundInstrument(Batcher batcher) {
       super(batcher.getAggregator());
@@ -71,15 +68,12 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
 
     @Override
     public void add(long increment) {
-      if (increment < 0) {
-        throw new IllegalArgumentException("Counters can only increase");
-      }
       recordLong(increment);
     }
   }
 
-  static final class Builder extends AbstractInstrument.Builder<LongCounterSdk.Builder>
-      implements LongCounter.Builder {
+  static final class Builder extends AbstractInstrument.Builder<LongUpDownCounterSdk.Builder>
+      implements LongUpDownCounter.Builder {
 
     Builder(
         String name,
@@ -94,10 +88,11 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
     }
 
     @Override
-    public LongCounterSdk build() {
+    public LongUpDownCounterSdk build() {
       return register(
-          new LongCounterSdk(
-              getInstrumentDescriptor(InstrumentType.COUNTER_MONOTONIC, InstrumentValueType.LONG),
+          new LongUpDownCounterSdk(
+              getInstrumentDescriptor(
+                  InstrumentType.COUNTER_NON_MONOTONIC, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

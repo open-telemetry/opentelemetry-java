@@ -62,6 +62,10 @@ public class BatchRecorderSdkTest {
   public void batchRecorder() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
+    DoubleUpDownCounterSdk doubleUpDownCounter =
+        testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
+    LongUpDownCounterSdk longUpDownCounter =
+        testSdk.longUpDownCounterBuilder("testLongUpDownCounter").build();
     DoubleCounterSdk doubleMeasure = testSdk.doubleCounterBuilder("testDoubleMeasure").build();
     DoubleCounterSdk longMeasure = testSdk.doubleCounterBuilder("testLongMeasure").build();
     LabelSetSdk labelSet = LabelSetSdk.create("key", "value");
@@ -69,6 +73,8 @@ public class BatchRecorderSdkTest {
     testSdk
         .newBatchRecorder("key", "value")
         .put(longCounter, 12)
+        .put(doubleUpDownCounter, -12.1d)
+        .put(longUpDownCounter, -12)
         .put(doubleCounter, 12.1d)
         .put(longMeasure, 13)
         .put(doubleMeasure, 13.1d)
@@ -101,5 +107,33 @@ public class BatchRecorderSdkTest {
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), labelSet.getLabels(), 12))));
+    assertThat(doubleUpDownCounter.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testDoubleUpDownCounter",
+                    "",
+                    "1",
+                    Type.NON_MONOTONIC_DOUBLE,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    DoublePoint.create(
+                        testClock.now(), testClock.now(), labelSet.getLabels(), -12.1d))));
+    assertThat(longUpDownCounter.collectAll())
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testLongUpDownCounter",
+                    "",
+                    "1",
+                    Type.NON_MONOTONIC_LONG,
+                    Collections.<String, String>emptyMap()),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>singletonList(
+                    LongPoint.create(
+                        testClock.now(), testClock.now(), labelSet.getLabels(), -12))));
   }
 }
