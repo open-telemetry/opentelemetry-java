@@ -48,7 +48,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongMeasure extends Measure<BoundLongMeasure> {
+public interface LongMeasure extends SynchronousInstrument<BoundLongMeasure> {
 
   /**
    * Records the given measurement, associated with the current {@code Context} and provided set of
@@ -85,7 +85,7 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
   }
 
   /** Builder class for {@link LongMeasure}. */
-  interface Builder extends Measure.Builder {
+  interface Builder extends SynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
 
@@ -94,9 +94,6 @@ public interface LongMeasure extends Measure<BoundLongMeasure> {
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);
-
-    @Override
-    Builder setAbsolute(boolean absolute);
 
     @Override
     LongMeasure build();
