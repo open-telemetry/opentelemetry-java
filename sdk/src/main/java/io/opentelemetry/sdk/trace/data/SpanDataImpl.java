@@ -52,10 +52,10 @@ public abstract class SpanDataImpl implements SpanData {
     return new AutoValue_SpanDataImpl.Builder()
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
-        .setLinks(Collections.<LinkData>emptyList())
+        .setLinks(Collections.<Link>emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
-        .setEvents(Collections.<EventData>emptyList())
+        .setEvents(Collections.<Event>emptyList())
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
@@ -76,9 +76,9 @@ public abstract class SpanDataImpl implements SpanData {
 
     abstract Map<String, AttributeValue> getAttributes();
 
-    abstract List<EventData> getEvents();
+    abstract List<Event> getEvents();
 
-    abstract List<LinkData> getLinks();
+    abstract List<Link> getLinks();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -196,12 +196,12 @@ public abstract class SpanDataImpl implements SpanData {
     /**
      * Set timed events that are associated with this span. Must not be null, may be empty.
      *
-     * @param events A List&lt;EventData&gt; of events associated with this span.
+     * @param events A List&lt;Event&gt; of events associated with this span.
      * @return this
-     * @see EventData
+     * @see Event
      * @since 0.1.0
      */
-    public abstract Builder setEvents(List<EventData> events);
+    public abstract Builder setEvents(List<Event> events);
 
     /**
      * Set the status for this span. Must not be null.
@@ -229,7 +229,7 @@ public abstract class SpanDataImpl implements SpanData {
      * @see io.opentelemetry.trace.Link
      * @since 0.1.0
      */
-    public abstract Builder setLinks(List<LinkData> links);
+    public abstract Builder setLinks(List<Link> links);
 
     /**
      * Sets to true if the span has a parent on a different process.

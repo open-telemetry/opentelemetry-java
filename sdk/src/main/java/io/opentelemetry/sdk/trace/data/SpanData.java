@@ -16,16 +16,20 @@
 
 package io.opentelemetry.sdk.trace.data;
 
+import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
@@ -37,6 +41,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public interface SpanData {
+
   /**
    * Gets the trace id for this span.
    *
@@ -128,7 +133,7 @@ public interface SpanData {
    * @return the timed events recorded for this {@code Span}.
    * @since 0.1.0
    */
-  List<EventData> getEvents();
+  List<Event> getEvents();
 
   /**
    * Returns links recorded for this {@code Span}.
@@ -136,7 +141,7 @@ public interface SpanData {
    * @return links recorded for this {@code Span}.
    * @since 0.1.0
    */
-  List<LinkData> getLinks();
+  List<Link> getLinks();
 
   /**
    * Returns the {@code Status}.
@@ -173,17 +178,16 @@ public interface SpanData {
   boolean getHasEnded();
 
   /**
-   * The total number of {@link EventData} events that were recorded on this span. This number may
-   * be larger than the number of events that are attached to this span, if the total number
-   * recorded was greater than the configured maximum value. See: {@link
-   * TraceConfig#getMaxNumberOfEvents()}
+   * The total number of {@link Event} events that were recorded on this span. This number may be
+   * larger than the number of events that are attached to this span, if the total number recorded
+   * was greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfEvents()}
    *
    * @return The total number of events recorded on this span.
    */
   int getTotalRecordedEvents();
 
   /**
-   * The total number of {@link LinkData} links that were recorded on this span. This number may be
+   * The total number of {@link Link} links that were recorded on this span. This number may be
    * larger than the number of links that are attached to this span, if the total number recorded
    * was greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfLinks()}
    *
@@ -199,4 +203,137 @@ public interface SpanData {
    * @return The total number of attributes on this span.
    */
   int getTotalAttributeCount();
+
+  /**
+   * An immutable implementation of {@link io.opentelemetry.trace.Link}.
+   *
+   * @since 0.1.0
+   */
+  @Immutable
+  @AutoValue
+  abstract class Link implements io.opentelemetry.trace.Link {
+
+    private static final Map<String, AttributeValue> DEFAULT_ATTRIBUTE_COLLECTION =
+        Collections.emptyMap();
+    private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
+
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @return a new immutable {@code Event<T>}
+     * @since 0.1.0
+     */
+    public static Link create(SpanContext spanContext) {
+      return new AutoValue_SpanData_Link(
+          spanContext, DEFAULT_ATTRIBUTE_COLLECTION, DEFAULT_ATTRIBUTE_COUNT);
+    }
+
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @param attributes the attributes of this {@code Link}.
+     * @return a new immutable {@code Event<T>}
+     * @since 0.1.0
+     */
+    public static Link create(SpanContext spanContext, Map<String, AttributeValue> attributes) {
+      return new AutoValue_SpanData_Link(
+          spanContext,
+          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
+          attributes.size());
+    }
+
+    /**
+     * Returns a new immutable {@code Link}.
+     *
+     * @param spanContext the {@code SpanContext} of this {@code Link}.
+     * @param attributes the attributes of this {@code Link}.
+     * @param totalAttributeCount the total number of attributed for this {@code Link}.
+     * @return a new immutable {@code Event<T>}
+     * @since 0.1.0
+     */
+    public static Link create(
+        SpanContext spanContext, Map<String, AttributeValue> attributes, int totalAttributeCount) {
+      return new AutoValue_SpanData_Link(
+          spanContext,
+          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
+          totalAttributeCount);
+    }
+
+    /**
+     * The total number of attributes that were recorded on this Link. This number may be larger
+     * than the number of attributes that are attached to this span, if the total number recorded
+     * was greater than the configured maximum value. See: {@link
+     * TraceConfig#getMaxNumberOfAttributesPerLink()}
+     *
+     * @return The number of attributes on this link.
+     */
+    public abstract int getTotalAttributeCount();
+
+    Link() {}
+  }
+
+  /**
+   * An immutable timed event representation. Enhances the core {@link io.opentelemetry.trace.Event}
+   * by adding the time at which the event occurred.
+   *
+   * @since 0.1.0
+   */
+  @Immutable
+  @AutoValue
+  abstract class Event implements io.opentelemetry.trace.Event {
+
+    /**
+     * Returns a new immutable {@code Event}.
+     *
+     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
+     * @param name the name of the {@code Event}.
+     * @param attributes the attributes of the {@code Event}.
+     * @return a new immutable {@code Event<T>}
+     * @since 0.1.0
+     */
+    public static Event create(
+        long epochNanos, String name, Map<String, AttributeValue> attributes) {
+      return new AutoValue_SpanData_Event(name, attributes, epochNanos, attributes.size());
+    }
+
+    /**
+     * Returns a new immutable {@code Event}.
+     *
+     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
+     * @param name the name of the {@code Event}.
+     * @param attributes the attributes of the {@code Event}.
+     * @param totalAttributeCount the total number of attributes for this {@code} Event.
+     * @return a new immutable {@code Event<T>}
+     * @since 0.1.0
+     */
+    public static Event create(
+        long epochNanos,
+        String name,
+        Map<String, AttributeValue> attributes,
+        int totalAttributeCount) {
+      return new AutoValue_SpanData_Event(name, attributes, epochNanos, totalAttributeCount);
+    }
+
+    /**
+     * Returns the epoch time in nanos of this event.
+     *
+     * @return the epoch time in nanos of this event.
+     * @since 0.1.0
+     */
+    public abstract long getEpochNanos();
+
+    /**
+     * The total number of attributes that were recorded on this Event. This number may be larger
+     * than the number of attributes that are attached to this span, if the total number recorded
+     * was greater than the configured maximum value. See: {@link
+     * TraceConfig#getMaxNumberOfAttributesPerEvent()}
+     *
+     * @return The total number of attributes on this event.
+     */
+    public abstract int getTotalAttributeCount();
+
+    Event() {}
+  }
 }

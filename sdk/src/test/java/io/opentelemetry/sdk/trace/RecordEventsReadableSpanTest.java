@@ -25,12 +25,10 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.EventData;
-import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanDataImpl;
-import io.opentelemetry.trace.Event;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -80,7 +78,7 @@ public class RecordEventsReadableSpanTest {
       InstrumentationLibraryInfo.create("theName", null);
   private final Map<String, AttributeValue> attributes = new HashMap<>();
   private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
-  private final Link link = LinkData.create(spanContext);
+  private final io.opentelemetry.trace.Link link = Link.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -108,7 +106,7 @@ public class RecordEventsReadableSpanTest {
     verifySpanData(
         spanData,
         Collections.<String, AttributeValue>emptyMap(),
-        Collections.<EventData>emptyList(),
+        Collections.<Event>emptyList(),
         Collections.singletonList(link),
         SPAN_NAME,
         startEpochNanos,
@@ -134,15 +132,15 @@ public class RecordEventsReadableSpanTest {
       assertThat(span.hasEnded()).isFalse();
       spanDoWork(span, null);
       SpanData spanData = span.toSpanData();
-      EventData eventData =
-          EventData.create(
+      Event event =
+          Event.create(
               startEpochNanos + NANOS_PER_SECOND,
               "event2",
               Collections.<String, AttributeValue>emptyMap());
       verifySpanData(
           spanData,
           expectedAttributes,
-          Collections.singletonList(eventData),
+          Collections.singletonList(event),
           Collections.singletonList(link),
           SPAN_NEW_NAME,
           startEpochNanos,
@@ -166,15 +164,15 @@ public class RecordEventsReadableSpanTest {
     }
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
-    EventData eventData =
-        EventData.create(
+    Event event =
+        Event.create(
             startEpochNanos + NANOS_PER_SECOND,
             "event2",
             Collections.<String, AttributeValue>emptyMap());
     verifySpanData(
         spanData,
         expectedAttributes,
-        Collections.singletonList(eventData),
+        Collections.singletonList(event),
         Collections.singletonList(link),
         SPAN_NEW_NAME,
         startEpochNanos,
@@ -384,7 +382,7 @@ public class RecordEventsReadableSpanTest {
       span.addEvent("event1");
       span.addEvent("event2", attributes);
       span.addEvent(
-          new Event() {
+          new io.opentelemetry.trace.Event() {
             @Override
             public String getName() {
               return "event3";
@@ -482,8 +480,8 @@ public class RecordEventsReadableSpanTest {
 
       assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
-        EventData expectedEvent =
-            EventData.create(
+        Event expectedEvent =
+            Event.create(
                 startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
                 "event2",
                 Collections.<String, AttributeValue>emptyMap());
@@ -496,8 +494,8 @@ public class RecordEventsReadableSpanTest {
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
-      EventData expectedEvent =
-          EventData.create(
+      Event expectedEvent =
+          Event.create(
               startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
               "event2",
               Collections.<String, AttributeValue>emptyMap());
@@ -578,8 +576,8 @@ public class RecordEventsReadableSpanTest {
   private void verifySpanData(
       SpanData spanData,
       Map<String, AttributeValue> attributes,
-      List<EventData> eventData,
-      List<Link> links,
+      List<Event> eventData,
+      List<io.opentelemetry.trace.Link> links,
       String spanName,
       long startEpochNanos,
       long endEpochNanos,
@@ -622,7 +620,7 @@ public class RecordEventsReadableSpanTest {
     Map<String, AttributeValue> event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
         SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
-    LinkData link1 = LinkData.create(context, TestUtils.generateRandomAttributes());
+    Link link1 = Link.create(context, TestUtils.generateRandomAttributes());
 
     RecordEventsReadableSpan readableSpan =
         RecordEventsReadableSpan.startSpan(
@@ -637,7 +635,7 @@ public class RecordEventsReadableSpanTest {
             clock,
             resource,
             attributesWithCapacity,
-            Collections.<Link>singletonList(link1),
+            Collections.<io.opentelemetry.trace.Link>singletonList(link1),
             1,
             0);
     long startEpochNanos = clock.now();
@@ -663,8 +661,8 @@ public class RecordEventsReadableSpanTest {
             .setEndEpochNanos(endEpochNanos)
             .setEvents(
                 Arrays.asList(
-                    EventData.create(firstEventEpochNanos, "event1", event1Attributes),
-                    EventData.create(secondEventTimeNanos, "event2", event2Attributes)))
+                    Event.create(firstEventEpochNanos, "event1", event1Attributes),
+                    Event.create(secondEventTimeNanos, "event2", event2Attributes)))
             .setTotalRecordedEvents(2)
             .setResource(resource)
             .setParentSpanId(parentSpanId)

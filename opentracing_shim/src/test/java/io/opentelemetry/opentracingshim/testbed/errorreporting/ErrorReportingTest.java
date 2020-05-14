@@ -26,8 +26,8 @@ import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -127,7 +127,7 @@ public final class ErrorReportingTest {
     assertEquals(spans.size(), 1);
     assertEquals(spans.get(0).getStatus().getCanonicalCode(), Status.UNKNOWN.getCanonicalCode());
 
-    List<EventData> events = spans.get(0).getEvents();
+    List<Event> events = spans.get(0).getEvents();
     assertEquals(events.size(), maxRetries);
     assertEquals(events.get(0).getName(), Tags.ERROR.getKey());
     /* TODO: Handle actual objects being passed to log/events. */

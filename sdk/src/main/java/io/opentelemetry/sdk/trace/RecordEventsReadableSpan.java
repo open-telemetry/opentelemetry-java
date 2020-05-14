@@ -25,13 +25,11 @@ import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.EventData;
-import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.EndSpanOptions;
-import io.opentelemetry.trace.Event;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -67,7 +65,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
   // List of recorded links to parent and child spans.
-  private final List<Link> links;
+  private final List<io.opentelemetry.trace.Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
   // Max number of attributes per event.
@@ -137,7 +135,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       Clock clock,
       Resource resource,
       AttributesMap attributes,
-      List<Link> links,
+      List<io.opentelemetry.trace.Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     RecordEventsReadableSpan span =
@@ -199,11 +197,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @GuardedBy("lock")
-  private List<EventData> adaptTimedEvents() {
-    List<EventData> result = new ArrayList<>(events.size());
+  private List<Event> adaptTimedEvents() {
+    List<Event> result = new ArrayList<>(events.size());
     for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
       result.add(
-          EventData.create(
+          Event.create(
               sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
     }
     return result;
@@ -262,19 +260,19 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return A copy of the Links for this span.
    */
-  private List<LinkData> getLinks() {
+  private List<Link> getLinks() {
     if (links == null) {
       return Collections.emptyList();
     }
-    List<LinkData> result = new ArrayList<>(links.size());
-    for (Link link : links) {
-      LinkData newLink;
-      if (!(link instanceof LinkData)) {
+    List<Link> result = new ArrayList<>(links.size());
+    for (io.opentelemetry.trace.Link link : links) {
+      Link newLink;
+      if (!(link instanceof Link)) {
         // Make a copy because the given Link may not be immutable and we may reference a lot of
         // memory.
-        newLink = LinkData.create(link.getContext(), link.getAttributes());
+        newLink = Link.create(link.getContext(), link.getAttributes());
       } else {
-        newLink = (LinkData) link;
+        newLink = (Link) link;
       }
       result.add(newLink);
     }
@@ -365,12 +363,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
-  public void addEvent(Event event) {
+  public void addEvent(io.opentelemetry.trace.Event event) {
     addTimedEvent(TimedEvent.create(clock.now(), event));
   }
 
   @Override
-  public void addEvent(Event event, long timestamp) {
+  public void addEvent(io.opentelemetry.trace.Event event, long timestamp) {
     addTimedEvent(TimedEvent.create(timestamp, event));
   }
 
@@ -481,7 +479,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       Clock clock,
       Resource resource,
       AttributesMap attributes,
-      List<Link> links,
+      List<io.opentelemetry.trace.Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;

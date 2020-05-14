@@ -26,9 +26,9 @@ import io.opentelemetry.proto.trace.v1.Status.StatusCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.data.EventData;
-import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -101,11 +101,11 @@ final class SpanAdapter {
     }
     builder.setDroppedAttributesCount(
         spanData.getTotalAttributeCount() - spanData.getAttributes().size());
-    for (EventData eventData : spanData.getEvents()) {
-      builder.addEvents(toProtoSpanEvent(eventData));
+    for (Event event : spanData.getEvents()) {
+      builder.addEvents(toProtoSpanEvent(event));
     }
     builder.setDroppedEventsCount(spanData.getTotalRecordedEvents() - spanData.getEvents().size());
-    for (LinkData link : spanData.getLinks()) {
+    for (Link link : spanData.getLinks()) {
       builder.addLinks(toProtoSpanLink(link));
     }
     builder.setDroppedLinksCount(spanData.getTotalRecordedLinks() - spanData.getLinks().size());
@@ -129,20 +129,20 @@ final class SpanAdapter {
     return SpanKind.UNRECOGNIZED;
   }
 
-  static Span.Event toProtoSpanEvent(EventData eventData) {
+  static Span.Event toProtoSpanEvent(Event event) {
     Span.Event.Builder builder = Span.Event.newBuilder();
-    builder.setName(eventData.getName());
-    builder.setTimeUnixNano(eventData.getEpochNanos());
-    for (Map.Entry<String, AttributeValue> resourceEntry : eventData.getAttributes().entrySet()) {
+    builder.setName(event.getName());
+    builder.setTimeUnixNano(event.getEpochNanos());
+    for (Map.Entry<String, AttributeValue> resourceEntry : event.getAttributes().entrySet()) {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
     builder.setDroppedAttributesCount(
-        eventData.getTotalAttributeCount() - eventData.getAttributes().size());
+        event.getTotalAttributeCount() - event.getAttributes().size());
     return builder.build();
   }
 
-  static Span.Link toProtoSpanLink(LinkData link) {
+  static Span.Link toProtoSpanLink(Link link) {
     Span.Link.Builder builder = Span.Link.newBuilder();
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().getTraceId()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanId()));

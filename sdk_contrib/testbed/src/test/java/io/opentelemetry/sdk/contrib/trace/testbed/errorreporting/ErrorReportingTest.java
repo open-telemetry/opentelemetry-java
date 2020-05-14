@@ -25,8 +25,8 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
@@ -121,7 +121,7 @@ public final class ErrorReportingTest {
     assertThat(spans.get(0).getStatus().getCanonicalCode())
         .isEqualTo(Status.UNKNOWN.getCanonicalCode());
 
-    List<EventData> events = spans.get(0).getEvents();
+    List<Event> events = spans.get(0).getEvents();
     assertEquals(events.size(), maxRetries);
     assertEquals(events.get(0).getName(), "error");
   }
