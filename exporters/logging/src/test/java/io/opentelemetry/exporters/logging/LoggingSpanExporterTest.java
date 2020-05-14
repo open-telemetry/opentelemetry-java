@@ -22,6 +22,7 @@ import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
@@ -66,9 +67,9 @@ public class LoggingSpanExporterTest {
             .setStatus(Status.OK)
             .setName("testSpan")
             .setKind(Kind.INTERNAL)
-            .setTimedEvents(
+            .setEvents(
                 singletonList(
-                    SpanDataImpl.TimedEvent.create(
+                    EventData.create(
                         epochNanos + 500,
                         "somethingHappenedHere",
                         singletonMap("important", AttributeValue.booleanAttributeValue(true)))))

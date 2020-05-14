@@ -27,10 +27,10 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.EventData;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanDataImpl;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.TimedEvent;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -119,10 +119,10 @@ public class AdapterTest {
   @Test
   public void testJaegerLogs() {
     // prepare
-    SpanDataImpl.TimedEvent timedEvents = getTimedEvent();
+    EventData eventsData = getTimedEvent();
 
     // test
-    Collection<Model.Log> logs = Adapter.toJaegerLogs(Collections.singletonList(timedEvents));
+    Collection<Model.Log> logs = Adapter.toJaegerLogs(Collections.singletonList(eventsData));
 
     // verify
     assertEquals(1, logs.size());
@@ -131,10 +131,10 @@ public class AdapterTest {
   @Test
   public void testJaegerLog() {
     // prepare
-    SpanDataImpl.TimedEvent timedEvent = getTimedEvent();
+    EventData eventData = getTimedEvent();
 
     // test
-    Model.Log log = Adapter.toJaegerLog(timedEvent);
+    Model.Log log = Adapter.toJaegerLog(eventData);
 
     // verify
     assertEquals(2, log.getFieldsCount());
@@ -210,8 +210,8 @@ public class AdapterTest {
   @Test
   public void testSpanRefs() {
     // prepare
-    Link link =
-        Link.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
+    LinkData link =
+        LinkData.create(createSpanContext("00000000000000000000000000cba123", "0000000000fed456"));
 
     // test
     Collection<Model.SpanRef> spanRefs = Adapter.toSpanRefs(Collections.singletonList(link));
@@ -223,7 +223,7 @@ public class AdapterTest {
   @Test
   public void testSpanRef() {
     // prepare
-    Link link = Link.create(createSpanContext(TRACE_ID, SPAN_ID));
+    LinkData link = LinkData.create(createSpanContext(TRACE_ID, SPAN_ID));
 
     // test
     Model.SpanRef spanRef = Adapter.toSpanRef(link);
@@ -291,18 +291,18 @@ public class AdapterTest {
     assertTrue(error.getVBool());
   }
 
-  private static TimedEvent getTimedEvent() {
+  private static EventData getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
     ImmutableMap<String, AttributeValue> attributes = ImmutableMap.of("foo", valueS);
-    return TimedEvent.create(epochNanos, "the log message", attributes);
+    return EventData.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
     AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
     Map<String, AttributeValue> attributes = ImmutableMap.of("valueB", valueB);
 
-    Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
+    LinkData link = LinkData.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
     return SpanDataImpl.newBuilder()
         .setHasEnded(true)
@@ -313,7 +313,7 @@ public class AdapterTest {
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
         .setAttributes(attributes)
-        .setTimedEvents(Collections.singletonList(getTimedEvent()))
+        .setEvents(Collections.singletonList(getTimedEvent()))
         .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)

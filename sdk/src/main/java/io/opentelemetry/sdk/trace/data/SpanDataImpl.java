@@ -20,10 +20,7 @@ import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
@@ -32,7 +29,6 @@ import io.opentelemetry.trace.TraceState;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
@@ -47,145 +43,6 @@ import javax.annotation.concurrent.Immutable;
 public abstract class SpanDataImpl implements SpanData {
 
   /**
-   * An immutable implementation of {@link Link}.
-   *
-   * @since 0.1.0
-   */
-  @Immutable
-  @AutoValue
-  public abstract static class Link implements io.opentelemetry.trace.Link {
-
-    private static final Map<String, AttributeValue> DEFAULT_ATTRIBUTE_COLLECTION =
-        Collections.emptyMap();
-    private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
-
-    /**
-     * Returns a new immutable {@code Link}.
-     *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
-     * @return a new immutable {@code TimedEvent<T>}
-     * @since 0.1.0
-     */
-    public static Link create(SpanContext spanContext) {
-      return new AutoValue_SpanDataImpl_Link(
-          spanContext, DEFAULT_ATTRIBUTE_COLLECTION, DEFAULT_ATTRIBUTE_COUNT);
-    }
-
-    /**
-     * Returns a new immutable {@code Link}.
-     *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
-     * @param attributes the attributes of this {@code Link}.
-     * @return a new immutable {@code TimedEvent<T>}
-     * @since 0.1.0
-     */
-    public static Link create(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-      return new AutoValue_SpanDataImpl_Link(
-          spanContext,
-          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
-          attributes.size());
-    }
-
-    /**
-     * Returns a new immutable {@code Link}.
-     *
-     * @param spanContext the {@code SpanContext} of this {@code Link}.
-     * @param attributes the attributes of this {@code Link}.
-     * @param totalAttributeCount the total number of attributed for this {@code Link}.
-     * @return a new immutable {@code TimedEvent<T>}
-     * @since 0.1.0
-     */
-    public static Link create(
-        SpanContext spanContext, Map<String, AttributeValue> attributes, int totalAttributeCount) {
-      return new AutoValue_SpanDataImpl_Link(
-          spanContext,
-          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
-          totalAttributeCount);
-    }
-
-    /**
-     * The total number of attributes that were recorded on this Link. This number may be larger
-     * than the number of attributes that are attached to this span, if the total number recorded
-     * was greater than the configured maximum value. See: {@link
-     * TraceConfig#getMaxNumberOfAttributesPerLink()}
-     *
-     * @return The number of attributes on this link.
-     */
-    public abstract int getTotalAttributeCount();
-
-    Link() {}
-  }
-
-  /**
-   * A timed event representation.
-   *
-   * @since 0.1.0
-   */
-  @Immutable
-  @AutoValue
-  public abstract static class TimedEvent implements Event {
-
-    /**
-     * Returns a new immutable {@code TimedEvent}.
-     *
-     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
-     * @param name the name of the {@code Event}.
-     * @param attributes the attributes of the {@code Event}.
-     * @return a new immutable {@code TimedEvent<T>}
-     * @since 0.1.0
-     */
-    public static TimedEvent create(
-        long epochNanos, String name, Map<String, AttributeValue> attributes) {
-      return new AutoValue_SpanDataImpl_TimedEvent(epochNanos, name, attributes, attributes.size());
-    }
-
-    /**
-     * Returns a new immutable {@code TimedEvent}.
-     *
-     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
-     * @param name the name of the {@code Event}.
-     * @param attributes the attributes of the {@code Event}.
-     * @param totalAttributeCount the total number of attributes for this {@code} Event.
-     * @return a new immutable {@code TimedEvent<T>}
-     * @since 0.1.0
-     */
-    public static TimedEvent create(
-        long epochNanos,
-        String name,
-        Map<String, AttributeValue> attributes,
-        int totalAttributeCount) {
-      return new AutoValue_SpanDataImpl_TimedEvent(
-          epochNanos, name, attributes, totalAttributeCount);
-    }
-
-    /**
-     * Returns the epoch time in nanos of this event.
-     *
-     * @return the epoch time in nanos of this event.
-     * @since 0.1.0
-     */
-    public abstract long getEpochNanos();
-
-    @Override
-    public abstract String getName();
-
-    @Override
-    public abstract Map<String, AttributeValue> getAttributes();
-
-    /**
-     * The total number of attributes that were recorded on this Event. This number may be larger
-     * than the number of attributes that are attached to this span, if the total number recorded
-     * was greater than the configured maximum value. See: {@link
-     * TraceConfig#getMaxNumberOfAttributesPerEvent()}
-     *
-     * @return The total number of attributes on this event.
-     */
-    public abstract int getTotalAttributeCount();
-
-    TimedEvent() {}
-  }
-
-  /**
    * Creates a new Builder for creating an SpanData instance.
    *
    * @return a new Builder.
@@ -195,10 +52,10 @@ public abstract class SpanDataImpl implements SpanData {
     return new AutoValue_SpanDataImpl.Builder()
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
-        .setLinks(Collections.<Link>emptyList())
+        .setLinks(Collections.<LinkData>emptyList())
         .setTotalRecordedLinks(0)
         .setAttributes(Collections.<String, AttributeValue>emptyMap())
-        .setTimedEvents(Collections.<TimedEvent>emptyList())
+        .setEvents(Collections.<EventData>emptyList())
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
         .setTraceState(TraceState.getDefault())
@@ -219,9 +76,9 @@ public abstract class SpanDataImpl implements SpanData {
 
     abstract Map<String, AttributeValue> getAttributes();
 
-    abstract List<TimedEvent> getTimedEvents();
+    abstract List<EventData> getEvents();
 
-    abstract List<Link> getLinks();
+    abstract List<LinkData> getLinks();
 
     /**
      * Create a new SpanData instance from the data in this.
@@ -232,7 +89,7 @@ public abstract class SpanDataImpl implements SpanData {
     public SpanDataImpl build() {
       // make unmodifiable copies of any collections
       setAttributes(Collections.unmodifiableMap(new HashMap<>(getAttributes())));
-      setTimedEvents(Collections.unmodifiableList(new ArrayList<>(getTimedEvents())));
+      setEvents(Collections.unmodifiableList(new ArrayList<>(getEvents())));
       setLinks(Collections.unmodifiableList(new ArrayList<>(getLinks())));
       return autoBuild();
     }
@@ -339,12 +196,12 @@ public abstract class SpanDataImpl implements SpanData {
     /**
      * Set timed events that are associated with this span. Must not be null, may be empty.
      *
-     * @param events A List&lt;TimedEvent&gt; of events associated with this span.
+     * @param events A List&lt;EventData&gt; of events associated with this span.
      * @return this
-     * @see TimedEvent
+     * @see EventData
      * @since 0.1.0
      */
-    public abstract Builder setTimedEvents(List<TimedEvent> events);
+    public abstract Builder setEvents(List<EventData> events);
 
     /**
      * Set the status for this span. Must not be null.
@@ -372,7 +229,7 @@ public abstract class SpanDataImpl implements SpanData {
      * @see io.opentelemetry.trace.Link
      * @since 0.1.0
      */
-    public abstract Builder setLinks(List<Link> links);
+    public abstract Builder setLinks(List<LinkData> links);
 
     /**
      * Sets to true if the span has a parent on a different process.

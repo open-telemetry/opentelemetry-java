@@ -20,8 +20,6 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl.TimedEvent;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -130,7 +128,7 @@ public interface SpanData {
    * @return the timed events recorded for this {@code Span}.
    * @since 0.1.0
    */
-  List<TimedEvent> getTimedEvents();
+  List<EventData> getEvents();
 
   /**
    * Returns links recorded for this {@code Span}.
@@ -138,7 +136,7 @@ public interface SpanData {
    * @return links recorded for this {@code Span}.
    * @since 0.1.0
    */
-  List<Link> getLinks();
+  List<LinkData> getLinks();
 
   /**
    * Returns the {@code Status}.
@@ -175,9 +173,9 @@ public interface SpanData {
   boolean getHasEnded();
 
   /**
-   * The total number of {@link SpanDataImpl.TimedEvent} events that were recorded on this span.
-   * This number may be larger than the number of events that are attached to this span, if the
-   * total number recorded was greater than the configured maximum value. See: {@link
+   * The total number of {@link EventData} events that were recorded on this span. This number may
+   * be larger than the number of events that are attached to this span, if the total number
+   * recorded was greater than the configured maximum value. See: {@link
    * TraceConfig#getMaxNumberOfEvents()}
    *
    * @return The total number of events recorded on this span.
@@ -185,10 +183,9 @@ public interface SpanData {
   int getTotalRecordedEvents();
 
   /**
-   * The total number of {@link SpanDataImpl.Link} links that were recorded on this span. This
-   * number may be larger than the number of links that are attached to this span, if the total
-   * number recorded was greater than the configured maximum value. See: {@link
-   * TraceConfig#getMaxNumberOfLinks()}
+   * The total number of {@link LinkData} links that were recorded on this span. This number may be
+   * larger than the number of links that are attached to this span, if the total number recorded
+   * was greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfLinks()}
    *
    * @return The total number of links recorded on this span.
    */

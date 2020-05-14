@@ -27,6 +27,7 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
+import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
@@ -214,7 +215,7 @@ public class OtlpGrpcSpanExporterTest {
         .setEndEpochNanos(endNs)
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)
-        .setLinks(Collections.<SpanDataImpl.Link>emptyList())
+        .setLinks(Collections.<LinkData>emptyList())
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
         .build();
