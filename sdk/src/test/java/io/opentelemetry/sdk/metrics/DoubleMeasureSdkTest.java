@@ -205,24 +205,6 @@ public class DoubleMeasureSdkTest {
   }
 
   @Test
-  public void doubleMeasureRecord_Absolute() {
-    DoubleMeasureSdk doubleMeasure =
-        testSdk.doubleMeasureBuilder("testMeasure").setAbsolute(true).build();
-
-    thrown.expect(IllegalArgumentException.class);
-    doubleMeasure.record(-45.77d);
-  }
-
-  @Test
-  public void boundDoubleMeasureRecord_Absolute() {
-    DoubleMeasureSdk doubleMeasure =
-        testSdk.doubleMeasureBuilder("testMeasure").setAbsolute(true).build();
-
-    thrown.expect(IllegalArgumentException.class);
-    doubleMeasure.bind().record(-9.3f);
-  }
-
-  @Test
   public void stressTest() {
     final DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
 
