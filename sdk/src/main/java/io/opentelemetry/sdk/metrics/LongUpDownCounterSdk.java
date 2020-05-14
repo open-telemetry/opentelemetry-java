@@ -60,7 +60,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInst
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
-      implements BoundLongUpDownCounter {
+      implements LongUpDownCounter.BoundLongUpDownCounter {
 
     BoundInstrument(Batcher batcher) {
       super(batcher.getAggregator());

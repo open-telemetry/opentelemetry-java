@@ -60,7 +60,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
-      implements BoundDoubleUpDownCounter {
+      implements DoubleUpDownCounter.BoundDoubleUpDownCounter {
 
     BoundInstrument(Batcher batcher) {
       super(batcher.getAggregator());

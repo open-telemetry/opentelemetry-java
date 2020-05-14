@@ -166,9 +166,9 @@ public interface SpanData {
   boolean isEnded();
 
   /**
-   * The total number of {@link SpanData.TimedEvent} events that were recorded on this span. This
-   * number may be larger than the number of events that are attached to this span, if the total
-   * number recorded was greater than the configured maximum value. See: {@link
+   * The total number of {@link TimedEvent} events that were recorded on this span. This number may
+   * be larger than the number of events that are attached to this span, if the total number
+   * recorded was greater than the configured maximum value. See: {@link
    * TraceConfig#getMaxNumberOfEvents()}
    *
    * @return The total number of events recorded on this span.
@@ -176,10 +176,9 @@ public interface SpanData {
   int getTotalRecordedEvents();
 
   /**
-   * The total number of {@link SpanData.Link} links that were recorded on this span. This number
-   * may be larger than the number of links that are attached to this span, if the total number
-   * recorded was greater than the configured maximum value. See: {@link
-   * TraceConfig#getMaxNumberOfLinks()}
+   * The total number of {@link ResolvedLink} links that were recorded on this span. This number may
+   * be larger than the number of links that are attached to this span, if the total number recorded
+   * was greater than the configured maximum value. See: {@link TraceConfig#getMaxNumberOfLinks()}
    *
    * @return The total number of links recorded on this span.
    */
