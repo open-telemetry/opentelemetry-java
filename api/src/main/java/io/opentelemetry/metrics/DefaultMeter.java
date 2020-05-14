@@ -340,11 +340,6 @@ public final class DefaultMeter implements Meter {
       public DoubleMeasure build() {
         return new NoopDoubleMeasure();
       }
-
-      @Override
-      public Builder setAbsolute(boolean absolute) {
-        return this;
-      }
     }
   }
 
@@ -390,11 +385,6 @@ public final class DefaultMeter implements Meter {
       @Override
       public LongMeasure build() {
         return new NoopLongMeasure();
-      }
-
-      @Override
-      public Builder setAbsolute(boolean absolute) {
-        return this;
       }
     }
   }
