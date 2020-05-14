@@ -20,7 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
-import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
@@ -35,6 +36,10 @@ import org.mockito.MockitoAnnotations;
 /** Unit tests for {@link CurrentSpanUtils}. */
 @RunWith(JUnit4.class)
 public class CurrentSpanUtilsTest {
+  private static final ScopeManager defaultScopeManager = DefaultScopeManager.getInstance();
+  private static final CurrentSpanUtils currentSpanUtils =
+      new CurrentSpanUtils(defaultScopeManager);
+
   @Mock private Span span;
 
   @Before
@@ -46,7 +51,7 @@ public class CurrentSpanUtilsTest {
   private void executeRunnableAndExpectError(Runnable runnable, Throwable error) {
     boolean called = false;
     try {
-      CurrentSpanUtils.withSpan(span, true, runnable).run();
+      currentSpanUtils.withSpan(span, true, runnable).run();
     } catch (Throwable e) {
       assertThat(e).isEqualTo(error);
       called = true;
@@ -58,7 +63,7 @@ public class CurrentSpanUtilsTest {
   private void executeCallableAndExpectError(Callable<Object> callable, Throwable error) {
     boolean called = false;
     try {
-      CurrentSpanUtils.withSpan(span, true, callable).call();
+      currentSpanUtils.withSpan(span, true, callable).call();
     } catch (Throwable e) {
       assertThat(e).isEqualTo(error);
       called = true;
@@ -77,7 +82,7 @@ public class CurrentSpanUtilsTest {
             assertThat(getCurrentSpan()).isSameInstanceAs(span);
           }
         };
-    CurrentSpanUtils.withSpan(span, false, runnable).run();
+    currentSpanUtils.withSpan(span, false, runnable).run();
     verifyZeroInteractions(span);
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -93,7 +98,7 @@ public class CurrentSpanUtilsTest {
             assertThat(getCurrentSpan()).isSameInstanceAs(span);
           }
         };
-    CurrentSpanUtils.withSpan(span, true, runnable).run();
+    currentSpanUtils.withSpan(span, true, runnable).run();
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -149,7 +154,7 @@ public class CurrentSpanUtilsTest {
             return ret;
           }
         };
-    assertThat(CurrentSpanUtils.withSpan(span, false, callable).call()).isEqualTo(ret);
+    assertThat(currentSpanUtils.withSpan(span, false, callable).call()).isEqualTo(ret);
     verifyZeroInteractions(span);
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -167,7 +172,7 @@ public class CurrentSpanUtilsTest {
             return ret;
           }
         };
-    assertThat(CurrentSpanUtils.withSpan(span, true, callable).call()).isEqualTo(ret);
+    assertThat(currentSpanUtils.withSpan(span, true, callable).call()).isEqualTo(ret);
     verify(span).end();
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
@@ -249,6 +254,6 @@ public class CurrentSpanUtilsTest {
   }
 
   private static Span getCurrentSpan() {
-    return CurrentContext.getSpan();
+    return defaultScopeManager.getSpan();
   }
 }

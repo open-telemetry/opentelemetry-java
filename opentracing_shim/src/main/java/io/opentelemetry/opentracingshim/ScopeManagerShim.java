@@ -16,12 +16,15 @@
 
 package io.opentelemetry.opentracingshim;
 
-import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentracing.Scope;
-import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 
-final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
+final class ScopeManagerShim extends BaseShimObject implements io.opentracing.ScopeManager {
+
+  // TODO (trask) should be injected
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
 
   public ScopeManagerShim(TelemetryInfo telemetryInfo) {
     super(telemetryInfo);
@@ -33,7 +36,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
     // As OpenTracing simply returns null when no active instance is available,
     // we need to do an explicit check against DefaultSpan,
     // which is used in OpenTelemetry for this very case.
-    io.opentelemetry.trace.Span span = CurrentContext.getSpan();
+    io.opentelemetry.trace.Span span = scopeManager.getSpan();
     if (io.opentelemetry.trace.DefaultSpan.getInvalid().equals(span)) {
       return null;
     }
@@ -46,7 +49,7 @@ final class ScopeManagerShim extends BaseShimObject implements ScopeManager {
   @SuppressWarnings("MustBeClosedChecker")
   public Scope activate(Span span) {
     io.opentelemetry.trace.Span actualSpan = getActualSpan(span);
-    return new ScopeShim(CurrentContext.withSpan(actualSpan));
+    return new ScopeShim(scopeManager.withSpan(actualSpan));
   }
 
   static io.opentelemetry.trace.Span getActualSpan(Span span) {

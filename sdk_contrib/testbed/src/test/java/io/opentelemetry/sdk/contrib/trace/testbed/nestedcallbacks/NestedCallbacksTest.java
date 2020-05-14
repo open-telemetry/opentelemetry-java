@@ -21,9 +21,10 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -40,6 +41,7 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class NestedCallbacksTest {
 
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
@@ -66,7 +68,7 @@ public final class NestedCallbacksTest {
       assertThat(attrs.get("key" + i).getStringValue()).isEqualTo(Integer.toString(i));
     }
 
-    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(scopeManager.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 
   private void submitCallbacks(final Span span) {
@@ -75,21 +77,21 @@ public final class NestedCallbacksTest {
         new Runnable() {
           @Override
           public void run() {
-            try (Scope ignored = CurrentContext.withSpan(span)) {
+            try (Scope ignored = scopeManager.withSpan(span)) {
               span.setAttribute("key1", "1");
 
               executor.submit(
                   new Runnable() {
                     @Override
                     public void run() {
-                      try (Scope ignored = CurrentContext.withSpan(span)) {
+                      try (Scope ignored = scopeManager.withSpan(span)) {
                         span.setAttribute("key2", "2");
 
                         executor.submit(
                             new Runnable() {
                               @Override
                               public void run() {
-                                try (Scope ignored = CurrentContext.withSpan(span)) {
+                                try (Scope ignored = scopeManager.withSpan(span)) {
                                   span.setAttribute("key3", "3");
                                 } finally {
                                   span.end();

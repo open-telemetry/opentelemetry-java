@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.correlationcontext;
 
 import io.opentelemetry.correlationcontext.Entry;
+import io.opentelemetry.scope.DefaultScopeManager;
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,7 +28,8 @@ class CorrelationContextTestUtil {
   }
 
   static CorrelationContextSdk listToCorrelationContext(List<Entry> entries) {
-    CorrelationContextSdk.Builder builder = new CorrelationContextSdk.Builder();
+    CorrelationContextSdk.Builder builder =
+        new CorrelationContextSdk.Builder(DefaultScopeManager.getInstance());
     for (Entry entry : entries) {
       builder.put(entry.getKey(), entry.getValue(), entry.getEntryMetadata());
     }

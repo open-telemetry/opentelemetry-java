@@ -19,14 +19,18 @@ package io.opentelemetry.sdk.contrib.trace.testbed.clientserver;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.ArrayBlockingQueue;
 
 final class Client {
+
+  // TODO (trask) should be injected
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
 
   private final ArrayBlockingQueue<Message> queue;
   private final Tracer tracer;
@@ -42,7 +46,7 @@ final class Client {
     Span span = tracer.spanBuilder("send").setSpanKind(Kind.CLIENT).startSpan();
     span.setAttribute("component", "example-client");
 
-    try (Scope ignored = CurrentContext.withSpan(span)) {
+    try (Scope ignored = scopeManager.withSpan(span)) {
       OpenTelemetry.getPropagators()
           .getHttpTextFormat()
           .inject(

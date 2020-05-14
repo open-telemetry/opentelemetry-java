@@ -19,8 +19,9 @@ package io.opentelemetry.sdk.contrib.trace.testbed.clientserver;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -32,6 +33,8 @@ final class Server extends Thread {
 
   private final ArrayBlockingQueue<Message> queue;
   private final Tracer tracer;
+  // TODO (trask) should be injected
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
 
   public Server(ArrayBlockingQueue<Message> queue, Tracer tracer) {
     this.queue = queue;
@@ -57,9 +60,9 @@ final class Server extends Thread {
         tracer.spanBuilder("receive").setSpanKind(Kind.SERVER).setParent(spanContext).startSpan();
     span.setAttribute("component", "example-server");
 
-    try (Scope ignored = CurrentContext.withSpan(span)) {
+    try (Scope ignored = scopeManager.withSpan(span)) {
       // Simulate work.
-      CurrentContext.getSpan().addEvent("DoWork");
+      scopeManager.getSpan().addEvent("DoWork");
     } finally {
       span.end();
     }

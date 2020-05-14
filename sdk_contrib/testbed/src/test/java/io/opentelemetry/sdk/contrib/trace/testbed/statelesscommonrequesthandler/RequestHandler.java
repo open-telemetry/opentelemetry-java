@@ -16,8 +16,9 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.statelesscommonrequesthandler;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
@@ -32,6 +33,8 @@ final class RequestHandler {
   static final String OPERATION_NAME = "send";
 
   private final Tracer tracer;
+  // TODO (trask) should be injected
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
 
   private static final ThreadLocal<Scope> tlsScope = new ThreadLocal<>();
 
@@ -42,13 +45,13 @@ final class RequestHandler {
   /** beforeRequest handler....... */
   public void beforeRequest(Object request) {
     Span span = tracer.spanBuilder(OPERATION_NAME).setSpanKind(Kind.SERVER).startSpan();
-    tlsScope.set(CurrentContext.withSpan(span));
+    tlsScope.set(scopeManager.withSpan(span));
   }
 
   /** afterResponse handler....... */
   public void afterResponse(Object response) {
     // Finish the Span
-    CurrentContext.getSpan().end();
+    scopeManager.getSpan().end();
 
     // Deactivate the Span
     tlsScope.get().close();

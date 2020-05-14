@@ -26,6 +26,8 @@ import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
 import io.opentelemetry.correlationcontext.EntryValue;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,6 +42,7 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public class CorrelationContextSdkTest {
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final CorrelationContextManager contextManager = new CorrelationContextManagerSdk();
 
   private static final EntryMetadata TMD =
@@ -58,7 +61,7 @@ public class CorrelationContextSdkTest {
 
   @Test
   public void getEntries_empty() {
-    CorrelationContextSdk distContext = new CorrelationContextSdk.Builder().build();
+    CorrelationContextSdk distContext = new CorrelationContextSdk.Builder(scopeManager).build();
     assertThat(distContext.getEntries()).isEmpty();
   }
 
@@ -142,7 +145,7 @@ public class CorrelationContextSdkTest {
 
   @Test
   public void remove_existingKey() {
-    CorrelationContextSdk.Builder builder = new CorrelationContextSdk.Builder();
+    CorrelationContextSdk.Builder builder = new CorrelationContextSdk.Builder(scopeManager);
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 
@@ -151,7 +154,7 @@ public class CorrelationContextSdkTest {
 
   @Test
   public void remove_differentKey() {
-    CorrelationContextSdk.Builder builder = new CorrelationContextSdk.Builder();
+    CorrelationContextSdk.Builder builder = new CorrelationContextSdk.Builder(scopeManager);
     builder.put(T1.getKey(), T1.getValue(), T1.getEntryMetadata());
     builder.put(T2.getKey(), T2.getValue(), T2.getEntryMetadata());
 

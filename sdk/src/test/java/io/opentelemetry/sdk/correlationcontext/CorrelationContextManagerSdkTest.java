@@ -20,8 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +38,8 @@ import org.mockito.MockitoAnnotations;
 //      are now removed
 @SuppressWarnings("MustBeClosedChecker")
 public class CorrelationContextManagerSdkTest {
+  private static final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+
   @Mock private CorrelationContext distContext;
 
   @Before
@@ -46,14 +49,14 @@ public class CorrelationContextManagerSdkTest {
 
   @Test
   public void testGetCurrentContext_DefaultContext() {
-    assertThat(CurrentContext.getCorrelationContext())
+    assertThat(scopeManager.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
   public void testGetCurrentContext_ContextSetToNull() {
-    try (Scope ignored = CurrentContext.withCorrelationContext(null)) {
-      CorrelationContext distContext = CurrentContext.getCorrelationContext();
+    try (Scope ignored = scopeManager.withCorrelationContext(null)) {
+      CorrelationContext distContext = scopeManager.getCorrelationContext();
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
     }
@@ -61,12 +64,12 @@ public class CorrelationContextManagerSdkTest {
 
   @Test
   public void testWithCorrelationContext() {
-    assertThat(CurrentContext.getCorrelationContext())
+    assertThat(scopeManager.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    try (Scope ignored = CurrentContext.withCorrelationContext(distContext)) {
-      assertThat(CurrentContext.getCorrelationContext()).isSameInstanceAs(distContext);
+    try (Scope ignored = scopeManager.withCorrelationContext(distContext)) {
+      assertThat(scopeManager.getCorrelationContext()).isSameInstanceAs(distContext);
     }
-    assertThat(CurrentContext.getCorrelationContext())
+    assertThat(scopeManager.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 }

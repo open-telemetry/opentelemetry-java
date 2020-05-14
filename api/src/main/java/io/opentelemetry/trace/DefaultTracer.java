@@ -17,8 +17,9 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -42,26 +43,30 @@ public final class DefaultTracer implements Tracer {
     return INSTANCE;
   }
 
+  // TODO (trask) should be injected
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+
   @Override
   public Span.Builder spanBuilder(String spanName) {
-    return NoopSpanBuilder.create(spanName);
+    return NoopSpanBuilder.create(spanName, scopeManager);
   }
 
   private DefaultTracer() {}
 
   // Noop implementation of Span.Builder.
   private static final class NoopSpanBuilder implements Span.Builder {
-    static NoopSpanBuilder create(String spanName) {
-      return new NoopSpanBuilder(spanName);
+    static NoopSpanBuilder create(String spanName, ScopeManager scopeManager) {
+      return new NoopSpanBuilder(spanName, scopeManager);
     }
 
     private boolean isRootSpan;
     @Nullable private SpanContext spanContext;
+    private final ScopeManager scopeManager;
 
     @Override
     public Span startSpan() {
       if (spanContext == null && !isRootSpan) {
-        spanContext = CurrentContext.getSpan().getContext();
+        spanContext = scopeManager.getSpan().getContext();
       }
 
       return spanContext != null && !SpanContext.getInvalid().equals(spanContext)
@@ -147,8 +152,9 @@ public final class DefaultTracer implements Tracer {
       return this;
     }
 
-    private NoopSpanBuilder(String name) {
+    private NoopSpanBuilder(String name, ScopeManager scopeManager) {
       Utils.checkNotNull(name, "name");
+      this.scopeManager = scopeManager;
     }
   }
 }

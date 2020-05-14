@@ -20,9 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
-import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
@@ -34,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class OpenTelemetryInteroperabilityTest {
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final io.opentelemetry.trace.Tracer tracer = sdk.get("opentracingshim");
   private final InMemoryTracing inMemoryTracing =
@@ -54,7 +56,7 @@ public class OpenTelemetryInteroperabilityTest {
     } finally {
       otSpan.finish();
     }
-    assertEquals(CurrentContext.getSpan().getClass(), DefaultSpan.class);
+    assertEquals(scopeManager.getSpan().getClass(), DefaultSpan.class);
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
@@ -65,13 +67,13 @@ public class OpenTelemetryInteroperabilityTest {
   @Test
   public void openTracingContinuesSdkTrace() {
     io.opentelemetry.trace.Span otelSpan = tracer.spanBuilder("otel_span").startSpan();
-    try (io.opentelemetry.currentcontext.Scope scope = CurrentContext.withSpan(otelSpan)) {
+    try (io.opentelemetry.scope.Scope scope = scopeManager.withSpan(otelSpan)) {
       otTracer.buildSpan("ot_span").start().finish();
     } finally {
       otelSpan.end();
     }
 
-    assertEquals(CurrentContext.getSpan().getClass(), DefaultSpan.class);
+    assertEquals(scopeManager.getSpan().getClass(), DefaultSpan.class);
     assertNull(otTracer.activeSpan());
 
     List<SpanData> finishedSpans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();

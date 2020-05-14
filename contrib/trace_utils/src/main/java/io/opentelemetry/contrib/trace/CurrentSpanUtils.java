@@ -16,16 +16,20 @@
 
 package io.opentelemetry.contrib.trace;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import java.util.concurrent.Callable;
 
 /** Util methods/functionality to interact with the {@link Span} in the {@link io.grpc.Context}. */
 public final class CurrentSpanUtils {
-  // No instance of this class.
-  private CurrentSpanUtils() {}
+
+  private final ScopeManager scopeManager;
+
+  public CurrentSpanUtils(ScopeManager scopeManager) {
+    this.scopeManager = scopeManager;
+  }
 
   /**
    * Wraps a {@link Runnable} so that it executes with the {@code span} as the current {@code Span}.
@@ -35,8 +39,8 @@ public final class CurrentSpanUtils {
    * @param runnable the {@code Runnable} to run in the {@code Span}.
    * @return the wrapped {@code Runnable}.
    */
-  public static Runnable withSpan(Span span, boolean endSpan, Runnable runnable) {
-    return new RunnableInSpan(span, runnable, endSpan);
+  public Runnable withSpan(Span span, boolean endSpan, Runnable runnable) {
+    return new RunnableInSpan(span, runnable, endSpan, scopeManager);
   }
 
   /**
@@ -48,24 +52,27 @@ public final class CurrentSpanUtils {
    * @param <C> the {@code Callable} result type.
    * @return the wrapped {@code Callable}.
    */
-  public static <C> Callable<C> withSpan(Span span, boolean endSpan, Callable<C> callable) {
-    return new CallableInSpan<C>(span, callable, endSpan);
+  public <C> Callable<C> withSpan(Span span, boolean endSpan, Callable<C> callable) {
+    return new CallableInSpan<C>(span, callable, endSpan, scopeManager);
   }
 
   private static final class RunnableInSpan implements Runnable {
     private final Span span;
     private final Runnable runnable;
     private final boolean endSpan;
+    private final ScopeManager scopeManager;
 
-    private RunnableInSpan(Span span, Runnable runnable, boolean endSpan) {
+    private RunnableInSpan(
+        Span span, Runnable runnable, boolean endSpan, ScopeManager scopeManager) {
       this.span = span;
       this.runnable = runnable;
       this.endSpan = endSpan;
+      this.scopeManager = scopeManager;
     }
 
     @Override
     public void run() {
-      try (Scope ignored = CurrentContext.withSpan(span)) {
+      try (Scope ignored = scopeManager.withSpan(span)) {
         runnable.run();
       } catch (Throwable t) {
         setErrorStatus(span, t);
@@ -87,16 +94,19 @@ public final class CurrentSpanUtils {
     private final Span span;
     private final Callable<V> callable;
     private final boolean endSpan;
+    private final ScopeManager scopeManager;
 
-    private CallableInSpan(Span span, Callable<V> callable, boolean endSpan) {
+    private CallableInSpan(
+        Span span, Callable<V> callable, boolean endSpan, ScopeManager scopeManager) {
       this.span = span;
       this.callable = callable;
       this.endSpan = endSpan;
+      this.scopeManager = scopeManager;
     }
 
     @Override
     public V call() throws Exception {
-      try (Scope ignored = CurrentContext.withSpan(span)) {
+      try (Scope ignored = scopeManager.withSpan(span)) {
         return callable.call();
       } catch (Exception e) {
         setErrorStatus(span, e);

@@ -22,9 +22,10 @@ import static io.opentelemetry.sdk.contrib.trace.testbed.TestUtils.sleep;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
@@ -40,6 +41,7 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public class ActiveSpanReplacementTest {
 
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
@@ -50,7 +52,7 @@ public class ActiveSpanReplacementTest {
   public void test() {
     // Start an isolated task and query for its result in another task/thread
     Span span = tracer.spanBuilder("initial").startSpan();
-    try (Scope scope = CurrentContext.withSpan(span)) {
+    try (Scope scope = scopeManager.withSpan(span)) {
       // Explicitly pass a Span to be finished once a late calculation is done.
       submitAnotherTask(span);
     }
@@ -73,7 +75,7 @@ public class ActiveSpanReplacementTest {
     assertThat(spans.get(0).getTraceId()).isNotEqualTo(spans.get(1).getTraceId());
     assertThat(spans.get(0).getParentSpanId()).isEqualTo(SpanId.getInvalid());
 
-    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(scopeManager.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 
   private void submitAnotherTask(final Span initialSpan) {
@@ -84,11 +86,11 @@ public class ActiveSpanReplacementTest {
           public void run() {
             // Create a new Span for this task
             Span taskSpan = tracer.spanBuilder("task").startSpan();
-            try (Scope scope = CurrentContext.withSpan(taskSpan)) {
+            try (Scope scope = scopeManager.withSpan(taskSpan)) {
 
               // Simulate work strictly related to the initial Span
               // and finish it.
-              try (Scope initialScope = CurrentContext.withSpan(initialSpan)) {
+              try (Scope initialScope = scopeManager.withSpan(initialSpan)) {
                 sleep(50);
               } finally {
                 initialSpan.end();
@@ -96,7 +98,7 @@ public class ActiveSpanReplacementTest {
 
               // Restore the span for this task and create a subspan
               Span subTaskSpan = tracer.spanBuilder("subtask").startSpan();
-              try (Scope subTaskScope = CurrentContext.withSpan(subTaskSpan)) {
+              try (Scope subTaskScope = scopeManager.withSpan(subTaskSpan)) {
                 sleep(50);
               } finally {
                 subTaskSpan.end();

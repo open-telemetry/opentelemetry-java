@@ -20,9 +20,10 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -42,6 +43,7 @@ import org.junit.Test;
  */
 @SuppressWarnings("FutureReturnValueIgnored")
 public class MultipleCallbacksTest {
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
@@ -53,7 +55,7 @@ public class MultipleCallbacksTest {
     Client client = new Client(tracer, parentDoneLatch);
 
     Span span = tracer.spanBuilder("parent").startSpan();
-    try (Scope scope = CurrentContext.withSpan(span)) {
+    try (Scope scope = scopeManager.withSpan(span)) {
       client.send("task1");
       client.send("task2");
       client.send("task3");
@@ -76,6 +78,6 @@ public class MultipleCallbacksTest {
       assertThat(spans.get(i).getParentSpanId()).isEqualTo(parentSpan.getSpanId());
     }
 
-    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(scopeManager.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 }

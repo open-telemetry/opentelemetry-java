@@ -14,24 +14,30 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.currentcontext;
+package io.opentelemetry.scope;
 
-import com.google.errorprone.annotations.MustBeClosed;
 import io.grpc.Context;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.trace.Span;
 
 /** Static methods for interacting with the current (thread-bound) context. */
 // TODO (trask) javadoc class and methods
-public class CurrentContext {
+public class DefaultScopeManager implements ScopeManager {
+  private static final DefaultScopeManager INSTANCE = new DefaultScopeManager();
 
-  @MustBeClosed
-  public static Scope withSpan(Span span) {
+  public static ScopeManager getInstance() {
+    return INSTANCE;
+  }
+
+  private DefaultScopeManager() {}
+
+  @Override
+  public Scope withSpan(Span span) {
     return withContext(Span.Key.put(span, Context.current()));
   }
 
-  @MustBeClosed
-  public static Scope withCorrelationContext(CorrelationContext correlationContext) {
+  @Override
+  public Scope withCorrelationContext(CorrelationContext correlationContext) {
     return withContext(CorrelationContext.Key.put(correlationContext, Context.current()));
   }
 
@@ -39,16 +45,18 @@ public class CurrentContext {
    * Binds the context to the current thread and returns a scope that must be used to unbind the
    * context from the current thread and restore the previously bound context (if any).
    */
-  @MustBeClosed
-  public static Scope withContext(Context context) {
+  @Override
+  public Scope withContext(Context context) {
     return new DefaultScope(context);
   }
 
-  public static Span getSpan() {
+  @Override
+  public Span getSpan() {
     return Span.Key.get(Context.current());
   }
 
-  public static CorrelationContext getCorrelationContext() {
+  @Override
+  public CorrelationContext getCorrelationContext() {
     return CorrelationContext.Key.get(Context.current());
   }
 
@@ -56,11 +64,9 @@ public class CurrentContext {
   // TODO (trask) this method is not needed currently, in favor of using Context.current() directly,
   //      but if we move to a Context object that doesn't have built-in thread-binding, then this is
   //      the only additional method we would need
-  // private static Context get() {
+  // private static Context getContext() {
   //   return Context.current();
   // }
-
-  private CurrentContext() {}
 
   static class DefaultScope implements Scope {
 

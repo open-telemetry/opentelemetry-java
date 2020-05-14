@@ -17,8 +17,8 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.scope.ScopeManager;
 import java.util.Map;
 import java.util.Random;
 import javax.annotation.concurrent.Immutable;
@@ -27,7 +27,7 @@ import javax.annotation.concurrent.Immutable;
  * The {@code DefaultSpan} is the default {@link Span} that is used when no {@code Span}
  * implementation is available. All operations are no-op except context propagation.
  *
- * <p>Used also to stop tracing, see {@link CurrentContext#withSpan}.
+ * <p>Used also to stop tracing, see {@link ScopeManager#withSpan}.
  *
  * @since 0.1.0
  */

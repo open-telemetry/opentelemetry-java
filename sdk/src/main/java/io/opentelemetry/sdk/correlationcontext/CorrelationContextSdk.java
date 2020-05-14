@@ -21,7 +21,7 @@ import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
 import io.opentelemetry.correlationcontext.EntryValue;
-import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.scope.ScopeManager;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -114,10 +114,12 @@ class CorrelationContextSdk implements CorrelationContext {
     @Nullable private CorrelationContext parent;
     private boolean noImplicitParent;
     private final Map<EntryKey, Entry> entries;
+    private final ScopeManager scopeManager;
 
     /** Create a new empty CorrelationContext builder. */
-    Builder() {
+    Builder(ScopeManager scopeManager) {
       this.entries = new HashMap<>();
+      this.scopeManager = scopeManager;
     }
 
     @Override
@@ -157,7 +159,7 @@ class CorrelationContextSdk implements CorrelationContext {
     @Override
     public CorrelationContextSdk build() {
       if (parent == null && !noImplicitParent) {
-        parent = CurrentContext.getCorrelationContext();
+        parent = scopeManager.getCorrelationContext();
       }
       return new CorrelationContextSdk(entries, parent);
     }

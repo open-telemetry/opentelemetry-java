@@ -21,9 +21,10 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -41,6 +42,7 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class ErrorReportingTest {
 
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
@@ -51,7 +53,7 @@ public final class ErrorReportingTest {
   @Test
   public void testSimpleError() {
     Span span = tracer.spanBuilder("one").startSpan();
-    try (Scope ignored = CurrentContext.withSpan(span)) {
+    try (Scope ignored = scopeManager.withSpan(span)) {
       throw new RuntimeException("Invalid state");
     } catch (Exception e) {
       span.setStatus(Status.UNKNOWN);
@@ -59,7 +61,7 @@ public final class ErrorReportingTest {
       span.end();
     }
 
-    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(scopeManager.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
@@ -75,7 +77,7 @@ public final class ErrorReportingTest {
         new Runnable() {
           @Override
           public void run() {
-            try (Scope ignored = CurrentContext.withSpan(span)) {
+            try (Scope ignored = scopeManager.withSpan(span)) {
               throw new RuntimeException("Invalid state");
             } catch (Exception exc) {
               span.setStatus(Status.UNKNOWN);
@@ -104,7 +106,7 @@ public final class ErrorReportingTest {
     Object res = null;
 
     Span span = tracer.spanBuilder("one").startSpan();
-    try (Scope ignored = CurrentContext.withSpan(span)) {
+    try (Scope ignored = scopeManager.withSpan(span)) {
       while (res == null && retries++ < maxRetries) {
         try {
           throw new RuntimeException("No url could be fetched");
@@ -119,7 +121,7 @@ public final class ErrorReportingTest {
     }
     span.end();
 
-    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(scopeManager.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
 
     List<SpanData> spans = inMemoryTracing.getSpanExporter().getFinishedSpanItems();
     assertThat(spans).hasSize(1);
@@ -136,7 +138,7 @@ public final class ErrorReportingTest {
   @Test
   public void testInstrumentationLayer() {
     Span span = tracer.spanBuilder("one").startSpan();
-    try (Scope ignored = CurrentContext.withSpan(span)) {
+    try (Scope ignored = scopeManager.withSpan(span)) {
       // ScopedRunnable captures the active Span at this time.
       executor.submit(
           new ScopedRunnable(
@@ -146,13 +148,14 @@ public final class ErrorReportingTest {
                   try {
                     throw new RuntimeException("Invalid state");
                   } catch (Exception exc) {
-                    CurrentContext.getSpan().setStatus(Status.UNKNOWN);
+                    scopeManager.getSpan().setStatus(Status.UNKNOWN);
                   } finally {
-                    CurrentContext.getSpan().end();
+                    scopeManager.getSpan().end();
                   }
                 }
               },
-              tracer));
+              tracer,
+              scopeManager));
     }
 
     await()
@@ -167,18 +170,20 @@ public final class ErrorReportingTest {
   private static class ScopedRunnable implements Runnable {
     Runnable runnable;
     Tracer tracer;
+    ScopeManager scopeManager;
     Span span;
 
-    private ScopedRunnable(Runnable runnable, Tracer tracer) {
+    private ScopedRunnable(Runnable runnable, Tracer tracer, ScopeManager scopeManager) {
       this.runnable = runnable;
       this.tracer = tracer;
-      this.span = CurrentContext.getSpan();
+      this.scopeManager = scopeManager;
+      this.span = scopeManager.getSpan();
     }
 
     @Override
     public void run() {
       // No error reporting is done, as we are a simple wrapper.
-      try (Scope ignored = CurrentContext.withSpan(span)) {
+      try (Scope ignored = scopeManager.withSpan(span)) {
         runnable.run();
       }
     }

@@ -16,8 +16,9 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.multiplecallbacks;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.concurrent.Callable;
@@ -30,6 +31,8 @@ class Client {
   private final ExecutorService executor = Executors.newCachedThreadPool();
   private final CountDownLatch parentDoneLatch;
   private final Tracer tracer;
+  // TODO (trask) should be injected
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
 
   public Client(Tracer tracer, CountDownLatch parentDoneLatch) {
     this.tracer = tracer;
@@ -37,14 +40,14 @@ class Client {
   }
 
   public Future<Object> send(final Object message) {
-    final Span parent = CurrentContext.getSpan();
+    final Span parent = scopeManager.getSpan();
 
     return executor.submit(
         new Callable<Object>() {
           @Override
           public Object call() throws Exception {
             Span span = tracer.spanBuilder("subtask").setParent(parent).startSpan();
-            try (Scope subtaskScope = CurrentContext.withSpan(span)) {
+            try (Scope subtaskScope = scopeManager.withSpan(span)) {
               // Simulate work - make sure we finish *after* the parent Span.
               parentDoneLatch.await();
             } finally {

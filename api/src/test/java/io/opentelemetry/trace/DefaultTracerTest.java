@@ -18,8 +18,9 @@ package io.opentelemetry.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,6 +34,7 @@ import org.junit.runners.JUnit4;
 // TODO (trask) delete tests here that were designed to test Tracer methods that are now removed
 @SuppressWarnings("MustBeClosedChecker")
 public class DefaultTracerTest {
+  private static final ScopeManager defaultScopeManager = DefaultScopeManager.getInstance();
   private static final Tracer defaultTracer = DefaultTracer.getInstance();
   private static final String SPAN_NAME = "MySpanName";
   private static final byte[] firstBytes =
@@ -48,19 +50,19 @@ public class DefaultTracerTest {
 
   @Test
   public void defaultGetCurrentSpan() {
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(defaultScopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void getCurrentSpan_WithSpan() {
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
-    Scope ws = CurrentContext.withSpan(DefaultSpan.createRandom());
+    assertThat(defaultScopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
+    Scope ws = defaultScopeManager.withSpan(DefaultSpan.createRandom());
     try {
-      assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+      assertThat(defaultScopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
     } finally {
       ws.close();
     }
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(defaultScopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -77,21 +79,21 @@ public class DefaultTracerTest {
   @Test
   public void testInProcessContext() {
     Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-    Scope scope = CurrentContext.withSpan(span);
+    Scope scope = defaultScopeManager.withSpan(span);
     try {
-      assertThat(CurrentContext.getSpan()).isEqualTo(span);
+      assertThat(defaultScopeManager.getSpan()).isEqualTo(span);
       Span secondSpan = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
-      Scope secondScope = CurrentContext.withSpan(secondSpan);
+      Scope secondScope = defaultScopeManager.withSpan(secondSpan);
       try {
-        assertThat(CurrentContext.getSpan()).isEqualTo(secondSpan);
+        assertThat(defaultScopeManager.getSpan()).isEqualTo(secondSpan);
       } finally {
         secondScope.close();
-        assertThat(CurrentContext.getSpan()).isEqualTo(span);
+        assertThat(defaultScopeManager.getSpan()).isEqualTo(span);
       }
     } finally {
       scope.close();
     }
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(defaultScopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -111,7 +113,7 @@ public class DefaultTracerTest {
   @Test
   public void testSpanContextPropagationCurrentSpan() {
     DefaultSpan parent = new DefaultSpan(spanContext);
-    Scope scope = CurrentContext.withSpan(parent);
+    Scope scope = defaultScopeManager.withSpan(parent);
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);
@@ -122,7 +124,7 @@ public class DefaultTracerTest {
 
   @Test
   public void testSpanContextPropagationCurrentSpanContext() {
-    Scope scope = CurrentContext.withSpan(DefaultSpan.create(spanContext));
+    Scope scope = defaultScopeManager.withSpan(DefaultSpan.create(spanContext));
     try {
       Span span = defaultTracer.spanBuilder(SPAN_NAME).startSpan();
       assertThat(span.getContext()).isSameInstanceAs(spanContext);

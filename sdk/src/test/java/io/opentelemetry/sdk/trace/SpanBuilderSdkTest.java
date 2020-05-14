@@ -20,8 +20,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.DefaultSpan;
@@ -55,6 +56,7 @@ public class SpanBuilderSdkTest {
           TraceFlags.builder().setIsSampled(true).build(),
           TraceState.getDefault());
 
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
   private final TracerSdk tracerSdk = tracerSdkFactory.get("SpanBuilderSdkTest");
 
@@ -375,7 +377,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void noParent() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope scope = CurrentContext.withSpan(parent)) {
+    try (Scope scope = scopeManager.withSpan(parent)) {
       Span span = tracerSdk.spanBuilder(SPAN_NAME).setNoParent().startSpan();
       try {
         assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
@@ -457,7 +459,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentCurrentSpan() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope scope = CurrentContext.withSpan(parent)) {
+    try (Scope scope = scopeManager.withSpan(parent)) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
       try {
@@ -509,7 +511,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void parentCurrentSpan_clockIsSame() {
     Span parent = tracerSdk.spanBuilder(SPAN_NAME).startSpan();
-    try (Scope scope = CurrentContext.withSpan(parent)) {
+    try (Scope scope = scopeManager.withSpan(parent)) {
       RecordEventsReadableSpan span =
           (RecordEventsReadableSpan) tracerSdk.spanBuilder(SPAN_NAME).startSpan();
 

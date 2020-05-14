@@ -18,8 +18,9 @@ package io.opentelemetry.correlationcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import java.util.Arrays;
 import java.util.Collection;
 import javax.annotation.Nullable;
@@ -34,6 +35,7 @@ import org.junit.runners.JUnit4;
 //      are now removed
 @RunWith(JUnit4.class)
 public final class DefaultCorrelationContextManagerTest {
+  private static final ScopeManager defaultScopeManager = DefaultScopeManager.getInstance();
   private static final CorrelationContextManager defaultCorrelationContextManager =
       DefaultCorrelationContextManager.getInstance();
   private static final EntryKey TEST_KEY = EntryKey.create("key");
@@ -64,15 +66,15 @@ public final class DefaultCorrelationContextManagerTest {
 
   @Test
   public void getCurrentContext_DefaultContext() {
-    assertThat(CurrentContext.getCorrelationContext())
+    assertThat(defaultScopeManager.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
   public void getCurrentContext_ContextSetToNull() {
-    Scope scope = CurrentContext.withCorrelationContext(null);
+    Scope scope = defaultScopeManager.withCorrelationContext(null);
     try {
-      CorrelationContext distContext = CurrentContext.getCorrelationContext();
+      CorrelationContext distContext = defaultScopeManager.getCorrelationContext();
       assertThat(distContext).isNotNull();
       assertThat(distContext.getEntries()).isEmpty();
     } finally {
@@ -82,30 +84,30 @@ public final class DefaultCorrelationContextManagerTest {
 
   @Test
   public void withContext() {
-    assertThat(CurrentContext.getCorrelationContext())
+    assertThat(defaultScopeManager.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    Scope wtm = CurrentContext.withCorrelationContext(DIST_CONTEXT);
+    Scope wtm = defaultScopeManager.withCorrelationContext(DIST_CONTEXT);
     try {
-      assertThat(CurrentContext.getCorrelationContext()).isSameInstanceAs(DIST_CONTEXT);
+      assertThat(defaultScopeManager.getCorrelationContext()).isSameInstanceAs(DIST_CONTEXT);
     } finally {
       wtm.close();
     }
-    assertThat(CurrentContext.getCorrelationContext())
+    assertThat(defaultScopeManager.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 
   @Test
   public void withContext_nullContext() {
-    assertThat(CurrentContext.getCorrelationContext())
+    assertThat(defaultScopeManager.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    Scope wtm = CurrentContext.withCorrelationContext(null);
+    Scope wtm = defaultScopeManager.withCorrelationContext(null);
     try {
-      assertThat(CurrentContext.getCorrelationContext())
+      assertThat(defaultScopeManager.getCorrelationContext())
           .isSameInstanceAs(EmptyCorrelationContext.getInstance());
     } finally {
       wtm.close();
     }
-    assertThat(CurrentContext.getCorrelationContext())
+    assertThat(defaultScopeManager.getCorrelationContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
   }
 

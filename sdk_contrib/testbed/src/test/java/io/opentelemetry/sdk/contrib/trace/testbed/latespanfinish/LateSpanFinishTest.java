@@ -18,9 +18,10 @@ package io.opentelemetry.sdk.contrib.trace.testbed.latespanfinish;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -35,6 +36,7 @@ import org.junit.Test;
 
 @SuppressWarnings("FutureReturnValueIgnored")
 public final class LateSpanFinishTest {
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
@@ -63,7 +65,7 @@ public final class LateSpanFinishTest {
 
     TestUtils.assertSameTrace(spans);
 
-    assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+    assertThat(scopeManager.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
   }
 
   /*
@@ -78,9 +80,9 @@ public final class LateSpanFinishTest {
           public void run() {
             /* Alternative to calling activate() is to pass it manually to asChildOf() for each
              * created Span. */
-            try (Scope scope = CurrentContext.withSpan(parentSpan)) {
+            try (Scope scope = scopeManager.withSpan(parentSpan)) {
               Span childSpan = tracer.spanBuilder("task1").startSpan();
-              try (Scope childScope = CurrentContext.withSpan(childSpan)) {
+              try (Scope childScope = scopeManager.withSpan(childSpan)) {
                 TestUtils.sleep(55);
               } finally {
                 childSpan.end();
@@ -93,9 +95,9 @@ public final class LateSpanFinishTest {
         new Runnable() {
           @Override
           public void run() {
-            try (Scope scope = CurrentContext.withSpan(parentSpan)) {
+            try (Scope scope = scopeManager.withSpan(parentSpan)) {
               Span childSpan = tracer.spanBuilder("task2").startSpan();
-              try (Scope childScope = CurrentContext.withSpan(childSpan)) {
+              try (Scope childScope = scopeManager.withSpan(childSpan)) {
                 TestUtils.sleep(85);
               } finally {
                 childSpan.end();

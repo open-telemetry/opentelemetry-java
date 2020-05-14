@@ -17,7 +17,7 @@
 package io.opentelemetry.correlationcontext;
 
 import io.grpc.Context;
-import io.opentelemetry.currentcontext.CurrentContext;
+import io.opentelemetry.scope.ScopeManager;
 import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -77,8 +77,8 @@ public interface CorrelationContext {
   interface Builder {
     /**
      * Sets the parent {@link CorrelationContext} to use. If no parent is provided, the value of
-     * {@link CurrentContext#getCorrelationContext()} at {@link #build()} time will be used as
-     * parent, unless {@link #setNoParent()} was called.
+     * {@link ScopeManager#getCorrelationContext()} at {@link #build()} time will be used as parent,
+     * unless {@link #setNoParent()} was called.
      *
      * <p>This <b>must</b> be used to create a {@link CorrelationContext} when manual Context
      * propagation is used.
@@ -96,7 +96,7 @@ public interface CorrelationContext {
     /**
      * Sets the option to become a root {@link CorrelationContext} with no parent. If <b>not</b>
      * called, the value provided using {@link #setParent(CorrelationContext)} or otherwise {@link
-     * CurrentContext#getCorrelationContext()} at {@link #build()} time will be used as parent.
+     * ScopeManager#getCorrelationContext()} at {@link #build()} time will be used as parent.
      *
      * @return this.
      * @since 0.1.0

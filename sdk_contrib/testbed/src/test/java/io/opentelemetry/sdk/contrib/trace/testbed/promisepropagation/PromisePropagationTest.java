@@ -18,9 +18,10 @@ package io.opentelemetry.sdk.contrib.trace.testbed.promisepropagation;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -41,6 +42,7 @@ import org.junit.Test;
  * execution for the tests without sleeps.
  */
 public class PromisePropagationTest {
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
@@ -63,14 +65,14 @@ public class PromisePropagationTest {
       Span parentSpan = tracer.spanBuilder("promises").startSpan();
       parentSpan.setAttribute("component", "example-promises");
 
-      try (Scope ignored = CurrentContext.withSpan(parentSpan)) {
+      try (Scope ignored = scopeManager.withSpan(parentSpan)) {
         Promise<String> successPromise = new Promise<>(context, tracer);
 
         successPromise.onSuccess(
             new Promise.SuccessCallback<String>() {
               @Override
               public void accept(String s) {
-                CurrentContext.getSpan().addEvent("Promised 1 " + s);
+                scopeManager.getSpan().addEvent("Promised 1 " + s);
                 successResult1.set(s);
                 phaser.arriveAndAwaitAdvance(); // result set
               }
@@ -79,7 +81,7 @@ public class PromisePropagationTest {
             new Promise.SuccessCallback<String>() {
               @Override
               public void accept(String s) {
-                CurrentContext.getSpan().addEvent("Promised 2 " + s);
+                scopeManager.getSpan().addEvent("Promised 2 " + s);
                 successResult2.set(s);
                 phaser.arriveAndAwaitAdvance(); // result set
               }

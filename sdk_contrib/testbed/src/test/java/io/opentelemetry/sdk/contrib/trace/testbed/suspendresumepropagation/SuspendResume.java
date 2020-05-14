@@ -16,26 +16,29 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.suspendresumepropagation;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 
 final class SuspendResume {
   private final Span span;
+  // TODO (trask) should be injected
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
 
   public SuspendResume(int id, Tracer tracer) {
     // Tracer passed along here for testing. Normally should be referenced via GlobalTracer.get().
 
     Span span = tracer.spanBuilder("job " + id).startSpan();
     span.setAttribute("component", "suspend-resume");
-    try (Scope scope = CurrentContext.withSpan(span)) {
+    try (Scope scope = scopeManager.withSpan(span)) {
       this.span = span;
     }
   }
 
   public void doPart(String name) {
-    try (Scope scope = CurrentContext.withSpan(span)) {
+    try (Scope scope = scopeManager.withSpan(span)) {
       span.addEvent("part: " + name);
     }
   }

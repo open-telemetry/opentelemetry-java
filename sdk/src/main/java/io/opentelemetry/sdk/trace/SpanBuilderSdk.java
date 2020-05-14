@@ -17,8 +17,8 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.currentcontext.CurrentContext;
 import io.opentelemetry.internal.Utils;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.MonotonicClock;
@@ -49,6 +49,7 @@ final class SpanBuilderSdk implements Span.Builder {
   private static final TraceFlags TRACE_OPTIONS_NOT_SAMPLED =
       TraceFlags.builder().setIsSampled(false).build();
 
+  private final ScopeManager scopeManager;
   private final String spanName;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
   private final SpanProcessor spanProcessor;
@@ -73,7 +74,8 @@ final class SpanBuilderSdk implements Span.Builder {
       TraceConfig traceConfig,
       Resource resource,
       IdsGenerator idsGenerator,
-      Clock clock) {
+      Clock clock,
+      ScopeManager scopeManager) {
     this.spanName = spanName;
     this.instrumentationLibraryInfo = instrumentationLibraryInfo;
     this.spanProcessor = spanProcessor;
@@ -83,6 +85,7 @@ final class SpanBuilderSdk implements Span.Builder {
     this.links = Collections.emptyList();
     this.idsGenerator = idsGenerator;
     this.clock = clock;
+    this.scopeManager = scopeManager;
   }
 
   @Override
@@ -245,13 +248,12 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Nullable
-  private static SpanContext parent(
-      ParentType parentType, Span explicitParent, SpanContext remoteParent) {
+  private SpanContext parent(ParentType parentType, Span explicitParent, SpanContext remoteParent) {
     switch (parentType) {
       case NO_PARENT:
         return null;
       case CURRENT_CONTEXT:
-        return CurrentContext.getSpan().getContext();
+        return scopeManager.getSpan().getContext();
       case EXPLICIT_PARENT:
         return explicitParent.getContext();
       case EXPLICIT_REMOTE_PARENT:
@@ -261,10 +263,10 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Nullable
-  private static Span parentSpan(ParentType parentType, Span explicitParent) {
+  private Span parentSpan(ParentType parentType, Span explicitParent) {
     switch (parentType) {
       case CURRENT_CONTEXT:
-        return CurrentContext.getSpan();
+        return scopeManager.getSpan();
       case EXPLICIT_PARENT:
         return explicitParent;
       default:

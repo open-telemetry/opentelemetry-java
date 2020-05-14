@@ -16,8 +16,9 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.actorpropagation;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
@@ -28,6 +29,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
 
 final class Actor implements AutoCloseable {
+
+  // TODO (trask) should be injected
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+
   private final ExecutorService executor;
   private final Tracer tracer;
   private final Phaser phaser;
@@ -46,7 +51,7 @@ final class Actor implements AutoCloseable {
   }
 
   Future<?> tell(final String message) {
-    final Span parent = CurrentContext.getSpan();
+    final Span parent = scopeManager.getSpan();
     phaser.register();
     return executor.submit(
         new Runnable() {
@@ -58,7 +63,7 @@ final class Actor implements AutoCloseable {
                     .setParent(parent)
                     .setSpanKind(Kind.CONSUMER)
                     .startSpan();
-            try (Scope ignored = CurrentContext.withSpan(child)) {
+            try (Scope ignored = scopeManager.withSpan(child)) {
               phaser.arriveAndAwaitAdvance(); // child tracer started
               child.addEvent("received " + message);
               phaser.arriveAndAwaitAdvance(); // assert size
@@ -73,7 +78,7 @@ final class Actor implements AutoCloseable {
   }
 
   Future<String> ask(final String message) {
-    final Span parent = CurrentContext.getSpan();
+    final Span parent = scopeManager.getSpan();
     phaser.register();
     return executor.submit(
         new Callable<String>() {

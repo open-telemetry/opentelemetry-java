@@ -18,9 +18,10 @@ package io.opentelemetry.sdk.contrib.trace.testbed.actorpropagation;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -44,6 +45,7 @@ import org.junit.Test;
  */
 @SuppressWarnings("FutureReturnValueIgnored")
 public class ActorPropagationTest {
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
@@ -61,7 +63,7 @@ public class ActorPropagationTest {
       phaser.register();
       Span parent = tracer.spanBuilder("actorTell").setSpanKind(Kind.PRODUCER).startSpan();
       parent.setAttribute("component", "example-actor");
-      try (Scope ignored = CurrentContext.withSpan(parent)) {
+      try (Scope ignored = scopeManager.withSpan(parent)) {
         actor.tell("my message 1");
         actor.tell("my message 2");
       } finally {
@@ -85,7 +87,7 @@ public class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+      assertThat(scopeManager.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
     }
   }
 
@@ -98,7 +100,7 @@ public class ActorPropagationTest {
       Span span = tracer.spanBuilder("actorAsk").setSpanKind(Kind.PRODUCER).startSpan();
       span.setAttribute("component", "example-actor");
 
-      try (Scope ignored = CurrentContext.withSpan(span)) {
+      try (Scope ignored = scopeManager.withSpan(span)) {
         future1 = actor.ask("my message 1");
         future2 = actor.ask("my message 2");
       } finally {
@@ -126,7 +128,7 @@ public class ActorPropagationTest {
       assertThat(TestUtils.getByKind(finished, Span.Kind.CONSUMER)).hasSize(2);
       assertThat(TestUtils.getOneByKind(finished, Span.Kind.PRODUCER)).isNotNull();
 
-      assertThat(CurrentContext.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
+      assertThat(scopeManager.getSpan()).isSameInstanceAs(DefaultSpan.getInvalid());
     }
   }
 }

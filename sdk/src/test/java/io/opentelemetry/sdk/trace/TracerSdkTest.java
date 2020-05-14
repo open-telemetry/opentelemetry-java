@@ -19,8 +19,9 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.currentcontext.CurrentContext;
-import io.opentelemetry.currentcontext.Scope;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.Scope;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.StressTestRunner.OperationUpdater;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -53,6 +54,8 @@ public class TracerSdkTest {
       InstrumentationLibraryInfo.create(
           INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
   @Mock private Span span;
+
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdk tracer =
       TracerSdkProvider.builder()
           .build()
@@ -65,7 +68,7 @@ public class TracerSdkTest {
 
   @Test
   public void defaultGetCurrentSpan() {
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(scopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -75,29 +78,29 @@ public class TracerSdkTest {
 
   @Test
   public void getCurrentSpan() {
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
-    try (Scope ignored = CurrentContext.withSpan(span)) {
-      assertThat(CurrentContext.getSpan()).isSameInstanceAs(span);
+    assertThat(scopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
+    try (Scope ignored = scopeManager.withSpan(span)) {
+      assertThat(scopeManager.getSpan()).isSameInstanceAs(span);
     }
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(scopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void withSpan_NullSpan() {
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
-    try (Scope ignored = CurrentContext.withSpan(null)) {
-      assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(scopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
+    try (Scope ignored = scopeManager.withSpan(null)) {
+      assertThat(scopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
     }
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(scopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
   public void getCurrentSpan_WithSpan() {
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
-    try (Scope ignored = CurrentContext.withSpan(span)) {
-      assertThat(CurrentContext.getSpan()).isSameInstanceAs(span);
+    assertThat(scopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
+    try (Scope ignored = scopeManager.withSpan(span)) {
+      assertThat(scopeManager.getSpan()).isSameInstanceAs(span);
     }
-    assertThat(CurrentContext.getSpan()).isInstanceOf(DefaultSpan.class);
+    assertThat(scopeManager.getSpan()).isInstanceOf(DefaultSpan.class);
   }
 
   @Test
@@ -198,11 +201,8 @@ public class TracerSdkTest {
     @Override
     public void update() {
       Span span = tracer.spanBuilder("testSpan").startSpan();
-      try (Scope ignored = CurrentContext.withSpan(span)) {
-        span.setAttribute("testAttribute", AttributeValue.stringAttributeValue("testValue"));
-      } finally {
-        span.end();
-      }
+      span.setAttribute("testAttribute", AttributeValue.stringAttributeValue("testValue"));
+      span.end();
     }
   }
 
