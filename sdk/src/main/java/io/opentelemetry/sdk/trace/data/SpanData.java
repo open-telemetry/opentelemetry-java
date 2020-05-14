@@ -28,7 +28,7 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
 import java.util.Map;
-import jdk.nashorn.internal.ir.annotations.Immutable;
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Immutable representation of all data collected by the {@link io.opentelemetry.trace.Span} class.
