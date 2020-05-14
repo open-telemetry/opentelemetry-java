@@ -26,7 +26,6 @@ import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.LinkData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,7 +46,7 @@ final class Adapter {
   private Adapter() {}
 
   /**
-   * Converts a list of {@link SpanDataImpl} into a collection of Jaeger's {@link Model.Span}.
+   * Converts a list of {@link SpanData} into a collection of Jaeger's {@link Model.Span}.
    *
    * @param spans the list of spans to be converted
    * @return the collection of Jaeger spans
@@ -62,7 +61,7 @@ final class Adapter {
   }
 
   /**
-   * Converts a single {@link SpanDataImpl} into a Jaeger's {@link Model.Span}.
+   * Converts a single {@link SpanData} into a Jaeger's {@link Model.Span}.
    *
    * @param span the span to be converted
    * @return the Jaeger span

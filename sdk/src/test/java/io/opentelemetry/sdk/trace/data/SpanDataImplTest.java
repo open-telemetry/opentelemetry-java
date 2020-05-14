@@ -38,7 +38,7 @@ import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link SpanDataImpl}. */
 @RunWith(JUnit4.class)
-public class SpanDataTest {
+public class SpanDataImplTest {
 
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
