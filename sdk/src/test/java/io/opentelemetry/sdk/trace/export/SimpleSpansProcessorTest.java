@@ -116,11 +116,10 @@ public class SimpleSpansProcessorTest {
   public void tracerSdk_NotSampled_Span() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
 
-    BatchSpansProcessor.Config config =
-        BatchSpansProcessor.Config.newBuilder()
+    tracerSdkFactory.addSpanProcessor(
+        BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-            .build();
-    tracerSdkFactory.addSpanProcessor(BatchSpansProcessor.create(waitingSpanExporter, config));
+            .build());
 
     TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, SPAN_NAME, Samplers.alwaysOff())
         .startSpan()
