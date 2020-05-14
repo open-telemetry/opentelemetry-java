@@ -28,8 +28,9 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl.Link;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl.TimedEvent;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -118,7 +119,7 @@ public class AdapterTest {
   @Test
   public void testJaegerLogs() {
     // prepare
-    SpanData.TimedEvent timedEvents = getTimedEvent();
+    SpanDataImpl.TimedEvent timedEvents = getTimedEvent();
 
     // test
     Collection<Model.Log> logs = Adapter.toJaegerLogs(Collections.singletonList(timedEvents));
@@ -130,7 +131,7 @@ public class AdapterTest {
   @Test
   public void testJaegerLog() {
     // prepare
-    SpanData.TimedEvent timedEvent = getTimedEvent();
+    SpanDataImpl.TimedEvent timedEvent = getTimedEvent();
 
     // test
     Model.Log log = Adapter.toJaegerLog(timedEvent);
@@ -240,7 +241,7 @@ public class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
-        SpanData.newBuilder()
+        SpanDataImpl.newBuilder()
             .setHasEnded(true)
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
@@ -267,7 +268,7 @@ public class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
-        SpanData.newBuilder()
+        SpanDataImpl.newBuilder()
             .setHasEnded(true)
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
@@ -303,7 +304,7 @@ public class AdapterTest {
 
     Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
-    return SpanData.newBuilder()
+    return SpanDataImpl.newBuilder()
         .setHasEnded(true)
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))

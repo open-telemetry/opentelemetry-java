@@ -25,6 +25,7 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -682,10 +683,10 @@ public class BatchSpansProcessorTest {
 
     /**
      * Waits until we received numberOfSpans spans to export. Returns the list of exported {@link
-     * SpanData} objects, otherwise {@code null} if the current thread is interrupted.
+     * SpanDataImpl} objects, otherwise {@code null} if the current thread is interrupted.
      *
-     * @return the list of exported {@link SpanData} objects, otherwise {@code null} if the current
-     *     thread is interrupted.
+     * @return the list of exported {@link SpanDataImpl} objects, otherwise {@code null} if the
+     *     current thread is interrupted.
      */
     @Nullable
     List<SpanData> waitForExport() {

@@ -26,6 +26,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
@@ -163,8 +164,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public SpanData toSpanData() {
     // Copy immutable fields outside synchronized block.
     SpanContext spanContext = getSpanContext();
-    SpanData.Builder builder =
-        SpanData.newBuilder()
+    SpanDataImpl.Builder builder =
+        SpanDataImpl.newBuilder()
             .setName(getName())
             .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
             .setTraceId(spanContext.getTraceId())
@@ -196,11 +197,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @GuardedBy("lock")
-  private List<SpanData.TimedEvent> adaptTimedEvents() {
-    List<SpanData.TimedEvent> result = new ArrayList<>(events.size());
+  private List<SpanDataImpl.TimedEvent> adaptTimedEvents() {
+    List<SpanDataImpl.TimedEvent> result = new ArrayList<>(events.size());
     for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
       result.add(
-          SpanData.TimedEvent.create(
+          SpanDataImpl.TimedEvent.create(
               sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
     }
     return result;
@@ -259,19 +260,19 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return A copy of the Links for this span.
    */
-  private List<SpanData.Link> getLinks() {
+  private List<SpanDataImpl.Link> getLinks() {
     if (links == null) {
       return Collections.emptyList();
     }
-    List<SpanData.Link> result = new ArrayList<>(links.size());
+    List<SpanDataImpl.Link> result = new ArrayList<>(links.size());
     for (Link link : links) {
-      SpanData.Link newLink;
-      if (!(link instanceof SpanData.Link)) {
+      SpanDataImpl.Link newLink;
+      if (!(link instanceof SpanDataImpl.Link)) {
         // Make a copy because the given Link may not be immutable and we may reference a lot of
         // memory.
-        newLink = SpanData.Link.create(link.getContext(), link.getAttributes());
+        newLink = SpanDataImpl.Link.create(link.getContext(), link.getAttributes());
       } else {
-        newLink = (SpanData.Link) link;
+        newLink = (SpanDataImpl.Link) link;
       }
       result.add(newLink);
     }

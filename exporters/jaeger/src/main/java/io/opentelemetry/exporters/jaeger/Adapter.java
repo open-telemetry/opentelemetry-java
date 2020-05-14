@@ -24,8 +24,9 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl.Link;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl.TimedEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -46,7 +47,7 @@ final class Adapter {
   private Adapter() {}
 
   /**
-   * Converts a list of {@link SpanData} into a collection of Jaeger's {@link Model.Span}.
+   * Converts a list of {@link SpanDataImpl} into a collection of Jaeger's {@link Model.Span}.
    *
    * @param spans the list of spans to be converted
    * @return the collection of Jaeger spans
@@ -61,7 +62,7 @@ final class Adapter {
   }
 
   /**
-   * Converts a single {@link SpanData} into a Jaeger's {@link Model.Span}.
+   * Converts a single {@link SpanDataImpl} into a Jaeger's {@link Model.Span}.
    *
    * @param span the span to be converted
    * @return the Jaeger span
@@ -120,7 +121,7 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link SpanData.TimedEvent}s into a collection of Jaeger's {@link Model.Log}.
+   * Converts {@link SpanDataImpl.TimedEvent}s into a collection of Jaeger's {@link Model.Log}.
    *
    * @param timeEvents the timed events to be converted
    * @return a collection of Jaeger logs
@@ -136,7 +137,7 @@ final class Adapter {
   }
 
   /**
-   * Converts a {@link SpanData.TimedEvent} into Jaeger's {@link Model.Log}.
+   * Converts a {@link SpanDataImpl.TimedEvent} into Jaeger's {@link Model.Log}.
    *
    * @param timedEvent the timed event to be converted
    * @return a Jaeger log
