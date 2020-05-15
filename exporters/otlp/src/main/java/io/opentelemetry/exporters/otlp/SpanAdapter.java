@@ -27,8 +27,8 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -101,11 +101,10 @@ final class SpanAdapter {
     }
     builder.setDroppedAttributesCount(
         spanData.getTotalAttributeCount() - spanData.getAttributes().size());
-    for (TimedEvent timedEvent : spanData.getTimedEvents()) {
-      builder.addEvents(toProtoSpanEvent(timedEvent));
+    for (Event event : spanData.getEvents()) {
+      builder.addEvents(toProtoSpanEvent(event));
     }
-    builder.setDroppedEventsCount(
-        spanData.getTotalRecordedEvents() - spanData.getTimedEvents().size());
+    builder.setDroppedEventsCount(spanData.getTotalRecordedEvents() - spanData.getEvents().size());
     for (Link link : spanData.getLinks()) {
       builder.addLinks(toProtoSpanLink(link));
     }
@@ -130,16 +129,16 @@ final class SpanAdapter {
     return SpanKind.UNRECOGNIZED;
   }
 
-  static Span.Event toProtoSpanEvent(TimedEvent timedEvent) {
+  static Span.Event toProtoSpanEvent(Event event) {
     Span.Event.Builder builder = Span.Event.newBuilder();
-    builder.setName(timedEvent.getName());
-    builder.setTimeUnixNano(timedEvent.getEpochNanos());
-    for (Map.Entry<String, AttributeValue> resourceEntry : timedEvent.getAttributes().entrySet()) {
+    builder.setName(event.getName());
+    builder.setTimeUnixNano(event.getEpochNanos());
+    for (Map.Entry<String, AttributeValue> resourceEntry : event.getAttributes().entrySet()) {
       builder.addAttributes(
           CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
     }
     builder.setDroppedAttributesCount(
-        timedEvent.getTotalAttributeCount() - timedEvent.getAttributes().size());
+        event.getTotalAttributeCount() - event.getAttributes().size());
     return builder.build();
   }
 

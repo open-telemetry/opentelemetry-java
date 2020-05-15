@@ -21,7 +21,8 @@ import static java.util.Collections.emptyList;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -37,9 +38,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link SpanData}. */
+/** Unit tests for {@link SpanDataImpl}. */
 @RunWith(JUnit4.class)
-public class SpanDataTest {
+public class SpanDataImplTest {
 
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
@@ -51,7 +52,7 @@ public class SpanDataTest {
 
     assertThat(spanData.getParentSpanId().isValid()).isFalse();
     assertThat(spanData.getAttributes()).isEqualTo(Collections.<String, AttributeValue>emptyMap());
-    assertThat(spanData.getTimedEvents()).isEqualTo(emptyList());
+    assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
     assertThat(spanData.getInstrumentationLibraryInfo())
         .isSameInstanceAs(InstrumentationLibraryInfo.getEmpty());
@@ -80,8 +81,8 @@ public class SpanDataTest {
 
     thrown.expect(UnsupportedOperationException.class);
     spanData
-        .getTimedEvents()
-        .add(TimedEvent.create(1234, "foo", Collections.<String, AttributeValue>emptyMap()));
+        .getEvents()
+        .add(Event.create(1234, "foo", Collections.<String, AttributeValue>emptyMap()));
   }
 
   @Test
@@ -98,46 +99,44 @@ public class SpanDataTest {
 
   @Test
   public void link_defaultTotalAttributeCountIsZero() {
-    SpanData.Link link = SpanData.Link.create(SpanContext.getInvalid());
+    Link link = Link.create(SpanContext.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void link_canSetTotalAttributeCount() {
-    SpanData.Link link = SpanData.Link.create(SpanContext.getInvalid());
+    Link link = Link.create(SpanContext.getInvalid());
     assertThat(link.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void timedEvent_defaultTotalAttributeCountIsZero() {
-    SpanData.TimedEvent event =
-        SpanData.TimedEvent.create(
-            START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap());
+    Event event =
+        Event.create(START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap());
     assertThat(event.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void timedEvent_canSetTotalAttributeCount() {
-    SpanData.TimedEvent event =
-        SpanData.TimedEvent.create(
-            START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap(), 123);
+    Event event =
+        Event.create(START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap(), 123);
     assertThat(event.getTotalAttributeCount()).isEqualTo(123);
   }
 
   private static SpanData createSpanDataWithMutableCollections() {
     return createBasicSpanBuilder()
-        .setLinks(new ArrayList<SpanData.Link>())
-        .setTimedEvents(new ArrayList<TimedEvent>())
+        .setLinks(new ArrayList<Link>())
+        .setEvents(new ArrayList<Event>())
         .setAttributes(new HashMap<String, AttributeValue>())
         .build();
   }
 
-  private static SpanData.Link emptyLink() {
-    return SpanData.Link.create(SpanContext.getInvalid());
+  private static Link emptyLink() {
+    return Link.create(SpanContext.getInvalid());
   }
 
-  private static SpanData.Builder createBasicSpanBuilder() {
-    return SpanData.newBuilder()
+  private static SpanDataImpl.Builder createBasicSpanBuilder() {
+    return SpanDataImpl.newBuilder()
         .setHasEnded(true)
         .setSpanId(SpanId.getInvalid())
         .setTraceId(TraceId.getInvalid())

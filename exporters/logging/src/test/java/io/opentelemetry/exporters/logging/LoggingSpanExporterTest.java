@@ -23,6 +23,8 @@ import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -56,7 +58,7 @@ public class LoggingSpanExporterTest {
   public void returnCode() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     SpanData spanData =
-        SpanData.newBuilder()
+        SpanDataImpl.newBuilder()
             .setHasEnded(true)
             .setTraceId(new TraceId(1234L, 6789L))
             .setSpanId(new SpanId(9876L))
@@ -65,9 +67,9 @@ public class LoggingSpanExporterTest {
             .setStatus(Status.OK)
             .setName("testSpan")
             .setKind(Kind.INTERNAL)
-            .setTimedEvents(
+            .setEvents(
                 singletonList(
-                    SpanData.TimedEvent.create(
+                    Event.create(
                         epochNanos + 500,
                         "somethingHappenedHere",
                         singletonMap("important", AttributeValue.booleanAttributeValue(true)))))

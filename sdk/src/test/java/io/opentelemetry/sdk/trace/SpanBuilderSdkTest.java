@@ -23,8 +23,8 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -81,7 +81,7 @@ public class SpanBuilderSdkTest {
   public void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    spanBuilder.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
+    spanBuilder.addLink(Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
         DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
@@ -112,10 +112,10 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       SpanData spanData = span.toSpanData();
-      List<SpanData.Link> links = spanData.getLinks();
+      List<Link> links = spanData.getLinks();
       assertThat(links.size()).isEqualTo(maxNumberOfLinks);
       for (int i = 0; i < maxNumberOfLinks; i++) {
-        assertThat(links.get(i)).isEqualTo(SpanData.Link.create(sampledSpanContext));
+        assertThat(links.get(i)).isEqualTo(Link.create(sampledSpanContext));
         assertThat(spanData.getTotalRecordedLinks()).isEqualTo(2 * maxNumberOfLinks);
       }
     } finally {
@@ -127,7 +127,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void addLink_null() {
     thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).addLink((Link) null);
+    tracerSdk.spanBuilder(SPAN_NAME).addLink((io.opentelemetry.trace.Link) null);
   }
 
   @Test
@@ -394,7 +394,7 @@ public class SpanBuilderSdkTest {
                           String name,
                           Span.Kind spanKind,
                           Map<String, AttributeValue> attributes,
-                          List<Link> parentLinks) {
+                          List<io.opentelemetry.trace.Link> parentLinks) {
                         return new Decision() {
                           @Override
                           public boolean isSampled() {

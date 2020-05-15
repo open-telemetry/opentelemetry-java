@@ -25,9 +25,8 @@ import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -62,7 +61,7 @@ final class SpanBuilderSdk implements Span.Builder {
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
-  private List<Link> links;
+  private List<io.opentelemetry.trace.Link> links;
   private int totalNumberOfLinksAdded = 0;
   private ParentType parentType = ParentType.CURRENT_CONTEXT;
   private long startEpochNanos = 0;
@@ -118,18 +117,18 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder addLink(SpanContext spanContext) {
-    addLink(SpanData.Link.create(spanContext));
+    addLink(Link.create(spanContext));
     return this;
   }
 
   @Override
   public Span.Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-    addLink(SpanData.Link.create(spanContext, attributes));
+    addLink(Link.create(spanContext, attributes));
     return this;
   }
 
   @Override
-  public Span.Builder addLink(Link link) {
+  public Span.Builder addLink(io.opentelemetry.trace.Link link) {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     // don't bother doing anything with any links beyond the max.

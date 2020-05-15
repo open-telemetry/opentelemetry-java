@@ -24,8 +24,8 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -78,7 +78,7 @@ final class Adapter {
         Timestamps.between(startTimestamp, Timestamps.fromNanos(span.getEndEpochNanos())));
 
     target.addAllTags(toKeyValues(span.getAttributes()));
-    target.addAllLogs(toJaegerLogs(span.getTimedEvents()));
+    target.addAllLogs(toJaegerLogs(span.getEvents()));
     target.addAllReferences(toSpanRefs(span.getLinks()));
 
     // add the parent span
@@ -120,36 +120,36 @@ final class Adapter {
   }
 
   /**
-   * Converts {@link SpanData.TimedEvent}s into a collection of Jaeger's {@link Model.Log}.
+   * Converts {@link Event}s into a collection of Jaeger's {@link Model.Log}.
    *
    * @param timeEvents the timed events to be converted
    * @return a collection of Jaeger logs
-   * @see #toJaegerLog(TimedEvent)
+   * @see #toJaegerLog(Event)
    */
   @VisibleForTesting
-  static Collection<Model.Log> toJaegerLogs(List<TimedEvent> timeEvents) {
+  static Collection<Model.Log> toJaegerLogs(List<Event> timeEvents) {
     List<Model.Log> logs = new ArrayList<>(timeEvents.size());
-    for (TimedEvent e : timeEvents) {
+    for (Event e : timeEvents) {
       logs.add(toJaegerLog(e));
     }
     return logs;
   }
 
   /**
-   * Converts a {@link SpanData.TimedEvent} into Jaeger's {@link Model.Log}.
+   * Converts a {@link Event} into Jaeger's {@link Model.Log}.
    *
-   * @param timedEvent the timed event to be converted
+   * @param event the timed event to be converted
    * @return a Jaeger log
    */
   @VisibleForTesting
-  static Model.Log toJaegerLog(TimedEvent timedEvent) {
+  static Model.Log toJaegerLog(Event event) {
     Model.Log.Builder builder = Model.Log.newBuilder();
-    builder.setTimestamp(Timestamps.fromNanos(timedEvent.getEpochNanos()));
+    builder.setTimestamp(Timestamps.fromNanos(event.getEpochNanos()));
 
     // name is a top-level property in OpenTelemetry
     builder.addFields(
-        Model.KeyValue.newBuilder().setKey(KEY_LOG_MESSAGE).setVStr(timedEvent.getName()).build());
-    builder.addAllFields(toKeyValues(timedEvent.getAttributes()));
+        Model.KeyValue.newBuilder().setKey(KEY_LOG_MESSAGE).setVStr(event.getName()).build());
+    builder.addAllFields(toKeyValues(event.getAttributes()));
 
     return builder.build();
   }
