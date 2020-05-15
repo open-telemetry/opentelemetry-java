@@ -16,7 +16,6 @@
 
 package io.opentelemetry.metrics;
 
-import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -55,15 +54,6 @@ public interface AsynchronousInstrument<R> extends Instrument {
 
   /** Builder class for {@link AsynchronousInstrument}. */
   interface Builder extends Instrument.Builder {
-    @Override
-    Builder setDescription(String description);
-
-    @Override
-    Builder setUnit(String unit);
-
-    @Override
-    Builder setConstantLabels(Map<String, String> constantLabels);
-
     /**
      * Sets the monotonicity property for this {@code Instrument}. If {@code true} successive values
      * are expected to rise monotonically.

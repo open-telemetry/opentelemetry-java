@@ -56,4 +56,10 @@ public interface SynchronousInstrument<B extends BoundInstrument> extends Instru
      */
     void unbind();
   }
+
+  /** Builder class for {@link SynchronousInstrument}. */
+  interface Builder extends Instrument.Builder {
+    @Override
+    SynchronousInstrument<?> build();
+  }
 }
