@@ -20,7 +20,7 @@ subprojects {
     apply plugin: 'net.ltgt.errorprone'
 
     group = "io.opentelemetry"
-    version = "0.4.1" // CURRENT_OPEN_TELEMETRY_VERSION
+    version = "0.4.2-SNAPSHOT" // CURRENT_OPEN_TELEMETRY_VERSION
 
     repositories {
         mavenCentral()
