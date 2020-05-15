@@ -47,14 +47,14 @@ public class HttpServer {
       // Name convention for the Span is not yet defined.
       // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
       Span.Builder spanBuilder = tracer.spanBuilder("/").setSpanKind(Span.Kind.SERVER);
-      Span span = null;
 
       // Extract the context from the HTTP request
       Context ctx =
           OpenTelemetry.getPropagators().getHttpTextFormat().extract(Context.current(), exchange, getter);
+
+      Span span = spanBuilder.startSpan();
       try (Scope scope = ContextUtils.withScopedContext(ctx)) {
         // Build a span automatically using the received context
-        span = spanBuilder.startSpan();
 
         // Set the Semantic Convention
         span.setAttribute("component", "http");
