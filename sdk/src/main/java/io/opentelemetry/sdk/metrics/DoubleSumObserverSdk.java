@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleSumObserver;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
@@ -28,27 +29,26 @@ import javax.annotation.Nullable;
 
 final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument
     implements DoubleSumObserver {
-  @Nullable private volatile Callback<ResultDoubleObserver> metricUpdater = null;
+  @Nullable private volatile Callback<ResultDoubleSumObserver> metricUpdater = null;
   private final ReentrantLock collectLock = new ReentrantLock();
 
   DoubleSumObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      boolean monotonic) {
-    super(descriptor, meterProviderSharedState, meterSharedState, monotonic);
+      MeterSharedState meterSharedState) {
+    super(descriptor, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   List<MetricData> collectAll() {
-    Callback<ResultDoubleObserver> currentMetricUpdater = metricUpdater;
+    Callback<ResultDoubleSumObserver> currentMetricUpdater = metricUpdater;
     if (currentMetricUpdater == null) {
       return Collections.emptyList();
     }
     collectLock.lock();
     try {
       final ActiveBatcher activeBatcher = getActiveBatcher();
-      currentMetricUpdater.update(new ResultDoubleObserverSdk(activeBatcher, isMonotonic()));
+      currentMetricUpdater.update(new ResultDoubleSumObserverSdk(activeBatcher));
       return activeBatcher.completeCollectionCycle();
     } finally {
       collectLock.unlock();
@@ -56,7 +56,7 @@ final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument
   }
 
   @Override
-  public void setCallback(Callback<DoubleSumObserver.ResultDoubleObserver> metricUpdater) {
+  public void setCallback(Callback<ResultDoubleSumObserver> metricUpdater) {
     this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
   }
 
@@ -81,29 +81,22 @@ final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument
       return register(
           new DoubleSumObserverSdk(
               getInstrumentDescriptor(
-                  AbstractAsynchronousInstrument.getInstrumentType(isMonotonic()),
-                  InstrumentValueType.DOUBLE),
+                  InstrumentType.OBSERVER_MONOTONIC, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
-              getMeterSharedState(),
-              isMonotonic()));
+              getMeterSharedState()));
     }
   }
 
-  private static final class ResultDoubleObserverSdk implements ResultDoubleObserver {
+  private static final class ResultDoubleSumObserverSdk implements ResultDoubleSumObserver {
 
     private final ActiveBatcher activeBatcher;
-    private final boolean monotonic;
 
-    private ResultDoubleObserverSdk(ActiveBatcher activeBatcher, boolean monotonic) {
+    private ResultDoubleSumObserverSdk(ActiveBatcher activeBatcher) {
       this.activeBatcher = activeBatcher;
-      this.monotonic = monotonic;
     }
 
     @Override
     public void observe(double sum, String... keyValueLabelPairs) {
-      if (monotonic && sum < 0) {
-        throw new IllegalArgumentException("monotonic observers can only record positive values");
-      }
       Aggregator aggregator = activeBatcher.getAggregator();
       aggregator.recordDouble(sum);
       activeBatcher.batch(

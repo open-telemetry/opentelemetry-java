@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleObserver;
+import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleSumObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -76,9 +76,9 @@ public class DoubleSumObserverSdkTest {
             .setUnit("ms")
             .build();
     doubleObserver.setCallback(
-        new Callback<ResultDoubleObserver>() {
+        new Callback<ResultDoubleSumObserver>() {
           @Override
-          public void update(ResultDoubleObserver result) {
+          public void update(ResultDoubleSumObserver result) {
             // Do nothing.
           }
         });
@@ -89,7 +89,7 @@ public class DoubleSumObserverSdkTest {
                     "testObserver",
                     "My very own measure",
                     "ms",
-                    Type.NON_MONOTONIC_DOUBLE,
+                    Type.MONOTONIC_DOUBLE,
                     Collections.singletonMap("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
@@ -98,12 +98,11 @@ public class DoubleSumObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    DoubleSumObserverSdk doubleObserver =
-        testSdk.doubleSumObserverBuilder("testObserver").setMonotonic(true).build();
+    DoubleSumObserverSdk doubleObserver = testSdk.doubleSumObserverBuilder("testObserver").build();
     doubleObserver.setCallback(
-        new Callback<ResultDoubleObserver>() {
+        new Callback<ResultDoubleSumObserver>() {
           @Override
-          public void update(ResultDoubleObserver result) {
+          public void update(ResultDoubleSumObserver result) {
             result.observe(12.1d, "k", "v");
           }
         });
@@ -143,22 +142,5 @@ public class DoubleSumObserverSdkTest {
                         testClock.now(),
                         Collections.singletonMap("k", "v"),
                         12.1d))));
-  }
-
-  @Test
-  public void observeMonotonic_NegativeValue() {
-    DoubleSumObserverSdk doubleObserver =
-        testSdk.doubleSumObserverBuilder("testObserver").setMonotonic(true).build();
-
-    doubleObserver.setCallback(
-        new Callback<ResultDoubleObserver>() {
-          @Override
-          public void update(ResultDoubleObserver result) {
-            thrown.expect(IllegalArgumentException.class);
-            thrown.expectMessage("monotonic observers can only record positive values");
-            result.observe(-45.0);
-          }
-        });
-    doubleObserver.collectAll();
   }
 }

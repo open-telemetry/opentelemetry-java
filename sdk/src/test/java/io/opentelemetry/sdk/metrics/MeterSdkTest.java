@@ -140,7 +140,6 @@ public class MeterSdkTest {
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
-            .setMonotonic(true)
             .build();
     assertThat(longObserver).isNotNull();
 
@@ -150,7 +149,6 @@ public class MeterSdkTest {
                 .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
-                .setMonotonic(true)
                 .build())
         .isSameInstanceAs(longObserver);
 
@@ -242,7 +240,6 @@ public class MeterSdkTest {
             .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
-            .setMonotonic(true)
             .build();
     assertThat(doubleObserver).isNotNull();
 
@@ -252,7 +249,6 @@ public class MeterSdkTest {
                 .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
-                .setMonotonic(true)
                 .build())
         .isSameInstanceAs(doubleObserver);
 

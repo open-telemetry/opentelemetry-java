@@ -105,6 +105,20 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
+  public DoubleUpDownSumObserver.Builder doubleUpDownSumObserverBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    return new NoopDoubleUpDownSumObserver.NoopBuilder();
+  }
+
+  @Override
+  public LongUpDownSumObserver.Builder longUpDownSumObserverBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    return new NoopLongUpDownSumObserver.NoopBuilder();
+  }
+
+  @Override
   public BatchRecorder newBatchRecorder(String... keyValuePairs) {
     Utils.validateLabelPairs(keyValuePairs);
     return NoopBatchRecorder.INSTANCE;
@@ -395,11 +409,11 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleSumObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultDoubleObserver> metricUpdater) {
+    public void setCallback(Callback<ResultDoubleSumObserver> metricUpdater) {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
-    private static final class NoopBuilder extends NoopAbstractObserverBuilder<NoopBuilder>
+    private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
         implements Builder {
 
       @Override
@@ -420,11 +434,11 @@ public final class DefaultMeter implements Meter {
     private NoopLongSumObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultLongObserver> metricUpdater) {
+    public void setCallback(Callback<ResultLongSumObserver> metricUpdater) {
       Utils.checkNotNull(metricUpdater, "metricUpdater");
     }
 
-    private static final class NoopBuilder extends NoopAbstractObserverBuilder<NoopBuilder>
+    private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
         implements Builder {
 
       @Override
@@ -435,6 +449,56 @@ public final class DefaultMeter implements Meter {
       @Override
       public LongSumObserver build() {
         return new NoopLongSumObserver();
+      }
+    }
+  }
+
+  @Immutable
+  private static final class NoopDoubleUpDownSumObserver implements DoubleUpDownSumObserver {
+
+    private NoopDoubleUpDownSumObserver() {}
+
+    @Override
+    public void setCallback(Callback<ResultDoubleUpDownSumObserver> metricUpdater) {
+      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    }
+
+    private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
+        implements Builder {
+
+      @Override
+      protected NoopBuilder getThis() {
+        return this;
+      }
+
+      @Override
+      public DoubleUpDownSumObserver build() {
+        return new NoopDoubleUpDownSumObserver();
+      }
+    }
+  }
+
+  @Immutable
+  private static final class NoopLongUpDownSumObserver implements LongUpDownSumObserver {
+
+    private NoopLongUpDownSumObserver() {}
+
+    @Override
+    public void setCallback(Callback<ResultLongUpDownSumObserver> metricUpdater) {
+      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    }
+
+    private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
+        implements Builder {
+
+      @Override
+      protected NoopBuilder getThis() {
+        return this;
+      }
+
+      @Override
+      public LongUpDownSumObserver build() {
+        return new NoopLongUpDownSumObserver();
       }
     }
   }
@@ -482,16 +546,6 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void record() {}
-  }
-
-  private abstract static class NoopAbstractObserverBuilder<
-          B extends NoopAbstractObserverBuilder<B>>
-      extends NoopAbstractInstrumentBuilder<B> implements AsynchronousInstrument.Builder {
-
-    @Override
-    public B setMonotonic(boolean monotonic) {
-      return getThis();
-    }
   }
 
   private abstract static class NoopAbstractInstrumentBuilder<

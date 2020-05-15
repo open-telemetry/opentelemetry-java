@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,19 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleSumObserver;
+import io.opentelemetry.metrics.DoubleUpDownSumObserver.ResultDoubleUpDownSumObserver;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * {@code SumObserver} is the asynchronous instrument corresponding to Counter, used to capture a
- * monotonic sum with Observe(sum).
+ * UpDownSumObserver is the asynchronous instrument corresponding to UpDownCounter, used to capture
+ * a non-monotonic count with Observe(sum).
  *
  * <p>"Sum" appears in the name to remind that it is used to capture sums directly. Use a
- * SumObserver to capture any value that starts at zero and rises throughout the process lifetime
- * and never falls.
+ * UpDownSumObserver to capture any value that starts at zero and rises or falls throughout the
+ * process lifetime.
  *
- * <p>A {@code SumObserver} is a good choice in situations where a measurement is expensive to
+ * <p>A {@code UpDownSumObserver} is a good choice in situations where a measurement is expensive to
  * compute, such that it would be wasteful to compute on every request.
  *
  * <p>Example:
@@ -37,21 +37,21 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
- *   private static final DoubleSumObserver cpuObserver =
+ *   private static final DoubleUpDownSumObserver memoryObserver =
  *       meter.
- *           .doubleSumObserverBuilder("cpu_time")
- *           .setDescription("System CPU usage")
- *           .setUnit("ms")
+ *           .doubleUpDownSumObserverBuilder("memory_usage")
+ *           .setDescription("System memory usage")
+ *           .setUnit("by")
  *           .build();
  *
  *   void init() {
- *     cpuObserver.setCallback(
- *         new DoubleSumObserver.Callback<ResultDoubleSumObserver>() {
+ *     memoryObserver.setCallback(
+ *         new DoubleUpDownSumObserver.Callback<ResultDoubleUpDownSumObserver>() {
  *          {@literal @}Override
- *           public void update(ResultDoubleSumObserver result) {
- *             // Get system cpu usage
- *             result.observe(cpuIdle, "state", "idle");
- *             result.observe(cpuUser, "state", "user");
+ *           public void update(ResultDoubleUpDownSumObserver result) {
+ *             // Get system memory usage
+ *             result.observe(memoryUsed, "state", "used");
+ *             result.observe(memoryFree, "state", "free");
  *           }
  *         });
  *   }
@@ -61,11 +61,12 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleSumObserver extends AsynchronousInstrument<ResultDoubleSumObserver> {
+public interface DoubleUpDownSumObserver
+    extends AsynchronousInstrument<ResultDoubleUpDownSumObserver> {
   @Override
-  void setCallback(Callback<ResultDoubleSumObserver> metricUpdater);
+  void setCallback(Callback<ResultDoubleUpDownSumObserver> metricUpdater);
 
-  /** Builder class for {@link DoubleSumObserver}. */
+  /** Builder class for {@link DoubleUpDownSumObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
@@ -77,11 +78,11 @@ public interface DoubleSumObserver extends AsynchronousInstrument<ResultDoubleSu
     Builder setConstantLabels(Map<String, String> constantLabels);
 
     @Override
-    DoubleSumObserver build();
+    DoubleUpDownSumObserver build();
   }
 
-  /** The result for the {@link AsynchronousInstrument.Callback}. */
-  interface ResultDoubleSumObserver {
+  /** The result for the {@link Callback}. */
+  interface ResultDoubleUpDownSumObserver {
     void observe(double sum, String... keyValueLabelPairs);
   }
 }

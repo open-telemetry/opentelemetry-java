@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LongSumObserver;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
@@ -27,27 +28,26 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
 final class LongSumObserverSdk extends AbstractAsynchronousInstrument implements LongSumObserver {
-  @Nullable private volatile Callback<ResultLongObserver> metricUpdater = null;
+  @Nullable private volatile Callback<ResultLongSumObserver> metricUpdater = null;
   private final ReentrantLock collectLock = new ReentrantLock();
 
   LongSumObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      boolean monotonic) {
-    super(descriptor, meterProviderSharedState, meterSharedState, monotonic);
+      MeterSharedState meterSharedState) {
+    super(descriptor, meterProviderSharedState, meterSharedState);
   }
 
   @Override
   List<MetricData> collectAll() {
-    Callback<ResultLongObserver> currentMetricUpdater = metricUpdater;
+    Callback<ResultLongSumObserver> currentMetricUpdater = metricUpdater;
     if (currentMetricUpdater == null) {
       return Collections.emptyList();
     }
     collectLock.lock();
     try {
       final ActiveBatcher activeBatcher = getActiveBatcher();
-      currentMetricUpdater.update(new ResultLongObserverSdk(activeBatcher, isMonotonic()));
+      currentMetricUpdater.update(new ResultLongObserverSdk(activeBatcher));
       return activeBatcher.completeCollectionCycle();
     } finally {
       collectLock.unlock();
@@ -55,7 +55,7 @@ final class LongSumObserverSdk extends AbstractAsynchronousInstrument implements
   }
 
   @Override
-  public void setCallback(Callback<ResultLongObserver> metricUpdater) {
+  public void setCallback(Callback<ResultLongSumObserver> metricUpdater) {
     this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
   }
 
@@ -79,30 +79,22 @@ final class LongSumObserverSdk extends AbstractAsynchronousInstrument implements
     public LongSumObserverSdk build() {
       return register(
           new LongSumObserverSdk(
-              getInstrumentDescriptor(
-                  AbstractAsynchronousInstrument.getInstrumentType(isMonotonic()),
-                  InstrumentValueType.LONG),
+              getInstrumentDescriptor(InstrumentType.OBSERVER_MONOTONIC, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
-              getMeterSharedState(),
-              isMonotonic()));
+              getMeterSharedState()));
     }
   }
 
-  private static final class ResultLongObserverSdk implements ResultLongObserver {
+  private static final class ResultLongObserverSdk implements ResultLongSumObserver {
 
     private final ActiveBatcher activeBatcher;
-    private final boolean monotonic;
 
-    private ResultLongObserverSdk(ActiveBatcher activeBatcher, boolean monotonic) {
+    private ResultLongObserverSdk(ActiveBatcher activeBatcher) {
       this.activeBatcher = activeBatcher;
-      this.monotonic = monotonic;
     }
 
     @Override
     public void observe(long sum, String... keyValueLabelPairs) {
-      if (monotonic && sum < 0) {
-        throw new IllegalArgumentException("monotonic observers can only record positive values");
-      }
       Aggregator aggregator = activeBatcher.getAggregator();
       aggregator.recordLong(sum);
       activeBatcher.batch(
