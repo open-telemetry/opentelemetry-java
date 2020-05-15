@@ -46,9 +46,9 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void init() {
  *     cpuObserver.setCallback(
- *         new LongSumObserver.Callback<LongObserver.ResultLongObserver>() {
+ *         new LongSumObserver.Callback<ResultLongSumObserver>() {
  *          {@literal @}Override
- *           public void update(ResultLongObserver result) {
+ *           public void update(ResultLongSumObserver result) {
  *             // Get system cpu usage
  *             result.observe(cpuIdle, "state", "idle");
  *             result.observe(cpuUser, "state", "user");
