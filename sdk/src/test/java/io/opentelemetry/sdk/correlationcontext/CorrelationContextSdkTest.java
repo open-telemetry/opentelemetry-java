@@ -43,7 +43,8 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class CorrelationContextSdkTest {
   private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
-  private final CorrelationContextManager contextManager = new CorrelationContextManagerSdk();
+  private final CorrelationContextManager contextManager =
+      new CorrelationContextManagerSdk(scopeManager);
 
   private static final EntryMetadata TMD =
       EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);

@@ -35,8 +35,8 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 public class DefaultTracerBenchmarks {
 
-  private final Tracer tracer = DefaultTracer.getInstance();
   private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final Tracer tracer = new DefaultTracer(scopeManager);
   @Nullable private Span span = null;
 
   /** Benchmark the full span lifecycle. */

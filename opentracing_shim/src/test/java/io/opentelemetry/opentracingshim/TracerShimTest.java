@@ -44,6 +44,7 @@ public class TracerShimTest {
             new TelemetryInfo(
                 OpenTelemetry.getTracer("opentracingshim"),
                 OpenTelemetry.getCorrelationContextManager(),
+                OpenTelemetry.getScopeManager(),
                 OpenTelemetry.getPropagators()));
   }
 

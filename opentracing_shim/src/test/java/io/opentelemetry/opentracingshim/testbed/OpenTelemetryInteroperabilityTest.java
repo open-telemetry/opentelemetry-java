@@ -36,12 +36,12 @@ import org.junit.Test;
 
 public class OpenTelemetryInteroperabilityTest {
   private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder(scopeManager).build();
   private final io.opentelemetry.trace.Tracer tracer = sdk.get("opentracingshim");
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer otTracer =
-      TraceShim.createTracerShim(sdk, DefaultCorrelationContextManager.getInstance());
+      TraceShim.createTracerShim(sdk, DefaultCorrelationContextManager.getInstance(), scopeManager);
 
   @Before
   public void before() {

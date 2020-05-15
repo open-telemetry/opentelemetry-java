@@ -18,6 +18,8 @@ package io.opentelemetry.exporters.inmemory;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -33,7 +35,9 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link InMemoryTracing}. */
 @RunWith(JUnit4.class)
 public class InMemoryTracingTest {
-  private final TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final TracerSdkProvider tracerSdkProvider =
+      TracerSdkProvider.builder(scopeManager).build();
   private final InMemoryTracing tracing =
       InMemoryTracing.builder().setTracerProvider(tracerSdkProvider).build();
   private final Tracer tracer = tracerSdkProvider.get("InMemoryTracing");

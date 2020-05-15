@@ -78,6 +78,6 @@ final class NoopSpanBuilderShim extends BaseShimObject implements SpanBuilder {
   @Override
   public Span start() {
     return new SpanShim(
-        telemetryInfo, DefaultTracer.getInstance().spanBuilder(spanName).startSpan());
+        telemetryInfo, new DefaultTracer(otelScopeManager()).spanBuilder(spanName).startSpan());
   }
 }

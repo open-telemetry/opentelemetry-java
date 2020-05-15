@@ -36,6 +36,7 @@ import io.opentelemetry.metrics.LongObserver;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
@@ -242,7 +243,7 @@ public class OpenTelemetryTest {
     }
 
     @Override
-    public TracerProvider create() {
+    public TracerProvider create(ScopeManager scopeManager) {
       return new SecondTraceProvider();
     }
   }
@@ -265,7 +266,7 @@ public class OpenTelemetryTest {
     }
 
     @Override
-    public TracerProvider create() {
+    public TracerProvider create(ScopeManager scopeManager) {
       return new FirstTraceProvider();
     }
   }
@@ -348,7 +349,7 @@ public class OpenTelemetryTest {
 
   public static class SecondCorrelationContextManager extends FirstCorrelationContextManager {
     @Override
-    public CorrelationContextManager create() {
+    public CorrelationContextManager create(ScopeManager scopeManager) {
       return new SecondCorrelationContextManager();
     }
   }
@@ -356,7 +357,7 @@ public class OpenTelemetryTest {
   public static class FirstCorrelationContextManager
       implements CorrelationContextManager, CorrelationContextManagerProvider {
     @Override
-    public CorrelationContextManager create() {
+    public CorrelationContextManager create(ScopeManager scopeManager) {
       return new FirstCorrelationContextManager();
     }
 

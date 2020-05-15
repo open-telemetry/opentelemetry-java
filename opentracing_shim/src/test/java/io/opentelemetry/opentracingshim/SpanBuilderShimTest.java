@@ -21,16 +21,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.trace.Tracer;
 import org.junit.Test;
 
 public class SpanBuilderShimTest {
-  private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final TracerSdkProvider tracerSdkFactory =
+      TracerSdkProvider.builder(scopeManager).build();
   private final Tracer tracer = tracerSdkFactory.get("SpanShimTest");
   private final TelemetryInfo telemetryInfo =
-      new TelemetryInfo(tracer, new CorrelationContextManagerSdk(), OpenTelemetry.getPropagators());
+      new TelemetryInfo(
+          tracer,
+          new CorrelationContextManagerSdk(scopeManager),
+          scopeManager,
+          OpenTelemetry.getPropagators());
 
   private static final String SPAN_NAME = "Span";
 

@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.correlationcontext.spi;
 
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 
 /**
@@ -31,7 +32,7 @@ public final class CorrelationContextManagerProviderSdk
     implements CorrelationContextManagerProvider {
 
   @Override
-  public CorrelationContextManager create() {
-    return new CorrelationContextManagerSdk();
+  public CorrelationContextManager create(ScopeManager scopeManager) {
+    return new CorrelationContextManagerSdk(scopeManager);
   }
 }

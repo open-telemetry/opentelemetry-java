@@ -35,7 +35,7 @@ import org.junit.runners.JUnit4;
 @SuppressWarnings("MustBeClosedChecker")
 public class DefaultTracerTest {
   private static final ScopeManager defaultScopeManager = DefaultScopeManager.getInstance();
-  private static final Tracer defaultTracer = DefaultTracer.getInstance();
+  private static final Tracer defaultTracer = new DefaultTracer(defaultScopeManager);
   private static final String SPAN_NAME = "MySpanName";
   private static final byte[] firstBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};

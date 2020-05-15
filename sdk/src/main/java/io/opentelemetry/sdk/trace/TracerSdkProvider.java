@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ComponentRegistry;
@@ -46,12 +47,13 @@ public class TracerSdkProvider implements TracerProvider {
    *
    * @return a new {@link Builder} for {@link TracerSdkProvider}.
    */
-  public static Builder builder() {
-    return new Builder();
+  public static Builder builder(ScopeManager scopeManager) {
+    return new Builder(scopeManager);
   }
 
-  private TracerSdkProvider(Clock clock, IdsGenerator idsGenerator, Resource resource) {
-    this.sharedState = new TracerSharedState(clock, idsGenerator, resource);
+  private TracerSdkProvider(
+      Clock clock, IdsGenerator idsGenerator, Resource resource, ScopeManager scopeManager) {
+    this.sharedState = new TracerSharedState(clock, idsGenerator, resource, scopeManager);
     this.tracerSdkComponentRegistry = new TracerSdkComponentRegistry(sharedState);
   }
 
@@ -136,6 +138,7 @@ public class TracerSdkProvider implements TracerProvider {
    */
   public static class Builder {
 
+    private final ScopeManager scopeManager;
     private Clock clock = MillisClock.getInstance();
     private IdsGenerator idsGenerator = new RandomIdsGenerator();
     private Resource resource = EnvVarResource.getResource();
@@ -183,10 +186,12 @@ public class TracerSdkProvider implements TracerProvider {
      * @return An initialized TracerSdkFactory.
      */
     public TracerSdkProvider build() {
-      return new TracerSdkProvider(clock, idsGenerator, resource);
+      return new TracerSdkProvider(clock, idsGenerator, resource, scopeManager);
     }
 
-    private Builder() {}
+    private Builder(ScopeManager scopeManager) {
+      this.scopeManager = scopeManager;
+    }
   }
 
   private static final class TracerSdkComponentRegistry extends ComponentRegistry<TracerSdk> {

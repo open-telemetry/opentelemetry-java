@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -40,7 +42,8 @@ import org.mockito.MockitoAnnotations;
 public class TracerSdkProviderTest {
   @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
-  private final TracerSdkProvider tracerFactory = TracerSdkProvider.builder().build();
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final TracerSdkProvider tracerFactory = TracerSdkProvider.builder(scopeManager).build();
 
   @Before
   public void setUp() {
@@ -51,7 +54,7 @@ public class TracerSdkProviderTest {
   @Test
   public void builder_HappyPath() {
     assertThat(
-            TracerSdkProvider.builder()
+            TracerSdkProvider.builder(scopeManager)
                 .setClock(mock(Clock.class))
                 .setResource(mock(Resource.class))
                 .setIdsGenerator(mock(IdsGenerator.class))
@@ -63,21 +66,21 @@ public class TracerSdkProviderTest {
   public void builder_NullClock() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("clock");
-    TracerSdkProvider.builder().setClock(null);
+    TracerSdkProvider.builder(scopeManager).setClock(null);
   }
 
   @Test
   public void builder_NullResource() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("resource");
-    TracerSdkProvider.builder().setResource(null);
+    TracerSdkProvider.builder(scopeManager).setResource(null);
   }
 
   @Test
   public void builder_NullIdsGenerator() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("idsGenerator");
-    TracerSdkProvider.builder().setIdsGenerator(null);
+    TracerSdkProvider.builder(scopeManager).setIdsGenerator(null);
   }
 
   @Test

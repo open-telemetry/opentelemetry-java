@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.correlationcontext;
 
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
-import io.opentelemetry.scope.DefaultScopeManager;
 import io.opentelemetry.scope.ScopeManager;
 
 /**
@@ -26,8 +25,11 @@ import io.opentelemetry.scope.ScopeManager;
  */
 public class CorrelationContextManagerSdk implements CorrelationContextManager {
 
-  // TODO (trask) should be injected
-  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final ScopeManager scopeManager;
+
+  public CorrelationContextManagerSdk(ScopeManager scopeManager) {
+    this.scopeManager = scopeManager;
+  }
 
   @Override
   public CorrelationContext.Builder contextBuilder() {

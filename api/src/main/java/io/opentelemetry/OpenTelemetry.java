@@ -29,6 +29,8 @@ import io.opentelemetry.metrics.DefaultMetricsProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.DefaultTraceProvider;
 import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
@@ -58,6 +60,7 @@ public final class OpenTelemetry {
   private final TracerProvider tracerProvider;
   private final MeterProvider meterProvider;
   private final CorrelationContextManager contextManager;
+  private final ScopeManager scopeManager;
 
   private volatile ContextPropagators propagators =
       DefaultContextPropagators.builder().addHttpTextFormat(new HttpTraceContext()).build();
@@ -65,7 +68,8 @@ public final class OpenTelemetry {
   /**
    * Returns a singleton {@link TracerProvider}.
    *
-   * @return registered TracerProvider or default via {@link DefaultTracerProvider#getInstance()}.
+   * @return registered TracerProvider or default via {@link
+   *     DefaultTracerProvider#DefaultTracerProvider(ScopeManager)}.
    * @throws IllegalStateException if a specified TracerProvider (via system properties) could not
    *     be found.
    * @since 0.1.0
@@ -160,6 +164,11 @@ public final class OpenTelemetry {
     return getInstance().contextManager;
   }
 
+  // TODO (trask) javadoc
+  public static ScopeManager getScopeManager() {
+    return getInstance().scopeManager;
+  }
+
   /**
    * Returns a {@link ContextPropagators} object, which can be used to access the set of registered
    * propagators for each supported format.
@@ -202,11 +211,13 @@ public final class OpenTelemetry {
   }
 
   private OpenTelemetry() {
+    // TODO (trask) should this come from SPI?
+    scopeManager = DefaultScopeManager.getInstance();
     TraceProvider traceProvider = loadSpi(TraceProvider.class);
     this.tracerProvider =
         traceProvider != null
-            ? new ObfuscatedTracerProvider(traceProvider.create())
-            : DefaultTraceProvider.getInstance().create();
+            ? new ObfuscatedTracerProvider(traceProvider.create(scopeManager))
+            : DefaultTraceProvider.getInstance().create(scopeManager);
 
     MetricsProvider metricsProvider = loadSpi(MetricsProvider.class);
     meterProvider =
@@ -217,8 +228,8 @@ public final class OpenTelemetry {
         loadSpi(CorrelationContextManagerProvider.class);
     contextManager =
         contextManagerProvider != null
-            ? contextManagerProvider.create()
-            : DefaultCorrelationContextManagerProvider.getInstance().create();
+            ? contextManagerProvider.create(scopeManager)
+            : DefaultCorrelationContextManagerProvider.getInstance().create(scopeManager);
   }
 
   /**

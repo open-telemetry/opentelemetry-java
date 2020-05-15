@@ -57,7 +57,8 @@ public class SpanBuilderSdkTest {
           TraceState.getDefault());
 
   private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
-  private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
+  private final TracerSdkProvider tracerSdkFactory =
+      TracerSdkProvider.builder(scopeManager).build();
   private final TracerSdk tracerSdk = tracerSdkFactory.get("SpanBuilderSdkTest");
 
   @Rule public final ExpectedException thrown = ExpectedException.none();

@@ -46,7 +46,7 @@ import org.junit.Test;
 @SuppressWarnings("FutureReturnValueIgnored")
 public class ActorPropagationTest {
   private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder(scopeManager).build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer tracer = sdk.get(ActorPropagationTest.class.getName());

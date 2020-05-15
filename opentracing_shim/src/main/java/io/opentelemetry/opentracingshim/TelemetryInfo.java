@@ -19,6 +19,7 @@ package io.opentelemetry.opentracingshim;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Tracer;
 
 /**
@@ -28,14 +29,19 @@ import io.opentelemetry.trace.Tracer;
 final class TelemetryInfo {
   private final Tracer tracer;
   private final CorrelationContextManager contextManager;
+  private final ScopeManager scopeManager;
   private final CorrelationContext emptyCorrelationContext;
   private final ContextPropagators propagators;
   private final SpanContextShimTable spanContextTable;
 
   TelemetryInfo(
-      Tracer tracer, CorrelationContextManager contextManager, ContextPropagators propagators) {
+      Tracer tracer,
+      CorrelationContextManager contextManager,
+      ScopeManager scopeManager,
+      ContextPropagators propagators) {
     this.tracer = tracer;
     this.contextManager = contextManager;
+    this.scopeManager = scopeManager;
     this.propagators = propagators;
     this.emptyCorrelationContext = contextManager.contextBuilder().build();
     this.spanContextTable = new SpanContextShimTable();
@@ -47,6 +53,10 @@ final class TelemetryInfo {
 
   CorrelationContextManager contextManager() {
     return contextManager;
+  }
+
+  ScopeManager scopeManager() {
+    return scopeManager;
   }
 
   SpanContextShimTable spanContextTable() {

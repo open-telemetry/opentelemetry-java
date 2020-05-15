@@ -42,7 +42,7 @@ import org.junit.Test;
 public final class NestedCallbacksTest {
 
   private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder(scopeManager).build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer tracer = sdk.get(NestedCallbacksTest.class.getName());

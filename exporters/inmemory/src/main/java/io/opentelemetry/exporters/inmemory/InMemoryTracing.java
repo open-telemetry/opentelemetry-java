@@ -31,7 +31,7 @@ import javax.annotation.concurrent.Immutable;
  * <pre><code>
  *   {@literal @}Test
  *   public void testCondition() {
- *     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build()
+ *     TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder(scopeManager).build()
  *     InMemoryTracing tracing =
  *         InMemoryTracing.builder().setTracerSdkProvider(tracerSdkProvider).build();
  *     Tracer tracer = tracerSdkProvider.getTracer("MyTestClass");

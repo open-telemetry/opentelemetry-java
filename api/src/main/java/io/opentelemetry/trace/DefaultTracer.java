@@ -18,7 +18,6 @@ package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.internal.Utils;
-import io.opentelemetry.scope.DefaultScopeManager;
 import io.opentelemetry.scope.ScopeManager;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -31,27 +30,17 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public final class DefaultTracer implements Tracer {
-  private static final DefaultTracer INSTANCE = new DefaultTracer();
 
-  /**
-   * Returns a {@code Tracer} singleton that is the default implementations for {@link Tracer}.
-   *
-   * @return a {@code Tracer} singleton that is the default implementations for {@link Tracer}.
-   * @since 0.1.0
-   */
-  public static Tracer getInstance() {
-    return INSTANCE;
+  private final ScopeManager scopeManager;
+
+  public DefaultTracer(ScopeManager scopeManager) {
+    this.scopeManager = scopeManager;
   }
-
-  // TODO (trask) should be injected
-  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
 
   @Override
   public Span.Builder spanBuilder(String spanName) {
     return NoopSpanBuilder.create(spanName, scopeManager);
   }
-
-  private DefaultTracer() {}
 
   // Noop implementation of Span.Builder.
   private static final class NoopSpanBuilder implements Span.Builder {

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.actorpropagation;
 
-import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.scope.Scope;
 import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
@@ -31,7 +31,7 @@ import java.util.concurrent.Phaser;
 final class Actor implements AutoCloseable {
 
   // TODO (trask) should be injected
-  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final ScopeManager scopeManager = OpenTelemetry.getScopeManager();
 
   private final ExecutorService executor;
   private final Tracer tracer;

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.multiplecallbacks;
 
-import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.scope.Scope;
 import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
@@ -32,7 +32,7 @@ class Client {
   private final CountDownLatch parentDoneLatch;
   private final Tracer tracer;
   // TODO (trask) should be injected
-  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final ScopeManager scopeManager = OpenTelemetry.getScopeManager();
 
   public Client(Tracer tracer, CountDownLatch parentDoneLatch) {
     this.tracer = tracer;

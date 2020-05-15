@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.trace.export;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.doThrow;
 
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
@@ -57,7 +59,9 @@ public class BatchSpansProcessorTest {
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
-  private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final TracerSdkProvider tracerSdkFactory =
+      TracerSdkProvider.builder(scopeManager).build();
   private final Tracer tracer = tracerSdkFactory.get("BatchSpansProcessorTest");
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;

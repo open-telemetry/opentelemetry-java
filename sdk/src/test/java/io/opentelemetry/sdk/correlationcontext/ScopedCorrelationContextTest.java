@@ -55,7 +55,8 @@ public class ScopedCorrelationContextTest {
       EntryMetadata.create(EntryMetadata.EntryTtl.NO_PROPAGATION);
 
   private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
-  private final CorrelationContextManager contextManager = new CorrelationContextManagerSdk();
+  private final CorrelationContextManager contextManager =
+      new CorrelationContextManagerSdk(scopeManager);
 
   @Test
   public void emptyCorrelationContext() {

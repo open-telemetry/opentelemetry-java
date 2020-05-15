@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.suspendresumepropagation;
 
-import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.scope.Scope;
 import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
@@ -25,7 +25,7 @@ import io.opentelemetry.trace.Tracer;
 final class SuspendResume {
   private final Span span;
   // TODO (trask) should be injected
-  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final ScopeManager scopeManager = OpenTelemetry.getScopeManager();
 
   public SuspendResume(int id, Tracer tracer) {
     // Tracer passed along here for testing. Normally should be referenced via GlobalTracer.get().

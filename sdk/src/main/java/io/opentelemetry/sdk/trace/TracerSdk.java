@@ -16,8 +16,6 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.scope.DefaultScopeManager;
-import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.trace.DefaultTracer;
 import io.opentelemetry.trace.Span;
@@ -27,8 +25,6 @@ import io.opentelemetry.trace.Tracer;
 final class TracerSdk implements Tracer {
   private final TracerSharedState sharedState;
   private final InstrumentationLibraryInfo instrumentationLibraryInfo;
-  // TODO (trask) should be injected
-  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
 
   TracerSdk(TracerSharedState sharedState, InstrumentationLibraryInfo instrumentationLibraryInfo) {
     this.sharedState = sharedState;
@@ -38,7 +34,7 @@ final class TracerSdk implements Tracer {
   @Override
   public Span.Builder spanBuilder(String spanName) {
     if (sharedState.isStopped()) {
-      return DefaultTracer.getInstance().spanBuilder(spanName);
+      return new DefaultTracer(sharedState.getScopeManager()).spanBuilder(spanName);
     }
     return new SpanBuilderSdk(
         spanName,
@@ -48,7 +44,7 @@ final class TracerSdk implements Tracer {
         sharedState.getResource(),
         sharedState.getIdsGenerator(),
         sharedState.getClock(),
-        scopeManager);
+        sharedState.getScopeManager());
   }
 
   /**

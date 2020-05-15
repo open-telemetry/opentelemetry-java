@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.contrib.trace.testbed.clientserver;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
-import io.opentelemetry.scope.DefaultScopeManager;
 import io.opentelemetry.scope.Scope;
 import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
@@ -34,7 +33,7 @@ final class Server extends Thread {
   private final ArrayBlockingQueue<Message> queue;
   private final Tracer tracer;
   // TODO (trask) should be injected
-  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final ScopeManager scopeManager = OpenTelemetry.getScopeManager();
 
   public Server(ArrayBlockingQueue<Message> queue, Tracer tracer) {
     this.queue = queue;

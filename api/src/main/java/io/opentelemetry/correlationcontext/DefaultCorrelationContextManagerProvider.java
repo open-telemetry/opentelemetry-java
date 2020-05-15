@@ -17,6 +17,7 @@
 package io.opentelemetry.correlationcontext;
 
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
+import io.opentelemetry.scope.ScopeManager;
 import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
@@ -37,7 +38,7 @@ public final class DefaultCorrelationContextManagerProvider
   }
 
   @Override
-  public CorrelationContextManager create() {
+  public CorrelationContextManager create(ScopeManager scopeManager) {
     return DefaultCorrelationContextManager.getInstance();
   }
 

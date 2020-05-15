@@ -17,6 +17,7 @@
 package io.opentelemetry.correlationcontext.spi;
 
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.scope.ScopeManager;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -40,5 +41,5 @@ public interface CorrelationContextManagerProvider {
    * @return a {@code CorrelationContextManager} instance.
    * @since 0.1.0
    */
-  CorrelationContextManager create();
+  CorrelationContextManager create(ScopeManager scopeManager);
 }

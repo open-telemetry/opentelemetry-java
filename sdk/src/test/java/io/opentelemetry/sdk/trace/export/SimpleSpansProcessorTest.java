@@ -22,6 +22,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
@@ -50,7 +52,9 @@ public class SimpleSpansProcessorTest {
   private static final String SPAN_NAME = "MySpanName";
   @Mock private ReadableSpan readableSpan;
   @Mock private SpanExporter spanExporter;
-  private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final TracerSdkProvider tracerSdkFactory =
+      TracerSdkProvider.builder(scopeManager).build();
   private final Tracer tracer = tracerSdkFactory.get("SimpleSpansProcessor");
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(

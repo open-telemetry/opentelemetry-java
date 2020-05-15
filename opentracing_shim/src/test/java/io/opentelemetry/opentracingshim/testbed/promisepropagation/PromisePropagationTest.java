@@ -21,6 +21,8 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.getByAttr;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -45,10 +47,12 @@ import org.junit.Test;
  * @author tylerbenson
  */
 public class PromisePropagationTest {
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder(scopeManager).build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
-  private final Tracer tracer = TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk());
+  private final Tracer tracer =
+      TraceShim.createTracerShim(sdk, new CorrelationContextManagerSdk(scopeManager), scopeManager);
   private Phaser phaser;
 
   @Before

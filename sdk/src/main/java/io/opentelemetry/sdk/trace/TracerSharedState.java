@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace;
 
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -29,6 +30,7 @@ final class TracerSharedState {
   private final Clock clock;
   private final IdsGenerator idsGenerator;
   private final Resource resource;
+  private final ScopeManager scopeManager;
 
   // Reads and writes are atomic for reference variables. Use volatile to ensure that these
   // operations are visible on other CPUs as well.
@@ -39,10 +41,12 @@ final class TracerSharedState {
   @GuardedBy("lock")
   private final List<SpanProcessor> registeredSpanProcessors = new ArrayList<>();
 
-  TracerSharedState(Clock clock, IdsGenerator idsGenerator, Resource resource) {
+  TracerSharedState(
+      Clock clock, IdsGenerator idsGenerator, Resource resource, ScopeManager scopeManager) {
     this.clock = clock;
     this.idsGenerator = idsGenerator;
     this.resource = resource;
+    this.scopeManager = scopeManager;
   }
 
   Clock getClock() {
@@ -55,6 +59,10 @@ final class TracerSharedState {
 
   Resource getResource() {
     return resource;
+  }
+
+  ScopeManager getScopeManager() {
+    return scopeManager;
   }
 
   /**

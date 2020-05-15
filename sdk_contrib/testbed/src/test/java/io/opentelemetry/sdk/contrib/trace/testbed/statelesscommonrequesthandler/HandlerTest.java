@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.contrib.trace.testbed.statelesscommonrequesthandler
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
+import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Tracer;
@@ -34,7 +36,8 @@ import org.junit.Test;
  */
 public final class HandlerTest {
 
-  private final TracerSdkProvider sdk = TracerSdkProvider.builder().build();
+  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final TracerSdkProvider sdk = TracerSdkProvider.builder(scopeManager).build();
   private final InMemoryTracing inMemoryTracing =
       InMemoryTracing.builder().setTracerProvider(sdk).build();
   private final Tracer tracer = sdk.get(HandlerTest.class.getName());

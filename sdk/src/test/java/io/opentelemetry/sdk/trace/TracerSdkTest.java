@@ -57,7 +57,7 @@ public class TracerSdkTest {
 
   private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
   private final TracerSdk tracer =
-      TracerSdkProvider.builder()
+      TracerSdkProvider.builder(scopeManager)
           .build()
           .get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
 
@@ -117,7 +117,7 @@ public class TracerSdkTest {
   @Test
   public void stressTest() {
     CountingSpanProcessor spanProcessor = new CountingSpanProcessor();
-    TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
+    TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder(scopeManager).build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
     TracerSdk tracer =
         tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);
@@ -139,7 +139,7 @@ public class TracerSdkTest {
   public void stressTest_withBatchSpanProcessor() {
     CountingSpanExporter countingSpanExporter = new CountingSpanExporter();
     SpanProcessor spanProcessor = BatchSpansProcessor.create(countingSpanExporter);
-    TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder().build();
+    TracerSdkProvider tracerSdkProvider = TracerSdkProvider.builder(scopeManager).build();
     tracerSdkProvider.addSpanProcessor(spanProcessor);
     TracerSdk tracer =
         tracerSdkProvider.get(INSTRUMENTATION_LIBRARY_NAME, INSTRUMENTATION_LIBRARY_VERSION);

@@ -20,7 +20,6 @@ import io.grpc.Context;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.trace.Span;
 
-/** Static methods for interacting with the current (thread-bound) context. */
 // TODO (trask) javadoc class and methods
 public class DefaultScopeManager implements ScopeManager {
   private static final DefaultScopeManager INSTANCE = new DefaultScopeManager();

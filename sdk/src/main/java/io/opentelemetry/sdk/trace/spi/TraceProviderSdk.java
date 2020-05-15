@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.trace.spi;
 
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.spi.TraceProvider;
@@ -23,7 +24,7 @@ import io.opentelemetry.trace.spi.TraceProvider;
 /** SDK implementation of the TracerProviderFactory for SPI. */
 public final class TraceProviderSdk implements TraceProvider {
   @Override
-  public TracerProvider create() {
-    return TracerSdkProvider.builder().build();
+  public TracerProvider create(ScopeManager scopeManager) {
+    return TracerSdkProvider.builder(scopeManager).build();
   }
 }

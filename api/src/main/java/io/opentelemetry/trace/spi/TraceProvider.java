@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace.spi;
 
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.TracerProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -38,5 +39,5 @@ public interface TraceProvider {
    * @return a new TracerProvider.
    * @since 0.1.0
    */
-  TracerProvider create();
+  TracerProvider create(ScopeManager scopeManager);
 }

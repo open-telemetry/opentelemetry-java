@@ -16,7 +16,7 @@
 
 package io.opentelemetry.sdk.contrib.trace.testbed.statelesscommonrequesthandler;
 
-import io.opentelemetry.scope.DefaultScopeManager;
+import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.scope.Scope;
 import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Span;
@@ -34,7 +34,7 @@ final class RequestHandler {
 
   private final Tracer tracer;
   // TODO (trask) should be injected
-  private final ScopeManager scopeManager = DefaultScopeManager.getInstance();
+  private final ScopeManager scopeManager = OpenTelemetry.getScopeManager();
 
   private static final ThreadLocal<Scope> tlsScope = new ThreadLocal<>();
 

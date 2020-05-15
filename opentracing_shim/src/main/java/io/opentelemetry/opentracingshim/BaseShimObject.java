@@ -18,6 +18,7 @@ package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.Tracer;
 
 abstract class BaseShimObject {
@@ -45,5 +46,9 @@ abstract class BaseShimObject {
 
   ContextPropagators propagators() {
     return telemetryInfo.propagators();
+  }
+
+  ScopeManager otelScopeManager() {
+    return telemetryInfo.scopeManager();
   }
 }

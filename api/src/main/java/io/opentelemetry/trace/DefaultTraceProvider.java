@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import io.opentelemetry.scope.ScopeManager;
 import io.opentelemetry.trace.spi.TraceProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -35,8 +36,8 @@ public final class DefaultTraceProvider implements TraceProvider {
   }
 
   @Override
-  public TracerProvider create() {
-    return DefaultTracerProvider.getInstance();
+  public TracerProvider create(ScopeManager scopeManager) {
+    return new DefaultTracerProvider(scopeManager);
   }
 
   private DefaultTraceProvider() {}

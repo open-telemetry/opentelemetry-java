@@ -19,6 +19,7 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.scope.DefaultScopeManager;
 import io.opentelemetry.trace.Span.Kind;
 import java.util.Collections;
 import java.util.Map;
@@ -31,7 +32,7 @@ import org.junit.runners.JUnit4;
 /** Unit tests for {@link Span.Builder}. */
 @RunWith(JUnit4.class)
 public class SpanBuilderTest {
-  private final Tracer tracer = DefaultTracer.getInstance();
+  private final Tracer tracer = new DefaultTracer(DefaultScopeManager.getInstance());
 
   @Test
   public void doNotCrash_NoopImplementation() {
