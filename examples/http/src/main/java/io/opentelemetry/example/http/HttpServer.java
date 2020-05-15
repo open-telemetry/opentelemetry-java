@@ -21,7 +21,6 @@ import com.sun.net.httpserver.HttpHandler;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
@@ -31,6 +30,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -40,40 +40,46 @@ import java.util.Map;
 
 public class HttpServer {
 
-  private class HelloHandler implements HttpHandler {
+  private static class HelloHandler implements HttpHandler {
 
     @Override
-    public void handle(HttpExchange he) throws IOException {
+    public void handle(HttpExchange exchange) throws IOException {
       // Name convention for the Span is not yet defined.
       // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
-      Span.Builder spanBuilder = tracer.spanBuilder("/").setSpanKind(Span.Kind.SERVER);
-      Span span = null;
 
       // Extract the context from the HTTP request
-      Context ctx =
-          OpenTelemetry.getPropagators().getHttpTextFormat().extract(Context.current(), he, getter);
-      try (Scope scope = ContextUtils.withScopedContext(ctx)) {
-        // Build a span automatically using the received context
-        span = spanBuilder.startSpan();
-      }
+      Context context =
+          OpenTelemetry.getPropagators()
+              .getHttpTextFormat()
+              .extract(Context.current(), exchange, getter);
 
-      // Set the Semantic Convention
-      span.setAttribute("component", "http");
-      span.setAttribute("http.method", "GET");
-      /*
-      One of the following is required:
-      - http.scheme, http.host, http.target
-      - http.scheme, http.server_name, net.host.port, http.target
-      - http.scheme, net.host.name, net.host.port, http.target
-      - http.url
-      */
-      span.setAttribute("http.scheme", "http");
-      span.setAttribute("http.host", "localhost:" + HttpServer.port);
-      span.setAttribute("http.target", "/");
-      // Process the request
-      answer(he, span);
-      // Close the span
-      span.end();
+      Span span =
+          tracer
+              .spanBuilder("/")
+              .setParent(TracingContextUtils.getSpan(context))
+              .setSpanKind(Span.Kind.SERVER)
+              .startSpan();
+
+      try (Scope scope = tracer.withSpan(span)) {
+        // Set the Semantic Convention
+        span.setAttribute("component", "http");
+        span.setAttribute("http.method", "GET");
+        /*
+         One of the following is required:
+         - http.scheme, http.host, http.target
+         - http.scheme, http.server_name, net.host.port, http.target
+         - http.scheme, net.host.name, net.host.port, http.target
+         - http.url
+        */
+        span.setAttribute("http.scheme", "http");
+        span.setAttribute("http.host", "localhost:" + HttpServer.port);
+        span.setAttribute("http.target", "/");
+        // Process the request
+        answer(exchange, span);
+      } finally {
+        // Close the span
+        span.end();
+      }
     }
 
     private void answer(HttpExchange he, Span span) throws IOException {
