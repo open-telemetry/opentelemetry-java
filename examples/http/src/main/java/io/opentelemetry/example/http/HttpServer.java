@@ -40,7 +40,7 @@ import java.util.Map;
 
 public class HttpServer {
 
-  private class HelloHandler implements HttpHandler {
+  private static class HelloHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange he) throws IOException {
@@ -55,25 +55,26 @@ public class HttpServer {
       try (Scope scope = ContextUtils.withScopedContext(ctx)) {
         // Build a span automatically using the received context
         span = spanBuilder.startSpan();
-      }
 
-      // Set the Semantic Convention
-      span.setAttribute("component", "http");
-      span.setAttribute("http.method", "GET");
-      /*
-      One of the following is required:
-      - http.scheme, http.host, http.target
-      - http.scheme, http.server_name, net.host.port, http.target
-      - http.scheme, net.host.name, net.host.port, http.target
-      - http.url
-      */
-      span.setAttribute("http.scheme", "http");
-      span.setAttribute("http.host", "localhost:" + HttpServer.port);
-      span.setAttribute("http.target", "/");
-      // Process the request
-      answer(he, span);
-      // Close the span
-      span.end();
+        // Set the Semantic Convention
+        span.setAttribute("component", "http");
+        span.setAttribute("http.method", "GET");
+        /*
+         One of the following is required:
+         - http.scheme, http.host, http.target
+         - http.scheme, http.server_name, net.host.port, http.target
+         - http.scheme, net.host.name, net.host.port, http.target
+         - http.url
+        */
+        span.setAttribute("http.scheme", "http");
+        span.setAttribute("http.host", "localhost:" + HttpServer.port);
+        span.setAttribute("http.target", "/");
+        // Process the request
+        answer(he, span);
+      } finally {
+        // Close the span
+        span.end();
+      }
     }
 
     private void answer(HttpExchange he, Span span) throws IOException {
