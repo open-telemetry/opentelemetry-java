@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleSumObserver;
+import io.opentelemetry.metrics.DoubleUpDownSumObserver.ResultDoubleUpDownSumObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -36,9 +36,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DoubleSumObserverSdk}. */
+/** Unit tests for {@link DoubleUpDownSumObserverSdk}. */
 @RunWith(JUnit4.class)
-public class DoubleSumObserverSdkTest {
+public class DoubleUpDownSumObserverSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   private static final long SECOND_NANOS = 1_000_000_000;
@@ -48,7 +48,7 @@ public class DoubleSumObserverSdkTest {
               "resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(
-          "io.opentelemetry.sdk.metrics.DoubleSumObserverSdkTest", null);
+          "io.opentelemetry.sdk.metrics.DoubleUpDownSumObserverSdkTest", null);
   private final TestClock testClock = TestClock.create();
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
@@ -57,11 +57,11 @@ public class DoubleSumObserverSdkTest {
 
   @Test
   public void collectMetrics_NoCallback() {
-    DoubleSumObserverSdk doubleObserver =
+    DoubleUpDownSumObserverSdk doubleObserver =
         testSdk
-            .doubleSumObserverBuilder("testObserver")
+            .doubleUpDownSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
-            .setDescription("My own DoubleSumObserver")
+            .setDescription("My very own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
     assertThat(doubleObserver.collectAll()).isEmpty();
@@ -69,17 +69,17 @@ public class DoubleSumObserverSdkTest {
 
   @Test
   public void collectMetrics_NoRecords() {
-    DoubleSumObserverSdk doubleObserver =
+    DoubleUpDownSumObserverSdk doubleObserver =
         testSdk
-            .doubleSumObserverBuilder("testObserver")
+            .doubleUpDownSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
-            .setDescription("My own DoubleSumObserver")
+            .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
     doubleObserver.setCallback(
-        new Callback<ResultDoubleSumObserver>() {
+        new Callback<ResultDoubleUpDownSumObserver>() {
           @Override
-          public void update(ResultDoubleSumObserver result) {
+          public void update(ResultDoubleUpDownSumObserver result) {
             // Do nothing.
           }
         });
@@ -88,9 +88,9 @@ public class DoubleSumObserverSdkTest {
             MetricData.create(
                 Descriptor.create(
                     "testObserver",
-                    "My own DoubleSumObserver",
+                    "My own DoubleUpDownSumObserver",
                     "ms",
-                    Type.MONOTONIC_DOUBLE,
+                    Type.NON_MONOTONIC_DOUBLE,
                     Collections.singletonMap("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
@@ -99,11 +99,12 @@ public class DoubleSumObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    DoubleSumObserverSdk doubleObserver = testSdk.doubleSumObserverBuilder("testObserver").build();
+    DoubleUpDownSumObserverSdk doubleObserver =
+        testSdk.doubleUpDownSumObserverBuilder("testObserver").build();
     doubleObserver.setCallback(
-        new Callback<ResultDoubleSumObserver>() {
+        new Callback<ResultDoubleUpDownSumObserver>() {
           @Override
-          public void update(ResultDoubleSumObserver result) {
+          public void update(ResultDoubleUpDownSumObserver result) {
             result.observe(12.1d, "k", "v");
           }
         });
@@ -115,7 +116,7 @@ public class DoubleSumObserverSdkTest {
                     "testObserver",
                     "",
                     "1",
-                    Type.MONOTONIC_DOUBLE,
+                    Type.NON_MONOTONIC_DOUBLE,
                     Collections.<String, String>emptyMap()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
@@ -133,7 +134,7 @@ public class DoubleSumObserverSdkTest {
                     "testObserver",
                     "",
                     "1",
-                    Type.MONOTONIC_DOUBLE,
+                    Type.NON_MONOTONIC_DOUBLE,
                     Collections.<String, String>emptyMap()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
