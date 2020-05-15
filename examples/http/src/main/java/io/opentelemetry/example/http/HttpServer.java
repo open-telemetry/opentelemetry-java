@@ -43,7 +43,7 @@ public class HttpServer {
   private static class HelloHandler implements HttpHandler {
 
     @Override
-    public void handle(HttpExchange he) throws IOException {
+    public void handle(HttpExchange exchange) throws IOException {
       // Name convention for the Span is not yet defined.
       // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
       Span.Builder spanBuilder = tracer.spanBuilder("/").setSpanKind(Span.Kind.SERVER);
@@ -51,7 +51,7 @@ public class HttpServer {
 
       // Extract the context from the HTTP request
       Context ctx =
-          OpenTelemetry.getPropagators().getHttpTextFormat().extract(Context.current(), he, getter);
+          OpenTelemetry.getPropagators().getHttpTextFormat().extract(Context.current(), exchange, getter);
       try (Scope scope = ContextUtils.withScopedContext(ctx)) {
         // Build a span automatically using the received context
         span = spanBuilder.startSpan();
@@ -70,7 +70,7 @@ public class HttpServer {
         span.setAttribute("http.host", "localhost:" + HttpServer.port);
         span.setAttribute("http.target", "/");
         // Process the request
-        answer(he, span);
+        answer(exchange, span);
       } finally {
         // Close the span
         span.end();
