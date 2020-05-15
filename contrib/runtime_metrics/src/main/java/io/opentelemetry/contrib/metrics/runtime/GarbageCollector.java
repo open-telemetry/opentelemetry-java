@@ -19,7 +19,7 @@ package io.opentelemetry.contrib.metrics.runtime;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
 import io.opentelemetry.metrics.LongSumObserver;
-import io.opentelemetry.metrics.LongSumObserver.ResultLongObserver;
+import io.opentelemetry.metrics.LongSumObserver.ResultLongSumObserver;
 import io.opentelemetry.metrics.Meter;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -60,7 +60,6 @@ public final class GarbageCollector {
             .longSumObserverBuilder("collection")
             .setDescription("Time spent in a given JVM garbage collector in milliseconds.")
             .setUnit("ms")
-            .setMonotonic(true)
             .build();
     final List<String[]> labelSets = new ArrayList<>(garbageCollectors.size());
     for (final GarbageCollectorMXBean gc : garbageCollectors) {
@@ -69,9 +68,9 @@ public final class GarbageCollector {
     }
 
     gcMetric.setCallback(
-        new Callback<ResultLongObserver>() {
+        new Callback<ResultLongSumObserver>() {
           @Override
-          public void update(ResultLongObserver resultLongObserver) {
+          public void update(ResultLongSumObserver resultLongObserver) {
             for (int i = 0; i < garbageCollectors.size(); i++) {
               resultLongObserver.observe(
                   garbageCollectors.get(i).getCollectionTime(), labelSets.get(i));

@@ -16,12 +16,20 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.LongSumObserver.ResultLongObserver;
+import io.opentelemetry.metrics.LongSumObserver.ResultLongSumObserver;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Observer to report pre-aggregated metrics with double value.
+ * {@code SumObserver} is the asynchronous instrument corresponding to Counter, used to capture a
+ * monotonic sum with Observe(sum).
+ *
+ * <p>"Sum" appears in the name to remind that it is used to capture sums directly. Use a
+ * SumObserver to capture any value that starts at zero and rises throughout the process lifetime
+ * and never falls.
+ *
+ * <p>A {@code SumObserver} is a good choice in situations where a measurement is expensive to
+ * compute, such that it would be wasteful to compute on every request.
  *
  * <p>Example:
  *
@@ -29,20 +37,21 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
- *   private static final LongSumObserver observer =
+ *   private static final LongSumObserver cpuObserver =
  *       meter.
- *           .longSumObserverBuilder("doWork_latency")
- *           .setDescription("gRPC Latency")
+ *           .longSumObserverBuilder("cpu_usage")
+ *           .setDescription("System CPU usage")
  *           .setUnit("ms")
  *           .build();
  *
  *   void init() {
- *     observer.setCallback(
+ *     cpuObserver.setCallback(
  *         new LongSumObserver.Callback<LongObserver.ResultLongObserver>() {
- *           final AtomicInteger count = new AtomicInteger(0);
  *          {@literal @}Override
  *           public void update(ResultLongObserver result) {
- *             result.observe(count.addAndGet(1), "my_label_key", "my_label_value");
+ *             // Get system cpu usage
+ *             result.observe(cpuIdle, "state", "idle");
+ *             result.observe(cpuUser, "state", "user");
  *           }
  *         });
  *   }
@@ -52,9 +61,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongSumObserver extends AsynchronousInstrument<ResultLongObserver> {
+public interface LongSumObserver extends AsynchronousInstrument<ResultLongSumObserver> {
   @Override
-  void setCallback(Callback<ResultLongObserver> metricUpdater);
+  void setCallback(Callback<ResultLongSumObserver> metricUpdater);
 
   /** Builder class for {@link LongSumObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {
@@ -68,14 +77,11 @@ public interface LongSumObserver extends AsynchronousInstrument<ResultLongObserv
     Builder setConstantLabels(Map<String, String> constantLabels);
 
     @Override
-    Builder setMonotonic(boolean monotonic);
-
-    @Override
     LongSumObserver build();
   }
 
   /** The result for the {@link AsynchronousInstrument.Callback}. */
-  interface ResultLongObserver {
+  interface ResultLongSumObserver {
     void observe(long sum, String... keyValueLabelPairs);
   }
 }

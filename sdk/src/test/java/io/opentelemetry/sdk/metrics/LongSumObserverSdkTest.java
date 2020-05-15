@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.LongSumObserver.ResultLongObserver;
+import io.opentelemetry.metrics.LongSumObserver.ResultLongSumObserver;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -76,9 +76,9 @@ public class LongSumObserverSdkTest {
             .setUnit("ms")
             .build();
     longObserver.setCallback(
-        new Callback<ResultLongObserver>() {
+        new Callback<ResultLongSumObserver>() {
           @Override
-          public void update(ResultLongObserver result) {
+          public void update(ResultLongSumObserver result) {
             // Do nothing.
           }
         });
@@ -89,7 +89,7 @@ public class LongSumObserverSdkTest {
                     "testObserver",
                     "My very own measure",
                     "ms",
-                    Type.NON_MONOTONIC_LONG,
+                    Type.MONOTONIC_LONG,
                     Collections.singletonMap("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
@@ -98,12 +98,11 @@ public class LongSumObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    LongSumObserverSdk longObserver =
-        testSdk.longSumObserverBuilder("testObserver").setMonotonic(true).build();
+    LongSumObserverSdk longObserver = testSdk.longSumObserverBuilder("testObserver").build();
     longObserver.setCallback(
-        new Callback<ResultLongObserver>() {
+        new Callback<ResultLongSumObserver>() {
           @Override
-          public void update(ResultLongObserver result) {
+          public void update(ResultLongSumObserver result) {
             result.observe(12, "k", "v");
           }
         });
@@ -143,22 +142,5 @@ public class LongSumObserverSdkTest {
                         testClock.now(),
                         Collections.singletonMap("k", "v"),
                         12))));
-  }
-
-  @Test
-  public void observeMonotonic_NegativeValue() {
-    LongSumObserverSdk longObserver =
-        testSdk.longSumObserverBuilder("testObserver").setMonotonic(true).build();
-
-    longObserver.setCallback(
-        new Callback<ResultLongObserver>() {
-          @Override
-          public void update(ResultLongObserver result) {
-            thrown.expect(IllegalArgumentException.class);
-            thrown.expectMessage("monotonic observers can only record positive values");
-            result.observe(-45);
-          }
-        });
-    longObserver.collectAll();
   }
 }

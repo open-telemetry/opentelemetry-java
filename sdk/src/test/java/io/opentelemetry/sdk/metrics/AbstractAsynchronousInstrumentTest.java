@@ -16,11 +16,10 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.resources.Resource;
@@ -29,32 +28,24 @@ import java.util.List;
 import org.junit.Test;
 
 public class AbstractAsynchronousInstrumentTest {
-  private static final boolean MONOTONIC = true;
-  private static final boolean NON_MONOTONIC = false;
-
-  @Test
-  public void getValues() {
-    assertThat(new TestObserverInstrument(InstrumentValueType.LONG, MONOTONIC).isMonotonic())
-        .isTrue();
-    assertThat(new TestObserverInstrument(InstrumentValueType.LONG, NON_MONOTONIC).isMonotonic())
-        .isFalse();
-  }
-
   @Test
   public void attributeValue_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(
-        new TestObserverInstrument(InstrumentValueType.LONG, MONOTONIC),
-        new TestObserverInstrument(InstrumentValueType.LONG, MONOTONIC));
+        new TestObserverInstrument(InstrumentValueType.LONG, InstrumentType.OBSERVER_MONOTONIC),
+        new TestObserverInstrument(InstrumentValueType.LONG, InstrumentType.OBSERVER_MONOTONIC));
     tester.addEqualityGroup(
-        new TestObserverInstrument(InstrumentValueType.LONG, NON_MONOTONIC),
-        new TestObserverInstrument(InstrumentValueType.LONG, NON_MONOTONIC));
+        new TestObserverInstrument(InstrumentValueType.LONG, InstrumentType.OBSERVER_NON_MONOTONIC),
+        new TestObserverInstrument(
+            InstrumentValueType.LONG, InstrumentType.OBSERVER_NON_MONOTONIC));
     tester.addEqualityGroup(
-        new TestObserverInstrument(InstrumentValueType.DOUBLE, MONOTONIC),
-        new TestObserverInstrument(InstrumentValueType.DOUBLE, MONOTONIC));
+        new TestObserverInstrument(InstrumentValueType.DOUBLE, InstrumentType.OBSERVER_MONOTONIC),
+        new TestObserverInstrument(InstrumentValueType.DOUBLE, InstrumentType.OBSERVER_MONOTONIC));
     tester.addEqualityGroup(
-        new TestObserverInstrument(InstrumentValueType.DOUBLE, NON_MONOTONIC),
-        new TestObserverInstrument(InstrumentValueType.DOUBLE, NON_MONOTONIC));
+        new TestObserverInstrument(
+            InstrumentValueType.DOUBLE, InstrumentType.OBSERVER_NON_MONOTONIC),
+        new TestObserverInstrument(
+            InstrumentValueType.DOUBLE, InstrumentType.OBSERVER_NON_MONOTONIC));
     tester.testEquals();
   }
 
@@ -64,18 +55,17 @@ public class AbstractAsynchronousInstrumentTest {
     private static final MeterSharedState METER_SHARED_STATE =
         MeterSharedState.create(InstrumentationLibraryInfo.getEmpty());
 
-    TestObserverInstrument(InstrumentValueType instrumentValueType, boolean monotonic) {
+    TestObserverInstrument(InstrumentValueType instrumentValueType, InstrumentType instrumentType) {
       super(
           InstrumentDescriptor.create(
               "name",
               "description",
               "1",
               Collections.singletonMap("key_2", "value_2"),
-              AbstractAsynchronousInstrument.getInstrumentType(monotonic),
+              instrumentType,
               instrumentValueType),
           METER_PROVIDER_SHARED_STATE,
-          METER_SHARED_STATE,
-          monotonic);
+          METER_SHARED_STATE);
     }
 
     @Override

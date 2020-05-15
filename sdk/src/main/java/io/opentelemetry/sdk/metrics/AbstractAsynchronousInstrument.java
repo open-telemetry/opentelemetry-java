@@ -16,18 +16,14 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.AsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 abstract class AbstractAsynchronousInstrument extends AbstractInstrument {
-  private final boolean monotonic;
-
   AbstractAsynchronousInstrument(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      boolean monotonic) {
+      MeterSharedState meterSharedState) {
     super(
         descriptor,
         meterProviderSharedState,
@@ -39,33 +35,6 @@ abstract class AbstractAsynchronousInstrument extends AbstractInstrument {
                     meterProviderSharedState,
                     meterSharedState,
                     Aggregations.lastValue()))));
-    this.monotonic = monotonic;
-  }
-
-  final boolean isMonotonic() {
-    return monotonic;
-  }
-
-  abstract static class Builder<B extends AbstractAsynchronousInstrument.Builder<B>>
-      extends AbstractInstrument.Builder<B> implements AsynchronousInstrument.Builder {
-    private boolean monotonic = false;
-
-    Builder(
-        String name,
-        MeterProviderSharedState meterProviderSharedState,
-        MeterSharedState meterSharedState) {
-      super(name, meterProviderSharedState, meterSharedState);
-    }
-
-    @Override
-    public final B setMonotonic(boolean monotonic) {
-      this.monotonic = monotonic;
-      return getThis();
-    }
-
-    final boolean isMonotonic() {
-      return this.monotonic;
-    }
   }
 
   static InstrumentType getInstrumentType(boolean monotonic) {

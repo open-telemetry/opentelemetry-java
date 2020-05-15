@@ -54,17 +54,6 @@ public interface AsynchronousInstrument<R> extends Instrument {
 
   /** Builder class for {@link AsynchronousInstrument}. */
   interface Builder extends Instrument.Builder {
-    /**
-     * Sets the monotonicity property for this {@code Instrument}. If {@code true} successive values
-     * are expected to rise monotonically.
-     *
-     * <p>Default value is {@code false}
-     *
-     * @param monotonic {@code true} successive values are expected to rise monotonically.
-     * @return this.
-     */
-    Builder setMonotonic(boolean monotonic);
-
     @Override
     AsynchronousInstrument<?> build();
   }
