@@ -39,7 +39,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
  *   private static final DoubleSumObserver cpuObserver =
  *       meter.
- *           .doubleSumObserverBuilder("cpu_usage")
+ *           .doubleSumObserverBuilder("cpu_time")
  *           .setDescription("System CPU usage")
  *           .setUnit("ms")
  *           .build();

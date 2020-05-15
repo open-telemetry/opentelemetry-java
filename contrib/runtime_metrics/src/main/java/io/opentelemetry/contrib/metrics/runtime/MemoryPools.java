@@ -69,7 +69,6 @@ public final class MemoryPools {
 
   /** Export only the "area" metric. */
   public void exportMemoryAreaMetric() {
-    // TODO: Set this as non-monotonic.
     final LongUpDownSumObserver areaMetric =
         this.meter
             .longUpDownSumObserverBuilder("area")
@@ -102,7 +101,6 @@ public final class MemoryPools {
 
   /** Export only the "pool" metric. */
   public void exportMemoryPoolMetric() {
-    // TODO: Set this as non-monotonic.
     final LongUpDownSumObserver poolMetric =
         this.meter
             .longUpDownSumObserverBuilder("pool")
