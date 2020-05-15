@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -113,6 +114,49 @@ public class RecordEventsReadableSpanTest {
         startEpochNanos,
         Status.OK,
         /*hasEnded=*/ true);
+  }
+
+  @Test
+  public void lazyLinksAreResolved() {
+    final Map<String, AttributeValue> attributes =
+        Collections.singletonMap("attr", AttributeValue.stringAttributeValue("val"));
+    io.opentelemetry.trace.Link link =
+        new io.opentelemetry.trace.Link() {
+          @Override
+          public SpanContext getContext() {
+            return spanContext;
+          }
+
+          @Override
+          public Map<String, AttributeValue> getAttributes() {
+            return attributes;
+          }
+        };
+    RecordEventsReadableSpan span =
+        createTestSpan(
+            Kind.CLIENT,
+            TraceConfig.getDefault(),
+            parentSpanId,
+            Collections.<String, AttributeValue>emptyMap(),
+            Collections.singletonList(link));
+
+    Link resultingLink = span.toSpanData().getLinks().get(0);
+    assertThat(resultingLink.getTotalAttributeCount()).isEqualTo(1);
+    assertThat(resultingLink.getContext()).isSameInstanceAs(spanContext);
+    assertThat(resultingLink.getAttributes()).isEqualTo(attributes);
+  }
+
+  @Test
+  public void nullLinksAreHandled() {
+    RecordEventsReadableSpan span =
+        createTestSpan(
+            Kind.CLIENT,
+            TraceConfig.getDefault(),
+            parentSpanId,
+            Collections.<String, AttributeValue>emptyMap(),
+            null);
+
+    assertThat(span.toSpanData().getLinks()).isEqualTo(emptyList());
   }
 
   @Test
@@ -505,7 +549,8 @@ public class RecordEventsReadableSpanTest {
 
   private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<String, AttributeValue> attributes) {
-    return createTestSpan(Kind.INTERNAL, TraceConfig.getDefault(), null, attributes);
+    return createTestSpan(
+        Kind.INTERNAL, TraceConfig.getDefault(), null, attributes, Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestRootSpan() {
@@ -513,7 +558,8 @@ public class RecordEventsReadableSpanTest {
         Kind.INTERNAL,
         TraceConfig.getDefault(),
         null,
-        Collections.<String, AttributeValue>emptyMap());
+        Collections.<String, AttributeValue>emptyMap(),
+        Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(Kind kind) {
@@ -521,19 +567,25 @@ public class RecordEventsReadableSpanTest {
         kind,
         TraceConfig.getDefault(),
         parentSpanId,
-        Collections.<String, AttributeValue>emptyMap());
+        Collections.<String, AttributeValue>emptyMap(),
+        Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(TraceConfig config) {
     return createTestSpan(
-        Kind.INTERNAL, config, parentSpanId, Collections.<String, AttributeValue>emptyMap());
+        Kind.INTERNAL,
+        config,
+        parentSpanId,
+        Collections.<String, AttributeValue>emptyMap(),
+        Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(
       Kind kind,
       TraceConfig config,
       @Nullable SpanId parentSpanId,
-      Map<String, AttributeValue> attributes) {
+      Map<String, AttributeValue> attributes,
+      List<io.opentelemetry.trace.Link> links) {
     AttributesMap attributesWithCapacity = new AttributesMap(config.getMaxNumberOfAttributes());
     attributesWithCapacity.putAll(attributes);
 
@@ -550,7 +602,7 @@ public class RecordEventsReadableSpanTest {
             testClock,
             resource,
             attributesWithCapacity,
-            Collections.singletonList(link),
+            links,
             1,
             0);
     Mockito.verify(spanProcessor, Mockito.times(1)).onStart(span);
