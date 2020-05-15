@@ -47,7 +47,8 @@ public class LongSumObserverSdkTest {
           Collections.singletonMap(
               "resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.LongObserverSdkTest", null);
+      InstrumentationLibraryInfo.create(
+          "io.opentelemetry.sdk.metrics.LongSumObserverSdkTest", null);
   private final TestClock testClock = TestClock.create();
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
@@ -60,7 +61,7 @@ public class LongSumObserverSdkTest {
         testSdk
             .longSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
-            .setDescription("My very own measure")
+            .setDescription("My own LongSumObserver")
             .setUnit("ms")
             .build();
     assertThat(longObserver.collectAll()).isEmpty();
@@ -72,7 +73,7 @@ public class LongSumObserverSdkTest {
         testSdk
             .longSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
-            .setDescription("My very own measure")
+            .setDescription("My own LongSumObserver")
             .setUnit("ms")
             .build();
     longObserver.setCallback(
@@ -87,7 +88,7 @@ public class LongSumObserverSdkTest {
             MetricData.create(
                 Descriptor.create(
                     "testObserver",
-                    "My very own measure",
+                    "My own LongSumObserver",
                     "ms",
                     Type.MONOTONIC_LONG,
                     Collections.singletonMap("sk1", "sv1")),
