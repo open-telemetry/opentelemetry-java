@@ -1,0 +1,169 @@
+/*
+ * Copyright 2020, OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.opentelemetry.sdk.trace;
+
+import com.google.auto.value.AutoValue;
+import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Status;
+import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.TraceId;
+import io.opentelemetry.trace.TraceState;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.concurrent.Immutable;
+
+@Immutable
+@AutoValue
+abstract class SpanWrapper implements SpanData {
+  abstract RecordEventsReadableSpan delegate();
+
+  abstract List<Link> resolvedLinks();
+
+  abstract List<Event> resolvedEvents();
+
+  abstract Map<String, AttributeValue> attributes();
+
+  abstract int totalAttributeCount();
+
+  abstract int totalRecordedEvents();
+
+  abstract Status status();
+
+  static SpanWrapper create(
+      RecordEventsReadableSpan delegate,
+      List<Link> links,
+      List<Event> events,
+      Map<String, AttributeValue> attributes,
+      int totalAttributeCount,
+      int totalRecordedEvents,
+      Status status) {
+    return new AutoValue_SpanWrapper(
+        delegate,
+        links,
+        events,
+        new HashMap<>(attributes),
+        totalAttributeCount,
+        totalRecordedEvents,
+        status);
+  }
+
+  @Override
+  public TraceId getTraceId() {
+    return delegate().getContext().getTraceId();
+  }
+
+  @Override
+  public SpanId getSpanId() {
+    return delegate().getContext().getSpanId();
+  }
+
+  @Override
+  public TraceFlags getTraceFlags() {
+    return delegate().getSpanContext().getTraceFlags();
+  }
+
+  @Override
+  public TraceState getTraceState() {
+    return delegate().getSpanContext().getTraceState();
+  }
+
+  @Override
+  public SpanId getParentSpanId() {
+    return delegate().getParentSpanId();
+  }
+
+  @Override
+  public Resource getResource() {
+    return delegate().getResource();
+  }
+
+  @Override
+  public InstrumentationLibraryInfo getInstrumentationLibraryInfo() {
+    return delegate().getInstrumentationLibraryInfo();
+  }
+
+  @Override
+  public String getName() {
+    return delegate().getName();
+  }
+
+  @Override
+  public Kind getKind() {
+    return delegate().getKind();
+  }
+
+  @Override
+  public long getStartEpochNanos() {
+    return delegate().getStartEpochNanos();
+  }
+
+  @Override
+  public Map<String, AttributeValue> getAttributes() {
+    return attributes();
+  }
+
+  @Override
+  public List<Event> getEvents() {
+    return resolvedEvents();
+  }
+
+  @Override
+  public List<Link> getLinks() {
+    return resolvedLinks();
+  }
+
+  @Override
+  public Status getStatus() {
+    return status();
+  }
+
+  @Override
+  public long getEndEpochNanos() {
+    return delegate().getEndEpochNanos();
+  }
+
+  @Override
+  public boolean getHasRemoteParent() {
+    return delegate().hasRemoteParent();
+  }
+
+  @Override
+  public boolean getHasEnded() {
+    return delegate().hasEnded();
+  }
+
+  @Override
+  public int getTotalRecordedEvents() {
+    return totalRecordedEvents();
+  }
+
+  @Override
+  public int getTotalRecordedLinks() {
+    return delegate().getTotalRecordedLinks();
+  }
+
+  @Override
+  public int getTotalAttributeCount() {
+    return totalAttributeCount();
+  }
+}
