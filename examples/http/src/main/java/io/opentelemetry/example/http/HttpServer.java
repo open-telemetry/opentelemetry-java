@@ -21,7 +21,6 @@ import com.sun.net.httpserver.HttpHandler;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.context.ContextUtils;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
@@ -31,6 +30,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -46,16 +46,21 @@ public class HttpServer {
     public void handle(HttpExchange exchange) throws IOException {
       // Name convention for the Span is not yet defined.
       // See: https://github.com/open-telemetry/opentelemetry-specification/issues/270
-      Span.Builder spanBuilder = tracer.spanBuilder("/").setSpanKind(Span.Kind.SERVER);
 
       // Extract the context from the HTTP request
-      Context ctx =
-          OpenTelemetry.getPropagators().getHttpTextFormat().extract(Context.current(), exchange, getter);
+      Context context =
+          OpenTelemetry.getPropagators()
+              .getHttpTextFormat()
+              .extract(Context.current(), exchange, getter);
 
-      Span span = spanBuilder.startSpan();
-      try (Scope scope = ContextUtils.withScopedContext(ctx)) {
-        // Build a span automatically using the received context
+      Span span =
+          tracer
+              .spanBuilder("/")
+              .setParent(TracingContextUtils.getSpan(context))
+              .setSpanKind(Span.Kind.SERVER)
+              .startSpan();
 
+      try (Scope scope = tracer.withSpan(span)) {
         // Set the Semantic Convention
         span.setAttribute("component", "http");
         span.setAttribute("http.method", "GET");
