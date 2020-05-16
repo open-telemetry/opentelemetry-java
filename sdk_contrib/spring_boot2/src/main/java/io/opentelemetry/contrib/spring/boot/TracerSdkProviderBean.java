@@ -260,7 +260,7 @@ public class TracerSdkProviderBean implements FactoryBean<TracerProvider>, Initi
       spanExporter = MultiSpanExporter.create(spanExporters);
     }
     return SimpleSpansProcessor.newBuilder(spanExporter)
-        .reportOnlySampled(properties.getTracer().isExportSampledOnly())
+        .setExportOnlySampled(properties.getTracer().isExportSampledOnly())
         .build();
   }
 }
