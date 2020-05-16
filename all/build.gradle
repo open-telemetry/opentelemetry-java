@@ -17,6 +17,7 @@ def subprojects = [
         project(':opentelemetry-exporters-jaeger'),
         project(':opentelemetry-exporters-otlp'),
         project(':opentelemetry-exporters-prometheus'),
+        project(':opentelemetry-exporters-zipkin'),
         project(':opentelemetry-opentracing-shim'),
         project(':opentelemetry-sdk'),
         project(':opentelemetry-sdk-contrib-async-processor'),

@@ -23,8 +23,8 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -81,7 +81,7 @@ public class SpanBuilderSdkTest {
   public void addLink() {
     // Verify methods do not crash.
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    spanBuilder.addLink(SpanData.Link.create(DefaultSpan.getInvalid().getContext()));
+    spanBuilder.addLink(Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
     spanBuilder.addLink(
         DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
@@ -112,10 +112,10 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       SpanData spanData = span.toSpanData();
-      List<SpanData.Link> links = spanData.getLinks();
+      List<Link> links = spanData.getLinks();
       assertThat(links.size()).isEqualTo(maxNumberOfLinks);
       for (int i = 0; i < maxNumberOfLinks; i++) {
-        assertThat(links.get(i)).isEqualTo(SpanData.Link.create(sampledSpanContext));
+        assertThat(links.get(i)).isEqualTo(Link.create(sampledSpanContext));
         assertThat(spanData.getTotalRecordedLinks()).isEqualTo(2 * maxNumberOfLinks);
       }
     } finally {
@@ -127,7 +127,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void addLink_null() {
     thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).addLink((Link) null);
+    tracerSdk.spanBuilder(SPAN_NAME).addLink((io.opentelemetry.trace.Link) null);
   }
 
   @Test
@@ -159,6 +159,37 @@ public class SpanBuilderSdkTest {
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
+      SpanData spanData = span.toSpanData();
+      Map<String, AttributeValue> attrs = spanData.getAttributes();
+      assertThat(attrs)
+          .containsExactly(
+              "string",
+              AttributeValue.stringAttributeValue("value"),
+              "long",
+              AttributeValue.longAttributeValue(12345L),
+              "double",
+              AttributeValue.doubleAttributeValue(.12345),
+              "boolean",
+              AttributeValue.booleanAttributeValue(true),
+              "stringAttribute",
+              AttributeValue.stringAttributeValue("attrvalue"));
+      assertThat(spanData.getTotalAttributeCount()).isEqualTo(5);
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  public void setAttribute_afterEnd() {
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    spanBuilder.setAttribute("string", "value");
+    spanBuilder.setAttribute("long", 12345L);
+    spanBuilder.setAttribute("double", .12345);
+    spanBuilder.setAttribute("boolean", true);
+    spanBuilder.setAttribute("stringAttribute", AttributeValue.stringAttributeValue("attrvalue"));
+
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
       Map<String, AttributeValue> attrs = span.toSpanData().getAttributes();
       assertThat(attrs).hasSize(5);
       assertThat(attrs.get("string")).isEqualTo(AttributeValue.stringAttributeValue("value"));
@@ -170,10 +201,24 @@ public class SpanBuilderSdkTest {
     } finally {
       span.end();
     }
+
+    span.setAttribute("string2", "value");
+    span.setAttribute("long2", 12345L);
+    span.setAttribute("double2", .12345);
+    span.setAttribute("boolean2", true);
+    span.setAttribute("stringAttribute2", AttributeValue.stringAttributeValue("attrvalue"));
+
+    Map<String, AttributeValue> attrs = span.toSpanData().getAttributes();
+    assertThat(attrs).hasSize(5);
+    assertThat(attrs.get("string2")).isEqualTo(null);
+    assertThat(attrs.get("long2")).isEqualTo(null);
+    assertThat(attrs.get("double2")).isEqualTo(null);
+    assertThat(attrs.get("boolean2")).isEqualTo(null);
+    assertThat(attrs.get("stringAttribute2")).isEqualTo(null);
   }
 
   @Test
-  public void setAttribute_emptyArrayAttributeValue() throws Exception {
+  public void setAttribute_emptyArrayAttributeValue() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute(
         "stringArrayAttribute", AttributeValue.arrayAttributeValue(new String[0]));
@@ -187,7 +232,7 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
-  public void setAttribute_nullStringValue() throws Exception {
+  public void setAttribute_nullStringValue() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("nullString", (String) null);
@@ -195,13 +240,13 @@ public class SpanBuilderSdkTest {
     spanBuilder.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
-    spanBuilder.setAttribute("emptyString", (String) null);
-    spanBuilder.setAttribute("emptyStringAttributeValue", (String) null);
+    span.setAttribute("emptyString", (String) null);
+    span.setAttribute("emptyStringAttributeValue", (String) null);
     assertThat(span.toSpanData().getAttributes()).isEmpty();
   }
 
   @Test
-  public void setAttribute_nullAttributeValue() throws Exception {
+  public void setAttribute_nullAttributeValue() {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.setAttribute("emptyString", "");
     spanBuilder.setAttribute("nullString", (AttributeValue) null);
@@ -218,16 +263,45 @@ public class SpanBuilderSdkTest {
         "doubleArrayAttribute", AttributeValue.arrayAttributeValue(1.2345, null));
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
-    spanBuilder.setAttribute("emptyString", (AttributeValue) null);
-    spanBuilder.setAttribute("emptyStringAttributeValue", (AttributeValue) null);
-    spanBuilder.setAttribute("longAttribute", (AttributeValue) null);
-    spanBuilder.setAttribute("boolAttribute", (AttributeValue) null);
-    spanBuilder.setAttribute("doubleAttribute", (AttributeValue) null);
-    spanBuilder.setAttribute("stringArrayAttribute", (AttributeValue) null);
-    spanBuilder.setAttribute("boolArrayAttribute", (AttributeValue) null);
-    spanBuilder.setAttribute("longArrayAttribute", (AttributeValue) null);
-    spanBuilder.setAttribute("doubleArrayAttribute", (AttributeValue) null);
+    span.setAttribute("emptyString", (AttributeValue) null);
+    span.setAttribute("emptyStringAttributeValue", (AttributeValue) null);
+    span.setAttribute("longAttribute", (AttributeValue) null);
+    span.setAttribute("boolAttribute", (AttributeValue) null);
+    span.setAttribute("doubleAttribute", (AttributeValue) null);
+    span.setAttribute("stringArrayAttribute", (AttributeValue) null);
+    span.setAttribute("boolArrayAttribute", (AttributeValue) null);
+    span.setAttribute("longArrayAttribute", (AttributeValue) null);
+    span.setAttribute("doubleArrayAttribute", (AttributeValue) null);
     assertThat(span.toSpanData().getAttributes()).isEmpty();
+  }
+
+  @Test
+  public void setAttribute_nullAttributeValue_afterEnd() throws Exception {
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    spanBuilder.setAttribute("emptyString", "");
+    spanBuilder.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
+    spanBuilder.setAttribute("longAttribute", 0L);
+    spanBuilder.setAttribute("boolAttribute", false);
+    spanBuilder.setAttribute("doubleAttribute", 0.12345f);
+    spanBuilder.setAttribute("stringArrayAttribute", AttributeValue.arrayAttributeValue("", null));
+    spanBuilder.setAttribute("boolArrayAttribute", AttributeValue.arrayAttributeValue(true, null));
+    spanBuilder.setAttribute(
+        "longArrayAttribute", AttributeValue.arrayAttributeValue(12345L, null));
+    spanBuilder.setAttribute(
+        "doubleArrayAttribute", AttributeValue.arrayAttributeValue(1.2345, null));
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
+    span.end();
+    span.setAttribute("emptyString", (AttributeValue) null);
+    span.setAttribute("emptyStringAttributeValue", (AttributeValue) null);
+    span.setAttribute("longAttribute", (AttributeValue) null);
+    span.setAttribute("boolAttribute", (AttributeValue) null);
+    span.setAttribute("doubleAttribute", (AttributeValue) null);
+    span.setAttribute("stringArrayAttribute", (AttributeValue) null);
+    span.setAttribute("boolArrayAttribute", (AttributeValue) null);
+    span.setAttribute("longArrayAttribute", (AttributeValue) null);
+    span.setAttribute("doubleArrayAttribute", (AttributeValue) null);
+    assertThat(span.toSpanData().getAttributes().size()).isEqualTo(9);
   }
 
   @Test
@@ -249,8 +323,7 @@ public class SpanBuilderSdkTest {
       Map<String, AttributeValue> attrs = span.toSpanData().getAttributes();
       assertThat(attrs.size()).isEqualTo(maxNumberOfAttrs);
       for (int i = 0; i < maxNumberOfAttrs; i++) {
-        assertThat(attrs.get("key" + (i + maxNumberOfAttrs)))
-            .isEqualTo(AttributeValue.longAttributeValue(i + maxNumberOfAttrs));
+        assertThat(attrs.get("key" + i)).isEqualTo(AttributeValue.longAttributeValue(i));
       }
     } finally {
       span.end();
@@ -321,7 +394,7 @@ public class SpanBuilderSdkTest {
                           String name,
                           Span.Kind spanKind,
                           Map<String, AttributeValue> attributes,
-                          List<Link> parentLinks) {
+                          List<io.opentelemetry.trace.Link> parentLinks) {
                         return new Decision() {
                           @Override
                           public boolean isSampled() {
@@ -343,7 +416,7 @@ public class SpanBuilderSdkTest {
                         return "test sampler";
                       }
                     },
-                    Collections.<String, AttributeValue>singletonMap(
+                    Collections.singletonMap(
                         samplerAttributeName, AttributeValue.stringAttributeValue("none")))
                 .startSpan();
     try {

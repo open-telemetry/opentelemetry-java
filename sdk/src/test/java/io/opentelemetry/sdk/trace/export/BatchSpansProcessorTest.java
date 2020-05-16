@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace.export;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.doThrow;
 
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
@@ -28,10 +29,7 @@ import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,10 +37,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentMatchers;
@@ -61,6 +56,17 @@ public class BatchSpansProcessorTest {
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
 
+  abstract static class ConfigTest<T> extends ConfigBuilder<T> {
+
+    public static ConfigBuilder.NamingConvention getDot() {
+      return NamingConvention.DOT;
+    }
+
+    public static ConfigBuilder.NamingConvention getEnv() {
+      return NamingConvention.ENV_VAR;
+    }
+  }
+
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
@@ -69,210 +75,6 @@ public class BatchSpansProcessorTest {
   @After
   public void cleanup() {
     tracerSdkFactory.shutdown();
-  }
-
-  @RunWith(JUnit4.class)
-  public static class ConfigurationSystemPropertiesTest {
-    @Rule
-    public final ProvideSystemProperty systemProperties =
-        new ProvideSystemProperty("otel.bsp.schedule.delay", "5")
-            .and("otel.bsp.max.queue", "5")
-            .and("otel.bsp.export.timeout", "5")
-            .and("otel.bsp.export.sampled", "false");
-
-    @Test
-    public void testSystemProperties() {
-      BatchSpansProcessor.Config config = BatchSpansProcessor.Config.loadFromDefaultSources();
-      assertThat(config.getScheduleDelayMillis()).isEqualTo(5);
-      assertThat(config.getMaxQueueSize()).isEqualTo(5);
-      // This is not defined and should be equal to the default values
-      assertThat(config.getMaxExportBatchSize())
-          .isEqualTo(BatchSpansProcessor.Config.getDefault().getMaxExportBatchSize());
-      assertThat(config.getExporterTimeoutMillis()).isEqualTo(5);
-      assertThat(config.isExportOnlySampled()).isEqualTo(false);
-    }
-  }
-
-  @RunWith(JUnit4.class)
-  public static class ConfigurationEnvironmentVariablesTest {
-    @Rule
-    public final EnvironmentVariables environmentVariables =
-        new EnvironmentVariables()
-            .set("OTEL_BSP_MAX_QUEUE", "22")
-            .set("OTEL_BSP_EXPORT_TIMEOUT", "22")
-            .set("OTEL_BSP_EXPORT_SAMPLED", "true");
-
-    @Test
-    public void testEnvironmentVariables() {
-      BatchSpansProcessor.Config config = BatchSpansProcessor.Config.loadFromDefaultSources();
-      BatchSpansProcessor.Config defaultConf = BatchSpansProcessor.Config.getDefault();
-      // This is not defined and should be equal to the default values
-      assertThat(config.getScheduleDelayMillis()).isEqualTo(defaultConf.getScheduleDelayMillis());
-      assertThat(config.getMaxQueueSize()).isEqualTo(22);
-      // This is not defined and should be equal to the default values
-      assertThat(config.getMaxExportBatchSize()).isEqualTo(defaultConf.getMaxExportBatchSize());
-      assertThat(config.getExporterTimeoutMillis()).isEqualTo(22);
-      assertThat(config.isExportOnlySampled()).isEqualTo(true);
-    }
-  }
-
-  @RunWith(JUnit4.class)
-  public static class ConfigurationSystemAndEnvironmentTest {
-    @Rule
-    public final ProvideSystemProperty systemProperties =
-        new ProvideSystemProperty("otel.bsp.max.queue", "5")
-            .and("otel.bsp.export.timeout", "5")
-            .and("otel.bsp.export.sampled", "false");
-
-    @Rule
-    public final EnvironmentVariables environmentVariables =
-        new EnvironmentVariables()
-            .set("OTEL_BSP_SCHEDULE_DELAY", "22")
-            .set("OTEL_BSP_MAX_QUEUE", "22")
-            .set("OTEL_BSP_EXPORT_TIMEOUT", "22")
-            .set("OTEL_BSP_EXPORT_SAMPLED", "true");
-
-    @Test
-    public void testSystemAndEnv() {
-      BatchSpansProcessor.Config config = BatchSpansProcessor.Config.loadFromDefaultSources();
-      BatchSpansProcessor.Config defaultConf = BatchSpansProcessor.Config.getDefault();
-      assertThat(config.getScheduleDelayMillis()).isEqualTo(22);
-      assertThat(config.getMaxQueueSize()).isEqualTo(5);
-      // This is not defined and should be equal to the default values
-      assertThat(config.getMaxExportBatchSize()).isEqualTo(defaultConf.getMaxExportBatchSize());
-      assertThat(config.getExporterTimeoutMillis()).isEqualTo(5);
-      assertThat(config.isExportOnlySampled()).isEqualTo(false);
-    }
-  }
-
-  private ReadableSpan createSampledEndedSpan(String spanName) {
-    io.opentelemetry.trace.Span span =
-        TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOn())
-            .startSpan();
-    span.end();
-    return (ReadableSpan) span;
-  }
-
-  @Test
-  public void testConfiguration() {
-    BatchSpansProcessor.Config config;
-    BatchSpansProcessor.Config defConfig = BatchSpansProcessor.Config.getDefault();
-
-    config = BatchSpansProcessor.Config.newBuilder().build();
-    // check defaults
-    assertThat(config.getScheduleDelayMillis()).isEqualTo(defConfig.getScheduleDelayMillis());
-    assertThat(config.getMaxQueueSize()).isEqualTo(defConfig.getMaxQueueSize());
-    assertThat(config.getMaxExportBatchSize()).isEqualTo(defConfig.getMaxExportBatchSize());
-    assertThat(config.getExporterTimeoutMillis()).isEqualTo(defConfig.getExporterTimeoutMillis());
-    assertThat(config.isExportOnlySampled()).isEqualTo(defConfig.isExportOnlySampled());
-
-    // check system configuration
-    Map<String, String> configMap = new HashMap<>();
-    configMap.put("otel.bsp.schedule.delay", "1");
-    configMap.put("otel.bsp.max.queue", "1");
-    configMap.put("otel.bsp.max.export.batch", "1");
-    configMap.put("otel.bsp.export.timeout", "1");
-    configMap.put("otel.bsp.export.sampled", "false");
-    config =
-        BatchSpansProcessor.Config.newBuilder()
-            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.DOT)
-            .build();
-    assertThat(config.getScheduleDelayMillis()).isEqualTo(1);
-    assertThat(config.getMaxQueueSize()).isEqualTo(1);
-    assertThat(config.getMaxExportBatchSize()).isEqualTo(1);
-    assertThat(config.getExporterTimeoutMillis()).isEqualTo(1);
-    assertThat(config.isExportOnlySampled()).isEqualTo(false);
-
-    // check properties
-    Properties properties = new Properties();
-    for (Map.Entry<String, String> entry : configMap.entrySet()) {
-      properties.put(entry.getKey(), entry.getValue());
-    }
-    config = BatchSpansProcessor.Config.newBuilder().readProperties(properties).build();
-    assertThat(config.getScheduleDelayMillis()).isEqualTo(1);
-    assertThat(config.getMaxQueueSize()).isEqualTo(1);
-    assertThat(config.getMaxExportBatchSize()).isEqualTo(1);
-    assertThat(config.getExporterTimeoutMillis()).isEqualTo(1);
-    assertThat(config.isExportOnlySampled()).isEqualTo(false);
-
-    // Check env vars
-    configMap.clear();
-    configMap.put("OTEL_BSP_SCHEDULE_DELAY", "2");
-    configMap.put("OTEL_BSP_MAX_QUEUE", "2");
-    configMap.put("OTEL_BSP_MAX_EXPORT_BATCH", "2");
-    configMap.put("OTEL_BSP_EXPORT_TIMEOUT", "2");
-    configMap.put("OTEL_BSP_EXPORT_SAMPLED", "true");
-    config =
-        BatchSpansProcessor.Config.newBuilder()
-            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.ENV_VAR)
-            .build();
-    assertThat(config.getScheduleDelayMillis()).isEqualTo(2);
-    assertThat(config.getMaxQueueSize()).isEqualTo(2);
-    assertThat(config.getMaxExportBatchSize()).isEqualTo(2);
-    assertThat(config.getExporterTimeoutMillis()).isEqualTo(2);
-    assertThat(config.isExportOnlySampled()).isEqualTo(true);
-
-    // Check mixing conventions
-    configMap.clear();
-    configMap.put("OTEL_BSP_schedule_DELAY", "3");
-    configMap.put("OTEL.BSP.MAX_QUEUE", "3");
-    configMap.put("OTEL_bsp.MAX_EXPORT_BATCH", "3");
-    configMap.put("OTEL_BSP_ExPoRt_TIMEOUT", "3");
-    configMap.put("OTEL_bSp.EXPORT.SAmpleD", "false");
-    config =
-        BatchSpansProcessor.Config.newBuilder()
-            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.ENV_VAR)
-            .build();
-    assertThat(config.getScheduleDelayMillis()).isEqualTo(3);
-    assertThat(config.getMaxQueueSize()).isEqualTo(3);
-    assertThat(config.getMaxExportBatchSize()).isEqualTo(3);
-    assertThat(config.getExporterTimeoutMillis()).isEqualTo(3);
-    assertThat(config.isExportOnlySampled()).isEqualTo(false);
-  }
-
-  @Test
-  public void testOnlySetPropertiesOverrideDefaults() {
-    BatchSpansProcessor.Config config;
-    Map<String, String> configMap = new HashMap<>();
-    // check only set values are written
-    configMap.clear();
-    configMap.put("OTEL_BSP_SCHEDULE_DELAY", "1");
-    config =
-        BatchSpansProcessor.Config.newBuilder()
-            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.ENV_VAR)
-            .build();
-    assertThat(config.getScheduleDelayMillis()).isEqualTo(1);
-    assertThat(config.getMaxQueueSize()).isEqualTo(2048);
-    assertThat(config.getMaxExportBatchSize()).isEqualTo(512);
-    assertThat(config.getExporterTimeoutMillis()).isEqualTo(30_000);
-    assertThat(config.isExportOnlySampled()).isEqualTo(true);
-  }
-
-  @Test
-  public void testUserSetPropertiesOverrideDefaults() {
-    BatchSpansProcessor.Config config;
-    Map<String, String> configMap = new HashMap<>();
-    // check only set values are written
-    configMap.clear();
-    configMap.put("otel.bsp.schedule.delay", "1");
-    configMap.put("otel.bsp.max.queue", "1");
-    configMap.put("otel.bsp.max.export.batch", "1");
-    configMap.put("otel.bsp.export.timeout", "1");
-    configMap.put("otel.bsp.export.sampled", "false");
-    config =
-        BatchSpansProcessor.Config.newBuilder()
-            .fromConfigMap(configMap, BatchSpansProcessor.Config.Builder.NamingConvention.DOT)
-            .setScheduleDelayMillis(2)
-            .setMaxQueueSize(2)
-            .setMaxExportBatchSize(2)
-            .setExporterTimeoutMillis(2)
-            .setExportOnlySampled(true)
-            .build();
-    assertThat(config.getScheduleDelayMillis()).isEqualTo(2);
-    assertThat(config.getMaxQueueSize()).isEqualTo(2);
-    assertThat(config.getMaxExportBatchSize()).isEqualTo(2);
-    assertThat(config.getExporterTimeoutMillis()).isEqualTo(2);
-    assertThat(config.isExportOnlySampled()).isEqualTo(true);
   }
 
   // TODO(bdrutu): Fix this when Sampler return RECORD option.
@@ -285,6 +87,14 @@ public class BatchSpansProcessorTest {
   }
   */
 
+  private ReadableSpan createSampledEndedSpan(String spanName) {
+    io.opentelemetry.trace.Span span =
+        TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOn())
+            .startSpan();
+    span.end();
+    return (ReadableSpan) span;
+  }
+
   private void createNotSampledEndedSpan(String spanName) {
     TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOff())
         .startSpan()
@@ -293,7 +103,8 @@ public class BatchSpansProcessorTest {
 
   @Test
   public void startEndRequirements() {
-    BatchSpansProcessor spansProcessor = BatchSpansProcessor.create(new WaitingSpanExporter(0));
+    BatchSpansProcessor spansProcessor =
+        BatchSpansProcessor.newBuilder(new WaitingSpanExporter(0)).build();
     assertThat(spansProcessor.isStartRequired()).isFalse();
     assertThat(spansProcessor.isEndRequired()).isTrue();
   }
@@ -302,11 +113,9 @@ public class BatchSpansProcessorTest {
   public void exportDifferentSampledSpans() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
     tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.create(
-            waitingSpanExporter,
-            BatchSpansProcessor.Config.newBuilder()
-                .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-                .build()));
+        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+            .build());
 
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
@@ -317,14 +126,14 @@ public class BatchSpansProcessorTest {
   @Test
   public void exportMoreSpansThanTheBufferSize() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(6);
-    BatchSpansProcessor.Config config =
-        BatchSpansProcessor.Config.newBuilder()
+    BatchSpansProcessor batchSpansProcessor =
+        BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setMaxQueueSize(6)
             .setMaxExportBatchSize(2)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build();
 
-    tracerSdkFactory.addSpanProcessor(BatchSpansProcessor.create(waitingSpanExporter, config));
+    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
 
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_1);
@@ -346,14 +155,12 @@ public class BatchSpansProcessorTest {
   @Test
   public void forceExport() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1, 1);
-    BatchSpansProcessor.Config config =
-        BatchSpansProcessor.Config.newBuilder()
+    BatchSpansProcessor batchSpansProcessor =
+        BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setMaxQueueSize(10_000)
             .setMaxExportBatchSize(2_000)
             .setScheduleDelayMillis(10_000) // 10s
             .build();
-    BatchSpansProcessor batchSpansProcessor =
-        BatchSpansProcessor.create(waitingSpanExporter, config);
 
     tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
     for (int i = 0; i < 100; i++) {
@@ -372,15 +179,12 @@ public class BatchSpansProcessorTest {
   public void exportSpansToMultipleServices() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
     WaitingSpanExporter waitingSpanExporter2 = new WaitingSpanExporter(2);
-    BatchSpansProcessor.Config config =
-        BatchSpansProcessor.Config.newBuilder()
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-            .build();
     tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.create(
-            MultiSpanExporter.create(
-                Arrays.<SpanExporter>asList(waitingSpanExporter, waitingSpanExporter2)),
-            config));
+        BatchSpansProcessor.newBuilder(
+                MultiSpanExporter.create(
+                    Arrays.<SpanExporter>asList(waitingSpanExporter, waitingSpanExporter2)))
+            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+            .build());
 
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
@@ -394,16 +198,14 @@ public class BatchSpansProcessorTest {
   public void exportMoreSpansThanTheMaximumLimit() {
     final int maxQueuedSpans = 8;
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(maxQueuedSpans);
-    BatchSpansProcessor.Config config =
-        BatchSpansProcessor.Config.newBuilder()
+    BatchSpansProcessor batchSpansProcessor =
+        BatchSpansProcessor.newBuilder(
+                MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .setMaxQueueSize(maxQueuedSpans)
             .setMaxExportBatchSize(maxQueuedSpans / 2)
             .build();
-    tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.create(
-            MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)),
-            config));
+    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
 
     List<SpanData> spansToExport = new ArrayList<>(maxQueuedSpans + 1);
     // Wait to block the worker thread in the BatchSampledSpansProcessor. This ensures that no items
@@ -460,15 +262,11 @@ public class BatchSpansProcessorTest {
     doThrow(new IllegalArgumentException("No export for you."))
         .when(mockServiceHandler)
         .export(ArgumentMatchers.<SpanData>anyList());
-
-    BatchSpansProcessor.Config config =
-        BatchSpansProcessor.Config.newBuilder()
-            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
-            .build();
     tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.create(
-            MultiSpanExporter.create(Arrays.asList(mockServiceHandler, waitingSpanExporter)),
-            config));
+        BatchSpansProcessor.newBuilder(
+                MultiSpanExporter.create(Arrays.asList(mockServiceHandler, waitingSpanExporter)))
+            .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
+            .build());
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).containsExactly(span1.toSpanData());
@@ -498,14 +296,14 @@ public class BatchSpansProcessorTest {
         };
 
     int exporterTimeoutMillis = 100;
-    BatchSpansProcessor.Config config =
-        BatchSpansProcessor.Config.newBuilder()
+    BatchSpansProcessor batchSpansProcessor =
+        BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setExporterTimeoutMillis(exporterTimeoutMillis)
             .setScheduleDelayMillis(1)
             .setMaxQueueSize(1)
             .build();
 
-    tracerSdkFactory.addSpanProcessor(BatchSpansProcessor.create(waitingSpanExporter, config));
+    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
 
     ReadableSpan span = createSampledEndedSpan(SPAN_NAME_1);
     List<SpanData> exported = waitingSpanExporter.waitForExport();
@@ -519,11 +317,11 @@ public class BatchSpansProcessorTest {
   @Test
   public void exportNotSampledSpans() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
-    BatchSpansProcessor.Config config =
-        BatchSpansProcessor.Config.newBuilder()
+    BatchSpansProcessor batchSpansProcessor =
+        BatchSpansProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build();
-    tracerSdkFactory.addSpanProcessor(BatchSpansProcessor.create(waitingSpanExporter, config));
+    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
 
     createNotSampledEndedSpan(SPAN_NAME_1);
     createNotSampledEndedSpan(SPAN_NAME_2);
@@ -575,10 +373,9 @@ public class BatchSpansProcessorTest {
   public void shutdownFlushes() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
     // Set the export delay to zero, for no timeout, in order to confirm the #flush() below works
-    BatchSpansProcessor.Config config =
-        BatchSpansProcessor.Config.newBuilder().setScheduleDelayMillis(0).build();
 
-    tracerSdkFactory.addSpanProcessor(BatchSpansProcessor.create(waitingSpanExporter, config));
+    tracerSdkFactory.addSpanProcessor(
+        BatchSpansProcessor.newBuilder(waitingSpanExporter).setScheduleDelayMillis(0).build());
 
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
 

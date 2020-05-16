@@ -20,15 +20,13 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
-import io.opentelemetry.correlationcontext.DefaultCorrelationContextManagerProvider;
 import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
+import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
-import io.opentelemetry.metrics.DefaultMetricsProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
-import io.opentelemetry.trace.DefaultTraceProvider;
 import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
@@ -64,13 +62,44 @@ public final class OpenTelemetry {
   /**
    * Returns a singleton {@link TracerProvider}.
    *
-   * @return registered TracerProvider of default via {@link DefaultTracerProvider#getInstance()}.
+   * @return registered TracerProvider or default via {@link DefaultTracerProvider#getInstance()}.
    * @throws IllegalStateException if a specified TracerProvider (via system properties) could not
    *     be found.
    * @since 0.1.0
    */
   public static TracerProvider getTracerProvider() {
     return getInstance().tracerProvider;
+  }
+
+  /**
+   * Gets or creates a named tracer instance.
+   *
+   * <p>This is a shortcut method for <code>getTracerProvider().get(instrumentationName)</code>.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   * @return a tracer instance.
+   * @since 0.4.0
+   */
+  public static Tracer getTracer(String instrumentationName) {
+    return getTracerProvider().get(instrumentationName);
+  }
+
+  /**
+   * Gets or creates a named and versioned tracer instance.
+   *
+   * <p>This is a shortcut method for <code>
+   * getTracerProvider().get(instrumentationName, instrumentationVersion)</code>.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library (e.g., "io.opentelemetry.contrib.mongodb"). Must not be null.
+   * @param instrumentationVersion The version of the instrumentation library (e.g.,
+   *     "semver:1.0.0").
+   * @return a tracer instance.
+   * @since 0.4.0
+   */
+  public static Tracer getTracer(String instrumentationName, String instrumentationVersion) {
+    return getTracerProvider().get(instrumentationName, instrumentationVersion);
   }
 
   /**
@@ -83,6 +112,36 @@ public final class OpenTelemetry {
    */
   public static MeterProvider getMeterProvider() {
     return getInstance().meterProvider;
+  }
+
+  /**
+   * Gets or creates a named meter instance.
+   *
+   * <p>This is a shortcut method for <code>getMeterProvider().get(instrumentationName)</code>.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @return a tracer instance.
+   * @since 0.4.0
+   */
+  public static Meter getMeter(String instrumentationName) {
+    return getMeterProvider().get(instrumentationName);
+  }
+
+  /**
+   * Gets or creates a named and versioned meter instance.
+   *
+   * <p>This is a shortcut method for <code>
+   * getMeterProvider().get(instrumentationName, instrumentationVersion)</code>.
+   *
+   * @param instrumentationName The name of the instrumentation library, not the name of the
+   *     instrument*ed* library.
+   * @param instrumentationVersion The version of the instrumentation library.
+   * @return a tracer instance.
+   * @since 0.4.0
+   */
+  public static Meter getMeter(String instrumentationName, String instrumentationVersion) {
+    return getMeterProvider().get(instrumentationName, instrumentationVersion);
   }
 
   /**
@@ -143,20 +202,18 @@ public final class OpenTelemetry {
     TraceProvider traceProvider = loadSpi(TraceProvider.class);
     this.tracerProvider =
         traceProvider != null
-            ? traceProvider.create()
-            : DefaultTraceProvider.getInstance().create();
+            ? new ObfuscatedTracerProvider(traceProvider.create())
+            : DefaultTracerProvider.getInstance();
 
     MetricsProvider metricsProvider = loadSpi(MetricsProvider.class);
     meterProvider =
-        metricsProvider != null
-            ? metricsProvider.create()
-            : DefaultMetricsProvider.getInstance().create();
+        metricsProvider != null ? metricsProvider.create() : DefaultMeterProvider.getInstance();
     CorrelationContextManagerProvider contextManagerProvider =
         loadSpi(CorrelationContextManagerProvider.class);
     contextManager =
         contextManagerProvider != null
             ? contextManagerProvider.create()
-            : DefaultCorrelationContextManagerProvider.getInstance().create();
+            : DefaultCorrelationContextManager.getInstance();
   }
 
   /**
@@ -187,5 +244,37 @@ public final class OpenTelemetry {
   // for testing
   static void reset() {
     instance = null;
+  }
+
+  /**
+   * A {@link TracerProvider} wrapper that forces users to access the SDK specific implementation
+   * via the SDK, instead of via the API and casting it to the SDK specific implementation.
+   *
+   * @see Obfuscated
+   */
+  @ThreadSafe
+  private static class ObfuscatedTracerProvider
+      implements TracerProvider, Obfuscated<TracerProvider> {
+
+    private final TracerProvider delegate;
+
+    private ObfuscatedTracerProvider(TracerProvider delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public Tracer get(String instrumentationName) {
+      return delegate.get(instrumentationName);
+    }
+
+    @Override
+    public Tracer get(String instrumentationName, String instrumentationVersion) {
+      return delegate.get(instrumentationName, instrumentationVersion);
+    }
+
+    @Override
+    public TracerProvider unobfuscate() {
+      return delegate;
+    }
   }
 }

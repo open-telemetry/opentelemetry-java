@@ -50,6 +50,16 @@ final class MeterSdk implements Meter {
   }
 
   @Override
+  public DoubleUpDownCounterSdk.Builder doubleUpDownCounterBuilder(String name) {
+    return new DoubleUpDownCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
+  }
+
+  @Override
+  public LongUpDownCounterSdk.Builder longUpDownCounterBuilder(String name) {
+    return new LongUpDownCounterSdk.Builder(name, meterProviderSharedState, meterSharedState);
+  }
+
+  @Override
   public DoubleMeasureSdk.Builder doubleMeasureBuilder(String name) {
     return new DoubleMeasureSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
@@ -60,13 +70,23 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public DoubleObserverSdk.Builder doubleObserverBuilder(String name) {
-    return new DoubleObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
+  public DoubleSumObserverSdk.Builder doubleSumObserverBuilder(String name) {
+    return new DoubleSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public LongObserverSdk.Builder longObserverBuilder(String name) {
-    return new LongObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
+  public LongSumObserverSdk.Builder longSumObserverBuilder(String name) {
+    return new LongSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
+  }
+
+  @Override
+  public DoubleUpDownSumObserverSdk.Builder doubleUpDownSumObserverBuilder(String name) {
+    return new DoubleUpDownSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
+  }
+
+  @Override
+  public LongUpDownSumObserverSdk.Builder longUpDownSumObserverBuilder(String name) {
+    return new LongUpDownSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override

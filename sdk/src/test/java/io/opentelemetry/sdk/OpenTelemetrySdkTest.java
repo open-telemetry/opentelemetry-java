@@ -28,11 +28,23 @@ public class OpenTelemetrySdkTest {
 
   @Test
   public void testDefault() {
-    assertThat(OpenTelemetrySdk.getTracerProvider())
-        .isSameInstanceAs(OpenTelemetry.getTracerProvider());
+    assertThat(OpenTelemetrySdk.getTracerProvider().get(""))
+        .isSameInstanceAs(OpenTelemetry.getTracerProvider().get(""));
     assertThat(OpenTelemetrySdk.getCorrelationContextManager())
         .isSameInstanceAs(OpenTelemetry.getCorrelationContextManager());
     assertThat(OpenTelemetrySdk.getMeterProvider())
         .isSameInstanceAs(OpenTelemetry.getMeterProvider());
+  }
+
+  @Test
+  public void testShortcutVersions() {
+    assertThat(OpenTelemetry.getTracer("testTracer1"))
+        .isEqualTo(OpenTelemetry.getTracerProvider().get("testTracer1"));
+    assertThat(OpenTelemetry.getTracer("testTracer2", "testVersion"))
+        .isEqualTo(OpenTelemetry.getTracerProvider().get("testTracer2", "testVersion"));
+    assertThat(OpenTelemetry.getMeter("testMeter1"))
+        .isEqualTo(OpenTelemetry.getMeterProvider().get("testMeter1"));
+    assertThat(OpenTelemetry.getMeter("testMeter2", "testVersion"))
+        .isEqualTo(OpenTelemetry.getMeterProvider().get("testMeter2", "testVersion"));
   }
 }

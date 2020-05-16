@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OpenTelemetry Authors
+ * Copyright 2020, OpenTelemetry Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,30 @@
  *   <li>{@link io.opentelemetry.sdk.trace.export.MultiSpanExporter}
  * </ul>
  *
- * <h2>Default values for {@link io.opentelemetry.sdk.trace.export.BatchSpansProcessor.Config}</h2>
+ * <h2>Default values for {@link io.opentelemetry.sdk.trace.export.SimpleSpansProcessor}</h2>
+ *
+ * <ul>
+ *   <li>{@code REPORT_ONLY_SAMPLED: true} *
+ * </ul>
+ *
+ * <p>Values for {@link io.opentelemetry.sdk.trace.export.SimpleSpansProcessor} can be read from
+ * system properties, environment variables, or {@link java.util.Properties} objects.
+ *
+ * <p>For System Properties and {@link java.util.Properties} objects, {@link
+ * io.opentelemetry.sdk.trace.export.SimpleSpansProcessor} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code otel.ssp.export.sampled}: sets whether only sampled spans should be exported.
+ * </ul>
+ *
+ * <p>For Environment Variable, {@link io.opentelemetry.sdk.trace.export.SimpleSpansProcessor} will
+ * look for the following names:
+ *
+ * <ul>
+ *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
+ * </ul>
+ *
+ * <h2>Default values for {@link io.opentelemetry.sdk.trace.export.BatchSpansProcessor}</h2>
  *
  * <ul>
  *   <li>{@code SCHEDULE_DELAY_MILLIS: 5000}
@@ -37,11 +60,11 @@
  *   <li>{@code REPORT_ONLY_SAMPLED: true}
  * </ul>
  *
- * <p>Values for {@link io.opentelemetry.sdk.trace.export.BatchSpansProcessor.Config} can be read
- * from system properties, environment variables, or {@link java.util.Properties} objects.
+ * <p>Values for {@link io.opentelemetry.sdk.trace.export.BatchSpansProcessor} can be read from
+ * system properties, environment variables, or {@link java.util.Properties} objects.
  *
  * <p>For System Properties and {@link java.util.Properties} objects, {@link
- * io.opentelemetry.sdk.trace.export.BatchSpansProcessor.Config} will look for the following names:
+ * io.opentelemetry.sdk.trace.export.BatchSpansProcessor} will look for the following names:
  *
  * <ul>
  *   <li>{@code otel.bsp.schedule.delay}: sets the delay interval between two consecutive exports.
@@ -51,8 +74,8 @@
  *   <li>{@code otel.bsp.export.sampled}: sets whether only sampled spans should be exported.
  * </ul>
  *
- * <p>For Environment Variable, {@link io.opentelemetry.sdk.trace.export.BatchSpansProcessor.Config}
- * will look for the following names:
+ * <p>For Environment Variable, {@link io.opentelemetry.sdk.trace.export.BatchSpansProcessor} will
+ * look for the following names:
  *
  * <ul>
  *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: sets the delay interval between two consecutive exports.

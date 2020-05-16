@@ -18,17 +18,27 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.sdk.metrics.LongMeasureSdk.BoundInstrument;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements LongMeasure {
+final class LongMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument>
+    implements LongMeasure {
 
   private LongMeasureSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      boolean absolute) {
+      MeterSharedState meterSharedState) {
     super(
-        descriptor, InstrumentValueType.LONG, meterProviderSharedState, meterSharedState, absolute);
+        descriptor,
+        meterProviderSharedState,
+        meterSharedState,
+        new ActiveBatcher(
+            getDefaultBatcher(
+                descriptor,
+                meterProviderSharedState,
+                meterSharedState,
+                Aggregations.minMaxSumCount())));
   }
 
   @Override
@@ -49,29 +59,23 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
 
   @Override
   BoundInstrument newBinding(Batcher batcher) {
-    return new BoundInstrument(isAbsolute(), batcher);
+    return new BoundInstrument(batcher);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
       implements LongMeasure.BoundLongMeasure {
 
-    private final boolean absolute;
-
-    BoundInstrument(boolean absolute, Batcher batcher) {
+    BoundInstrument(Batcher batcher) {
       super(batcher.getAggregator());
-      this.absolute = absolute;
     }
 
     @Override
     public void record(long value) {
-      if (this.absolute && value < 0) {
-        throw new IllegalArgumentException("absolute measure can only record positive values");
-      }
       recordLong(value);
     }
   }
 
-  static final class Builder extends AbstractMeasure.Builder<LongMeasureSdk.Builder>
+  static final class Builder extends AbstractInstrument.Builder<LongMeasureSdk.Builder>
       implements LongMeasure.Builder {
 
     Builder(
@@ -90,10 +94,10 @@ final class LongMeasureSdk extends AbstractMeasure<BoundInstrument> implements L
     public LongMeasureSdk build() {
       return register(
           new LongMeasureSdk(
-              getInstrumentDescriptor(),
+              getInstrumentDescriptor(
+                  InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
-              getMeterSharedState(),
-              isAbsolute()));
+              getMeterSharedState()));
     }
   }
 }

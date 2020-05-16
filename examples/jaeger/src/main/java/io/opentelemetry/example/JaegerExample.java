@@ -15,8 +15,7 @@ public class JaegerExample {
   private int port; // = 14250;
 
   // OTel API
-  private Tracer tracer =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.JaegerExample");
+  private Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.JaegerExample");
   // Export traces to Jaeger
   private JaegerGrpcSpanExporter jaegerExporter;
 
@@ -39,7 +38,7 @@ public class JaegerExample {
 
     // Set to process the spans by the Jaeger Exporter
     OpenTelemetrySdk.getTracerProvider()
-        .addSpanProcessor(SimpleSpansProcessor.newBuilder(this.jaegerExporter).build());
+        .addSpanProcessor(SimpleSpansProcessor.create(this.jaegerExporter));
   }
 
   private void myWonderfulUseCase() {

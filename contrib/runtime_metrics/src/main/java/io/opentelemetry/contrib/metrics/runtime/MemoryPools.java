@@ -17,10 +17,11 @@
 package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
-import io.opentelemetry.metrics.LongObserver;
-import io.opentelemetry.metrics.LongObserver.ResultLongObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
+import io.opentelemetry.metrics.LongSumObserver;
+import io.opentelemetry.metrics.LongUpDownSumObserver;
+import io.opentelemetry.metrics.LongUpDownSumObserver.ResultLongUpDownSumObserver;
 import io.opentelemetry.metrics.Meter;
-import io.opentelemetry.metrics.Observer.Callback;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
@@ -63,18 +64,16 @@ public final class MemoryPools {
   public MemoryPools() {
     this.memoryBean = ManagementFactory.getMemoryMXBean();
     this.poolBeans = ManagementFactory.getMemoryPoolMXBeans();
-    this.meter = OpenTelemetry.getMeterProvider().get("jvm_memory");
+    this.meter = OpenTelemetry.getMeter("jvm_memory");
   }
 
   /** Export only the "area" metric. */
   public void exportMemoryAreaMetric() {
-    // TODO: Set this as non-monotonic.
-    final LongObserver areaMetric =
+    final LongUpDownSumObserver areaMetric =
         this.meter
-            .longObserverBuilder("area")
+            .longUpDownSumObserverBuilder("area")
             .setDescription("Bytes of a given JVM memory area.")
             .setUnit("By")
-            .setMonotonic(false)
             .build();
     final String[] usedHeap = new String[] {TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, HEAP};
     final String[] usedNonHeap = new String[] {TYPE_LABEL_KEY, USED, AREA_LABEL_KEY, NON_HEAP};
@@ -85,9 +84,9 @@ public final class MemoryPools {
     final String[] maxHeap = new String[] {TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP};
     final String[] maxNonHeap = new String[] {TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP};
     areaMetric.setCallback(
-        new LongObserver.Callback<ResultLongObserver>() {
+        new LongSumObserver.Callback<ResultLongUpDownSumObserver>() {
           @Override
-          public void update(ResultLongObserver resultLongObserver) {
+          public void update(ResultLongUpDownSumObserver resultLongObserver) {
             MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
             MemoryUsage nonHeapUsage = memoryBean.getNonHeapMemoryUsage();
             resultLongObserver.observe(heapUsage.getUsed(), usedHeap);
@@ -102,13 +101,11 @@ public final class MemoryPools {
 
   /** Export only the "pool" metric. */
   public void exportMemoryPoolMetric() {
-    // TODO: Set this as non-monotonic.
-    final LongObserver poolMetric =
+    final LongUpDownSumObserver poolMetric =
         this.meter
-            .longObserverBuilder("pool")
+            .longUpDownSumObserverBuilder("pool")
             .setDescription("Bytes of a given JVM memory pool.")
             .setUnit("By")
-            .setMonotonic(false)
             .build();
     final List<String[]> usedLabelSets = new ArrayList<>(poolBeans.size());
     final List<String[]> committedLabelSets = new ArrayList<>(poolBeans.size());
@@ -120,9 +117,9 @@ public final class MemoryPools {
       maxLabelSets.add(new String[] {TYPE_LABEL_KEY, MAX, POOL_LABEL_KEY, pool.getName()});
     }
     poolMetric.setCallback(
-        new Callback<ResultLongObserver>() {
+        new Callback<ResultLongUpDownSumObserver>() {
           @Override
-          public void update(ResultLongObserver resultLongObserver) {
+          public void update(ResultLongUpDownSumObserver resultLongObserver) {
             for (int i = 0; i < poolBeans.size(); i++) {
               MemoryUsage poolUsage = poolBeans.get(i).getUsage();
               resultLongObserver.observe(poolUsage.getUsed(), usedLabelSets.get(i));

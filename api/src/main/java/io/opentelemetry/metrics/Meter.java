@@ -63,6 +63,32 @@ public interface Meter {
   LongCounter.Builder longCounterBuilder(String name);
 
   /**
+   * Returns a builder for a {@link DoubleUpDownCounter}.
+   *
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
+   * @return a {@code DoubleCounter.Builder}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
+   * @since 0.1.0
+   */
+  DoubleUpDownCounter.Builder doubleUpDownCounterBuilder(String name);
+
+  /**
+   * Returns a builder for a {@link LongUpDownCounter}.
+   *
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
+   * @return a {@code LongCounter.Builder}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
+   * @since 0.1.0
+   */
+  LongUpDownCounter.Builder longUpDownCounterBuilder(String name);
+
+  /**
    * Returns a new builder for a {@link DoubleMeasure}.
    *
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
@@ -89,30 +115,56 @@ public interface Meter {
   LongMeasure.Builder longMeasureBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link DoubleObserver}.
+   * Returns a new builder for a {@link DoubleSumObserver}.
    *
    * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
-   * @return a new builder for a {@code DoubleObserver}.
+   * @return a new builder for a {@code DoubleSumObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  DoubleObserver.Builder doubleObserverBuilder(String name);
+  DoubleSumObserver.Builder doubleSumObserverBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link LongObserver}.
+   * Returns a new builder for a {@link LongSumObserver}.
    *
    * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
-   * @return a new builder for a {@code LongObserver}.
+   * @return a new builder for a {@code LongSumObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  LongObserver.Builder longObserverBuilder(String name);
+  LongSumObserver.Builder longSumObserverBuilder(String name);
+
+  /**
+   * Returns a new builder for a {@link DoubleUpDownSumObserver}.
+   *
+   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
+   *     greater than 255 characters.
+   * @return a new builder for a {@code DoubleUpDownObserver}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
+   * @since 0.1.0
+   */
+  DoubleUpDownSumObserver.Builder doubleUpDownSumObserverBuilder(String name);
+
+  /**
+   * Returns a new builder for a {@link LongUpDownSumObserver}.
+   *
+   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
+   *     greater than 255 characters.
+   * @return a new builder for a {@code LongUpDownSumObserver}.
+   * @throws NullPointerException if {@code name} is null.
+   * @throws IllegalArgumentException if different metric with the same name already registered.
+   * @throws IllegalArgumentException if the {@code name} does not match the requirements.
+   * @since 0.1.0
+   */
+  LongUpDownSumObserver.Builder longUpDownSumObserverBuilder(String name);
 
   /**
    * Utility method that allows users to atomically record measurements to a set of Measures with a

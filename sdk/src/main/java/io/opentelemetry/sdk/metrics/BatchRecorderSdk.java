@@ -19,8 +19,10 @@ package io.opentelemetry.sdk.metrics;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleMeasure;
+import io.opentelemetry.metrics.DoubleUpDownCounter;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongMeasure;
+import io.opentelemetry.metrics.LongUpDownCounter;
 
 /**
  * Minimal implementation of the {@link BatchRecorder} that simply redirects the calls to the
@@ -56,6 +58,18 @@ final class BatchRecorderSdk implements BatchRecorder {
   @Override
   public BatchRecorder put(DoubleCounter counter, double value) {
     ((DoubleCounterSdk) counter).add(value, labelSet);
+    return this;
+  }
+
+  @Override
+  public BatchRecorder put(LongUpDownCounter upDownCounter, long value) {
+    ((LongUpDownCounterSdk) upDownCounter).add(value, labelSet);
+    return this;
+  }
+
+  @Override
+  public BatchRecorder put(DoubleUpDownCounter upDownCounter, double value) {
+    ((DoubleUpDownCounterSdk) upDownCounter).add(value, labelSet);
     return this;
   }
 

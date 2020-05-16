@@ -203,15 +203,15 @@ public final class TraceId implements Comparable<TraceId> {
   }
 
   /**
-   * Returns the lower 8 bytes of the trace-id as a long value, assuming little-endian order. This
-   * is used in ProbabilitySampler.
+   * Returns the rightmost 8 bytes of the trace-id as a long value. This is used in
+   * ProbabilitySampler.
    *
    * <p>This method is marked as internal and subject to change.
    *
-   * @return the lower 8 bytes of the trace-id as a long value, assuming little-endian order.
+   * @return the rightmost 8 bytes of the trace-id as a long value.
    */
-  public long getLowerLong() {
-    return (idHi < 0) ? -idHi : idHi;
+  public long getTraceRandomPart() {
+    return idLo;
   }
 
   @Override

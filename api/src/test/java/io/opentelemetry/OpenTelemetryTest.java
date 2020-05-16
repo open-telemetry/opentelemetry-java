@@ -30,10 +30,14 @@ import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.DoubleObserver;
+import io.opentelemetry.metrics.DoubleSumObserver;
+import io.opentelemetry.metrics.DoubleUpDownCounter;
+import io.opentelemetry.metrics.DoubleUpDownSumObserver;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.metrics.LongObserver;
+import io.opentelemetry.metrics.LongSumObserver;
+import io.opentelemetry.metrics.LongUpDownCounter;
+import io.opentelemetry.metrics.LongUpDownSumObserver;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
@@ -95,8 +99,8 @@ public class OpenTelemetryTest {
         createService(TraceProvider.class, FirstTraceProvider.class, SecondTraceProvider.class);
     try {
       assertTrue(
-          (OpenTelemetry.getTracerProvider() instanceof FirstTraceProvider)
-              || (OpenTelemetry.getTracerProvider() instanceof SecondTraceProvider));
+          (OpenTelemetry.getTracerProvider().get("") instanceof FirstTraceProvider)
+              || (OpenTelemetry.getTracerProvider().get("") instanceof SecondTraceProvider));
     } finally {
       serviceFile.delete();
     }
@@ -108,7 +112,7 @@ public class OpenTelemetryTest {
         createService(TraceProvider.class, FirstTraceProvider.class, SecondTraceProvider.class);
     System.setProperty(TraceProvider.class.getName(), SecondTraceProvider.class.getName());
     try {
-      assertThat(OpenTelemetry.getTracerProvider()).isInstanceOf(SecondTraceProvider.class);
+      assertThat(OpenTelemetry.getTracerProvider().get("")).isInstanceOf(SecondTraceProvider.class);
     } finally {
       serviceFile.delete();
     }
@@ -118,7 +122,7 @@ public class OpenTelemetryTest {
   public void testTracerNotFound() {
     System.setProperty(TraceProvider.class.getName(), "io.does.not.exists");
     thrown.expect(IllegalStateException.class);
-    OpenTelemetry.getTracerProvider().get("testTracer");
+    OpenTelemetry.getTracer("testTracer");
   }
 
   @Test
@@ -320,6 +324,18 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
+    public DoubleUpDownCounter.Builder doubleUpDownCounterBuilder(String name) {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public LongUpDownCounter.Builder longUpDownCounterBuilder(String name) {
+      return null;
+    }
+
+    @Nullable
+    @Override
     public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
       return null;
     }
@@ -332,13 +348,25 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public DoubleObserver.Builder doubleObserverBuilder(String name) {
+    public DoubleSumObserver.Builder doubleSumObserverBuilder(String name) {
       return null;
     }
 
     @Nullable
     @Override
-    public LongObserver.Builder longObserverBuilder(String name) {
+    public LongSumObserver.Builder longSumObserverBuilder(String name) {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public DoubleUpDownSumObserver.Builder doubleUpDownSumObserverBuilder(String name) {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public LongUpDownSumObserver.Builder longUpDownSumObserverBuilder(String name) {
       return null;
     }
 

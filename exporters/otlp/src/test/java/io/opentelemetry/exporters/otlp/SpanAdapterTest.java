@@ -26,9 +26,9 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.proto.trace.v1.Status.StatusCode;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanData.TimedEvent;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -57,7 +57,7 @@ public class SpanAdapterTest {
   public void toProtoSpan() {
     Span span =
         SpanAdapter.toProtoSpan(
-            SpanData.newBuilder()
+            SpanDataImpl.newBuilder()
                 .setHasEnded(true)
                 .setTraceId(TRACE_ID)
                 .setSpanId(SPAN_ID)
@@ -69,9 +69,9 @@ public class SpanAdapterTest {
                 .setAttributes(
                     Collections.singletonMap("key", AttributeValue.booleanAttributeValue(true)))
                 .setTotalAttributeCount(2)
-                .setTimedEvents(
+                .setEvents(
                     Collections.singletonList(
-                        TimedEvent.create(
+                        Event.create(
                             12347, "my_event", Collections.<String, AttributeValue>emptyMap())))
                 .setTotalRecordedEvents(3)
                 .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
@@ -81,7 +81,7 @@ public class SpanAdapterTest {
 
     assertThat(span.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
     assertThat(span.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-    assertThat(span.getParentSpanId().toByteArray()).isEqualTo(new byte[] {0, 0, 0, 0, 0, 0, 0, 0});
+    assertThat(span.getParentSpanId().toByteArray()).isEqualTo(new byte[] {});
     assertThat(span.getName()).isEqualTo("GET /api/endpoint");
     assertThat(span.getKind()).isEqualTo(SpanKind.SERVER);
     assertThat(span.getStartTimeUnixNano()).isEqualTo(12345);
@@ -234,7 +234,7 @@ public class SpanAdapterTest {
   public void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                TimedEvent.create(
+                Event.create(
                     12345,
                     "test_without_attributes",
                     Collections.<String, AttributeValue>emptyMap())))
@@ -249,7 +249,7 @@ public class SpanAdapterTest {
   public void toProtoSpanEvent_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                TimedEvent.create(
+                Event.create(
                     12345,
                     "test_with_attributes",
                     Collections.singletonMap(

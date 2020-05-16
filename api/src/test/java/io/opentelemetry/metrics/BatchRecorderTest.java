@@ -44,6 +44,34 @@ public class BatchRecorderTest {
   }
 
   @Test
+  public void preventNull_CounterLong() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("counter");
+    meter.newBatchRecorder().put((LongCounter) null, 5L).record();
+  }
+
+  @Test
+  public void preventNull_CounterDouble() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("counter");
+    meter.newBatchRecorder().put((DoubleCounter) null, 5L).record();
+  }
+
+  @Test
+  public void preventNull_UpDownCounterLong() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("upDownCounter");
+    meter.newBatchRecorder().put((LongUpDownCounter) null, 5L).record();
+  }
+
+  @Test
+  public void preventNull_UpDownCounterDouble() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("upDownCounter");
+    meter.newBatchRecorder().put((DoubleUpDownCounter) null, 5L).record();
+  }
+
+  @Test
   public void doesNotThrow() {
     BatchRecorder batchRecorder = meter.newBatchRecorder();
     batchRecorder.put(meter.longMeasureBuilder("longMeasure").build(), 44L);
@@ -51,8 +79,24 @@ public class BatchRecorderTest {
     batchRecorder.put(meter.doubleMeasureBuilder("doubleMeasure").build(), 77.556d);
     batchRecorder.put(meter.doubleMeasureBuilder("negativeDoubleMeasure").build(), -8787.774744d);
     batchRecorder.put(meter.longCounterBuilder("longCounter").build(), 44L);
-    batchRecorder.put(meter.longCounterBuilder("negativeLongCounter").build(), -44L);
     batchRecorder.put(meter.doubleCounterBuilder("doubleCounter").build(), 77.556d);
-    batchRecorder.put(meter.doubleCounterBuilder("negativeDoubleCounter").build(), -8787.774744d);
+    batchRecorder.put(meter.longUpDownCounterBuilder("longUpDownCounter").build(), -44L);
+    batchRecorder.put(meter.doubleUpDownCounterBuilder("doubleUpDownCounter").build(), -77.556d);
+  }
+
+  @Test
+  public void negativeValue_DoubleCounter() {
+    BatchRecorder batchRecorder = meter.newBatchRecorder();
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Counters can only increase");
+    batchRecorder.put(meter.doubleCounterBuilder("doubleCounter").build(), -77.556d);
+  }
+
+  @Test
+  public void negativeValue_LongCounter() {
+    BatchRecorder batchRecorder = meter.newBatchRecorder();
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Counters can only increase");
+    batchRecorder.put(meter.longCounterBuilder("longCounter").build(), -44L);
   }
 }

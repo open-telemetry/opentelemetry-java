@@ -28,6 +28,8 @@ import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.proto.trace.v1.ResourceSpans;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -204,7 +206,7 @@ public class OtlpGrpcSpanExporterTest {
     long duration = TimeUnit.MILLISECONDS.toNanos(900);
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + duration;
-    return SpanData.newBuilder()
+    return SpanDataImpl.newBuilder()
         .setHasEnded(true)
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
@@ -213,7 +215,7 @@ public class OtlpGrpcSpanExporterTest {
         .setEndEpochNanos(endNs)
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)
-        .setLinks(Collections.<SpanData.Link>emptyList())
+        .setLinks(Collections.<Link>emptyList())
         .setTotalRecordedLinks(0)
         .setTotalRecordedEvents(0)
         .build();

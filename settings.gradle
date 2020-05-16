@@ -30,6 +30,7 @@ include ":opentelemetry-all",
         ":opentelemetry-exporters-logging",
         ":opentelemetry-exporters-otlp",
         ":opentelemetry-exporters-prometheus",
+        ":opentelemetry-exporters-zipkin",
         ":opentelemetry-opentracing-shim",
         ":opentelemetry-proto",
         ":opentelemetry-sdk",
@@ -39,7 +40,8 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-contrib-otproto",
         ":opentelemetry-sdk-contrib-spring-boot2",
         ":opentelemetry-sdk-contrib-testbed",
-        ":opentelemetry-sdk-contrib-jaeger-remote-sampler"
+        ":opentelemetry-sdk-contrib-jaeger-remote-sampler",
+        ":opentelemetry-bom"
 
 rootProject.children.each {
     it.projectDir = "$rootDir/" + it.name

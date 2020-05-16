@@ -88,18 +88,18 @@ public final class DefaultMeterTest {
   public void noopAddObserverDouble_EmptyName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Name");
-    defaultMeter.doubleObserverBuilder("");
+    defaultMeter.doubleSumObserverBuilder("");
   }
 
   @Test
   public void noopAddObserverLong_EmptyName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Name");
-    defaultMeter.longObserverBuilder("");
+    defaultMeter.longSumObserverBuilder("");
   }
 
   @Test
-  public void testNewBatchRecorder_badLabelSet() throws Exception {
+  public void testNewBatchRecorder_badLabelSet() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("key/value");
     defaultMeter.newBatchRecorder("key");

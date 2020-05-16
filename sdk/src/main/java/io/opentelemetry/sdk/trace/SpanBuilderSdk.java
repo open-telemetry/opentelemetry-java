@@ -25,9 +25,8 @@ import io.opentelemetry.sdk.internal.MonotonicClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.DefaultSpan;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -57,12 +56,12 @@ final class SpanBuilderSdk implements Span.Builder {
   private final Resource resource;
   private final IdsGenerator idsGenerator;
   private final Clock clock;
+  private final AttributesMap attributes;
 
   @Nullable private Span parent;
   @Nullable private SpanContext remoteParent;
   private Kind spanKind = Kind.INTERNAL;
-  private final AttributesWithCapacity attributes;
-  private List<Link> links;
+  private List<io.opentelemetry.trace.Link> links;
   private int totalNumberOfLinksAdded = 0;
   private ParentType parentType = ParentType.CURRENT_CONTEXT;
   private long startEpochNanos = 0;
@@ -80,7 +79,7 @@ final class SpanBuilderSdk implements Span.Builder {
     this.spanProcessor = spanProcessor;
     this.traceConfig = traceConfig;
     this.resource = resource;
-    this.attributes = new AttributesWithCapacity(traceConfig.getMaxNumberOfAttributes());
+    this.attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
     this.links = Collections.emptyList();
     this.idsGenerator = idsGenerator;
     this.clock = clock;
@@ -118,18 +117,18 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder addLink(SpanContext spanContext) {
-    addLink(SpanData.Link.create(spanContext));
+    addLink(Link.create(spanContext));
     return this;
   }
 
   @Override
   public Span.Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-    addLink(SpanData.Link.create(spanContext, attributes));
+    addLink(Link.create(spanContext, attributes));
     return this;
   }
 
   @Override
-  public Span.Builder addLink(Link link) {
+  public Span.Builder addLink(io.opentelemetry.trace.Link link) {
     Objects.requireNonNull(link, "link");
     totalNumberOfLinksAdded++;
     // don't bother doing anything with any links beyond the max.
@@ -170,10 +169,10 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span.Builder setAttribute(String key, AttributeValue value) {
     Objects.requireNonNull(key, "key");
     if (value == null
-        || (value.getType().equals(AttributeValue.Type.STRING) && value.getStringValue() == null)) {
+        || (value.getType() == AttributeValue.Type.STRING && value.getStringValue() == null)) {
       attributes.remove(key);
     } else {
-      attributes.putAttribute(key, value);
+      attributes.put(key, value);
     }
     return this;
   }
@@ -216,8 +215,7 @@ final class SpanBuilderSdk implements Span.Builder {
     if (!samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
     }
-
-    attributes.putAllAttributes(samplingDecision.getAttributes());
+    attributes.putAll(samplingDecision.getAttributes());
 
     return RecordEventsReadableSpan.startSpan(
         spanContext,

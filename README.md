@@ -88,7 +88,7 @@ This is a **current** feature status list:
 | Metrics SDK                 | v0.3.0  |
 | OTLP Exporter               | v0.3.0  |
 | Jaeger Trace Exporter       | v0.3.0  |
-| Zipkin Trace Exporter       | N/A     |
+| Zipkin Trace Exporter       | dev     |
 | Prometheus Metrics Exporter | dev     |
 | Context Propagation         | v0.3.0  |
 | OpenTracing Bridge          | v0.3.0  |
@@ -109,9 +109,9 @@ managed better. We are open to feedback and suggestions from all of you!
 Approvers ([@open-telemetry/java-approvers](https://github.com/orgs/open-telemetry/teams/java-approvers)):
 
 - [Pavol Loffay](https://github.com/pavolloffay), RedHat
-- [Yang Song](https://github.com/songy23), Google
 - [Tyler Benson](https://github.com/tylerbenson), DataDog
 - [Armin Ruech](https://github.com/arminru), Dynatrace
+- [Giovanni Liva](https://github.com/thisthat), Dynatrace
 
 *Find more about the approver role in [community repository](https://github.com/open-telemetry/community/blob/master/community-membership.md#approver).*
 

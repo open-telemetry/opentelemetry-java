@@ -26,9 +26,10 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.EndSpanOptions;
-import io.opentelemetry.trace.Event;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -51,10 +52,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
-  @SuppressWarnings("checkstyle:LineLength")
-  private static final String MAX_SPAN_ATTRIBUTE_COUNT_LOG_MESSAGE =
-      "Span with name '%s' has reached the maximum number of attributes (%d). Dropping attribute with key '%s'";
-
   private static final String MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE =
       "Link has reached the maximum number of attributes (%d). Dropping %d attributes.";
 
@@ -68,11 +65,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final SpanProcessor spanProcessor;
   // The displayed name of the span.
   // List of recorded links to parent and child spans.
-  private final List<Link> links;
+  private final List<io.opentelemetry.trace.Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
-  // Max number of attibutes per span.
-  private final int maxNumberOfAttributes;
   // Max number of attributes per event.
   private final int maxNumberOfAttributesPerEvent;
 
@@ -93,13 +88,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final long startEpochNanos;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
   @GuardedBy("lock")
-  private final AttributesWithCapacity attributes;
+  private final AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
   private final EvictingQueue<TimedEvent> events;
-  // Number of attributes recorded.
-  @GuardedBy("lock")
-  private int totalAttributeCount = 0;
   // Number of events recorded.
   @GuardedBy("lock")
   private int totalRecordedEvents = 0;
@@ -142,8 +134,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
-      AttributesWithCapacity attributes,
-      List<Link> links,
+      AttributesMap attributes,
+      List<io.opentelemetry.trace.Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     RecordEventsReadableSpan span =
@@ -172,8 +164,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   public SpanData toSpanData() {
     // Copy immutable fields outside synchronized block.
     SpanContext spanContext = getSpanContext();
-    SpanData.Builder builder =
-        SpanData.newBuilder()
+    SpanDataImpl.Builder builder =
+        SpanDataImpl.newBuilder()
             .setName(getName())
             .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
             .setTraceId(spanContext.getTraceId())
@@ -195,8 +187,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
           .setAttributes(attributes)
           .setEndEpochNanos(getEndEpochNanos())
           .setStatus(getStatusWithDefault())
-          .setTimedEvents(adaptTimedEvents())
-          .setTotalAttributeCount(totalAttributeCount)
+          .setEvents(adaptTimedEvents())
+          .setTotalAttributeCount(attributes.getTotalAddedValues())
           .setTotalRecordedEvents(totalRecordedEvents)
           // build() does the actual copying of the collections: it needs to be synchronized
           // because of the attributes and events collections.
@@ -205,11 +197,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @GuardedBy("lock")
-  private List<SpanData.TimedEvent> adaptTimedEvents() {
-    List<SpanData.TimedEvent> result = new ArrayList<>(events.size());
+  private List<Event> adaptTimedEvents() {
+    List<Event> result = new ArrayList<>(events.size());
     for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
       result.add(
-          SpanData.TimedEvent.create(
+          Event.create(
               sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
     }
     return result;
@@ -268,19 +260,19 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return A copy of the Links for this span.
    */
-  private List<SpanData.Link> getLinks() {
+  private List<Link> getLinks() {
     if (links == null) {
       return Collections.emptyList();
     }
-    List<SpanData.Link> result = new ArrayList<>(links.size());
-    for (Link link : links) {
-      SpanData.Link newLink;
-      if (!(link instanceof SpanData.Link)) {
+    List<Link> result = new ArrayList<>(links.size());
+    for (io.opentelemetry.trace.Link link : links) {
+      Link newLink;
+      if (!(link instanceof Link)) {
         // Make a copy because the given Link may not be immutable and we may reference a lot of
         // memory.
-        newLink = SpanData.Link.create(link.getContext(), link.getAttributes());
+        newLink = Link.create(link.getContext(), link.getAttributes());
       } else {
-        newLink = (SpanData.Link) link;
+        newLink = (Link) link;
       }
       result.add(newLink);
     }
@@ -332,26 +324,16 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @Override
   public void setAttribute(String key, AttributeValue value) {
     Preconditions.checkNotNull(key, "key");
-    if (value == null || (value.getType().equals(STRING) && value.getStringValue() == null)) {
-      synchronized (lock) {
-        attributes.remove(key);
-      }
-      return;
-    }
     synchronized (lock) {
       if (hasEnded) {
         logger.log(Level.FINE, "Calling setAttribute() on an ended Span.");
         return;
       }
-      totalAttributeCount++;
-      if (attributes.get(key) == null && attributes.size() >= maxNumberOfAttributes) {
-        logger.log(
-            Level.FINE,
-            String.format(
-                MAX_SPAN_ATTRIBUTE_COUNT_LOG_MESSAGE, this.name, maxNumberOfAttributes, key));
+      if (value == null || (value.getType().equals(STRING) && value.getStringValue() == null)) {
+        attributes.remove(key);
         return;
       }
-      attributes.putAttribute(key, value);
+      attributes.put(key, value);
     }
   }
 
@@ -381,12 +363,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
-  public void addEvent(Event event) {
+  public void addEvent(io.opentelemetry.trace.Event event) {
     addTimedEvent(TimedEvent.create(clock.now(), event));
   }
 
   @Override
-  public void addEvent(Event event, long timestamp) {
+  public void addEvent(io.opentelemetry.trace.Event event, long timestamp) {
     addTimedEvent(TimedEvent.create(timestamp, event));
   }
 
@@ -395,7 +377,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       return attributes;
     }
 
-    Map<String, AttributeValue> temp = new HashMap<String, AttributeValue>();
+    Map<String, AttributeValue> temp = new HashMap<>();
     for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
       if (temp.size() < this.maxNumberOfAttributesPerEvent) {
         temp.put(entry.getKey(), entry.getValue());
@@ -496,8 +478,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
-      AttributesWithCapacity attributes,
-      List<Link> links,
+      AttributesMap attributes,
+      List<io.opentelemetry.trace.Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
     this.context = context;
@@ -513,9 +495,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.hasEnded = false;
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
+    // TODO: Do not always initialize the attributes.
     this.attributes = attributes;
     this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
-    this.maxNumberOfAttributes = traceConfig.getMaxNumberOfAttributes();
     this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
   }
 }

@@ -142,8 +142,9 @@ abstract class AbstractInstrument implements Instrument {
       return meterSharedState;
     }
 
-    final InstrumentDescriptor getInstrumentDescriptor() {
-      return InstrumentDescriptor.create(name, description, unit, constantLabels);
+    final InstrumentDescriptor getInstrumentDescriptor(
+        InstrumentType type, InstrumentValueType valueType) {
+      return InstrumentDescriptor.create(name, description, unit, constantLabels, type, valueType);
     }
 
     abstract B getThis();
@@ -154,31 +155,25 @@ abstract class AbstractInstrument implements Instrument {
   }
 
   static Descriptor getDefaultMetricDescriptor(
-      InstrumentDescriptor descriptor,
-      InstrumentType instrumentType,
-      InstrumentValueType instrumentValueType,
-      Aggregation aggregation) {
+      InstrumentDescriptor descriptor, Aggregation aggregation) {
     return Descriptor.create(
         descriptor.getName(),
         descriptor.getDescription(),
         aggregation.getUnit(descriptor.getUnit()),
-        aggregation.getDescriptorType(instrumentType, instrumentValueType),
+        aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
         descriptor.getConstantLabels());
   }
 
   static Batcher getDefaultBatcher(
       InstrumentDescriptor descriptor,
-      InstrumentType instrumentType,
-      InstrumentValueType instrumentValueType,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState,
       Aggregation defaultAggregation) {
     return Batchers.getCumulativeAllLabels(
-        getDefaultMetricDescriptor(
-            descriptor, instrumentType, instrumentValueType, defaultAggregation),
+        getDefaultMetricDescriptor(descriptor, defaultAggregation),
         meterProviderSharedState.getResource(),
         meterSharedState.getInstrumentationLibraryInfo(),
-        defaultAggregation.getAggregatorFactory(instrumentValueType),
+        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
         meterProviderSharedState.getClock());
   }
 }

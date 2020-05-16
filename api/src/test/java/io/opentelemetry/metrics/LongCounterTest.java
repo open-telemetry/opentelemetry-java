@@ -18,6 +18,7 @@ package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class LongCounterTest {
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
 
-  private final Meter meter = OpenTelemetry.getMeterProvider().get("counter_long_test");
+  private final Meter meter = OpenTelemetry.getMeter("counter_long_test");
 
   @Test
   public void preventNonPrintableName() {
@@ -83,9 +84,41 @@ public class LongCounterTest {
   }
 
   @Test
-  public void doesNotThrow() {
+  public void add_DoesNotThrow() {
     LongCounter longCounter =
         meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    longCounter.bind().add(1);
+    longCounter.add(1);
+  }
+
+  @Test
+  public void add_PreventNegativeValue() {
+    LongCounter longCounter =
+        meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Counters can only increase");
+    longCounter.add(-1);
+  }
+
+  @Test
+  public void bound_DoesNotThrow() {
+    LongCounter longCounter =
+        meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
+    BoundLongCounter bound = longCounter.bind();
+    bound.add(1);
+    bound.unbind();
+  }
+
+  @Test
+  public void bound_PreventNegativeValue() {
+    LongCounter longCounter =
+        meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
+    BoundLongCounter bound = longCounter.bind();
+    try {
+      thrown.expect(IllegalArgumentException.class);
+      thrown.expectMessage("Counters can only increase");
+      bound.add(-1);
+    } finally {
+      bound.unbind();
+    }
   }
 }

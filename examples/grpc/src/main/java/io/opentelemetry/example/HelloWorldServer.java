@@ -48,8 +48,7 @@ public class HelloWorldServer {
   private final int port = 50051;
 
   // OTel API
-  Tracer tracer =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.HelloWorldServer");
+  Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldServer");
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text
@@ -110,7 +109,7 @@ public class HelloWorldServer {
     // Get the tracer
     TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Set to process the the spans by the LogExporter
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(exporter));
   }
 
   /** Await termination on the main thread since the grpc library uses daemon threads. */

@@ -143,7 +143,7 @@ public class CurrentSpanUtilsTest {
     Callable<Object> callable =
         new Callable<Object>() {
           @Override
-          public Object call() throws Exception {
+          public Object call() {
             // When we run the runnable we will have the span in the current Context.
             assertThat(getCurrentSpan()).isSameInstanceAs(span);
             return ret;
@@ -161,7 +161,7 @@ public class CurrentSpanUtilsTest {
     Callable<Object> callable =
         new Callable<Object>() {
           @Override
-          public Object call() throws Exception {
+          public Object call() {
             // When we run the runnable we will have the span in the current Context.
             assertThat(getCurrentSpan()).isSameInstanceAs(span);
             return ret;
@@ -217,7 +217,7 @@ public class CurrentSpanUtilsTest {
     Callable<Object> callable =
         new Callable<Object>() {
           @Override
-          public Object call() throws Exception {
+          public Object call() {
             // When we run the runnable we will have the span in the current Context.
             assertThat(getCurrentSpan()).isSameInstanceAs(span);
             throw error;
@@ -236,7 +236,7 @@ public class CurrentSpanUtilsTest {
     Callable<Object> callable =
         new Callable<Object>() {
           @Override
-          public Object call() throws Exception {
+          public Object call() {
             // When we run the runnable we will have the span in the current Context.
             assertThat(getCurrentSpan()).isSameInstanceAs(span);
             throw error;

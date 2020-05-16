@@ -21,28 +21,29 @@ import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Counter metric, to report instantaneous measurement of a double value. Cumulative values can go
- * up or stay the same, but can never go down. Cumulative values cannot be negative.
+ * Counter is the most common synchronous instrument. This instrument supports an {@link
+ * #add(double, String...)}` function for reporting an increment, and is restricted to non-negative
+ * increments. The default aggregation is `Sum`.
  *
  * <p>Example:
  *
  * <pre>{@code
  * class YourClass {
- *
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
  *   private static final DoubleCounter counter =
  *       meter.
- *           .doubleCounterBuilder("processed_jobs")
- *           .setDescription("Processed jobs")
+ *           .doubleCounterBuilder("allocated_resources")
+ *           .setDescription("Total allocated resources")
  *           .setUnit("1")
  *           .build();
+ *
  *   // It is recommended that the API user keep references to a Bound Counters.
  *   private static final BoundDoubleCounter someWorkBound =
  *       counter.bind(Collections.singletonList("SomeWork"));
  *
  *   void doSomeWork() {
+ *      someWorkBound.add(10.2);  // Resources needed for this task.
  *      // Your code here.
- *      someWorkBound.add(10.0);
  *   }
  * }
  * }</pre>
@@ -50,47 +51,45 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleCounter extends Counter<BoundDoubleCounter> {
+public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter> {
 
   /**
-   * Adds the given {@code delta} to the current value. The values can be negative iff monotonic was
-   * set to {@code false}.
+   * Adds the given {@code increment} to the current value. The values cannot be negative.
    *
    * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
-   * @param delta the value to add.
+   * @param increment the value to add.
    * @param labelKeyValuePairs the labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(double delta, String... labelKeyValuePairs);
+  void add(double increment, String... labelKeyValuePairs);
 
   @Override
   BoundDoubleCounter bind(String... labelKeyValuePairs);
 
   /**
-   * A {@code Bound Instrument} for a {@code CounterDouble}.
+   * A {@code Bound Instrument} for a {@link DoubleCounter}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundDoubleCounter extends InstrumentWithBinding.BoundInstrument {
+  interface BoundDoubleCounter extends SynchronousInstrument.BoundInstrument {
     /**
-     * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
-     * was set to {@code false}.
+     * Adds the given {@code increment} to the current value. The values cannot be negative.
      *
      * <p>The value added is associated with the current {@code Context}.
      *
-     * @param delta the value to add.
+     * @param increment the value to add.
      * @since 0.1.0
      */
-    void add(double delta);
+    void add(double increment);
 
     @Override
     void unbind();
   }
 
   /** Builder class for {@link DoubleCounter}. */
-  interface Builder extends Counter.Builder {
+  interface Builder extends SynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
 
@@ -99,9 +98,6 @@ public interface DoubleCounter extends Counter<BoundDoubleCounter> {
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);
-
-    @Override
-    Builder setMonotonic(boolean monotonic);
 
     @Override
     DoubleCounter build();

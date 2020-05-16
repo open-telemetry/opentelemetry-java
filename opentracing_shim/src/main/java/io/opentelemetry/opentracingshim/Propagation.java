@@ -45,7 +45,7 @@ final class Propagation extends BaseShimObject {
 
   @Nullable
   public SpanContextShim extractTextFormat(TextMapExtract carrier) {
-    Map<String, String> carrierMap = new HashMap<String, String>();
+    Map<String, String> carrierMap = new HashMap<>();
     for (Map.Entry<String, String> entry : carrier) {
       carrierMap.put(entry.getKey(), entry.getValue());
     }

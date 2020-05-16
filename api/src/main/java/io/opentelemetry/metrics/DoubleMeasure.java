@@ -48,7 +48,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
+public interface DoubleMeasure extends SynchronousInstrument<BoundDoubleMeasure> {
 
   /**
    * Records the given measurement, associated with the current {@code Context} and provided set of
@@ -70,7 +70,7 @@ public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundDoubleMeasure extends InstrumentWithBinding.BoundInstrument {
+  interface BoundDoubleMeasure extends SynchronousInstrument.BoundInstrument {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *
@@ -85,7 +85,7 @@ public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
   }
 
   /** Builder class for {@link DoubleMeasure}. */
-  interface Builder extends Measure.Builder {
+  interface Builder extends SynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
 
@@ -94,9 +94,6 @@ public interface DoubleMeasure extends Measure<BoundDoubleMeasure> {
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);
-
-    @Override
-    Builder setAbsolute(boolean absolute);
 
     @Override
     DoubleMeasure build();

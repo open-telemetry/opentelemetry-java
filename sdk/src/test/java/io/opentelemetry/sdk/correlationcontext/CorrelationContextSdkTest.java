@@ -129,7 +129,7 @@ public class CorrelationContextSdkTest {
   public void setParent_nullValue() {
     CorrelationContextSdk parent = listToCorrelationContext(T1);
     thrown.expect(NullPointerException.class);
-    contextManager.contextBuilder().setParent(parent).setParent((CorrelationContext) null).build();
+    contextManager.contextBuilder().setParent(parent).setParent(null).build();
   }
 
   @Test

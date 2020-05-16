@@ -49,7 +49,7 @@ public class AwsXRayIdsGeneratorTest {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
     TraceId traceId = generator.generateTraceId();
     Long unixSeconds = Long.valueOf(traceId.toLowerBase16().substring(0, 8), 16);
-    long ts = unixSeconds.longValue() * 1000L;
+    long ts = unixSeconds * 1000L;
     long currentTs = System.currentTimeMillis();
     assertThat(ts <= currentTs).isTrue();
     long month = 86400000L * 30L;

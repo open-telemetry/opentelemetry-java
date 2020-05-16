@@ -100,6 +100,6 @@ public final class MultiSpanExporter implements SpanExporter {
   }
 
   private MultiSpanExporter(List<SpanExporter> spanExporters) {
-    this.spanExporters = spanExporters.toArray(new SpanExporter[spanExporters.size()]);
+    this.spanExporters = spanExporters.toArray(new SpanExporter[0]);
   }
 }

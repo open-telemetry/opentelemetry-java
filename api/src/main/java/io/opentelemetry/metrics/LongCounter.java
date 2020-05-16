@@ -21,14 +21,14 @@ import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Counter instrument, to report instantaneous measurements of long values. Cumulative values can go
- * up or stay the same, but can never go down. Cumulative values cannot be negative.
+ * Counter is the most common synchronous instrument. This instrument supports an {@link #add(long,
+ * String...)}` function for reporting an increment, and is restricted to non-negative increments.
+ * The default aggregation is `Sum`.
  *
  * <p>Example:
  *
  * <pre>{@code
  * class YourClass {
- *
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
  *   private static final LongCounter counter =
  *       meter.
@@ -36,6 +36,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *           .setDescription("Processed jobs")
  *           .setUnit("1")
  *           .build();
+ *
  *   // It is recommended that the API user keep a reference to a Bound Counter.
  *   private static final BoundLongCounter someWorkBound =
  *       counter.getBound(Collections.singletonList("SomeWork"));
@@ -50,48 +51,46 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongCounter extends Counter<BoundLongCounter> {
+public interface LongCounter extends SynchronousInstrument<BoundLongCounter> {
 
   /**
-   * Adds the given {@code delta} to the current value. The values can be negative iff monotonic was
-   * set to {@code false}.
+   * Adds the given {@code increment} to the current value. The values cannot be negative.
    *
    * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
-   * @param delta the value to add.
+   * @param increment the value to add.
    * @param labelKeyValuePairs the set of labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(long delta, String... labelKeyValuePairs);
+  void add(long increment, String... labelKeyValuePairs);
 
   @Override
   BoundLongCounter bind(String... labelKeyValuePairs);
 
   /**
-   * A {@code Bound Instrument} for a {@code LongCounter}.
+   * A {@code Bound Instrument} for a {@link LongCounter}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundLongCounter extends InstrumentWithBinding.BoundInstrument {
+  interface BoundLongCounter extends SynchronousInstrument.BoundInstrument {
 
     /**
-     * Adds the given {@code delta} to the current value. The values can be negative iff monotonic
-     * was set to {@code false}.
+     * Adds the given {@code increment} to the current value. The values cannot be negative.
      *
      * <p>The value added is associated with the current {@code Context}.
      *
-     * @param delta the value to add.
+     * @param increment the value to add.
      * @since 0.1.0
      */
-    void add(long delta);
+    void add(long increment);
 
     @Override
     void unbind();
   }
 
   /** Builder class for {@link LongCounter}. */
-  interface Builder extends Counter.Builder {
+  interface Builder extends SynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
 
@@ -100,9 +99,6 @@ public interface LongCounter extends Counter<BoundLongCounter> {
 
     @Override
     Builder setConstantLabels(Map<String, String> constantLabels);
-
-    @Override
-    Builder setMonotonic(boolean monotonic);
 
     @Override
     LongCounter build();

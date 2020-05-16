@@ -30,7 +30,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class TracingContextUtils {
   private static final Context.Key<Span> CONTEXT_SPAN_KEY =
-      Context.<Span>key("opentelemetry-trace-span-key");
+      Context.key("opentelemetry-trace-span-key");
 
   /**
    * Creates a new {@code Context} with the given {@link Span} set.

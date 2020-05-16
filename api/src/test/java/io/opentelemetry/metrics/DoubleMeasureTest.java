@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,15 +70,17 @@ public final class DoubleMeasureTest {
 
   @Test
   public void preventNegativeValue() {
-    DoubleMeasure myMeasure = meter.doubleMeasureBuilder("MyMeasure").build();
+    DoubleMeasure doubleMeasure = meter.doubleMeasureBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    myMeasure.bind().record(-5.0);
+    doubleMeasure.bind().record(-5.0);
   }
 
   @Test
   public void doesNotThrow() {
-    DoubleMeasure myMeasure = meter.doubleMeasureBuilder("MyMeasure").build();
-    myMeasure.bind().record(5.0);
+    DoubleMeasure doubleMeasure = meter.doubleMeasureBuilder("MyMeasure").build();
+    BoundDoubleMeasure bound = doubleMeasure.bind();
+    bound.record(5.0);
+    bound.unbind();
   }
 }

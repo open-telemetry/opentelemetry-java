@@ -66,7 +66,6 @@ public class LongMeasureSdkTest {
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
-            .setAbsolute(true)
             .build();
     assertThat(longMeasure).isInstanceOf(LongMeasureSdk.class);
     List<MetricData> metricDataList = longMeasure.collectAll();
@@ -205,24 +204,6 @@ public class LongMeasureSdkTest {
     } finally {
       boundMeasure.unbind();
     }
-  }
-
-  @Test
-  public void longMeasureRecord_Absolute() {
-    LongMeasureSdk longMeasure =
-        testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
-
-    thrown.expect(IllegalArgumentException.class);
-    longMeasure.record(-45);
-  }
-
-  @Test
-  public void boundLongMeasure_Absolute() {
-    LongMeasureSdk longMeasure =
-        testSdk.longMeasureBuilder("testMeasure").setAbsolute(true).build();
-
-    thrown.expect(IllegalArgumentException.class);
-    longMeasure.bind().record(-9);
   }
 
   @Test

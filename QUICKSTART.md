@@ -40,7 +40,7 @@ monitored. More information is available in the specification chapter [Obtaining
 
 ```java
 Tracer tracer =
-    OpenTelemetry.getTracerProvider().get("instrumentation-library-name","semver:1.0.0");
+    OpenTelemetry.getTracer("instrumentation-library-name","semver:1.0.0");
 ```
 
 ### Create basic Span
@@ -251,11 +251,11 @@ business metric such as transactions.
 All metrics can be annotated with labels: additional qualifiers that help describe what
 subdivision of the measurements the metric represents.
 
-The following is an example of metric usage:
+The following is an example of counter usage:
 
 ```java
 // Gets or creates a named meter instance
-Meter meter = OpenTelemetry.getMeterProvider().get("instrumentation-library-name","semver:1.0.0");
+Meter meter = OpenTelemetry.getMeter("instrumentation-library-name","semver:1.0.0");
 
 // Build counter e.g. LongCounter 
 LongCounter counter = meter
@@ -271,6 +271,32 @@ BoundLongCounter someWorkCounter = counter.bind("Key", "SomeWork");
 // Record data
 someWorkCounter.add(123);
 
+// Alternatively, the user can use the unbounded counter and explicitly
+// specify the labels set at call-time:
+counter.add(123, "Key", "SomeWork");
+```
+
+`Observer` is an additional instrument supporting an asynchronous API and
+collecting metric data on demand, once per collection interval.
+
+The following is an example of observer usage:
+
+```java
+// Build observer e.g. LongObserver
+LongObserver observer = meter
+        .observerLongBuilder("cpu_usage")
+        .setDescription("CPU Usage")
+        .setUnit("ms")
+        .build();
+
+observer.setCallback(
+        new LongObserver.Callback<LongObserver.ResultLongObserver>() {
+          @Override
+          public void update(ResultLongObserver result) {
+            // long getCpuUsage()
+            result.observe(getCpuUsage(), "Key", "SomeWork");
+          }
+        });
 ```
 
 ## Tracing SDK Configuration
@@ -352,6 +378,7 @@ Span processors are initialized with an exporter which is responsible for sendin
 a particular backend. OpenTelemetry offers four exporters out of the box:
 - In-Memory Exporter: keeps the data in memory, useful for debugging.
 - Jaeger Exporter: prepares and sends the collected telemetry data to a Jaeger backend via gRPC.
+- Zipkin Exporter: prepares and sends the collected telemetry data to a Zipkin backend via the Zipkin APIs.
 - Logging Exporter: saves the telemetry data into log streams.
 - OpenTelemetry Exporter: sends the data to the [OpenTelemetry Collector] (not yet implemented).
 

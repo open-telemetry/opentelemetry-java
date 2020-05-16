@@ -37,7 +37,7 @@ public class HttpClient {
 
   // OTel API
   private static Tracer tracer =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.http.HttpClient");
+      OpenTelemetry.getTracer("io.opentelemetry.example.http.HttpClient");
   // Export traces to log
   private static LoggingSpanExporter loggingExporter = new LoggingSpanExporter();
   // Inject the span context into the request
@@ -55,7 +55,7 @@ public class HttpClient {
     // Show that multiple exporters can be used
 
     // Set to export the traces also to a log file
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(loggingExporter));
   }
 
   private HttpClient() throws Exception {

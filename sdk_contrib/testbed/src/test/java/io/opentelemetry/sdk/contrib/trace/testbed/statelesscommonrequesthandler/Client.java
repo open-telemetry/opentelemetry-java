@@ -37,7 +37,7 @@ final class Client {
     return executor.submit(
         new Callable<String>() {
           @Override
-          public String call() throws Exception {
+          public String call() {
             TestUtils.sleep();
             requestHandler.beforeRequest(message);
 

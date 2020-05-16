@@ -41,7 +41,13 @@ public final class PushExporter {
   public PushExporter(Collection<MetricProducer> producers) {
     metricExporter = new PushMetricExporter();
     intervalMetricReader =
-        new IntervalMetricReader(producers, metricExporter, 60 /* export interval sec*/);
+        IntervalMetricReader.builder()
+                    .readEnvironment() // Read configuration from environment variables
+                    .readSystemProperties() // Read configuration from system properties
+                    .setExportIntervalMillis(100_000) 
+                    .setMetricExporter(metricExporter)
+                    .setMetricProducers(Collections.singletonList(producers))
+                    .build();
   }
   
   // Can be accessed by any "push based" library to export metrics.
@@ -54,9 +60,11 @@ public final class PushExporter {
 **Pull backend:**
 
 ```java
+import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 /**
@@ -93,8 +101,12 @@ public final class PullExporter {
     return metricExporter;
   }
 
-  private void OnPullRequest() {
+  private void onPullRequest() {
     // Iterate over all producers and the PullMetricExporter and export all metrics.
+    for (MetricProducer metricProducer : producers) {
+      Collection<MetricData> metrics = metricProducer.getAllMetrics();
+      // Do something with metrics
+    }
   }
 }
 ```

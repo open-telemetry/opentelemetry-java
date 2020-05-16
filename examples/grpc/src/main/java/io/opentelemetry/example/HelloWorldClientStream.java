@@ -53,8 +53,7 @@ public class HelloWorldClientStream {
   private final GreeterGrpc.GreeterStub asyncStub;
 
   // OTel API
-  Tracer tracer =
-      OpenTelemetry.getTracerProvider().get("io.opentelemetry.example.HelloWorldClient");;
+  Tracer tracer = OpenTelemetry.getTracer("io.opentelemetry.example.HelloWorldClient");;
   // Export traces as log
   LoggingSpanExporter exporter = new LoggingSpanExporter();
   // Share context via text headers
@@ -89,7 +88,7 @@ public class HelloWorldClientStream {
     // Use the OpenTelemetry SDK
     TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Set to process the spans by the log exporter
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(exporter));
   }
 
   public void shutdown() throws InterruptedException {

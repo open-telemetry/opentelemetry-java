@@ -16,12 +16,16 @@
 
 package io.opentelemetry.sdk.trace.export;
 
+import com.google.common.annotations.VisibleForTesting;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,22 +95,97 @@ public final class SimpleSpansProcessor implements SpanProcessor {
   }
 
   /** Builder class for {@link SimpleSpansProcessor}. */
-  public static final class Builder {
+  public static final class Builder extends ConfigBuilder<Builder> {
 
+    private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
+
+    private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
     private final SpanExporter spanExporter;
-    private boolean sampled = true;
+    private boolean sampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
     private Builder(SpanExporter spanExporter) {
       this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
     }
 
     /**
-     * Set whether only sampled spans should be reported.
+     * Sets the configuration values from the given configuration map for only the available keys.
+     * This method looks for the following keys:
      *
+     * <ul>
+     *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be exported.
+     * </ul>
+     *
+     * @param configMap {@link Map} holding the configuration values.
+     * @return this.
+     */
+    @VisibleForTesting
+    @Override
+    protected Builder fromConfigMap(
+        Map<String, String> configMap, NamingConvention namingConvention) {
+      configMap = namingConvention.normalize(configMap);
+      Boolean boolValue = getBooleanProperty(KEY_SAMPLED, configMap);
+      if (boolValue != null) {
+        this.setExportOnlySampled(boolValue);
+      }
+      return this;
+    }
+
+    /**
+     * Sets the configuration values from the given properties object for only the available keys.
+     * This method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be exported.
+     * </ul>
+     *
+     * @param properties {@link Properties} holding the configuration values.
+     * @return this.
+     */
+    @Override
+    public Builder readProperties(Properties properties) {
+      return super.readProperties(properties);
+    }
+
+    /**
+     * Sets the configuration values from environment variables for only the available keys. This
+     * method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: to set whether only sampled spans should be exported.
+     * </ul>
+     *
+     * @return this.
+     */
+    @Override
+    public Builder readEnvironment() {
+      return super.readEnvironment();
+    }
+
+    /**
+     * Sets the configuration values from system properties for only the available keys. This method
+     * looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be reported.
+     * </ul>
+     *
+     * @return this.
+     */
+    @Override
+    public Builder readSystemProperties() {
+      return super.readSystemProperties();
+    }
+
+    /**
+     * Set whether only sampled spans should be exported.
+     *
+     * <p>Default value is {@code true}.
+     *
+     * @see SimpleSpansProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
      * @param sampled report only sampled spans.
      * @return this.
      */
-    public Builder reportOnlySampled(boolean sampled) {
+    public Builder setExportOnlySampled(boolean sampled) {
       this.sampled = sampled;
       return this;
     }

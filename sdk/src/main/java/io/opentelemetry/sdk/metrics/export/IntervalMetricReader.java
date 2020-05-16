@@ -19,11 +19,14 @@ package io.opentelemetry.sdk.metrics.export;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.DaemonThreadFactory;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -69,12 +72,25 @@ public final class IntervalMetricReader {
   }
 
   /**
+   * Returns a new {@link Builder} for {@link IntervalMetricReader} reading the configuration values
+   * from the environment and from system properties. System properties override values defined in
+   * the environment. If a configuration value is missing, it uses the default value.
+   *
+   * @return a new {@link Builder} for {@link IntervalMetricReader}.
+   * @since 0.4.0
+   */
+  public static Builder builderFromDefaultSources() {
+    return builder().readEnvironment().readSystemProperties();
+  }
+
+  /**
    * Builder for {@link IntervalMetricReader}.
    *
    * @since 0.3.0
    */
-  public static final class Builder {
+  public static final class Builder extends ConfigBuilder<Builder> {
     private final InternalState.Builder optionsBuilder;
+    private static final String KEY_EXPORT_INTERVAL = "otel.imr.export.interval";
 
     private Builder(InternalState.Builder optionsBuilder) {
       this.optionsBuilder = optionsBuilder;
@@ -130,6 +146,78 @@ public final class IntervalMetricReader {
 
       return new IntervalMetricReader(internalState);
     }
+
+    /**
+     * Sets the configuration values from the given configuration map for only the available keys.
+     * This method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.imr.export.interval}: to set the export interval between pushes to the
+     *       exporter.
+     * </ul>
+     *
+     * @param configMap {@link Map} holding the configuration values.
+     * @return this.
+     */
+    @Override
+    protected Builder fromConfigMap(
+        Map<String, String> configMap, NamingConvention namingConvention) {
+      configMap = namingConvention.normalize(configMap);
+      Long value = getLongProperty(KEY_EXPORT_INTERVAL, configMap);
+      if (value != null) {
+        this.setExportIntervalMillis(value);
+      }
+      return this;
+    }
+
+    /**
+     * Sets the configuration values from the given properties object for only the available keys.
+     * This method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.imr.export.interval}: to set the export interval between pushes to the
+     *       exporter.
+     * </ul>
+     *
+     * @param properties {@link Properties} holding the configuration values.
+     * @return this.
+     */
+    @Override
+    public Builder readProperties(Properties properties) {
+      return super.readProperties(properties);
+    }
+
+    /**
+     * Sets the configuration values from environment variables for only the available keys. This
+     * method looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code OTEL_IMR_EXPORT_INTERVAL}: to set the export interval between pushes to the
+     *       exporter.
+     * </ul>
+     *
+     * @return this.
+     */
+    @Override
+    public Builder readEnvironment() {
+      return super.readEnvironment();
+    }
+
+    /**
+     * Sets the configuration values from system properties for only the available keys. This method
+     * looks for the following keys:
+     *
+     * <ul>
+     *   <li>{@code otel.imr.export.interval}: to set the export interval between pushes to the
+     *       exporter.
+     * </ul>
+     *
+     * @return this.
+     */
+    @Override
+    public Builder readSystemProperties() {
+      return super.readSystemProperties();
+    }
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
@@ -184,6 +272,7 @@ public final class IntervalMetricReader {
 
     @AutoValue.Builder
     abstract static class Builder {
+
       abstract Builder setExportIntervalMillis(long exportIntervalMillis);
 
       abstract Builder setMetricExporter(MetricExporter metricExporter);

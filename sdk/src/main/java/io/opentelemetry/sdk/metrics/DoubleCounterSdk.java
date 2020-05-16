@@ -18,32 +18,38 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.sdk.metrics.DoubleCounterSdk.BoundInstrument;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements DoubleCounter {
+final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrument>
+    implements DoubleCounter {
 
   private DoubleCounterSdk(
       InstrumentDescriptor descriptor,
-      boolean monotonic,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
     super(
         descriptor,
-        InstrumentValueType.DOUBLE,
         meterProviderSharedState,
         meterSharedState,
-        monotonic);
+        new ActiveBatcher(
+            getDefaultBatcher(
+                descriptor, meterProviderSharedState, meterSharedState, Aggregations.sum())));
   }
 
   @Override
-  public void add(double delta, String... labelKeyValuePairs) {
-    add(delta, LabelSetSdk.create(labelKeyValuePairs));
+  public void add(double increment, String... labelKeyValuePairs) {
+    add(increment, LabelSetSdk.create(labelKeyValuePairs));
   }
 
-  void add(double delta, LabelSetSdk labelSet) {
+  void add(double increment, LabelSetSdk labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
-    boundInstrument.add(delta);
-    boundInstrument.unbind();
+    try {
+      boundInstrument.add(increment);
+    } finally {
+      boundInstrument.unbind();
+    }
   }
 
   @Override
@@ -53,29 +59,26 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
 
   @Override
   BoundInstrument newBinding(Batcher batcher) {
-    return new BoundInstrument(isMonotonic(), batcher);
+    return new BoundInstrument(batcher);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
       implements DoubleCounter.BoundDoubleCounter {
 
-    private final boolean monotonic;
-
-    BoundInstrument(boolean monotonic, Batcher batcher) {
+    BoundInstrument(Batcher batcher) {
       super(batcher.getAggregator());
-      this.monotonic = monotonic;
     }
 
     @Override
-    public void add(double delta) {
-      if (monotonic && delta < 0) {
-        throw new IllegalArgumentException("monotonic counters can only increase");
+    public void add(double increment) {
+      if (increment < 0) {
+        throw new IllegalArgumentException("Counters can only increase");
       }
-      recordDouble(delta);
+      recordDouble(increment);
     }
   }
 
-  static final class Builder extends AbstractCounter.Builder<DoubleCounterSdk.Builder>
+  static final class Builder extends AbstractInstrument.Builder<DoubleCounterSdk.Builder>
       implements DoubleCounter.Builder {
 
     Builder(
@@ -94,8 +97,7 @@ final class DoubleCounterSdk extends AbstractCounter<BoundInstrument> implements
     public DoubleCounterSdk build() {
       return register(
           new DoubleCounterSdk(
-              getInstrumentDescriptor(),
-              isMonotonic(),
+              getInstrumentDescriptor(InstrumentType.COUNTER_MONOTONIC, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

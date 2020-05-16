@@ -22,8 +22,7 @@ import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 import com.google.common.truth.Truth;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
-import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.Link;
+import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -54,7 +53,7 @@ public class SamplersTest {
           traceId, parentSpanId, TraceFlags.builder().setIsSampled(true).build(), traceState);
   private final SpanContext notSampledSpanContext =
       SpanContext.create(traceId, parentSpanId, TraceFlags.getDefault(), traceState);
-  private final Link sampledParentLink = SpanData.Link.create(sampledSpanContext);
+  private final io.opentelemetry.trace.Link sampledParentLink = Link.create(sampledSpanContext);
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -70,7 +69,7 @@ public class SamplersTest {
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
-                    Collections.<Link>emptyList())
+                    Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isTrue();
     // Not sampled parent.
@@ -83,7 +82,7 @@ public class SamplersTest {
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
-                    Collections.<Link>emptyList())
+                    Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isTrue();
   }
@@ -105,7 +104,7 @@ public class SamplersTest {
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
-                    Collections.<Link>emptyList())
+                    Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isFalse();
     // Not sampled parent.
@@ -118,7 +117,7 @@ public class SamplersTest {
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
-                    Collections.<Link>emptyList())
+                    Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isFalse();
   }
@@ -165,7 +164,10 @@ public class SamplersTest {
 
   // Applies the given sampler to NUM_SAMPLE_TRIES random traceId/spanId pairs.
   private void assertSamplerSamplesWithProbability(
-      Sampler sampler, SpanContext parent, List<Link> parentLinks, double probability) {
+      Sampler sampler,
+      SpanContext parent,
+      List<io.opentelemetry.trace.Link> parentLinks,
+      double probability) {
     int count = 0; // Count of spans with sampling enabled
     for (int i = 0; i < NUM_SAMPLE_TRIES; i++) {
       if (sampler
@@ -191,26 +193,44 @@ public class SamplersTest {
   public void probabilitySampler_DifferentProbabilities_NotSampledParent() {
     final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample, notSampledSpanContext, Collections.<Link>emptyList(), 0.5);
+        fiftyPercentSample,
+        notSampledSpanContext,
+        Collections.<io.opentelemetry.trace.Link>emptyList(),
+        0.5);
     final Sampler twentyPercentSample = Samplers.Probability.create(0.2);
     assertSamplerSamplesWithProbability(
-        twentyPercentSample, notSampledSpanContext, Collections.<Link>emptyList(), 0.2);
+        twentyPercentSample,
+        notSampledSpanContext,
+        Collections.<io.opentelemetry.trace.Link>emptyList(),
+        0.2);
     final Sampler twoThirdsSample = Samplers.Probability.create(2.0 / 3.0);
     assertSamplerSamplesWithProbability(
-        twoThirdsSample, notSampledSpanContext, Collections.<Link>emptyList(), 2.0 / 3.0);
+        twoThirdsSample,
+        notSampledSpanContext,
+        Collections.<io.opentelemetry.trace.Link>emptyList(),
+        2.0 / 3.0);
   }
 
   @Test
   public void probabilitySampler_DifferentProbabilities_SampledParent() {
     final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample, sampledSpanContext, Collections.<Link>emptyList(), 1.0);
+        fiftyPercentSample,
+        sampledSpanContext,
+        Collections.<io.opentelemetry.trace.Link>emptyList(),
+        1.0);
     final Sampler twentyPercentSample = Samplers.Probability.create(0.2);
     assertSamplerSamplesWithProbability(
-        twentyPercentSample, sampledSpanContext, Collections.<Link>emptyList(), 1.0);
+        twentyPercentSample,
+        sampledSpanContext,
+        Collections.<io.opentelemetry.trace.Link>emptyList(),
+        1.0);
     final Sampler twoThirdsSample = Samplers.Probability.create(2.0 / 3.0);
     assertSamplerSamplesWithProbability(
-        twoThirdsSample, sampledSpanContext, Collections.<Link>emptyList(), 1.0);
+        twoThirdsSample,
+        sampledSpanContext,
+        Collections.<io.opentelemetry.trace.Link>emptyList(),
+        1.0);
   }
 
   @Test
@@ -235,11 +255,19 @@ public class SamplersTest {
   @Test
   public void probabilitySampler_SampleBasedOnTraceId() {
     final Sampler defaultProbability = Samplers.Probability.create(0.0001);
-    // This traceId will not be sampled by the Probability Sampler because the first 8 bytes as long
+    // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
     TraceId notSampledtraceId =
         TraceId.fromBytes(
             new byte[] {
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
               (byte) 0x8F,
               (byte) 0xFF,
               (byte) 0xFF,
@@ -247,15 +275,7 @@ public class SamplersTest {
               (byte) 0xFF,
               (byte) 0xFF,
               (byte) 0xFF,
-              (byte) 0xFF,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0,
-              0
+              (byte) 0xFF
             },
             0);
     Decision decision1 =
@@ -266,11 +286,11 @@ public class SamplersTest {
             SPAN_NAME,
             SPAN_KIND,
             Collections.<String, AttributeValue>emptyMap(),
-            Collections.<Link>emptyList());
+            Collections.<io.opentelemetry.trace.Link>emptyList());
     assertThat(decision1.isSampled()).isFalse();
     assertThat(decision1.getAttributes())
         .containsExactly(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
-    // This traceId will be sampled by the Probability Sampler because the first 8 bytes as long
+    // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     TraceId sampledtraceId =
         TraceId.fromBytes(
@@ -301,7 +321,7 @@ public class SamplersTest {
             SPAN_NAME,
             SPAN_KIND,
             Collections.<String, AttributeValue>emptyMap(),
-            Collections.<Link>emptyList());
+            Collections.<io.opentelemetry.trace.Link>emptyList());
     assertThat(decision2.isSampled()).isTrue();
     assertThat(decision1.getAttributes())
         .containsExactly(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));

@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.metrics.MeterSdkProvider;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
@@ -40,7 +41,7 @@ public final class OpenTelemetrySdk {
    * @since 0.1.0
    */
   public static TracerSdkProvider getTracerProvider() {
-    return (TracerSdkProvider) OpenTelemetry.getTracerProvider();
+    return (TracerSdkProvider) ((Obfuscated<?>) OpenTelemetry.getTracerProvider()).unobfuscate();
   }
 
   /**

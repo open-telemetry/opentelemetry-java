@@ -1,0 +1,25 @@
+apply plugin: "java-platform"
+apply plugin: "maven-publish"
+
+group = "io.opentelemetry"
+
+dependencies {
+    constraints {
+        parent.childProjects.sort { "$it.value" }
+                .collect { it.value }
+                .findAll { it.name != project.name }
+                .each { project ->
+                    api project
+                    println project
+                }
+    }
+}
+
+publishing {
+    publications {
+        mavenBom(MavenPublication) {
+            artifactId = 'opentelemetry-bom'
+            from components.javaPlatform
+        }
+    }
+}

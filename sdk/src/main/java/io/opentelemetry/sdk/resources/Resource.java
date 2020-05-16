@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.resources;
 
 import com.google.auto.value.AutoValue;
+import com.google.auto.value.extension.memoized.Memoized;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
@@ -65,6 +66,10 @@ public abstract class Resource {
    * @since 0.1.0
    */
   public abstract Map<String, AttributeValue> getAttributes();
+
+  @Memoized
+  @Override
+  public abstract int hashCode();
 
   /**
    * Returns a {@link Resource}.

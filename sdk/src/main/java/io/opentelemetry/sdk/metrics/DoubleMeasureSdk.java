@@ -18,21 +18,27 @@ package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.sdk.metrics.DoubleMeasureSdk.BoundInstrument;
+import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements DoubleMeasure {
+final class DoubleMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument>
+    implements DoubleMeasure {
 
   private DoubleMeasureSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      boolean absolute) {
+      MeterSharedState meterSharedState) {
     super(
         descriptor,
-        InstrumentValueType.DOUBLE,
         meterProviderSharedState,
         meterSharedState,
-        absolute);
+        new ActiveBatcher(
+            getDefaultBatcher(
+                descriptor,
+                meterProviderSharedState,
+                meterSharedState,
+                Aggregations.minMaxSumCount())));
   }
 
   @Override
@@ -53,29 +59,23 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
 
   @Override
   BoundInstrument newBinding(Batcher batcher) {
-    return new BoundInstrument(isAbsolute(), batcher);
+    return new BoundInstrument(batcher);
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
       implements DoubleMeasure.BoundDoubleMeasure {
 
-    private final boolean absolute;
-
-    BoundInstrument(boolean absolute, Batcher batcher) {
+    BoundInstrument(Batcher batcher) {
       super(batcher.getAggregator());
-      this.absolute = absolute;
     }
 
     @Override
     public void record(double value) {
-      if (this.absolute && value < 0) {
-        throw new IllegalArgumentException("absolute measure can only record positive values");
-      }
       recordDouble(value);
     }
   }
 
-  static final class Builder extends AbstractMeasure.Builder<DoubleMeasureSdk.Builder>
+  static final class Builder extends AbstractInstrument.Builder<DoubleMeasureSdk.Builder>
       implements DoubleMeasure.Builder {
 
     Builder(
@@ -94,10 +94,10 @@ final class DoubleMeasureSdk extends AbstractMeasure<BoundInstrument> implements
     public DoubleMeasureSdk build() {
       return register(
           new DoubleMeasureSdk(
-              getInstrumentDescriptor(),
+              getInstrumentDescriptor(
+                  InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
-              getMeterSharedState(),
-              isAbsolute()));
+              getMeterSharedState()));
     }
   }
 }
