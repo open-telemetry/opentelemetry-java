@@ -82,6 +82,13 @@ configure(opentelemetryProjects) {
     compileTestJava {
         // serialVersionUID is basically guaranteed to be useless in tests
         options.compilerArgs += ["-Xlint:-serial"]
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+
+        // Disable Java7 checks in test sources
+        options.errorprone.disable("Java7ApiChecker")
+        // Disable AndroidJdkLibs checks in test sources
+        options.errorprone.disable("AndroidJdkLibsChecker")
     }
 
     jar.manifest {
