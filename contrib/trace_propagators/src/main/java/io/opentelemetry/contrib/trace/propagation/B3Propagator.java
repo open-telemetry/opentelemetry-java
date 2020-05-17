@@ -62,8 +62,13 @@ public class B3Propagator implements HttpTextFormat {
    * @param singleHeader whether to use single or multiple headers.
    */
   public B3Propagator(boolean singleHeader) {
-    b3PropagatorInjector = new B3PropagatorInjector(singleHeader);
-    b3PropagatorExtractor = new B3PropagatorExtractor(singleHeader);
+    if (singleHeader) {
+      b3PropagatorInjector = new B3PropagatorInjectorSingleHeader();
+      b3PropagatorExtractor = new B3PropagatorExtractorSingleHeader();
+    } else {
+      b3PropagatorInjector = new B3PropagatorInjectorMultipleHeaders();
+      b3PropagatorExtractor = new B3PropagatorExtractorMultipleHeaders();
+    }
   }
 
   @Override
