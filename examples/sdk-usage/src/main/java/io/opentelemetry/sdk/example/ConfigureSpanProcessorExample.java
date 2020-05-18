@@ -73,8 +73,7 @@ public class ConfigureSpanProcessorExample {
     // Configure the batch spans processor. This span processor exports span in batches.
     BatchSpansProcessor batchSpansProcessor =
         BatchSpansProcessor.newBuilder(exporter)
-            .setExportOnlySampled(
-                true) // send to the exporter only spans that have been sampled
+            .setExportOnlySampled(true) // send to the exporter only spans that have been sampled
             .setMaxExportBatchSize(512) // set the maximum batch size to use
             .setMaxQueueSize(2048) // set the queue size. This must be >= the export batch size
             .setExporterTimeoutMillis(
