@@ -55,7 +55,7 @@ public class HttpClient {
     // Show that multiple exporters can be used
 
     // Set to export the traces also to a log file
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(loggingExporter));
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(loggingExporter).build());
   }
 
   private HttpClient() throws Exception {

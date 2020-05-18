@@ -41,7 +41,7 @@ class ConfigureTraceExample {
   static Tracer tracer = tracerProvider.get("ConfigureTraceExample");
 
   static {
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(new LoggingSpanExporter()));
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build());
   }
 
   public static void main(String[] args) {
