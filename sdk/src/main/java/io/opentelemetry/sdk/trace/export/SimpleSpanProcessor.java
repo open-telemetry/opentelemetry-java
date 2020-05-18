@@ -33,14 +33,14 @@ import java.util.logging.Logger;
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
  * SpanData} and passes it to the configured exporter.
  */
-public final class SimpleSpansProcessor implements SpanProcessor {
+public final class SimpleSpanProcessor implements SpanProcessor {
 
-  private static final Logger logger = Logger.getLogger(SimpleSpansProcessor.class.getName());
+  private static final Logger logger = Logger.getLogger(SimpleSpanProcessor.class.getName());
 
   private final SpanExporter spanExporter;
   private final boolean sampled;
 
-  private SimpleSpansProcessor(SpanExporter spanExporter, boolean sampled) {
+  private SimpleSpanProcessor(SpanExporter spanExporter, boolean sampled) {
     this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
     this.sampled = sampled;
   }
@@ -84,17 +84,17 @@ public final class SimpleSpansProcessor implements SpanProcessor {
   }
 
   /**
-   * Returns a new Builder for {@link SimpleSpansProcessor}.
+   * Returns a new Builder for {@link SimpleSpanProcessor}.
    *
    * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
-   * @return a new {@link SimpleSpansProcessor}.
+   * @return a new {@link SimpleSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
   public static Builder newBuilder(SpanExporter spanExporter) {
     return new Builder(spanExporter);
   }
 
-  /** Builder class for {@link SimpleSpansProcessor}. */
+  /** Builder class for {@link SimpleSpanProcessor}. */
   public static final class Builder extends ConfigBuilder<Builder> {
 
     private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
@@ -181,7 +181,7 @@ public final class SimpleSpansProcessor implements SpanProcessor {
      *
      * <p>Default value is {@code true}.
      *
-     * @see SimpleSpansProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
+     * @see SimpleSpanProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
      * @param sampled report only sampled spans.
      * @return this.
      */
@@ -194,14 +194,14 @@ public final class SimpleSpansProcessor implements SpanProcessor {
     // TODO: Consider to add support for constant Attributes and/or Resource.
 
     /**
-     * Returns a new {@link SimpleSpansProcessor} that converts spans to proto and forwards them to
+     * Returns a new {@link SimpleSpanProcessor} that converts spans to proto and forwards them to
      * the given {@code spanExporter}.
      *
-     * @return a new {@link SimpleSpansProcessor}.
+     * @return a new {@link SimpleSpanProcessor}.
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
-    public SimpleSpansProcessor build() {
-      return new SimpleSpansProcessor(spanExporter, sampled);
+    public SimpleSpanProcessor build() {
+      return new SimpleSpanProcessor(spanExporter, sampled);
     }
   }
 }

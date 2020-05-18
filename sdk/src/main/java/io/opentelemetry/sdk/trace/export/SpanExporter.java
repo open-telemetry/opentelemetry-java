@@ -25,7 +25,7 @@ import java.util.Collection;
  * their own format.
  *
  * <p>To export data this MUST be register to the {@code TracerSdk} using a {@link
- * SimpleSpansProcessor} or a {@code BatchSampledSpansProcessor}.
+ * SimpleSpanProcessor} or a {@code BatchSampledSpansProcessor}.
  */
 public interface SpanExporter {
 

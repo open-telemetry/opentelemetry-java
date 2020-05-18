@@ -27,7 +27,7 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.BatchSpansProcessorTest.WaitingSpanExporter;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessorTest.WaitingSpanExporter;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
@@ -43,15 +43,15 @@ import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link SimpleSpansProcessor}. */
+/** Unit tests for {@link SimpleSpanProcessor}. */
 @RunWith(JUnit4.class)
-public class SimpleSpansProcessorTest {
+public class SimpleSpanProcessorTest {
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private static final String SPAN_NAME = "MySpanName";
   @Mock private ReadableSpan readableSpan;
   @Mock private SpanExporter spanExporter;
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
-  private final Tracer tracer = tracerSdkFactory.get("SimpleSpansProcessor");
+  private final Tracer tracer = tracerSdkFactory.get("SimpleSpanProcessor");
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
           TraceId.getInvalid(),
@@ -60,12 +60,12 @@ public class SimpleSpansProcessorTest {
           TraceState.builder().build());
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
 
-  private SimpleSpansProcessor simpleSampledSpansProcessor;
+  private SimpleSpanProcessor simpleSampledSpansProcessor;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    simpleSampledSpansProcessor = SimpleSpansProcessor.newBuilder(spanExporter).build();
+    simpleSampledSpansProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
   }
 
   @Test
@@ -96,9 +96,8 @@ public class SimpleSpansProcessorTest {
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
-    SimpleSpansProcessor simpleSpansProcessor =
-        SimpleSpansProcessor.newBuilder(spanExporter).build();
-    simpleSpansProcessor.onEnd(readableSpan);
+    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+    simpleSpanProcessor.onEnd(readableSpan);
     verifyZeroInteractions(spanExporter);
   }
 
@@ -108,9 +107,8 @@ public class SimpleSpansProcessorTest {
     when(readableSpan.toSpanData())
         .thenReturn(TestUtils.makeBasicSpan())
         .thenThrow(new RuntimeException());
-    SimpleSpansProcessor simpleSpansProcessor =
-        SimpleSpansProcessor.newBuilder(spanExporter).build();
-    simpleSpansProcessor.onEnd(readableSpan);
+    SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+    simpleSpanProcessor.onEnd(readableSpan);
     verify(spanExporter).export(Collections.singletonList(TestUtils.makeBasicSpan()));
   }
 
@@ -119,7 +117,7 @@ public class SimpleSpansProcessorTest {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
 
     tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+        BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
@@ -148,7 +146,7 @@ public class SimpleSpansProcessorTest {
     // TODO(bdrutu): Fix this when Sampler return RECORD option.
     /*
     tracer.addSpanProcessor(
-        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+        BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .reportOnlySampled(false)
             .build());

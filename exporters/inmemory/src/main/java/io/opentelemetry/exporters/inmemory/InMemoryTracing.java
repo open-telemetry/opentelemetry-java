@@ -18,11 +18,11 @@ package io.opentelemetry.exporters.inmemory;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * InMemoryTracing is an utility class that helps installing the {@link SimpleSpansProcessor} and an
+ * InMemoryTracing is an utility class that helps installing the {@link SimpleSpanProcessor} and an
  * instance of the {@link InMemorySpanExporter} to a given {@link TracerSdkProvider}. Can be used to
  * test OpenTelemetry integration.
  *
@@ -96,7 +96,7 @@ public abstract class InMemoryTracing {
      */
     public final InMemoryTracing build() {
       InMemorySpanExporter exporter = InMemorySpanExporter.create();
-      getTracerProvider().addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
+      getTracerProvider().addSpanProcessor(SimpleSpanProcessor.newBuilder(exporter).build());
       return setSpanExporter(exporter).autoBuild();
     }
   }
