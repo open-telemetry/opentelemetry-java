@@ -108,7 +108,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @since 0.5.0
    */
   public static OtlpGrpcMetricExporter getDefault() {
-    return newBuilder().readEnvironment().readSystemProperties().build();
+    return newBuilder().readEnvironmentVariables().readSystemProperties().build();
   }
 
   /**
@@ -216,8 +216,8 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
      * @return this.
      */
     @Override
-    public Builder readEnvironment() {
-      return super.readEnvironment();
+    public Builder readEnvironmentVariables() {
+      return super.readEnvironmentVariables();
     }
 
     /**

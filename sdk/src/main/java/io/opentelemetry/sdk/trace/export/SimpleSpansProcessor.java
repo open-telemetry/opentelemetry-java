@@ -157,8 +157,8 @@ public final class SimpleSpansProcessor implements SpanProcessor {
      * @return this.
      */
     @Override
-    public Builder readEnvironment() {
-      return super.readEnvironment();
+    public Builder readEnvironmentVariables() {
+      return super.readEnvironmentVariables();
     }
 
     /**
