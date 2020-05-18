@@ -57,17 +57,17 @@ import javax.annotation.concurrent.GuardedBy;
  * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
  * TODO: Add a link to the SpanProcessor that uses Disruptor as alternative with low contention.
  */
-public final class BatchSpansProcessor implements SpanProcessor {
+public final class BatchSpanProcessor implements SpanProcessor {
 
   private static final String WORKER_THREAD_NAME =
-      BatchSpansProcessor.class.getSimpleName() + "_WorkerThread";
+      BatchSpanProcessor.class.getSimpleName() + "_WorkerThread";
   private static final String EXPORTER_THREAD_NAME =
-      BatchSpansProcessor.class.getSimpleName() + "_ExporterThread";
+      BatchSpanProcessor.class.getSimpleName() + "_ExporterThread";
   private final Worker worker;
   private final Thread workerThread;
   private final boolean sampled;
 
-  private BatchSpansProcessor(
+  private BatchSpanProcessor(
       SpanExporter spanExporter,
       boolean sampled,
       long scheduleDelayMillis,
@@ -132,10 +132,10 @@ public final class BatchSpansProcessor implements SpanProcessor {
               .longCounterBuilder("droppedSpans")
               .setUnit("1")
               .setDescription(
-                  "The number of spans dropped by the BatchSpansProcessor due to high throughput.")
+                  "The number of spans dropped by the BatchSpanProcessor due to high throughput.")
               .build();
       droppedSpans =
-          droppedSpansCounter.bind("spanProcessorType", BatchSpansProcessor.class.getSimpleName());
+          droppedSpansCounter.bind("spanProcessorType", BatchSpanProcessor.class.getSimpleName());
     }
 
     private static final BoundLongCounter droppedSpans;
@@ -279,17 +279,17 @@ public final class BatchSpansProcessor implements SpanProcessor {
   }
 
   /**
-   * Returns a new Builder for {@link BatchSpansProcessor}.
+   * Returns a new Builder for {@link BatchSpanProcessor}.
    *
    * @param spanExporter the {@code SpanExporter} to where the Spans are pushed.
-   * @return a new {@link BatchSpansProcessor}.
+   * @return a new {@link BatchSpanProcessor}.
    * @throws NullPointerException if the {@code spanExporter} is {@code null}.
    */
   public static Builder newBuilder(SpanExporter spanExporter) {
     return new Builder(spanExporter);
   }
 
-  /** Builder class for {@link BatchSpansProcessor}. */
+  /** Builder class for {@link BatchSpanProcessor}. */
   public static final class Builder extends ConfigBuilder<Builder> {
 
     private static final String KEY_SCHEDULE_DELAY_MILLIS = "otel.bsp.schedule.delay";
@@ -429,7 +429,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
      *
      * @param sampled report only sampled spans.
      * @return this.
-     * @see BatchSpansProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
+     * @see BatchSpanProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
      */
     public Builder setExportOnlySampled(boolean sampled) {
       this.exportOnlySampled = sampled;
@@ -444,7 +444,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
      *
      * @param scheduleDelayMillis the delay interval between two consecutive exports.
      * @return this.
-     * @see BatchSpansProcessor.Builder#DEFAULT_SCHEDULE_DELAY_MILLIS
+     * @see BatchSpanProcessor.Builder#DEFAULT_SCHEDULE_DELAY_MILLIS
      */
     public Builder setScheduleDelayMillis(long scheduleDelayMillis) {
       this.scheduleDelayMillis = scheduleDelayMillis;
@@ -458,7 +458,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
      *
      * @param exporterTimeoutMillis the timeout for exports in milliseconds.
      * @return this
-     * @see BatchSpansProcessor.Builder#DEFAULT_EXPORT_TIMEOUT_MILLIS
+     * @see BatchSpanProcessor.Builder#DEFAULT_EXPORT_TIMEOUT_MILLIS
      */
     public Builder setExporterTimeoutMillis(int exporterTimeoutMillis) {
       this.exporterTimeoutMillis = exporterTimeoutMillis;
@@ -476,7 +476,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
      * @param maxQueueSize the maximum number of Spans that are kept in the queue before start
      *     dropping.
      * @return this.
-     * @see BatchSpansProcessor.Builder#DEFAULT_MAX_QUEUE_SIZE
+     * @see BatchSpanProcessor.Builder#DEFAULT_MAX_QUEUE_SIZE
      */
     public Builder setMaxQueueSize(int maxQueueSize) {
       this.maxQueueSize = maxQueueSize;
@@ -491,7 +491,7 @@ public final class BatchSpansProcessor implements SpanProcessor {
      *
      * @param maxExportBatchSize the maximum batch size for every export.
      * @return this.
-     * @see BatchSpansProcessor.Builder#DEFAULT_MAX_EXPORT_BATCH_SIZE
+     * @see BatchSpanProcessor.Builder#DEFAULT_MAX_EXPORT_BATCH_SIZE
      */
     public Builder setMaxExportBatchSize(int maxExportBatchSize) {
       Utils.checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
@@ -500,14 +500,14 @@ public final class BatchSpansProcessor implements SpanProcessor {
     }
 
     /**
-     * Returns a new {@link BatchSpansProcessor} that batches, then converts spans to proto and
+     * Returns a new {@link BatchSpanProcessor} that batches, then converts spans to proto and
      * forwards them to the given {@code spanExporter}.
      *
-     * @return a new {@link BatchSpansProcessor}.
+     * @return a new {@link BatchSpanProcessor}.
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
-    public BatchSpansProcessor build() {
-      return new BatchSpansProcessor(
+    public BatchSpanProcessor build() {
+      return new BatchSpanProcessor(
           spanExporter,
           exportOnlySampled,
           scheduleDelayMillis,

@@ -317,7 +317,7 @@ TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
 
 // Set to export the traces to a logging stream
 tracerProvider.addSpanProcessor(
-    SimpleSpansProcessor.newBuilder(
+    SimpleSpanProcessor.newBuilder(
         new LoggingSpanExporter()
     ).build());
 ```
@@ -355,20 +355,20 @@ tracerProvider.updateActiveTraceConfig(
 ### Span Processor
 
 Different Span processors are offered by OpenTelemetry. The `SimpleSpanProcessor` immediately
-forwards ended spans to the exporter, while the `BatchSpansProcessor` batches them and sends them
+forwards ended spans to the exporter, while the `BatchSpanProcessor` batches them and sends them
 in bulk. Multiple Span processors can be configured to be active at the same time using the
 `MultiSpanProcessor`.
 
 ```java
 tracerProvider.addSpanProcessor(
-    SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build()
+    SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
 );
 tracerProvider.addSpanProcessor(
-    BatchSpansProcessor.newBuilder(new LoggingSpanExporter()).build()
+    BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
 );
 tracerProvider.addSpanProcessor(MultiSpanProcessor.create(Arrays.asList(
-            SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build(),
-            BatchSpansProcessor.newBuilder(new LoggingSpanExporter()).build()
+            SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build(),
+            BatchSpanProcessor.newBuilder(new LoggingSpanExporter()).build()
 )));
 ```
 
@@ -386,16 +386,16 @@ Other exporters can be found in the [OpenTelemetry Registry].
 
 ```java
 tracerProvider.addSpanProcessor(
-    SimpleSpansProcessor.newBuilder(InMemorySpanExporter.create()).build());
+    SimpleSpanProcessor.newBuilder(InMemorySpanExporter.create()).build());
 tracerProvider.addSpanProcessor(
-    SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build());
+    SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build());
 
 ManagedChannel jaegerChannel =
     ManagedChannelBuilder.forAddress([ip:String], [port:int]).usePlaintext().build();
 JaegerGrpcSpanExporter jaegerExporter = JaegerGrpcSpanExporter.newBuilder()
     .setServiceName("example").setChannel(jaegerChannel).setDeadline(30000)
     .build();
-tracerProvider.addSpanProcessor(BatchSpansProcessor.newBuilder(
+tracerProvider.addSpanProcessor(BatchSpanProcessor.newBuilder(
     jaegerExporter
 ).build());
 ```
