@@ -20,7 +20,7 @@ import io.opentelemetry.trace.TracerProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * TracerProvider is a service provider for a {@link TracerProvider}. Fully qualified class name of
+ * TraceProvider is a service provider for a {@link TracerProvider}. Fully qualified class name of
  * the implementation should be registered in {@code
  * META-INF/services/io.opentelemetry.trace.spi.TraceProvider}. <br>
  * <br>

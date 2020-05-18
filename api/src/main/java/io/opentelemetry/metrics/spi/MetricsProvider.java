@@ -20,12 +20,12 @@ import io.opentelemetry.metrics.MeterProvider;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * MeterRegistryProvider is a service provider for {@link MeterProvider}. Fully qualified class name
+ * MetricsProvider is a service provider for {@link MeterProvider}. Fully qualified class name
  * of the implementation should be registered in {@code
- * META-INF/services/io.opentelemetry.metrics.spi.MeterRegistryProvider}. <br>
+ * META-INF/services/io.opentelemetry.metrics.spi.MetricsProvider}. <br>
  * <br>
  * A specific implementation can be selected by a system property {@code
- * io.opentelemetry.metrics.spi.MeterRegistryProvider} with value of fully qualified class name.
+ * io.opentelemetry.metrics.spi.MetricsProvider} with value of fully qualified class name.
  *
  * @see io.opentelemetry.OpenTelemetry
  */
