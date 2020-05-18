@@ -109,7 +109,7 @@ public class HelloWorldServer {
     // Get the tracer
     TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Set to process the the spans by the LogExporter
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(exporter));
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
   }
 
   /** Await termination on the main thread since the grpc library uses daemon threads. */
