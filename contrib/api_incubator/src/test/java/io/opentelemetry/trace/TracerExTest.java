@@ -53,6 +53,7 @@ public class TracerExTest {
             .addLink(
                 SpanContext.getInvalid(),
                 Attribute.create(LONG_ATTRIBUTE, 109L),
+                Attribute.create(longKey("long"), 109L),
                 Attribute.create(BOOLEAN_ATTRIBUTE, true))
             .addLink(LinkEx.create(SpanContext.getInvalid(), testAttributes())) // option 3
             .startSpan();
@@ -69,6 +70,10 @@ public class TracerExTest {
     SpanEx testSpan =
         testTracer
             .spanBuilder("testSpan")
+            // option 0 - direct with the new typed keys
+            .setAttribute(DOUBLE_ATTRIBUTE, 234.56)
+            .setAttribute(STRING_ATTRIBUTE, "my value")
+            .setAttribute(SemanticAttributes.HTTP_SCHEME, "https")
             // option 1 - single
             .setAttribute(Attribute.create(SemanticAttributes.HTTP_METHOD, "GET"))
             // option 2 - multiple
@@ -80,6 +85,8 @@ public class TracerExTest {
             .startSpan();
     try (Scope ignored = testTracer.withSpan(testSpan)) {
       // do some work
+      testSpan.setAttribute(SemanticAttributes.HTTP_HEADERS, "X-API-KEY", "X-CUSTOM-HEADER");
+      testSpan.setAttribute(LONG_ATTRIBUTE, 666L);
     }
     testSpan.end();
   }

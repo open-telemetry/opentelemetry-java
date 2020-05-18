@@ -16,6 +16,7 @@
 
 package io.opentelemetry.common;
 
+import java.util.List;
 import java.util.Set;
 
 public interface Attributes {
@@ -29,4 +30,12 @@ public interface Attributes {
   long getValue(AttributeKey.LongValuedKey key);
 
   double getValue(AttributeKey.DoubleValuedKey key);
+
+  List<String> getValue(AttributeKey.StringArrayValuedKey key);
+
+  List<Double> getValue(AttributeKey.DoubleArrayValuedKey key);
+
+  List<Long> getValue(AttributeKey.LongArrayValuedKey key);
+
+  List<Boolean> getValue(AttributeKey.BooleanArrayValuedKey key);
 }

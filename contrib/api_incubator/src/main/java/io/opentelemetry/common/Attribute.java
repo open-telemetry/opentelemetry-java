@@ -17,6 +17,8 @@
 package io.opentelemetry.common;
 
 import com.google.auto.value.AutoValue;
+import java.util.Arrays;
+import java.util.List;
 import jdk.nashorn.internal.ir.annotations.Immutable;
 
 @AutoValue
@@ -43,6 +45,22 @@ public abstract class Attribute {
     return (String) value();
   }
 
+  public List<String> getStringArrayValue() {
+    return Arrays.asList((String[]) value());
+  }
+
+  public List<Double> getDoubleArrayValue() {
+    return Arrays.asList((Double[]) value());
+  }
+
+  public List<Long> getLongArrayValue() {
+    return Arrays.asList((Long[]) value());
+  }
+
+  public List<Boolean> getBooleanArrayValue() {
+    return Arrays.asList((Boolean[]) value());
+  }
+
   public static Attribute create(AttributeKey.BooleanValuedKey key, boolean value) {
     return new AutoValue_Attribute(key, value);
   }
@@ -56,6 +74,22 @@ public abstract class Attribute {
   }
 
   public static Attribute create(AttributeKey.StringValuedKey key, String value) {
+    return new AutoValue_Attribute(key, value);
+  }
+
+  public static Attribute create(AttributeKey.StringArrayValuedKey key, String... value) {
+    return new AutoValue_Attribute(key, value);
+  }
+
+  public static Attribute create(AttributeKey.DoubleArrayValuedKey key, Double... value) {
+    return new AutoValue_Attribute(key, value);
+  }
+
+  public static Attribute create(AttributeKey.LongArrayValuedKey key, Long... value) {
+    return new AutoValue_Attribute(key, value);
+  }
+
+  public static Attribute create(AttributeKey.BooleanArrayValuedKey key, Boolean... value) {
     return new AutoValue_Attribute(key, value);
   }
 }

@@ -25,7 +25,11 @@ public interface AttributeKey {
     BOOLEAN,
     LONG,
     DOUBLE,
-    STRING
+    STRING,
+    STRING_ARRAY,
+    BOOLEAN_ARRAY,
+    LONG_ARRAY,
+    DOUBLE_ARRAY
   }
 
   Type getType();
@@ -46,6 +50,22 @@ public interface AttributeKey {
 
   static StringValuedKey stringKey(String key) {
     return new AutoValue_AttributeKey_StringValuedKey(key);
+  }
+
+  static StringArrayValuedKey stringArrayKey(String key) {
+    return new AutoValue_AttributeKey_StringArrayValuedKey(key);
+  }
+
+  static LongArrayValuedKey longArrayKey(String key) {
+    return new AutoValue_AttributeKey_LongArrayValuedKey(key);
+  }
+
+  static DoubleArrayValuedKey doubleArrayKey(String key) {
+    return new AutoValue_AttributeKey_DoubleArrayValuedKey(key);
+  }
+
+  static BooleanArrayValuedKey booleanArrayKey(String key) {
+    return new AutoValue_AttributeKey_BooleanArrayValuedKey(key);
   }
 
   @AutoValue
@@ -81,6 +101,42 @@ public interface AttributeKey {
     @Override
     public Type getType() {
       return Type.STRING;
+    }
+  }
+
+  @AutoValue
+  @Immutable
+  abstract class StringArrayValuedKey implements AttributeKey {
+    @Override
+    public Type getType() {
+      return Type.STRING_ARRAY;
+    }
+  }
+
+  @AutoValue
+  @Immutable
+  abstract class LongArrayValuedKey implements AttributeKey {
+    @Override
+    public Type getType() {
+      return Type.LONG_ARRAY;
+    }
+  }
+
+  @AutoValue
+  @Immutable
+  abstract class DoubleArrayValuedKey implements AttributeKey {
+    @Override
+    public Type getType() {
+      return Type.DOUBLE_ARRAY;
+    }
+  }
+
+  @AutoValue
+  @Immutable
+  abstract class BooleanArrayValuedKey implements AttributeKey {
+    @Override
+    public Type getType() {
+      return Type.BOOLEAN_ARRAY;
     }
   }
 }

@@ -16,6 +16,7 @@
 
 package io.opentelemetry.trace;
 
+import static io.opentelemetry.common.AttributeValue.arrayAttributeValue;
 import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 import static io.opentelemetry.common.AttributeValue.longAttributeValue;
@@ -23,9 +24,13 @@ import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import io.opentelemetry.common.Attribute;
 import io.opentelemetry.common.AttributeKey;
+import io.opentelemetry.common.AttributeKey.BooleanArrayValuedKey;
 import io.opentelemetry.common.AttributeKey.BooleanValuedKey;
+import io.opentelemetry.common.AttributeKey.DoubleArrayValuedKey;
 import io.opentelemetry.common.AttributeKey.DoubleValuedKey;
+import io.opentelemetry.common.AttributeKey.LongArrayValuedKey;
 import io.opentelemetry.common.AttributeKey.LongValuedKey;
+import io.opentelemetry.common.AttributeKey.StringArrayValuedKey;
 import io.opentelemetry.common.AttributeKey.StringValuedKey;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
@@ -67,6 +72,38 @@ public class SpanEx {
 
   public void end(EndSpanOptions endOptions) {
     span.end(endOptions);
+  }
+
+  public void setAttribute(StringValuedKey key, String value) {
+    span.setAttribute(key.key(), AttributeValue.stringAttributeValue(value));
+  }
+
+  public void setAttribute(LongValuedKey key, long value) {
+    span.setAttribute(key.key(), AttributeValue.longAttributeValue(value));
+  }
+
+  public void setAttribute(DoubleValuedKey key, double value) {
+    span.setAttribute(key.key(), AttributeValue.doubleAttributeValue(value));
+  }
+
+  public void setAttribute(BooleanValuedKey key, boolean value) {
+    span.setAttribute(key.key(), AttributeValue.booleanAttributeValue(value));
+  }
+
+  public void setAttribute(StringArrayValuedKey key, String... value) {
+    span.setAttribute(key.key(), AttributeValue.arrayAttributeValue(value));
+  }
+
+  public void setAttribute(LongArrayValuedKey key, Long... value) {
+    span.setAttribute(key.key(), AttributeValue.arrayAttributeValue(value));
+  }
+
+  public void setAttribute(DoubleArrayValuedKey key, Double... value) {
+    span.setAttribute(key.key(), AttributeValue.arrayAttributeValue(value));
+  }
+
+  public void setAttribute(BooleanArrayValuedKey key, Boolean... value) {
+    span.setAttribute(key.key(), AttributeValue.arrayAttributeValue(value));
   }
 
   public static Builder newBuilder(Tracer tracer, String spanName) {
@@ -152,6 +189,46 @@ public class SpanEx {
       }
       return this;
     }
+
+    public SpanEx.Builder setAttribute(StringValuedKey key, String value) {
+      builder.setAttribute(key.key(), AttributeValue.stringAttributeValue(value));
+      return this;
+    }
+
+    public SpanEx.Builder setAttribute(LongValuedKey key, long value) {
+      builder.setAttribute(key.key(), AttributeValue.longAttributeValue(value));
+      return this;
+    }
+
+    public SpanEx.Builder setAttribute(DoubleValuedKey key, double value) {
+      builder.setAttribute(key.key(), AttributeValue.doubleAttributeValue(value));
+      return this;
+    }
+
+    public SpanEx.Builder setAttribute(BooleanValuedKey key, boolean value) {
+      builder.setAttribute(key.key(), AttributeValue.booleanAttributeValue(value));
+      return this;
+    }
+
+    public SpanEx.Builder setAttribute(StringArrayValuedKey key, String... value) {
+      builder.setAttribute(key.key(), AttributeValue.arrayAttributeValue(value));
+      return this;
+    }
+
+    public SpanEx.Builder setAttribute(LongArrayValuedKey key, Long... value) {
+      builder.setAttribute(key.key(), AttributeValue.arrayAttributeValue(value));
+      return this;
+    }
+
+    public SpanEx.Builder setAttribute(DoubleArrayValuedKey key, Double... value) {
+      builder.setAttribute(key.key(), AttributeValue.arrayAttributeValue(value));
+      return this;
+    }
+
+    public SpanEx.Builder setAttribute(BooleanArrayValuedKey key, Boolean... value) {
+      builder.setAttribute(key.key(), AttributeValue.arrayAttributeValue(value));
+      return this;
+    }
   }
 
   private static Map<String, AttributeValue> makeAttributeMap(Attribute[] attributes) {
@@ -181,6 +258,14 @@ public class SpanEx {
         return doubleAttributeValue(attribute.getDoubleValue());
       case STRING:
         return stringAttributeValue(attribute.getStringValue());
+      case STRING_ARRAY:
+        return arrayAttributeValue(attribute.getStringArrayValue().toArray(new String[0]));
+      case BOOLEAN_ARRAY:
+        return arrayAttributeValue(attribute.getBooleanArrayValue().toArray(new Boolean[0]));
+      case LONG_ARRAY:
+        return arrayAttributeValue(attribute.getLongArrayValue().toArray(new Long[0]));
+      case DOUBLE_ARRAY:
+        return arrayAttributeValue(attribute.getDoubleArrayValue().toArray(new Double[0]));
     }
     throw new IllegalStateException("Unknown type: " + key.getType());
   }
@@ -195,6 +280,18 @@ public class SpanEx {
         return doubleAttributeValue(attributes.getValue((DoubleValuedKey) key));
       case STRING:
         return stringAttributeValue(attributes.getValue((StringValuedKey) key));
+      case STRING_ARRAY:
+        return arrayAttributeValue(
+            attributes.getValue((StringArrayValuedKey) key).toArray(new String[0]));
+      case BOOLEAN_ARRAY:
+        return arrayAttributeValue(
+            attributes.getValue((BooleanArrayValuedKey) key).toArray(new Boolean[0]));
+      case LONG_ARRAY:
+        return arrayAttributeValue(
+            attributes.getValue((LongArrayValuedKey) key).toArray(new Long[0]));
+      case DOUBLE_ARRAY:
+        return arrayAttributeValue(
+            attributes.getValue((DoubleArrayValuedKey) key).toArray(new Double[0]));
     }
     throw new IllegalStateException("Unknown type: " + key.getType());
   }

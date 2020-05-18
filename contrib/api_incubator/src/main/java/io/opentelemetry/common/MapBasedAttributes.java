@@ -17,8 +17,14 @@
 package io.opentelemetry.common;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.common.AttributeKey.BooleanArrayValuedKey;
+import io.opentelemetry.common.AttributeKey.DoubleArrayValuedKey;
+import io.opentelemetry.common.AttributeKey.LongArrayValuedKey;
+import io.opentelemetry.common.AttributeKey.StringArrayValuedKey;
 import io.opentelemetry.trace.SpanContext;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,6 +87,26 @@ public abstract class MapBasedAttributes implements Attributes {
     return (double) getData().get(key);
   }
 
+  @Override
+  public List<String> getValue(StringArrayValuedKey key) {
+    return Arrays.asList((String[]) getData().get(key));
+  }
+
+  @Override
+  public List<Double> getValue(DoubleArrayValuedKey key) {
+    return Arrays.asList((Double[]) getData().get(key));
+  }
+
+  @Override
+  public List<Long> getValue(LongArrayValuedKey key) {
+    return Arrays.asList((Long[]) getData().get(key));
+  }
+
+  @Override
+  public List<Boolean> getValue(BooleanArrayValuedKey key) {
+    return Arrays.asList((Boolean[]) getData().get(key));
+  }
+
   public static Builder newBuilder() {
     return new Builder();
   }
@@ -109,6 +135,26 @@ public abstract class MapBasedAttributes implements Attributes {
     }
 
     public Builder put(AttributeKey.DoubleValuedKey key, double value) {
+      data.put(key, value);
+      return this;
+    }
+
+    public Builder put(AttributeKey.StringArrayValuedKey key, String... value) {
+      data.put(key, value);
+      return this;
+    }
+
+    public Builder put(AttributeKey.LongArrayValuedKey key, Long... value) {
+      data.put(key, value);
+      return this;
+    }
+
+    public Builder put(AttributeKey.DoubleArrayValuedKey key, Double... value) {
+      data.put(key, value);
+      return this;
+    }
+
+    public Builder put(AttributeKey.BooleanArrayValuedKey key, Boolean... value) {
       data.put(key, value);
       return this;
     }

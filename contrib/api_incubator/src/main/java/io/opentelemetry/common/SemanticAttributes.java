@@ -19,6 +19,8 @@ package io.opentelemetry.common;
 public class SemanticAttributes {
   public static final AttributeKey.StringValuedKey HTTP_METHOD =
       AttributeKey.stringKey("http.method");
+  public static final AttributeKey.StringArrayValuedKey HTTP_HEADERS =
+      AttributeKey.stringArrayKey("http.headers");
   public static final AttributeKey.StringValuedKey HTTP_TARGET =
       AttributeKey.stringKey("http.target");
   public static final AttributeKey.StringValuedKey HTTP_HOST = AttributeKey.stringKey("http.host");

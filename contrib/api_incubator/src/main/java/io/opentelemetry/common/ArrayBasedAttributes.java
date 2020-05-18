@@ -17,9 +17,13 @@
 package io.opentelemetry.common;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.common.AttributeKey.BooleanArrayValuedKey;
 import io.opentelemetry.common.AttributeKey.BooleanValuedKey;
+import io.opentelemetry.common.AttributeKey.DoubleArrayValuedKey;
 import io.opentelemetry.common.AttributeKey.DoubleValuedKey;
+import io.opentelemetry.common.AttributeKey.LongArrayValuedKey;
 import io.opentelemetry.common.AttributeKey.LongValuedKey;
+import io.opentelemetry.common.AttributeKey.StringArrayValuedKey;
 import io.opentelemetry.common.AttributeKey.StringValuedKey;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,29 +63,50 @@ public abstract class ArrayBasedAttributes implements Attributes {
 
   @Override
   public boolean getValue(BooleanValuedKey key) {
-    return (boolean) find(key, keysAndValues());
+    return find(key, keysAndValues());
   }
 
   @Override
   public String getValue(StringValuedKey key) {
-    return (String) find(key, keysAndValues());
+    return find(key, keysAndValues());
   }
 
   @Override
   public long getValue(LongValuedKey key) {
-    return (long) find(key, keysAndValues());
+    return find(key, keysAndValues());
   }
 
   @Override
   public double getValue(DoubleValuedKey key) {
-    return (double) find(key, keysAndValues());
+    return find(key, keysAndValues());
   }
 
-  private static Object find(AttributeKey key, List<Object> keysAndValues) {
+  @Override
+  public List<String> getValue(StringArrayValuedKey key) {
+    return find(key, keysAndValues());
+  }
+
+  @Override
+  public List<Double> getValue(DoubleArrayValuedKey key) {
+    return find(key, keysAndValues());
+  }
+
+  @Override
+  public List<Long> getValue(LongArrayValuedKey key) {
+    return find(key, keysAndValues());
+  }
+
+  @Override
+  public List<Boolean> getValue(BooleanArrayValuedKey key) {
+    return find(key, keysAndValues());
+  }
+
+  @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})
+  private static <T> T find(AttributeKey key, List<Object> keysAndValues) {
     for (int i = 0; i < keysAndValues.size(); i++) {
       AttributeKey attributeKey = (AttributeKey) keysAndValues.get(i++);
       if (key.equals(attributeKey)) {
-        return keysAndValues.get(i);
+        return (T) keysAndValues.get(i);
       }
     }
     throw new IllegalStateException("key not found" + key);
@@ -122,6 +147,37 @@ public abstract class ArrayBasedAttributes implements Attributes {
 
     /** Doc me. */
     public ArrayBasedAttributes.Builder put(AttributeKey.DoubleValuedKey key, double value) {
+      data.add(key);
+      data.add(value);
+      return this;
+    }
+
+    /** Doc me. */
+    public ArrayBasedAttributes.Builder put(
+        AttributeKey.StringArrayValuedKey key, List<String> value) {
+      data.add(key);
+      data.add(value);
+      return this;
+    }
+
+    /** Doc me. */
+    public ArrayBasedAttributes.Builder put(AttributeKey.LongArrayValuedKey key, List<Long> value) {
+      data.add(key);
+      data.add(value);
+      return this;
+    }
+
+    /** Doc me. */
+    public ArrayBasedAttributes.Builder put(
+        AttributeKey.DoubleArrayValuedKey key, List<Double> value) {
+      data.add(key);
+      data.add(value);
+      return this;
+    }
+
+    /** Doc me. */
+    public ArrayBasedAttributes.Builder put(
+        AttributeKey.BooleanArrayValuedKey key, List<Boolean> value) {
       data.add(key);
       data.add(value);
       return this;
