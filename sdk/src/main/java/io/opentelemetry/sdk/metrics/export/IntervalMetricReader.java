@@ -80,7 +80,7 @@ public final class IntervalMetricReader {
    * @since 0.4.0
    */
   public static Builder builderFromDefaultSources() {
-    return builder().readEnvironment().readSystemProperties();
+    return builder().readEnvironmentVariables().readSystemProperties();
   }
 
   /**
@@ -199,8 +199,8 @@ public final class IntervalMetricReader {
      * @return this.
      */
     @Override
-    public Builder readEnvironment() {
-      return super.readEnvironment();
+    public Builder readEnvironmentVariables() {
+      return super.readEnvironmentVariables();
     }
 
     /**

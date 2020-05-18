@@ -108,7 +108,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
    * @since 0.5.0
    */
   public static OtlpGrpcSpanExporter getDefault() {
-    return newBuilder().readEnvironment().readSystemProperties().build();
+    return newBuilder().readEnvironmentVariables().readSystemProperties().build();
   }
 
   /**
@@ -215,8 +215,8 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
      * @return this.
      */
     @Override
-    public Builder readEnvironment() {
-      return super.readEnvironment();
+    public Builder readEnvironmentVariables() {
+      return super.readEnvironmentVariables();
     }
 
     /**
