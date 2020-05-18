@@ -16,12 +16,24 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.LongMeasure.BoundLongMeasure;
+import io.opentelemetry.metrics.LongValueRecorder.BoundLongValueRecorder;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Measure to report instantaneous measurement of a long value.
+ * ValueRecorder is a non-additive synchronous instrument useful for recording any non-additive
+ * number, positive or negative. Values captured by a Record(value) are treated as individual events
+ * belonging to a distribution that is being summarized.
+ *
+ * <p>ValueRecorder should be chosen either when capturing measurements that do not contribute
+ * meaningfully to a sum, or when capturing numbers that are additive in nature, but where the
+ * distribution of individual increments is considered interesting.
+ *
+ * <p>One of the most common uses for ValueRecorder is to capture latency measurements. Latency
+ * measurements are not additive in the sense that there is little need to know the latency-sum of
+ * all processed requests. We use a ValueRecorder instrument to capture latency measurements
+ * typically because we are interested in knowing mean, median, and other summary statistics about
+ * individual events.
  *
  * <p>Example:
  *
@@ -29,18 +41,21 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
- *   private static final LongMeasure measure =
+ *   private static final LongValueRecorder valueRecorder =
  *       meter.
- *           .longMeasureBuilder("doWork_latency")
+ *           .longValueRecorderBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
  *           .setUnit("ns")
  *           .build();
- *   private static final LongMeasure.BoundLongMeasure boundMeasure = measure.bind(labelset);
+ *
+ *   // It is recommended that the API user keep a reference to a Bound Counter.
+ *   private static final BoundLongValueRecorder someWorkBound =
+ *       valueRecorder.bind("work_name", "some_work");
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
  *      // Your code here.
- *      boundMeasure.record(System.nanoTime() - startTime);
+ *      someWorkBound.record(System.nanoTime() - startTime);
  *   }
  * }
  * }</pre>
@@ -48,7 +63,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongMeasure extends SynchronousInstrument<BoundLongMeasure> {
+public interface LongValueRecorder extends SynchronousInstrument<BoundLongValueRecorder> {
 
   /**
    * Records the given measurement, associated with the current {@code Context} and provided set of
@@ -62,15 +77,15 @@ public interface LongMeasure extends SynchronousInstrument<BoundLongMeasure> {
   void record(long value, String... labelKeyValuePairs);
 
   @Override
-  BoundLongMeasure bind(String... labelKeyValuePairs);
+  BoundLongValueRecorder bind(String... labelKeyValuePairs);
 
   /**
-   * A {@code Bound Instrument} for a {@code LongMeasure}.
+   * A {@code Bound Instrument} for a {@link LongValueRecorder}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundLongMeasure extends SynchronousInstrument.BoundInstrument {
+  interface BoundLongValueRecorder extends SynchronousInstrument.BoundInstrument {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *
@@ -84,7 +99,7 @@ public interface LongMeasure extends SynchronousInstrument<BoundLongMeasure> {
     void unbind();
   }
 
-  /** Builder class for {@link LongMeasure}. */
+  /** Builder class for {@link LongValueRecorder}. */
   interface Builder extends SynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
@@ -96,6 +111,6 @@ public interface LongMeasure extends SynchronousInstrument<BoundLongMeasure> {
     Builder setConstantLabels(Map<String, String> constantLabels);
 
     @Override
-    LongMeasure build();
+    LongValueRecorder build();
   }
 }

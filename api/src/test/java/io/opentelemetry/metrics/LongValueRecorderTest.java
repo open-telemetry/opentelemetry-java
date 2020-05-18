@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
+import io.opentelemetry.metrics.LongValueRecorder.BoundLongValueRecorder;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,17 +24,17 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link DoubleMeasure}. */
+/** Tests for {@link LongValueRecorder}. */
 @RunWith(JUnit4.class)
-public final class DoubleMeasureTest {
+public final class LongValueRecorderTest {
   private static final Meter meter = DefaultMeter.getInstance();
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void preventNonPrintableName() {
+  public void preventNonPrintableMeasureName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleMeasureBuilder("\2").build();
+    meter.longValueRecorderBuilder("\2").build();
   }
 
   @Test
@@ -44,43 +44,43 @@ public final class DoubleMeasureTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleMeasureBuilder(longName).build();
+    meter.longValueRecorderBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.doubleMeasureBuilder("metric").setDescription(null).build();
+    meter.longValueRecorderBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.doubleMeasureBuilder("metric").setUnit(null).build();
+    meter.longValueRecorderBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.doubleMeasureBuilder("metric").setConstantLabels(null).build();
+    meter.longValueRecorderBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
   public void preventNegativeValue() {
-    DoubleMeasure doubleMeasure = meter.doubleMeasureBuilder("MyMeasure").build();
+    LongValueRecorder longValueRecorder = meter.longValueRecorderBuilder("MyMeasure").build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Unsupported negative values");
-    doubleMeasure.bind().record(-5.0);
+    longValueRecorder.bind().record(-5);
   }
 
   @Test
   public void doesNotThrow() {
-    DoubleMeasure doubleMeasure = meter.doubleMeasureBuilder("MyMeasure").build();
-    BoundDoubleMeasure bound = doubleMeasure.bind();
-    bound.record(5.0);
+    LongValueRecorder longValueRecorder = meter.longValueRecorderBuilder("MyMeasure").build();
+    BoundLongValueRecorder bound = longValueRecorder.bind();
+    bound.record(5);
     bound.unbind();
   }
 }

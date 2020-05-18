@@ -89,30 +89,30 @@ public interface Meter {
   LongUpDownCounter.Builder longUpDownCounterBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link DoubleMeasure}.
+   * Returns a new builder for a {@link DoubleValueRecorder}.
    *
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
-   * @return a new builder for a {@code DoubleMeasure}.
+   * @return a new builder for a {@code DoubleValueRecorder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  DoubleMeasure.Builder doubleMeasureBuilder(String name);
+  DoubleValueRecorder.Builder doubleValueRecorderBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link LongMeasure}.
+   * Returns a new builder for a {@link LongValueRecorder}.
    *
    * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
    *     greater than 255 characters.
-   * @return a new builder for a {@code LongMeasure}.
+   * @return a new builder for a {@code LongValueRecorder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  LongMeasure.Builder longMeasureBuilder(String name);
+  LongValueRecorder.Builder longValueRecorderBuilder(String name);
 
   /**
    * Returns a new builder for a {@link DoubleSumObserver}.

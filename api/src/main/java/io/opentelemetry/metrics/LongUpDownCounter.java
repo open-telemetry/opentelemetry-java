@@ -41,7 +41,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   // It is recommended that the API user keep a reference to a Bound Counter.
  *   private static final BoundLongUpDownCounter someWorkBound =
- *       counter.getBound(Collections.singletonList("SomeWork"));
+ *       upDownCounter.bind("work_name", "some_work");
  *
  *   void doSomeWork() {
  *      someWorkBound.add(1);

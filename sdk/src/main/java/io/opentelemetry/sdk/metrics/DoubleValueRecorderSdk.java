@@ -16,16 +16,16 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.sdk.metrics.LongMeasureSdk.BoundInstrument;
+import io.opentelemetry.metrics.DoubleValueRecorder;
+import io.opentelemetry.sdk.metrics.DoubleValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class LongMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument>
-    implements LongMeasure {
+final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundInstrument>
+    implements DoubleValueRecorder {
 
-  private LongMeasureSdk(
+  private DoubleValueRecorderSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
@@ -42,11 +42,11 @@ final class LongMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument
   }
 
   @Override
-  public void record(long value, String... labelKeyValuePairs) {
-    record(value, LabelSetSdk.create(labelKeyValuePairs));
+  public void record(double delta, String... labelKeyValuePairs) {
+    record(delta, LabelSetSdk.create(labelKeyValuePairs));
   }
 
-  void record(long value, LabelSetSdk labelSet) {
+  void record(double value, LabelSetSdk labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
     boundInstrument.record(value);
     boundInstrument.unbind();
@@ -63,20 +63,20 @@ final class LongMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
-      implements LongMeasure.BoundLongMeasure {
+      implements BoundDoubleValueRecorder {
 
     BoundInstrument(Batcher batcher) {
       super(batcher.getAggregator());
     }
 
     @Override
-    public void record(long value) {
-      recordLong(value);
+    public void record(double value) {
+      recordDouble(value);
     }
   }
 
-  static final class Builder extends AbstractInstrument.Builder<LongMeasureSdk.Builder>
-      implements LongMeasure.Builder {
+  static final class Builder extends AbstractInstrument.Builder<DoubleValueRecorderSdk.Builder>
+      implements DoubleValueRecorder.Builder {
 
     Builder(
         String name,
@@ -91,11 +91,11 @@ final class LongMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument
     }
 
     @Override
-    public LongMeasureSdk build() {
+    public DoubleValueRecorderSdk build() {
       return register(
-          new LongMeasureSdk(
+          new DoubleValueRecorderSdk(
               getInstrumentDescriptor(
-                  InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.LONG),
+                  InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

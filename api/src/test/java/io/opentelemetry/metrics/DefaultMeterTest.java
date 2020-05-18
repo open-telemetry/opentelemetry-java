@@ -46,14 +46,14 @@ public final class DefaultMeterTest {
   public void noopAddMeasureDouble_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    defaultMeter.doubleMeasureBuilder(null);
+    defaultMeter.doubleValueRecorderBuilder(null);
   }
 
   @Test
   public void noopAddMeasureLong_NullName() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    defaultMeter.longMeasureBuilder(null);
+    defaultMeter.longValueRecorderBuilder(null);
   }
 
   @Test
@@ -74,14 +74,14 @@ public final class DefaultMeterTest {
   public void noopAddMeasureDouble_EmptyName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Name");
-    defaultMeter.doubleMeasureBuilder("");
+    defaultMeter.doubleValueRecorderBuilder("");
   }
 
   @Test
   public void noopAddMeasureLong_EmptyName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Name");
-    defaultMeter.longMeasureBuilder("");
+    defaultMeter.longValueRecorderBuilder("");
   }
 
   @Test
