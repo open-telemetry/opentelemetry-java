@@ -57,7 +57,7 @@ public class SpanPipelineBenchmark {
   @Threads(value = 5)
   @Fork(1)
   @Warmup(iterations = 5, time = 1)
-  @Measurement(iterations = 10, time = 1)
+  @Measurement(iterations = 5, time = 1)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public void runThePipeline_05Threads() {
     doWork();
@@ -73,6 +73,8 @@ public class SpanPipelineBenchmark {
             .startSpan();
     span.setAttribute("longAttribute", 33L);
     span.setAttribute("stringAttribute", "test_value");
+    span.setAttribute("doubleAttribute", 4844.44d);
+    span.setAttribute("booleanAttribute", false);
     span.setStatus(Status.OK);
 
     span.addEvent("testEvent");
