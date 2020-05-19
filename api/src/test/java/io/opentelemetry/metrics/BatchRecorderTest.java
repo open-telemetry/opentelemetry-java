@@ -32,40 +32,40 @@ public class BatchRecorderTest {
   @Test
   public void preventNull_MeasureLong() {
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("measure");
-    meter.newBatchRecorder().put((LongMeasure) null, 5L).record();
+    thrown.expectMessage("valueRecorder");
+    meter.newBatchRecorder().put((LongValueRecorder) null, 5L).record();
   }
 
   @Test
   public void preventNull_MeasureDouble() {
     thrown.expect(NullPointerException.class);
-    thrown.expectMessage("measure");
-    meter.newBatchRecorder().put((DoubleMeasure) null, 5L).record();
+    thrown.expectMessage("valueRecorder");
+    meter.newBatchRecorder().put((DoubleValueRecorder) null, 5L).record();
   }
 
   @Test
-  public void preventNull_CounterLong() {
+  public void preventNull_LongCounter() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("counter");
     meter.newBatchRecorder().put((LongCounter) null, 5L).record();
   }
 
   @Test
-  public void preventNull_CounterDouble() {
+  public void preventNull_DoubleCounter() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("counter");
     meter.newBatchRecorder().put((DoubleCounter) null, 5L).record();
   }
 
   @Test
-  public void preventNull_UpDownCounterLong() {
+  public void preventNull_LongUpDownCounter() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("upDownCounter");
     meter.newBatchRecorder().put((LongUpDownCounter) null, 5L).record();
   }
 
   @Test
-  public void preventNull_UpDownCounterDouble() {
+  public void preventNull_DoubleUpDownCounter() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("upDownCounter");
     meter.newBatchRecorder().put((DoubleUpDownCounter) null, 5L).record();
@@ -74,10 +74,11 @@ public class BatchRecorderTest {
   @Test
   public void doesNotThrow() {
     BatchRecorder batchRecorder = meter.newBatchRecorder();
-    batchRecorder.put(meter.longMeasureBuilder("longMeasure").build(), 44L);
-    batchRecorder.put(meter.longMeasureBuilder("negativeLongMeasure").build(), -44L);
-    batchRecorder.put(meter.doubleMeasureBuilder("doubleMeasure").build(), 77.556d);
-    batchRecorder.put(meter.doubleMeasureBuilder("negativeDoubleMeasure").build(), -8787.774744d);
+    batchRecorder.put(meter.longValueRecorderBuilder("longValueRecorder").build(), 44L);
+    batchRecorder.put(meter.longValueRecorderBuilder("negativeLongValueRecorder").build(), -44L);
+    batchRecorder.put(meter.doubleValueRecorderBuilder("doubleValueRecorder").build(), 77.556d);
+    batchRecorder.put(
+        meter.doubleValueRecorderBuilder("negativeDoubleValueRecorder").build(), -77.556d);
     batchRecorder.put(meter.longCounterBuilder("longCounter").build(), 44L);
     batchRecorder.put(meter.doubleCounterBuilder("doubleCounter").build(), 77.556d);
     batchRecorder.put(meter.longUpDownCounterBuilder("longUpDownCounter").build(), -44L);

@@ -77,17 +77,17 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
-  public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
+  public DoubleValueRecorder.Builder doubleValueRecorderBuilder(String name) {
     Utils.checkNotNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
-    return new NoopDoubleMeasure.NoopBuilder();
+    return new NoopDoubleValueRecorder.NoopBuilder();
   }
 
   @Override
-  public LongMeasure.Builder longMeasureBuilder(String name) {
+  public LongValueRecorder.Builder longValueRecorderBuilder(String name) {
     Utils.checkNotNull(name, "name");
     Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
-    return new NoopLongMeasure.NoopBuilder();
+    return new NoopLongValueRecorder.NoopBuilder();
   }
 
   @Override
@@ -126,11 +126,10 @@ public final class DefaultMeter implements Meter {
 
   private DefaultMeter() {}
 
-  /** No-op implementation of DoubleCounter interface. */
+  /** No-op implementation of {@link DoubleCounter} interface. */
   @Immutable
   private static final class NoopDoubleCounter implements DoubleCounter {
 
-    /** Creates a new {@code NoopBound}. */
     private NoopDoubleCounter() {}
 
     @Override
@@ -145,7 +144,6 @@ public final class DefaultMeter implements Meter {
       return NoopBoundDoubleCounter.INSTANCE;
     }
 
-    /** No-op implementation of BoundDoubleCounter interface. */
     @Immutable
     private enum NoopBoundDoubleCounter implements BoundDoubleCounter {
       INSTANCE;
@@ -174,11 +172,10 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  /** No-op implementation of CounterLong interface. */
+  /** No-op implementation of {@link LongCounter} interface. */
   @Immutable
   private static final class NoopLongCounter implements LongCounter {
 
-    /** Creates a new {@code NoopBound}. */
     private NoopLongCounter() {}
 
     @Override
@@ -193,7 +190,6 @@ public final class DefaultMeter implements Meter {
       return NoopBoundLongCounter.INSTANCE;
     }
 
-    /** No-op implementation of BoundLongCounter interface. */
     @Immutable
     private enum NoopBoundLongCounter implements BoundLongCounter {
       INSTANCE;
@@ -222,11 +218,10 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  /** No-op implementation of DoubleUpDownCounter interface. */
+  /** No-op implementation of {@link DoubleUpDownCounter} interface. */
   @Immutable
   private static final class NoopDoubleUpDownCounter implements DoubleUpDownCounter {
 
-    /** Creates a new {@code NoopBound}. */
     private NoopDoubleUpDownCounter() {}
 
     @Override
@@ -240,7 +235,6 @@ public final class DefaultMeter implements Meter {
       return NoopBoundDoubleUpDownCounter.INSTANCE;
     }
 
-    /** No-op implementation of BoundDoubleUpDownCounter interface. */
     @Immutable
     private enum NoopBoundDoubleUpDownCounter implements BoundDoubleUpDownCounter {
       INSTANCE;
@@ -267,11 +261,10 @@ public final class DefaultMeter implements Meter {
     }
   }
 
-  /** No-op implementation of LongUpDownCounter interface. */
+  /** No-op implementation of {@link LongUpDownCounter} interface. */
   @Immutable
   private static final class NoopLongUpDownCounter implements LongUpDownCounter {
 
-    /** Creates a new {@code NoopBound}. */
     private NoopLongUpDownCounter() {}
 
     @Override
@@ -283,7 +276,6 @@ public final class DefaultMeter implements Meter {
       return NoopBoundLongUpDownCounter.INSTANCE;
     }
 
-    /** No-op implementation of BoundLongUpDownCounter interface. */
     @Immutable
     private enum NoopBoundLongUpDownCounter implements BoundLongUpDownCounter {
       INSTANCE;
@@ -310,11 +302,11 @@ public final class DefaultMeter implements Meter {
     }
   }
 
+  /** No-op implementation of {@link DoubleValueRecorder} interface. */
   @Immutable
-  private static final class NoopDoubleMeasure implements DoubleMeasure {
+  private static final class NoopDoubleValueRecorder implements DoubleValueRecorder {
 
-    /** Creates a new {@code NoopDoubleMeasure}. */
-    private NoopDoubleMeasure() {}
+    private NoopDoubleValueRecorder() {}
 
     @Override
     public void record(double value, String... labelKeyValuePairs) {
@@ -323,14 +315,13 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundDoubleMeasure bind(String... labelKeyValuePairs) {
+    public NoopBoundDoubleValueRecorder bind(String... labelKeyValuePairs) {
       Utils.validateLabelPairs(labelKeyValuePairs);
-      return NoopBoundDoubleMeasure.INSTANCE;
+      return NoopBoundDoubleValueRecorder.INSTANCE;
     }
 
-    /** No-op implementation of BoundDoubleMeasure interface. */
     @Immutable
-    private enum NoopBoundDoubleMeasure implements BoundDoubleMeasure {
+    private enum NoopBoundDoubleValueRecorder implements BoundDoubleValueRecorder {
       INSTANCE;
 
       @Override
@@ -351,16 +342,17 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public DoubleMeasure build() {
-        return new NoopDoubleMeasure();
+      public DoubleValueRecorder build() {
+        return new NoopDoubleValueRecorder();
       }
     }
   }
 
+  /** No-op implementation of {@link LongValueRecorder} interface. */
   @Immutable
-  private static final class NoopLongMeasure implements LongMeasure {
+  private static final class NoopLongValueRecorder implements LongValueRecorder {
 
-    private NoopLongMeasure() {}
+    private NoopLongValueRecorder() {}
 
     @Override
     public void record(long value, String... labelKeyValuePairs) {
@@ -369,14 +361,13 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundLongMeasure bind(String... labelKeyValuePairs) {
+    public NoopBoundLongValueRecorder bind(String... labelKeyValuePairs) {
       Utils.validateLabelPairs(labelKeyValuePairs);
-      return NoopBoundLongMeasure.INSTANCE;
+      return NoopBoundLongValueRecorder.INSTANCE;
     }
 
-    /** No-op implementations of BoundLongMeasure interface. */
     @Immutable
-    private enum NoopBoundLongMeasure implements BoundLongMeasure {
+    private enum NoopBoundLongValueRecorder implements BoundLongValueRecorder {
       INSTANCE;
 
       @Override
@@ -397,12 +388,13 @@ public final class DefaultMeter implements Meter {
       }
 
       @Override
-      public LongMeasure build() {
-        return new NoopLongMeasure();
+      public LongValueRecorder build() {
+        return new NoopLongValueRecorder();
       }
     }
   }
 
+  /** No-op implementation of {@link DoubleSumObserver} interface. */
   @Immutable
   private static final class NoopDoubleSumObserver implements DoubleSumObserver {
 
@@ -428,6 +420,7 @@ public final class DefaultMeter implements Meter {
     }
   }
 
+  /** No-op implementation of {@link LongSumObserver} interface. */
   @Immutable
   private static final class NoopLongSumObserver implements LongSumObserver {
 
@@ -453,6 +446,7 @@ public final class DefaultMeter implements Meter {
     }
   }
 
+  /** No-op implementation of {@link DoubleUpDownSumObserver} interface. */
   @Immutable
   private static final class NoopDoubleUpDownSumObserver implements DoubleUpDownSumObserver {
 
@@ -478,6 +472,7 @@ public final class DefaultMeter implements Meter {
     }
   }
 
+  /** No-op implementation of {@link LongUpDownSumObserver} interface. */
   @Immutable
   private static final class NoopLongUpDownSumObserver implements LongUpDownSumObserver {
 
@@ -503,18 +498,19 @@ public final class DefaultMeter implements Meter {
     }
   }
 
+  /** No-op implementation of {@link BatchRecorder} interface. */
   private enum NoopBatchRecorder implements BatchRecorder {
     INSTANCE;
 
     @Override
-    public BatchRecorder put(LongMeasure measure, long value) {
-      Utils.checkNotNull(measure, "measure");
+    public BatchRecorder put(LongValueRecorder valueRecorder, long value) {
+      Utils.checkNotNull(valueRecorder, "valueRecorder");
       return this;
     }
 
     @Override
-    public BatchRecorder put(DoubleMeasure measure, double value) {
-      Utils.checkNotNull(measure, "measure");
+    public BatchRecorder put(DoubleValueRecorder valueRecorder, double value) {
+      Utils.checkNotNull(valueRecorder, "valueRecorder");
       return this;
     }
 

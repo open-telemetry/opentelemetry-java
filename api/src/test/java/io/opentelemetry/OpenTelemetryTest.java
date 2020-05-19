@@ -29,15 +29,15 @@ import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleMeasure;
 import io.opentelemetry.metrics.DoubleSumObserver;
 import io.opentelemetry.metrics.DoubleUpDownCounter;
 import io.opentelemetry.metrics.DoubleUpDownSumObserver;
+import io.opentelemetry.metrics.DoubleValueRecorder;
 import io.opentelemetry.metrics.LongCounter;
-import io.opentelemetry.metrics.LongMeasure;
 import io.opentelemetry.metrics.LongSumObserver;
 import io.opentelemetry.metrics.LongUpDownCounter;
 import io.opentelemetry.metrics.LongUpDownSumObserver;
+import io.opentelemetry.metrics.LongValueRecorder;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
 import io.opentelemetry.metrics.spi.MetricsProvider;
@@ -336,13 +336,13 @@ public class OpenTelemetryTest {
 
     @Nullable
     @Override
-    public DoubleMeasure.Builder doubleMeasureBuilder(String name) {
+    public DoubleValueRecorder.Builder doubleValueRecorderBuilder(String name) {
       return null;
     }
 
     @Nullable
     @Override
-    public LongMeasure.Builder longMeasureBuilder(String name) {
+    public LongValueRecorder.Builder longValueRecorderBuilder(String name) {
       return null;
     }
 

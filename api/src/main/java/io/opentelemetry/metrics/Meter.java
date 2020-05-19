@@ -39,8 +39,8 @@ public interface Meter {
   /**
    * Returns a builder for a {@link DoubleCounter}.
    *
-   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
-   *     characters.
+   * @param name the name of the instrument. Should be a ASCII string with a length no greater than
+   *     255 characters.
    * @return a {@code DoubleCounter.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -52,8 +52,8 @@ public interface Meter {
   /**
    * Returns a builder for a {@link LongCounter}.
    *
-   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
-   *     characters.
+   * @param name the name of the instrument. Should be a ASCII string with a length no greater than
+   *     255 characters.
    * @return a {@code LongCounter.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -65,8 +65,8 @@ public interface Meter {
   /**
    * Returns a builder for a {@link DoubleUpDownCounter}.
    *
-   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
-   *     characters.
+   * @param name the name of the instrument. Should be a ASCII string with a length no greater than
+   *     255 characters.
    * @return a {@code DoubleCounter.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -78,8 +78,8 @@ public interface Meter {
   /**
    * Returns a builder for a {@link LongUpDownCounter}.
    *
-   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
-   *     characters.
+   * @param name the name of the instrument. Should be a ASCII string with a length no greater than
+   *     255 characters.
    * @return a {@code LongCounter.Builder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -89,36 +89,36 @@ public interface Meter {
   LongUpDownCounter.Builder longUpDownCounterBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link DoubleMeasure}.
+   * Returns a new builder for a {@link DoubleValueRecorder}.
    *
-   * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
-   * @return a new builder for a {@code DoubleMeasure}.
+   * @param name the name of the instrument. Should be a ASCII string with a length no greater than
+   *     255 characters.
+   * @return a new builder for a {@code DoubleValueRecorder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  DoubleMeasure.Builder doubleMeasureBuilder(String name);
+  DoubleValueRecorder.Builder doubleValueRecorderBuilder(String name);
 
   /**
-   * Returns a new builder for a {@link LongMeasure}.
+   * Returns a new builder for a {@link LongValueRecorder}.
    *
-   * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
-   * @return a new builder for a {@code LongMeasure}.
+   * @param name the name of the instrument. Should be a ASCII string with a length no greater than
+   *     255 characters.
+   * @return a new builder for a {@code LongValueRecorder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
    * @throws IllegalArgumentException if the {@code name} does not match the requirements.
    * @since 0.1.0
    */
-  LongMeasure.Builder longMeasureBuilder(String name);
+  LongValueRecorder.Builder longValueRecorderBuilder(String name);
 
   /**
    * Returns a new builder for a {@link DoubleSumObserver}.
    *
-   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
+   * @param name the name of the instrument. Should be a ASCII string with a length no greater than
+   *     255 characters.
    * @return a new builder for a {@code DoubleSumObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -130,8 +130,8 @@ public interface Meter {
   /**
    * Returns a new builder for a {@link LongSumObserver}.
    *
-   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
+   * @param name the name of the instrument. Should be a ASCII string with a length no greater than
+   *     255 characters.
    * @return a new builder for a {@code LongSumObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -143,8 +143,8 @@ public interface Meter {
   /**
    * Returns a new builder for a {@link DoubleUpDownSumObserver}.
    *
-   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
+   * @param name the name of the instrument. Should be a ASCII string with a length no greater than
+   *     255 characters.
    * @return a new builder for a {@code DoubleUpDownObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -156,8 +156,8 @@ public interface Meter {
   /**
    * Returns a new builder for a {@link LongUpDownSumObserver}.
    *
-   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
+   * @param name the name of the instrument. Should be a ASCII string with a length no greater than
+   *     255 characters.
    * @return a new builder for a {@code LongUpDownSumObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -167,8 +167,8 @@ public interface Meter {
   LongUpDownSumObserver.Builder longUpDownSumObserverBuilder(String name);
 
   /**
-   * Utility method that allows users to atomically record measurements to a set of Measures with a
-   * common set of labels.
+   * Utility method that allows users to atomically record measurements to a set of Instruments with
+   * a common set of labels.
    *
    * @param keyValuePairs The set of labels to associate with this recorder and all it's recordings.
    * @return a {@code MeasureBatchRecorder} that can be use to atomically record a set of
