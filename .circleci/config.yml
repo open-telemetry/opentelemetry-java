@@ -20,7 +20,6 @@ publish_release_task: &publish_release_task
   command: make publish-release-artifacts
 
 #for test containers https://www.testcontainers.org/supported_docker_environment/continuous_integration/circle_ci/
-executorType: machine
 
 jobs:
   build:
@@ -28,12 +27,11 @@ jobs:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx1g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:8-jdk
+    machine:
+        image: circleci/openjdk:8-jdk
+        docker_layer_caching: true
     steps:
       - checkout
-      - setup_remote_docker:
-            docker_layer_caching: true
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle" }}
@@ -63,12 +61,11 @@ jobs:
       # Configure the JVM and Gradle to avoid OOM errors
       _JAVA_OPTIONS: "-Xmx3g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
-    docker:
-      - image: circleci/openjdk:11.0.6-jdk-buster
+    machine:
+        image: circleci/openjdk:11.0.6-jdk-buster
+        docker_layer_caching: true
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
       - restore_cache:
           keys:
             - java11-gradle-{{ checksum "build.gradle" }}
