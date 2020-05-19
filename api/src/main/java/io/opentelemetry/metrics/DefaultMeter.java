@@ -503,14 +503,14 @@ public final class DefaultMeter implements Meter {
     INSTANCE;
 
     @Override
-    public BatchRecorder put(LongValueRecorder measure, long value) {
-      Utils.checkNotNull(measure, "measure");
+    public BatchRecorder put(LongValueRecorder valueRecorder, long value) {
+      Utils.checkNotNull(valueRecorder, "valueRecorder");
       return this;
     }
 
     @Override
-    public BatchRecorder put(DoubleValueRecorder measure, double value) {
-      Utils.checkNotNull(measure, "measure");
+    public BatchRecorder put(DoubleValueRecorder valueRecorder, double value) {
+      Utils.checkNotNull(valueRecorder, "valueRecorder");
       return this;
     }
 

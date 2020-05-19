@@ -29,10 +29,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * meaningfully to a sum, or when capturing numbers that are additive in nature, but where the
  * distribution of individual increments is considered interesting.
  *
- * <p>One of the most common uses for ValueRecorder is to capture latency measurements. Latency *
- * measurements are not additive in the sense that there is little need to know the latency-sum of *
- * all processed requests. We use a ValueRecorder instrument to capture latency measurements *
- * typically because we are interested in knowing mean, median, and other summary statistics about *
+ * <p>One of the most common uses for ValueRecorder is to capture latency measurements. Latency
+ * measurements are not additive in the sense that there is little need to know the latency-sum of
+ * all processed requests. We use a ValueRecorder instrument to capture latency measurements
+ * typically because we are interested in knowing mean, median, and other summary statistics about
  * individual events.
  *
  * <p>Example:

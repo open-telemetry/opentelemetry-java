@@ -91,8 +91,8 @@ public interface Meter {
   /**
    * Returns a new builder for a {@link DoubleValueRecorder}.
    *
-   * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
    * @return a new builder for a {@code DoubleValueRecorder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -104,8 +104,8 @@ public interface Meter {
   /**
    * Returns a new builder for a {@link LongValueRecorder}.
    *
-   * @param name Name of measure, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
    * @return a new builder for a {@code LongValueRecorder}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -117,8 +117,8 @@ public interface Meter {
   /**
    * Returns a new builder for a {@link DoubleSumObserver}.
    *
-   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
    * @return a new builder for a {@code DoubleSumObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -130,8 +130,8 @@ public interface Meter {
   /**
    * Returns a new builder for a {@link LongSumObserver}.
    *
-   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
    * @return a new builder for a {@code LongSumObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -143,8 +143,8 @@ public interface Meter {
   /**
    * Returns a new builder for a {@link DoubleUpDownSumObserver}.
    *
-   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
    * @return a new builder for a {@code DoubleUpDownObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
@@ -156,8 +156,8 @@ public interface Meter {
   /**
    * Returns a new builder for a {@link LongUpDownSumObserver}.
    *
-   * @param name Name of observer, as a {@code String}. Should be a ASCII string with a length no
-   *     greater than 255 characters.
+   * @param name the name of the metric. Should be a ASCII string with a length no greater than 255
+   *     characters.
    * @return a new builder for a {@code LongUpDownSumObserver}.
    * @throws NullPointerException if {@code name} is null.
    * @throws IllegalArgumentException if different metric with the same name already registered.
