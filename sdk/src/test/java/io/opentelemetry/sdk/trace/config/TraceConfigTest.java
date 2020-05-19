@@ -42,7 +42,7 @@ public class TraceConfigTest {
 
   @Test
   public void updateTraceConfig_NullSampler() {
-    thrown.expect(NullPointerException.class);
+    thrown.expect(IllegalArgumentException.class);
     TraceConfig.getDefault().toBuilder().setSampler(null).build();
   }
 
