@@ -63,7 +63,7 @@ import javax.annotation.concurrent.ThreadSafe;
 @ThreadSafe
 public interface LongUpDownSumObserver extends AsynchronousInstrument<ResultLongUpDownSumObserver> {
   @Override
-  void setCallback(Callback<ResultLongUpDownSumObserver> metricUpdater);
+  void setCallback(Callback<ResultLongUpDownSumObserver> callback);
 
   /** Builder class for {@link LongUpDownSumObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {

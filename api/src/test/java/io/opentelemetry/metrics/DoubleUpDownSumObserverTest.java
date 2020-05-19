@@ -18,7 +18,11 @@ package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
+import io.opentelemetry.metrics.DoubleUpDownSumObserver.ResultDoubleUpDownSumObserver;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -30,7 +34,13 @@ import org.junit.runners.JUnit4;
 public class DoubleUpDownSumObserverTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
-  private final Meter meter = OpenTelemetry.getMeter("observer_double_test");
+  private static final String NAME = "name";
+  private static final String DESCRIPTION = "description";
+  private static final String UNIT = "1";
+  private static final Map<String, String> CONSTANT_LABELS =
+      Collections.singletonMap("key", "value");
+
+  private final Meter meter = OpenTelemetry.getMeter("DoubleUpDownSumObserverTest");
 
   @Test
   public void preventNonPrintableName() {
@@ -67,5 +77,30 @@ public class DoubleUpDownSumObserverTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
     meter.doubleUpDownSumObserverBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
+  public void preventNull_Callback() {
+    DoubleUpDownSumObserver doubleUpDownSumObserver =
+        meter.doubleUpDownSumObserverBuilder("metric").build();
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("callback");
+    doubleUpDownSumObserver.setCallback(null);
+  }
+
+  @Test
+  public void doesNotThrow() {
+    DoubleUpDownSumObserver doubleUpDownSumObserver =
+        meter
+            .doubleUpDownSumObserverBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setUnit(UNIT)
+            .setConstantLabels(CONSTANT_LABELS)
+            .build();
+    doubleUpDownSumObserver.setCallback(
+        new Callback<ResultDoubleUpDownSumObserver>() {
+          @Override
+          public void update(ResultDoubleUpDownSumObserver result) {}
+        });
   }
 }
