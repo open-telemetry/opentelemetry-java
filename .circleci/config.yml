@@ -28,7 +28,7 @@ jobs:
       _JAVA_OPTIONS: "-Xmx1g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     machine:
-        image: circleci/openjdk:8-jdk
+        image: ubuntu-1604:202004-01
         docker_layer_caching: true
     steps:
       - checkout
@@ -62,7 +62,7 @@ jobs:
       _JAVA_OPTIONS: "-Xmx3g"
       GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2"
     machine:
-        image: circleci/openjdk:11.0.6-jdk-buster
+        image: ubuntu-1604:202004-01
         docker_layer_caching: true
     steps:
       - checkout
