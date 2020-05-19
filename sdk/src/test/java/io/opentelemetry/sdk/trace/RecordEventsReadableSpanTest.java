@@ -18,8 +18,6 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -233,7 +231,7 @@ public class RecordEventsReadableSpanTest {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertFalse(spanData.getParentSpanId().isValid());
+    assertThat(spanData.getParentSpanId().isValid()).isFalse();
   }
 
   @Test
