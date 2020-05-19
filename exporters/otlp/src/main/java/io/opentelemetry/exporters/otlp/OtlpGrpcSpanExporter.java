@@ -33,7 +33,7 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * Exports spans using OTLP via gRPC, using OpenTelemetry's protobuf model.
  *
- * <p>Values for {@link OtlpGrpcSpanExporter} can be read from system properties, environment
+ * <p>Configuration options for {@link OtlpGrpcSpanExporter} can be read from system properties, environment
  * variables, or {@link java.util.Properties} objects.
  *
  * <p>For System Properties and {@link java.util.Properties} objects, {@link OtlpGrpcSpanExporter}
@@ -44,7 +44,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *       each span batch.
  * </ul>
  *
- * <p>For Environment Variable, {@link OtlpGrpcSpanExporter} will look for the following names:
+ * <p>For environment variables, {@link OtlpGrpcSpanExporter} will look for the following names:
  *
  * <ul>
  *   <li>{@code OTEL_OTLP_SPAN_TIMEOUT}: to set the max waiting time for the collector to process
