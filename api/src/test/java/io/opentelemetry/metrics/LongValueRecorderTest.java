@@ -69,18 +69,18 @@ public final class LongValueRecorderTest {
   }
 
   @Test
-  public void preventNegativeValue() {
+  public void recordDoesNotThrow() {
     LongValueRecorder longValueRecorder = meter.longValueRecorderBuilder("MyMeasure").build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Unsupported negative values");
-    longValueRecorder.bind().record(-5);
+    longValueRecorder.record(5);
+    longValueRecorder.record(-5);
   }
 
   @Test
-  public void doesNotThrow() {
+  public void boundDoesNotThrow() {
     LongValueRecorder longValueRecorder = meter.longValueRecorderBuilder("MyMeasure").build();
     BoundLongValueRecorder bound = longValueRecorder.bind();
     bound.record(5);
+    bound.record(-5);
     bound.unbind();
   }
 }

@@ -69,18 +69,18 @@ public final class DoubleValueRecorderTest {
   }
 
   @Test
-  public void preventNegativeValue() {
+  public void recordDoesNotThrow() {
     DoubleValueRecorder doubleValueRecorder = meter.doubleValueRecorderBuilder("MyMeasure").build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Unsupported negative values");
-    doubleValueRecorder.bind().record(-5.0);
+    doubleValueRecorder.record(5.0);
+    doubleValueRecorder.record(-5.0);
   }
 
   @Test
-  public void doesNotThrow() {
+  public void boundDoesNotThrow() {
     DoubleValueRecorder doubleValueRecorder = meter.doubleValueRecorderBuilder("MyMeasure").build();
     BoundDoubleValueRecorder bound = doubleValueRecorder.bind();
     bound.record(5.0);
+    bound.record(-5.0);
     bound.unbind();
   }
 }

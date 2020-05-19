@@ -120,11 +120,11 @@ public class DoubleValueRecorderSdkTest {
       // Do some records using bounds and direct calls and bindings.
       doubleMeasure.record(12.1d);
       boundMeasure.record(123.3d);
-      doubleMeasure.record(21.4d);
+      doubleMeasure.record(-13.1d);
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(321.5d);
-      doubleMeasure.record(111.1d, "K", "V");
+      doubleMeasure.record(-121.5d, "K", "V");
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = doubleMeasure.collectAll();
@@ -137,20 +137,20 @@ public class DoubleValueRecorderSdkTest {
                   firstCollect,
                   emptyLabelSet.getLabels(),
                   2,
-                  33.5d,
-                  valueAtPercentiles(12.1d, 21.4d)),
+                  -1.0d,
+                  valueAtPercentiles(-13.1d, 12.1d)),
               SummaryPoint.create(
                   startTime,
                   firstCollect,
                   labelSet.getLabels(),
                   3,
-                  555.9d,
-                  valueAtPercentiles(111.1d, 321.5d)));
+                  323.3d,
+                  valueAtPercentiles(-121.5d, 321.5d)));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(222d);
-      doubleMeasure.record(11d);
+      doubleMeasure.record(17d);
 
       long secondCollect = testClock.now();
       metricDataList = doubleMeasure.collectAll();
@@ -163,15 +163,15 @@ public class DoubleValueRecorderSdkTest {
                   secondCollect,
                   emptyLabelSet.getLabels(),
                   3,
-                  44.5d,
-                  valueAtPercentiles(11d, 21.4d)),
+                  16.0d,
+                  valueAtPercentiles(-13.1d, 17d)),
               SummaryPoint.create(
                   startTime,
                   secondCollect,
                   labelSet.getLabels(),
                   4,
-                  777.9d,
-                  valueAtPercentiles(111.1d, 321.5d)));
+                  545.3d,
+                  valueAtPercentiles(-121.5, 321.5d)));
     } finally {
       boundMeasure.unbind();
     }
