@@ -57,10 +57,10 @@ import javax.annotation.concurrent.GuardedBy;
  * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
  * TODO: Add a link to the SpanProcessor that uses Disruptor as alternative with low contention.
  *
- * <p>Configuration options for {@link BatchSpansProcessor} can be read from system properties,
+ * <p>Configuration options for {@link BatchSpanProcessor} can be read from system properties,
  * environment variables, or {@link java.util.Properties} objects.
  *
- * <p>For System Properties and {@link java.util.Properties} objects, {@link BatchSpansProcessor}
+ * <p>For System Properties and {@link java.util.Properties} objects, {@link BatchSpanProcessor}
  * will look for the following names:
  *
  * <ul>
@@ -71,7 +71,7 @@ import javax.annotation.concurrent.GuardedBy;
  *   <li>{@code otel.bsp.export.sampled}: sets whether only sampled spans should be exported.
  * </ul>
  *
- * <p>For environment variables, {@link BatchSpansProcessor} will look for the following names:
+ * <p>For environment variables, {@link BatchSpanProcessor} will look for the following names:
  *
  * <ul>
  *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: sets the delay interval between two consecutive exports.
