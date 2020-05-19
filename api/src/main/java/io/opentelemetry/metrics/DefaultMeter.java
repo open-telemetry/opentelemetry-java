@@ -310,7 +310,6 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void record(double value, String... labelKeyValuePairs) {
-      Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
       Utils.validateLabelPairs(labelKeyValuePairs);
     }
 
@@ -325,9 +324,7 @@ public final class DefaultMeter implements Meter {
       INSTANCE;
 
       @Override
-      public void record(double value) {
-        Utils.checkArgument(value >= 0.0, "Unsupported negative values.");
-      }
+      public void record(double value) {}
 
       @Override
       public void unbind() {}
@@ -356,7 +353,6 @@ public final class DefaultMeter implements Meter {
 
     @Override
     public void record(long value, String... labelKeyValuePairs) {
-      Utils.checkArgument(value >= 0, "Unsupported negative values.");
       Utils.validateLabelPairs(labelKeyValuePairs);
     }
 
@@ -371,9 +367,7 @@ public final class DefaultMeter implements Meter {
       INSTANCE;
 
       @Override
-      public void record(long value) {
-        Utils.checkArgument(value >= 0, "Unsupported negative values.");
-      }
+      public void record(long value) {}
 
       @Override
       public void unbind() {}
