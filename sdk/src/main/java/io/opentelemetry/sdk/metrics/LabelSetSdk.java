@@ -16,8 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import static java.util.Collections.unmodifiableMap;
-
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.internal.Utils;
 import java.util.Collections;
@@ -30,13 +28,6 @@ import javax.annotation.concurrent.Immutable;
 abstract class LabelSetSdk {
   private static final LabelSetSdk EMPTY =
       new AutoValue_LabelSetSdk(Collections.<String, String>emptyMap());
-
-  static LabelSetSdk create(Map<String, String> labels) {
-    if (labels == null || labels.isEmpty()) {
-      return EMPTY;
-    }
-    return new AutoValue_LabelSetSdk(unmodifiableMap(labels));
-  }
 
   static LabelSetSdk create(String... keyValuePairs) {
     if (keyValuePairs.length == 0) {

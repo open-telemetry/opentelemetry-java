@@ -16,7 +16,6 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
 abstract class AbstractAsynchronousInstrument extends AbstractInstrument {
@@ -35,9 +34,5 @@ abstract class AbstractAsynchronousInstrument extends AbstractInstrument {
                     meterProviderSharedState,
                     meterSharedState,
                     Aggregations.lastValue()))));
-  }
-
-  static InstrumentType getInstrumentType(boolean monotonic) {
-    return monotonic ? InstrumentType.OBSERVER_MONOTONIC : InstrumentType.OBSERVER_NON_MONOTONIC;
   }
 }
