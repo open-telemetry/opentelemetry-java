@@ -21,9 +21,9 @@ import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * ValueRecorder is a non-additive synchronous instrument useful for recording any non-additive
- * number, positive or negative. Values captured by a Record(value) are treated as individual events
- * belonging to a distribution that is being summarized.
+ * ValueRecorder is a synchronous instrument useful for recording any number, positive or negative.
+ * Values captured by a Record(value) are treated as individual events belonging to a distribution
+ * that is being summarized.
  *
  * <p>ValueRecorder should be chosen either when capturing measurements that do not contribute
  * meaningfully to a sum, or when capturing numbers that are additive in nature, but where the
