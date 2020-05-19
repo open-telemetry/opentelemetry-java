@@ -36,8 +36,8 @@ import javax.annotation.concurrent.Immutable;
  * Wraps a list of {@link MetricProducer}s and automatically reads and exports the metrics every
  * export interval.
  *
- * <p>Configuration options for {@link IntervalMetricReader} can be read from system properties, environment
- * variables, or {@link java.util.Properties} objects.
+ * <p>Configuration options for {@link IntervalMetricReader} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
  *
  * <p>For System Properties and {@link java.util.Properties} objects, {@link IntervalMetricReader}
  * will look for the following names:

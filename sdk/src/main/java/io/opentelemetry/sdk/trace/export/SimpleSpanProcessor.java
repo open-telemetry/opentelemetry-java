@@ -33,8 +33,8 @@ import java.util.logging.Logger;
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
  * SpanData} and passes it to the configured exporter.
  *
- * <p>Configuration options for {@link SimpleSpansProcessor} can be read from system properties, environment
- * variables, or {@link java.util.Properties} objects.
+ * <p>Configuration options for {@link SimpleSpansProcessor} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
  *
  * <p>For System Properties and {@link java.util.Properties} objects, {@link SimpleSpansProcessor}
  * will look for the following names:

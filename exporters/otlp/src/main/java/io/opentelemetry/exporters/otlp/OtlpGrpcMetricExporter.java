@@ -33,8 +33,8 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * Exports metrics using OTLP via gRPC, using OpenTelemetry's protobuf model.
  *
- * <p>Configuration options for {@link OtlpGrpcMetricExporter} can be read from system properties, environment
- * variables, or {@link java.util.Properties} objects.
+ * <p>Configuration options for {@link OtlpGrpcMetricExporter} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
  *
  * <p>For System Properties and {@link java.util.Properties} objects, {@link OtlpGrpcMetricExporter}
  * will look for the following names:

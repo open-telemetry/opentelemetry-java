@@ -57,8 +57,8 @@ import javax.annotation.concurrent.GuardedBy;
  * <p>This batch {@link SpanProcessor} can cause high contention in a very high traffic service.
  * TODO: Add a link to the SpanProcessor that uses Disruptor as alternative with low contention.
  *
- * <p>Configuration options for {@link BatchSpansProcessor} can be read from system properties, environment
- * variables, or {@link java.util.Properties} objects.
+ * <p>Configuration options for {@link BatchSpansProcessor} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
  *
  * <p>For System Properties and {@link java.util.Properties} objects, {@link BatchSpansProcessor}
  * will look for the following names:
