@@ -32,6 +32,8 @@ jobs:
       - image: circleci/openjdk:8-jdk
     steps:
       - checkout
+      - setup_remote_docker:
+            docker_layer_caching: true
       - restore_cache:
           keys:
             - gradle-{{ checksum "build.gradle" }}
@@ -65,6 +67,8 @@ jobs:
       - image: circleci/openjdk:11.0.6-jdk-buster
     steps:
       - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
       - restore_cache:
           keys:
             - java11-gradle-{{ checksum "build.gradle" }}
