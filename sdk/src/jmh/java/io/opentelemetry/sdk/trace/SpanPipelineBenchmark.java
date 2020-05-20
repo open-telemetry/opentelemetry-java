@@ -16,18 +16,22 @@
 
 package io.opentelemetry.sdk.trace;
 
+import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
+import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
+import static java.util.Collections.singletonMap;
+
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.trace.Event;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Status;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -71,6 +75,7 @@ public class SpanPipelineBenchmark {
             .setAttribute("key", "value")
             .addLink(new TestLink())
             .startSpan();
+    span.addEvent("started", singletonMap("operation", stringAttributeValue("some_work")));
     span.setAttribute("longAttribute", 33L);
     span.setAttribute("stringAttribute", "test_value");
     span.setAttribute("doubleAttribute", 4844.44d);
@@ -78,6 +83,7 @@ public class SpanPipelineBenchmark {
     span.setStatus(Status.OK);
 
     span.addEvent("testEvent");
+    span.addEvent(new TestEvent());
     span.end();
   }
 
@@ -106,7 +112,19 @@ public class SpanPipelineBenchmark {
 
     @Override
     public Map<String, AttributeValue> getAttributes() {
-      return Collections.singletonMap("linkAttr", AttributeValue.stringAttributeValue("linkValue"));
+      return singletonMap("linkAttr", stringAttributeValue("linkValue"));
+    }
+  }
+
+  private static class TestEvent implements Event {
+    @Override
+    public String getName() {
+      return "ended";
+    }
+
+    @Override
+    public Map<String, AttributeValue> getAttributes() {
+      return singletonMap("finalized", booleanAttributeValue(true));
     }
   }
 }

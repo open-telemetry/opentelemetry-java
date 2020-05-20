@@ -27,7 +27,7 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
@@ -59,9 +59,9 @@ abstract class SpanWrapper implements SpanData {
       Status status) {
     return new AutoValue_SpanWrapper(
         delegate,
-        links,
-        events,
-        new HashMap<>(attributes),
+        Collections.unmodifiableList(links),
+        Collections.unmodifiableList(events),
+        Collections.unmodifiableMap(attributes),
         totalAttributeCount,
         totalRecordedEvents,
         status);
