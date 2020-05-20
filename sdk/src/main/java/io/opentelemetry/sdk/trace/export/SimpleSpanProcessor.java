@@ -32,6 +32,22 @@ import java.util.logging.Logger;
 /**
  * An implementation of the {@link SpanProcessor} that converts the {@link ReadableSpan} to {@link
  * SpanData} and passes it to the configured exporter.
+ *
+ * <p>Configuration options for {@link SimpleSpanProcessor} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
+ *
+ * <p>For system properties and {@link java.util.Properties} objects, {@link SimpleSpanProcessor}
+ * will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code otel.ssp.export.sampled}: sets whether only sampled spans should be exported.
+ * </ul>
+ *
+ * <p>For environment variables, {@link SimpleSpanProcessor} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: sets whether only sampled spans should be exported.
+ * </ul>
  */
 public final class SimpleSpanProcessor implements SpanProcessor {
 
@@ -132,11 +148,6 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
     /**
      * Sets the configuration values from the given properties object for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be exported.
-     * </ul>
      *
      * @param properties {@link Properties} holding the configuration values.
      * @return this.
@@ -147,12 +158,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     }
 
     /**
-     * Sets the configuration values from environment variables for only the available keys. This
-     * method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code OTEL_SSP_EXPORT_SAMPLED}: to set whether only sampled spans should be exported.
-     * </ul>
+     * Sets the configuration values from environment variables for only the available keys.
      *
      * @return this.
      */
@@ -162,12 +168,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
     }
 
     /**
-     * Sets the configuration values from system properties for only the available keys. This method
-     * looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.ssp.export.sampled}: to set whether only sampled spans should be reported.
-     * </ul>
+     * Sets the configuration values from system properties for only the available keys.
      *
      * @return this.
      */

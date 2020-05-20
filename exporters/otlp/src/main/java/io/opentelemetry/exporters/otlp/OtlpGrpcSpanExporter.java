@@ -30,7 +30,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Exports spans using OTLP via gRPC, using OpenTelemetry's protobuf model. */
+/**
+ * Exports spans using OTLP via gRPC, using OpenTelemetry's protobuf model.
+ *
+ * <p>Configuration options for {@link OtlpGrpcSpanExporter} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
+ *
+ * <p>For system properties and {@link java.util.Properties} objects, {@link OtlpGrpcSpanExporter}
+ * will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time allowed to send each span
+ *       batch.
+ * </ul>
+ *
+ * <p>For environment variables, {@link OtlpGrpcSpanExporter} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code OTEL_OTLP_SPAN_TIMEOUT}: to set the max waiting time allowed to send each span
+ *       batch.
+ * </ul>
+ */
 @ThreadSafe
 public final class OtlpGrpcSpanExporter implements SpanExporter {
   private static final Logger logger = Logger.getLogger(OtlpGrpcSpanExporter.class.getName());
@@ -165,12 +185,6 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
     /**
      * Sets the configuration values from the given configuration map for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time for the collector to
-     *       process each span batch.
-     * </ul>
      *
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
@@ -188,12 +202,6 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
 
     /**
      * Sets the configuration values from the given properties object for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time for the collector to
-     *       process each span batch.
-     * </ul>
      *
      * @param properties {@link Properties} holding the configuration values.
      * @return this.
@@ -204,13 +212,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the configuration values from environment variables for only the available keys. This
-     * method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code OTEL_OTLP_SPAN_TIMEOUT}: to set the max waiting time for the collector to
-     *       process each span batch.
-     * </ul>
+     * Sets the configuration values from environment variables for only the available keys.
      *
      * @return this.
      */
@@ -220,13 +222,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     }
 
     /**
-     * Sets the configuration values from system properties for only the available keys. This method
-     * looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time for the collector to
-     *       process each span batch.
-     * </ul>
+     * Sets the configuration values from system properties for only the available keys.
      *
      * @return this.
      */
