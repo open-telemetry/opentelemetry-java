@@ -58,7 +58,7 @@ public class SamplersTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void alwaysOnSampler_AlwaysReturnTrue() {
+  public void alwaysOnSampler() {
     // Sampled parent.
     Truth.assertThat(
             Samplers.alwaysOn()
@@ -72,6 +72,7 @@ public class SamplersTest {
                     Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isTrue();
+
     // Not sampled parent.
     Truth.assertThat(
             Samplers.alwaysOn()
@@ -85,15 +86,29 @@ public class SamplersTest {
                     Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isTrue();
+
+    // Null parent.
+    Truth.assertThat(
+            Samplers.alwaysOn()
+                .shouldSample(
+                    null,
+                    traceId,
+                    spanId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Collections.<String, AttributeValue>emptyMap(),
+                    Collections.<io.opentelemetry.trace.Link>emptyList())
+                .isSampled())
+        .isTrue();
   }
 
   @Test
-  public void alwaysOnSampler_ToString() {
-    Truth.assertThat(Samplers.alwaysOn().toString()).isEqualTo("AlwaysOnSampler");
+  public void alwaysOnSampler_GetDescription() {
+    Truth.assertThat(Samplers.alwaysOn().getDescription()).isEqualTo("AlwaysOnSampler");
   }
 
   @Test
-  public void alwaysOffSampler_AlwaysReturnFalse() {
+  public void alwaysOffSampler() {
     // Sampled parent.
     Truth.assertThat(
             Samplers.alwaysOff()
@@ -107,6 +122,7 @@ public class SamplersTest {
                     Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isFalse();
+
     // Not sampled parent.
     Truth.assertThat(
             Samplers.alwaysOff()
@@ -120,11 +136,25 @@ public class SamplersTest {
                     Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isFalse();
+
+    // Null parent.
+    Truth.assertThat(
+            Samplers.alwaysOff()
+                .shouldSample(
+                    null,
+                    traceId,
+                    spanId,
+                    SPAN_NAME,
+                    SPAN_KIND,
+                    Collections.<String, AttributeValue>emptyMap(),
+                    Collections.<io.opentelemetry.trace.Link>emptyList())
+                .isSampled())
+        .isFalse();
   }
 
   @Test
-  public void alwaysOffSampler_ToString() {
-    Truth.assertThat(Samplers.alwaysOff().toString()).isEqualTo("AlwaysOffSampler");
+  public void alwaysOffSampler_GetDescription() {
+    Truth.assertThat(Samplers.alwaysOff().getDescription()).isEqualTo("AlwaysOffSampler");
   }
 
   @Test
@@ -155,11 +185,6 @@ public class SamplersTest {
   public void probabilitySampler_getDescription() {
     assertThat(Samplers.Probability.create(0.5).getDescription())
         .isEqualTo(String.format("ProbabilitySampler{%.6f}", 0.5));
-  }
-
-  @Test
-  public void probabilitySampler_ToString() {
-    assertThat(Samplers.Probability.create(0.5).toString()).contains("0.5");
   }
 
   // Applies the given sampler to NUM_SAMPLE_TRIES random traceId/spanId pairs.
