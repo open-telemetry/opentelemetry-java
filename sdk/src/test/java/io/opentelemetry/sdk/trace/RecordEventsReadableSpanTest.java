@@ -18,8 +18,6 @@ package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptyList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -29,7 +27,6 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -234,7 +231,7 @@ public class RecordEventsReadableSpanTest {
       span.end();
     }
     SpanData spanData = span.toSpanData();
-    assertFalse(spanData.getParentSpanId().isValid());
+    assertThat(spanData.getParentSpanId().isValid()).isFalse();
   }
 
   @Test
@@ -656,15 +653,13 @@ public class RecordEventsReadableSpanTest {
   public void testAsSpanData() {
     String name = "GreatSpan";
     Kind kind = Kind.SERVER;
-    TraceId traceId = idsGenerator.generateTraceId();
-    SpanId spanId = idsGenerator.generateSpanId();
-    SpanId parentSpanId = idsGenerator.generateSpanId();
+    TraceId traceId = this.traceId;
+    SpanId spanId = this.spanId;
+    SpanId parentSpanId = this.parentSpanId;
     TraceConfig traceConfig = TraceConfig.getDefault();
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();
-    Map<String, AttributeValue> attribute = new HashMap<>();
-    attribute.put("foo", AttributeValue.stringAttributeValue("bar"));
-    Resource resource = Resource.create(attribute);
+    Resource resource = this.resource;
     Map<String, AttributeValue> attributes = TestUtils.generateRandomAttributes();
     AttributesMap attributesWithCapacity = new AttributesMap(32);
     attributesWithCapacity.putAll(attributes);
@@ -681,7 +676,7 @@ public class RecordEventsReadableSpanTest {
             instrumentationLibraryInfo,
             kind,
             parentSpanId,
-            /* hasRemoteParent= */ false,
+            /* hasRemoteParent= */ expectedHasRemoteParent,
             traceConfig,
             spanProcessor,
             clock,
@@ -702,33 +697,22 @@ public class RecordEventsReadableSpanTest {
     readableSpan.end();
     long endEpochNanos = clock.now();
 
-    SpanData expected =
-        SpanDataImpl.newBuilder()
-            .setHasEnded(true)
-            .setName(name)
-            .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
-            .setKind(kind)
-            .setStatus(Status.OK)
-            .setStartEpochNanos(startEpochNanos)
-            .setEndEpochNanos(endEpochNanos)
-            .setEvents(
-                Arrays.asList(
-                    Event.create(firstEventEpochNanos, "event1", event1Attributes),
-                    Event.create(secondEventTimeNanos, "event2", event2Attributes)))
-            .setTotalRecordedEvents(2)
-            .setResource(resource)
-            .setParentSpanId(parentSpanId)
-            .setLinks(Collections.singletonList(link1))
-            .setTotalRecordedLinks(1)
-            .setTraceId(traceId)
-            .setSpanId(spanId)
-            .setAttributes(attributes)
-            .setTotalAttributeCount(1)
-            .setHasRemoteParent(false)
-            .build();
+    List<Event> events =
+        Arrays.asList(
+            Event.create(firstEventEpochNanos, "event1", event1Attributes),
+            Event.create(secondEventTimeNanos, "event2", event2Attributes));
 
     SpanData result = readableSpan.toSpanData();
-    assertEquals(expected, result);
+    verifySpanData(
+        result,
+        attributes,
+        events,
+        Collections.<io.opentelemetry.trace.Link>singletonList(link1),
+        name,
+        startEpochNanos,
+        endEpochNanos,
+        Status.OK,
+        /* hasEnded= */ true);
   }
 
   @Test

@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -106,6 +105,40 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   @GuardedBy("lock")
   private boolean hasEnded;
 
+  private RecordEventsReadableSpan(
+      SpanContext context,
+      String name,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      Kind kind,
+      SpanId parentSpanId,
+      boolean hasRemoteParent,
+      TraceConfig traceConfig,
+      SpanProcessor spanProcessor,
+      Clock clock,
+      Resource resource,
+      AttributesMap attributes,
+      List<io.opentelemetry.trace.Link> links,
+      int totalRecordedLinks,
+      long startEpochNanos) {
+    this.context = context;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.parentSpanId = parentSpanId;
+    this.hasRemoteParent = hasRemoteParent;
+    this.links = links;
+    this.totalRecordedLinks = totalRecordedLinks;
+    this.name = name;
+    this.kind = kind;
+    this.spanProcessor = spanProcessor;
+    this.resource = resource;
+    this.hasEnded = false;
+    this.clock = clock;
+    this.startEpochNanos = startEpochNanos;
+    // TODO: Do not always initialize the attributes.
+    this.attributes = attributes;
+    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
+    this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
+  }
+
   /**
    * Creates and starts a span with the given configuration.
    *
@@ -162,37 +195,16 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public SpanData toSpanData() {
-    // Copy immutable fields outside synchronized block.
-    SpanContext spanContext = getSpanContext();
-    SpanDataImpl.Builder builder =
-        SpanDataImpl.newBuilder()
-            .setName(getName())
-            .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
-            .setTraceId(spanContext.getTraceId())
-            .setSpanId(spanContext.getSpanId())
-            .setTraceFlags(spanContext.getTraceFlags())
-            .setLinks(getLinks())
-            .setTotalRecordedLinks(totalRecordedLinks)
-            .setKind(kind)
-            .setTraceState(spanContext.getTraceState())
-            .setParentSpanId(parentSpanId)
-            .setHasRemoteParent(hasRemoteParent)
-            .setResource(resource)
-            .setStartEpochNanos(startEpochNanos);
-
-    // Copy remainder within synchronized
+    // Copy within synchronized context
     synchronized (lock) {
-      return builder
-          .setHasEnded(hasEnded)
-          .setAttributes(attributes)
-          .setEndEpochNanos(getEndEpochNanos())
-          .setStatus(getStatusWithDefault())
-          .setEvents(adaptTimedEvents())
-          .setTotalAttributeCount(attributes.getTotalAddedValues())
-          .setTotalRecordedEvents(totalRecordedEvents)
-          // build() does the actual copying of the collections: it needs to be synchronized
-          // because of the attributes and events collections.
-          .build();
+      return SpanWrapper.create(
+          this,
+          getLinks(),
+          adaptTimedEvents(),
+          attributes,
+          attributes.getTotalAddedValues(),
+          totalRecordedEvents,
+          getStatusWithDefault());
     }
   }
 
@@ -249,7 +261,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the end nano time.
    */
-  private long getEndEpochNanos() {
+  long getEndEpochNanos() {
     synchronized (lock) {
       return endEpochNanos;
     }
@@ -467,37 +479,27 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
   }
 
-  private RecordEventsReadableSpan(
-      SpanContext context,
-      String name,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Kind kind,
-      SpanId parentSpanId,
-      boolean hasRemoteParent,
-      TraceConfig traceConfig,
-      SpanProcessor spanProcessor,
-      Clock clock,
-      Resource resource,
-      AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links,
-      int totalRecordedLinks,
-      long startEpochNanos) {
-    this.context = context;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.parentSpanId = parentSpanId;
-    this.hasRemoteParent = hasRemoteParent;
-    this.links = links;
-    this.totalRecordedLinks = totalRecordedLinks;
-    this.name = name;
-    this.kind = kind;
-    this.spanProcessor = spanProcessor;
-    this.resource = resource;
-    this.hasEnded = false;
-    this.clock = clock;
-    this.startEpochNanos = startEpochNanos;
-    // TODO: Do not always initialize the attributes.
-    this.attributes = attributes;
-    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
-    this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
+  SpanId getParentSpanId() {
+    return parentSpanId;
+  }
+
+  Resource getResource() {
+    return resource;
+  }
+
+  Kind getKind() {
+    return kind;
+  }
+
+  long getStartEpochNanos() {
+    return startEpochNanos;
+  }
+
+  boolean hasRemoteParent() {
+    return hasRemoteParent;
+  }
+
+  int getTotalRecordedLinks() {
+    return totalRecordedLinks;
   }
 }
