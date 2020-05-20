@@ -56,8 +56,8 @@ final class DoubleUpDownSumObserverSdk extends AbstractAsynchronousInstrument
   }
 
   @Override
-  public void setCallback(Callback<ResultDoubleUpDownSumObserver> metricUpdater) {
-    this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
+  public void setCallback(Callback<ResultDoubleUpDownSumObserver> callback) {
+    this.metricUpdater = Objects.requireNonNull(callback, "metricUpdater");
   }
 
   static final class Builder

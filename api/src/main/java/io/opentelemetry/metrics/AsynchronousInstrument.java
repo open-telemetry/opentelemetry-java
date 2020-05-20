@@ -47,10 +47,10 @@ public interface AsynchronousInstrument<R> extends Instrument {
    * <p>Evaluation is deferred until needed, if this {@code AsynchronousInstrument} metric is not
    * exported then it will never be called.
    *
-   * @param metricUpdater the callback to be executed before export.
+   * @param callback the callback to be executed before export.
    * @since 0.1.0
    */
-  void setCallback(Callback<R> metricUpdater);
+  void setCallback(Callback<R> callback);
 
   /** Builder class for {@link AsynchronousInstrument}. */
   interface Builder extends Instrument.Builder {

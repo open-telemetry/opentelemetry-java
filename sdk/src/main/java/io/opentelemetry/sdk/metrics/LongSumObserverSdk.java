@@ -55,8 +55,8 @@ final class LongSumObserverSdk extends AbstractAsynchronousInstrument implements
   }
 
   @Override
-  public void setCallback(Callback<ResultLongSumObserver> metricUpdater) {
-    this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
+  public void setCallback(Callback<ResultLongSumObserver> callback) {
+    this.metricUpdater = Objects.requireNonNull(callback, "metricUpdater");
   }
 
   static final class Builder

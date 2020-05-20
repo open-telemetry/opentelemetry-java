@@ -395,8 +395,8 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleSumObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultDoubleSumObserver> metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    public void setCallback(Callback<ResultDoubleSumObserver> callback) {
+      Utils.checkNotNull(callback, "callback");
     }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
@@ -421,8 +421,8 @@ public final class DefaultMeter implements Meter {
     private NoopLongSumObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultLongSumObserver> metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    public void setCallback(Callback<ResultLongSumObserver> callback) {
+      Utils.checkNotNull(callback, "callback");
     }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
@@ -447,8 +447,8 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleUpDownSumObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultDoubleUpDownSumObserver> metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    public void setCallback(Callback<ResultDoubleUpDownSumObserver> callback) {
+      Utils.checkNotNull(callback, "callback");
     }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
@@ -473,8 +473,8 @@ public final class DefaultMeter implements Meter {
     private NoopLongUpDownSumObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultLongUpDownSumObserver> metricUpdater) {
-      Utils.checkNotNull(metricUpdater, "metricUpdater");
+    public void setCallback(Callback<ResultLongUpDownSumObserver> callback) {
+      Utils.checkNotNull(callback, "callback");
     }
 
     private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>

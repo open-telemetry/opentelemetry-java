@@ -83,6 +83,7 @@ public class BatchRecorderTest {
     batchRecorder.put(meter.doubleCounterBuilder("doubleCounter").build(), 77.556d);
     batchRecorder.put(meter.longUpDownCounterBuilder("longUpDownCounter").build(), -44L);
     batchRecorder.put(meter.doubleUpDownCounterBuilder("doubleUpDownCounter").build(), -77.556d);
+    batchRecorder.record();
   }
 
   @Test
