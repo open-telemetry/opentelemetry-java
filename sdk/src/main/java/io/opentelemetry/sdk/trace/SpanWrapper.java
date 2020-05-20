@@ -27,7 +27,6 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
@@ -49,6 +48,10 @@ abstract class SpanWrapper implements SpanData {
 
   abstract Status status();
 
+  /**
+   * Note: the collections that are passed into this creator method are assumed to be immutable to
+   * preserve the overall immutability of the class.
+   */
   static SpanWrapper create(
       RecordEventsReadableSpan delegate,
       List<Link> links,
@@ -58,13 +61,7 @@ abstract class SpanWrapper implements SpanData {
       int totalRecordedEvents,
       Status status) {
     return new AutoValue_SpanWrapper(
-        delegate,
-        Collections.unmodifiableList(links),
-        Collections.unmodifiableList(events),
-        Collections.unmodifiableMap(attributes),
-        totalAttributeCount,
-        totalRecordedEvents,
-        status);
+        delegate, links, events, attributes, totalAttributeCount, totalRecordedEvents, status);
   }
 
   @Override

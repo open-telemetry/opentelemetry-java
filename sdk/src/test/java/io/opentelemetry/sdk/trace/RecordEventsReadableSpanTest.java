@@ -223,6 +223,49 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
+  public void toSpanData_immutableLinks() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    SpanData spanData = span.toSpanData();
+
+    thrown.expect(UnsupportedOperationException.class);
+    spanData.getLinks().add(Link.create(SpanContext.getInvalid()));
+  }
+
+  @Test
+  public void toSpanData_immutableEvents() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    SpanData spanData = span.toSpanData();
+
+    thrown.expect(UnsupportedOperationException.class);
+    spanData
+        .getEvents()
+        .add(Event.create(1000, "test", Collections.<String, AttributeValue>emptyMap()));
+  }
+
+  @Test
+  public void toSpanData_endedSpanHasImmutableAttributes() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    span.end();
+    SpanData spanData = span.toSpanData();
+
+    thrown.expect(UnsupportedOperationException.class);
+    spanData.getAttributes().put("badKey", AttributeValue.stringAttributeValue("badValue"));
+  }
+
+  @Test
+  public void toSpanData_preEndedSpanHasImmutableAttributes() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+
+    SpanData spanData = span.toSpanData();
+    span.setAttribute("new", 333L);
+
+    assertThat(spanData.getAttributes()).isEmpty();
+
+    thrown.expect(UnsupportedOperationException.class);
+    spanData.getAttributes().put("badKey", AttributeValue.stringAttributeValue("badValue"));
+  }
+
+  @Test
   public void toSpanData_RootSpan() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
@@ -713,6 +756,8 @@ public class RecordEventsReadableSpanTest {
         endEpochNanos,
         Status.OK,
         /* hasEnded= */ true);
+    assertThat(result.getTotalRecordedLinks()).isEqualTo(1);
+    assertThat(result.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
 
   @Test

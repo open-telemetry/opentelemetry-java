@@ -199,9 +199,11 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     synchronized (lock) {
       return SpanWrapper.create(
           this,
-          getLinks(),
-          adaptTimedEvents(),
-          attributes,
+          Collections.unmodifiableList(getLinks()),
+          Collections.unmodifiableList(adaptTimedEvents()),
+          hasEnded()
+              ? Collections.unmodifiableMap(attributes)
+              : Collections.unmodifiableMap(new HashMap<>(attributes)),
           attributes.getTotalAddedValues(),
           totalRecordedEvents,
           getStatusWithDefault());
@@ -272,6 +274,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return A copy of the Links for this span.
    */
+  @SuppressWarnings("MixedMutabilityReturnType")
   private List<Link> getLinks() {
     if (links == null) {
       return Collections.emptyList();
@@ -288,7 +291,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       }
       result.add(newLink);
     }
-    return Collections.unmodifiableList(result);
+    return result;
   }
 
   /**
