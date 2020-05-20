@@ -79,13 +79,14 @@ import javax.annotation.concurrent.Immutable;
 @AutoValue
 @Immutable
 public abstract class TraceConfig {
-
+  // These values are the default values for all the global parameters.
+  // TODO: decide which default sampler to use
+  private static final Sampler DEFAULT_SAMPLER = Samplers.alwaysOn();
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_EVENTS = 128;
   private static final int DEFAULT_SPAN_MAX_NUM_LINKS = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_EVENT = 32;
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
-  private static final Sampler DEFAULT_SAMPLER = Samplers.alwaysOn();
 
   /**
    * Returns a new {@link TraceConfig} reading the configuration values from the environment and

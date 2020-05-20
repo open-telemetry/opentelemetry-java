@@ -34,10 +34,10 @@
  *   <li>{@code SPAN_MAX_NUM_ATTRIBUTES_PER_LINK: 32}
  * </ul>
  *
- * <p>Values for {@link io.opentelemetry.sdk.trace.config.TraceConfig} can be read from system
+ * <p>Configuration options for {@link io.opentelemetry.sdk.trace.config.TraceConfig} can be read from system
  * properties, environment variables, or {@link java.util.Properties} objects.
  *
- * <p>For System Properties and {@link java.util.Properties} objects, {@link
+ * <p>For system Properties and {@link java.util.Properties} objects, {@link
  * io.opentelemetry.sdk.trace.config.TraceConfig} will look for the following names:
  *
  * <ul>
@@ -54,7 +54,7 @@
  *       {@link io.opentelemetry.trace.Link}.
  * </ul>
  *
- * <p>For Environment Variable, {@link io.opentelemetry.sdk.trace.config.TraceConfig} will look for
+ * <p>For environment variable, {@link io.opentelemetry.sdk.trace.config.TraceConfig} will look for
  * the following names:
  *
  * <ul>
