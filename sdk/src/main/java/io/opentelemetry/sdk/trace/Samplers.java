@@ -64,6 +64,20 @@ public final class Samplers {
   private Samplers() {}
 
   /**
+   * Returns a {@link Decision} with empty attributes and {@link Decision#isSampled()} returning the
+   * value of the parameter {@code isSampled}.
+   *
+   * <p>This is meant for use by custom {@link Sampler} implementations.
+   *
+   * @param isSampled The value to return from {@link Decision#isSampled()}.
+   * @return A {@link Decision} with empty attributes and {@link Decision#isSampled()} returning the
+   *     value of the parameter {@code isSampled}.
+   */
+  public static final Decision emptyDecision(boolean isSampled) {
+    return isSampled ? ALWAYS_ON_DECISION : ALWAYS_OFF_DECISION;
+  }
+  
+  /**
    * Returns a {@link Sampler} that always makes a "yes" decision on {@link Span} sampling.
    *
    * @return a {@code Sampler} that always makes a "yes" decision on {@code Span} sampling.
