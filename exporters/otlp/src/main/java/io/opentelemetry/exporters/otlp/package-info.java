@@ -28,44 +28,44 @@
  *   <li>{@link io.opentelemetry.exporters.otlp.SpanAdapter}
  * </ul>
  *
- * <p>Values for {@link io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter} and {@link
- * io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter} can be read from system properties,
+ * <p>Configuration options for {@link io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter} and
+ * {@link io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter} can be read from system properties,
  * environment variables, or {@link java.util.Properties} objects.
  *
  * <h2>{@link io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter}</h2>
  *
- * <p>For System Properties and {@link java.util.Properties} objects, {@link
+ * <p>For system properties and {@link java.util.Properties} objects, {@link
  * io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter} will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time for the collector to process
- *       each metric batch.
+ *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time allowed to send each metric
+ *       batch.
  * </ul>
  *
- * <p>For Environment Variable, {@link io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter} will
+ * <p>For environment variables, {@link io.opentelemetry.exporters.otlp.OtlpGrpcMetricExporter} will
  * look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_OTLP_METRIC_TIMEOUT}: to set the max waiting time for the collector to process
- *       each metric batch.
+ *   <li>{@code OTEL_OTLP_METRIC_TIMEOUT}: to set the max waiting time allowed to send each metric
+ *       batch.
  * </ul>
  *
  * <h2>{@link io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter}</h2>
  *
- * <p>For System Properties and {@link java.util.Properties} objects, {@link
+ * <p>For system properties and {@link java.util.Properties} objects, {@link
  * io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter} will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time for the collector to process
- *       each span batch.
+ *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time allowed to send each span
+ *       batch.
  * </ul>
  *
- * <p>For Environment Variable, {@link io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter} will
+ * <p>For environment variables, {@link io.opentelemetry.exporters.otlp.OtlpGrpcSpanExporter} will
  * look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_OTLP_SPAN_TIMEOUT}: to set the max waiting time for the collector to process
- *       each span batch.
+ *   <li>{@code OTEL_OTLP_SPAN_TIMEOUT}: to set the max waiting time allowed to send each span
+ *       batch.
  * </ul>
  */
 package io.opentelemetry.exporters.otlp;

@@ -39,7 +39,7 @@ import javax.annotation.concurrent.Immutable;
  * <p>Configuration options for {@link IntervalMetricReader} can be read from system properties,
  * environment variables, or {@link java.util.Properties} objects.
  *
- * <p>For System Properties and {@link java.util.Properties} objects, {@link IntervalMetricReader}
+ * <p>For system properties and {@link java.util.Properties} objects, {@link IntervalMetricReader}
  * will look for the following names:
  *
  * <ul>

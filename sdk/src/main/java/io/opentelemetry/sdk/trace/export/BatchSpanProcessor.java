@@ -60,7 +60,7 @@ import javax.annotation.concurrent.GuardedBy;
  * <p>Configuration options for {@link BatchSpanProcessor} can be read from system properties,
  * environment variables, or {@link java.util.Properties} objects.
  *
- * <p>For System Properties and {@link java.util.Properties} objects, {@link BatchSpanProcessor}
+ * <p>For system properties and {@link java.util.Properties} objects, {@link BatchSpanProcessor}
  * will look for the following names:
  *
  * <ul>

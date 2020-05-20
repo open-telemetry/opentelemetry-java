@@ -33,17 +33,17 @@
  *   <li>{@code REPORT_ONLY_SAMPLED: true} *
  * </ul>
  *
- * <p>Values for {@link io.opentelemetry.sdk.trace.export.SimpleSpanProcessor} can be read from
- * system properties, environment variables, or {@link java.util.Properties} objects.
+ * <p>Configuration options for {@link io.opentelemetry.sdk.trace.export.SimpleSpanProcessor} can be
+ * read from system properties, environment variables, or {@link java.util.Properties} objects.
  *
- * <p>For System Properties and {@link java.util.Properties} objects, {@link
+ * <p>For system properties and {@link java.util.Properties} objects, {@link
  * io.opentelemetry.sdk.trace.export.SimpleSpanProcessor} will look for the following names:
  *
  * <ul>
  *   <li>{@code otel.ssp.export.sampled}: sets whether only sampled spans should be exported.
  * </ul>
  *
- * <p>For Environment Variable, {@link io.opentelemetry.sdk.trace.export.SimpleSpanProcessor} will
+ * <p>For environment variables, {@link io.opentelemetry.sdk.trace.export.SimpleSpanProcessor} will
  * look for the following names:
  *
  * <ul>
@@ -60,10 +60,10 @@
  *   <li>{@code REPORT_ONLY_SAMPLED: true}
  * </ul>
  *
- * <p>Values for {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor} can be read from
- * system properties, environment variables, or {@link java.util.Properties} objects.
+ * <p>Configuration options for {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor} can be
+ * read from system properties, environment variables, or {@link java.util.Properties} objects.
  *
- * <p>For System Properties and {@link java.util.Properties} objects, {@link
+ * <p>For system properties and {@link java.util.Properties} objects, {@link
  * io.opentelemetry.sdk.trace.export.BatchSpanProcessor} will look for the following names:
  *
  * <ul>
@@ -74,7 +74,7 @@
  *   <li>{@code otel.bsp.export.sampled}: sets whether only sampled spans should be exported.
  * </ul>
  *
- * <p>For Environment Variable, {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor} will
+ * <p>For environment variables, {@link io.opentelemetry.sdk.trace.export.BatchSpanProcessor} will
  * look for the following names:
  *
  * <ul>

@@ -36,7 +36,7 @@ import java.util.logging.Logger;
  * <p>Configuration options for {@link SimpleSpanProcessor} can be read from system properties,
  * environment variables, or {@link java.util.Properties} objects.
  *
- * <p>For System Properties and {@link java.util.Properties} objects, {@link SimpleSpanProcessor}
+ * <p>For system properties and {@link java.util.Properties} objects, {@link SimpleSpanProcessor}
  * will look for the following names:
  *
  * <ul>

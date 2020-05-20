@@ -36,19 +36,19 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>Configuration options for {@link OtlpGrpcSpanExporter} can be read from system properties,
  * environment variables, or {@link java.util.Properties} objects.
  *
- * <p>For System Properties and {@link java.util.Properties} objects, {@link OtlpGrpcSpanExporter}
+ * <p>For system properties and {@link java.util.Properties} objects, {@link OtlpGrpcSpanExporter}
  * will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time for the collector to process
- *       each span batch.
+ *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time allowed to send each span
+ *       batch.
  * </ul>
  *
  * <p>For environment variables, {@link OtlpGrpcSpanExporter} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_OTLP_SPAN_TIMEOUT}: to set the max waiting time for the collector to process
- *       each span batch.
+ *   <li>{@code OTEL_OTLP_SPAN_TIMEOUT}: to set the max waiting time allowed to send each span
+ *       batch.
  * </ul>
  */
 @ThreadSafe
