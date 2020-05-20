@@ -223,6 +223,35 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
+  public void toSpanData_immutableLinks() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    SpanData spanData = span.toSpanData();
+
+    thrown.expect(UnsupportedOperationException.class);
+    spanData.getLinks().add(Link.create(SpanContext.getInvalid()));
+  }
+
+  @Test
+  public void toSpanData_immutableEvents() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    SpanData spanData = span.toSpanData();
+
+    thrown.expect(UnsupportedOperationException.class);
+    spanData
+        .getEvents()
+        .add(Event.create(1000, "test", Collections.<String, AttributeValue>emptyMap()));
+  }
+
+  @Test
+  public void toSpanData_immutableAttributes() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    SpanData spanData = span.toSpanData();
+
+    thrown.expect(UnsupportedOperationException.class);
+    spanData.getAttributes().put("badKey", AttributeValue.stringAttributeValue("badValue"));
+  }
+
+  @Test
   public void toSpanData_RootSpan() {
     RecordEventsReadableSpan span = createTestRootSpan();
     try {
@@ -713,6 +742,8 @@ public class RecordEventsReadableSpanTest {
         endEpochNanos,
         Status.OK,
         /* hasEnded= */ true);
+    assertThat(result.getTotalRecordedLinks()).isEqualTo(1);
+    assertThat(result.getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
 
   @Test

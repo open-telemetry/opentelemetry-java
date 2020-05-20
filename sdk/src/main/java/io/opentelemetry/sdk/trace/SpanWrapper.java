@@ -59,7 +59,7 @@ abstract class SpanWrapper implements SpanData {
       Status status) {
     return new AutoValue_SpanWrapper(
         delegate,
-        Collections.unmodifiableList(links),
+        links, // note: the caller has already made this unmodifiable
         Collections.unmodifiableList(events),
         Collections.unmodifiableMap(attributes),
         totalAttributeCount,
