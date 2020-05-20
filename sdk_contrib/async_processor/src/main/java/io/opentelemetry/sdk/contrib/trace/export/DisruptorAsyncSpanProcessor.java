@@ -19,25 +19,43 @@ package io.opentelemetry.sdk.contrib.trace.export;
 import com.google.common.base.Preconditions;
 import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.WaitStrategy;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * A {@link SpanProcessor} implementation that uses {@code Disruptor} to execute all the hooks on an
  * async thread.
+ *
+ * <p>Configuration options for {@link DisruptorAsyncSpanProcessor} can be read from system
+ * properties, environment variables, or {@link java.util.Properties} objects.
+ *
+ * <p>For system properties and {@link java.util.Properties} objects, {@link
+ * DisruptorAsyncSpanProcessor} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code otel.disruptor.buffer.size}: number of events that can be enqueued at any one time.
+ *   <li>{@code otel.disruptor.blocking}: to block the queue if no space available.
+ *   <li>{@code otel.disruptor.num.retries}: number of retries for the {@link SleepingWaitStrategy}.
+ *   <li>{@code otel.disruptor.sleeping.time}: waiting time in ns for the {@link
+ *       SleepingWaitStrategy}.
+ * </ul>
+ *
+ * <p>For environment variables, {@link DisruptorAsyncSpanProcessor} will look for the following
+ * names:
+ *
+ * <ul>
+ *   <li>{@code OTEL_DISRUPTOR_BUFFER_SIZE}: number of events that can be enqueued at any one time.
+ *   <li>{@code OTEL_DISRUPTOR_BLOCKING}: to block the queue if no space available.
+ *   <li>{@code OTEL_DISRUPTOR_NUM_RETRIES}: number of retries for the {@link SleepingWaitStrategy}.
+ *   <li>{@code OTEL_DISRUPTOR_SLEEPING_TIME}: waiting time in ns for the {@link
+ *       SleepingWaitStrategy}.
+ * </ul>
  */
 @ThreadSafe
 public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
-  // Number of events that can be enqueued at any one time. If more than this are enqueued,
-  // then subsequent attempts to enqueue new entries will block.
-  private static final int DEFAULT_DISRUPTOR_BUFFER_SIZE = 8192;
-  // The default value of the Disruptor behavior, blocks when no space available.
-  private static final boolean DEFAULT_BLOCKING = true;
-  // The default number of retries for the SleepingWaitingStrategy.
-  private static final int DEFAULT_NUM_RETRIES = 0;
-  // The default waiting time in ns for the SleepingWaitingStrategy.
-  private static final long DEFAULT_SLEEPING_TIME_NS = 1000 * 1000;
 
   private final DisruptorEventQueue disruptorEventQueue;
   private final boolean startRequired;
@@ -93,7 +111,23 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
   }
 
   /** Builder class for {@link DisruptorAsyncSpanProcessor}. */
-  public static final class Builder {
+  public static final class Builder extends ConfigBuilder<Builder> {
+
+    private static final String KEY_DISRUPTOR_BUFFER_SIZE = "otel.disruptor.buffer.size";
+    private static final String KEY_BLOCKING = "otel.disruptor.blocking";
+    private static final String KEY_NUM_RETRIES = "otel.disruptor.num.retries";
+    private static final String KEY_SLEEPING_TIME_NS = "otel.disruptor.sleeping.time";
+
+    // Number of events that can be enqueued at any one time. If more than this are enqueued,
+    // then subsequent attempts to enqueue new entries will block.
+    private static final int DEFAULT_DISRUPTOR_BUFFER_SIZE = 8192;
+    // The default value of the Disruptor behavior, blocks when no space available.
+    private static final boolean DEFAULT_BLOCKING = true;
+    // The default number of retries for the SleepingWaitingStrategy.
+    private static final int DEFAULT_NUM_RETRIES = 0;
+    // The default waiting time in ns for the SleepingWaitingStrategy.
+    private static final long DEFAULT_SLEEPING_TIME_NS = 1000 * 1000L;
+
     private final SpanProcessor spanProcessor;
     private int bufferSize = DEFAULT_DISRUPTOR_BUFFER_SIZE;
     private boolean blocking = DEFAULT_BLOCKING;
@@ -148,6 +182,29 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
           new DisruptorEventQueue(bufferSize, waitStrategy, spanProcessor, blocking),
           spanProcessor.isStartRequired(),
           spanProcessor.isEndRequired());
+    }
+
+    @Override
+    protected Builder fromConfigMap(
+        Map<String, String> configMap, NamingConvention namingConvention) {
+      configMap = namingConvention.normalize(configMap);
+      Integer intValue = getIntProperty(KEY_DISRUPTOR_BUFFER_SIZE, configMap);
+      if (intValue != null) {
+        this.setBufferSize(intValue);
+      }
+      Boolean boolValue = getBooleanProperty(KEY_BLOCKING, configMap);
+      if (boolValue != null) {
+        this.setBlocking(boolValue);
+      }
+      Integer retries = getIntProperty(KEY_NUM_RETRIES, configMap);
+      if (retries == null) {
+        retries = DEFAULT_NUM_RETRIES;
+      }
+      Long sleepingNS = getLongProperty(KEY_SLEEPING_TIME_NS, configMap);
+      if (sleepingNS == null) {
+        sleepingNS = DEFAULT_SLEEPING_TIME_NS;
+      }
+      return setWaitingStrategy(new SleepingWaitStrategy(retries, sleepingNS));
     }
   }
 

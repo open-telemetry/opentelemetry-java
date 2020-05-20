@@ -17,6 +17,8 @@
 package io.opentelemetry.exporters.zipkin;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
@@ -54,10 +56,32 @@ public abstract class ZipkinExporterConfiguration {
   /**
    * Builder for {@link ZipkinExporterConfiguration}.
    *
+   * <p>Configuration options for {@link ZipkinExporterConfiguration} can be read from system
+   * properties, environment variables, or {@link java.util.Properties} objects.
+   *
+   * <p>For system properties and {@link java.util.Properties} objects, {@link
+   * ZipkinExporterConfiguration} will look for the following names:
+   *
+   * <ul>
+   *   <li>{@code otel.zipkin.service.name}: to set the service name.
+   *   <li>{@code otel.zipkin.endpoint}: to set the endpoint URL.
+   * </ul>
+   *
+   * <p>For environment variables, {@link ZipkinExporterConfiguration} will look for the following
+   * names:
+   *
+   * <ul>
+   *   <li>{@code OTEL_ZIPKIN_SERVICE_NAME}: to set the service name.
+   *   <li>{@code OTEL_ZIPKIN_ENDPOINT}: to set the endpoint URL.
+   * </ul>
+   *
    * @since 0.4.0
    */
   @AutoValue.Builder
-  public abstract static class Builder {
+  public abstract static class Builder extends ConfigBuilder<Builder> {
+
+    private static final String KEY_SERVICE_NAME = "otel.zipkin.service.name";
+    private static final String KEY_ENDPOINT = "otel.zipkin.endpoint";
 
     Builder() {}
 
@@ -68,7 +92,7 @@ public abstract class ZipkinExporterConfiguration {
      * <p>This is a primary label for trace lookup and aggregation, so it should be intuitive and
      * consistent. Many use a name from service discovery.
      *
-     * <p>Note: this value, will be superceded by the value of {@link
+     * <p>Note: this value, will be superseded by the value of {@link
      * io.opentelemetry.sdk.resources.ResourceConstants#SERVICE_NAME} if it has been set in the
      * {@link io.opentelemetry.sdk.resources.Resource} associated with the Tracer that created the
      * spans.
@@ -122,5 +146,26 @@ public abstract class ZipkinExporterConfiguration {
      * @since 0.4.0
      */
     public abstract ZipkinExporterConfiguration build();
+
+    /**
+     * Sets the configuration values from the given configuration map for only the available keys.
+     *
+     * @param configMap {@link Map} holding the configuration values.
+     * @return this.
+     */
+    @Override
+    protected Builder fromConfigMap(
+        Map<String, String> configMap, NamingConvention namingConvention) {
+      configMap = namingConvention.normalize(configMap);
+      String stringValue = getStringProperty(KEY_SERVICE_NAME, configMap);
+      if (stringValue != null) {
+        this.setServiceName(stringValue);
+      }
+      stringValue = getStringProperty(KEY_ENDPOINT, configMap);
+      if (stringValue != null) {
+        this.setEndpoint(stringValue);
+      }
+      return this;
+    }
   }
 }

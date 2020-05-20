@@ -139,4 +139,19 @@ public abstract class ConfigBuilder<T> {
       return null;
     }
   }
+
+  /**
+   * Get a {@link String} property from the map, {@code null} if it cannot be found.
+   *
+   * @param name The property name
+   * @param map The map where to look for the property
+   * @return the {@link String} value of the property, {@code null} if the property cannot be found.
+   */
+  @Nullable
+  protected static String getStringProperty(String name, Map<String, String> map) {
+    if (map.containsKey(name)) {
+      return map.get(name);
+    }
+    return null;
+  }
 }
