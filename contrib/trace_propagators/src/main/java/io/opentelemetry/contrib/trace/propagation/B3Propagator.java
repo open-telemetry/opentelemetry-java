@@ -51,17 +51,24 @@ public class B3Propagator implements HttpTextFormat {
   private final B3PropagatorInjector b3PropagatorInjector;
   private final B3PropagatorExtractor b3PropagatorExtractor;
 
-  /** Creates a new instance of {@link B3Propagator}. Defaults to use multiple headers. */
-  public B3Propagator() {
-    this(false);
-  }
+  /**
+   * Creates a new instance of {@link B3Propagator}. This instance contains the reference to {@link
+   * B3PropagatorInjectorSingleHeader} and {@link B3PropagatorExtractorSingleHeader}.
+   */
+  public static final B3Propagator SINGLE_HEADER = new B3Propagator(/* singleHeader= */ true);
+
+  /**
+   * Creates a new instance of {@link B3Propagator}. This instance contains the reference to {@link
+   * B3PropagatorInjectorMultipleHeaders} and {@link B3PropagatorExtractorMultipleHeaders}.
+   */
+  public static final B3Propagator MULTI_HEADER = new B3Propagator(/* singleHeader= */ false);
 
   /**
    * Creates a new instance of {@link B3Propagator}.
    *
    * @param singleHeader whether to use single or multiple headers.
    */
-  public B3Propagator(boolean singleHeader) {
+  private B3Propagator(boolean singleHeader) {
     if (singleHeader) {
       b3PropagatorInjector = new B3PropagatorInjectorSingleHeader();
       b3PropagatorExtractor = new B3PropagatorExtractorSingleHeader();
