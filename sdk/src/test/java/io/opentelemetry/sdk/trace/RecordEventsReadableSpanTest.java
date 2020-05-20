@@ -243,9 +243,23 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void toSpanData_immutableAttributes() {
+  public void toSpanData_endedSPanHasImmutableAttributes() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+    span.end();
     SpanData spanData = span.toSpanData();
+
+    thrown.expect(UnsupportedOperationException.class);
+    spanData.getAttributes().put("badKey", AttributeValue.stringAttributeValue("badValue"));
+  }
+
+  @Test
+  public void toSpanData_preEndedSpanHasImmutableAttributes() {
+    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
+
+    SpanData spanData = span.toSpanData();
+    span.setAttribute("new", 333L);
+
+    assertThat(spanData.getAttributes()).isEmpty();
 
     thrown.expect(UnsupportedOperationException.class);
     spanData.getAttributes().put("badKey", AttributeValue.stringAttributeValue("badValue"));
