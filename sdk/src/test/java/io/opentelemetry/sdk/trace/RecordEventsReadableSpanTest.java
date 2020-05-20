@@ -243,7 +243,7 @@ public class RecordEventsReadableSpanTest {
   }
 
   @Test
-  public void toSpanData_endedSPanHasImmutableAttributes() {
+  public void toSpanData_endedSpanHasImmutableAttributes() {
     RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
     span.end();
     SpanData spanData = span.toSpanData();
