@@ -200,11 +200,11 @@ public final class DisruptorAsyncSpanProcessor implements SpanProcessor {
       if (retries == null) {
         retries = DEFAULT_NUM_RETRIES;
       }
-      Long sleepingNS = getLongProperty(KEY_SLEEPING_TIME_NS, configMap);
-      if (sleepingNS == null) {
-        sleepingNS = DEFAULT_SLEEPING_TIME_NS;
+      Long sleepingNs = getLongProperty(KEY_SLEEPING_TIME_NS, configMap);
+      if (sleepingNs == null) {
+        sleepingNs = DEFAULT_SLEEPING_TIME_NS;
       }
-      return setWaitingStrategy(new SleepingWaitStrategy(retries, sleepingNS));
+      return setWaitingStrategy(new SleepingWaitStrategy(retries, sleepingNs));
     }
   }
 
