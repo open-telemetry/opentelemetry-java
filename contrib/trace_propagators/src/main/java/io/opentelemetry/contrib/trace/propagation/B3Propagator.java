@@ -63,7 +63,7 @@ public class B3Propagator implements HttpTextFormat {
    * protocol. See <a
    * href=https://github.com/openzipkin/b3-propagation#single-header>openzipkin/b3-propagation#single-header</a>.
    *
-   * @return Returns an instance of {@link B3Propagator} with Single Header Implementation of B3
+   * @return Returns an instance of {@link B3Propagator} with Single Header implementation of B3
    *     propagation protocol.
    */
   public static B3Propagator getSingleHeaderPropagator() {
@@ -75,7 +75,7 @@ public class B3Propagator implements HttpTextFormat {
    * propagation protocol. See <a
    * href=https://github.com/openzipkin/b3-propagation#multiple-headers>openzipkin/b3-propagation#multiple-headers</a>.
    *
-   * @return Returns an instance of {@link B3Propagator} with Multiple Header Implementation of B3
+   * @return Returns an instance of {@link B3Propagator} with Multiple Header implementation of B3
    *     propagation protocol.
    */
   public static B3Propagator getMultipleHeaderPropagator() {
