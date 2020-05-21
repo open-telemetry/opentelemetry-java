@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.trace;
 
 import static com.google.common.truth.Truth.assertThat;
-import static java.util.Collections.emptyList;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -141,19 +140,6 @@ public class RecordEventsReadableSpanTest {
     assertThat(resultingLink.getTotalAttributeCount()).isEqualTo(1);
     assertThat(resultingLink.getContext()).isSameInstanceAs(spanContext);
     assertThat(resultingLink.getAttributes()).isEqualTo(attributes);
-  }
-
-  @Test
-  public void nullLinksAreHandled() {
-    RecordEventsReadableSpan span =
-        createTestSpan(
-            Kind.CLIENT,
-            TraceConfig.getDefault(),
-            parentSpanId,
-            Collections.<String, AttributeValue>emptyMap(),
-            null);
-
-    assertThat(span.toSpanData().getLinks()).isEqualTo(emptyList());
   }
 
   @Test
