@@ -20,18 +20,18 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.DefaultContextPropagators;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.DefaultCorrelationContextManager;
-import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerProvider;
+import io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory;
 import io.opentelemetry.internal.Obfuscated;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.DefaultMeterProvider;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
-import io.opentelemetry.metrics.spi.MetricsProvider;
+import io.opentelemetry.metrics.spi.MeterProviderFactory;
 import io.opentelemetry.trace.DefaultTracerProvider;
 import io.opentelemetry.trace.Tracer;
 import io.opentelemetry.trace.TracerProvider;
 import io.opentelemetry.trace.propagation.HttpTraceContext;
-import io.opentelemetry.trace.spi.TraceProvider;
+import io.opentelemetry.trace.spi.TracerProviderFactory;
 import java.util.ServiceLoader;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -43,8 +43,8 @@ import javax.annotation.concurrent.ThreadSafe;
  * <p>The telemetry objects are lazy-loaded singletons resolved via {@link ServiceLoader} mechanism.
  *
  * @see TracerProvider
- * @see MetricsProvider
- * @see CorrelationContextManagerProvider
+ * @see MeterProviderFactory
+ * @see CorrelationContextManagerFactory
  */
 @ThreadSafe
 public final class OpenTelemetry {
@@ -199,17 +199,19 @@ public final class OpenTelemetry {
   }
 
   private OpenTelemetry() {
-    TraceProvider traceProvider = loadSpi(TraceProvider.class);
+    TracerProviderFactory tracerProviderFactory = loadSpi(TracerProviderFactory.class);
     this.tracerProvider =
-        traceProvider != null
-            ? new ObfuscatedTracerProvider(traceProvider.create())
+        tracerProviderFactory != null
+            ? new ObfuscatedTracerProvider(tracerProviderFactory.create())
             : DefaultTracerProvider.getInstance();
 
-    MetricsProvider metricsProvider = loadSpi(MetricsProvider.class);
+    MeterProviderFactory meterProviderFactory = loadSpi(MeterProviderFactory.class);
     meterProvider =
-        metricsProvider != null ? metricsProvider.create() : DefaultMeterProvider.getInstance();
-    CorrelationContextManagerProvider contextManagerProvider =
-        loadSpi(CorrelationContextManagerProvider.class);
+        meterProviderFactory != null
+            ? meterProviderFactory.create()
+            : DefaultMeterProvider.getInstance();
+    CorrelationContextManagerFactory contextManagerProvider =
+        loadSpi(CorrelationContextManagerFactory.class);
     contextManager =
         contextManagerProvider != null
             ? contextManagerProvider.create()
