@@ -22,7 +22,8 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * {@code ValueObserver} is the asynchronous instrument corresponding to ValueRecorder, used to
- * capture values that are treated as individual with Observe(value).
+ * capture values that are treated as individual observations, recorded with the observe(value)
+ * method.
  *
  * <p>A {@code ValueObserver} is a good choice in situations where a measurement is expensive to
  * compute, such that it would be wasteful to compute on every request.
@@ -33,18 +34,18 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
- *   private static final DoubleSumObserver cpuObserver =
+ *   private static final DoubleValueObserver cpuObserver =
  *       meter.
- *           .doubleSumObserverBuilder("cpu_temperature")
+ *           .doubleValueObserverBuilder("cpu_temperature")
  *           .setDescription("System CPU temperature")
  *           .setUnit("ms")
  *           .build();
  *
  *   void init() {
  *     cpuObserver.setCallback(
- *         new DoubleSumObserver.Callback<ResultDoubleSumObserver>() {
+ *         new DoubleValueObserver.Callback<ResultDoubleValueObserver>() {
  *          {@literal @}Override
- *           public void update(ResultDoubleSumObserver result) {
+ *           public void update(ResultDoubleValueObserver result) {
  *             // Get system cpu temperature
  *             result.observe(cpuTemperature);
  *           }
@@ -53,7 +54,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * }
  * }</pre>
  *
- * @since 0.1.0
+ * @since 0.5.0
  */
 @ThreadSafe
 public interface DoubleValueObserver extends AsynchronousInstrument<ResultDoubleValueObserver> {
