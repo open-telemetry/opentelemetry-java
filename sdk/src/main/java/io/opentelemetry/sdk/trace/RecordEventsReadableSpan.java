@@ -199,26 +199,13 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     synchronized (lock) {
       return SpanWrapper.create(
           this,
-          Collections.unmodifiableList(getLinks()),
-          Collections.unmodifiableList(adaptTimedEvents()),
-          hasEnded()
-              ? Collections.unmodifiableMap(attributes)
-              : Collections.unmodifiableMap(new HashMap<>(attributes)),
+          getImmutableLinks(),
+          getImmutableTimedEvents(),
+          getImmutableAttributes(),
           attributes.getTotalAddedValues(),
           totalRecordedEvents,
           getStatusWithDefault());
     }
-  }
-
-  @GuardedBy("lock")
-  private List<Event> adaptTimedEvents() {
-    List<Event> result = new ArrayList<>(events.size());
-    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
-      result.add(
-          Event.create(
-              sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
-    }
-    return result;
   }
 
   @Override
@@ -267,31 +254,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     synchronized (lock) {
       return endEpochNanos;
     }
-  }
-
-  /**
-   * Returns a copy of the links for this span.
-   *
-   * @return A copy of the Links for this span.
-   */
-  @SuppressWarnings("MixedMutabilityReturnType")
-  private List<Link> getLinks() {
-    if (links == null) {
-      return Collections.emptyList();
-    }
-    List<Link> result = new ArrayList<>(links.size());
-    for (io.opentelemetry.trace.Link link : links) {
-      Link newLink;
-      if (!(link instanceof Link)) {
-        // Make a copy because the given Link may not be immutable and we may reference a lot of
-        // memory.
-        newLink = Link.create(link.getContext(), link.getAttributes());
-      } else {
-        newLink = (Link) link;
-      }
-      result.add(newLink);
-    }
-    return result;
   }
 
   /**
@@ -504,5 +466,49 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   int getTotalRecordedLinks() {
     return totalRecordedLinks;
+  }
+
+  @GuardedBy("lock")
+  private List<Link> getImmutableLinks() {
+    if (links.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<Link> result = new ArrayList<>(links.size());
+    for (io.opentelemetry.trace.Link link : links) {
+      Link newLink;
+      if (!(link instanceof Link)) {
+        // Make a copy because the given Link may not be immutable and we may reference a lot of
+        // memory.
+        newLink = Link.create(link.getContext(), link.getAttributes());
+      } else {
+        newLink = (Link) link;
+      }
+      result.add(newLink);
+    }
+    return Collections.unmodifiableList(result);
+  }
+
+  @GuardedBy("lock")
+  private List<Event> getImmutableTimedEvents() {
+    if (events.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<Event> result = new ArrayList<>(events.size());
+    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
+      result.add(
+          Event.create(
+              sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
+    }
+    return Collections.unmodifiableList(result);
+  }
+
+  @GuardedBy("lock")
+  private Map<String, AttributeValue> getImmutableAttributes() {
+    if (attributes.isEmpty()) {
+      return Collections.emptyMap();
+    }
+    return hasEnded
+        ? Collections.unmodifiableMap(attributes)
+        : Collections.unmodifiableMap(new HashMap<>(attributes));
   }
 }
