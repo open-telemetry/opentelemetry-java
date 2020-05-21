@@ -18,7 +18,9 @@ package io.opentelemetry.sdk.common.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.common.export.ConfigBuilder.NamingConvention;
 import java.util.Collections;
+import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -26,6 +28,17 @@ import org.junit.runners.JUnit4;
 /** Tests for {@link io.opentelemetry.sdk.common.export.ConfigBuilder}. */
 @RunWith(JUnit4.class)
 public class ConfigBuilderTest {
+
+  @Test
+  public void normalize() {
+    Map<String, String> dotValues =
+        NamingConvention.DOT.normalize(Collections.singletonMap("Test.Config.Key", "value"));
+    assertThat(dotValues).containsEntry("test.config.key", "value");
+
+    Map<String, String> envValue =
+        NamingConvention.ENV_VAR.normalize(Collections.singletonMap("TEST_CONFIG_KEY", "value"));
+    assertThat(envValue).containsEntry("test.config.key", "value");
+  }
 
   @Test
   public void booleanProperty() {
