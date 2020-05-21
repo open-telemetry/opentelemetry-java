@@ -73,10 +73,6 @@ final class B3PropagatorExtractor {
       C carrier, HttpTextFormat.Getter<C> getter) {
     String value = getter.get(carrier, COMBINED_HEADER);
     if (StringUtils.isNullOrEmpty(value)) {
-      logger.info(
-          "Missing or empty combined header: "
-              + COMBINED_HEADER
-              + ". Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 
