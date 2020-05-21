@@ -420,7 +420,7 @@ public interface Span {
      * @param context the {@code Context}.
      * @return this.
      * @throws NullPointerException if {@code context} is {@code null}.
-     * @since 0.3.0
+     * @since 0.5.0
      */
     Builder setParent(Context context);
 

@@ -93,7 +93,7 @@ public interface CorrelationContext {
      * @return this.
      * @throws NullPointerException if {@code context} is {@code null}.
      * @see #setNoParent()
-     * @since 0.3.0
+     * @since 0.4.0
      */
     Builder setParent(Context context);
 
