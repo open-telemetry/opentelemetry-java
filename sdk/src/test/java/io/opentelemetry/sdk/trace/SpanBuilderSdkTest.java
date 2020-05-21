@@ -125,6 +125,59 @@ public class SpanBuilderSdkTest {
   }
 
   @Test
+  public void truncateLinkAttributes() {
+    TraceConfig traceConfig =
+        tracerSdkFactory
+            .getActiveTraceConfig()
+            .toBuilder()
+            .setMaxNumberOfAttributesPerLink(1)
+            .build();
+    tracerSdkFactory.updateActiveTraceConfig(traceConfig);
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    Map<String, AttributeValue> attributes = new LinkedHashMap<>();
+    attributes.put("key0", AttributeValue.stringAttributeValue("str"));
+    attributes.put("key1", AttributeValue.stringAttributeValue("str"));
+    attributes.put("key2", AttributeValue.stringAttributeValue("str"));
+    spanBuilder.addLink(sampledSpanContext, attributes);
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      assertThat(span.toSpanData().getLinks())
+          .containsExactly(
+              Link.create(
+                  sampledSpanContext,
+                  Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
+                  3));
+    } finally {
+      span.end();
+      tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
+    }
+  }
+
+  @Test
+  public void changingAttributes_NoEffectAfterAddLink() {
+    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
+    Map<String, AttributeValue> attributes = new LinkedHashMap<>();
+    attributes.put("key0", AttributeValue.stringAttributeValue("str"));
+    spanBuilder.addLink(sampledSpanContext, attributes);
+    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
+    try {
+      assertThat(span.toSpanData().getLinks())
+          .containsExactly(
+              Link.create(
+                  sampledSpanContext,
+                  Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str"))));
+      attributes.remove("key0");
+      assertThat(span.toSpanData().getLinks())
+          .containsExactly(
+              Link.create(
+                  sampledSpanContext,
+                  Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str"))));
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
   public void addLink_null() {
     thrown.expect(NullPointerException.class);
     tracerSdk.spanBuilder(SPAN_NAME).addLink((io.opentelemetry.trace.Link) null);

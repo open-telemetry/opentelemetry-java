@@ -51,9 +51,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
-  private static final String MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE =
-      "Link has reached the maximum number of attributes (%d). Dropping %d attributes.";
-
+  // The config used when constructing this Span.
+  private final TraceConfig traceConfig;
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
@@ -67,8 +66,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final List<io.opentelemetry.trace.Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
-  // Max number of attributes per event.
-  private final int maxNumberOfAttributesPerEvent;
 
   // Lock used to internally guard the mutable state of this instance
   private final Object lock = new Object();
@@ -136,7 +133,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     // TODO: Do not always initialize the attributes.
     this.attributes = attributes;
     this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
-    this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
+    this.traceConfig = traceConfig;
   }
 
   /**
@@ -316,12 +313,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name) {
-    addTimedEvent(TimedEvent.create(clock.now(), name));
+    addTimedEvent(
+        TimedEvent.create(clock.now(), name, Collections.<String, AttributeValue>emptyMap(), 0));
   }
 
   @Override
   public void addEvent(String name, long timestamp) {
-    addTimedEvent(TimedEvent.create(timestamp, name));
+    addTimedEvent(
+        TimedEvent.create(timestamp, name, Collections.<String, AttributeValue>emptyMap(), 0));
   }
 
   @Override
@@ -329,14 +328,21 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         TimedEvent.create(
-            clock.now(), name, limitEventAttributes(attributes), totalAttributeCount));
+            clock.now(),
+            name,
+            copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
+            totalAttributeCount));
   }
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        TimedEvent.create(timestamp, name, limitEventAttributes(attributes), totalAttributeCount));
+        TimedEvent.create(
+            timestamp,
+            name,
+            copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
+            totalAttributeCount));
   }
 
   @Override
@@ -349,24 +355,24 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     addTimedEvent(TimedEvent.create(timestamp, event));
   }
 
-  private Map<String, AttributeValue> limitEventAttributes(Map<String, AttributeValue> attributes) {
-    if (attributes.size() <= this.maxNumberOfAttributesPerEvent) {
-      return attributes;
+  static Map<String, AttributeValue> copyAndLimitAttributes(
+      Map<String, AttributeValue> attributes, int limit) {
+    if (attributes.isEmpty()) {
+      return Collections.emptyMap();
+    }
+
+    if (attributes.size() <= limit) {
+      return Collections.unmodifiableMap(new HashMap<>(attributes));
     }
 
     Map<String, AttributeValue> temp = new HashMap<>();
     for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      if (temp.size() < this.maxNumberOfAttributesPerEvent) {
+      if (temp.size() < limit) {
         temp.put(entry.getKey(), entry.getValue());
       }
     }
-    logger.log(
-        Level.FINE,
-        String.format(
-            MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE,
-            maxNumberOfAttributesPerEvent,
-            attributes.size() - temp.size()));
-    return temp;
+
+    return Collections.unmodifiableMap(temp);
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
