@@ -42,6 +42,20 @@ public class DoubleUpDownCounterTest {
   private final Meter meter = OpenTelemetry.getMeter("DoubleUpDownCounterTest");
 
   @Test
+  public void preventNull_Name() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.doubleUpDownCounterBuilder(null);
+  }
+
+  @Test
+  public void preventEmpty_Name() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.doubleUpDownCounterBuilder("").build();
+  }
+
+  @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);

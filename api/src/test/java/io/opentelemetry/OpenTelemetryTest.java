@@ -32,11 +32,13 @@ import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.DoubleSumObserver;
 import io.opentelemetry.metrics.DoubleUpDownCounter;
 import io.opentelemetry.metrics.DoubleUpDownSumObserver;
+import io.opentelemetry.metrics.DoubleValueObserver;
 import io.opentelemetry.metrics.DoubleValueRecorder;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongSumObserver;
 import io.opentelemetry.metrics.LongUpDownCounter;
 import io.opentelemetry.metrics.LongUpDownSumObserver;
+import io.opentelemetry.metrics.LongValueObserver;
 import io.opentelemetry.metrics.LongValueRecorder;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.metrics.MeterProvider;
@@ -383,6 +385,18 @@ public class OpenTelemetryTest {
     @Nullable
     @Override
     public LongUpDownSumObserver.Builder longUpDownSumObserverBuilder(String name) {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public DoubleValueObserver.Builder doubleValueObserverBuilder(String name) {
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public LongValueObserver.Builder longValueObserverBuilder(String name) {
       return null;
     }
 

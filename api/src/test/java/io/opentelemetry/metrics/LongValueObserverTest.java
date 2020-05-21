@@ -19,7 +19,7 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleSumObserver;
+import io.opentelemetry.metrics.LongValueObserver.ResultLongValueObserver;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -29,9 +29,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DoubleSumObserver}. */
+/** Unit tests for {@link LongValueObserver}. */
 @RunWith(JUnit4.class)
-public class DoubleSumObserverTest {
+public class LongValueObserverTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static final String NAME = "name";
@@ -40,26 +40,27 @@ public class DoubleSumObserverTest {
   private static final Map<String, String> CONSTANT_LABELS =
       Collections.singletonMap("key", "value");
 
-  private final Meter meter = OpenTelemetry.getMeter("DoubleSumObserverTest");
+  private final Meter meter = OpenTelemetry.getMeter("LongValueObserverTest");
 
   @Test
   public void preventNull_Name() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("name");
-    meter.doubleSumObserverBuilder(null);
+    meter.longValueObserverBuilder(null);
   }
 
   @Test
   public void preventEmpty_Name() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleSumObserverBuilder("").build();
+    meter.longValueObserverBuilder("").build();
   }
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
-    meter.doubleSumObserverBuilder("\2").build();
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.longValueObserverBuilder("\2").build();
   }
 
   @Test
@@ -69,51 +70,51 @@ public class DoubleSumObserverTest {
     String longName = String.valueOf(chars);
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
-    meter.doubleSumObserverBuilder(longName).build();
+    meter.longValueObserverBuilder(longName).build();
   }
 
   @Test
   public void preventNull_Description() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("description");
-    meter.doubleSumObserverBuilder("metric").setDescription(null).build();
+    meter.longValueObserverBuilder("metric").setDescription(null).build();
   }
 
   @Test
   public void preventNull_Unit() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("unit");
-    meter.doubleSumObserverBuilder("metric").setUnit(null).build();
+    meter.longValueObserverBuilder("metric").setUnit(null).build();
   }
 
   @Test
   public void preventNull_ConstantLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
-    meter.doubleSumObserverBuilder("metric").setConstantLabels(null).build();
+    meter.longValueObserverBuilder("metric").setConstantLabels(null).build();
   }
 
   @Test
   public void preventNull_Callback() {
-    DoubleSumObserver doubleSumObserver = meter.doubleSumObserverBuilder("metric").build();
+    LongValueObserver longValueObserver = meter.longValueObserverBuilder("metric").build();
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("callback");
-    doubleSumObserver.setCallback(null);
+    longValueObserver.setCallback(null);
   }
 
   @Test
   public void doesNotThrow() {
-    DoubleSumObserver doubleSumObserver =
+    LongValueObserver longValueObserver =
         meter
-            .doubleSumObserverBuilder(NAME)
+            .longValueObserverBuilder(NAME)
             .setDescription(DESCRIPTION)
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    doubleSumObserver.setCallback(
-        new Callback<ResultDoubleSumObserver>() {
+    longValueObserver.setCallback(
+        new Callback<ResultLongValueObserver>() {
           @Override
-          public void update(ResultDoubleSumObserver result) {}
+          public void update(ResultLongValueObserver result) {}
         });
   }
 }

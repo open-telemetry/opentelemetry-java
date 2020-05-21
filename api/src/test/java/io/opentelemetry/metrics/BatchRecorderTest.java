@@ -30,6 +30,13 @@ public class BatchRecorderTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
+  public void testNewBatchRecorder_badLabelSet() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("key/value");
+    meter.newBatchRecorder("key");
+  }
+
+  @Test
   public void preventNull_MeasureLong() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("valueRecorder");

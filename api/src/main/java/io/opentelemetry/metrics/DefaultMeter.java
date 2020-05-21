@@ -119,6 +119,20 @@ public final class DefaultMeter implements Meter {
   }
 
   @Override
+  public DoubleValueObserver.Builder doubleValueObserverBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    return new NoopDoubleValueObserver.NoopBuilder();
+  }
+
+  @Override
+  public LongValueObserver.Builder longValueObserverBuilder(String name) {
+    Utils.checkNotNull(name, "name");
+    Utils.checkArgument(StringUtils.isValidMetricName(name), ERROR_MESSAGE_INVALID_NAME);
+    return new NoopLongValueObserver.NoopBuilder();
+  }
+
+  @Override
   public BatchRecorder newBatchRecorder(String... keyValuePairs) {
     Utils.validateLabelPairs(keyValuePairs);
     return NoopBatchRecorder.INSTANCE;
@@ -488,6 +502,58 @@ public final class DefaultMeter implements Meter {
       @Override
       public LongUpDownSumObserver build() {
         return new NoopLongUpDownSumObserver();
+      }
+    }
+  }
+
+  /** No-op implementation of {@link DoubleValueObserver} interface. */
+  @Immutable
+  private static final class NoopDoubleValueObserver implements DoubleValueObserver {
+
+    private NoopDoubleValueObserver() {}
+
+    @Override
+    public void setCallback(Callback<ResultDoubleValueObserver> callback) {
+      Utils.checkNotNull(callback, "callback");
+    }
+
+    private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
+        implements Builder {
+
+      @Override
+      protected NoopBuilder getThis() {
+        return this;
+      }
+
+      @Override
+      public DoubleValueObserver build() {
+        return new NoopDoubleValueObserver();
+      }
+    }
+  }
+
+  /** No-op implementation of {@link LongValueObserver} interface. */
+  @Immutable
+  private static final class NoopLongValueObserver implements LongValueObserver {
+
+    private NoopLongValueObserver() {}
+
+    @Override
+    public void setCallback(Callback<ResultLongValueObserver> callback) {
+      Utils.checkNotNull(callback, "callback");
+    }
+
+    private static final class NoopBuilder extends NoopAbstractInstrumentBuilder<NoopBuilder>
+        implements Builder {
+
+      @Override
+      protected NoopBuilder getThis() {
+        return this;
+      }
+
+      @Override
+      public LongValueObserver build() {
+        return new NoopLongValueObserver();
       }
     }
   }
