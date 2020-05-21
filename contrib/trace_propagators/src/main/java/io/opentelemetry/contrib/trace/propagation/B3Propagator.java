@@ -51,23 +51,36 @@ public class B3Propagator implements HttpTextFormat {
   private final B3PropagatorInjector b3PropagatorInjector;
   private final B3PropagatorExtractor b3PropagatorExtractor;
 
+  private static final B3Propagator SINGLE_HEADER =
+      new B3Propagator(
+          new B3PropagatorInjectorSingleHeader(), new B3PropagatorExtractorSingleHeader());
+  private static final B3Propagator MULTI_HEADER =
+      new B3Propagator(
+          new B3PropagatorInjectorMultipleHeaders(), new B3PropagatorExtractorMultipleHeaders());
+
   /**
    * Returns an instance of {@link B3Propagator} with Single Header Implementation of B3 propagation
    * protocol. See <a
    * href=https://github.com/openzipkin/b3-propagation#single-header>openzipkin/b3-propagation#single-header</a>.
+   *
+   * @return Returns an instance of {@link B3Propagator} with Single Header Implementation of B3
+   *     propagation protocol.
    */
-  public static final B3Propagator SINGLE_HEADER =
-      new B3Propagator(
-          new B3PropagatorInjectorSingleHeader(), new B3PropagatorExtractorSingleHeader());
+  public static B3Propagator getSingleHeaderPropagator() {
+    return SINGLE_HEADER;
+  }
 
   /**
    * Returns an instance of {@link B3Propagator} with Multiple Header Implementation of B3
    * propagation protocol. See <a
    * href=https://github.com/openzipkin/b3-propagation#multiple-headers>openzipkin/b3-propagation#multiple-headers</a>.
+   *
+   * @return Returns an instance of {@link B3Propagator} with Multiple Header Implementation of B3
+   *     propagation protocol.
    */
-  public static final B3Propagator MULTI_HEADER =
-      new B3Propagator(
-          new B3PropagatorInjectorMultipleHeaders(), new B3PropagatorExtractorMultipleHeaders());
+  public static B3Propagator getMultipleHeaderPropagator() {
+    return MULTI_HEADER;
+  }
 
   private B3Propagator(
       B3PropagatorInjector b3PropagatorInjector, B3PropagatorExtractor b3PropagatorExtractor) {

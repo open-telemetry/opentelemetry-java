@@ -69,8 +69,8 @@ public class B3PropagatorTest {
           return carrier.get(key);
         }
       };
-  private final B3Propagator b3Propagator = B3Propagator.MULTI_HEADER;
-  private final B3Propagator b3PropagatorSingleHeader = B3Propagator.SINGLE_HEADER;
+  private final B3Propagator b3Propagator = B3Propagator.getMultipleHeaderPropagator();
+  private final B3Propagator b3PropagatorSingleHeader = B3Propagator.getSingleHeaderPropagator();
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static SpanContext getSpanContext(Context context) {
