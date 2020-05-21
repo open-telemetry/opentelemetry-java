@@ -141,7 +141,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
       configMap = namingConvention.normalize(configMap);
       Boolean boolValue = getBooleanProperty(KEY_SAMPLED, configMap);
       if (boolValue != null) {
-        this.setExportOnlySampled(boolValue);
+        return this.setExportOnlySampled(boolValue);
       }
       return this;
     }
