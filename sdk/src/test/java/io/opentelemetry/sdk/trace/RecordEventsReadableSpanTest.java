@@ -36,6 +36,7 @@ import io.opentelemetry.trace.TraceState;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -466,8 +467,61 @@ public class RecordEventsReadableSpanTest {
     } finally {
       span.end();
     }
-    SpanData spanData = span.toSpanData();
-    assertThat(spanData.getEvents().size()).isEqualTo(3);
+    assertThat(span.toSpanData().getEvents().size()).isEqualTo(3);
+  }
+
+  @Test
+  public void changingAttributes_NoEffectAfterAddEvent() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    Map<String, AttributeValue> attributes = new LinkedHashMap<>();
+    attributes.put("key0", AttributeValue.stringAttributeValue("str"));
+    span.addEvent("name", attributes);
+    try {
+      assertThat(span.toSpanData().getEvents())
+          .containsExactly(
+              Event.create(
+                  testClock.now(),
+                  "name",
+                  Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
+                  1));
+      attributes.remove("key0");
+      assertThat(span.toSpanData().getEvents())
+          .containsExactly(
+              Event.create(
+                  testClock.now(),
+                  "name",
+                  Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
+                  1));
+    } finally {
+      span.end();
+    }
+  }
+
+  @Test
+  public void changingAttributes_NoEffectAfterAddEventWithTimestamp() {
+    RecordEventsReadableSpan span = createTestRootSpan();
+    Map<String, AttributeValue> attributes = new LinkedHashMap<>();
+    attributes.put("key0", AttributeValue.stringAttributeValue("str"));
+    span.addEvent("name", attributes, 100);
+    try {
+      assertThat(span.toSpanData().getEvents())
+          .containsExactly(
+              Event.create(
+                  100,
+                  "name",
+                  Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
+                  1));
+      attributes.remove("key0");
+      assertThat(span.toSpanData().getEvents())
+          .containsExactly(
+              Event.create(
+                  100,
+                  "name",
+                  Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
+                  1));
+    } finally {
+      span.end();
+    }
   }
 
   @Test

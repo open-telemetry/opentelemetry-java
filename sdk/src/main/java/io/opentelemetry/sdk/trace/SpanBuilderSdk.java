@@ -123,7 +123,13 @@ final class SpanBuilderSdk implements Span.Builder {
 
   @Override
   public Span.Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-    addLink(Link.create(spanContext, attributes));
+    int totalAttributeCount = attributes.size();
+    addLink(
+        Link.create(
+            spanContext,
+            RecordEventsReadableSpan.copyAndLimitAttributes(
+                attributes, traceConfig.getMaxNumberOfAttributesPerLink()),
+            totalAttributeCount));
     return this;
   }
 
@@ -138,7 +144,7 @@ final class SpanBuilderSdk implements Span.Builder {
 
     // This is the Collection.emptyList which is immutable.
     if (links.isEmpty()) {
-      links = new ArrayList<>();
+      links = new ArrayList<>(traceConfig.getMaxNumberOfLinks());
     }
 
     links.add(link);
