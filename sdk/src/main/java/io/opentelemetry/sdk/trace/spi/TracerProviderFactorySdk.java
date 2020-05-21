@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.metrics.spi;
+package io.opentelemetry.sdk.trace.spi;
 
-import io.opentelemetry.metrics.spi.MetricsProvider;
-import io.opentelemetry.sdk.metrics.MeterSdkProvider;
+import io.opentelemetry.sdk.trace.TracerSdkProvider;
+import io.opentelemetry.trace.TracerProvider;
+import io.opentelemetry.trace.spi.TracerProviderFactory;
 
-/**
- * {@code MeterProvider} provider implementation for {@link MetricsProvider}.
- *
- * <p>This class is not intended to be used in application code and it is used only by {@link
- * io.opentelemetry.OpenTelemetry}.
- */
-public final class MetricsProviderSdk implements MetricsProvider {
-
+/** SDK implementation of the TracerProviderFactory for SPI. */
+public final class TracerProviderFactorySdk implements TracerProviderFactory {
   @Override
-  public MeterSdkProvider create() {
-    return MeterSdkProvider.builder().build();
+  public TracerProvider create() {
+    return TracerSdkProvider.builder().build();
   }
 }

@@ -14,29 +14,30 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.trace.spi;
+package io.opentelemetry.correlationcontext.spi;
 
-import io.opentelemetry.trace.TracerProvider;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * TraceProvider is a service provider for a {@link TracerProvider}. Fully qualified class name of
- * the implementation should be registered in {@code
- * META-INF/services/io.opentelemetry.trace.spi.TraceProvider}. <br>
+ * CorrelationContextManagerFactory is a service provider for {@link CorrelationContextManager}.
+ * Fully qualified class name of the implementation should be registered in {@code
+ * META-INF/services/io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory}. <br>
  * <br>
  * A specific implementation can be selected by a system property {@code
- * io.opentelemetry.trace.spi.TraceProvider} with value of fully qualified class name.
+ * io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory} with value of fully
+ * qualified class name.
  *
  * @see io.opentelemetry.OpenTelemetry
  */
 @ThreadSafe
-public interface TraceProvider {
+public interface CorrelationContextManagerFactory {
 
   /**
-   * Creates a new TracerProvider.
+   * Creates a new {@code CorrelationContextManager} instance.
    *
-   * @return a new TracerProvider.
+   * @return a {@code CorrelationContextManager} instance.
    * @since 0.1.0
    */
-  TracerProvider create();
+  CorrelationContextManager create();
 }
