@@ -36,6 +36,7 @@ import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -178,5 +179,43 @@ public class SimpleSpanProcessorTest {
   public void shutdown() {
     simpleSampledSpansProcessor.shutdown();
     verify(spanExporter).shutdown();
+  }
+
+  @Test
+  public void buildFromProperties_defaultSampledFlag() {
+    Properties properties = new Properties();
+    SimpleSpanProcessor spanProcessor =
+        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onEnd(readableSpan);
+    verifyZeroInteractions(spanExporter);
+  }
+
+  @Test
+  public void buildFromProperties_onlySampledTrue() {
+    Properties properties = new Properties();
+    properties.setProperty("otel.ssp.export.sampled", "true");
+    SimpleSpanProcessor spanProcessor =
+        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onEnd(readableSpan);
+    verifyZeroInteractions(spanExporter);
+  }
+
+  @Test
+  public void buildFromProperties_onlySampledFalse() {
+    Properties properties = new Properties();
+    properties.setProperty("otel.ssp.export.sampled", "false");
+    SimpleSpanProcessor spanProcessor =
+        SimpleSpanProcessor.newBuilder(spanExporter).readProperties(properties).build();
+    SpanData spanData = TestUtils.makeBasicSpan();
+
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    when(readableSpan.toSpanData()).thenReturn(spanData);
+
+    spanProcessor.onEnd(readableSpan);
+    verify(spanExporter).export(Collections.singletonList(spanData));
   }
 }

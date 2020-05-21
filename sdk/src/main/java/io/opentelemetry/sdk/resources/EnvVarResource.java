@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.resources;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.AttributeValue;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,8 +60,8 @@ public final class EnvVarResource {
    * Values may be quoted or unquoted in general.
    * If a value contains whitespaces, =, or " characters, it must always be quoted.
    */
-  private static Map<String, AttributeValue> parseResourceAttributes(
-      @Nullable String rawEnvAttributes) {
+  @VisibleForTesting
+  static Map<String, AttributeValue> parseResourceAttributes(@Nullable String rawEnvAttributes) {
     if (rawEnvAttributes == null) {
       return Collections.emptyMap();
     } else {
