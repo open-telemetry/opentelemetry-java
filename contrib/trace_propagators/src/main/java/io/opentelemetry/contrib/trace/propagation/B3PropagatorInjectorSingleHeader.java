@@ -27,7 +27,7 @@ import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class B3PropagatorInjectorSingleHeader extends B3PropagatorInjector {
+final class B3PropagatorInjectorSingleHeader implements B3PropagatorInjector {
   private static final int SAMPLED_FLAG_SIZE = 1;
   private static final int TRACE_ID_HEX_SIZE = 2 * TraceId.getSize();
   private static final int SPAN_ID_HEX_SIZE = 2 * SpanId.getSize();
@@ -38,7 +38,7 @@ final class B3PropagatorInjectorSingleHeader extends B3PropagatorInjector {
   private static final int COMBINED_HEADER_SIZE = SAMPLED_FLAG_OFFSET + SAMPLED_FLAG_SIZE;
 
   @Override
-  <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter) {
+  public <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter) {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 

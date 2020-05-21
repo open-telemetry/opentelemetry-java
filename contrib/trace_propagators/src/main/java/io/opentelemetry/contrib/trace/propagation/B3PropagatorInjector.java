@@ -21,6 +21,6 @@ import io.opentelemetry.context.propagation.HttpTextFormat;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-abstract class B3PropagatorInjector {
-  abstract <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter);
+interface B3PropagatorInjector {
+  <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter);
 }

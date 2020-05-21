@@ -30,12 +30,12 @@ import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class B3PropagatorExtractorSingleHeader extends B3PropagatorExtractor {
+final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
   private static final Logger logger =
       Logger.getLogger(B3PropagatorExtractorSingleHeader.class.getName());
 
   @Override
-  <C> Context extract(Context context, C carrier, HttpTextFormat.Getter<C> getter) {
+  public <C> Context extract(Context context, C carrier, HttpTextFormat.Getter<C> getter) {
     Objects.requireNonNull(carrier, "carrier");
     Objects.requireNonNull(getter, "getter");
     SpanContext spanContext = getSpanContextFromSingleHeader(carrier, getter);
@@ -65,14 +65,14 @@ final class B3PropagatorExtractorSingleHeader extends B3PropagatorExtractor {
     }
 
     String traceId = parts[0];
-    if (!isTraceIdValid(traceId)) {
+    if (!Util.isTraceIdValid(traceId)) {
       logger.info(
           "Invalid TraceId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
       return SpanContext.getInvalid();
     }
 
     String spanId = parts[1];
-    if (!isSpanIdValid(spanId)) {
+    if (!Util.isSpanIdValid(spanId)) {
       logger.info(
           "Invalid SpanId in B3 header: " + COMBINED_HEADER + ". Returning INVALID span context.");
       return SpanContext.getInvalid();
@@ -80,6 +80,6 @@ final class B3PropagatorExtractorSingleHeader extends B3PropagatorExtractor {
 
     String sampled = parts.length >= 3 ? parts[2] : null;
 
-    return buildSpanContext(traceId, spanId, sampled);
+    return Util.buildSpanContext(traceId, spanId, sampled);
   }
 }

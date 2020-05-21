@@ -25,9 +25,9 @@ import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-final class B3PropagatorInjectorMultipleHeaders extends B3PropagatorInjector {
+final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector {
   @Override
-  <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter) {
+  public <C> void inject(Context context, C carrier, HttpTextFormat.Setter<C> setter) {
     Objects.requireNonNull(context, "context");
     Objects.requireNonNull(setter, "setter");
 
