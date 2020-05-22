@@ -41,6 +41,20 @@ public final class LongValueRecorderTest {
   private final Meter meter = OpenTelemetry.getMeter("LongValueRecorderTest");
 
   @Test
+  public void preventNull_Name() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.longValueRecorderBuilder(null);
+  }
+
+  @Test
+  public void preventEmpty_Name() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.longValueRecorderBuilder("").build();
+  }
+
+  @Test
   public void preventNonPrintableMeasureName() {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);

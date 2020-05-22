@@ -16,92 +16,31 @@
 
 package io.opentelemetry.metrics;
 
-import org.junit.Rule;
+import static com.google.common.truth.Truth.assertThat;
+
+import io.opentelemetry.OpenTelemetry;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Unit tests for {@link DefaultMeter}. */
 @RunWith(JUnit4.class)
 public final class DefaultMeterTest {
-  private static final Meter defaultMeter = DefaultMeter.getInstance();
-  @Rule public final ExpectedException thrown = ExpectedException.none();
-
   @Test
-  public void noopAddDoubleCumulative_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    defaultMeter.doubleCounterBuilder(null);
+  public void expectDefaultMeter() {
+    assertThat(OpenTelemetry.getMeterProvider()).isInstanceOf(DefaultMeterProvider.class);
+    assertThat(OpenTelemetry.getMeter("test")).isInstanceOf(DefaultMeter.class);
+    assertThat(OpenTelemetry.getMeter("test")).isSameInstanceAs(DefaultMeter.getInstance());
+    assertThat(OpenTelemetry.getMeter("test", "0.1.0"))
+        .isSameInstanceAs(DefaultMeter.getInstance());
   }
 
   @Test
-  public void noopAddLongCumulative_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    defaultMeter.longCounterBuilder(null);
-  }
-
-  @Test
-  public void noopAddMeasureDouble_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    defaultMeter.doubleValueRecorderBuilder(null);
-  }
-
-  @Test
-  public void noopAddMeasureLong_NullName() {
-    thrown.expect(NullPointerException.class);
-    thrown.expectMessage("name");
-    defaultMeter.longValueRecorderBuilder(null);
-  }
-
-  @Test
-  public void noopAddDoubleCumulative_EmptyName() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Name");
-    defaultMeter.doubleCounterBuilder("");
-  }
-
-  @Test
-  public void noopAddLongCumulative_EmptyName() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Name");
-    defaultMeter.longCounterBuilder("");
-  }
-
-  @Test
-  public void noopAddMeasureDouble_EmptyName() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Name");
-    defaultMeter.doubleValueRecorderBuilder("");
-  }
-
-  @Test
-  public void noopAddMeasureLong_EmptyName() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Name");
-    defaultMeter.longValueRecorderBuilder("");
-  }
-
-  @Test
-  public void noopAddObserverDouble_EmptyName() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Name");
-    defaultMeter.doubleSumObserverBuilder("");
-  }
-
-  @Test
-  public void noopAddObserverLong_EmptyName() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Name");
-    defaultMeter.longSumObserverBuilder("");
-  }
-
-  @Test
-  public void testNewBatchRecorder_badLabelSet() {
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("key/value");
-    defaultMeter.newBatchRecorder("key");
+  public void expectDefaultMeterProvider() {
+    assertThat(OpenTelemetry.getMeterProvider())
+        .isSameInstanceAs(DefaultMeterProvider.getInstance());
+    assertThat(OpenTelemetry.getMeterProvider().get("test")).isInstanceOf(DefaultMeter.class);
+    assertThat(OpenTelemetry.getMeterProvider().get("test", "0.1.0"))
+        .isInstanceOf(DefaultMeter.class);
   }
 }

@@ -43,8 +43,23 @@ public class LongSumObserverTest {
   private final Meter meter = OpenTelemetry.getMeter("LongSumObserverTest");
 
   @Test
+  public void preventNull_Name() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.longSumObserverBuilder(null);
+  }
+
+  @Test
+  public void preventEmpty_Name() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.longSumObserverBuilder("").build();
+  }
+
+  @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
     meter.longSumObserverBuilder("\2").build();
   }
 
