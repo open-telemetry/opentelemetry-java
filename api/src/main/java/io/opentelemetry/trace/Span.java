@@ -551,6 +551,9 @@ public interface Span {
      *
      * <p>Does not install the newly created {@code Span} to the current Context.
      *
+     * <p>IMPORTANT: This method can be called only once per {@link Builder} instance and as the
+     * last method called. After this method is called calling any method is undefined behavior.
+     *
      * <p>Example of usage:
      *
      * <pre>{@code
