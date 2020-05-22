@@ -41,7 +41,8 @@
  * io.opentelemetry.sdk.trace.config.TraceConfig} will look for the following names:
  *
  * <ul>
- *   <li>{@code otel.config.sampler.probability}: to set the global default sampler for traces.
+ *   <li>{@code otel.config.sampler.probability}: to set the global default sampler which is used
+ *       when constructing a new {@code Span}.
  *   <li>{@code otel.config.max.attrs}: to set the global default max number of attributes per
  *       {@link io.opentelemetry.trace.Span}.
  *   <li>{@code otel.config.max.events}: to set the global default max number of {@link
@@ -58,7 +59,8 @@
  * the following names:
  *
  * <ul>
- *   <li>{@code OTEL_CONFIG_SAMPLER_PROBABILITY}: to set the global default sampler for traces.
+ *   <li>{@code OTEL_CONFIG_SAMPLER_PROBABILITY}: to set the global default sampler which is used
+ *       when constructing a new {@code Span}.
  *   <li>{@code OTEL_CONFIG_MAX_ATTRS}: to set the global default max number of attributes per
  *       {@link io.opentelemetry.trace.Span}.
  *   <li>{@code OTEL_CONFIG_MAX_EVENTS}: to set the global default max number of {@link

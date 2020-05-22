@@ -47,7 +47,8 @@ import javax.annotation.concurrent.Immutable;
  * for the following names:
  *
  * <ul>
- *   <li>{@code otel.config.sampler.probability}: to set the global default sampler for traces.
+ *   <li>{@code otel.config.sampler.probability}: to set the global default sampler which is used
+ *       when constructing a new {@code Span}.
  *   <li>{@code otel.config.max.attrs}: to set the global default max number of attributes per
  *       {@link Span}.
  *   <li>{@code otel.config.max.events}: to set the global default max number of {@link Event}s per
@@ -63,7 +64,8 @@ import javax.annotation.concurrent.Immutable;
  * <p>For environment variables, {@link TraceConfig} will look for the following names:
  *
  * <ul>
- *   <li>{@code OTEL_CONFIG_SAMPLER_PROBABILITY}: to set the global default sampler for traces.
+ *   <li>{@code OTEL_CONFIG_SAMPLER_PROBABILITY}: to set the global default sampler which is used
+ *       when constructing a new {@code Span}.
  *   <li>{@code OTEL_CONFIG_MAX_ATTRS}: to set the global default max number of attributes per
  *       {@link Span}.
  *   <li>{@code OTEL_CONFIG_MAX_EVENTS}: to set the global default max number of {@link Event}s per
@@ -259,7 +261,8 @@ public abstract class TraceConfig {
      * Sets the global default {@code Sampler}. It must be not {@code null} otherwise {@link
      * #build()} will throw an exception.
      *
-     * @param samplerProbability the global default {@code Sampler}.
+     * @param samplerProbability the global default probability used to make decisions on {@link
+     *     Span} sampling.
      * @return this.
      */
     public Builder setSamplerProbability(double samplerProbability) {
@@ -328,11 +331,10 @@ public abstract class TraceConfig {
      * Builds and returns a {@code TraceConfig} with the desired values.
      *
      * @return a {@code TraceConfig} with the desired values.
-     * @throws IllegalArgumentException if any of the max numbers are not positive
+     * @throws IllegalArgumentException if any of the max numbers are not positive.
      */
     public TraceConfig build() {
       TraceConfig traceConfig = autoBuild();
-      Preconditions.checkArgument(traceConfig.getSampler() != null, "sampler");
       Preconditions.checkArgument(
           traceConfig.getMaxNumberOfAttributes() > 0, "maxNumberOfAttributes");
       Preconditions.checkArgument(traceConfig.getMaxNumberOfEvents() > 0, "maxNumberOfEvents");
