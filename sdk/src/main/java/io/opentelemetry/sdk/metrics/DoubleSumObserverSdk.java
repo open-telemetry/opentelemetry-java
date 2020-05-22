@@ -80,8 +80,7 @@ final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument
     public DoubleSumObserverSdk build() {
       return register(
           new DoubleSumObserverSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.OBSERVER_MONOTONIC, InstrumentValueType.DOUBLE),
+              getInstrumentDescriptor(InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

@@ -18,10 +18,10 @@ package io.opentelemetry.sdk.metrics.common;
 
 /** All instrument types available in the metric package. */
 public enum InstrumentType {
-  COUNTER_MONOTONIC,
-  COUNTER_NON_MONOTONIC,
-  MEASURE_ABSOLUTE,
-  MEASURE_NON_ABSOLUTE,
-  OBSERVER_MONOTONIC,
-  OBSERVER_NON_MONOTONIC,
+  COUNTER,
+  UP_DOWN_COUNTER,
+  VALUE_RECORDER,
+  SUM_OBSERVER,
+  UP_DOWN_SUM_OBSERVER,
+  VALUE_OBSERVER,
 }

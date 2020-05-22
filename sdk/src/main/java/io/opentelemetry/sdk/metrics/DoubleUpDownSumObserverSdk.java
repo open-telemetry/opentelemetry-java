@@ -81,7 +81,7 @@ final class DoubleUpDownSumObserverSdk extends AbstractAsynchronousInstrument
       return register(
           new DoubleUpDownSumObserverSdk(
               getInstrumentDescriptor(
-                  InstrumentType.OBSERVER_NON_MONOTONIC, InstrumentValueType.DOUBLE),
+                  InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

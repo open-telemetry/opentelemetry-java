@@ -32,20 +32,18 @@ public class AbstractAsynchronousInstrumentTest {
   public void attributeValue_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
     tester.addEqualityGroup(
-        new TestObserverInstrument(InstrumentValueType.LONG, InstrumentType.OBSERVER_MONOTONIC),
-        new TestObserverInstrument(InstrumentValueType.LONG, InstrumentType.OBSERVER_MONOTONIC));
+        new TestObserverInstrument(InstrumentValueType.LONG, InstrumentType.SUM_OBSERVER),
+        new TestObserverInstrument(InstrumentValueType.LONG, InstrumentType.SUM_OBSERVER));
     tester.addEqualityGroup(
-        new TestObserverInstrument(InstrumentValueType.LONG, InstrumentType.OBSERVER_NON_MONOTONIC),
-        new TestObserverInstrument(
-            InstrumentValueType.LONG, InstrumentType.OBSERVER_NON_MONOTONIC));
+        new TestObserverInstrument(InstrumentValueType.LONG, InstrumentType.UP_DOWN_SUM_OBSERVER),
+        new TestObserverInstrument(InstrumentValueType.LONG, InstrumentType.UP_DOWN_SUM_OBSERVER));
     tester.addEqualityGroup(
-        new TestObserverInstrument(InstrumentValueType.DOUBLE, InstrumentType.OBSERVER_MONOTONIC),
-        new TestObserverInstrument(InstrumentValueType.DOUBLE, InstrumentType.OBSERVER_MONOTONIC));
+        new TestObserverInstrument(InstrumentValueType.DOUBLE, InstrumentType.SUM_OBSERVER),
+        new TestObserverInstrument(InstrumentValueType.DOUBLE, InstrumentType.SUM_OBSERVER));
     tester.addEqualityGroup(
+        new TestObserverInstrument(InstrumentValueType.DOUBLE, InstrumentType.UP_DOWN_SUM_OBSERVER),
         new TestObserverInstrument(
-            InstrumentValueType.DOUBLE, InstrumentType.OBSERVER_NON_MONOTONIC),
-        new TestObserverInstrument(
-            InstrumentValueType.DOUBLE, InstrumentType.OBSERVER_NON_MONOTONIC));
+            InstrumentValueType.DOUBLE, InstrumentType.UP_DOWN_SUM_OBSERVER));
     tester.testEquals();
   }
 

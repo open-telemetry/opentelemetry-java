@@ -146,8 +146,7 @@ public class AbstractInstrumentBuilderTest {
     assertThat(testInstrument.getDescriptor().getDescription()).isEqualTo(DESCRIPTION);
     assertThat(testInstrument.getDescriptor().getUnit()).isEqualTo(UNIT);
     assertThat(testInstrument.getDescriptor().getConstantLabels()).isEqualTo(CONSTANT_LABELS);
-    assertThat(testInstrument.getDescriptor().getType())
-        .isEqualTo(InstrumentType.COUNTER_NON_MONOTONIC);
+    assertThat(testInstrument.getDescriptor().getType()).isEqualTo(InstrumentType.UP_DOWN_COUNTER);
     assertThat(testInstrument.getDescriptor().getValueType()).isEqualTo(InstrumentValueType.LONG);
   }
 
@@ -166,7 +165,7 @@ public class AbstractInstrumentBuilderTest {
     @Override
     public TestInstrument build() {
       return new TestInstrument(
-          getInstrumentDescriptor(InstrumentType.COUNTER_NON_MONOTONIC, InstrumentValueType.LONG),
+          getInstrumentDescriptor(InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
           getMeterProviderSharedState(),
           getMeterSharedState());
     }
