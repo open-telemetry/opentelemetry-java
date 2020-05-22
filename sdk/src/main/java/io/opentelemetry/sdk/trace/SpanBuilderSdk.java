@@ -173,10 +173,9 @@ final class SpanBuilderSdk implements Span.Builder {
     Objects.requireNonNull(key, "key");
     if (value == null
         || (value.getType() == AttributeValue.Type.STRING && value.getStringValue() == null)) {
-      if (attributes == null) {
-        return this;
+      if (attributes != null) {
+        attributes.remove(key);
       }
-      attributes.remove(key);
       return this;
     }
     if (attributes == null) {

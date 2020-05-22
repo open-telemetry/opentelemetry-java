@@ -134,7 +134,7 @@ public class RecordEventsReadableSpanTest {
             Kind.CLIENT,
             TraceConfig.getDefault(),
             parentSpanId,
-            Collections.<String, AttributeValue>emptyMap(),
+            null,
             Collections.singletonList(link));
 
     Link resultingLink = span.toSpanData().getLinks().get(0);
@@ -409,8 +409,8 @@ public class RecordEventsReadableSpanTest {
   @Test
   public void setAttribute_nullStringValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    span.setAttribute("emptyString", "");
     span.setAttribute("nullString", (String) null);
+    span.setAttribute("emptyString", "");
     span.setAttribute("nullStringAttributeValue", AttributeValue.stringAttributeValue(null));
     span.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
@@ -629,45 +629,38 @@ public class RecordEventsReadableSpanTest {
 
   private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<String, AttributeValue> attributes) {
-    return createTestSpan(
-        Kind.INTERNAL, TraceConfig.getDefault(), null, attributes, Collections.singletonList(link));
-  }
-
-  private RecordEventsReadableSpan createTestRootSpan() {
+    AttributesMap attributesMap =
+        new AttributesMap(TraceConfig.getDefault().getMaxNumberOfAttributes());
+    attributesMap.putAll(attributes);
     return createTestSpan(
         Kind.INTERNAL,
         TraceConfig.getDefault(),
         null,
-        Collections.<String, AttributeValue>emptyMap(),
+        attributesMap,
         Collections.singletonList(link));
+  }
+
+  private RecordEventsReadableSpan createTestRootSpan() {
+    return createTestSpan(
+        Kind.INTERNAL, TraceConfig.getDefault(), null, null, Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(Kind kind) {
     return createTestSpan(
-        kind,
-        TraceConfig.getDefault(),
-        parentSpanId,
-        Collections.<String, AttributeValue>emptyMap(),
-        Collections.singletonList(link));
+        kind, TraceConfig.getDefault(), parentSpanId, null, Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(TraceConfig config) {
     return createTestSpan(
-        Kind.INTERNAL,
-        config,
-        parentSpanId,
-        Collections.<String, AttributeValue>emptyMap(),
-        Collections.singletonList(link));
+        Kind.INTERNAL, config, parentSpanId, null, Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(
       Kind kind,
       TraceConfig config,
       @Nullable SpanId parentSpanId,
-      Map<String, AttributeValue> attributes,
+      @Nullable AttributesMap attributes,
       List<io.opentelemetry.trace.Link> links) {
-    AttributesMap attributesWithCapacity = new AttributesMap(config.getMaxNumberOfAttributes());
-    attributesWithCapacity.putAll(attributes);
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
@@ -681,7 +674,7 @@ public class RecordEventsReadableSpanTest {
             spanProcessor,
             testClock,
             resource,
-            attributesWithCapacity,
+            attributes,
             links,
             1,
             0);
