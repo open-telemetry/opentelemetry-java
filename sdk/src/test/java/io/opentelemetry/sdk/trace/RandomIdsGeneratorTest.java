@@ -69,9 +69,9 @@ public class RandomIdsGeneratorTest {
             });
 
     // First two zeros skipped
-    when(random.nextLong()).thenReturn(0L).thenReturn(0L).thenReturn(3L).thenReturn(4L);
+    when(random.nextLong()).thenReturn(0L).thenReturn(0L).thenReturn(0L).thenReturn(4L);
     TraceId traceId = generator.generateTraceId();
-    assertThat(traceId.toLowerBase16()).isEqualTo("00000000000000030000000000000004");
+    assertThat(traceId.toLowerBase16()).isEqualTo("00000000000000000000000000000004");
 
     when(random.nextLong()).thenReturn(0L).thenReturn(5L);
     SpanId spanId = generator.generateSpanId();
