@@ -18,15 +18,53 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-final class RandomIdsGenerator implements IdsGenerator {
+/**
+ * The default {@link IdsGenerator} which generates IDs as random numbers.
+ */
+public final class RandomIdsGenerator implements IdsGenerator {
+
   private static final long INVALID_ID = 0;
+
+  /**
+   * A supplier of the {@link Random} that will be used to generate random IDs. This is a functional
+   * interface and can be safely initialized as a lambda.
+   */
+  public interface RandomSupplier {
+    /**
+     * Returns the {@link Random} to use for generating IDs.
+     */
+    Random get();
+  }
+
+  /**
+   * Creates a {@link RandomIdsGenerator} which uses {@link ThreadLocalRandom} to generate IDs.
+   */
+  public RandomIdsGenerator() {
+    this(new RandomSupplier() {
+      @Override
+      public Random get() {
+        return ThreadLocalRandom.current();
+      }
+    });
+  }
+
+  /**
+   * Creates a {@link RandomIdsGenerator} which uses the provided {@link RandomSupplier} to generate
+   * IDs.
+   */
+  public RandomIdsGenerator(RandomSupplier randomSupplier) {
+    this.randomSupplier = randomSupplier;
+  }
+
+  private final RandomSupplier randomSupplier;
 
   @Override
   public SpanId generateSpanId() {
     long id;
-    ThreadLocalRandom random = ThreadLocalRandom.current();
+    Random random = randomSupplier.get();
     do {
       id = random.nextLong();
     } while (id == INVALID_ID);
@@ -37,7 +75,7 @@ final class RandomIdsGenerator implements IdsGenerator {
   public TraceId generateTraceId() {
     long idHi;
     long idLo;
-    ThreadLocalRandom random = ThreadLocalRandom.current();
+    Random random = randomSupplier.get();
     do {
       idHi = random.nextLong();
       idLo = random.nextLong();
