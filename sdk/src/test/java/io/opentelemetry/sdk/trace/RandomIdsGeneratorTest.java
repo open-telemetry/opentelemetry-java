@@ -3,17 +3,16 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.trace.RandomIdsGenerator.RandomSupplier;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceId;
 import java.util.Random;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import io.opentelemetry.sdk.trace.RandomIdsGenerator.RandomSupplier;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
 
 @RunWith(JUnit4.class)
 public class RandomIdsGeneratorTest {
