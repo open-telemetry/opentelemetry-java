@@ -21,9 +21,7 @@ import io.opentelemetry.trace.TraceId;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * The default {@link IdsGenerator} which generates IDs as random numbers.
- */
+/** The default {@link IdsGenerator} which generates IDs as random numbers. */
 public final class RandomIdsGenerator implements IdsGenerator {
 
   private static final long INVALID_ID = 0;
@@ -33,22 +31,24 @@ public final class RandomIdsGenerator implements IdsGenerator {
    * interface and can be safely initialized as a lambda.
    */
   public interface RandomSupplier {
-    /**
-     * Returns the {@link Random} to use for generating IDs.
-     */
+    /** Returns the {@link Random} to use for generating IDs. */
     Random get();
   }
 
-  /**
-   * Creates a {@link RandomIdsGenerator} which uses {@link ThreadLocalRandom} to generate IDs.
-   */
+  /** Creates a {@link RandomIdsGenerator} which uses {@link ThreadLocalRandom} to generate IDs. */
   public RandomIdsGenerator() {
-    this(new RandomSupplier() {
-      @Override
-      public Random get() {
-        return ThreadLocalRandom.current();
-      }
-    });
+    this(
+        new RandomSupplier() {
+          @Override
+          public Random get() {
+            return ThreadLocalRandom.current();
+          }
+
+          @Override
+          public String toString() {
+            return "ThreadLocalRandom";
+          }
+        });
   }
 
   /**
