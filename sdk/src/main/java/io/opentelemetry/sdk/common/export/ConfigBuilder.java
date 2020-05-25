@@ -149,9 +149,6 @@ public abstract class ConfigBuilder<T> {
    */
   @Nullable
   protected static String getStringProperty(String name, Map<String, String> map) {
-    if (map.containsKey(name)) {
-      return map.get(name);
-    }
-    return null;
+    return map.get(name);
   }
 }

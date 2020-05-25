@@ -245,25 +245,23 @@ public class ZipkinSpanExporterTest {
 
   @Test
   public void testCreate() {
-    ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.builder()
+    ZipkinSpanExporter exporter =
+        ZipkinSpanExporter.newBuilder()
             .setSender(mockSender)
             .setServiceName("myGreatService")
             .build();
 
-    ZipkinSpanExporter exporter = ZipkinSpanExporter.create(configuration);
     assertThat(exporter).isNotNull();
   }
 
   @Test
   public void testShutdown() throws IOException {
-    ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.builder()
+    ZipkinSpanExporter exporter =
+        ZipkinSpanExporter.newBuilder()
             .setServiceName("myGreatService")
             .setSender(mockSender)
             .build();
 
-    ZipkinSpanExporter exporter = ZipkinSpanExporter.create(configuration);
     exporter.shutdown();
     verify(mockSender).close();
   }
