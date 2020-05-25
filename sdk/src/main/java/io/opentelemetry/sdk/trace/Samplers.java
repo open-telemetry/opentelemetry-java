@@ -74,9 +74,9 @@ public final class Samplers {
    *     value of the parameter {@code isSampled}.
    */
   public static final Decision emptyDecision(boolean isSampled) {
-    return isSampled ? ALWAYS_ON_DECISION : ALWAYS_OFF_DECISION;
+    return isSampled ? EMPTY_SAMPLED_DECISION : EMPTY_NOT_SAMPLED_DECISION;
   }
-  
+
   /**
    * Returns a {@link Sampler} that always makes a "yes" decision on {@link Span} sampling.
    *

@@ -58,6 +58,14 @@ public class SamplersTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
+  public void emptySamplingDecision() {
+    Truth.assertThat(Samplers.emptyDecision(true).isSampled()).isTrue();
+    Truth.assertThat(Samplers.emptyDecision(true).getAttributes()).isEmpty();
+    Truth.assertThat(Samplers.emptyDecision(false).isSampled()).isFalse();
+    Truth.assertThat(Samplers.emptyDecision(false).getAttributes()).isEmpty();
+  }
+
+  @Test
   public void alwaysOnSampler() {
     // Sampled parent.
     Truth.assertThat(
