@@ -192,7 +192,7 @@ public interface Span {
   /**
    * Adds an event to the {@code Span}.
    *
-   * <p>Use this method to specify an explicit event timestamp. If not alled, the implementation
+   * <p>Use this method to specify an explicit event timestamp. If not called, the implementation
    * will use the current timestamp value, which should be the default case.
    *
    * <p>Important: this is NOT equivalent with System.nanoTime().
