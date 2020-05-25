@@ -20,8 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.common.export.ConfigBuilder.NamingConvention;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -122,5 +126,166 @@ public class ConfigBuilderTest {
     Double doubleProperty =
         ConfigBuilder.getDoubleProperty("double", Collections.<String, String>emptyMap());
     assertThat(doubleProperty).isNull();
+  }
+
+  @Test
+  public void testNormalize_dot() {
+    assertThat(NamingConvention.DOT.normalize("lower.case")).isEqualTo("lower.case");
+    assertThat(NamingConvention.DOT.normalize("lower_case")).isEqualTo("lower_case");
+    assertThat(NamingConvention.DOT.normalize("loWer.cAsE")).isEqualTo("lower.case");
+    assertThat(NamingConvention.DOT.normalize("loWer_cAsE")).isEqualTo("lower_case");
+  }
+
+  @Test
+  public void testNormalize_env() {
+    assertThat(NamingConvention.ENV_VAR.normalize("lower.case")).isEqualTo("lower.case");
+    assertThat(NamingConvention.ENV_VAR.normalize("lower_case")).isEqualTo("lower.case");
+    assertThat(NamingConvention.ENV_VAR.normalize("loWer.cAsE")).isEqualTo("lower.case");
+    assertThat(NamingConvention.ENV_VAR.normalize("loWer_cAsE")).isEqualTo("lower.case");
+  }
+
+  @Test
+  public void testNormalize_dotMap() {
+    Map<String, String> map = new HashMap<>();
+    map.put("lower.case", "1");
+    map.put("lower_case", "2");
+    map.put("loWer.cAsE", "3");
+    map.put("loWer_cAsE", "4");
+    Map<String, String> normalized = NamingConvention.DOT.normalize(map);
+    assertThat(normalized.size()).isEqualTo(2);
+    assertThat(normalized.get("lower.case")).isNotEmpty();
+    assertThat(normalized.get("lower_case")).isNotEmpty();
+  }
+
+  @Test
+  public void testNormalize_envMap() {
+    Map<String, String> map = new HashMap<>();
+    map.put("lower.case", "1");
+    map.put("lower_case", "2");
+    map.put("loWer.cAsE", "3");
+    map.put("loWer_cAsE", "4");
+    Map<String, String> normalized = NamingConvention.ENV_VAR.normalize(map);
+    assertThat(normalized.size()).isEqualTo(1);
+    assertThat(normalized.get("lower.case")).isNotEmpty();
+  }
+
+  @Test
+  public void testBoolProperty() {
+    Map<String, String> map = new HashMap<>();
+    map.put("int", "1");
+    map.put("long", "2L");
+    map.put("boolt", "true");
+    map.put("boolf", "false");
+    map.put("string", "random");
+    assertThat(ConfigBuilder.getBooleanProperty("int", map)).isFalse();
+    assertThat(ConfigBuilder.getBooleanProperty("long", map)).isFalse();
+    assertThat(ConfigBuilder.getBooleanProperty("boolt", map)).isTrue();
+    assertThat(ConfigBuilder.getBooleanProperty("boolf", map)).isFalse();
+    assertThat(ConfigBuilder.getBooleanProperty("string", map)).isFalse();
+    assertThat(ConfigBuilder.getBooleanProperty("no-key", map)).isNull();
+  }
+
+  @Test
+  public void testIntProperty() {
+    Map<String, String> map = new HashMap<>();
+    map.put("int", "1");
+    map.put("long", "2L");
+    map.put("boolt", "true");
+    map.put("boolf", "false");
+    map.put("string", "random");
+    assertThat(ConfigBuilder.getIntProperty("int", map)).isNotNull();
+    assertThat(ConfigBuilder.getIntProperty("long", map)).isNull();
+    assertThat(ConfigBuilder.getIntProperty("boolt", map)).isNull();
+    assertThat(ConfigBuilder.getIntProperty("boolf", map)).isNull();
+    assertThat(ConfigBuilder.getIntProperty("string", map)).isNull();
+    assertThat(ConfigBuilder.getIntProperty("no-key", map)).isNull();
+  }
+
+  @Test
+  public void testLongProperty() {
+    Map<String, String> map = new HashMap<>();
+    map.put("int", "1");
+    map.put("long", "2L");
+    map.put("boolt", "true");
+    map.put("boolf", "false");
+    map.put("string", "random");
+    assertThat(ConfigBuilder.getLongProperty("int", map)).isNotNull();
+    assertThat(ConfigBuilder.getLongProperty("long", map)).isNull();
+    assertThat(ConfigBuilder.getLongProperty("boolt", map)).isNull();
+    assertThat(ConfigBuilder.getLongProperty("boolf", map)).isNull();
+    assertThat(ConfigBuilder.getLongProperty("string", map)).isNull();
+    assertThat(ConfigBuilder.getLongProperty("no-key", map)).isNull();
+  }
+
+  @Test
+  public void testStringProperty() {
+    Map<String, String> map = new HashMap<>();
+    map.put("int", "1");
+    map.put("long", "2L");
+    map.put("boolt", "true");
+    map.put("boolf", "false");
+    map.put("string", "random");
+    assertThat(ConfigBuilder.getStringProperty("int", map)).isNotNull();
+    assertThat(ConfigBuilder.getStringProperty("long", map)).isNotNull();
+    assertThat(ConfigBuilder.getStringProperty("boolt", map)).isNotNull();
+    assertThat(ConfigBuilder.getStringProperty("boolf", map)).isNotNull();
+    assertThat(ConfigBuilder.getStringProperty("string", map)).isNotNull();
+    assertThat(ConfigBuilder.getStringProperty("no-key", map)).isNull();
+  }
+
+  private static final class ConfigTester extends ConfigBuilder<Map<String, String>> {
+
+    @Override
+    protected Map<String, String> fromConfigMap(
+        Map<String, String> configMap, NamingConvention namingConvention) {
+      return configMap;
+    }
+  }
+
+  @RunWith(JUnit4.class)
+  public static class ConfigurationSystemPropertiesTest {
+    @Rule
+    public final ProvideSystemProperty systemProperties =
+        new ProvideSystemProperty("int", "1")
+            .and("long", "2L")
+            .and("boolt", "true")
+            .and("boolf", "false")
+            .and("string", "random");
+
+    @Test
+    public void testSystemProperties() {
+      ConfigTester config = new ConfigTester();
+      Map<String, String> map = config.readSystemProperties();
+      assertThat(ConfigBuilder.getStringProperty("int", map)).isEqualTo("1");
+      assertThat(ConfigBuilder.getStringProperty("long", map)).isEqualTo("2L");
+      assertThat(ConfigBuilder.getStringProperty("boolt", map)).isEqualTo("true");
+      assertThat(ConfigBuilder.getStringProperty("boolf", map)).isEqualTo("false");
+      assertThat(ConfigBuilder.getStringProperty("string", map)).isEqualTo("random");
+      assertThat(ConfigBuilder.getStringProperty("no-key", map)).isNull();
+    }
+  }
+
+  @RunWith(JUnit4.class)
+  public static class ConfigurationEnvVarsTest {
+    @Rule
+    public final EnvironmentVariables environmentVariables =
+        new EnvironmentVariables()
+            .set("int", "1")
+            .set("long", "2L")
+            .set("boolt", "true")
+            .set("boolf", "false")
+            .set("string", "random");
+
+    @Test
+    public void testEnvironmentVariables() {
+      ConfigTester config = new ConfigTester();
+      Map<String, String> map = config.readEnvironmentVariables();
+      assertThat(ConfigBuilder.getStringProperty("int", map)).isEqualTo("1");
+      assertThat(ConfigBuilder.getStringProperty("long", map)).isEqualTo("2L");
+      assertThat(ConfigBuilder.getStringProperty("boolt", map)).isEqualTo("true");
+      assertThat(ConfigBuilder.getStringProperty("boolf", map)).isEqualTo("false");
+      assertThat(ConfigBuilder.getStringProperty("string", map)).isEqualTo("random");
+      assertThat(ConfigBuilder.getStringProperty("no-key", map)).isNull();
+    }
   }
 }
