@@ -67,8 +67,8 @@ public final class DefaultContextPropagators implements ContextPropagators {
    *     .build();
    * }</pre>
    *
-   * <p>The first added {@link HttpTextFormat} has the highest precedence when extracting the
-   * {@code SpanContext}.
+   * <p>The first added {@link HttpTextFormat} has the highest precedence when extracting the {@code
+   * SpanContext}.
    *
    * @since 0.3.0
    */
