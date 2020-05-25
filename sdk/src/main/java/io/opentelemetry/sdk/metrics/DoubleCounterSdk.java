@@ -97,7 +97,7 @@ final class DoubleCounterSdk extends AbstractSynchronousInstrument<BoundInstrume
     public DoubleCounterSdk build() {
       return register(
           new DoubleCounterSdk(
-              getInstrumentDescriptor(InstrumentType.COUNTER_MONOTONIC, InstrumentValueType.DOUBLE),
+              getInstrumentDescriptor(InstrumentType.COUNTER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

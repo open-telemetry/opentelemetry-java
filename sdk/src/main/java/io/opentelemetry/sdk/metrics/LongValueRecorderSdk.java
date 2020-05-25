@@ -94,8 +94,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
     public LongValueRecorderSdk build() {
       return register(
           new LongValueRecorderSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.LONG),
+              getInstrumentDescriptor(InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

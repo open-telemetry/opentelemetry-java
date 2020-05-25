@@ -91,8 +91,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInst
     public LongUpDownCounterSdk build() {
       return register(
           new LongUpDownCounterSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.COUNTER_NON_MONOTONIC, InstrumentValueType.LONG),
+              getInstrumentDescriptor(InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

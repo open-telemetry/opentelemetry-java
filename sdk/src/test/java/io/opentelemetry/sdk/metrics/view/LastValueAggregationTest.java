@@ -32,26 +32,22 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class LastValueAggregationTest {
   private static final EnumSet<InstrumentType> SUPPORTED_INSTRUMENTS =
-      EnumSet.of(InstrumentType.OBSERVER_MONOTONIC, InstrumentType.OBSERVER_NON_MONOTONIC);
+      EnumSet.of(InstrumentType.SUM_OBSERVER, InstrumentType.UP_DOWN_SUM_OBSERVER);
 
   @Test
   public void getDescriptorType_ForSupportedInstruments() {
     Aggregation lastValue = Aggregations.lastValue();
-    assertThat(
-            lastValue.getDescriptorType(
-                InstrumentType.OBSERVER_MONOTONIC, InstrumentValueType.DOUBLE))
+    assertThat(lastValue.getDescriptorType(InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE))
         .isEqualTo(Type.MONOTONIC_DOUBLE);
-    assertThat(
-            lastValue.getDescriptorType(
-                InstrumentType.OBSERVER_MONOTONIC, InstrumentValueType.LONG))
+    assertThat(lastValue.getDescriptorType(InstrumentType.SUM_OBSERVER, InstrumentValueType.LONG))
         .isEqualTo(Type.MONOTONIC_LONG);
     assertThat(
             lastValue.getDescriptorType(
-                InstrumentType.OBSERVER_NON_MONOTONIC, InstrumentValueType.DOUBLE))
+                InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.DOUBLE))
         .isEqualTo(Type.NON_MONOTONIC_DOUBLE);
     assertThat(
             lastValue.getDescriptorType(
-                InstrumentType.OBSERVER_NON_MONOTONIC, InstrumentValueType.LONG))
+                InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG))
         .isEqualTo(Type.NON_MONOTONIC_LONG);
   }
 

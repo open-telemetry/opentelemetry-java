@@ -112,8 +112,8 @@ public class Aggregations {
 
     @Override
     public boolean availableForInstrument(InstrumentType instrumentType) {
-      return instrumentType == InstrumentType.MEASURE_ABSOLUTE
-          || instrumentType == InstrumentType.MEASURE_NON_ABSOLUTE;
+      return instrumentType == InstrumentType.VALUE_OBSERVER
+          || instrumentType == InstrumentType.VALUE_RECORDER;
     }
   }
 
@@ -132,15 +132,15 @@ public class Aggregations {
     public Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       switch (instrumentType) {
-        case COUNTER_MONOTONIC:
-        case MEASURE_ABSOLUTE:
-        case OBSERVER_MONOTONIC:
+        case COUNTER:
+        case SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
               ? Type.MONOTONIC_LONG
               : Type.MONOTONIC_DOUBLE;
-        case COUNTER_NON_MONOTONIC:
-        case MEASURE_NON_ABSOLUTE:
-        case OBSERVER_NON_MONOTONIC:
+        case UP_DOWN_COUNTER:
+        case VALUE_RECORDER:
+        case UP_DOWN_SUM_OBSERVER:
+        case VALUE_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
               ? Type.NON_MONOTONIC_LONG
               : Type.NON_MONOTONIC_DOUBLE;
@@ -234,11 +234,11 @@ public class Aggregations {
     public Type getDescriptorType(
         InstrumentType instrumentType, InstrumentValueType instrumentValueType) {
       switch (instrumentType) {
-        case OBSERVER_MONOTONIC:
+        case SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
               ? Type.MONOTONIC_LONG
               : Type.MONOTONIC_DOUBLE;
-        case OBSERVER_NON_MONOTONIC:
+        case UP_DOWN_SUM_OBSERVER:
           return instrumentValueType == InstrumentValueType.LONG
               ? Type.NON_MONOTONIC_LONG
               : Type.NON_MONOTONIC_DOUBLE;
@@ -256,8 +256,8 @@ public class Aggregations {
     @Override
     public boolean availableForInstrument(InstrumentType instrumentType) {
       // Do not change this unless the limitations of the current LastValueAggregator are fixed.
-      return instrumentType == InstrumentType.OBSERVER_MONOTONIC
-          || instrumentType == InstrumentType.OBSERVER_NON_MONOTONIC;
+      return instrumentType == InstrumentType.SUM_OBSERVER
+          || instrumentType == InstrumentType.UP_DOWN_SUM_OBSERVER;
     }
   }
 

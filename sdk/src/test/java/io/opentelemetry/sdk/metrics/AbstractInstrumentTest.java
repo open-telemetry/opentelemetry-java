@@ -39,7 +39,7 @@ public class AbstractInstrumentTest {
           "description",
           "1",
           Collections.singletonMap("key_2", "value_2"),
-          InstrumentType.COUNTER_MONOTONIC,
+          InstrumentType.COUNTER,
           InstrumentValueType.LONG);
   private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =
       MeterProviderSharedState.create(TestClock.create(), Resource.getEmpty());

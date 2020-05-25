@@ -81,7 +81,7 @@ final class LongUpDownSumObserverSdk extends AbstractAsynchronousInstrument
       return register(
           new LongUpDownSumObserverSdk(
               getInstrumentDescriptor(
-                  InstrumentType.OBSERVER_NON_MONOTONIC, InstrumentValueType.LONG),
+                  InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

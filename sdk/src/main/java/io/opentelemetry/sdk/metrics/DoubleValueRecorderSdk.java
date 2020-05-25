@@ -94,8 +94,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
     public DoubleValueRecorderSdk build() {
       return register(
           new DoubleValueRecorderSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE),
+              getInstrumentDescriptor(InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }
