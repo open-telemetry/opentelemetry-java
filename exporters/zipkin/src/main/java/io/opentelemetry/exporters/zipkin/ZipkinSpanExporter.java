@@ -51,19 +51,18 @@ import zipkin2.reporter.urlconnection.URLConnectionSender;
  * This class was based on the OpenCensus zipkin exporter code at
  * https://github.com/census-instrumentation/opencensus-java/tree/c960b19889de5e4a7b25f90919d28b066590d4f0/exporters/trace/zipkin
  *
- * <p>Configuration options for {@link ZipkinExporterConfiguration} can be read from system
- * properties, environment variables, or {@link java.util.Properties} objects.
+ * <p>Configuration options for {@link ZipkinSpanExporter} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
  *
- * <p>For system properties and {@link java.util.Properties} objects, {@link
- * ZipkinExporterConfiguration} will look for the following names:
+ * <p>For system properties and {@link java.util.Properties} objects, {@link ZipkinSpanExporter}
+ * will look for the following names:
  *
  * <ul>
  *   <li>{@code otel.zipkin.service.name}: to set the service name.
  *   <li>{@code otel.zipkin.endpoint}: to set the endpoint URL.
  * </ul>
  *
- * <p>For environment variables, {@link ZipkinExporterConfiguration} will look for the following
- * names:
+ * <p>For environment variables, {@link ZipkinSpanExporter} will look for the following names:
  *
  * <ul>
  *   <li>{@code OTEL_ZIPKIN_SERVICE_NAME}: to set the service name.
@@ -298,6 +297,8 @@ public final class ZipkinSpanExporter implements SpanExporter {
      *
      * <p>This property is required to be set.
      *
+     * @param serviceName The service name. It defaults to "unknown".
+     * @return this.
      * @see io.opentelemetry.sdk.resources.Resource
      * @see io.opentelemetry.sdk.resources.ResourceConstants
      * @since 0.4.0
@@ -314,6 +315,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * <p>The {@link Sender#close()} method will be called when the exporter is shut down.
      *
      * @param sender the Zipkin sender implementation.
+     * @return this.
      * @since 0.4.0
      */
     public Builder setSender(Sender sender) {
@@ -326,6 +328,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * to the {@link SpanBytesEncoder#JSON_V2}.
      *
      * @param encoder the {@code BytesEncoder} to use.
+     * @return this.
      * @see SpanBytesEncoder
      * @since 0.4.0
      */
@@ -339,6 +342,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
      * instance to this builder.
      *
      * @param endpoint The Zipkin endpoint URL, ex. "http://zipkinhost:9411/api/v2/spans".
+     * @return this.
      * @see URLConnectionSender
      * @since 0.4.0
      */
@@ -369,9 +373,9 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
 
     /**
-     * Builds a {@link ZipkinExporterConfiguration}.
+     * Builds a {@link ZipkinSpanExporter}.
      *
-     * @return a {@code ZipkinExporterConfiguration}.
+     * @return a {@code ZipkinSpanExporter}.
      * @since 0.4.0
      */
     public ZipkinSpanExporter build() {
