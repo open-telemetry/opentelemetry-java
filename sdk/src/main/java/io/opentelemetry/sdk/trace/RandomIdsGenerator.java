@@ -16,7 +16,8 @@
 
 package io.opentelemetry.sdk.trace;
 
-import io.opentelemetry.internal.Utils;
+import static java.util.Objects.requireNonNull;
+
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import java.util.Random;
@@ -57,7 +58,7 @@ public final class RandomIdsGenerator implements IdsGenerator {
    * IDs.
    */
   public RandomIdsGenerator(RandomSupplier randomSupplier) {
-    this.randomSupplier = Utils.checkNotNull(randomSupplier, "randomSupplier");
+    this.randomSupplier = requireNonNull(randomSupplier, "randomSupplier");
   }
 
   private final RandomSupplier randomSupplier;
