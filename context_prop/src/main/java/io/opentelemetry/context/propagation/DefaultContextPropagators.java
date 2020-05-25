@@ -67,6 +67,9 @@ public final class DefaultContextPropagators implements ContextPropagators {
    *     .build();
    * }</pre>
    *
+   * <p>The first added {@link HttpTextFormat} has the highest precedence when extracting the
+   * {@code SpanContext}.
+   *
    * @since 0.3.0
    */
   public static final class Builder {
@@ -140,7 +143,7 @@ public final class DefaultContextPropagators implements ContextPropagators {
 
     @Override
     public <C> Context extract(Context context, C carrier, Getter<C> getter) {
-      for (int i = 0; i < textPropagators.length; i++) {
+      for (int i = textPropagators.length - 1; i >= 0; i--) {
         context = textPropagators[i].extract(context, carrier, getter);
       }
       return context;
