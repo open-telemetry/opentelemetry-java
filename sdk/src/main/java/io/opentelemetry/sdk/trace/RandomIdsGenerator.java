@@ -16,57 +16,22 @@
 
 package io.opentelemetry.sdk.trace;
 
-import static java.util.Objects.requireNonNull;
-
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-/** The default {@link IdsGenerator} which generates IDs as random numbers. */
+/**
+ * The default {@link IdsGenerator} which generates IDs as random numbers using
+ * {@link ThreadLocalRandom}.
+ */
 public final class RandomIdsGenerator implements IdsGenerator {
 
   private static final long INVALID_ID = 0;
 
-  /**
-   * A supplier of the {@link Random} that will be used to generate random IDs. This is a functional
-   * interface and can be safely initialized as a lambda.
-   */
-  public interface RandomSupplier {
-    /** Returns the {@link Random} to use for generating IDs. */
-    Random get();
-  }
-
-  /** Creates a {@link RandomIdsGenerator} which uses {@link ThreadLocalRandom} to generate IDs. */
-  public RandomIdsGenerator() {
-    this(
-        new RandomSupplier() {
-          @Override
-          public Random get() {
-            return ThreadLocalRandom.current();
-          }
-
-          @Override
-          public String toString() {
-            return "ThreadLocalRandom";
-          }
-        });
-  }
-
-  /**
-   * Creates a {@link RandomIdsGenerator} which uses the provided {@link RandomSupplier} to generate
-   * IDs.
-   */
-  public RandomIdsGenerator(RandomSupplier randomSupplier) {
-    this.randomSupplier = requireNonNull(randomSupplier, "randomSupplier");
-  }
-
-  private final RandomSupplier randomSupplier;
-
   @Override
   public SpanId generateSpanId() {
     long id;
-    Random random = randomSupplier.get();
+    ThreadLocalRandom random = ThreadLocalRandom.current();
     do {
       id = random.nextLong();
     } while (id == INVALID_ID);
@@ -77,7 +42,7 @@ public final class RandomIdsGenerator implements IdsGenerator {
   public TraceId generateTraceId() {
     long idHi;
     long idLo;
-    Random random = randomSupplier.get();
+    ThreadLocalRandom random = ThreadLocalRandom.current();
     do {
       idHi = random.nextLong();
       idLo = random.nextLong();
