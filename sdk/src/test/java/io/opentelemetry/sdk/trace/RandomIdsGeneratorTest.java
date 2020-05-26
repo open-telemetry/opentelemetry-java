@@ -31,11 +31,13 @@ public class RandomIdsGeneratorTest {
   public void defaults() {
     RandomIdsGenerator generator = new RandomIdsGenerator();
 
-    // Can't assert values but can assert they're valid.
-    TraceId traceId = generator.generateTraceId();
-    assertThat(traceId).isNotEqualTo(TraceId.getInvalid());
+    // Can't assert values but can assert they're valid, try a lot as a sort of fuzz check.
+    for (int i = 0; i < 1000; i++) {
+      TraceId traceId = generator.generateTraceId();
+      assertThat(traceId).isNotEqualTo(TraceId.getInvalid());
 
-    SpanId spanId = generator.generateSpanId();
-    assertThat(spanId).isNotEqualTo(SpanId.getInvalid());
+      SpanId spanId = generator.generateSpanId();
+      assertThat(spanId).isNotEqualTo(SpanId.getInvalid());
+    }
   }
 }
