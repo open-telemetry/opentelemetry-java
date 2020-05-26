@@ -452,25 +452,33 @@ public class RecordEventsReadableSpanTest {
   @Test
   public void addEvent() {
     RecordEventsReadableSpan span = createTestRootSpan();
+    io.opentelemetry.trace.Event customEvent =
+        new io.opentelemetry.trace.Event() {
+          @Override
+          public String getName() {
+            return "event3";
+          }
+
+          @Override
+          public Map<String, AttributeValue> getAttributes() {
+            return Collections.emptyMap();
+          }
+        };
     try {
       span.addEvent("event1");
       span.addEvent("event2", attributes);
-      span.addEvent(
-          new io.opentelemetry.trace.Event() {
-            @Override
-            public String getName() {
-              return "event3";
-            }
-
-            @Override
-            public Map<String, AttributeValue> getAttributes() {
-              return Collections.emptyMap();
-            }
-          });
+      span.addEvent(customEvent);
     } finally {
       span.end();
     }
-    assertThat(span.toSpanData().getEvents().size()).isEqualTo(3);
+    List<Event> events = span.toSpanData().getEvents();
+    assertThat(events.size()).isEqualTo(3);
+    for (Event event : events) {
+      // make sure that we aren't holding on to the memory from the custom event, in case it
+      // references
+      // some heavyweight thing.
+      assertThat(event).isNotInstanceOf(TimedEvent.RawTimedEventWithEvent.class);
+    }
   }
 
   @Test
