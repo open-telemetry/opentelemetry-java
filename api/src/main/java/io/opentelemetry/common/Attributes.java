@@ -17,6 +17,7 @@
 package io.opentelemetry.common;
 
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
@@ -59,7 +60,7 @@ public abstract class Attributes {
 
   /** javadoc me. */
   public static Attributes of(String key, AttributeValue value) {
-    return new AutoValue_Attributes_ArrayBackedAttributes(Arrays.asList(key, value));
+    return new SingleAttributes(key, value);
   }
 
   /** javadoc me. */
@@ -220,7 +221,7 @@ public abstract class Attributes {
     }
 
     /** javadoc me. */
-    public Builder addAttribute(String key, Boolean value) {
+    public Builder addAttribute(String key, Boolean... value) {
       data.add(key);
       data.add(AttributeValue.arrayAttributeValue(value));
       return this;
@@ -238,6 +239,56 @@ public abstract class Attributes {
     @Override
     public AttributeValue getValue(String key) {
       return null;
+    }
+  }
+
+  private static class SingleAttributes extends Attributes {
+    private final Set<String> keys;
+    private final AttributeValue value;
+
+    private SingleAttributes(String key, AttributeValue value) {
+      this.keys = singleton(key);
+      this.value = value;
+    }
+
+    @Override
+    public Set<String> keys() {
+      return keys;
+    }
+
+    @Nullable
+    @Override
+    public AttributeValue getValue(String key) {
+      return keys.contains(key) ? value : null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof SingleAttributes)) {
+        return false;
+      }
+
+      SingleAttributes that = (SingleAttributes) o;
+
+      if (keys != null ? !keys.equals(that.keys) : that.keys != null) {
+        return false;
+      }
+      return value != null ? value.equals(that.value) : that.value == null;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = keys != null ? keys.hashCode() : 0;
+      result = 31 * result + (value != null ? value.hashCode() : 0);
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "SingleAttributes{" + "keys=" + keys + ", value=" + value + '}';
     }
   }
 }
