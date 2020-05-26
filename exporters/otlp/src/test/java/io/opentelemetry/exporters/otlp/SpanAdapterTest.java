@@ -26,6 +26,7 @@ import io.opentelemetry.proto.trace.v1.Span;
 import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.proto.trace.v1.Status.StatusCode;
+import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.SpanDataImpl;
@@ -70,8 +71,8 @@ public class SpanAdapterTest {
                     Collections.singletonMap("key", AttributeValue.booleanAttributeValue(true)))
                 .setTotalAttributeCount(2)
                 .setEvents(
-                    Collections.singletonList(
-                        Event.create(
+                    Collections.<Event>singletonList(
+                        EventImpl.create(
                             12347, "my_event", Collections.<String, AttributeValue>emptyMap())))
                 .setTotalRecordedEvents(3)
                 .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))
@@ -234,7 +235,7 @@ public class SpanAdapterTest {
   public void toProtoSpanEvent_WithoutAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                Event.create(
+                EventImpl.create(
                     12345,
                     "test_without_attributes",
                     Collections.<String, AttributeValue>emptyMap())))
@@ -249,7 +250,7 @@ public class SpanAdapterTest {
   public void toProtoSpanEvent_WithAttributes() {
     assertThat(
             SpanAdapter.toProtoSpanEvent(
-                Event.create(
+                EventImpl.create(
                     12345,
                     "test_with_attributes",
                     Collections.singletonMap(

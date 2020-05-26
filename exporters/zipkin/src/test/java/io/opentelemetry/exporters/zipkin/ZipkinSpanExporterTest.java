@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
+import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -67,10 +68,10 @@ public class ZipkinSpanExporterTest {
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
   private static final Map<String, AttributeValue> attributes = Collections.emptyMap();
   private static final List<Event> annotations =
-      ImmutableList.of(
-          Event.create(
+      ImmutableList.<Event>of(
+          EventImpl.create(
               1505855799_433901068L, "RECEIVED", Collections.<String, AttributeValue>emptyMap()),
-          Event.create(
+          EventImpl.create(
               1505855799_459486280L, "SENT", Collections.<String, AttributeValue>emptyMap()));
 
   @Test
