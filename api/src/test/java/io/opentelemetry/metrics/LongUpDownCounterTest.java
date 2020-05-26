@@ -20,6 +20,8 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.LongUpDownCounter.BoundLongUpDownCounter;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -34,12 +36,29 @@ public class LongUpDownCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
+  private static final Map<String, String> CONSTANT_LABELS =
+      Collections.singletonMap("key", "value");
 
-  private final Meter meter = OpenTelemetry.getMeter("counter_long_test");
+  private final Meter meter = OpenTelemetry.getMeter("LongUpDownCounterTest");
+
+  @Test
+  public void preventNull_Name() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.longUpDownCounterBuilder(null);
+  }
+
+  @Test
+  public void preventEmpty_Name() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.longUpDownCounterBuilder("").build();
+  }
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
     meter.longUpDownCounterBuilder("\2").build();
   }
 
@@ -86,7 +105,12 @@ public class LongUpDownCounterTest {
   @Test
   public void addDoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
-        meter.longUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
+        meter
+            .longUpDownCounterBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setUnit(UNIT)
+            .setConstantLabels(CONSTANT_LABELS)
+            .build();
     longUpDownCounter.add(1);
     longUpDownCounter.add(-1);
   }
@@ -94,7 +118,12 @@ public class LongUpDownCounterTest {
   @Test
   public void boundDoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
-        meter.longUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
+        meter
+            .longUpDownCounterBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setUnit(UNIT)
+            .setConstantLabels(CONSTANT_LABELS)
+            .build();
     BoundLongUpDownCounter bound = longUpDownCounter.bind();
     bound.add(1);
     bound.add(-1);

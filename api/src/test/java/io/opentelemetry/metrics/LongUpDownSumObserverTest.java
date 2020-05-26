@@ -18,7 +18,11 @@ package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
+import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
+import io.opentelemetry.metrics.LongUpDownSumObserver.ResultLongUpDownSumObserver;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -30,11 +34,32 @@ import org.junit.runners.JUnit4;
 public class LongUpDownSumObserverTest {
   @Rule public ExpectedException thrown = ExpectedException.none();
 
-  private final Meter meter = OpenTelemetry.getMeter("observer_long_test");
+  private static final String NAME = "name";
+  private static final String DESCRIPTION = "description";
+  private static final String UNIT = "1";
+  private static final Map<String, String> CONSTANT_LABELS =
+      Collections.singletonMap("key", "value");
+
+  private final Meter meter = OpenTelemetry.getMeter("LongUpDownSumObserverTest");
+
+  @Test
+  public void preventNull_Name() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.longUpDownSumObserverBuilder(null);
+  }
+
+  @Test
+  public void preventEmpty_Name() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.longUpDownSumObserverBuilder("").build();
+  }
 
   @Test
   public void preventNonPrintableName() {
     thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
     meter.longUpDownSumObserverBuilder("\2").build();
   }
 
@@ -67,5 +92,30 @@ public class LongUpDownSumObserverTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("constantLabels");
     meter.longUpDownSumObserverBuilder("metric").setConstantLabels(null).build();
+  }
+
+  @Test
+  public void preventNull_Callback() {
+    LongUpDownSumObserver longUpDownSumObserver =
+        meter.longUpDownSumObserverBuilder("metric").build();
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("callback");
+    longUpDownSumObserver.setCallback(null);
+  }
+
+  @Test
+  public void doesNotThrow() {
+    LongUpDownSumObserver longUpDownSumObserver =
+        meter
+            .longUpDownSumObserverBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setUnit(UNIT)
+            .setConstantLabels(CONSTANT_LABELS)
+            .build();
+    longUpDownSumObserver.setCallback(
+        new Callback<ResultLongUpDownSumObserver>() {
+          @Override
+          public void update(ResultLongUpDownSumObserver result) {}
+        });
   }
 }

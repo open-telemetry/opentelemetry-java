@@ -16,12 +16,24 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
+import io.opentelemetry.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * Measure to report instantaneous measurement of a double value.
+ * ValueRecorder is a synchronous instrument useful for recording any number, positive or negative.
+ * Values captured by a Record(value) are treated as individual events belonging to a distribution
+ * that is being summarized.
+ *
+ * <p>ValueRecorder should be chosen either when capturing measurements that do not contribute
+ * meaningfully to a sum, or when capturing numbers that are additive in nature, but where the
+ * distribution of individual increments is considered interesting.
+ *
+ * <p>One of the most common uses for ValueRecorder is to capture latency measurements. Latency
+ * measurements are not additive in the sense that there is little need to know the latency-sum of
+ * all processed requests. We use a ValueRecorder instrument to capture latency measurements
+ * typically because we are interested in knowing mean, median, and other summary statistics about
+ * individual events.
  *
  * <p>Example:
  *
@@ -29,18 +41,21 @@ import javax.annotation.concurrent.ThreadSafe;
  * class YourClass {
  *
  *   private static final Meter meter = OpenTelemetry.getMeterRegistry().get("my_library_name");
- *   private static final DoubleMeasure measure =
+ *   private static final DoubleValueRecorder valueRecorder =
  *       meter.
- *           .measureDoubleBuilder("doWork_latency")
+ *           .doubleValueRecorderBuilder("doWork_latency")
  *           .setDescription("gRPC Latency")
  *           .setUnit("ms")
  *           .build();
- *   private static final BoundDoubleMeasure boundMeasure = measure.bind(labelset);
+ *
+ *   // It is recommended that the API user keep references to a Bound Counters.
+ *   private static final BoundDoubleValueRecorder someWorkBound =
+ *       valueRecorder.bind("work_name", "some_work");
  *
  *   void doWork() {
  *      long startTime = System.nanoTime();
  *      // Your code here.
- *      boundMeasure.record((System.nanoTime() - startTime) / 1e6);
+ *      someWorkBound.record((System.nanoTime() - startTime) / 1e6);
  *   }
  * }
  * }</pre>
@@ -48,7 +63,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleMeasure extends SynchronousInstrument<BoundDoubleMeasure> {
+public interface DoubleValueRecorder extends SynchronousInstrument<BoundDoubleValueRecorder> {
 
   /**
    * Records the given measurement, associated with the current {@code Context} and provided set of
@@ -62,15 +77,15 @@ public interface DoubleMeasure extends SynchronousInstrument<BoundDoubleMeasure>
   void record(double value, String... labelKeyValuePairs);
 
   @Override
-  BoundDoubleMeasure bind(String... labelKeyValuePairs);
+  BoundDoubleValueRecorder bind(String... labelKeyValuePairs);
 
   /**
-   * A {@code Bound Instrument} for a {@code LongMeasure}.
+   * A {@code Bound Instrument} for a {@link DoubleValueRecorder}.
    *
    * @since 0.1.0
    */
   @ThreadSafe
-  interface BoundDoubleMeasure extends SynchronousInstrument.BoundInstrument {
+  interface BoundDoubleValueRecorder extends SynchronousInstrument.BoundInstrument {
     /**
      * Records the given measurement, associated with the current {@code Context}.
      *
@@ -84,7 +99,7 @@ public interface DoubleMeasure extends SynchronousInstrument<BoundDoubleMeasure>
     void unbind();
   }
 
-  /** Builder class for {@link DoubleMeasure}. */
+  /** Builder class for {@link DoubleValueRecorder}. */
   interface Builder extends SynchronousInstrument.Builder {
     @Override
     Builder setDescription(String description);
@@ -96,6 +111,6 @@ public interface DoubleMeasure extends SynchronousInstrument<BoundDoubleMeasure>
     Builder setConstantLabels(Map<String, String> constantLabels);
 
     @Override
-    DoubleMeasure build();
+    DoubleValueRecorder build();
   }
 }

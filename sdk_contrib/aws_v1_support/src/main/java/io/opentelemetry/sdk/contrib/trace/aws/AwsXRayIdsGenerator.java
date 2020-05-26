@@ -16,10 +16,13 @@
 
 package io.opentelemetry.sdk.contrib.trace.aws;
 
-import com.amazonaws.xray.ThreadLocalStorage;
 import io.opentelemetry.sdk.trace.IdsGenerator;
+import io.opentelemetry.sdk.trace.RandomIdsGenerator;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Generates tracing ids compatible with the AWS X-Ray tracing service. In the X-Ray system the
@@ -32,24 +35,25 @@ import io.opentelemetry.trace.TraceId;
  */
 public class AwsXRayIdsGenerator implements IdsGenerator {
 
+  private static final RandomIdsGenerator RANDOM_IDS_GENERATOR = new RandomIdsGenerator();
+
   @Override
   public SpanId generateSpanId() {
-    String awsIdStr = generateId();
-    return SpanId.fromLowerBase16(awsIdStr, 0);
+    return RANDOM_IDS_GENERATOR.generateSpanId();
   }
 
   @Override
   public TraceId generateTraceId() {
-    String traceIdStr = new com.amazonaws.xray.entities.TraceID().toString();
-    return TraceId.fromLowerBase16(traceIdStr.substring(2, 10) + traceIdStr.substring(11, 35), 0);
-  }
+    // hi - 4 bytes timestamp, 4 bytes random
+    // low - 8 bytes random.
+    // Since we include timestamp, impossible to be invalid.
 
-  // Copied from com.amazonaws.xray.entities.Entity
-  private static String generateId() {
-    String id = Long.toString(ThreadLocalStorage.getRandom().nextLong() >>> 1, 16);
-    while (id.length() < 16) {
-      id = '0' + id;
-    }
-    return id;
+    Random random = ThreadLocalRandom.current();
+    long timestampSecs = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+    long hiRandom = random.nextInt() & 0xFFFFFFFFL;
+
+    long lowRandom = random.nextLong();
+
+    return new TraceId(timestampSecs << 32 | hiRandom, lowRandom);
   }
 }

@@ -192,7 +192,7 @@ public interface Span {
   /**
    * Adds an event to the {@code Span}.
    *
-   * <p>Use this method to specify an explicit event timestamp. If not alled, the implementation
+   * <p>Use this method to specify an explicit event timestamp. If not called, the implementation
    * will use the current timestamp value, which should be the default case.
    *
    * <p>Important: this is NOT equivalent with System.nanoTime().
@@ -550,6 +550,9 @@ public interface Span {
      * <p>Users <b>must</b> manually call {@link Span#end()} to end this {@code Span}.
      *
      * <p>Does not install the newly created {@code Span} to the current Context.
+     *
+     * <p>IMPORTANT: This method can be called only once per {@link Builder} instance and as the
+     * last method called. After this method is called calling any method is undefined behavior.
      *
      * <p>Example of usage:
      *

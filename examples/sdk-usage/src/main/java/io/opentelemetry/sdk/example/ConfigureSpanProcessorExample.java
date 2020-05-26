@@ -22,7 +22,6 @@ import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpansProcessor;
-import io.opentelemetry.sdk.trace.export.BatchSpansProcessor.Config;
 import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
 import io.opentelemetry.trace.Tracer;
 import java.util.Arrays;
@@ -68,23 +67,20 @@ public class ConfigureSpanProcessorExample {
 
     // Configure the simple spans processor. This span processor exports span immediately after they
     // are ended.
-    SimpleSpansProcessor simpleSpansProcessor = SimpleSpansProcessor.create(exporter);
+    SimpleSpansProcessor simpleSpansProcessor = SimpleSpansProcessor.newBuilder(exporter).build();
     tracerProvider.addSpanProcessor(simpleSpansProcessor);
 
     // Configure the batch spans processor. This span processor exports span in batches.
     BatchSpansProcessor batchSpansProcessor =
-        BatchSpansProcessor.create(
-            exporter,
-            Config.newBuilder()
-                .setExportOnlySampled(
-                    true) // send to the exporter only spans that have been sampled
-                .setMaxExportBatchSize(512) // set the maximum batch size to use
-                .setMaxQueueSize(2048) // set the queue size. This must be >= the export batch size
-                .setExporterTimeoutMillis(
-                    30_000) // set the max amount of time an export can run before getting
-                // interrupted
-                .setScheduleDelayMillis(5000) // set time between two different exports
-                .build());
+        BatchSpansProcessor.newBuilder(exporter)
+            .setExportOnlySampled(true) // send to the exporter only spans that have been sampled
+            .setMaxExportBatchSize(512) // set the maximum batch size to use
+            .setMaxQueueSize(2048) // set the queue size. This must be >= the export batch size
+            .setExporterTimeoutMillis(
+                30_000) // set the max amount of time an export can run before getting
+            // interrupted
+            .setScheduleDelayMillis(5000) // set time between two different exports
+            .build();
     tracerProvider.addSpanProcessor(batchSpansProcessor);
 
     // Configure the multi spans processor. A MultiSpanProcessor accepts a list of Span Processors.

@@ -56,8 +56,8 @@ final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument
   }
 
   @Override
-  public void setCallback(Callback<ResultDoubleSumObserver> metricUpdater) {
-    this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
+  public void setCallback(Callback<ResultDoubleSumObserver> callback) {
+    this.metricUpdater = Objects.requireNonNull(callback, "metricUpdater");
   }
 
   static final class Builder
@@ -80,8 +80,7 @@ final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument
     public DoubleSumObserverSdk build() {
       return register(
           new DoubleSumObserverSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.OBSERVER_MONOTONIC, InstrumentValueType.DOUBLE),
+              getInstrumentDescriptor(InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

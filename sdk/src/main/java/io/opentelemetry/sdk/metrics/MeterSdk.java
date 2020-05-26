@@ -16,6 +16,8 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.metrics.DoubleValueObserver;
+import io.opentelemetry.metrics.LongValueObserver;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -60,13 +62,13 @@ final class MeterSdk implements Meter {
   }
 
   @Override
-  public DoubleMeasureSdk.Builder doubleMeasureBuilder(String name) {
-    return new DoubleMeasureSdk.Builder(name, meterProviderSharedState, meterSharedState);
+  public DoubleValueRecorderSdk.Builder doubleValueRecorderBuilder(String name) {
+    return new DoubleValueRecorderSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
-  public LongMeasureSdk.Builder longMeasureBuilder(String name) {
-    return new LongMeasureSdk.Builder(name, meterProviderSharedState, meterSharedState);
+  public LongValueRecorderSdk.Builder longValueRecorderBuilder(String name) {
+    return new LongValueRecorderSdk.Builder(name, meterProviderSharedState, meterSharedState);
   }
 
   @Override
@@ -87,6 +89,16 @@ final class MeterSdk implements Meter {
   @Override
   public LongUpDownSumObserverSdk.Builder longUpDownSumObserverBuilder(String name) {
     return new LongUpDownSumObserverSdk.Builder(name, meterProviderSharedState, meterSharedState);
+  }
+
+  @Override
+  public DoubleValueObserver.Builder doubleValueObserverBuilder(String name) {
+    throw new UnsupportedOperationException("not yet implemented");
+  }
+
+  @Override
+  public LongValueObserver.Builder longValueObserverBuilder(String name) {
+    throw new UnsupportedOperationException("not yet implemented");
   }
 
   @Override

@@ -19,8 +19,8 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.metrics.DoubleMeasure.BoundDoubleMeasure;
+import io.opentelemetry.metrics.LongValueRecorder;
+import io.opentelemetry.metrics.LongValueRecorder.BoundLongValueRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.StressTestRunner.OperationUpdater;
@@ -40,9 +40,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link DoubleMeasureSdk}. */
+/** Unit tests for {@link LongValueRecorderSdk}. */
 @RunWith(JUnit4.class)
-public class DoubleMeasureSdkTest {
+public class LongValueRecorderSdkTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
   private static final long SECOND_NANOS = 1_000_000_000;
@@ -51,7 +51,8 @@ public class DoubleMeasureSdkTest {
           Collections.singletonMap(
               "resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
-      InstrumentationLibraryInfo.create("io.opentelemetry.sdk.metrics.DoubleMeasureSdkTest", null);
+      InstrumentationLibraryInfo.create(
+          "io.opentelemetry.sdk.metrics.LongValueRecorderSdkTest", null);
   private final TestClock testClock = TestClock.create();
   private final MeterProviderSharedState meterProviderSharedState =
       MeterProviderSharedState.create(testClock, RESOURCE);
@@ -60,21 +61,21 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void collectMetrics_NoRecords() {
-    DoubleMeasureSdk doubleMeasure =
+    LongValueRecorderSdk longMeasure =
         testSdk
-            .doubleMeasureBuilder("testMeasure")
+            .longValueRecorderBuilder("testMeasure")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
-            .setDescription("My very own measure")
+            .setDescription("My very own counter")
             .setUnit("ms")
             .build();
-    assertThat(doubleMeasure).isInstanceOf(DoubleMeasureSdk.class);
-    List<MetricData> metricDataList = doubleMeasure.collectAll();
+    assertThat(longMeasure).isInstanceOf(LongValueRecorderSdk.class);
+    List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
                     "testMeasure",
-                    "My very own measure",
+                    "My very own counter",
                     "ms",
                     Type.SUMMARY,
                     Collections.singletonMap("sk1", "sv1")),
@@ -85,10 +86,10 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
+    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testMeasure").build();
     testClock.advanceNanos(SECOND_NANOS);
-    doubleMeasure.record(12.1d);
-    List<MetricData> metricDataList = doubleMeasure.collectAll();
+    longMeasure.record(12);
+    List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
@@ -102,8 +103,8 @@ public class DoubleMeasureSdkTest {
                         testClock.now(),
                         Collections.<String, String>emptyMap(),
                         1,
-                        12.1d,
-                        valueAtPercentiles(12.1d, 12.1d)))));
+                        12,
+                        valueAtPercentiles(12, 12)))));
   }
 
   @Test
@@ -111,22 +112,23 @@ public class DoubleMeasureSdkTest {
     LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
     LabelSetSdk emptyLabelSet = LabelSetSdk.create();
     long startTime = testClock.now();
-    DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
-    BoundDoubleMeasure boundMeasure = doubleMeasure.bind("K", "V");
+    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testMeasure").build();
+    BoundLongValueRecorder boundMeasure = longMeasure.bind("K", "V");
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleMeasure.record(12.1d);
-      boundMeasure.record(123.3d);
-      doubleMeasure.record(21.4d);
+      longMeasure.record(12);
+      boundMeasure.record(123);
+      longMeasure.record(-14);
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
-      boundMeasure.record(321.5d);
-      doubleMeasure.record(111.1d, "K", "V");
+      boundMeasure.record(321);
+      longMeasure.record(-121, "K", "V");
 
       long firstCollect = testClock.now();
-      List<MetricData> metricDataList = doubleMeasure.collectAll();
+      List<MetricData> metricDataList = longMeasure.collectAll();
       assertThat(metricDataList).hasSize(1);
       MetricData metricData = metricDataList.get(0);
+      assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
               SummaryPoint.create(
@@ -134,25 +136,26 @@ public class DoubleMeasureSdkTest {
                   firstCollect,
                   emptyLabelSet.getLabels(),
                   2,
-                  33.5d,
-                  valueAtPercentiles(12.1d, 21.4d)),
+                  -2,
+                  valueAtPercentiles(-14, 12)),
               SummaryPoint.create(
                   startTime,
                   firstCollect,
                   labelSet.getLabels(),
                   3,
-                  555.9d,
-                  valueAtPercentiles(111.1d, 321.5d)));
+                  323,
+                  valueAtPercentiles(-121, 321)));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
-      boundMeasure.record(222d);
-      doubleMeasure.record(11d);
+      boundMeasure.record(222);
+      longMeasure.record(17);
 
       long secondCollect = testClock.now();
-      metricDataList = doubleMeasure.collectAll();
+      metricDataList = longMeasure.collectAll();
       assertThat(metricDataList).hasSize(1);
       metricData = metricDataList.get(0);
+      assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
               SummaryPoint.create(
@@ -160,15 +163,15 @@ public class DoubleMeasureSdkTest {
                   secondCollect,
                   emptyLabelSet.getLabels(),
                   3,
-                  44.5d,
-                  valueAtPercentiles(11d, 21.4d)),
+                  15,
+                  valueAtPercentiles(-14, 17)),
               SummaryPoint.create(
                   startTime,
                   secondCollect,
                   labelSet.getLabels(),
                   4,
-                  777.9d,
-                  valueAtPercentiles(111.1d, 321.5d)));
+                  545,
+                  valueAtPercentiles(-121, 321)));
     } finally {
       boundMeasure.unbind();
     }
@@ -176,9 +179,9 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet() {
-    DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
-    BoundDoubleMeasure boundMeasure = doubleMeasure.bind("K", "v");
-    BoundDoubleMeasure duplicateBoundMeasure = doubleMeasure.bind("K", "v");
+    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testMeasure").build();
+    BoundLongValueRecorder boundMeasure = longMeasure.bind("K", "v");
+    BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind("K", "v");
     try {
       assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
     } finally {
@@ -189,11 +192,11 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
-    BoundDoubleMeasure boundMeasure = doubleMeasure.bind("K", "v");
+    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testMeasure").build();
+    BoundLongValueRecorder boundMeasure = longMeasure.bind("K", "v");
     try {
-      doubleMeasure.collectAll();
-      BoundDoubleMeasure duplicateBoundMeasure = doubleMeasure.bind("K", "v");
+      longMeasure.collectAll();
+      BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind("K", "v");
       try {
         assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
       } finally {
@@ -206,24 +209,28 @@ public class DoubleMeasureSdkTest {
 
   @Test
   public void stressTest() {
-    final DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
+    final LongValueRecorderSdk longMeasure =
+        testSdk.longValueRecorderBuilder("testMeasure").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleMeasure).setCollectionIntervalMs(100);
+        StressTestRunner.builder().setInstrument(longMeasure).setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000,
-              2,
-              new DoubleMeasureSdkTest.OperationUpdaterDirectCall(doubleMeasure, "K", "V")));
+              2_000,
+              1,
+              new LongValueRecorderSdkTest.OperationUpdaterDirectCall(longMeasure, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterWithBinding(doubleMeasure.bind("K", "V"))));
+              2_000,
+              1,
+              new LongValueRecorderSdkTest.OperationUpdaterWithBinding(
+                  longMeasure.bind("K", "V"))));
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleMeasure.collectAll();
+    List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
@@ -231,35 +238,39 @@ public class DoubleMeasureSdkTest {
                 testClock.now(),
                 testClock.now(),
                 Collections.singletonMap("K", "V"),
-                8_000,
-                80_000,
-                valueAtPercentiles(9.0, 11.0)));
+                16_000,
+                160_000,
+                valueAtPercentiles(9, 11)));
   }
 
   @Test
   public void stressTest_WithDifferentLabelSet() {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
-    final DoubleMeasureSdk doubleMeasure = testSdk.doubleMeasureBuilder("testMeasure").build();
+    final LongValueRecorderSdk longMeasure =
+        testSdk.longValueRecorderBuilder("testMeasure").build();
 
     StressTestRunner.Builder stressTestBuilder =
-        StressTestRunner.builder().setInstrument(doubleMeasure).setCollectionIntervalMs(100);
+        StressTestRunner.builder().setInstrument(longMeasure).setCollectionIntervalMs(100);
 
     for (int i = 0; i < 4; i++) {
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000,
-              1,
-              new DoubleMeasureSdkTest.OperationUpdaterDirectCall(
-                  doubleMeasure, keys[i], values[i])));
+              1_000,
+              2,
+              new LongValueRecorderSdkTest.OperationUpdaterDirectCall(
+                  longMeasure, keys[i], values[i])));
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterWithBinding(doubleMeasure.bind(keys[i], values[i]))));
+              1_000,
+              2,
+              new LongValueRecorderSdkTest.OperationUpdaterWithBinding(
+                  longMeasure.bind(keys[i], values[i]))));
     }
 
     stressTestBuilder.build().run();
-    List<MetricData> metricDataList = doubleMeasure.collectAll();
+    List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
@@ -267,64 +278,66 @@ public class DoubleMeasureSdkTest {
                 testClock.now(),
                 testClock.now(),
                 Collections.singletonMap(keys[0], values[0]),
-                4_000,
-                40_000d,
-                valueAtPercentiles(9.0, 11.0)),
+                2_000,
+                20_000,
+                valueAtPercentiles(9, 11)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Collections.singletonMap(keys[1], values[1]),
-                4_000,
-                40_000d,
-                valueAtPercentiles(9.0, 11.0)),
+                2_000,
+                20_000,
+                valueAtPercentiles(9, 11)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Collections.singletonMap(keys[2], values[2]),
-                4_000,
-                40_000d,
-                valueAtPercentiles(9.0, 11.0)),
+                2_000,
+                20_000,
+                valueAtPercentiles(9, 11)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
                 Collections.singletonMap(keys[3], values[3]),
-                4_000,
-                40_000d,
-                valueAtPercentiles(9.0, 11.0)));
+                2_000,
+                20_000,
+                valueAtPercentiles(9, 11)));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {
-    private final DoubleMeasure.BoundDoubleMeasure boundDoubleMeasure;
+    private final BoundLongValueRecorder boundLongValueRecorder;
 
-    private OperationUpdaterWithBinding(BoundDoubleMeasure boundDoubleMeasure) {
-      this.boundDoubleMeasure = boundDoubleMeasure;
+    private OperationUpdaterWithBinding(BoundLongValueRecorder boundLongValueRecorder) {
+      this.boundLongValueRecorder = boundLongValueRecorder;
     }
 
     @Override
     void update() {
-      boundDoubleMeasure.record(11.0);
+      boundLongValueRecorder.record(9);
     }
 
     @Override
     void cleanup() {
-      boundDoubleMeasure.unbind();
+      boundLongValueRecorder.unbind();
     }
   }
 
   private static class OperationUpdaterDirectCall extends OperationUpdater {
-    private final DoubleMeasure doubleMeasure;
+
+    private final LongValueRecorder longValueRecorder;
     private final String key;
     private final String value;
 
-    private OperationUpdaterDirectCall(DoubleMeasure doubleMeasure, String key, String value) {
-      this.doubleMeasure = doubleMeasure;
+    private OperationUpdaterDirectCall(
+        LongValueRecorder longValueRecorder, String key, String value) {
+      this.longValueRecorder = longValueRecorder;
       this.key = key;
       this.value = value;
     }
 
     @Override
     void update() {
-      doubleMeasure.record(9.0, key, value);
+      longValueRecorder.record(11, key, value);
     }
 
     @Override

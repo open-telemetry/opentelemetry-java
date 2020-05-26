@@ -16,16 +16,16 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.LongMeasure;
-import io.opentelemetry.sdk.metrics.LongMeasureSdk.BoundInstrument;
+import io.opentelemetry.metrics.LongValueRecorder;
+import io.opentelemetry.sdk.metrics.LongValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class LongMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument>
-    implements LongMeasure {
+final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInstrument>
+    implements LongValueRecorder {
 
-  private LongMeasureSdk(
+  private LongValueRecorderSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
@@ -63,7 +63,7 @@ final class LongMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
-      implements LongMeasure.BoundLongMeasure {
+      implements BoundLongValueRecorder {
 
     BoundInstrument(Batcher batcher) {
       super(batcher.getAggregator());
@@ -75,8 +75,8 @@ final class LongMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument
     }
   }
 
-  static final class Builder extends AbstractInstrument.Builder<LongMeasureSdk.Builder>
-      implements LongMeasure.Builder {
+  static final class Builder extends AbstractInstrument.Builder<LongValueRecorderSdk.Builder>
+      implements LongValueRecorder.Builder {
 
     Builder(
         String name,
@@ -91,11 +91,10 @@ final class LongMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument
     }
 
     @Override
-    public LongMeasureSdk build() {
+    public LongValueRecorderSdk build() {
       return register(
-          new LongMeasureSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.LONG),
+          new LongValueRecorderSdk(
+              getInstrumentDescriptor(InstrumentType.VALUE_RECORDER, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

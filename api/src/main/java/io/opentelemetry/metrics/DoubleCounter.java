@@ -39,7 +39,7 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   // It is recommended that the API user keep references to a Bound Counters.
  *   private static final BoundDoubleCounter someWorkBound =
- *       counter.bind(Collections.singletonList("SomeWork"));
+ *       counter.bind("work_name", "some_work");
  *
  *   void doSomeWork() {
  *      someWorkBound.add(10.2);  // Resources needed for this task.

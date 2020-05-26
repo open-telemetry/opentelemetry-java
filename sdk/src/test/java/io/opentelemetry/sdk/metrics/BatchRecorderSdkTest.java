@@ -66,8 +66,10 @@ public class BatchRecorderSdkTest {
         testSdk.doubleUpDownCounterBuilder("testDoubleUpDownCounter").build();
     LongUpDownCounterSdk longUpDownCounter =
         testSdk.longUpDownCounterBuilder("testLongUpDownCounter").build();
-    DoubleCounterSdk doubleMeasure = testSdk.doubleCounterBuilder("testDoubleMeasure").build();
-    DoubleCounterSdk longMeasure = testSdk.doubleCounterBuilder("testLongMeasure").build();
+    DoubleValueRecorderSdk doubleValueRecorder =
+        testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
+    LongValueRecorderSdk longValueRecorder =
+        testSdk.longValueRecorderBuilder("testLongValueRecorder").build();
     LabelSetSdk labelSet = LabelSetSdk.create("key", "value");
 
     testSdk
@@ -76,8 +78,8 @@ public class BatchRecorderSdkTest {
         .put(doubleUpDownCounter, -12.1d)
         .put(longUpDownCounter, -12)
         .put(doubleCounter, 12.1d)
-        .put(longMeasure, 13)
-        .put(doubleMeasure, 13.1d)
+        .put(longValueRecorder, 13)
+        .put(doubleValueRecorder, 13.1d)
         .record();
 
     assertThat(doubleCounter.collectAll())

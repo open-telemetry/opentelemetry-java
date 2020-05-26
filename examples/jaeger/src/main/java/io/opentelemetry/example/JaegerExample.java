@@ -38,7 +38,7 @@ public class JaegerExample {
 
     // Set to process the spans by the Jaeger Exporter
     OpenTelemetrySdk.getTracerProvider()
-        .addSpanProcessor(SimpleSpansProcessor.create(this.jaegerExporter));
+        .addSpanProcessor(SimpleSpansProcessor.newBuilder(this.jaegerExporter).build());
   }
 
   private void myWonderfulUseCase() {

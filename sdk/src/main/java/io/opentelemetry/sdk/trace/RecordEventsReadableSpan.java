@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
 import io.opentelemetry.trace.EndSpanOptions;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -52,9 +51,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static final Logger logger = Logger.getLogger(Tracer.class.getName());
 
-  private static final String MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE =
-      "Link has reached the maximum number of attributes (%d). Dropping %d attributes.";
-
+  // The config used when constructing this Span.
+  private final TraceConfig traceConfig;
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
@@ -68,8 +66,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final List<io.opentelemetry.trace.Link> links;
   // Number of links recorded.
   private final int totalRecordedLinks;
-  // Max number of attributes per event.
-  private final int maxNumberOfAttributesPerEvent;
 
   // Lock used to internally guard the mutable state of this instance
   private final Object lock = new Object();
@@ -88,7 +84,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final long startEpochNanos;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
   @GuardedBy("lock")
-  private final AttributesMap attributes;
+  @Nullable
+  private AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
   private final EvictingQueue<TimedEvent> events;
@@ -105,6 +102,39 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // True if the span is ended.
   @GuardedBy("lock")
   private boolean hasEnded;
+
+  private RecordEventsReadableSpan(
+      SpanContext context,
+      String name,
+      InstrumentationLibraryInfo instrumentationLibraryInfo,
+      Kind kind,
+      SpanId parentSpanId,
+      boolean hasRemoteParent,
+      TraceConfig traceConfig,
+      SpanProcessor spanProcessor,
+      Clock clock,
+      Resource resource,
+      @Nullable AttributesMap attributes,
+      List<io.opentelemetry.trace.Link> links,
+      int totalRecordedLinks,
+      long startEpochNanos) {
+    this.context = context;
+    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
+    this.parentSpanId = parentSpanId;
+    this.hasRemoteParent = hasRemoteParent;
+    this.links = links;
+    this.totalRecordedLinks = totalRecordedLinks;
+    this.name = name;
+    this.kind = kind;
+    this.spanProcessor = spanProcessor;
+    this.resource = resource;
+    this.hasEnded = false;
+    this.clock = clock;
+    this.startEpochNanos = startEpochNanos;
+    this.attributes = attributes;
+    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
+    this.traceConfig = traceConfig;
+  }
 
   /**
    * Creates and starts a span with the given configuration.
@@ -162,49 +192,17 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public SpanData toSpanData() {
-    // Copy immutable fields outside synchronized block.
-    SpanContext spanContext = getSpanContext();
-    SpanDataImpl.Builder builder =
-        SpanDataImpl.newBuilder()
-            .setName(getName())
-            .setInstrumentationLibraryInfo(instrumentationLibraryInfo)
-            .setTraceId(spanContext.getTraceId())
-            .setSpanId(spanContext.getSpanId())
-            .setTraceFlags(spanContext.getTraceFlags())
-            .setLinks(getLinks())
-            .setTotalRecordedLinks(totalRecordedLinks)
-            .setKind(kind)
-            .setTraceState(spanContext.getTraceState())
-            .setParentSpanId(parentSpanId)
-            .setHasRemoteParent(hasRemoteParent)
-            .setResource(resource)
-            .setStartEpochNanos(startEpochNanos);
-
-    // Copy remainder within synchronized
+    // Copy within synchronized context
     synchronized (lock) {
-      return builder
-          .setHasEnded(hasEnded)
-          .setAttributes(attributes)
-          .setEndEpochNanos(getEndEpochNanos())
-          .setStatus(getStatusWithDefault())
-          .setEvents(adaptTimedEvents())
-          .setTotalAttributeCount(attributes.getTotalAddedValues())
-          .setTotalRecordedEvents(totalRecordedEvents)
-          // build() does the actual copying of the collections: it needs to be synchronized
-          // because of the attributes and events collections.
-          .build();
+      return SpanWrapper.create(
+          this,
+          getImmutableLinks(),
+          getImmutableTimedEvents(),
+          getImmutableAttributes(),
+          (attributes == null) ? 0 : attributes.getTotalAddedValues(),
+          totalRecordedEvents,
+          getStatusWithDefault());
     }
-  }
-
-  @GuardedBy("lock")
-  private List<Event> adaptTimedEvents() {
-    List<Event> result = new ArrayList<>(events.size());
-    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
-      result.add(
-          Event.create(
-              sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
-    }
-    return result;
   }
 
   @Override
@@ -249,34 +247,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
    *
    * @return the end nano time.
    */
-  private long getEndEpochNanos() {
+  long getEndEpochNanos() {
     synchronized (lock) {
       return endEpochNanos;
     }
-  }
-
-  /**
-   * Returns a copy of the links for this span.
-   *
-   * @return A copy of the Links for this span.
-   */
-  private List<Link> getLinks() {
-    if (links == null) {
-      return Collections.emptyList();
-    }
-    List<Link> result = new ArrayList<>(links.size());
-    for (io.opentelemetry.trace.Link link : links) {
-      Link newLink;
-      if (!(link instanceof Link)) {
-        // Make a copy because the given Link may not be immutable and we may reference a lot of
-        // memory.
-        newLink = Link.create(link.getContext(), link.getAttributes());
-      } else {
-        newLink = (Link) link;
-      }
-      result.add(newLink);
-    }
-    return Collections.unmodifiableList(result);
   }
 
   /**
@@ -330,8 +304,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         return;
       }
       if (value == null || (value.getType().equals(STRING) && value.getStringValue() == null)) {
+        if (attributes == null) {
+          return;
+        }
         attributes.remove(key);
         return;
+      }
+      if (attributes == null) {
+        attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
       attributes.put(key, value);
     }
@@ -339,12 +319,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name) {
-    addTimedEvent(TimedEvent.create(clock.now(), name));
+    addTimedEvent(
+        TimedEvent.create(clock.now(), name, Collections.<String, AttributeValue>emptyMap(), 0));
   }
 
   @Override
   public void addEvent(String name, long timestamp) {
-    addTimedEvent(TimedEvent.create(timestamp, name));
+    addTimedEvent(
+        TimedEvent.create(timestamp, name, Collections.<String, AttributeValue>emptyMap(), 0));
   }
 
   @Override
@@ -352,14 +334,21 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         TimedEvent.create(
-            clock.now(), name, limitEventAttributes(attributes), totalAttributeCount));
+            clock.now(),
+            name,
+            copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
+            totalAttributeCount));
   }
 
   @Override
   public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
     int totalAttributeCount = attributes.size();
     addTimedEvent(
-        TimedEvent.create(timestamp, name, limitEventAttributes(attributes), totalAttributeCount));
+        TimedEvent.create(
+            timestamp,
+            name,
+            copyAndLimitAttributes(attributes, traceConfig.getMaxNumberOfAttributesPerEvent()),
+            totalAttributeCount));
   }
 
   @Override
@@ -372,24 +361,24 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     addTimedEvent(TimedEvent.create(timestamp, event));
   }
 
-  private Map<String, AttributeValue> limitEventAttributes(Map<String, AttributeValue> attributes) {
-    if (attributes.size() <= this.maxNumberOfAttributesPerEvent) {
-      return attributes;
+  static Map<String, AttributeValue> copyAndLimitAttributes(
+      Map<String, AttributeValue> attributes, int limit) {
+    if (attributes.isEmpty()) {
+      return Collections.emptyMap();
+    }
+
+    if (attributes.size() <= limit) {
+      return Collections.unmodifiableMap(new HashMap<>(attributes));
     }
 
     Map<String, AttributeValue> temp = new HashMap<>();
     for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      if (temp.size() < this.maxNumberOfAttributesPerEvent) {
+      if (temp.size() < limit) {
         temp.put(entry.getKey(), entry.getValue());
       }
     }
-    logger.log(
-        Level.FINE,
-        String.format(
-            MAX_LINK_ATTRIBUTE_COUNT_LOG_MESSAGE,
-            maxNumberOfAttributesPerEvent,
-            attributes.size() - temp.size()));
-    return temp;
+
+    return Collections.unmodifiableMap(temp);
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
@@ -467,37 +456,71 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
   }
 
-  private RecordEventsReadableSpan(
-      SpanContext context,
-      String name,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      Kind kind,
-      SpanId parentSpanId,
-      boolean hasRemoteParent,
-      TraceConfig traceConfig,
-      SpanProcessor spanProcessor,
-      Clock clock,
-      Resource resource,
-      AttributesMap attributes,
-      List<io.opentelemetry.trace.Link> links,
-      int totalRecordedLinks,
-      long startEpochNanos) {
-    this.context = context;
-    this.instrumentationLibraryInfo = instrumentationLibraryInfo;
-    this.parentSpanId = parentSpanId;
-    this.hasRemoteParent = hasRemoteParent;
-    this.links = links;
-    this.totalRecordedLinks = totalRecordedLinks;
-    this.name = name;
-    this.kind = kind;
-    this.spanProcessor = spanProcessor;
-    this.resource = resource;
-    this.hasEnded = false;
-    this.clock = clock;
-    this.startEpochNanos = startEpochNanos;
-    // TODO: Do not always initialize the attributes.
-    this.attributes = attributes;
-    this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
-    this.maxNumberOfAttributesPerEvent = traceConfig.getMaxNumberOfAttributesPerEvent();
+  SpanId getParentSpanId() {
+    return parentSpanId;
+  }
+
+  Resource getResource() {
+    return resource;
+  }
+
+  Kind getKind() {
+    return kind;
+  }
+
+  long getStartEpochNanos() {
+    return startEpochNanos;
+  }
+
+  boolean hasRemoteParent() {
+    return hasRemoteParent;
+  }
+
+  int getTotalRecordedLinks() {
+    return totalRecordedLinks;
+  }
+
+  @GuardedBy("lock")
+  private List<Link> getImmutableLinks() {
+    if (links.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<Link> result = new ArrayList<>(links.size());
+    for (io.opentelemetry.trace.Link link : links) {
+      Link newLink;
+      if (!(link instanceof Link)) {
+        // Make a copy because the given Link may not be immutable and we may reference a lot of
+        // memory.
+        newLink = Link.create(link.getContext(), link.getAttributes());
+      } else {
+        newLink = (Link) link;
+      }
+      result.add(newLink);
+    }
+    return Collections.unmodifiableList(result);
+  }
+
+  @GuardedBy("lock")
+  private List<Event> getImmutableTimedEvents() {
+    if (events.isEmpty()) {
+      return Collections.emptyList();
+    }
+    List<Event> result = new ArrayList<>(events.size());
+    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
+      result.add(
+          Event.create(
+              sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
+    }
+    return Collections.unmodifiableList(result);
+  }
+
+  @GuardedBy("lock")
+  private Map<String, AttributeValue> getImmutableAttributes() {
+    if (attributes == null || attributes.isEmpty()) {
+      return Collections.emptyMap();
+    }
+    return hasEnded
+        ? Collections.unmodifiableMap(attributes)
+        : Collections.unmodifiableMap(new HashMap<>(attributes));
   }
 }

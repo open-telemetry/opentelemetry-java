@@ -80,7 +80,7 @@ public abstract class ConfigBuilder<T> {
   }
 
   /** Sets the configuration values from environment variables. */
-  public T readEnvironment() {
+  public T readEnvironmentVariables() {
     return fromConfigMap(System.getenv(), NamingConvention.ENV_VAR);
   }
 

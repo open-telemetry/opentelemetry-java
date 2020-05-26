@@ -55,8 +55,8 @@ final class LongSumObserverSdk extends AbstractAsynchronousInstrument implements
   }
 
   @Override
-  public void setCallback(Callback<ResultLongSumObserver> metricUpdater) {
-    this.metricUpdater = Objects.requireNonNull(metricUpdater, "metricUpdater");
+  public void setCallback(Callback<ResultLongSumObserver> callback) {
+    this.metricUpdater = Objects.requireNonNull(callback, "metricUpdater");
   }
 
   static final class Builder
@@ -79,7 +79,7 @@ final class LongSumObserverSdk extends AbstractAsynchronousInstrument implements
     public LongSumObserverSdk build() {
       return register(
           new LongSumObserverSdk(
-              getInstrumentDescriptor(InstrumentType.OBSERVER_MONOTONIC, InstrumentValueType.LONG),
+              getInstrumentDescriptor(InstrumentType.SUM_OBSERVER, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

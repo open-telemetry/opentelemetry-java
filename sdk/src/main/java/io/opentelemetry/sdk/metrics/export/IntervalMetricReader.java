@@ -36,6 +36,22 @@ import javax.annotation.concurrent.Immutable;
  * Wraps a list of {@link MetricProducer}s and automatically reads and exports the metrics every
  * export interval.
  *
+ * <p>Configuration options for {@link IntervalMetricReader} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
+ *
+ * <p>For system properties and {@link java.util.Properties} objects, {@link IntervalMetricReader}
+ * will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code otel.imr.export.interval}: sets the export interval between pushes to the exporter.
+ * </ul>
+ *
+ * <p>For environment variables, {@link IntervalMetricReader} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code OTEL_IMR_EXPORT_INTERVAL}: sets the export interval between pushes to the exporter.
+ * </ul>
+ *
  * @since 0.3.0
  */
 public final class IntervalMetricReader {
@@ -80,7 +96,7 @@ public final class IntervalMetricReader {
    * @since 0.4.0
    */
   public static Builder builderFromDefaultSources() {
-    return builder().readEnvironment().readSystemProperties();
+    return builder().readEnvironmentVariables().readSystemProperties();
   }
 
   /**
@@ -149,12 +165,6 @@ public final class IntervalMetricReader {
 
     /**
      * Sets the configuration values from the given configuration map for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.imr.export.interval}: to set the export interval between pushes to the
-     *       exporter.
-     * </ul>
      *
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
@@ -172,12 +182,6 @@ public final class IntervalMetricReader {
 
     /**
      * Sets the configuration values from the given properties object for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.imr.export.interval}: to set the export interval between pushes to the
-     *       exporter.
-     * </ul>
      *
      * @param properties {@link Properties} holding the configuration values.
      * @return this.
@@ -188,29 +192,17 @@ public final class IntervalMetricReader {
     }
 
     /**
-     * Sets the configuration values from environment variables for only the available keys. This
-     * method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code OTEL_IMR_EXPORT_INTERVAL}: to set the export interval between pushes to the
-     *       exporter.
-     * </ul>
+     * Sets the configuration values from environment variables for only the available keys.
      *
      * @return this.
      */
     @Override
-    public Builder readEnvironment() {
-      return super.readEnvironment();
+    public Builder readEnvironmentVariables() {
+      return super.readEnvironmentVariables();
     }
 
     /**
-     * Sets the configuration values from system properties for only the available keys. This method
-     * looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.imr.export.interval}: to set the export interval between pushes to the
-     *       exporter.
-     * </ul>
+     * Sets the configuration values from system properties for only the available keys.
      *
      * @return this.
      */

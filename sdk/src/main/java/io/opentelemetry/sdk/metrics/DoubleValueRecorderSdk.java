@@ -16,16 +16,16 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.metrics.DoubleMeasure;
-import io.opentelemetry.sdk.metrics.DoubleMeasureSdk.BoundInstrument;
+import io.opentelemetry.metrics.DoubleValueRecorder;
+import io.opentelemetry.sdk.metrics.DoubleValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class DoubleMeasureSdk extends AbstractSynchronousInstrument<BoundInstrument>
-    implements DoubleMeasure {
+final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundInstrument>
+    implements DoubleValueRecorder {
 
-  private DoubleMeasureSdk(
+  private DoubleValueRecorderSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
@@ -63,7 +63,7 @@ final class DoubleMeasureSdk extends AbstractSynchronousInstrument<BoundInstrume
   }
 
   static final class BoundInstrument extends AbstractBoundInstrument
-      implements DoubleMeasure.BoundDoubleMeasure {
+      implements BoundDoubleValueRecorder {
 
     BoundInstrument(Batcher batcher) {
       super(batcher.getAggregator());
@@ -75,8 +75,8 @@ final class DoubleMeasureSdk extends AbstractSynchronousInstrument<BoundInstrume
     }
   }
 
-  static final class Builder extends AbstractInstrument.Builder<DoubleMeasureSdk.Builder>
-      implements DoubleMeasure.Builder {
+  static final class Builder extends AbstractInstrument.Builder<DoubleValueRecorderSdk.Builder>
+      implements DoubleValueRecorder.Builder {
 
     Builder(
         String name,
@@ -91,11 +91,10 @@ final class DoubleMeasureSdk extends AbstractSynchronousInstrument<BoundInstrume
     }
 
     @Override
-    public DoubleMeasureSdk build() {
+    public DoubleValueRecorderSdk build() {
       return register(
-          new DoubleMeasureSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.MEASURE_NON_ABSOLUTE, InstrumentValueType.DOUBLE),
+          new DoubleValueRecorderSdk(
+              getInstrumentDescriptor(InstrumentType.VALUE_RECORDER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

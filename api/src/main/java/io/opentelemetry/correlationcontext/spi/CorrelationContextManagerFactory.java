@@ -14,29 +14,30 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.metrics.spi;
+package io.opentelemetry.correlationcontext.spi;
 
-import io.opentelemetry.metrics.MeterProvider;
+import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * MeterRegistryProvider is a service provider for {@link MeterProvider}. Fully qualified class name
- * of the implementation should be registered in {@code
- * META-INF/services/io.opentelemetry.metrics.spi.MeterRegistryProvider}. <br>
+ * CorrelationContextManagerFactory is a service provider for {@link CorrelationContextManager}.
+ * Fully qualified class name of the implementation should be registered in {@code
+ * META-INF/services/io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory}. <br>
  * <br>
  * A specific implementation can be selected by a system property {@code
- * io.opentelemetry.metrics.spi.MeterRegistryProvider} with value of fully qualified class name.
+ * io.opentelemetry.correlationcontext.spi.CorrelationContextManagerFactory} with value of fully
+ * qualified class name.
  *
  * @see io.opentelemetry.OpenTelemetry
  */
 @ThreadSafe
-public interface MetricsProvider {
+public interface CorrelationContextManagerFactory {
 
   /**
-   * Creates a new meter registry instance.
+   * Creates a new {@code CorrelationContextManager} instance.
    *
-   * @return a meter factory instance.
+   * @return a {@code CorrelationContextManager} instance.
    * @since 0.1.0
    */
-  MeterProvider create();
+  CorrelationContextManager create();
 }

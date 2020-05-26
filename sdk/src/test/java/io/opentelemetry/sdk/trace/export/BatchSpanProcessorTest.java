@@ -44,15 +44,15 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link BatchSpansProcessor}. */
+/** Unit tests for {@link BatchSpanProcessor}. */
 @RunWith(JUnit4.class)
-public class BatchSpansProcessorTest {
+public class BatchSpanProcessorTest {
 
   private static final String SPAN_NAME_1 = "MySpanName/1";
   private static final String SPAN_NAME_2 = "MySpanName/2";
   private static final long MAX_SCHEDULE_DELAY_MILLIS = 500;
   private final TracerSdkProvider tracerSdkFactory = TracerSdkProvider.builder().build();
-  private final Tracer tracer = tracerSdkFactory.get("BatchSpansProcessorTest");
+  private final Tracer tracer = tracerSdkFactory.get("BatchSpanProcessorTest");
   private final BlockingSpanExporter blockingSpanExporter = new BlockingSpanExporter();
   @Mock private SpanExporter mockServiceHandler;
 
@@ -103,8 +103,8 @@ public class BatchSpansProcessorTest {
 
   @Test
   public void startEndRequirements() {
-    BatchSpansProcessor spansProcessor =
-        BatchSpansProcessor.newBuilder(new WaitingSpanExporter(0)).build();
+    BatchSpanProcessor spansProcessor =
+        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0)).build();
     assertThat(spansProcessor.isStartRequired()).isFalse();
     assertThat(spansProcessor.isEndRequired()).isTrue();
   }
@@ -113,7 +113,7 @@ public class BatchSpansProcessorTest {
   public void exportDifferentSampledSpans() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
     tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+        BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
 
@@ -126,14 +126,14 @@ public class BatchSpansProcessorTest {
   @Test
   public void exportMoreSpansThanTheBufferSize() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(6);
-    BatchSpansProcessor batchSpansProcessor =
-        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setMaxQueueSize(6)
             .setMaxExportBatchSize(2)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build();
 
-    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
+    tracerSdkFactory.addSpanProcessor(batchSpanProcessor);
 
     ReadableSpan span1 = createSampledEndedSpan(SPAN_NAME_1);
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_1);
@@ -155,21 +155,21 @@ public class BatchSpansProcessorTest {
   @Test
   public void forceExport() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1, 1);
-    BatchSpansProcessor batchSpansProcessor =
-        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setMaxQueueSize(10_000)
             .setMaxExportBatchSize(2_000)
             .setScheduleDelayMillis(10_000) // 10s
             .build();
 
-    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
+    tracerSdkFactory.addSpanProcessor(batchSpanProcessor);
     for (int i = 0; i < 100; i++) {
       createSampledEndedSpan("notExported");
     }
     List<SpanData> exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported.size()).isEqualTo(0);
-    batchSpansProcessor.forceFlush();
+    batchSpanProcessor.forceFlush();
     exported = waitingSpanExporter.waitForExport();
     assertThat(exported).isNotNull();
     assertThat(exported.size()).isEqualTo(100);
@@ -180,7 +180,7 @@ public class BatchSpansProcessorTest {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(2);
     WaitingSpanExporter waitingSpanExporter2 = new WaitingSpanExporter(2);
     tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.newBuilder(
+        BatchSpanProcessor.newBuilder(
                 MultiSpanExporter.create(
                     Arrays.<SpanExporter>asList(waitingSpanExporter, waitingSpanExporter2)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
@@ -198,14 +198,14 @@ public class BatchSpansProcessorTest {
   public void exportMoreSpansThanTheMaximumLimit() {
     final int maxQueuedSpans = 8;
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(maxQueuedSpans);
-    BatchSpansProcessor batchSpansProcessor =
-        BatchSpansProcessor.newBuilder(
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(blockingSpanExporter, waitingSpanExporter)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .setMaxQueueSize(maxQueuedSpans)
             .setMaxExportBatchSize(maxQueuedSpans / 2)
             .build();
-    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
+    tracerSdkFactory.addSpanProcessor(batchSpanProcessor);
 
     List<SpanData> spansToExport = new ArrayList<>(maxQueuedSpans + 1);
     // Wait to block the worker thread in the BatchSampledSpansProcessor. This ensures that no items
@@ -263,7 +263,7 @@ public class BatchSpansProcessorTest {
         .when(mockServiceHandler)
         .export(ArgumentMatchers.<SpanData>anyList());
     tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.newBuilder(
+        BatchSpanProcessor.newBuilder(
                 MultiSpanExporter.create(Arrays.asList(mockServiceHandler, waitingSpanExporter)))
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
@@ -296,14 +296,14 @@ public class BatchSpansProcessorTest {
         };
 
     int exporterTimeoutMillis = 100;
-    BatchSpansProcessor batchSpansProcessor =
-        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setExporterTimeoutMillis(exporterTimeoutMillis)
             .setScheduleDelayMillis(1)
             .setMaxQueueSize(1)
             .build();
 
-    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
+    tracerSdkFactory.addSpanProcessor(batchSpanProcessor);
 
     ReadableSpan span = createSampledEndedSpan(SPAN_NAME_1);
     List<SpanData> exported = waitingSpanExporter.waitForExport();
@@ -317,11 +317,11 @@ public class BatchSpansProcessorTest {
   @Test
   public void exportNotSampledSpans() {
     WaitingSpanExporter waitingSpanExporter = new WaitingSpanExporter(1);
-    BatchSpansProcessor batchSpansProcessor =
-        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+    BatchSpanProcessor batchSpanProcessor =
+        BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build();
-    tracerSdkFactory.addSpanProcessor(batchSpansProcessor);
+    tracerSdkFactory.addSpanProcessor(batchSpanProcessor);
 
     createNotSampledEndedSpan(SPAN_NAME_1);
     createNotSampledEndedSpan(SPAN_NAME_2);
@@ -341,7 +341,7 @@ public class BatchSpansProcessorTest {
     // TODO(bdrutu): Fix this when Sampler return RECORD option.
     /*
     tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+        BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .reportOnlySampled(false)
             .build());
@@ -357,7 +357,7 @@ public class BatchSpansProcessorTest {
     // TODO(bdrutu): Fix this when Sampler return RECORD option.
     /*
     tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.newBuilder(waitingSpanExporter)
+        BatchSpanProcessor.newBuilder(waitingSpanExporter)
             .reportOnlySampled(true)
             .setScheduleDelayMillis(MAX_SCHEDULE_DELAY_MILLIS)
             .build());
@@ -375,7 +375,7 @@ public class BatchSpansProcessorTest {
     // Set the export delay to zero, for no timeout, in order to confirm the #flush() below works
 
     tracerSdkFactory.addSpanProcessor(
-        BatchSpansProcessor.newBuilder(waitingSpanExporter).setScheduleDelayMillis(0).build());
+        BatchSpanProcessor.newBuilder(waitingSpanExporter).setScheduleDelayMillis(0).build());
 
     ReadableSpan span2 = createSampledEndedSpan(SPAN_NAME_2);
 

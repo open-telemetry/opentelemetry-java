@@ -20,6 +20,8 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -34,8 +36,24 @@ public class DoubleCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
+  private static final Map<String, String> CONSTANT_LABELS =
+      Collections.singletonMap("key", "value");
 
-  private final Meter meter = OpenTelemetry.getMeter("counter_double_test");
+  private final Meter meter = OpenTelemetry.getMeter("DoubleCounterTest");
+
+  @Test
+  public void preventNull_Name() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("name");
+    meter.doubleCounterBuilder(null);
+  }
+
+  @Test
+  public void preventEmpty_Name() {
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(DefaultMeter.ERROR_MESSAGE_INVALID_NAME);
+    meter.doubleCounterBuilder("").build();
+  }
 
   @Test
   public void preventNonPrintableName() {
@@ -103,7 +121,12 @@ public class DoubleCounterTest {
   @Test
   public void bound_DoesNotThrow() {
     DoubleCounter doubleCounter =
-        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
+        meter
+            .doubleCounterBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setUnit(UNIT)
+            .setConstantLabels(CONSTANT_LABELS)
+            .build();
     BoundDoubleCounter bound = doubleCounter.bind();
     bound.add(1.0);
     bound.unbind();
@@ -112,7 +135,12 @@ public class DoubleCounterTest {
   @Test
   public void bound_PreventNegativeValue() {
     DoubleCounter doubleCounter =
-        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
+        meter
+            .doubleCounterBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setUnit(UNIT)
+            .setConstantLabels(CONSTANT_LABELS)
+            .build();
     BoundDoubleCounter bound = doubleCounter.bind();
     try {
       thrown.expect(IllegalArgumentException.class);

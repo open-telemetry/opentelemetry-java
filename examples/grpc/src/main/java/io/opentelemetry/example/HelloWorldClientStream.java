@@ -88,7 +88,7 @@ public class HelloWorldClientStream {
     // Use the OpenTelemetry SDK
     TracerSdkProvider tracerProvider = OpenTelemetrySdk.getTracerProvider();
     // Set to process the spans by the log exporter
-    tracerProvider.addSpanProcessor(SimpleSpansProcessor.create(exporter));
+    tracerProvider.addSpanProcessor(SimpleSpansProcessor.newBuilder(exporter).build());
   }
 
   public void shutdown() throws InterruptedException {

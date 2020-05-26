@@ -30,7 +30,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.concurrent.ThreadSafe;
 
-/** Exports metrics using OTLP via gRPC, using OpenTelemetry's protobuf model. */
+/**
+ * Exports metrics using OTLP via gRPC, using OpenTelemetry's protobuf model.
+ *
+ * <p>Configuration options for {@link OtlpGrpcMetricExporter} can be read from system properties,
+ * environment variables, or {@link java.util.Properties} objects.
+ *
+ * <p>For system properties and {@link java.util.Properties} objects, {@link OtlpGrpcMetricExporter}
+ * will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time allowed to send each metric
+ *       batch.
+ * </ul>
+ *
+ * <p>For environment variables, {@link OtlpGrpcMetricExporter} will look for the following names:
+ *
+ * <ul>
+ *   <li>{@code OTEL_OTLP_METRIC_TIMEOUT}: to set the max waiting time allowed to send each metric
+ *       batch.
+ * </ul>
+ */
 @ThreadSafe
 public final class OtlpGrpcMetricExporter implements MetricExporter {
   private static final Logger logger = Logger.getLogger(OtlpGrpcMetricExporter.class.getName());
@@ -108,7 +128,7 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
    * @since 0.5.0
    */
   public static OtlpGrpcMetricExporter getDefault() {
-    return newBuilder().readEnvironment().readSystemProperties().build();
+    return newBuilder().readEnvironmentVariables().readSystemProperties().build();
   }
 
   /**
@@ -166,12 +186,6 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
     /**
      * Sets the configuration values from the given configuration map for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time for the collector to
-     *       process each metric batch.
-     * </ul>
      *
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
@@ -189,12 +203,6 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
 
     /**
      * Sets the configuration values from the given properties object for only the available keys.
-     * This method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time for the collector to
-     *       process each metric batch.
-     * </ul>
      *
      * @param properties {@link Properties} holding the configuration values.
      * @return this.
@@ -205,29 +213,17 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
     }
 
     /**
-     * Sets the configuration values from environment variables for only the available keys. This
-     * method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code OTEL_OTLP_METRIC_TIMEOUT}: to set the max waiting time for the collector to
-     *       process each metric batch.
-     * </ul>
+     * Sets the configuration values from environment variables for only the available keys.
      *
      * @return this.
      */
     @Override
-    public Builder readEnvironment() {
-      return super.readEnvironment();
+    public Builder readEnvironmentVariables() {
+      return super.readEnvironmentVariables();
     }
 
     /**
-     * Sets the configuration values from system properties for only the available keys. This method
-     * looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code otel.otlp.metric.timeout}: to set the max waiting time for the collector to
-     *       process each metric batch.
-     * </ul>
+     * Sets the configuration values from system properties for only the available keys.
      *
      * @return this.
      */

@@ -315,6 +315,12 @@ configure(opentelemetryProjects) {
                     artifact sourcesJar
                     artifact javadocJar
 
+                    versionMapping {
+                        usage('java-api') {
+                            fromResolutionOf('runtimeClasspath')
+                        }
+                    }
+
                     pom {
                         name = 'OpenTelemetry Java'
                         packaging = 'jar'

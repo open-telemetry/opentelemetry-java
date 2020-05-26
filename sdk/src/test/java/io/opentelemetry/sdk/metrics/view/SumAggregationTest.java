@@ -31,14 +31,13 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class SumAggregationTest {
   private static final InstrumentType[] MONOTONIC_INSTRUMENTS = {
-    InstrumentType.COUNTER_MONOTONIC,
-    InstrumentType.MEASURE_ABSOLUTE,
-    InstrumentType.OBSERVER_MONOTONIC
+    InstrumentType.COUNTER, InstrumentType.SUM_OBSERVER
   };
   private static final InstrumentType[] NON_MONOTONIC_INSTRUMENTS = {
-    InstrumentType.COUNTER_NON_MONOTONIC,
-    InstrumentType.MEASURE_NON_ABSOLUTE,
-    InstrumentType.OBSERVER_NON_MONOTONIC
+    InstrumentType.UP_DOWN_COUNTER,
+    InstrumentType.UP_DOWN_SUM_OBSERVER,
+    InstrumentType.VALUE_RECORDER,
+    InstrumentType.VALUE_OBSERVER
   };
 
   @Test

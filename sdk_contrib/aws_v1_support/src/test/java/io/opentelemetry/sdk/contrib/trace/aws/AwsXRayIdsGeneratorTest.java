@@ -38,22 +38,26 @@ public class AwsXRayIdsGeneratorTest {
   @Test
   public void shouldGenerateValidIds() {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
-    TraceId traceId = generator.generateTraceId();
-    assertThat(traceId.isValid()).isTrue();
-    SpanId spanId = generator.generateSpanId();
-    assertThat(spanId.isValid()).isTrue();
+    for (int i = 0; i < 1000; i++) {
+      TraceId traceId = generator.generateTraceId();
+      assertThat(traceId.isValid()).isTrue();
+      SpanId spanId = generator.generateSpanId();
+      assertThat(spanId.isValid()).isTrue();
+    }
   }
 
   @Test
   public void shouldGenerateTraceIdsWithTimestampsWithAllowedXrayTimeRange() {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
-    TraceId traceId = generator.generateTraceId();
-    Long unixSeconds = Long.valueOf(traceId.toLowerBase16().substring(0, 8), 16);
-    long ts = unixSeconds * 1000L;
-    long currentTs = System.currentTimeMillis();
-    assertThat(ts <= currentTs).isTrue();
-    long month = 86400000L * 30L;
-    assertThat(ts > currentTs - month).isTrue();
+    for (int i = 0; i < 1000; i++) {
+      TraceId traceId = generator.generateTraceId();
+      Long unixSeconds = Long.valueOf(traceId.toLowerBase16().substring(0, 8), 16);
+      long ts = unixSeconds * 1000L;
+      long currentTs = System.currentTimeMillis();
+      assertThat(ts).isAtMost(currentTs);
+      long month = 86400000L * 30L;
+      assertThat(ts).isGreaterThan(currentTs - month);
+    }
   }
 
   @Test
@@ -71,8 +75,8 @@ public class AwsXRayIdsGeneratorTest {
     }
     barrier.await();
     barrier.await();
-    assertThat(traceIds.size()).isEqualTo(threads * generations);
-    assertThat(spanIds.size()).isEqualTo(threads * generations);
+    assertThat(traceIds).hasSize(threads * generations);
+    assertThat(spanIds).hasSize(threads * generations);
   }
 
   static class GenerateRunner implements Runnable {
