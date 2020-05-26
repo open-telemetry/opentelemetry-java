@@ -16,6 +16,8 @@
 
 package io.opentelemetry.common;
 
+import static java.util.Collections.emptySet;
+
 import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import java.util.ArrayList;
@@ -31,6 +33,8 @@ import javax.annotation.concurrent.Immutable;
 /** javadoc me. */
 @Immutable
 public abstract class Attributes {
+  private static final Attributes EMPTY = new EmptyAttributes();
+
   /** javadoc me. */
   public abstract Set<String> keys();
 
@@ -46,6 +50,11 @@ public abstract class Attributes {
       data.add(entry.getValue());
     }
     return new AutoValue_Attributes_ArrayBackedAttributes(data);
+  }
+
+  /** javadoc me. */
+  public static Attributes empty() {
+    return EMPTY;
   }
 
   /** javadoc me. */
@@ -215,6 +224,20 @@ public abstract class Attributes {
       data.add(key);
       data.add(AttributeValue.arrayAttributeValue(value));
       return this;
+    }
+  }
+
+  private static class EmptyAttributes extends Attributes {
+
+    @Override
+    public Set<String> keys() {
+      return emptySet();
+    }
+
+    @Nullable
+    @Override
+    public AttributeValue getValue(String key) {
+      return null;
     }
   }
 }
