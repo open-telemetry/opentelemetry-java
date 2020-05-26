@@ -162,10 +162,11 @@ public class RecordEventsReadableSpanTest {
       spanDoWork(span, null);
       SpanData spanData = span.toSpanData();
       Event event =
-          EventImpl.create(
+          TimedEvent.create(
               startEpochNanos + NANOS_PER_SECOND,
               "event2",
-              Collections.<String, AttributeValue>emptyMap());
+              Collections.<String, AttributeValue>emptyMap(),
+              0);
       verifySpanData(
           spanData,
           expectedAttributes,
@@ -194,10 +195,11 @@ public class RecordEventsReadableSpanTest {
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
     Event event =
-        EventImpl.create(
+        TimedEvent.create(
             startEpochNanos + NANOS_PER_SECOND,
             "event2",
-            Collections.<String, AttributeValue>emptyMap());
+            Collections.<String, AttributeValue>emptyMap(),
+            0);
     verifySpanData(
         spanData,
         expectedAttributes,
@@ -480,7 +482,7 @@ public class RecordEventsReadableSpanTest {
     try {
       assertThat(span.toSpanData().getEvents())
           .containsExactly(
-              EventImpl.create(
+              TimedEvent.create(
                   testClock.now(),
                   "name",
                   Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
@@ -488,7 +490,7 @@ public class RecordEventsReadableSpanTest {
       attributes.remove("key0");
       assertThat(span.toSpanData().getEvents())
           .containsExactly(
-              EventImpl.create(
+              TimedEvent.create(
                   testClock.now(),
                   "name",
                   Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
@@ -507,7 +509,7 @@ public class RecordEventsReadableSpanTest {
     try {
       assertThat(span.toSpanData().getEvents())
           .containsExactly(
-              EventImpl.create(
+              TimedEvent.create(
                   100,
                   "name",
                   Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
@@ -515,7 +517,7 @@ public class RecordEventsReadableSpanTest {
       attributes.remove("key0");
       assertThat(span.toSpanData().getEvents())
           .containsExactly(
-              EventImpl.create(
+              TimedEvent.create(
                   100,
                   "name",
                   Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
@@ -606,10 +608,11 @@ public class RecordEventsReadableSpanTest {
       assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
         Event expectedEvent =
-            EventImpl.create(
+            TimedEvent.create(
                 startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
                 "event2",
-                Collections.<String, AttributeValue>emptyMap());
+                Collections.<String, AttributeValue>emptyMap(),
+                0);
         assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
         assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
       }
@@ -620,10 +623,11 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
       Event expectedEvent =
-          EventImpl.create(
+          TimedEvent.create(
               startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
               "event2",
-              Collections.<String, AttributeValue>emptyMap());
+              Collections.<String, AttributeValue>emptyMap(),
+              0);
       assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
     }
   }
@@ -776,8 +780,10 @@ public class RecordEventsReadableSpanTest {
 
     List<Event> events =
         Arrays.<Event>asList(
-            EventImpl.create(firstEventEpochNanos, "event1", event1Attributes),
-            EventImpl.create(secondEventTimeNanos, "event2", event2Attributes));
+            TimedEvent.create(
+                firstEventEpochNanos, "event1", event1Attributes, event1Attributes.size()),
+            TimedEvent.create(
+                secondEventTimeNanos, "event2", event2Attributes, event2Attributes.size()));
 
     SpanData result = readableSpan.toSpanData();
     verifySpanData(
