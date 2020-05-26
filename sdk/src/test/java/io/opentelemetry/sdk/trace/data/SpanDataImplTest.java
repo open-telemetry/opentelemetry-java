@@ -21,7 +21,6 @@ import static java.util.Collections.emptyList;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
@@ -82,7 +81,7 @@ public class SpanDataImplTest {
     thrown.expect(UnsupportedOperationException.class);
     spanData
         .getEvents()
-        .add(Event.create(1234, "foo", Collections.<String, AttributeValue>emptyMap()));
+        .add(EventImpl.create(1234, "foo", Collections.<String, AttributeValue>emptyMap()));
   }
 
   @Test
@@ -111,22 +110,23 @@ public class SpanDataImplTest {
 
   @Test
   public void timedEvent_defaultTotalAttributeCountIsZero() {
-    Event event =
-        Event.create(START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap());
+    EventImpl event =
+        EventImpl.create(START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap());
     assertThat(event.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void timedEvent_canSetTotalAttributeCount() {
-    Event event =
-        Event.create(START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap(), 123);
+    EventImpl event =
+        EventImpl.create(
+            START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap(), 123);
     assertThat(event.getTotalAttributeCount()).isEqualTo(123);
   }
 
   private static SpanData createSpanDataWithMutableCollections() {
     return createBasicSpanBuilder()
         .setLinks(new ArrayList<Link>())
-        .setEvents(new ArrayList<Event>())
+        .setEvents(new ArrayList<SpanData.Event>())
         .setAttributes(new HashMap<String, AttributeValue>())
         .build();
   }

@@ -27,6 +27,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -131,7 +132,7 @@ public class AdapterTest {
   @Test
   public void testJaegerLog() {
     // prepare
-    Event event = getTimedEvent();
+    EventImpl event = getTimedEvent();
 
     // test
     Model.Log log = Adapter.toJaegerLog(event);
@@ -291,11 +292,11 @@ public class AdapterTest {
     assertTrue(error.getVBool());
   }
 
-  private static Event getTimedEvent() {
+  private static EventImpl getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
     ImmutableMap<String, AttributeValue> attributes = ImmutableMap.of("foo", valueS);
-    return Event.create(epochNanos, "the log message", attributes);
+    return EventImpl.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
@@ -313,7 +314,7 @@ public class AdapterTest {
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
         .setAttributes(attributes)
-        .setEvents(Collections.singletonList(getTimedEvent()))
+        .setEvents(Collections.<Event>singletonList(getTimedEvent()))
         .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)

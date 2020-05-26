@@ -24,6 +24,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.TimedEvent.RawTimedEventWithEvent;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -505,13 +506,23 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     if (events.isEmpty()) {
       return Collections.emptyList();
     }
-    List<Event> result = new ArrayList<>(events.size());
-    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
-      result.add(
-          Event.create(
-              sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
+
+    List<Event> results = new ArrayList<>(events.size());
+    for (TimedEvent event : events) {
+      if (event instanceof RawTimedEventWithEvent) {
+        // make sure to copy the data if the event is wrapping another one,
+        // so we don't hold on the caller's memory
+        results.add(
+            TimedEvent.create(
+                event.getEpochNanos(),
+                event.getName(),
+                event.getAttributes(),
+                event.getTotalAttributeCount()));
+      } else {
+        results.add(event);
+      }
     }
-    return Collections.unmodifiableList(result);
+    return Collections.unmodifiableList(results);
   }
 
   @GuardedBy("lock")
