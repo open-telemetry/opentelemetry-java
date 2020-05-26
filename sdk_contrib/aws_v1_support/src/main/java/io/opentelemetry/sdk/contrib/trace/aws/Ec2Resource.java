@@ -16,8 +16,6 @@
 
 package io.opentelemetry.sdk.contrib.trace.aws;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
 import com.amazonaws.util.EC2MetadataUtils;
 import com.amazonaws.util.EC2MetadataUtils.InstanceInfo;
 import io.opentelemetry.common.AttributeValue;
@@ -67,7 +65,7 @@ public class Ec2Resource {
       labels.put(
           ResourceConstants.HOST_IMAGE_ID, AttributeValue.stringAttributeValue(info.getImageId()));
     }
-    if (!isNullOrEmpty(hostname)) {
+    if (hostname != null && !hostname.isEmpty()) {
       labels.put(ResourceConstants.HOST_HOSTNAME, AttributeValue.stringAttributeValue(hostname));
     }
     return Resource.create(labels);
