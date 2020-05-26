@@ -51,19 +51,41 @@ public class B3Propagator implements HttpTextFormat {
   private final B3PropagatorInjector b3PropagatorInjector;
   private final B3PropagatorExtractor b3PropagatorExtractor;
 
-  /** Creates a new instance of {@link B3Propagator}. Defaults to use multiple headers. */
-  public B3Propagator() {
-    this(false);
+  private static final B3Propagator SINGLE_HEADER =
+      new B3Propagator(
+          new B3PropagatorInjectorSingleHeader(), new B3PropagatorExtractorSingleHeader());
+  private static final B3Propagator MULTI_HEADER =
+      new B3Propagator(
+          new B3PropagatorInjectorMultipleHeaders(), new B3PropagatorExtractorMultipleHeaders());
+
+  /**
+   * Returns an instance of {@link B3Propagator} with Single Header Implementation of B3 propagation
+   * protocol. See <a
+   * href=https://github.com/openzipkin/b3-propagation#single-header>openzipkin/b3-propagation#single-header</a>.
+   *
+   * @return Returns an instance of {@link B3Propagator} with Single Header implementation of B3
+   *     propagation protocol.
+   */
+  public static B3Propagator getSingleHeaderPropagator() {
+    return SINGLE_HEADER;
   }
 
   /**
-   * Creates a new instance of {@link B3Propagator}.
+   * Returns an instance of {@link B3Propagator} with Multiple Header Implementation of B3
+   * propagation protocol. See <a
+   * href=https://github.com/openzipkin/b3-propagation#multiple-headers>openzipkin/b3-propagation#multiple-headers</a>.
    *
-   * @param singleHeader whether to use single or multiple headers.
+   * @return Returns an instance of {@link B3Propagator} with Multiple Header implementation of B3
+   *     propagation protocol.
    */
-  public B3Propagator(boolean singleHeader) {
-    b3PropagatorInjector = new B3PropagatorInjector(singleHeader);
-    b3PropagatorExtractor = new B3PropagatorExtractor(singleHeader);
+  public static B3Propagator getMultipleHeaderPropagator() {
+    return MULTI_HEADER;
+  }
+
+  private B3Propagator(
+      B3PropagatorInjector b3PropagatorInjector, B3PropagatorExtractor b3PropagatorExtractor) {
+    this.b3PropagatorInjector = b3PropagatorInjector;
+    this.b3PropagatorExtractor = b3PropagatorExtractor;
   }
 
   @Override
