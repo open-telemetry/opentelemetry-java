@@ -20,7 +20,6 @@ import com.google.auto.value.AutoValue;
 import com.google.auto.value.extension.memoized.Memoized;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +31,7 @@ import javax.annotation.concurrent.Immutable;
 /** javadoc me. */
 @Immutable
 public abstract class Attributes {
+  /** javadoc me. */
   public abstract Set<String> keys();
 
   /** javadoc me. */
@@ -158,7 +158,7 @@ public abstract class Attributes {
 
     /** javadoc me. */
     public Attributes build() {
-      return new AutoValue_Attributes_ArrayBackedAttributes(Collections.unmodifiableList(data));
+      return new AutoValue_Attributes_ArrayBackedAttributes(Arrays.asList(data.toArray()));
     }
 
     /** javadoc me. */
