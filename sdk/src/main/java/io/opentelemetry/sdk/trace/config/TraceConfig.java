@@ -91,16 +91,16 @@ public abstract class TraceConfig {
   private static final int DEFAULT_SPAN_MAX_NUM_ATTRIBUTES_PER_LINK = 32;
 
   /**
-   * Returns a new {@link TraceConfig} reading the configuration values from the environment and
-   * from system properties. System properties override values defined in the environment. If a
-   * configuration value is missing, it uses the default value.
+   * Returns the default {@code TraceConfig}.
    *
    * @return the default {@code TraceConfig}.
    * @since 0.1.0
    */
   public static TraceConfig getDefault() {
-    return newBuilder().readEnvironmentVariables().readSystemProperties().build();
+    return DEFAULT;
   }
+
+  private static final TraceConfig DEFAULT = TraceConfig.newBuilder().build();
 
   /**
    * Returns the global default {@code Sampler} which is used when constructing a new {@code Span}.
