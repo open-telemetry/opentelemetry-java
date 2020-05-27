@@ -16,7 +16,6 @@
 
 package io.opentelemetry.common;
 
-import static java.util.Collections.emptyIterator;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 
@@ -281,7 +280,22 @@ public abstract class Attributes implements Iterable<Entry<String, AttributeValu
 
     @Override
     public Iterator<Entry<String, AttributeValue>> iterator() {
-      return emptyIterator();
+      return new Iterator<Entry<String, AttributeValue>>() {
+        @Override
+        public boolean hasNext() {
+          return false;
+        }
+
+        @Override
+        public Entry<String, AttributeValue> next() {
+          throw new IllegalStateException();
+        }
+
+        @Override
+        public void remove() {
+          throw new UnsupportedOperationException("empty");
+        }
+      };
     }
   }
 

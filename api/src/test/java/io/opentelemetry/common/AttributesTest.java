@@ -59,7 +59,7 @@ public class AttributesTest {
   public void testIteration_empty() {
     AtomicBoolean sawSomething = new AtomicBoolean(false);
     Attributes emptyAttributes = Attributes.empty();
-    for (Entry<String, AttributeValue> ignored : emptyAttributes) {
+    for (Entry<String, AttributeValue> unused : emptyAttributes) {
       sawSomething.set(true);
     }
     assertThat(sawSomething.get()).isFalse();
