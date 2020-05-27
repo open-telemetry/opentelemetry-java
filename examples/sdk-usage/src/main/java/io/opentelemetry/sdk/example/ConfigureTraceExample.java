@@ -23,7 +23,7 @@ import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
-import io.opentelemetry.sdk.trace.export.SimpleSpansProcessor;
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
@@ -42,7 +42,7 @@ class ConfigureTraceExample {
 
   static {
     tracerProvider.addSpanProcessor(
-        SimpleSpansProcessor.newBuilder(new LoggingSpanExporter()).build());
+        SimpleSpanProcessor.newBuilder(new LoggingSpanExporter()).build());
   }
 
   public static void main(String[] args) {
