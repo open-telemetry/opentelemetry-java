@@ -21,6 +21,7 @@ import static java.util.Collections.singletonMap;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.trace.Link;
@@ -33,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -75,16 +77,16 @@ public final class Samplers {
    *
    * @param isSampled The value to return from {@link Decision#isSampled()}.
    * @param attributes The attributes to return from {@link Decision#getAttributes()}. A different
-   *     object instance with the same elements may be returned. The map must not be modified after
-   *     being passed to this function. Use {@link Collections#emptyMap()} for an empty decision.
+   *     object instance with the same elements may be returned.
    * @return A {@link Decision} with the attributes equivalent to {@code attributes} and {@link
    *     Decision#isSampled()} returning {@code isSampled}.
    */
-  public static final Decision decision(boolean isSampled, Map<String, AttributeValue> attributes) {
+  public static final Decision decision(
+      boolean isSampled, @Nonnull Map<String, AttributeValue> attributes) {
     Objects.requireNonNull(attributes, "attributes");
     return attributes.isEmpty()
         ? emptyDecision(isSampled)
-        : DecisionImpl.create(isSampled, attributes);
+        : DecisionImpl.create(isSampled, ImmutableMap.copyOf(attributes));
   }
 
   /**
