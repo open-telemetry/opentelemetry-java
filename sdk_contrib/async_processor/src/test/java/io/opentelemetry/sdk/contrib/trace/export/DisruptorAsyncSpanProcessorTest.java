@@ -18,16 +18,20 @@ package io.opentelemetry.sdk.contrib.trace.export;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.MultiSpanProcessor;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link DisruptorAsyncSpanProcessor}. */
@@ -267,5 +271,27 @@ public class DisruptorAsyncSpanProcessorTest {
     assertThat(incrementSpanProcessor.getCounterOnEnd()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnExportedForceFlushSpans()).isEqualTo(tenK);
     assertThat(incrementSpanProcessor.getCounterOnShutdown()).isEqualTo(1);
+  }
+
+  abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
+    public static NamingConvention getNaming() {
+      return NamingConvention.DOT;
+    }
+  }
+
+  @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.disruptor.blocking", "false");
+    options.put("otel.disruptor.buffer.size", "1234");
+    options.put("otel.disruptor.num.retries", "56");
+    options.put("otel.disruptor.sleeping.time", "78");
+    IncrementSpanProcessor incrementSpanProcessor = new IncrementSpanProcessor(REQUIRED, REQUIRED);
+    DisruptorAsyncSpanProcessor.Builder config =
+        DisruptorAsyncSpanProcessor.newBuilder(incrementSpanProcessor);
+    DisruptorAsyncSpanProcessor.Builder spy = Mockito.spy(config);
+    spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
+    Mockito.verify(spy).setBlocking(false);
+    Mockito.verify(spy).setBufferSize(1234);
   }
 }
