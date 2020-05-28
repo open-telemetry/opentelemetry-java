@@ -30,7 +30,6 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.Map;
@@ -84,13 +83,11 @@ public class JaegerRemoteSampler implements Sampler {
   public Decision shouldSample(
       @Nullable SpanContext parentContext,
       TraceId traceId,
-      SpanId spanId,
       String name,
       Kind spanKind,
       Map<String, AttributeValue> attributes,
       List<Link> parentLinks) {
-    return sampler.shouldSample(
-        parentContext, traceId, spanId, name, spanKind, attributes, parentLinks);
+    return sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
   }
 
   private void getAndUpdateSampler() {

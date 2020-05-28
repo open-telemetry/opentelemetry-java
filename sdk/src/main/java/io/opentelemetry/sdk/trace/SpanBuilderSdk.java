@@ -223,13 +223,7 @@ final class SpanBuilderSdk implements Span.Builder {
         traceConfig
             .getSampler()
             .shouldSample(
-                parentContext,
-                traceId,
-                spanId,
-                spanName,
-                spanKind,
-                immutableAttributes,
-                immutableLinks);
+                parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
 
     SpanContext spanContext =
         SpanContext.create(

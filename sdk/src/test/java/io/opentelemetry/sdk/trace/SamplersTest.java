@@ -47,7 +47,6 @@ public class SamplersTest {
   private static final int NUM_SAMPLE_TRIES = 1000;
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
   private final TraceId traceId = idsGenerator.generateTraceId();
-  private final SpanId spanId = idsGenerator.generateSpanId();
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
   private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
@@ -102,7 +101,6 @@ public class SamplersTest {
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -116,7 +114,6 @@ public class SamplersTest {
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -130,7 +127,6 @@ public class SamplersTest {
                 .shouldSample(
                     null,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -152,7 +148,6 @@ public class SamplersTest {
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -166,7 +161,6 @@ public class SamplersTest {
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -180,7 +174,6 @@ public class SamplersTest {
                 .shouldSample(
                     null,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -224,7 +217,7 @@ public class SamplersTest {
         .isEqualTo(String.format("ProbabilitySampler{%.6f}", 0.5));
   }
 
-  // Applies the given sampler to NUM_SAMPLE_TRIES random traceId/spanId pairs.
+  // Applies the given sampler to NUM_SAMPLE_TRIES random traceId.
   private void assertSamplerSamplesWithProbability(
       Sampler sampler,
       SpanContext parent,
@@ -236,7 +229,6 @@ public class SamplersTest {
           .shouldSample(
               parent,
               idsGenerator.generateTraceId(),
-              idsGenerator.generateSpanId(),
               SPAN_NAME,
               SPAN_KIND,
               Collections.<String, AttributeValue>emptyMap(),
@@ -344,7 +336,6 @@ public class SamplersTest {
         defaultProbability.shouldSample(
             null,
             notSampledtraceId,
-            idsGenerator.generateSpanId(),
             SPAN_NAME,
             SPAN_KIND,
             Collections.<String, AttributeValue>emptyMap(),
@@ -379,7 +370,6 @@ public class SamplersTest {
         defaultProbability.shouldSample(
             null,
             sampledtraceId,
-            idsGenerator.generateSpanId(),
             SPAN_NAME,
             SPAN_KIND,
             Collections.<String, AttributeValue>emptyMap(),
