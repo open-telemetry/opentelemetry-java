@@ -115,6 +115,22 @@ public class HttpTraceContextTest {
   }
 
   @Test
+  public void inject_invalidContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    httpTraceContext.inject(
+        withSpanContext(
+            SpanContext.create(
+                TraceId.getInvalid(),
+                SpanId.getInvalid(),
+                SAMPLED_TRACE_OPTIONS,
+                TraceState.builder().set("foo", "bar").build()),
+            Context.current()),
+        carrier,
+        setter);
+    assertThat(carrier).hasSize(0);
+  }
+
+  @Test
   public void inject_SampledContext() {
     Map<String, String> carrier = new LinkedHashMap<>();
     Context context =
