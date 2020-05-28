@@ -180,10 +180,7 @@ configure(opentelemetryProjects) {
 
     dependencies {
 
-        implementation platform(boms.grpc),
-                platform(boms.guava),
-                platform(boms.protobuf),
-                platform(boms.zipkin_reporter)
+        implementation platform(boms.grpc)
 
         compileOnly libraries.auto_value_annotation,
                 libraries.errorprone_annotation,
@@ -192,7 +189,8 @@ configure(opentelemetryProjects) {
         testImplementation libraries.junit,
                 libraries.mockito,
                 libraries.truth,
-                libraries.guava_testlib
+                libraries.guava_testlib,
+                platform(boms.guava)
 
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check

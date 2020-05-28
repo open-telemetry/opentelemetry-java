@@ -13,7 +13,8 @@ dependencies {
             project(':opentelemetry-sdk')
 
     implementation libraries.guava,
-            libraries.disruptor
+            libraries.disruptor,
+            platform(boms.guava)
 
     signature "org.codehaus.mojo.signature:java18:1.0@signature"
 }
