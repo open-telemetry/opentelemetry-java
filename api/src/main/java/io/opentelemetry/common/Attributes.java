@@ -36,13 +36,11 @@ public abstract class Attributes implements Iterable<Entry<String, AttributeValu
     // note: this is possibly not the most memory-efficient possible implementation, but it works.
     TreeMap<String, AttributeValue> sorter = new TreeMap<>();
     for (int i = 0; i < data.size(); i++) {
-      String key = (String) data.get(i);
+      String key = (String) data.get(i++);
       // todo: skip here, favoring the first, or use the TreeMap's built in replacement to favor the
       // last?
       if (!sorter.containsKey(key)) {
-        sorter.put(key, (AttributeValue) data.get(++i));
-      } else {
-        i++;
+        sorter.put(key, (AttributeValue) data.get(i));
       }
     }
     List<Object> sortedData = new ArrayList<>(sorter.size() * 2);
