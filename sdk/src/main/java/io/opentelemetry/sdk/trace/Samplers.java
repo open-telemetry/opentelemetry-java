@@ -21,6 +21,7 @@ import static java.util.Collections.singletonMap;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.trace.Link;
@@ -32,6 +33,8 @@ import io.opentelemetry.trace.attributes.DoubleAttributeSetter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -62,6 +65,45 @@ public final class Samplers {
 
   // No instance of this class.
   private Samplers() {}
+
+  /**
+   * Returns a {@link Decision} with the given {@code attributes} and {@link Decision#isSampled()}
+   * returning {@code isSampled}.
+   *
+   * <p>This is meant for use by custom {@link Sampler} implementations.
+   *
+   * <p>Using {@link #emptyDecision(boolean)} instead of this method is slightly faster and shorter
+   * if you don't need attributes.
+   *
+   * @param isSampled The value to return from {@link Decision#isSampled()}.
+   * @param attributes The attributes to return from {@link Decision#getAttributes()}. A different
+   *     object instance with the same elements may be returned.
+   * @return A {@link Decision} with the attributes equivalent to {@code attributes} and {@link
+   *     Decision#isSampled()} returning {@code isSampled}.
+   */
+  public static final Decision decision(
+      boolean isSampled, @Nonnull Map<String, AttributeValue> attributes) {
+    Objects.requireNonNull(attributes, "attributes");
+    return attributes.isEmpty()
+        ? emptyDecision(isSampled)
+        : DecisionImpl.create(isSampled, ImmutableMap.copyOf(attributes));
+  }
+
+  /**
+   * Returns a {@link Decision} with empty attributes and {@link Decision#isSampled()} returning the
+   * {@code isSampled}.
+   *
+   * <p>This is meant for use by custom {@link Sampler} implementations.
+   *
+   * <p>Use {@link #decision(boolean, Map)} if you need attributes.
+   *
+   * @param isSampled The value to return from {@link Decision#isSampled()}.
+   * @return A {@link Decision} with empty attributes and {@link Decision#isSampled()} returning
+   *     {@code isSampled}.
+   */
+  public static final Decision emptyDecision(boolean isSampled) {
+    return isSampled ? EMPTY_SAMPLED_DECISION : EMPTY_NOT_SAMPLED_DECISION;
+  }
 
   /**
    * Returns a {@link Sampler} that always makes a "yes" decision on {@link Span} sampling.
@@ -245,6 +287,16 @@ public final class Samplers {
     static Decision createWithoutAttributes(boolean decision) {
       return new AutoValue_Samplers_DecisionImpl(
           decision, Collections.<String, AttributeValue>emptyMap());
+    }
+
+    /**
+     * Creates sampling decision with the given attributes.
+     *
+     * @param decision sampling decision
+     * @param attributes attributes. Will not be copied, so do not modify afterwards.
+     */
+    static Decision create(boolean decision, Map<String, AttributeValue> attributes) {
+      return new AutoValue_Samplers_DecisionImpl(decision, attributes);
     }
 
     @Override

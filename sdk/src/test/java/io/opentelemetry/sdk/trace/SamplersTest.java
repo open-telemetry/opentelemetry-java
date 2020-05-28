@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.truth.Truth;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
@@ -30,6 +31,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,6 +58,41 @@ public class SamplersTest {
   private final io.opentelemetry.trace.Link sampledParentLink = Link.create(sampledSpanContext);
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
+
+  @Test
+  public void emptySamplingDecision() {
+    Truth.assertThat(Samplers.emptyDecision(true)).isSameInstanceAs(Samplers.emptyDecision(true));
+    Truth.assertThat(Samplers.emptyDecision(false)).isSameInstanceAs(Samplers.emptyDecision(false));
+
+    Truth.assertThat(Samplers.emptyDecision(true).isSampled()).isTrue();
+    Truth.assertThat(Samplers.emptyDecision(true).getAttributes()).isEmpty();
+    Truth.assertThat(Samplers.emptyDecision(false).isSampled()).isFalse();
+    Truth.assertThat(Samplers.emptyDecision(false).getAttributes()).isEmpty();
+  }
+
+  @Test
+  public void samplingDecisionEmpty() {
+    Truth.assertThat(Samplers.decision(/*isSampled=*/ true, new HashMap<String, AttributeValue>()))
+        .isSameInstanceAs(Samplers.emptyDecision(true));
+    Truth.assertThat(
+            Samplers.decision(/*isSampled=*/ false, Collections.<String, AttributeValue>emptyMap()))
+        .isSameInstanceAs(Samplers.emptyDecision(false));
+  }
+
+  @Test
+  public void samplingDecisionAttrs() {
+    final ImmutableMap<String, AttributeValue> attrs =
+        ImmutableMap.of(
+            "foo", AttributeValue.longAttributeValue(42),
+            "bar", AttributeValue.stringAttributeValue("baz"));
+    final Decision sampledDecision = Samplers.decision(/*isSampled=*/ true, attrs);
+    Truth.assertThat(sampledDecision.isSampled()).isTrue();
+    Truth.assertThat(sampledDecision.getAttributes()).isEqualTo(attrs);
+
+    final Decision notSampledDecision = Samplers.decision(/*isSampled=*/ false, attrs);
+    Truth.assertThat(notSampledDecision.isSampled()).isFalse();
+    Truth.assertThat(notSampledDecision.getAttributes()).isEqualTo(attrs);
+  }
 
   @Test
   public void alwaysOnSampler() {
