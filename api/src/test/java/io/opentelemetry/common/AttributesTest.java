@@ -17,6 +17,7 @@
 package io.opentelemetry.common;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -27,12 +28,12 @@ import org.junit.Test;
 public class AttributesTest {
 
   @Test
-  public void testIteration() {
+  public void iteration() {
     Set<String> keysSeen = new HashSet<>();
 
     Attributes attributes =
         Attributes.of(
-            "key1", AttributeValue.stringAttributeValue("value1"),
+            "key1", stringAttributeValue("value1"),
             "key2", AttributeValue.longAttributeValue(333));
 
     for (Entry<String, AttributeValue> attribute : attributes) {
@@ -43,10 +44,10 @@ public class AttributesTest {
   }
 
   @Test
-  public void testIteration_singleAttribute() {
+  public void iteration_singleAttribute() {
     Set<String> keysSeen = new HashSet<>();
 
-    Attributes attributes = Attributes.of("key", AttributeValue.stringAttributeValue("value"));
+    Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
 
     for (Entry<String, AttributeValue> attribute : attributes) {
       keysSeen.add(attribute.getKey());
@@ -56,12 +57,37 @@ public class AttributesTest {
   }
 
   @Test
-  public void testIteration_empty() {
+  public void iteration_empty() {
     AtomicBoolean sawSomething = new AtomicBoolean(false);
     Attributes emptyAttributes = Attributes.empty();
     for (Entry<String, AttributeValue> unused : emptyAttributes) {
       sawSomething.set(true);
     }
     assertThat(sawSomething.get()).isFalse();
+  }
+
+  @Test
+  public void orderIndependentEquality() {
+    Attributes one =
+        Attributes.of(
+            "key1", stringAttributeValue("value1"),
+            "key2", stringAttributeValue("value2"));
+    Attributes two =
+        Attributes.of(
+            "key2", stringAttributeValue("value2"),
+            "key1", stringAttributeValue("value1"));
+
+    assertThat(one).isEqualTo(two);
+  }
+
+  @Test
+  public void deduplication() {
+    Attributes one =
+        Attributes.of(
+            "key1", stringAttributeValue("value1"),
+            "key1", stringAttributeValue("valueX"));
+    Attributes two = Attributes.of("key1", stringAttributeValue("value1"));
+
+    assertThat(one).isEqualTo(two);
   }
 }
