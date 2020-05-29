@@ -12,7 +12,8 @@ ext.moduleName = "io.opentelemetry.sdk"
 dependencies {
     api project(':opentelemetry-api')
 
-    implementation libraries.guava
+    implementation libraries.guava,
+            platform(boms.guava)
 
     annotationProcessor libraries.auto_value
 

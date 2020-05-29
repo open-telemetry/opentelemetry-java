@@ -14,7 +14,8 @@ dependencies {
             project(':opentelemetry-sdk')
 
     implementation libraries.protobuf,
-            libraries.protobuf_util
+            libraries.protobuf_util,
+            platform(boms.protobuf)
 
     testImplementation "io.grpc:grpc-testing:${grpcVersion}"
     testRuntime "io.grpc:grpc-netty-shaded:${grpcVersion}"
