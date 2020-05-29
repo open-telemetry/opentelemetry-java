@@ -196,7 +196,6 @@ final class SpanBuilderSdk implements Span.Builder {
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
     TraceId traceId;
-    SpanId spanId = idsGenerator.generateSpanId();
     TraceState traceState = TraceState.getDefault();
     if (parentContext == null || !parentContext.isValid()) {
       // New root span.
@@ -225,12 +224,13 @@ final class SpanBuilderSdk implements Span.Builder {
             .shouldSample(
                 parentContext, traceId, spanName, spanKind, immutableAttributes, immutableLinks);
 
-    SpanContext spanContext =
-        SpanContext.create(
-            traceId,
-            spanId,
-            samplingDecision.isSampled() ? TRACE_OPTIONS_SAMPLED : TRACE_OPTIONS_NOT_SAMPLED,
-            traceState);
+    SpanId spanId = SpanId.getInvalid();
+    TraceFlags traceFlags = TRACE_OPTIONS_NOT_SAMPLED;
+    if (samplingDecision.isSampled()) {
+      spanId = idsGenerator.generateSpanId();
+      traceFlags = TRACE_OPTIONS_SAMPLED;
+    }
+    SpanContext spanContext = SpanContext.create(traceId, spanId, traceFlags, traceState);
 
     if (!samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
