@@ -38,11 +38,17 @@ configure(opentelemetryProjects) {
     targetCompatibility = 1.7
 
     tasks.withType(JavaCompile) {
-        // We suppress the "try" warning because it disallows managing an auto-closeable with
-        // try-with-resources without referencing the auto-closeable within the try block.
-        // We suppress the "processing" warning as suggested in
-        // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
-        it.options.compilerArgs += ["-Xlint:all", "-Xlint:-try", "-Xlint:-processing"]
+        it.options.compilerArgs += [
+                "-Xlint:all",
+                // We suppress the "try" warning because it disallows managing an auto-closeable with
+                // try-with-resources without referencing the auto-closeable within the try block.
+                "-Xlint:-try",
+                // We suppress the "processing" warning as suggested in
+                // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
+                "-Xlint:-processing",
+                // We suppress the "options" warning because it prevents
+                "-Xlint:-options",
+        ]
         it.options.errorprone.disableWarningsInGeneratedCode = true
         it.options.errorprone.allDisabledChecksAsWarnings = true
 
@@ -66,17 +72,17 @@ configure(opentelemetryProjects) {
         it.options.errorprone.disable("AutoValueImmutableFields")
         // "-Xep:AutoValueImmutableFields:OFF"
 
+        // UnnecessaryAnonymousClass requires Java 8 but we target Java 7
+        it.options.errorprone.disable("UnnecessaryAnonymousClass")
+        // "-Xep:UnnecessaryAnonymousClass:OFF"
+
         it.options.encoding = "UTF-8"
 
         // Ignore warnings for protobuf and jmh generated files.
         it.options.errorprone.excludedPaths = ".*generated.*"
         // "-XepExcludedPaths:.*/build/generated/source/proto/.*"
 
-        // Enforce errorprone warnings to be errors.
-        if (!JavaVersion.current().isJava9() && !JavaVersion.current().isJava10() && !JavaVersion.current().isJava11()) {
-            // TODO: Enable -Werror for Java 9+
-            it.options.compilerArgs += ["-Werror"]
-        }
+        it.options.compilerArgs += ["-Werror"]
     }
 
     compileTestJava {
@@ -95,7 +101,7 @@ configure(opentelemetryProjects) {
 
     ext {
         autoValueVersion = '1.6.6'
-        errorProneVersion = '2.3.3'
+        errorProneVersion = '2.3.4'
         errorProneJavacVersion = '9+181-r4173-1'
         findBugsJsr305Version = '3.0.2'
         grpcVersion = '1.28.0'
@@ -144,7 +150,7 @@ configure(opentelemetryProjects) {
                 // Test dependencies.
                 guava_testlib           : "com.google.guava:guava-testlib",
                 junit                   : 'junit:junit:4.12',
-                mockito                 : 'org.mockito:mockito-core:2.28.2',
+                mockito                 : 'org.mockito:mockito-core:3.3.3',
                 truth                   : 'com.google.truth:truth:1.0.1',
                 system_rules            : 'com.github.stefanbirkner:system-rules:1.19.0', // env and system properties
                 slf4jsimple             : 'org.slf4j:slf4j-simple:1.7.25', // Compatibility layer
@@ -163,7 +169,7 @@ configure(opentelemetryProjects) {
         configProperties["rootDir"] = rootDir
     }
 
-    jacoco { toolVersion = "0.8.2" }
+    jacoco { toolVersion = "0.8.5" }
 
     googleJavaFormat {
         toolVersion = '1.7'
@@ -197,9 +203,11 @@ configure(opentelemetryProjects) {
         // The ErrorProne plugin defaults to the latest, which would break our
         // build if error prone releases a new version with a new check
         errorprone libraries.errorprone_core
-        errorproneJavac libraries.errorprone_javac
+        if (!JavaVersion.current().isJava9Compatible()) {
+            errorproneJavac libraries.errorprone_javac
+        }
 
-        if (JavaVersion.current().isJava9() || JavaVersion.current().isJava10() || JavaVersion.current().isJava11()) {
+        if (JavaVersion.current().isJava9Compatible()) {
             // Workaround for @javax.annotation.Generated
             // see: https://github.com/grpc/grpc-java/issues/3633
             compile("javax.annotation:javax.annotation-api:1.3.2")

@@ -51,7 +51,7 @@ public class AwsXRayIdsGeneratorTest {
     AwsXRayIdsGenerator generator = new AwsXRayIdsGenerator();
     for (int i = 0; i < 1000; i++) {
       TraceId traceId = generator.generateTraceId();
-      Long unixSeconds = Long.valueOf(traceId.toLowerBase16().substring(0, 8), 16);
+      long unixSeconds = Long.valueOf(traceId.toLowerBase16().substring(0, 8), 16);
       long ts = unixSeconds * 1000L;
       long currentTs = System.currentTimeMillis();
       assertThat(ts).isAtMost(currentTs);

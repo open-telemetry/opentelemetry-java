@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.trace.export;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -72,7 +72,7 @@ public class SimpleSpanProcessorTest {
   @Test
   public void onStartSync() {
     simpleSampledSpansProcessor.onStart(readableSpan);
-    verifyZeroInteractions(spanExporter);
+    verifyNoInteractions(spanExporter);
   }
 
   @Test
@@ -88,7 +88,7 @@ public class SimpleSpanProcessorTest {
   public void onEndSync_NotSampledSpan() {
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     simpleSampledSpansProcessor.onEnd(readableSpan);
-    verifyZeroInteractions(spanExporter);
+    verifyNoInteractions(spanExporter);
   }
 
   @Test
@@ -99,7 +99,7 @@ public class SimpleSpanProcessorTest {
         .thenThrow(new RuntimeException());
     SimpleSpanProcessor simpleSpanProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
     simpleSpanProcessor.onEnd(readableSpan);
-    verifyZeroInteractions(spanExporter);
+    verifyNoInteractions(spanExporter);
   }
 
   @Test
@@ -189,7 +189,7 @@ public class SimpleSpanProcessorTest {
 
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onEnd(readableSpan);
-    verifyZeroInteractions(spanExporter);
+    verifyNoInteractions(spanExporter);
   }
 
   @Test
@@ -201,7 +201,7 @@ public class SimpleSpanProcessorTest {
 
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onEnd(readableSpan);
-    verifyZeroInteractions(spanExporter);
+    verifyNoInteractions(spanExporter);
   }
 
   @Test
