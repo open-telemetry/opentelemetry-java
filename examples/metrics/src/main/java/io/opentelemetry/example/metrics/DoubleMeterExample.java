@@ -2,21 +2,34 @@ package io.opentelemetry.example.metrics;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.DoubleCounter;
+import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.metrics.Meter;
 
+/**
+ * Simple example for meter usage
+ */
 public class DoubleMeterExample {
 
   public static void main(String[] args) {
-    Meter sampleMeter = OpenTelemetry.getMeterProvider().get("sample", "0.1");
-    DoubleCounter jvmUsageCounter = sampleMeter.doubleCounterBuilder("jvm_memory_usage")
-        .setDescription("should meter jvm memory usage in percentage")
-        .setUnit("%")
+    Meter sampleMeter = OpenTelemetry.getMeterProvider()
+        .get("io.opentelemetry.example.metrics", "0.5");
+    DoubleCounter timeCounter = sampleMeter.doubleCounterBuilder("some_method_time_usage")
+        .setDescription("should measure some method execution time")
+        .setUnit("second")
         .build();
-    long totalJvmMemory = Runtime.getRuntime().totalMemory();
-    long freeJvmMemory = Runtime.getRuntime().freeMemory();
-    long usedJvmMemory = totalJvmMemory - freeJvmMemory;
-    double usedJvmMemoryPercentage = ((usedJvmMemory * 1.0) / totalJvmMemory) * 100;
-    jvmUsageCounter.add(usedJvmMemoryPercentage);
+    Long timeStart = System.currentTimeMillis();
+    superLongMethod();
+    Long timeEnd = System.currentTimeMillis();
+    Double seconds = (timeEnd.doubleValue() - timeStart.doubleValue()) / 1000;
+    timeCounter.add(seconds, "someWork", "execution time");
+    BoundDoubleCounter bind = timeCounter.bind();
   }
 
+  private static void superLongMethod() {
+    try {
+      Thread.sleep(3_125);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
 }

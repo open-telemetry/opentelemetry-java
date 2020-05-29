@@ -2,21 +2,37 @@ package io.opentelemetry.example.metrics;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.LongCounter;
+import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
+import java.util.Random;
 
+/**
+ * Long meter example with bound counter
+ */
 public class LongMeterExample {
 
+  private static final Meter sampleMeter = OpenTelemetry.getMeterProvider()
+      .get("io.opentelemetry.example.metrics", "0.5");
+  private static final LongCounter methodCallCounter = sampleMeter
+      .longCounterBuilder("method_call_counter")
+      .setDescription("should count methods call")
+      .setUnit("unit")
+      .build();
+  //we can use BoundCounters to not specify labels each time
+  private static final BoundLongCounter gateBCounter = methodCallCounter.bind("gate", "b");
+
   public static void main(String[] args) {
-    Meter sampleMeter = OpenTelemetry.getMeterProvider().get("sample", "0.1");
-    LongCounter jvmUsageCounter = sampleMeter.longCounterBuilder("jvm_memory_usage")
-        .setDescription("should meter jvm memory usage")
-        .setUnit("byte")
-        .build();
-    long totalJvmMemory = Runtime.getRuntime().totalMemory();
-    long freeJvmMemory = Runtime.getRuntime().freeMemory();
-    // different key value parents will aggregate independently
-    jvmUsageCounter.add(totalJvmMemory, "jvm memory", "total");
-    jvmUsageCounter.add(freeJvmMemory, "jvm memory", "free");
+    for (int i = 0; i < 10; i++) {
+      abGate();
+    }
   }
 
+  //compare bound and usual counter usage
+  private static void abGate() {
+    if (new Random().nextBoolean()) {
+      methodCallCounter.add(1, "gate", "a");
+    } else {
+      gateBCounter.add(1);
+    }
+  }
 }
