@@ -518,7 +518,6 @@ public class SpanBuilderSdkTest {
                       public Decision shouldSample(
                           @Nullable SpanContext parentContext,
                           TraceId traceId,
-                          SpanId spanId,
                           String name,
                           Span.Kind spanKind,
                           Map<String, AttributeValue> attributes,

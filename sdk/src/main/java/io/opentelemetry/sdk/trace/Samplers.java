@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.attributes.DoubleAttributeSetter;
 import java.util.Collections;
@@ -146,7 +145,6 @@ public final class Samplers {
     public Decision shouldSample(
         @Nullable SpanContext parentContext,
         TraceId traceId,
-        SpanId spanId,
         String name,
         Span.Kind spanKind,
         Map<String, AttributeValue> attributes,
@@ -169,7 +167,6 @@ public final class Samplers {
     public Decision shouldSample(
         @Nullable SpanContext parentContext,
         TraceId traceId,
-        SpanId spanId,
         String name,
         Span.Kind spanKind,
         Map<String, AttributeValue> attributes,
@@ -230,7 +227,6 @@ public final class Samplers {
     public final Decision shouldSample(
         @Nullable SpanContext parentContext,
         TraceId traceId,
-        SpanId spanId,
         String name,
         Span.Kind spanKind,
         Map<String, AttributeValue> attributes,
