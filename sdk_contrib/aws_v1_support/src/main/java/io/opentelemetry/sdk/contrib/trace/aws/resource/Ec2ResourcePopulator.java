@@ -123,6 +123,7 @@ class Ec2ResourcePopulator extends AwsResourcePopulator {
     }
 
     resourceAttributes.put(ResourceConstants.HOST_HOSTNAME, stringAttributeValue(hostname));
+    resourceAttributes.put(ResourceConstants.HOST_NAME, stringAttributeValue(hostname));
   }
 
   private String fetchToken() {

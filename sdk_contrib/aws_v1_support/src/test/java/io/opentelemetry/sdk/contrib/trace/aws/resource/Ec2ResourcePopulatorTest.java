@@ -90,7 +90,8 @@ public class Ec2ResourcePopulatorTest {
             ResourceConstants.HOST_IMAGE_ID, stringAttributeValue("ami-5fb8c835"),
             ResourceConstants.CLOUD_ACCOUNT, stringAttributeValue("123456789012"),
             ResourceConstants.CLOUD_REGION, stringAttributeValue("us-west-2"),
-            ResourceConstants.HOST_HOSTNAME, stringAttributeValue("ec2-1-2-3-4"));
+            ResourceConstants.HOST_HOSTNAME, stringAttributeValue("ec2-1-2-3-4"),
+            ResourceConstants.HOST_NAME, stringAttributeValue("ec2-1-2-3-4"));
 
     verify(
         putRequestedFor(urlEqualTo("/latest/api/token"))
@@ -121,7 +122,8 @@ public class Ec2ResourcePopulatorTest {
             ResourceConstants.HOST_IMAGE_ID, stringAttributeValue("ami-5fb8c835"),
             ResourceConstants.CLOUD_ACCOUNT, stringAttributeValue("123456789012"),
             ResourceConstants.CLOUD_REGION, stringAttributeValue("us-west-2"),
-            ResourceConstants.HOST_HOSTNAME, stringAttributeValue("ec2-1-2-3-4"));
+            ResourceConstants.HOST_HOSTNAME, stringAttributeValue("ec2-1-2-3-4"),
+            ResourceConstants.HOST_NAME, stringAttributeValue("ec2-1-2-3-4"));
 
     verify(
         putRequestedFor(urlEqualTo("/latest/api/token"))
