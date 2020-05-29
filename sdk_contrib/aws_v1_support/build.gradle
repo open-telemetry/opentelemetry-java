@@ -5,18 +5,18 @@ plugins {
     id "ru.vyarus.animalsniffer"
 }
 
-description = 'OpenTelemetry SDK AWS SDK v1.x Support'
+description = 'OpenTelemetry SDK AWS Instrumentation Support'
 ext.moduleName = "io.opentelemetry.sdk.contrib.trace.aws"
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 dependencies {
     api project(':opentelemetry-api'),
             project(':opentelemetry-sdk')
 
-    implementation 'com.amazonaws:aws-java-sdk-core:1.11.701',
-            'com.amazonaws:aws-java-sdk-ec2:1.11.701'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.11.0',
+            libraries.guava
 
-    signature "org.codehaus.mojo.signature:java18:1.0@signature"
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
 }

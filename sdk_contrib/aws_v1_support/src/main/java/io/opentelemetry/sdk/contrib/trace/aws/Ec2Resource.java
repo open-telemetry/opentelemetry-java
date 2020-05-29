@@ -16,16 +16,16 @@
 
 package io.opentelemetry.sdk.contrib.trace.aws;
 
-import com.amazonaws.util.EC2MetadataUtils;
-import com.amazonaws.util.EC2MetadataUtils.InstanceInfo;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.sdk.contrib.trace.aws.resource.AwsResourcePopulator;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.resources.ResourceConstants;
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.Nullable;
 
-/** Provides for lookup and population of {@link Resource} labels when running on AWS EC2. */
+/**
+ * Provides for lookup and population of {@link Resource} labels when running on AWS EC2.
+ *
+ * @deprecated Use {@link AwsResourcePopulator}.
+ */
+@Deprecated
 public class Ec2Resource {
 
   /** OpenTelemetry semantic convention identifier for AWS cloud. */
@@ -36,39 +36,11 @@ public class Ec2Resource {
    * the EC2 metadata endpoint.
    *
    * @return the resource
+   * @deprecated Use {@link AwsResourcePopulator#createResource()}.
    */
+  @Deprecated
   public static Resource getResource() {
-    return getResourceFromInfoAndHost(
-        EC2MetadataUtils.getInstanceInfo(), EC2MetadataUtils.getLocalHostName());
-  }
-
-  // This can be tested now with a fake info and host.
-  static Resource getResourceFromInfoAndHost(
-      @Nullable InstanceInfo info, @Nullable String hostname) {
-    Map<String, AttributeValue> labels = new HashMap<>();
-    labels.put(ResourceConstants.CLOUD_PROVIDER, CLOUD_PROVIDER_AWS);
-    if (info != null) {
-      labels.put(
-          ResourceConstants.CLOUD_ACCOUNT,
-          AttributeValue.stringAttributeValue(info.getAccountId()));
-      labels.put(
-          ResourceConstants.CLOUD_REGION, AttributeValue.stringAttributeValue(info.getRegion()));
-      labels.put(
-          ResourceConstants.CLOUD_ZONE,
-          AttributeValue.stringAttributeValue(info.getAvailabilityZone()));
-      labels.put(
-          ResourceConstants.HOST_ID, AttributeValue.stringAttributeValue(info.getInstanceId()));
-      labels.put(
-          ResourceConstants.HOST_NAME, AttributeValue.stringAttributeValue(info.getPrivateIp()));
-      labels.put(
-          ResourceConstants.HOST_TYPE, AttributeValue.stringAttributeValue(info.getInstanceType()));
-      labels.put(
-          ResourceConstants.HOST_IMAGE_ID, AttributeValue.stringAttributeValue(info.getImageId()));
-    }
-    if (hostname != null && !hostname.isEmpty()) {
-      labels.put(ResourceConstants.HOST_HOSTNAME, AttributeValue.stringAttributeValue(hostname));
-    }
-    return Resource.create(labels);
+    return AwsResourcePopulator.createResource();
   }
 
   private Ec2Resource() {}
