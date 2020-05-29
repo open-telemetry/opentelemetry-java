@@ -46,7 +46,7 @@ configure(opentelemetryProjects) {
                 // We suppress the "processing" warning as suggested in
                 // https://groups.google.com/forum/#!topic/bazel-discuss/_R3A9TJSoPM
                 "-Xlint:-processing",
-                // We suppress the "options" warning because it prevents
+                // We suppress the "options" warning because it prevents compilation on modern JDKs
                 "-Xlint:-options",
         ]
         it.options.errorprone.disableWarningsInGeneratedCode = true
