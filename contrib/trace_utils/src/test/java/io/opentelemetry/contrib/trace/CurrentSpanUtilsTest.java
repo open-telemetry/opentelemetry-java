@@ -18,7 +18,7 @@ package io.opentelemetry.contrib.trace;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
@@ -78,7 +78,7 @@ public class CurrentSpanUtilsTest {
           }
         };
     CurrentSpanUtils.withSpan(span, false, runnable).run();
-    verifyZeroInteractions(span);
+    verifyNoInteractions(span);
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 
@@ -150,7 +150,7 @@ public class CurrentSpanUtilsTest {
           }
         };
     assertThat(CurrentSpanUtils.withSpan(span, false, callable).call()).isEqualTo(ret);
-    verifyZeroInteractions(span);
+    verifyNoInteractions(span);
     assertThat(getCurrentSpan()).isInstanceOf(DefaultSpan.class);
   }
 

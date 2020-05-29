@@ -52,7 +52,6 @@ public class JaegerRemoteSampler implements Sampler {
   private final String serviceName;
   private final SamplingManagerBlockingStub stub;
   private Sampler sampler;
-  private final ScheduledExecutorService scheduledExecutorService;
 
   @SuppressWarnings("FutureReturnValueIgnored")
   private JaegerRemoteSampler(
@@ -60,9 +59,9 @@ public class JaegerRemoteSampler implements Sampler {
     this.serviceName = serviceName;
     this.stub = SamplingManagerGrpc.newBlockingStub(channel);
     this.sampler = initialSampler;
-    this.scheduledExecutorService =
+    ScheduledExecutorService scheduledExecutorService =
         Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
-    this.scheduledExecutorService.scheduleAtFixedRate(
+    scheduledExecutorService.scheduleAtFixedRate(
         updateSampleRunnable(), 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
   }
 
