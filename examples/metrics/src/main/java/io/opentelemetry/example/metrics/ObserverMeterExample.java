@@ -18,7 +18,7 @@ public class ObserverMeterExample {
         new LongValueObserver.Callback<LongValueObserver.ResultLongValueObserver>() {
           @Override
           public void update(ResultLongValueObserver result) {
-            result.observe(Runtime.getRuntime().totalMemory(), "jvm memory", "free");
+            result.observe(Runtime.getRuntime().totalMemory(), "jvm memory", "total");
           }
         });
   }
