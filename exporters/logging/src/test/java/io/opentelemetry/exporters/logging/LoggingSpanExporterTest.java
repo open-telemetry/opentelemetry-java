@@ -25,7 +25,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -60,7 +60,7 @@ public class LoggingSpanExporterTest {
   public void returnCode() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     SpanData spanData =
-        SpanDataImpl.newBuilder()
+        TestSpanData.newBuilder()
             .setHasEnded(true)
             .setTraceId(new TraceId(1234L, 6789L))
             .setSpanId(new SpanId(9876L))
