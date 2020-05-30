@@ -17,20 +17,26 @@
 package io.opentelemetry.common;
 
 import com.google.auto.value.AutoValue;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import javax.annotation.concurrent.Immutable;
 
 /** javadoc me. */
 @Immutable
-public abstract class Attributes implements Iterable<Entry<String, AttributeValue>> {
-  private static final Attributes EMPTY = new EmptyAttributes();
+public abstract class Attributes {
+  private static final Attributes EMPTY =
+      new Attributes() {
+        @Override
+        public void forEach(AttributeConsumer consumer) {
+          // no-op
+        }
+      };
+
+  /** javadoc me. */
+  public abstract void forEach(AttributeConsumer consumer);
 
   private static Attributes sortAndFilter(List<Object> data) {
     // note: this is possibly not the most memory-efficient possible implementation, but it works.
@@ -137,31 +143,9 @@ public abstract class Attributes implements Iterable<Entry<String, AttributeValu
     ArrayBackedAttributes() {}
 
     @Override
-    public Iterator<Entry<String, AttributeValue>> iterator() {
-      return new ArrayIterator();
-    }
-
-    private class ArrayIterator implements Iterator<Entry<String, AttributeValue>> {
-      private int currentIndex = 0;
-
-      @Override
-      public boolean hasNext() {
-        return data().size() > currentIndex;
-      }
-
-      @Override
-      public Entry<String, AttributeValue> next() {
-        if (!hasNext()) {
-          throw new NoSuchElementException("no more");
-        }
-        List<Object> data = data();
-        return new SimpleImmutableEntry<>(
-            (String) data.get(currentIndex++), (AttributeValue) data.get(currentIndex++));
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException("remove");
+    public void forEach(AttributeConsumer consumer) {
+      for (int i = 0; i < data().size(); i++) {
+        consumer.consume((String) data().get(i), (AttributeValue) data().get(++i));
       }
     }
   }
@@ -232,26 +216,8 @@ public abstract class Attributes implements Iterable<Entry<String, AttributeValu
     }
   }
 
-  private static class EmptyAttributes extends Attributes {
-
-    @Override
-    public Iterator<Entry<String, AttributeValue>> iterator() {
-      return new Iterator<Entry<String, AttributeValue>>() {
-        @Override
-        public boolean hasNext() {
-          return false;
-        }
-
-        @Override
-        public Entry<String, AttributeValue> next() {
-          throw new NoSuchElementException();
-        }
-
-        @Override
-        public void remove() {
-          throw new UnsupportedOperationException("empty");
-        }
-      };
-    }
+  /** javadoc me. */
+  public interface AttributeConsumer {
+    void consume(String key, AttributeValue value);
   }
 }

@@ -19,8 +19,8 @@ package io.opentelemetry.common;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
+import io.opentelemetry.common.Attributes.AttributeConsumer;
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
@@ -28,41 +28,52 @@ import org.junit.Test;
 public class AttributesTest {
 
   @Test
-  public void iteration() {
-    Set<String> keysSeen = new HashSet<>();
+  public void forEach() {
+    final Set<String> keysSeen = new HashSet<>();
 
     Attributes attributes =
         Attributes.of(
             "key1", stringAttributeValue("value1"),
             "key2", AttributeValue.longAttributeValue(333));
 
-    for (Entry<String, AttributeValue> attribute : attributes) {
-      keysSeen.add(attribute.getKey());
-    }
+    attributes.forEach(
+        new AttributeConsumer() {
+          @Override
+          public void consume(String key, AttributeValue value) {
+            keysSeen.add(key);
+          }
+        });
 
     assertThat(keysSeen).containsExactly("key1", "key2");
   }
 
   @Test
-  public void iteration_singleAttribute() {
-    Set<String> keysSeen = new HashSet<>();
+  public void forEach_singleAttribute() {
+    final Set<String> keysSeen = new HashSet<>();
 
     Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
-
-    for (Entry<String, AttributeValue> attribute : attributes) {
-      keysSeen.add(attribute.getKey());
-    }
+    attributes.forEach(
+        new AttributeConsumer() {
+          @Override
+          public void consume(String key, AttributeValue value) {
+            keysSeen.add(key);
+          }
+        });
 
     assertThat(keysSeen).containsExactly("key");
   }
 
   @Test
-  public void iteration_empty() {
-    AtomicBoolean sawSomething = new AtomicBoolean(false);
+  public void forEach_empty() {
+    final AtomicBoolean sawSomething = new AtomicBoolean(false);
     Attributes emptyAttributes = Attributes.empty();
-    for (Entry<String, AttributeValue> unused : emptyAttributes) {
-      sawSomething.set(true);
-    }
+    emptyAttributes.forEach(
+        new AttributeConsumer() {
+          @Override
+          public void consume(String key, AttributeValue value) {
+            sawSomething.set(true);
+          }
+        });
     assertThat(sawSomething.get()).isFalse();
   }
 
