@@ -29,7 +29,7 @@ import io.opentelemetry.proto.trace.v1.Status.StatusCode;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -58,7 +58,7 @@ public class SpanAdapterTest {
   public void toProtoSpan() {
     Span span =
         SpanAdapter.toProtoSpan(
-            SpanDataImpl.newBuilder()
+            TestSpanData.newBuilder()
                 .setHasEnded(true)
                 .setTraceId(TRACE_ID)
                 .setSpanId(SPAN_ID)

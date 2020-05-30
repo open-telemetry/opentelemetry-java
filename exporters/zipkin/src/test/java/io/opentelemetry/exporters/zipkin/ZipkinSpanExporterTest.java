@@ -31,7 +31,7 @@ import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -269,8 +269,8 @@ public class ZipkinSpanExporterTest {
     verify(mockSender).close();
   }
 
-  private static SpanDataImpl.Builder buildStandardSpan() {
-    return SpanDataImpl.newBuilder()
+  private static TestSpanData.Builder buildStandardSpan() {
+    return TestSpanData.newBuilder()
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
         .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))

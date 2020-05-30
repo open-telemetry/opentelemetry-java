@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.trace.data;
+package io.opentelemetry.sdk.trace.data.test;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
@@ -40,7 +41,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 @AutoValue
-public abstract class SpanDataImpl implements SpanData {
+public abstract class TestSpanData implements SpanData {
 
   /**
    * Creates a new Builder for creating an SpanData instance.
@@ -49,7 +50,7 @@ public abstract class SpanDataImpl implements SpanData {
    * @since 0.1.0
    */
   public static Builder newBuilder() {
-    return new AutoValue_SpanDataImpl.Builder()
+    return new AutoValue_TestSpanData.Builder()
         .setParentSpanId(SpanId.getInvalid())
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.<Link>emptyList())
@@ -65,14 +66,14 @@ public abstract class SpanDataImpl implements SpanData {
   }
 
   /**
-   * A {@code Builder} class for {@link SpanDataImpl}.
+   * A {@code Builder} class for {@link TestSpanData}.
    *
    * @since 0.1.0
    */
   @AutoValue.Builder
   public abstract static class Builder {
 
-    abstract SpanDataImpl autoBuild();
+    abstract TestSpanData autoBuild();
 
     abstract Map<String, AttributeValue> getAttributes();
 
@@ -86,7 +87,7 @@ public abstract class SpanDataImpl implements SpanData {
      * @return a new SpanData instance
      * @since 0.1.0
      */
-    public SpanDataImpl build() {
+    public TestSpanData build() {
       // make unmodifiable copies of any collections
       setAttributes(Collections.unmodifiableMap(new HashMap<>(getAttributes())));
       setEvents(Collections.unmodifiableList(new ArrayList<>(getEvents())));
