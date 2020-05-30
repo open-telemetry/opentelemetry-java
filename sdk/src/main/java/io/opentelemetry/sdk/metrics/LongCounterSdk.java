@@ -97,7 +97,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
     public LongCounterSdk build() {
       return register(
           new LongCounterSdk(
-              getInstrumentDescriptor(InstrumentType.COUNTER_MONOTONIC, InstrumentValueType.LONG),
+              getInstrumentDescriptor(InstrumentType.COUNTER, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

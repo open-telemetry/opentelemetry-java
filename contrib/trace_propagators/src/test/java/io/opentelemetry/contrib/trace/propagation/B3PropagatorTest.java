@@ -69,8 +69,8 @@ public class B3PropagatorTest {
           return carrier.get(key);
         }
       };
-  private final B3Propagator b3Propagator = new B3Propagator();
-  private final B3Propagator b3PropagatorSingleHeader = new B3Propagator(true);
+  private final B3Propagator b3Propagator = B3Propagator.getMultipleHeaderPropagator();
+  private final B3Propagator b3PropagatorSingleHeader = B3Propagator.getSingleHeaderPropagator();
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private static SpanContext getSpanContext(Context context) {
@@ -79,6 +79,22 @@ public class B3PropagatorTest {
 
   private static Context withSpanContext(SpanContext spanContext, Context context) {
     return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
+  }
+
+  @Test
+  public void inject_invalidContext() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    b3Propagator.inject(
+        withSpanContext(
+            SpanContext.create(
+                TraceId.getInvalid(),
+                SpanId.getInvalid(),
+                SAMPLED_TRACE_OPTIONS,
+                TraceState.builder().set("foo", "bar").build()),
+            Context.current()),
+        carrier,
+        setter);
+    assertThat(carrier).hasSize(0);
   }
 
   @Test
@@ -244,6 +260,22 @@ public class B3PropagatorTest {
     invalidHeaders.put(B3Propagator.SAMPLED_HEADER, B3Propagator.TRUE_INT);
     assertThat(getSpanContext(b3Propagator.extract(Context.current(), invalidHeaders, getter)))
         .isSameInstanceAs(SpanContext.getInvalid());
+  }
+
+  @Test
+  public void inject_invalidContext_SingleHeader() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    b3PropagatorSingleHeader.inject(
+        withSpanContext(
+            SpanContext.create(
+                TraceId.getInvalid(),
+                SpanId.getInvalid(),
+                SAMPLED_TRACE_OPTIONS,
+                TraceState.builder().set("foo", "bar").build()),
+            Context.current()),
+        carrier,
+        setter);
+    assertThat(carrier).hasSize(0);
   }
 
   @Test

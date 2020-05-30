@@ -91,8 +91,7 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
     public DoubleUpDownCounterSdk build() {
       return register(
           new DoubleUpDownCounterSdk(
-              getInstrumentDescriptor(
-                  InstrumentType.COUNTER_NON_MONOTONIC, InstrumentValueType.DOUBLE),
+              getInstrumentDescriptor(InstrumentType.UP_DOWN_COUNTER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
     }

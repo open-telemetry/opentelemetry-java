@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -62,7 +61,6 @@ class RateLimitingSampler implements Sampler {
   public Decision shouldSample(
       @Nullable SpanContext parentContext,
       TraceId traceId,
-      SpanId spanId,
       String name,
       Kind spanKind,
       Map<String, AttributeValue> attributes,
@@ -70,14 +68,13 @@ class RateLimitingSampler implements Sampler {
     boolean sampled = this.rateLimiter.checkCredit(1.0);
     if (parentContext != null && parentContext.getTraceFlags().isSampled()) {
       return Samplers.alwaysOn()
-          .shouldSample(parentContext, traceId, spanId, name, spanKind, attributes, parentLinks);
+          .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
     }
     if (parentLinks != null) {
       for (Link parentLink : parentLinks) {
         if (parentLink.getContext().getTraceFlags().isSampled()) {
           return Samplers.alwaysOn()
-              .shouldSample(
-                  parentContext, traceId, spanId, name, spanKind, attributes, parentLinks);
+              .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
         }
       }
     }

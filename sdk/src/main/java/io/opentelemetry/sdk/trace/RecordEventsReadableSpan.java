@@ -24,6 +24,7 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.TimedEvent.RawTimedEventWithEvent;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -84,7 +85,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   private final long startEpochNanos;
   // Set of recorded attributes. DO NOT CALL any other method that changes the ordering of events.
   @GuardedBy("lock")
-  private final AttributesMap attributes;
+  @Nullable
+  private AttributesMap attributes;
   // List of recorded events.
   @GuardedBy("lock")
   private final EvictingQueue<TimedEvent> events;
@@ -113,7 +115,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       SpanProcessor spanProcessor,
       Clock clock,
       Resource resource,
-      AttributesMap attributes,
+      @Nullable AttributesMap attributes,
       List<io.opentelemetry.trace.Link> links,
       int totalRecordedLinks,
       long startEpochNanos) {
@@ -130,7 +132,6 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     this.hasEnded = false;
     this.clock = clock;
     this.startEpochNanos = startEpochNanos;
-    // TODO: Do not always initialize the attributes.
     this.attributes = attributes;
     this.events = EvictingQueue.create(traceConfig.getMaxNumberOfEvents());
     this.traceConfig = traceConfig;
@@ -199,7 +200,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
           getImmutableLinks(),
           getImmutableTimedEvents(),
           getImmutableAttributes(),
-          attributes.getTotalAddedValues(),
+          (attributes == null) ? 0 : attributes.getTotalAddedValues(),
           totalRecordedEvents,
           getStatusWithDefault());
     }
@@ -304,8 +305,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
         return;
       }
       if (value == null || (value.getType().equals(STRING) && value.getStringValue() == null)) {
+        if (attributes == null) {
+          return;
+        }
         attributes.remove(key);
         return;
+      }
+      if (attributes == null) {
+        attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
       attributes.put(key, value);
     }
@@ -499,18 +506,28 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     if (events.isEmpty()) {
       return Collections.emptyList();
     }
-    List<Event> result = new ArrayList<>(events.size());
-    for (io.opentelemetry.sdk.trace.TimedEvent sourceEvent : events) {
-      result.add(
-          Event.create(
-              sourceEvent.getEpochNanos(), sourceEvent.getName(), sourceEvent.getAttributes()));
+
+    List<Event> results = new ArrayList<>(events.size());
+    for (TimedEvent event : events) {
+      if (event instanceof RawTimedEventWithEvent) {
+        // make sure to copy the data if the event is wrapping another one,
+        // so we don't hold on the caller's memory
+        results.add(
+            TimedEvent.create(
+                event.getEpochNanos(),
+                event.getName(),
+                event.getAttributes(),
+                event.getTotalAttributeCount()));
+      } else {
+        results.add(event);
+      }
     }
-    return Collections.unmodifiableList(result);
+    return Collections.unmodifiableList(results);
   }
 
   @GuardedBy("lock")
   private Map<String, AttributeValue> getImmutableAttributes() {
-    if (attributes.isEmpty()) {
+    if (attributes == null || attributes.isEmpty()) {
       return Collections.emptyMap();
     }
     return hasEnded

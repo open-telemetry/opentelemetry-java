@@ -39,7 +39,6 @@ public class RateLimitingSamplerTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private final TraceId traceId = new TraceId(150, 150);
-  private final SpanId spanId = new SpanId(150);
   private final SpanId parentSpanId = new SpanId(250);
   private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
@@ -57,7 +56,6 @@ public class RateLimitingSamplerTest {
             .shouldSample(
                 sampledSpanContext,
                 traceId,
-                spanId,
                 SPAN_NAME,
                 SPAN_KIND,
                 Collections.<String, AttributeValue>emptyMap(),
@@ -68,7 +66,6 @@ public class RateLimitingSamplerTest {
             .shouldSample(
                 sampledSpanContext,
                 traceId,
-                spanId,
                 SPAN_NAME,
                 SPAN_KIND,
                 Collections.<String, AttributeValue>emptyMap(),
@@ -83,7 +80,6 @@ public class RateLimitingSamplerTest {
         sampler.shouldSample(
             notSampledSpanContext,
             traceId,
-            spanId,
             SPAN_NAME,
             SPAN_KIND,
             Collections.<String, AttributeValue>emptyMap(),
@@ -94,7 +90,6 @@ public class RateLimitingSamplerTest {
             .shouldSample(
                 notSampledSpanContext,
                 traceId,
-                spanId,
                 SPAN_NAME,
                 SPAN_KIND,
                 Collections.<String, AttributeValue>emptyMap(),

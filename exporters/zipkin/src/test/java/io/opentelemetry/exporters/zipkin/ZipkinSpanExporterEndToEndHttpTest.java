@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -61,10 +62,10 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
   private static final Map<String, AttributeValue> attributes = Collections.emptyMap();
   private static final List<Event> annotations =
-      ImmutableList.of(
-          Event.create(
+      ImmutableList.<Event>of(
+          EventImpl.create(
               RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Collections.<String, AttributeValue>emptyMap()),
-          Event.create(
+          EventImpl.create(
               SENT_TIMESTAMP_NANOS, "SENT", Collections.<String, AttributeValue>emptyMap()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
@@ -78,50 +79,47 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   @Test
   public void testExportWithDefaultEncoding() {
 
-    ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.builder()
+    ZipkinSpanExporter exporter =
+        ZipkinSpanExporter.newBuilder()
             .setEndpoint(zipkin.httpUrl() + ENDPOINT_V2_SPANS)
             .setServiceName(SERVICE_NAME)
             .build();
 
-    exportAndVerify(configuration);
+    exportAndVerify(exporter);
   }
 
   @Test
   public void testExportAsProtobuf() {
 
-    ZipkinExporterConfiguration configuration =
-        buildZipkinExporterConfiguration(
+    ZipkinSpanExporter exporter =
+        buildZipkinExporter(
             zipkin.httpUrl() + ENDPOINT_V2_SPANS, Encoding.PROTO3, SpanBytesEncoder.PROTO3);
-    exportAndVerify(configuration);
+    exportAndVerify(exporter);
   }
 
   @Test
   public void testExportAsThrift() {
 
     @SuppressWarnings("deprecation")
-    ZipkinExporterConfiguration configuration =
-        buildZipkinExporterConfiguration(
+    ZipkinSpanExporter exporter =
+        buildZipkinExporter(
             zipkin.httpUrl() + ENDPOINT_V1_SPANS, Encoding.THRIFT, SpanBytesEncoder.THRIFT);
-    exportAndVerify(configuration);
+    exportAndVerify(exporter);
   }
 
   @Test
   public void testExportAsJsonV1() {
-    ZipkinExporterConfiguration configuration =
-        buildZipkinExporterConfiguration(
+    ZipkinSpanExporter exporter =
+        buildZipkinExporter(
             zipkin.httpUrl() + ENDPOINT_V1_SPANS, Encoding.JSON, SpanBytesEncoder.JSON_V1);
-    exportAndVerify(configuration);
+    exportAndVerify(exporter);
   }
 
   @Test
   public void testExportFailedAsWrongEncoderUsed() {
-
-    ZipkinExporterConfiguration configuration =
-        buildZipkinExporterConfiguration(
+    ZipkinSpanExporter zipkinSpanExporter =
+        buildZipkinExporter(
             zipkin.httpUrl() + ENDPOINT_V2_SPANS, Encoding.JSON, SpanBytesEncoder.PROTO3);
-
-    ZipkinSpanExporter zipkinSpanExporter = ZipkinSpanExporter.create(configuration);
 
     SpanData spanData = buildStandardSpan().build();
     SpanExporter.ResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));
@@ -132,9 +130,9 @@ public class ZipkinSpanExporterEndToEndHttpTest {
     assertThat(zipkinSpans).isEmpty();
   }
 
-  private static ZipkinExporterConfiguration buildZipkinExporterConfiguration(
+  private static ZipkinSpanExporter buildZipkinExporter(
       String endpoint, Encoding encoding, SpanBytesEncoder encoder) {
-    return ZipkinExporterConfiguration.builder()
+    return ZipkinSpanExporter.newBuilder()
         .setSender(URLConnectionSender.newBuilder().endpoint(endpoint).encoding(encoding).build())
         .setServiceName(SERVICE_NAME)
         .setEncoder(encoder)
@@ -145,8 +143,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
    * Exports a span, verify that it was received by Zipkin, and check that the span stored by Zipkin
    * matches what was sent.
    */
-  private void exportAndVerify(ZipkinExporterConfiguration configuration) {
-    ZipkinSpanExporter zipkinSpanExporter = ZipkinSpanExporter.create(configuration);
+  private void exportAndVerify(ZipkinSpanExporter zipkinSpanExporter) {
 
     SpanData spanData = buildStandardSpan().build();
     SpanExporter.ResultCode resultCode = zipkinSpanExporter.export(Collections.singleton(spanData));

@@ -274,55 +274,14 @@ public interface SpanData {
     Link() {}
   }
 
-  /**
-   * An immutable timed event representation. Enhances the core {@link io.opentelemetry.trace.Event}
-   * by adding the time at which the event occurred.
-   *
-   * @since 0.1.0
-   */
-  @Immutable
-  @AutoValue
-  abstract class Event implements io.opentelemetry.trace.Event {
-
-    /**
-     * Returns a new immutable {@code Event}.
-     *
-     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
-     * @param name the name of the {@code Event}.
-     * @param attributes the attributes of the {@code Event}.
-     * @return a new immutable {@code Event<T>}
-     * @since 0.1.0
-     */
-    public static Event create(
-        long epochNanos, String name, Map<String, AttributeValue> attributes) {
-      return new AutoValue_SpanData_Event(name, attributes, epochNanos, attributes.size());
-    }
-
-    /**
-     * Returns a new immutable {@code Event}.
-     *
-     * @param epochNanos epoch timestamp in nanos of the {@code Event}.
-     * @param name the name of the {@code Event}.
-     * @param attributes the attributes of the {@code Event}.
-     * @param totalAttributeCount the total number of attributes for this {@code} Event.
-     * @return a new immutable {@code Event<T>}
-     * @since 0.1.0
-     */
-    public static Event create(
-        long epochNanos,
-        String name,
-        Map<String, AttributeValue> attributes,
-        int totalAttributeCount) {
-      return new AutoValue_SpanData_Event(name, attributes, epochNanos, totalAttributeCount);
-    }
-
+  interface Event extends io.opentelemetry.trace.Event {
     /**
      * Returns the epoch time in nanos of this event.
      *
      * @return the epoch time in nanos of this event.
      * @since 0.1.0
      */
-    public abstract long getEpochNanos();
+    long getEpochNanos();
 
     /**
      * The total number of attributes that were recorded on this Event. This number may be larger
@@ -332,8 +291,6 @@ public interface SpanData {
      *
      * @return The total number of attributes on this event.
      */
-    public abstract int getTotalAttributeCount();
-
-    Event() {}
+    int getTotalAttributeCount();
   }
 }

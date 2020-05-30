@@ -38,6 +38,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +51,10 @@ public class JaegerRemoteSamplerTest {
 
   private static final String SERVICE_NAME = "my-service";
   private static final int RATE = 999;
+
+  private final String serverName = InProcessServerBuilder.generateName();
+  private final ManagedChannel inProcessChannel =
+      InProcessChannelBuilder.forName(serverName).directExecutor().build();
 
   @Rule public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
@@ -79,24 +84,27 @@ public class JaegerRemoteSamplerTest {
     }
   }
 
-  @Test
-  public void connectionWorks() throws IOException {
-    final String serverName = InProcessServerBuilder.generateName();
-    final ArgumentCaptor<SamplingStrategyParameters> requestCaptor =
-        ArgumentCaptor.forClass(Sampling.SamplingStrategyParameters.class);
-
+  @Before
+  public void before() throws IOException {
     grpcCleanup.register(
         InProcessServerBuilder.forName(serverName)
             .directExecutor()
             .addService(service)
             .build()
             .start());
+    grpcCleanup.register(inProcessChannel);
+  }
 
-    ManagedChannel channel =
-        grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build());
+  @Test
+  public void connectionWorks() {
+    ArgumentCaptor<SamplingStrategyParameters> requestCaptor =
+        ArgumentCaptor.forClass(Sampling.SamplingStrategyParameters.class);
 
     JaegerRemoteSampler sampler =
-        JaegerRemoteSampler.newBuilder().setChannel(channel).setServiceName(SERVICE_NAME).build();
+        JaegerRemoteSampler.newBuilder()
+            .setChannel(inProcessChannel)
+            .setServiceName(SERVICE_NAME)
+            .build();
 
     Awaitility.await()
         .atMost(10, TimeUnit.SECONDS)
@@ -115,11 +123,11 @@ public class JaegerRemoteSamplerTest {
 
   @Test
   public void description() {
-    ManagedChannel channel =
-        grpcCleanup.register(
-            InProcessChannelBuilder.forName(SERVICE_NAME).directExecutor().build());
     JaegerRemoteSampler sampler =
-        JaegerRemoteSampler.newBuilder().setChannel(channel).setServiceName(SERVICE_NAME).build();
+        JaegerRemoteSampler.newBuilder()
+            .setChannel(inProcessChannel)
+            .setServiceName(SERVICE_NAME)
+            .build();
     assertTrue(
         sampler
             .getDescription()

@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.truth.Truth;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
@@ -30,6 +31,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +47,6 @@ public class SamplersTest {
   private static final int NUM_SAMPLE_TRIES = 1000;
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
   private final TraceId traceId = idsGenerator.generateTraceId();
-  private final SpanId spanId = idsGenerator.generateSpanId();
   private final SpanId parentSpanId = idsGenerator.generateSpanId();
   private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
@@ -58,6 +59,41 @@ public class SamplersTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
+  public void emptySamplingDecision() {
+    Truth.assertThat(Samplers.emptyDecision(true)).isSameInstanceAs(Samplers.emptyDecision(true));
+    Truth.assertThat(Samplers.emptyDecision(false)).isSameInstanceAs(Samplers.emptyDecision(false));
+
+    Truth.assertThat(Samplers.emptyDecision(true).isSampled()).isTrue();
+    Truth.assertThat(Samplers.emptyDecision(true).getAttributes()).isEmpty();
+    Truth.assertThat(Samplers.emptyDecision(false).isSampled()).isFalse();
+    Truth.assertThat(Samplers.emptyDecision(false).getAttributes()).isEmpty();
+  }
+
+  @Test
+  public void samplingDecisionEmpty() {
+    Truth.assertThat(Samplers.decision(/*isSampled=*/ true, new HashMap<String, AttributeValue>()))
+        .isSameInstanceAs(Samplers.emptyDecision(true));
+    Truth.assertThat(
+            Samplers.decision(/*isSampled=*/ false, Collections.<String, AttributeValue>emptyMap()))
+        .isSameInstanceAs(Samplers.emptyDecision(false));
+  }
+
+  @Test
+  public void samplingDecisionAttrs() {
+    final ImmutableMap<String, AttributeValue> attrs =
+        ImmutableMap.of(
+            "foo", AttributeValue.longAttributeValue(42),
+            "bar", AttributeValue.stringAttributeValue("baz"));
+    final Decision sampledDecision = Samplers.decision(/*isSampled=*/ true, attrs);
+    Truth.assertThat(sampledDecision.isSampled()).isTrue();
+    Truth.assertThat(sampledDecision.getAttributes()).isEqualTo(attrs);
+
+    final Decision notSampledDecision = Samplers.decision(/*isSampled=*/ false, attrs);
+    Truth.assertThat(notSampledDecision.isSampled()).isFalse();
+    Truth.assertThat(notSampledDecision.getAttributes()).isEqualTo(attrs);
+  }
+
+  @Test
   public void alwaysOnSampler() {
     // Sampled parent.
     Truth.assertThat(
@@ -65,7 +101,6 @@ public class SamplersTest {
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -79,7 +114,6 @@ public class SamplersTest {
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -93,7 +127,6 @@ public class SamplersTest {
                 .shouldSample(
                     null,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -115,7 +148,6 @@ public class SamplersTest {
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -129,7 +161,6 @@ public class SamplersTest {
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -143,7 +174,6 @@ public class SamplersTest {
                 .shouldSample(
                     null,
                     traceId,
-                    spanId,
                     SPAN_NAME,
                     SPAN_KIND,
                     Collections.<String, AttributeValue>emptyMap(),
@@ -187,7 +217,7 @@ public class SamplersTest {
         .isEqualTo(String.format("ProbabilitySampler{%.6f}", 0.5));
   }
 
-  // Applies the given sampler to NUM_SAMPLE_TRIES random traceId/spanId pairs.
+  // Applies the given sampler to NUM_SAMPLE_TRIES random traceId.
   private void assertSamplerSamplesWithProbability(
       Sampler sampler,
       SpanContext parent,
@@ -199,7 +229,6 @@ public class SamplersTest {
           .shouldSample(
               parent,
               idsGenerator.generateTraceId(),
-              idsGenerator.generateSpanId(),
               SPAN_NAME,
               SPAN_KIND,
               Collections.<String, AttributeValue>emptyMap(),
@@ -307,7 +336,6 @@ public class SamplersTest {
         defaultProbability.shouldSample(
             null,
             notSampledtraceId,
-            idsGenerator.generateSpanId(),
             SPAN_NAME,
             SPAN_KIND,
             Collections.<String, AttributeValue>emptyMap(),
@@ -342,7 +370,6 @@ public class SamplersTest {
         defaultProbability.shouldSample(
             null,
             sampledtraceId,
-            idsGenerator.generateSpanId(),
             SPAN_NAME,
             SPAN_KIND,
             Collections.<String, AttributeValue>emptyMap(),

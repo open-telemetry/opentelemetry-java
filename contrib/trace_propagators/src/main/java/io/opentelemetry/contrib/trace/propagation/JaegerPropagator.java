@@ -89,7 +89,7 @@ public class JaegerPropagator implements HttpTextFormat {
     checkNotNull(setter, "setter");
 
     Span span = TracingContextUtils.getSpanWithoutDefault(context);
-    if (span == null) {
+    if (span == null || !span.getContext().isValid()) {
       return;
     }
 

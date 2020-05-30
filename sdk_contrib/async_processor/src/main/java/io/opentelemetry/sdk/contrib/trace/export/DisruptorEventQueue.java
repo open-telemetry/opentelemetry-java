@@ -63,8 +63,6 @@ final class DisruptorEventQueue {
         }
       };
 
-  // The event queue is built on this {@link Disruptor}.
-  private final Disruptor<DisruptorEvent> disruptor;
   private final RingBuffer<DisruptorEvent> ringBuffer;
   private final AtomicBoolean loggedShutdownMessage = new AtomicBoolean(false);
   private volatile boolean isShutdown = false;
@@ -89,7 +87,7 @@ final class DisruptorEventQueue {
     // Create new Disruptor for processing. Note that Disruptor creates a single thread per
     // consumer (see https://github.com/LMAX-Exchange/disruptor/issues/121 for details);
     // this ensures that the event handler can take unsynchronized actions whenever possible.
-    this.disruptor =
+    Disruptor<DisruptorEvent> disruptor =
         new Disruptor<>(
             EVENT_FACTORY,
             bufferSize,

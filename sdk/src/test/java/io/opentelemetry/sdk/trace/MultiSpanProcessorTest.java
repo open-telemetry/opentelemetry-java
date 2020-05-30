@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -89,10 +89,10 @@ public class MultiSpanProcessorTest {
     assertThat(multiSpanProcessor.isEndRequired()).isFalse();
 
     multiSpanProcessor.onStart(readableSpan);
-    verifyZeroInteractions(spanProcessor1);
+    verifyNoMoreInteractions(spanProcessor1);
 
     multiSpanProcessor.onEnd(readableSpan);
-    verifyZeroInteractions(spanProcessor1);
+    verifyNoMoreInteractions(spanProcessor1);
 
     multiSpanProcessor.forceFlush();
     verify(spanProcessor1).forceFlush();

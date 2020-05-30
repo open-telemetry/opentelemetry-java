@@ -67,17 +67,17 @@ final class AttributesMap extends HashMap<String, AttributeValue> {
 
   @SuppressWarnings("MissingOverride")
   public AttributeValue putIfAbsent(String key, AttributeValue value) {
-    throw new RuntimeException("Do not call methods on the map");
+    throw new UnsupportedOperationException("Do not call methods on the map");
   }
 
   @SuppressWarnings("MissingOverride")
   public AttributeValue replace(String key, AttributeValue value) {
-    throw new RuntimeException("Do not call methods on the map");
+    throw new UnsupportedOperationException("Do not call methods on the map");
   }
 
   @SuppressWarnings("MissingOverride")
   public boolean replace(String key, AttributeValue oldValue, AttributeValue newValue) {
-    throw new RuntimeException("Do not call methods on the map");
+    throw new UnsupportedOperationException("Do not call methods on the map");
   }
 
   int getTotalAddedValues() {

@@ -19,50 +19,16 @@ package io.opentelemetry.sdk.trace;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.trace.Event;
-import java.util.Collections;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /** Timed event. */
 @Immutable
-abstract class TimedEvent {
+abstract class TimedEvent implements io.opentelemetry.sdk.trace.data.SpanData.Event {
 
-  private static final Map<String, AttributeValue> EMPTY_ATTRIBUTES =
-      Collections.unmodifiableMap(Collections.<String, AttributeValue>emptyMap());
   private static final int DEFAULT_TOTAL_ATTRIBUTE_COUNT = 0;
 
-  abstract long getEpochNanos();
-
-  abstract String getName();
-
-  abstract Map<String, AttributeValue> getAttributes();
-
-  abstract int getTotalAttributeCount();
-
   TimedEvent() {}
-
-  /**
-   * Creates an {@link TimedEvent} with the given time, name and empty attributes.
-   *
-   * @param epochNanos epoch timestamp in nanos.
-   * @param name the name of this {@code TimedEvent}.
-   * @return an {@code TimedEvent}.
-   */
-  static TimedEvent create(long epochNanos, String name) {
-    return create(epochNanos, name, EMPTY_ATTRIBUTES);
-  }
-
-  /**
-   * Creates an {@link TimedEvent} with the given time, name and attributes.
-   *
-   * @param epochNanos epoch timestamp in nanos.
-   * @param name the name of this {@code TimedEvent}.
-   * @param attributes the attributes of this {@code TimedEvent}.
-   * @return an {@code TimedEvent}.
-   */
-  static TimedEvent create(long epochNanos, String name, Map<String, AttributeValue> attributes) {
-    return new AutoValue_TimedEvent_RawTimedEvent(epochNanos, name, attributes, attributes.size());
-  }
 
   /**
    * Creates an {@link TimedEvent} with the given time, name and attributes.
@@ -78,7 +44,7 @@ abstract class TimedEvent {
       Map<String, AttributeValue> attributes,
       int totalAttributeCount) {
     return new AutoValue_TimedEvent_RawTimedEvent(
-        epochNanos, name, attributes, totalAttributeCount);
+        name, attributes, epochNanos, totalAttributeCount);
   }
 
   /**
@@ -99,17 +65,17 @@ abstract class TimedEvent {
     abstract Event getEvent();
 
     @Override
-    String getName() {
+    public String getName() {
       return getEvent().getName();
     }
 
     @Override
-    Map<String, AttributeValue> getAttributes() {
+    public Map<String, AttributeValue> getAttributes() {
       return getEvent().getAttributes();
     }
 
     @Override
-    abstract int getTotalAttributeCount();
+    public abstract int getTotalAttributeCount();
   }
 
   @AutoValue

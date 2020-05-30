@@ -75,7 +75,7 @@ public final class CurrentSpanUtils {
         } else if (t instanceof Error) {
           throw (Error) t;
         }
-        throw new RuntimeException("unexpected", t);
+        throw new IllegalStateException("unexpected", t);
       } finally {
         Context.current().detach(origContext);
         if (endSpan) {
@@ -109,7 +109,7 @@ public final class CurrentSpanUtils {
         if (t instanceof Error) {
           throw (Error) t;
         }
-        throw new RuntimeException("unexpected", t);
+        throw new IllegalStateException("unexpected", t);
       } finally {
         Context.current().detach(origContext);
         if (endSpan) {

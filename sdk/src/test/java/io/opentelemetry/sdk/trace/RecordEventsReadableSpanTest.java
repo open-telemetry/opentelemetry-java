@@ -23,6 +23,7 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -134,7 +135,7 @@ public class RecordEventsReadableSpanTest {
             Kind.CLIENT,
             TraceConfig.getDefault(),
             parentSpanId,
-            Collections.<String, AttributeValue>emptyMap(),
+            null,
             Collections.singletonList(link));
 
     Link resultingLink = span.toSpanData().getLinks().get(0);
@@ -161,10 +162,11 @@ public class RecordEventsReadableSpanTest {
       spanDoWork(span, null);
       SpanData spanData = span.toSpanData();
       Event event =
-          Event.create(
+          TimedEvent.create(
               startEpochNanos + NANOS_PER_SECOND,
               "event2",
-              Collections.<String, AttributeValue>emptyMap());
+              Collections.<String, AttributeValue>emptyMap(),
+              0);
       verifySpanData(
           spanData,
           expectedAttributes,
@@ -193,10 +195,11 @@ public class RecordEventsReadableSpanTest {
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
     Event event =
-        Event.create(
+        TimedEvent.create(
             startEpochNanos + NANOS_PER_SECOND,
             "event2",
-            Collections.<String, AttributeValue>emptyMap());
+            Collections.<String, AttributeValue>emptyMap(),
+            0);
     verifySpanData(
         spanData,
         expectedAttributes,
@@ -226,7 +229,7 @@ public class RecordEventsReadableSpanTest {
     thrown.expect(UnsupportedOperationException.class);
     spanData
         .getEvents()
-        .add(Event.create(1000, "test", Collections.<String, AttributeValue>emptyMap()));
+        .add(EventImpl.create(1000, "test", Collections.<String, AttributeValue>emptyMap()));
   }
 
   @Test
@@ -409,8 +412,8 @@ public class RecordEventsReadableSpanTest {
   @Test
   public void setAttribute_nullStringValue() {
     RecordEventsReadableSpan span = createTestRootSpan();
-    span.setAttribute("emptyString", "");
     span.setAttribute("nullString", (String) null);
+    span.setAttribute("emptyString", "");
     span.setAttribute("nullStringAttributeValue", AttributeValue.stringAttributeValue(null));
     span.setAttribute("emptyStringAttributeValue", AttributeValue.stringAttributeValue(""));
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
@@ -449,25 +452,33 @@ public class RecordEventsReadableSpanTest {
   @Test
   public void addEvent() {
     RecordEventsReadableSpan span = createTestRootSpan();
+    io.opentelemetry.trace.Event customEvent =
+        new io.opentelemetry.trace.Event() {
+          @Override
+          public String getName() {
+            return "event3";
+          }
+
+          @Override
+          public Map<String, AttributeValue> getAttributes() {
+            return Collections.emptyMap();
+          }
+        };
     try {
       span.addEvent("event1");
       span.addEvent("event2", attributes);
-      span.addEvent(
-          new io.opentelemetry.trace.Event() {
-            @Override
-            public String getName() {
-              return "event3";
-            }
-
-            @Override
-            public Map<String, AttributeValue> getAttributes() {
-              return Collections.emptyMap();
-            }
-          });
+      span.addEvent(customEvent);
     } finally {
       span.end();
     }
-    assertThat(span.toSpanData().getEvents().size()).isEqualTo(3);
+    List<Event> events = span.toSpanData().getEvents();
+    assertThat(events.size()).isEqualTo(3);
+    for (Event event : events) {
+      // make sure that we aren't holding on to the memory from the custom event, in case it
+      // references
+      // some heavyweight thing.
+      assertThat(event).isNotInstanceOf(TimedEvent.RawTimedEventWithEvent.class);
+    }
   }
 
   @Test
@@ -479,7 +490,7 @@ public class RecordEventsReadableSpanTest {
     try {
       assertThat(span.toSpanData().getEvents())
           .containsExactly(
-              Event.create(
+              TimedEvent.create(
                   testClock.now(),
                   "name",
                   Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
@@ -487,7 +498,7 @@ public class RecordEventsReadableSpanTest {
       attributes.remove("key0");
       assertThat(span.toSpanData().getEvents())
           .containsExactly(
-              Event.create(
+              TimedEvent.create(
                   testClock.now(),
                   "name",
                   Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
@@ -506,7 +517,7 @@ public class RecordEventsReadableSpanTest {
     try {
       assertThat(span.toSpanData().getEvents())
           .containsExactly(
-              Event.create(
+              TimedEvent.create(
                   100,
                   "name",
                   Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
@@ -514,7 +525,7 @@ public class RecordEventsReadableSpanTest {
       attributes.remove("key0");
       assertThat(span.toSpanData().getEvents())
           .containsExactly(
-              Event.create(
+              TimedEvent.create(
                   100,
                   "name",
                   Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
@@ -605,10 +616,11 @@ public class RecordEventsReadableSpanTest {
       assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
       for (int i = 0; i < maxNumberOfEvents; i++) {
         Event expectedEvent =
-            Event.create(
+            TimedEvent.create(
                 startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
                 "event2",
-                Collections.<String, AttributeValue>emptyMap());
+                Collections.<String, AttributeValue>emptyMap(),
+                0);
         assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
         assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
       }
@@ -619,55 +631,49 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getEvents().size()).isEqualTo(maxNumberOfEvents);
     for (int i = 0; i < maxNumberOfEvents; i++) {
       Event expectedEvent =
-          Event.create(
+          TimedEvent.create(
               startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
               "event2",
-              Collections.<String, AttributeValue>emptyMap());
+              Collections.<String, AttributeValue>emptyMap(),
+              0);
       assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
     }
   }
 
   private RecordEventsReadableSpan createTestSpanWithAttributes(
       Map<String, AttributeValue> attributes) {
-    return createTestSpan(
-        Kind.INTERNAL, TraceConfig.getDefault(), null, attributes, Collections.singletonList(link));
-  }
-
-  private RecordEventsReadableSpan createTestRootSpan() {
+    AttributesMap attributesMap =
+        new AttributesMap(TraceConfig.getDefault().getMaxNumberOfAttributes());
+    attributesMap.putAll(attributes);
     return createTestSpan(
         Kind.INTERNAL,
         TraceConfig.getDefault(),
         null,
-        Collections.<String, AttributeValue>emptyMap(),
+        attributesMap,
         Collections.singletonList(link));
+  }
+
+  private RecordEventsReadableSpan createTestRootSpan() {
+    return createTestSpan(
+        Kind.INTERNAL, TraceConfig.getDefault(), null, null, Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(Kind kind) {
     return createTestSpan(
-        kind,
-        TraceConfig.getDefault(),
-        parentSpanId,
-        Collections.<String, AttributeValue>emptyMap(),
-        Collections.singletonList(link));
+        kind, TraceConfig.getDefault(), parentSpanId, null, Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(TraceConfig config) {
     return createTestSpan(
-        Kind.INTERNAL,
-        config,
-        parentSpanId,
-        Collections.<String, AttributeValue>emptyMap(),
-        Collections.singletonList(link));
+        Kind.INTERNAL, config, parentSpanId, null, Collections.singletonList(link));
   }
 
   private RecordEventsReadableSpan createTestSpan(
       Kind kind,
       TraceConfig config,
       @Nullable SpanId parentSpanId,
-      Map<String, AttributeValue> attributes,
+      @Nullable AttributesMap attributes,
       List<io.opentelemetry.trace.Link> links) {
-    AttributesMap attributesWithCapacity = new AttributesMap(config.getMaxNumberOfAttributes());
-    attributesWithCapacity.putAll(attributes);
 
     RecordEventsReadableSpan span =
         RecordEventsReadableSpan.startSpan(
@@ -681,7 +687,7 @@ public class RecordEventsReadableSpanTest {
             spanProcessor,
             testClock,
             resource,
-            attributesWithCapacity,
+            attributes,
             links,
             1,
             0);
@@ -781,9 +787,11 @@ public class RecordEventsReadableSpanTest {
     long endEpochNanos = clock.now();
 
     List<Event> events =
-        Arrays.asList(
-            Event.create(firstEventEpochNanos, "event1", event1Attributes),
-            Event.create(secondEventTimeNanos, "event2", event2Attributes));
+        Arrays.<Event>asList(
+            TimedEvent.create(
+                firstEventEpochNanos, "event1", event1Attributes, event1Attributes.size()),
+            TimedEvent.create(
+                secondEventTimeNanos, "event2", event2Attributes, event2Attributes.size()));
 
     SpanData result = readableSpan.toSpanData();
     verifySpanData(
