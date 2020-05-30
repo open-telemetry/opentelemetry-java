@@ -3,7 +3,18 @@ plugins {
 }
 
 description = 'OpenTelemetry Examples for Jaeger Exporter'
-ext.moduleName = "io.opentelemetry.examples.jaeger"
+ext {
+    moduleName = "io.opentelemetry.examples.jaeger"
+    testcontainersVersion = "1.14.2"
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+compileTestJava {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
 
 dependencies {
     compile("io.opentelemetry:opentelemetry-api:${opentelemetryVersion}")
@@ -11,4 +22,14 @@ dependencies {
     compile("io.opentelemetry:opentelemetry-exporters-jaeger:${opentelemetryVersion}")
     compile("io.grpc:grpc-protobuf:1.28.0")
     compile("io.grpc:grpc-netty-shaded:1.28.0")
+
+    implementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
+    testCompile("org.testcontainers:testcontainers")
+    testCompile("org.awaitility:awaitility:3.0.0")
+    testCompile("io.rest-assured:rest-assured:4.2.0")
+}
+
+tasks.withType(Test) {
+    dependsOn fatJar
+    systemProperty 'archive.name', fatJar.outputs.files[0].path
 }
