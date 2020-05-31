@@ -50,7 +50,7 @@ final class B3PropagatorExtractorSingleHeader implements B3PropagatorExtractor {
       return SpanContext.getInvalid();
     }
 
-    // must have between 2 and 4 hyphen delimieted parts:
+    // must have between 2 and 4 hyphen delimited parts:
     //   traceId-spanId-sampled-parentSpanId (last two are optional)
     // NOTE: we do not use parentSpanId
     String[] parts = value.split(COMBINED_HEADER_DELIMITER);
