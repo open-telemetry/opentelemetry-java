@@ -98,7 +98,7 @@ public class SpanShimTest {
     spanShim1.setBaggageItem("key1", "value1");
 
     /* Baggage should be synchronized among different SpanShim objects
-     * refering to the same Span.*/
+     * referring to the same Span.*/
     SpanShim spanShim2 = new SpanShim(telemetryInfo, span);
     spanShim2.setBaggageItem("key1", "value2");
     assertEquals(spanShim1.getBaggageItem("key1"), "value2");
