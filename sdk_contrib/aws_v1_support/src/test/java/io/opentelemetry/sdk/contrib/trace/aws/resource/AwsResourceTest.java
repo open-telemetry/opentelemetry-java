@@ -33,13 +33,13 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.stubbing.Answer;
 
-public class AwsResourcePopulatorTest {
+public class AwsResourceTest {
 
   @Rule public MockitoRule mocks = MockitoJUnit.rule();
 
-  @Mock private AwsResourcePopulator populator1;
+  @Mock private AwsResource populator1;
 
-  @Mock private AwsResourcePopulator populator2;
+  @Mock private AwsResource populator2;
 
   @Test
   public void createsResource() {
@@ -54,7 +54,7 @@ public class AwsResourcePopulatorTest {
               }
             })
         .when(populator1)
-        .populate(ArgumentMatchers.<String, AttributeValue>anyMap());
+        .create(ArgumentMatchers.<String, AttributeValue>anyMap());
     doAnswer(
             new Answer<Void>() {
               @Override
@@ -67,9 +67,9 @@ public class AwsResourcePopulatorTest {
               }
             })
         .when(populator2)
-        .populate(ArgumentMatchers.<String, AttributeValue>anyMap());
+        .create(ArgumentMatchers.<String, AttributeValue>anyMap());
 
-    Resource resource = AwsResourcePopulator.createResource(populator1, populator2);
+    Resource resource = AwsResource.create(populator1, populator2);
     assertThat(resource.getAttributes())
         .containsExactly(
             "key1", stringAttributeValue("value3"),

@@ -34,13 +34,12 @@ import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.resources.ResourceConstants;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-public class Ec2ResourcePopulatorTest {
+public class Ec2Resource {
 
   // From https://docs.amazonaws.cn/en_us/AWSEC2/latest/UserGuide/instance-identity-documents.html
   private static final String IDENTITY_DOCUMENT =
@@ -80,8 +79,7 @@ public class Ec2ResourcePopulatorTest {
             .willReturn(okJson(IDENTITY_DOCUMENT)));
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
-    Map<String, AttributeValue> metadata = new LinkedHashMap<>();
-    populator.populate(metadata);
+    Map<String, AttributeValue> metadata = populator.createAttributes();
     assertThat(metadata)
         .containsExactly(
             ResourceConstants.HOST_ID, stringAttributeValue("i-1234567890abcdef0"),
@@ -112,8 +110,7 @@ public class Ec2ResourcePopulatorTest {
             .willReturn(okJson(IDENTITY_DOCUMENT)));
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
-    Map<String, AttributeValue> metadata = new LinkedHashMap<>();
-    populator.populate(metadata);
+    Map<String, AttributeValue> metadata = populator.createAttributes();
     assertThat(metadata)
         .containsExactly(
             ResourceConstants.HOST_ID, stringAttributeValue("i-1234567890abcdef0"),
@@ -140,8 +137,7 @@ public class Ec2ResourcePopulatorTest {
         any(urlPathEqualTo("/latest/dynamic/instance-identity/document"))
             .willReturn(okJson("I'm not JSON")));
 
-    Map<String, AttributeValue> metadata = new LinkedHashMap<>();
-    populator.populate(metadata);
+    Map<String, AttributeValue> metadata = populator.createAttributes();
     assertThat(metadata).isEmpty();
 
     verify(

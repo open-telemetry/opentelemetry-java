@@ -23,27 +23,27 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /** Populates the attributes for creating a {@link Resource} that is running in AWS. */
-public abstract class AwsResourcePopulator {
+public abstract class AwsResource {
 
   /**
    * Returns a {@link Resource} which is filled with attributes describing the current AWS
    * environment, e.g., metadata for the instance if the app is running on EC2.
    */
-  public static Resource createResource() {
-    return createResource(new Ec2ResourcePopulator());
+  public static Resource create() {
+    return create(new Ec2ResourcePopulator());
   }
 
   @VisibleForTesting
-  static Resource createResource(AwsResourcePopulator... populators) {
+  static Resource create(AwsResource... populators) {
     Map<String, AttributeValue> resourceAttributes = new LinkedHashMap<>();
 
-    for (AwsResourcePopulator populator : populators) {
-      populator.populate(resourceAttributes);
+    for (AwsResource populator : populators) {
+      resourceAttributes.putAll(populator.createAttributes());
     }
 
     return Resource.create(resourceAttributes);
   }
 
-  /** Populates a {@link Map} of attributes for constructing a {@link Resource}. */
-  public abstract void populate(Map<String, AttributeValue> resourceAttributes);
+  /** Retrurns a {@link Map} of attributes for constructing a {@link Resource}. */
+  public abstract Map<String, AttributeValue> createAttributes();
 }

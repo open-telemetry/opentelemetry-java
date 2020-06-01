@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.resources.ResourceConstants;
@@ -38,7 +39,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class Ec2ResourcePopulator extends AwsResourcePopulator {
+class Ec2ResourcePopulator extends AwsResource {
 
   private static final Logger logger = Logger.getLogger(Ec2ResourcePopulator.class.getName());
 
@@ -72,7 +73,7 @@ class Ec2ResourcePopulator extends AwsResourcePopulator {
   }
 
   @Override
-  public void populate(Map<String, AttributeValue> resourceAttributes) {
+  public Map<String, AttributeValue> createAttributes() {
     String token = fetchToken();
 
     // If token is empty, either IMDSv2 isn't enabled or an unexpected failure happened. We can
@@ -80,10 +81,12 @@ class Ec2ResourcePopulator extends AwsResourcePopulator {
     String identity = fetchIdentity(token);
     if (identity.isEmpty()) {
       // If no identity document, assume we are not actually running on EC2.
-      return;
+      return ImmutableMap.of();
     }
 
     String hostname = fetchHostname(token);
+
+    ImmutableMap.Builder<String, AttributeValue> resourceAttributes = ImmutableMap.builder();
 
     try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
       parser.nextToken();
@@ -119,11 +122,13 @@ class Ec2ResourcePopulator extends AwsResourcePopulator {
       }
     } catch (IOException e) {
       logger.log(Level.WARNING, "Could not parse identity document, resource not filled.", e);
-      return;
+      return ImmutableMap.of();
     }
 
     resourceAttributes.put(ResourceConstants.HOST_HOSTNAME, stringAttributeValue(hostname));
     resourceAttributes.put(ResourceConstants.HOST_NAME, stringAttributeValue(hostname));
+
+    return resourceAttributes.build();
   }
 
   private String fetchToken() {
