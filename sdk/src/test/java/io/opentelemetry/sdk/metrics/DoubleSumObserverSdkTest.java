@@ -57,33 +57,33 @@ public class DoubleSumObserverSdkTest {
 
   @Test
   public void collectMetrics_NoCallback() {
-    DoubleSumObserverSdk doubleObserver =
+    DoubleSumObserverSdk doubleSumObserver =
         testSdk
             .doubleSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My own DoubleSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(doubleObserver.collectAll()).isEmpty();
+    assertThat(doubleSumObserver.collectAll()).isEmpty();
   }
 
   @Test
   public void collectMetrics_NoRecords() {
-    DoubleSumObserverSdk doubleObserver =
+    DoubleSumObserverSdk doubleSumObserver =
         testSdk
             .doubleSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My own DoubleSumObserver")
             .setUnit("ms")
             .build();
-    doubleObserver.setCallback(
+    doubleSumObserver.setCallback(
         new Callback<ResultDoubleSumObserver>() {
           @Override
           public void update(ResultDoubleSumObserver result) {
             // Do nothing.
           }
         });
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -99,8 +99,9 @@ public class DoubleSumObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    DoubleSumObserverSdk doubleObserver = testSdk.doubleSumObserverBuilder("testObserver").build();
-    doubleObserver.setCallback(
+    DoubleSumObserverSdk doubleSumObserver =
+        testSdk.doubleSumObserverBuilder("testObserver").build();
+    doubleSumObserver.setCallback(
         new Callback<ResultDoubleSumObserver>() {
           @Override
           public void update(ResultDoubleSumObserver result) {
@@ -108,7 +109,7 @@ public class DoubleSumObserverSdkTest {
           }
         });
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -126,7 +127,7 @@ public class DoubleSumObserverSdkTest {
                         Collections.singletonMap("k", "v"),
                         12.1d))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(

@@ -57,33 +57,33 @@ public class LongUpDownSumObserverSdkTest {
 
   @Test
   public void collectMetrics_NoCallback() {
-    LongUpDownSumObserverSdk longObserver =
+    LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk
             .longUpDownSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My own LongUpDownSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(longObserver.collectAll()).isEmpty();
+    assertThat(longUpDownSumObserver.collectAll()).isEmpty();
   }
 
   @Test
   public void collectMetrics_NoRecords() {
-    LongUpDownSumObserverSdk longObserver =
+    LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk
             .longUpDownSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My own LongUpDownSumObserver")
             .setUnit("ms")
             .build();
-    longObserver.setCallback(
+    longUpDownSumObserver.setCallback(
         new Callback<ResultLongUpDownSumObserver>() {
           @Override
           public void update(ResultLongUpDownSumObserver result) {
             // Do nothing.
           }
         });
-    assertThat(longObserver.collectAll())
+    assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -99,9 +99,9 @@ public class LongUpDownSumObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    LongUpDownSumObserverSdk longObserver =
+    LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk.longUpDownSumObserverBuilder("testObserver").build();
-    longObserver.setCallback(
+    longUpDownSumObserver.setCallback(
         new Callback<ResultLongUpDownSumObserver>() {
           @Override
           public void update(ResultLongUpDownSumObserver result) {
@@ -109,7 +109,7 @@ public class LongUpDownSumObserverSdkTest {
           }
         });
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longObserver.collectAll())
+    assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -127,7 +127,7 @@ public class LongUpDownSumObserverSdkTest {
                         Collections.singletonMap("k", "v"),
                         12))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longObserver.collectAll())
+    assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(

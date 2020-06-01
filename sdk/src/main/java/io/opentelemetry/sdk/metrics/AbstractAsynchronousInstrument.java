@@ -16,23 +16,57 @@
 
 package io.opentelemetry.sdk.metrics;
 
-import io.opentelemetry.sdk.metrics.view.Aggregations;
+import io.opentelemetry.metrics.AsynchronousInstrument;
+import io.opentelemetry.sdk.metrics.data.MetricData;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
+import javax.annotation.Nullable;
 
-abstract class AbstractAsynchronousInstrument extends AbstractInstrument {
+abstract class AbstractAsynchronousInstrument<T> extends AbstractInstrument
+    implements AsynchronousInstrument<T> {
+  @Nullable private volatile Callback<T> metricUpdater = null;
+  private final ReentrantLock collectLock = new ReentrantLock();
+
   AbstractAsynchronousInstrument(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState) {
-    super(
-        descriptor,
-        meterProviderSharedState,
-        meterSharedState,
-        new ActiveBatcher(
-            new ActiveBatcher(
-                getDefaultBatcher(
-                    descriptor,
-                    meterProviderSharedState,
-                    meterSharedState,
-                    Aggregations.lastValue()))));
+      MeterSharedState meterSharedState,
+      ActiveBatcher activeBatcher) {
+    super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+  }
+
+  @Override
+  List<MetricData> collectAll() {
+    Callback<T> currentMetricUpdater = metricUpdater;
+    if (currentMetricUpdater == null) {
+      return Collections.emptyList();
+    }
+    collectLock.lock();
+    try {
+      final ActiveBatcher activeBatcher = getActiveBatcher();
+      currentMetricUpdater.update(newResult(activeBatcher));
+      return activeBatcher.completeCollectionCycle();
+    } finally {
+      collectLock.unlock();
+    }
+  }
+
+  @Override
+  public void setCallback(Callback<T> callback) {
+    this.metricUpdater = Objects.requireNonNull(callback, "callback");
+  }
+
+  abstract T newResult(ActiveBatcher activeBatcher);
+
+  abstract static class Builder<B extends AbstractInstrument.Builder<?>>
+      extends AbstractInstrument.Builder<B> {
+    Builder(
+        String name,
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState) {
+      super(name, meterProviderSharedState, meterSharedState);
+    }
   }
 }
