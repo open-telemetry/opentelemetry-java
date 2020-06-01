@@ -23,7 +23,7 @@ dependencies {
     compile("io.grpc:grpc-protobuf:1.28.0")
     compile("io.grpc:grpc-netty-shaded:1.28.0")
 
-    implementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
+    testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
     testCompile("org.testcontainers:testcontainers")
     testCompile("org.awaitility:awaitility:3.0.0")
     testCompile("io.rest-assured:rest-assured:4.2.0")

@@ -9,7 +9,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.awaitility.Awaitility;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -50,8 +49,8 @@ public class JaegerExampleIntegrationTest {
           .withExposedPorts(COLLECTOR_PORT, QUERY_PORT)
           .waitingFor(new HttpWaitStrategy().forPath("/"));
 
-  @Rule
-  public GenericContainer jaegerExampleAppContainer =
+  @ClassRule
+  public static GenericContainer jaegerExampleAppContainer =
       new GenericContainer("openjdk:7u111-jre-alpine")
           .withNetwork(network)
           .withCopyFileToContainer(MountableFile.forHostPath(ARCHIVE_NAME), "/app/" + APP_NAME)
@@ -62,7 +61,8 @@ public class JaegerExampleIntegrationTest {
               "io.opentelemetry.example.JaegerExample",
               JAEGER_HOSTNAME,
               Integer.toString(COLLECTOR_PORT))
-          .waitingFor(Wait.forLogMessage(".*Bye.*", 1));
+          .waitingFor(Wait.forLogMessage(".*Bye.*", 1))
+          .dependsOn(jaegerContainer);
 
   @Test
   public void testJaegerExampleAppIntegration() {
