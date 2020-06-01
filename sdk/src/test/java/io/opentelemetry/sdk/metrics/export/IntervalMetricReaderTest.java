@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
@@ -28,13 +29,16 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link IntervalMetricReader}. */
@@ -64,6 +68,16 @@ public class IntervalMetricReaderTest {
   public void setup() {
     MockitoAnnotations.initMocks(this);
     when(metricProducer.getAllMetrics()).thenReturn(Collections.singletonList(METRIC_DATA));
+  }
+
+  @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.imr.export.interval", "12");
+    IntervalMetricReader.Builder config = IntervalMetricReader.builder();
+    IntervalMetricReader.Builder spy = Mockito.spy(config);
+    spy.fromConfigMap(options, ConfigTester.getNamingDot());
+    Mockito.verify(spy).setExportIntervalMillis(12);
   }
 
   @Test

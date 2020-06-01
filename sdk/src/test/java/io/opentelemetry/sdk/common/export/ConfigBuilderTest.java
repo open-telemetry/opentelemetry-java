@@ -29,6 +29,7 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+
 /** Tests for {@link io.opentelemetry.sdk.common.export.ConfigBuilder}. */
 @RunWith(JUnit4.class)
 public class ConfigBuilderTest {
@@ -233,7 +234,15 @@ public class ConfigBuilderTest {
     assertThat(ConfigBuilder.getStringProperty("no-key", map)).isNull();
   }
 
-  private static final class ConfigTester extends ConfigBuilder<Map<String, String>> {
+  public static final class ConfigTester extends ConfigBuilder<Map<String, String>> {
+
+    public static NamingConvention getNamingDot() {
+      return NamingConvention.DOT;
+    }
+
+    public static NamingConvention getNamingEnv() {
+      return NamingConvention.ENV_VAR;
+    }
 
     @Override
     protected Map<String, String> fromConfigMap(

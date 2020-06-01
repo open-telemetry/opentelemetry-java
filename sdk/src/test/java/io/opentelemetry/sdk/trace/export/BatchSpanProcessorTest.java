@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.doThrow;
 
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
+import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
@@ -29,7 +30,9 @@ import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,6 +45,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link BatchSpanProcessor}. */
@@ -99,6 +103,24 @@ public class BatchSpanProcessorTest {
     TestUtils.startSpanWithSampler(tracerSdkFactory, tracer, spanName, Samplers.alwaysOff())
         .startSpan()
         .end();
+  }
+
+  @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.bsp.schedule.delay", "12");
+    options.put("otel.bsp.max.queue", "34");
+    options.put("otel.bsp.max.export.batch", "56");
+    options.put("otel.bsp.export.timeout", "78");
+    options.put("otel.bsp.export.sampled", "false");
+    BatchSpanProcessor.Builder config = BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0));
+    BatchSpanProcessor.Builder spy = Mockito.spy(config);
+    spy.fromConfigMap(options, ConfigTester.getNamingDot()).build();
+    Mockito.verify(spy).setScheduleDelayMillis(12);
+    Mockito.verify(spy).setMaxQueueSize(34);
+    Mockito.verify(spy).setMaxExportBatchSize(56);
+    Mockito.verify(spy).setExporterTimeoutMillis(78);
+    Mockito.verify(spy).setExportOnlySampled(false);
   }
 
   @Test
