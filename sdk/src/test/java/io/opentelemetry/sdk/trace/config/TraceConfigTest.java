@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.sdk.trace.Samplers;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -125,16 +124,6 @@ public class TraceConfigTest {
   public static class SystemPropertiesTest {
     @Rule public final ExpectedException thrown = ExpectedException.none();
 
-    @Before
-    public void setUp() {
-      System.setProperty("otel.config.sampler.probability", "0.3");
-      System.setProperty("otel.config.max.attrs", "5");
-      System.setProperty("otel.config.max.events", "6");
-      System.setProperty("otel.config.max.links", "9");
-      System.setProperty("otel.config.max.event.attrs", "7");
-      System.setProperty("otel.config.max.link.attrs", "10");
-    }
-
     @After
     public void tearDown() {
       System.clearProperty("otel.config.sampler.probability");
@@ -147,7 +136,18 @@ public class TraceConfigTest {
 
     @Test
     public void updateTraceConfig_SystemProperties() {
-      TraceConfig traceConfig = TraceConfig.getDefault().toBuilder().readSystemProperties().build();
+      System.setProperty("otel.config.sampler.probability", "0.3");
+      System.setProperty("otel.config.max.attrs", "5");
+      System.setProperty("otel.config.max.events", "6");
+      System.setProperty("otel.config.max.links", "9");
+      System.setProperty("otel.config.max.event.attrs", "7");
+      System.setProperty("otel.config.max.link.attrs", "10");
+      TraceConfig traceConfig =
+          TraceConfig.getDefault()
+              .toBuilder()
+              .readEnvironmentVariables()
+              .readSystemProperties()
+              .build();
       assertThat(traceConfig.getSampler()).isEqualTo(Samplers.probability(0.3));
       assertThat(traceConfig.getMaxNumberOfAttributes()).isEqualTo(5);
       assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(6);
