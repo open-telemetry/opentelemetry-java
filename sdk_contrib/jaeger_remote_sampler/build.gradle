@@ -14,7 +14,6 @@ dependencies {
 
     implementation project(':opentelemetry-sdk-contrib-otproto'),
             project(':opentelemetry-sdk'),
-            platform(boms.protobuf),
             libraries.grpc_api,
             libraries.grpc_protobuf,
             libraries.grpc_stub,
