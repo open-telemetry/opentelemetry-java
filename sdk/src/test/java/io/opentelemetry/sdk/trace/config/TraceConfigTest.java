@@ -141,7 +141,7 @@ public class TraceConfigTest {
       System.setProperty("otel.config.max.events", "6");
       System.setProperty("otel.config.max.links", "9");
       System.setProperty("otel.config.max.event.attrs", "7");
-      System.setProperty("otel.config.max.link.attrs", "10");
+      System.setProperty("otel.config.max.link.attrs", "11");
       TraceConfig traceConfig =
           TraceConfig.getDefault()
               .toBuilder()
@@ -153,7 +153,7 @@ public class TraceConfigTest {
       assertThat(traceConfig.getMaxNumberOfEvents()).isEqualTo(6);
       assertThat(traceConfig.getMaxNumberOfLinks()).isEqualTo(9);
       assertThat(traceConfig.getMaxNumberOfAttributesPerEvent()).isEqualTo(7);
-      assertThat(traceConfig.getMaxNumberOfAttributesPerLink()).isEqualTo(10);
+      assertThat(traceConfig.getMaxNumberOfAttributesPerLink()).isEqualTo(11);
     }
 
     @Test
