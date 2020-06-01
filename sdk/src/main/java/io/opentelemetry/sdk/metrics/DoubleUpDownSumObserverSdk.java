@@ -17,47 +17,32 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleUpDownSumObserver;
+import io.opentelemetry.metrics.DoubleUpDownSumObserver.ResultDoubleUpDownSumObserver;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
-import javax.annotation.Nullable;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class DoubleUpDownSumObserverSdk extends AbstractAsynchronousInstrument
+final class DoubleUpDownSumObserverSdk
+    extends AbstractAsynchronousInstrument<ResultDoubleUpDownSumObserver>
     implements DoubleUpDownSumObserver {
-  @Nullable private volatile Callback<ResultDoubleUpDownSumObserver> metricUpdater = null;
-  private final ReentrantLock collectLock = new ReentrantLock();
 
   DoubleUpDownSumObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
-    super(descriptor, meterProviderSharedState, meterSharedState);
+    super(
+        descriptor,
+        meterProviderSharedState,
+        meterSharedState,
+        new ActiveBatcher(
+            getDefaultBatcher(
+                descriptor, meterProviderSharedState, meterSharedState, Aggregations.lastValue())));
   }
 
   @Override
-  List<MetricData> collectAll() {
-    Callback<ResultDoubleUpDownSumObserver> currentMetricUpdater = metricUpdater;
-    if (currentMetricUpdater == null) {
-      return Collections.emptyList();
-    }
-    collectLock.lock();
-    try {
-      final ActiveBatcher activeBatcher = getActiveBatcher();
-      currentMetricUpdater.update(new ResultObserver(activeBatcher));
-      return activeBatcher.completeCollectionCycle();
-    } finally {
-      collectLock.unlock();
-    }
-  }
-
-  @Override
-  public void setCallback(Callback<ResultDoubleUpDownSumObserver> callback) {
-    this.metricUpdater = Objects.requireNonNull(callback, "metricUpdater");
+  ResultDoubleUpDownSumObserver newResult(ActiveBatcher activeBatcher) {
+    return new ResultDoubleUpDownSumObserverSdk(activeBatcher);
   }
 
   static final class Builder
@@ -87,11 +72,12 @@ final class DoubleUpDownSumObserverSdk extends AbstractAsynchronousInstrument
     }
   }
 
-  private static final class ResultObserver implements ResultDoubleUpDownSumObserver {
+  private static final class ResultDoubleUpDownSumObserverSdk
+      implements ResultDoubleUpDownSumObserver {
 
     private final ActiveBatcher activeBatcher;
 
-    private ResultObserver(ActiveBatcher activeBatcher) {
+    private ResultDoubleUpDownSumObserverSdk(ActiveBatcher activeBatcher) {
       this.activeBatcher = activeBatcher;
     }
 

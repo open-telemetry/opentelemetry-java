@@ -17,47 +17,31 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LongUpDownSumObserver;
+import io.opentelemetry.metrics.LongUpDownSumObserver.ResultLongUpDownSumObserver;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
-import javax.annotation.Nullable;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class LongUpDownSumObserverSdk extends AbstractAsynchronousInstrument
+final class LongUpDownSumObserverSdk
+    extends AbstractAsynchronousInstrument<ResultLongUpDownSumObserver>
     implements LongUpDownSumObserver {
-  @Nullable private volatile Callback<ResultLongUpDownSumObserver> metricUpdater = null;
-  private final ReentrantLock collectLock = new ReentrantLock();
-
   LongUpDownSumObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
-    super(descriptor, meterProviderSharedState, meterSharedState);
+    super(
+        descriptor,
+        meterProviderSharedState,
+        meterSharedState,
+        new ActiveBatcher(
+            getDefaultBatcher(
+                descriptor, meterProviderSharedState, meterSharedState, Aggregations.lastValue())));
   }
 
   @Override
-  List<MetricData> collectAll() {
-    Callback<ResultLongUpDownSumObserver> currentMetricUpdater = metricUpdater;
-    if (currentMetricUpdater == null) {
-      return Collections.emptyList();
-    }
-    collectLock.lock();
-    try {
-      final ActiveBatcher activeBatcher = getActiveBatcher();
-      currentMetricUpdater.update(new ResultObserver(activeBatcher));
-      return activeBatcher.completeCollectionCycle();
-    } finally {
-      collectLock.unlock();
-    }
-  }
-
-  @Override
-  public void setCallback(Callback<ResultLongUpDownSumObserver> callback) {
-    this.metricUpdater = Objects.requireNonNull(callback, "metricUpdater");
+  ResultLongUpDownSumObserver newResult(ActiveBatcher activeBatcher) {
+    return new ResultLongUpDownSumObserverSdk(activeBatcher);
   }
 
   static final class Builder
@@ -87,12 +71,11 @@ final class LongUpDownSumObserverSdk extends AbstractAsynchronousInstrument
     }
   }
 
-  private static final class ResultObserver
-      implements LongUpDownSumObserver.ResultLongUpDownSumObserver {
+  private static final class ResultLongUpDownSumObserverSdk implements ResultLongUpDownSumObserver {
 
     private final ActiveBatcher activeBatcher;
 
-    private ResultObserver(ActiveBatcher activeBatcher) {
+    private ResultLongUpDownSumObserverSdk(ActiveBatcher activeBatcher) {
       this.activeBatcher = activeBatcher;
     }
 

@@ -17,47 +17,31 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleSumObserver;
+import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleSumObserver;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.locks.ReentrantLock;
-import javax.annotation.Nullable;
+import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument
+final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument<ResultDoubleSumObserver>
     implements DoubleSumObserver {
-  @Nullable private volatile Callback<ResultDoubleSumObserver> metricUpdater = null;
-  private final ReentrantLock collectLock = new ReentrantLock();
 
   DoubleSumObserverSdk(
       InstrumentDescriptor descriptor,
       MeterProviderSharedState meterProviderSharedState,
       MeterSharedState meterSharedState) {
-    super(descriptor, meterProviderSharedState, meterSharedState);
+    super(
+        descriptor,
+        meterProviderSharedState,
+        meterSharedState,
+        new ActiveBatcher(
+            getDefaultBatcher(
+                descriptor, meterProviderSharedState, meterSharedState, Aggregations.lastValue())));
   }
 
   @Override
-  List<MetricData> collectAll() {
-    Callback<ResultDoubleSumObserver> currentMetricUpdater = metricUpdater;
-    if (currentMetricUpdater == null) {
-      return Collections.emptyList();
-    }
-    collectLock.lock();
-    try {
-      final ActiveBatcher activeBatcher = getActiveBatcher();
-      currentMetricUpdater.update(new ResultDoubleSumObserverSdk(activeBatcher));
-      return activeBatcher.completeCollectionCycle();
-    } finally {
-      collectLock.unlock();
-    }
-  }
-
-  @Override
-  public void setCallback(Callback<ResultDoubleSumObserver> callback) {
-    this.metricUpdater = Objects.requireNonNull(callback, "metricUpdater");
+  ResultDoubleSumObserver newResult(ActiveBatcher activeBatcher) {
+    return new ResultDoubleSumObserverSdk(activeBatcher);
   }
 
   static final class Builder

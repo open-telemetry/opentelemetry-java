@@ -57,33 +57,33 @@ public class DoubleUpDownSumObserverSdkTest {
 
   @Test
   public void collectMetrics_NoCallback() {
-    DoubleUpDownSumObserverSdk doubleObserver =
+    DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My very own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(doubleObserver.collectAll()).isEmpty();
+    assertThat(doubleUpDownSumObserver.collectAll()).isEmpty();
   }
 
   @Test
   public void collectMetrics_NoRecords() {
-    DoubleUpDownSumObserverSdk doubleObserver =
+    DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
-    doubleObserver.setCallback(
+    doubleUpDownSumObserver.setCallback(
         new Callback<ResultDoubleUpDownSumObserver>() {
           @Override
           public void update(ResultDoubleUpDownSumObserver result) {
             // Do nothing.
           }
         });
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -99,9 +99,9 @@ public class DoubleUpDownSumObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    DoubleUpDownSumObserverSdk doubleObserver =
+    DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk.doubleUpDownSumObserverBuilder("testObserver").build();
-    doubleObserver.setCallback(
+    doubleUpDownSumObserver.setCallback(
         new Callback<ResultDoubleUpDownSumObserver>() {
           @Override
           public void update(ResultDoubleUpDownSumObserver result) {
@@ -109,7 +109,7 @@ public class DoubleUpDownSumObserverSdkTest {
           }
         });
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -127,7 +127,7 @@ public class DoubleUpDownSumObserverSdkTest {
                         Collections.singletonMap("k", "v"),
                         12.1d))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
