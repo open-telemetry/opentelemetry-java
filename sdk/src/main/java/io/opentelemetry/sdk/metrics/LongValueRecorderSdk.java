@@ -34,7 +34,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
         meterProviderSharedState,
         meterSharedState,
         new ActiveBatcher(
-            getDefaultBatcher(
+            Batchers.getCumulativeAllLabels(
                 descriptor,
                 meterProviderSharedState,
                 meterSharedState,

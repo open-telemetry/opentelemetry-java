@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.aggregator.NoopAggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
+import io.opentelemetry.sdk.metrics.view.Aggregation;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,17 +40,16 @@ final class Batchers {
   }
 
   static Batcher getCumulativeAllLabels(
-      Descriptor descriptor,
-      Resource resource,
-      InstrumentationLibraryInfo instrumentationLibraryInfo,
-      AggregatorFactory aggregatorFactory,
-      Clock clock) {
+      InstrumentDescriptor descriptor,
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      Aggregation defaultAggregation) {
     return new AllLabels(
-        descriptor,
-        resource,
-        instrumentationLibraryInfo,
-        aggregatorFactory,
-        clock,
+        getDefaultMetricDescriptor(descriptor, defaultAggregation),
+        meterProviderSharedState.getResource(),
+        meterSharedState.getInstrumentationLibraryInfo(),
+        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
+        meterProviderSharedState.getClock(),
         /* delta= */ false);
   }
 
@@ -133,6 +133,16 @@ final class Batchers {
       return Collections.singletonList(
           MetricData.create(descriptor, resource, instrumentationLibraryInfo, points));
     }
+  }
+
+  private static Descriptor getDefaultMetricDescriptor(
+      InstrumentDescriptor descriptor, Aggregation aggregation) {
+    return Descriptor.create(
+        descriptor.getName(),
+        descriptor.getDescription(),
+        aggregation.getUnit(descriptor.getUnit()),
+        aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
+        descriptor.getConstantLabels());
   }
 
   private Batchers() {}

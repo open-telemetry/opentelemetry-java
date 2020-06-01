@@ -35,7 +35,7 @@ final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument<ResultDo
         meterProviderSharedState,
         meterSharedState,
         new ActiveBatcher(
-            getDefaultBatcher(
+            Batchers.getCumulativeAllLabels(
                 descriptor, meterProviderSharedState, meterSharedState, Aggregations.lastValue())));
   }
 
