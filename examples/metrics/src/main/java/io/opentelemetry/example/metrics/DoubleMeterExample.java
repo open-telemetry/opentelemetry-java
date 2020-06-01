@@ -2,11 +2,11 @@ package io.opentelemetry.example.metrics;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.DoubleCounter;
-import io.opentelemetry.metrics.DoubleCounter.BoundDoubleCounter;
 import io.opentelemetry.metrics.Meter;
 
+
 /**
- * Simple example for meter usage
+ * Example of using {@link DoubleCounter} to measure execution time of method.
  */
 public class DoubleMeterExample {
 
@@ -22,7 +22,6 @@ public class DoubleMeterExample {
     Long timeEnd = System.currentTimeMillis();
     Double seconds = (timeEnd.doubleValue() - timeStart.doubleValue()) / 1000;
     timeCounter.add(seconds, "someWork", "execution time");
-    BoundDoubleCounter bind = timeCounter.bind();
   }
 
   private static void superLongMethod() {

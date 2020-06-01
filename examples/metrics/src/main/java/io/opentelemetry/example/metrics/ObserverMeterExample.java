@@ -6,12 +6,15 @@ import io.opentelemetry.metrics.LongValueObserver.ResultLongValueObserver;
 import io.opentelemetry.metrics.Meter;
 
 /**
- * In this example we are setting callback to get asynchronously jvm memory usage
+ * Example of using {@link LongValueObserver} to measure execution time of method.
+ * Setting {@link LongValueObserver.Callback} a callback that gets executed every collection interval.
+ * Useful for expensive measurements that would be wastefully to calculate each request.
  */
 public class ObserverMeterExample {
 
   public static void main(String[] args) {
-    Meter sampleMeter = OpenTelemetry.getMeterProvider().get("io.opentelemetry.example.metrics", "0.5");
+    Meter sampleMeter = OpenTelemetry.getMeterProvider()
+        .get("io.opentelemetry.example.metrics", "0.5");
     LongValueObserver observer = sampleMeter.longValueObserverBuilder("jvm_memory_usage")
         .setDescription("should meter jvm memory usage")
         .setUnit("byte")

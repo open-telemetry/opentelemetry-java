@@ -7,13 +7,13 @@ import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import java.io.File;
 import javax.swing.filechooser.FileSystemView;
 
 /**
- * Example to search all directories for specific file.
- * Here we will search directory recursively for specific file, using meter to count searched directories.
+ * Example of using {@link LongCounter} and {@link LongCounter.BoundLongCounter} to count searched directories.
  */
 public class LongCounterExample {
 
@@ -26,9 +26,10 @@ public class LongCounterExample {
       .setDescription("should count directories searched")
       .setUnit("unit")
       .build();
+  private static final File homeDirectory = FileSystemView.getFileSystemView().getHomeDirectory();
   //we can use BoundCounters to not specify labels each time
   private static final BoundLongCounter directoryCounter = methodCallCounter
-      .bind("directory", "searched");
+      .bind("root directory", homeDirectory.getName());
 
   public static void main(String[] args) {
     Span span = tracer.spanBuilder("workflow")
@@ -37,7 +38,10 @@ public class LongCounterExample {
     LongCounterExample example = new LongCounterExample();
     try (Scope scope = tracer.withSpan(span)) {
       directoryCounter.add(1);// count root directory
-      example.findFile("file_to_find.txt", FileSystemView.getFileSystemView().getHomeDirectory());
+      example.findFile("file_to_find.txt", homeDirectory);
+    } catch (Exception e) {
+      Status status = Status.UNKNOWN.withDescription("Error while finding file");
+      span.setStatus(status);
     } finally {
       span.end();
     }
