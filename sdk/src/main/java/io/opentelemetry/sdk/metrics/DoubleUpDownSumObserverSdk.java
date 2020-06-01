@@ -36,7 +36,7 @@ final class DoubleUpDownSumObserverSdk
         meterProviderSharedState,
         meterSharedState,
         new ActiveBatcher(
-            getDefaultBatcher(
+            Batchers.getCumulativeAllLabels(
                 descriptor, meterProviderSharedState, meterSharedState, Aggregations.lastValue())));
   }
 
