@@ -73,7 +73,7 @@ class Ec2ResourcePopulator extends AwsResource {
   }
 
   @Override
-  public Map<String, AttributeValue> createAttributes() {
+  Map<String, AttributeValue> createAttributes() {
     String token = fetchToken();
 
     // If token is empty, either IMDSv2 isn't enabled or an unexpected failure happened. We can

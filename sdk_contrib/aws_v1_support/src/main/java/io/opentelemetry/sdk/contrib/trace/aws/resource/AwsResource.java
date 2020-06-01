@@ -45,5 +45,5 @@ public abstract class AwsResource {
   }
 
   /** Retrurns a {@link Map} of attributes for constructing a {@link Resource}. */
-  public abstract Map<String, AttributeValue> createAttributes();
+  abstract Map<String, AttributeValue> createAttributes();
 }
