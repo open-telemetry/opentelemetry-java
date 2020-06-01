@@ -24,52 +24,55 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import javax.annotation.concurrent.Immutable;
 
-/** javadoc me. */
+/**
+ * An immutable container for attributes. The type parameter describes the values of the attributes.
+ */
 @Immutable
-public abstract class Attributes {
-  private static final Attributes EMPTY =
-      new Attributes() {
+public abstract class Attributes<T> {
+  private static final Attributes<Object> EMPTY =
+      new Attributes<Object>() {
         @Override
-        public void forEach(AttributeConsumer consumer) {
+        public void forEach(AttributeConsumer<Object> consumer) {
           // no-op
         }
       };
 
-  /** javadoc me. */
-  public abstract void forEach(AttributeConsumer consumer);
+  /** Iterate over all the key-value pairs of attributes contained by this instance. */
+  public abstract void forEach(AttributeConsumer<T> consumer);
 
-  private static Attributes sortAndFilter(List<Object> data) {
+  @SuppressWarnings("unchecked")
+  private static <T> Attributes<T> sortAndFilter(List<Object> data) {
     // note: this is possibly not the most memory-efficient possible implementation, but it works.
-    TreeMap<String, AttributeValue> sorter = new TreeMap<>();
+    TreeMap<String, T> sorter = new TreeMap<>();
     for (int i = 0; i < data.size(); i++) {
       String key = (String) data.get(i++);
       // todo: skip here, favoring the first, or use the TreeMap's built in replacement to favor the
       // last?
       if (!sorter.containsKey(key)) {
-        sorter.put(key, (AttributeValue) data.get(i));
+        sorter.put(key, (T) data.get(i));
       }
     }
     List<Object> sortedData = new ArrayList<>(sorter.size() * 2);
-    for (Entry<String, AttributeValue> entry : sorter.entrySet()) {
+    for (Entry<String, T> entry : sorter.entrySet()) {
       sortedData.add(entry.getKey());
       sortedData.add(entry.getValue());
     }
-    return new AutoValue_Attributes_ArrayBackedAttributes(sortedData);
+    return new AutoValue_Attributes_ArrayBackedAttributes<>(sortedData);
   }
 
   /** javadoc me. */
-  public static Attributes empty() {
-    return EMPTY;
+  @SuppressWarnings("unchecked")
+  public static <T> Attributes<T> empty() {
+    return (Attributes<T>) EMPTY;
   }
 
   /** javadoc me. */
-  public static Attributes of(String key, AttributeValue value) {
+  public static <T> Attributes<T> of(String key, T value) {
     return sortAndFilter(Arrays.asList(key, value));
   }
 
   /** javadoc me. */
-  public static Attributes of(
-      String key1, AttributeValue value1, String key2, AttributeValue value2) {
+  public static <T> Attributes<T> of(String key1, T value1, String key2, T value2) {
     return sortAndFilter(
         Arrays.asList(
             key1, value1,
@@ -77,13 +80,8 @@ public abstract class Attributes {
   }
 
   /** javadoc me. */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3) {
+  public static <T> Attributes<T> of(
+      String key1, T value1, String key2, T value2, String key3, T value3) {
     return sortAndFilter(
         Arrays.asList(
             key1, value1,
@@ -92,15 +90,8 @@ public abstract class Attributes {
   }
 
   /** javadoc me. */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3,
-      String key4,
-      AttributeValue value4) {
+  public static <T> Attributes<T> of(
+      String key1, T value1, String key2, T value2, String key3, T value3, String key4, T value4) {
     return sortAndFilter(
         Arrays.asList(
             key1, value1,
@@ -110,17 +101,17 @@ public abstract class Attributes {
   }
 
   /** javadoc me. */
-  public static Attributes of(
+  public static <T> Attributes<T> of(
       String key1,
-      AttributeValue value1,
+      T value1,
       String key2,
-      AttributeValue value2,
+      T value2,
       String key3,
-      AttributeValue value3,
+      T value3,
       String key4,
-      AttributeValue value4,
+      T value4,
       String key5,
-      AttributeValue value5) {
+      T value5) {
     return sortAndFilter(
         Arrays.asList(
             key1, value1,
@@ -131,93 +122,45 @@ public abstract class Attributes {
   }
 
   /** javadoc me. */
-  public static Builder newBuilder() {
-    return new Builder();
+  public static <T> Builder<T> newBuilder() {
+    return new Builder<>();
   }
 
   @AutoValue
   @Immutable
-  abstract static class ArrayBackedAttributes extends Attributes {
+  abstract static class ArrayBackedAttributes<T> extends Attributes<T> {
     abstract List<Object> data();
 
     ArrayBackedAttributes() {}
 
     @Override
-    public void forEach(AttributeConsumer consumer) {
+    @SuppressWarnings("unchecked")
+    public void forEach(AttributeConsumer<T> consumer) {
       for (int i = 0; i < data().size(); i++) {
-        consumer.consume((String) data().get(i), (AttributeValue) data().get(++i));
+        consumer.consume((String) data().get(i), (T) data().get(++i));
       }
     }
   }
 
   /** javadoc me. */
-  public static class Builder {
+  public static class Builder<T> {
     private final List<Object> data = new ArrayList<>();
 
     /** javadoc me. */
-    public Attributes build() {
+    public Attributes<T> build() {
       return sortAndFilter(Arrays.asList(data.toArray()));
     }
 
     /** javadoc me. */
-    public Builder addAttribute(String key, String value) {
+    public Builder<T> addAttribute(String key, T value) {
       data.add(key);
-      data.add(AttributeValue.stringAttributeValue(value));
-      return this;
-    }
-
-    /** javadoc me. */
-    public Builder addAttribute(String key, long value) {
-      data.add(key);
-      data.add(AttributeValue.longAttributeValue(value));
-      return this;
-    }
-
-    /** javadoc me. */
-    public Builder addAttribute(String key, double value) {
-      data.add(key);
-      data.add(AttributeValue.doubleAttributeValue(value));
-      return this;
-    }
-
-    /** javadoc me. */
-    public Builder addAttribute(String key, boolean value) {
-      data.add(key);
-      data.add(AttributeValue.booleanAttributeValue(value));
-      return this;
-    }
-
-    /** javadoc me. */
-    public Builder addAttribute(String key, String... value) {
-      data.add(key);
-      data.add(AttributeValue.arrayAttributeValue(value));
-      return this;
-    }
-
-    /** javadoc me. */
-    public Builder addAttribute(String key, Long... value) {
-      data.add(key);
-      data.add(AttributeValue.arrayAttributeValue(value));
-      return this;
-    }
-
-    /** javadoc me. */
-    public Builder addAttribute(String key, Double... value) {
-      data.add(key);
-      data.add(AttributeValue.arrayAttributeValue(value));
-      return this;
-    }
-
-    /** javadoc me. */
-    public Builder addAttribute(String key, Boolean... value) {
-      data.add(key);
-      data.add(AttributeValue.arrayAttributeValue(value));
+      data.add(value);
       return this;
     }
   }
 
-  /** javadoc me. */
-  public interface AttributeConsumer {
-    void consume(String key, AttributeValue value);
+  /** Used for iterating over the key-value pairs contained by an {@link Attributes} instance. */
+  public interface AttributeConsumer<T> {
+    void consume(String key, T value);
   }
 }

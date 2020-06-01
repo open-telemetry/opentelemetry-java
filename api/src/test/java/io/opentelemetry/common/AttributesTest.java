@@ -31,13 +31,13 @@ public class AttributesTest {
   public void forEach() {
     final Set<String> keysSeen = new HashSet<>();
 
-    Attributes attributes =
+    Attributes<AttributeValue> attributes =
         Attributes.of(
             "key1", stringAttributeValue("value1"),
             "key2", AttributeValue.longAttributeValue(333));
 
     attributes.forEach(
-        new AttributeConsumer() {
+        new AttributeConsumer<AttributeValue>() {
           @Override
           public void consume(String key, AttributeValue value) {
             keysSeen.add(key);
@@ -51,9 +51,9 @@ public class AttributesTest {
   public void forEach_singleAttribute() {
     final Set<String> keysSeen = new HashSet<>();
 
-    Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
+    Attributes<AttributeValue> attributes = Attributes.of("key", stringAttributeValue("value"));
     attributes.forEach(
-        new AttributeConsumer() {
+        new AttributeConsumer<AttributeValue>() {
           @Override
           public void consume(String key, AttributeValue value) {
             keysSeen.add(key);
@@ -66,9 +66,9 @@ public class AttributesTest {
   @Test
   public void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
-    Attributes emptyAttributes = Attributes.empty();
+    Attributes<AttributeValue> emptyAttributes = Attributes.empty();
     emptyAttributes.forEach(
-        new AttributeConsumer() {
+        new AttributeConsumer<AttributeValue>() {
           @Override
           public void consume(String key, AttributeValue value) {
             sawSomething.set(true);
@@ -79,11 +79,11 @@ public class AttributesTest {
 
   @Test
   public void orderIndependentEquality() {
-    Attributes one =
+    Attributes<?> one =
         Attributes.of(
             "key1", stringAttributeValue("value1"),
             "key2", stringAttributeValue("value2"));
-    Attributes two =
+    Attributes<?> two =
         Attributes.of(
             "key2", stringAttributeValue("value2"),
             "key1", stringAttributeValue("value1"));
@@ -93,11 +93,11 @@ public class AttributesTest {
 
   @Test
   public void deduplication() {
-    Attributes one =
+    Attributes<?> one =
         Attributes.of(
             "key1", stringAttributeValue("value1"),
             "key1", stringAttributeValue("valueX"));
-    Attributes two = Attributes.of("key1", stringAttributeValue("value1"));
+    Attributes<?> two = Attributes.of("key1", stringAttributeValue("value1"));
 
     assertThat(one).isEqualTo(two);
   }
