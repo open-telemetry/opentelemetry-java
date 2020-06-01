@@ -18,14 +18,35 @@ An example of simple Zipkin exporter initialization. In this case
 spans will be sent to a Zipkin endpoint running on `localhost`:
 
 ```java
-    ZipkinExporterConfiguration configuration =
-        ZipkinExporterConfiguration.builder()
+ZipkinSpanExporter exporter =
+        ZipkinSpanExporter.newBuilder()
             .setEndpoint("http://localhost/api/v2/spans")
             .setServiceName("my-service")
             .build();
-
-    ZipkinSpanExporter exporter = ZipkinSpanExporter.create(configuration);
 ```
+
+Service name and Endpoint can be also configured via environment variables or system properties. 
+
+```java
+// Using environment variables
+ZipkinSpanExporter exporter = 
+        ZipkinSpanExporter.newBuilder()
+            .readEnvironmentVariables()
+            .build()
+```
+
+```java
+// Using system properties
+ZipkinSpanExporter exporter = 
+        ZipkinSpanExporter.newBuilder()
+            .readSystemProperties()
+            .build()
+```
+
+The Zipkin span exporter will look for the following environment variables / system properties:
+* `OTEL_ZIPKIN_SERVICE_NAME` / `otel.zipkin.service.name`
+* `OTEL_ZIPKIN_ENDPOINT` / `otel.zipkin.endpoint`
+
 
 ## Compatibility
 
