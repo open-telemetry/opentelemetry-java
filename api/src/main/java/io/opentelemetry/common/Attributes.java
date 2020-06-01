@@ -25,7 +25,8 @@ import java.util.TreeMap;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An immutable container for attributes. The type parameter describes the values of the attributes.
+ * An immutable container for attributes. The type parameter denotes the type of the values of the
+ * attributes.
  */
 @Immutable
 public abstract class Attributes<T> {
@@ -37,7 +38,7 @@ public abstract class Attributes<T> {
         }
       };
 
-  /** Iterate over all the key-value pairs of attributes contained by this instance. */
+  /** Iterates over all the key-value pairs of attributes contained by this instance. */
   public abstract void forEach(AttributeConsumer<T> consumer);
 
   @SuppressWarnings("unchecked")
@@ -60,18 +61,20 @@ public abstract class Attributes<T> {
     return new AutoValue_Attributes_ArrayBackedAttributes<>(sortedData);
   }
 
-  /** javadoc me. */
+  /** An {@link Attributes} instance with no attributes. */
   @SuppressWarnings("unchecked")
   public static <T> Attributes<T> empty() {
     return (Attributes<T>) EMPTY;
   }
 
-  /** javadoc me. */
+  /** An {@link Attributes} instance with a single key-value pair. */
   public static <T> Attributes<T> of(String key, T value) {
     return sortAndFilter(Arrays.asList(key, value));
   }
 
-  /** javadoc me. */
+  /**
+   * An {@link Attributes} instance with two key-value pairs. Order of the keys is not preserved.
+   */
   public static <T> Attributes<T> of(String key1, T value1, String key2, T value2) {
     return sortAndFilter(
         Arrays.asList(
@@ -79,7 +82,9 @@ public abstract class Attributes<T> {
             key2, value2));
   }
 
-  /** javadoc me. */
+  /**
+   * An {@link Attributes} instance with three key-value pairs. Order of the keys is not preserved.
+   */
   public static <T> Attributes<T> of(
       String key1, T value1, String key2, T value2, String key3, T value3) {
     return sortAndFilter(
@@ -89,7 +94,9 @@ public abstract class Attributes<T> {
             key3, value3));
   }
 
-  /** javadoc me. */
+  /**
+   * An {@link Attributes} instance with four key-value pairs. Order of the keys is not preserved.
+   */
   public static <T> Attributes<T> of(
       String key1, T value1, String key2, T value2, String key3, T value3, String key4, T value4) {
     return sortAndFilter(
@@ -100,7 +107,9 @@ public abstract class Attributes<T> {
             key4, value4));
   }
 
-  /** javadoc me. */
+  /**
+   * An {@link Attributes} instance with five key-value pairs. Order of the keys is not preserved.
+   */
   public static <T> Attributes<T> of(
       String key1,
       T value1,
@@ -121,7 +130,7 @@ public abstract class Attributes<T> {
             key5, value5));
   }
 
-  /** javadoc me. */
+  /** Creates a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
   public static <T> Builder<T> newBuilder() {
     return new Builder<>();
   }
@@ -142,7 +151,10 @@ public abstract class Attributes<T> {
     }
   }
 
-  /** javadoc me. */
+  /**
+   * Enables the creation of an {@link Attributes} instance with an arbitrary number of key-value
+   * pairs.
+   */
   public static class Builder<T> {
     private final List<Object> data = new ArrayList<>();
 
