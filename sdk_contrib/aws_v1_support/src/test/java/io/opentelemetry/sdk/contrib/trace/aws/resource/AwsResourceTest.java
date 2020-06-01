@@ -19,19 +19,15 @@ package io.opentelemetry.sdk.contrib.trace.aws.resource;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
-import io.opentelemetry.common.AttributeValue;
+import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.mockito.stubbing.Answer;
 
 public class AwsResourceTest {
 
@@ -43,31 +39,14 @@ public class AwsResourceTest {
 
   @Test
   public void createsResource() {
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(InvocationOnMock invocation) {
-                Map<String, AttributeValue> attributes = invocation.getArgument(0);
-                attributes.put("key1", stringAttributeValue("value1"));
-                attributes.put("key2", booleanAttributeValue(true));
-                return null;
-              }
-            })
-        .when(populator1)
-        .create(ArgumentMatchers.<String, AttributeValue>anyMap());
-    doAnswer(
-            new Answer<Void>() {
-              @Override
-              public Void answer(InvocationOnMock invocation) {
-                Map<String, AttributeValue> attributes = invocation.getArgument(0);
-                attributes.put("key3", stringAttributeValue("value2"));
-                // Duplicate keys clobber but don't worry about it.
-                attributes.put("key1", stringAttributeValue("value3"));
-                return null;
-              }
-            })
-        .when(populator2)
-        .create(ArgumentMatchers.<String, AttributeValue>anyMap());
+    when(populator1.createAttributes())
+        .thenReturn(
+            ImmutableMap.of(
+                "key1", stringAttributeValue("value1"), "key2", booleanAttributeValue(true)));
+    when(populator2.createAttributes())
+        .thenReturn(
+            ImmutableMap.of(
+                "key3", stringAttributeValue("value2"), "key1", stringAttributeValue("value3")));
 
     Resource resource = AwsResource.create(populator1, populator2);
     assertThat(resource.getAttributes())
