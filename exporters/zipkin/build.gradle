@@ -16,7 +16,8 @@ dependencies {
     annotationProcessor libraries.auto_value
 
     implementation libraries.zipkin_reporter,
-            libraries.zipkin_urlconnection
+            libraries.zipkin_urlconnection,
+            platform(boms.zipkin_reporter)
 
     testImplementation libraries.guava,
             libraries.zipkin_junit

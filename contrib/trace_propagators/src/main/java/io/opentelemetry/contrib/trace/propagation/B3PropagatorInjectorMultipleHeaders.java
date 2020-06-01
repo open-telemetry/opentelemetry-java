@@ -32,7 +32,7 @@ final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector 
     Objects.requireNonNull(setter, "setter");
 
     Span span = TracingContextUtils.getSpanWithoutDefault(context);
-    if (span == null) {
+    if (span == null || !span.getContext().isValid()) {
       return;
     }
 

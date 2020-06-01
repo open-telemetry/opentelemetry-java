@@ -11,8 +11,7 @@ ext.moduleName = "io.opentelemetry.exporters.prometheus"
 dependencies {
     api project(':opentelemetry-sdk')
 
-    implementation libraries.guava,
-            libraries.prometheus_client
+    implementation libraries.prometheus_client
 
     testImplementation libraries.prometheus_client_common
 

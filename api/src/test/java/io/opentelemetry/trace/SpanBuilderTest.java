@@ -76,7 +76,7 @@ public class SpanBuilderTest {
   }
 
   @Test
-  public void setParent_NullSpanContex() {
+  public void setParent_NullSpanContext() {
     Span.Builder spanBuilder = tracer.spanBuilder("MySpanName");
     thrown.expect(NullPointerException.class);
     spanBuilder.setParent((SpanContext) null);

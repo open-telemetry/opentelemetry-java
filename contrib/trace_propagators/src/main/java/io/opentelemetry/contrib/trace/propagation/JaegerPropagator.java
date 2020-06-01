@@ -39,7 +39,7 @@ import javax.annotation.concurrent.Immutable;
 
 /**
  * Implementation of the Jaeger propagation protocol. See <a
- * href=https://www.jaegertracing.io/docs/client-libraries/#propagation-format>Jaeger Propogation
+ * href=https://www.jaegertracing.io/docs/client-libraries/#propagation-format>Jaeger Propagation
  * Format</a>.
  */
 @Immutable
@@ -89,7 +89,7 @@ public class JaegerPropagator implements HttpTextFormat {
     checkNotNull(setter, "setter");
 
     Span span = TracingContextUtils.getSpanWithoutDefault(context);
-    if (span == null) {
+    if (span == null || !span.getContext().isValid()) {
       return;
     }
 

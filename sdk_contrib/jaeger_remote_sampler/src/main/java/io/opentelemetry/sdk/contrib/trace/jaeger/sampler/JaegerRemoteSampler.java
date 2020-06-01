@@ -30,7 +30,6 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +52,6 @@ public class JaegerRemoteSampler implements Sampler {
   private final String serviceName;
   private final SamplingManagerBlockingStub stub;
   private Sampler sampler;
-  private final ScheduledExecutorService scheduledExecutorService;
 
   @SuppressWarnings("FutureReturnValueIgnored")
   private JaegerRemoteSampler(
@@ -61,9 +59,9 @@ public class JaegerRemoteSampler implements Sampler {
     this.serviceName = serviceName;
     this.stub = SamplingManagerGrpc.newBlockingStub(channel);
     this.sampler = initialSampler;
-    this.scheduledExecutorService =
+    ScheduledExecutorService scheduledExecutorService =
         Executors.newScheduledThreadPool(1, new DaemonThreadFactory(WORKER_THREAD_NAME));
-    this.scheduledExecutorService.scheduleAtFixedRate(
+    scheduledExecutorService.scheduleAtFixedRate(
         updateSampleRunnable(), 0, pollingIntervalMs, TimeUnit.MILLISECONDS);
   }
 
@@ -84,13 +82,11 @@ public class JaegerRemoteSampler implements Sampler {
   public Decision shouldSample(
       @Nullable SpanContext parentContext,
       TraceId traceId,
-      SpanId spanId,
       String name,
       Kind spanKind,
       Map<String, AttributeValue> attributes,
       List<Link> parentLinks) {
-    return sampler.shouldSample(
-        parentContext, traceId, spanId, name, spanKind, attributes, parentLinks);
+    return sampler.shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
   }
 
   private void getAndUpdateSampler() {

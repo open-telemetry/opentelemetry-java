@@ -16,7 +16,6 @@
 
 package io.opentelemetry.exporters.zipkin;
 
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.common.AttributeValue;
@@ -199,7 +198,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   private static long toEpochMicros(long epochNanos) {
-    return MICROSECONDS.convert(epochNanos, NANOSECONDS);
+    return NANOSECONDS.toMicros(epochNanos);
   }
 
   private static String attributeValueToString(AttributeValue attributeValue) {

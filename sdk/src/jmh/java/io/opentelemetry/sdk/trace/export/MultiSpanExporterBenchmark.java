@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.trace.export;
 
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanId;
@@ -73,10 +73,10 @@ public class MultiSpanExporterBenchmark {
     Arrays.fill(exporter, new NoopSpanExporter());
     this.exporter = MultiSpanExporter.create(Arrays.asList(exporter));
 
-    SpanDataImpl[] spans = new SpanDataImpl[spanCount];
+    TestSpanData[] spans = new TestSpanData[spanCount];
     for (int i = 0; i < spans.length; i++) {
       spans[i] =
-          SpanDataImpl.newBuilder()
+          TestSpanData.newBuilder()
               .setTraceId(new TraceId(1, 1))
               .setSpanId(new SpanId(1))
               .setName("noop")

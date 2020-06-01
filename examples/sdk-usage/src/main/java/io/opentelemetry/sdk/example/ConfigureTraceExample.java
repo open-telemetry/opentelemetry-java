@@ -115,7 +115,6 @@ class ConfigureTraceExample {
       public Decision shouldSample(
           SpanContext parentContext,
           TraceId traceId,
-          SpanId spanId,
           String name,
           Span.Kind spanKind,
           Map<String, AttributeValue> attributes,

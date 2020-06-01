@@ -31,7 +31,7 @@ import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -242,7 +242,7 @@ public class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
-        SpanDataImpl.newBuilder()
+        TestSpanData.newBuilder()
             .setHasEnded(true)
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
@@ -269,7 +269,7 @@ public class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
-        SpanDataImpl.newBuilder()
+        TestSpanData.newBuilder()
             .setHasEnded(true)
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
@@ -305,7 +305,7 @@ public class AdapterTest {
 
     Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
-    return SpanDataImpl.newBuilder()
+    return TestSpanData.newBuilder()
         .setHasEnded(true)
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))

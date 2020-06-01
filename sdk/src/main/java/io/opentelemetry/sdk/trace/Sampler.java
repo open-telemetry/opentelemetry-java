@@ -20,7 +20,6 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,6 @@ public interface Sampler {
    *     span.
    * @param traceId the {@link TraceId} for the new {@code Span}. This will be identical to that in
    *     the parentContext, unless this is a root span.
-   * @param spanId the {@link SpanId} for the new {@code Span}.
    * @param name the name of the new {@code Span}.
    * @param parentLinks the parentLinks associated with the new {@code Span}.
    * @param spanKind the {@link Span.Kind} of the {@code Span}.
@@ -52,7 +50,6 @@ public interface Sampler {
   Decision shouldSample(
       @Nullable SpanContext parentContext,
       TraceId traceId,
-      SpanId spanId,
       String name,
       Span.Kind spanKind,
       Map<String, AttributeValue> attributes,
@@ -70,7 +67,7 @@ public interface Sampler {
   String getDescription();
 
   /**
-   * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, TraceId, SpanId, String,
+   * Sampling decision returned by {@link Sampler#shouldSample(SpanContext, TraceId, String,
    * Span.Kind, Map, List)}.
    *
    * @since 0.1.0
