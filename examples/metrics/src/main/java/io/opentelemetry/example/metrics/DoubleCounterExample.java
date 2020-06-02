@@ -22,13 +22,13 @@ public class DoubleCounterExample {
     Span span = tracer.spanBuilder("superLongMethod")
         .setSpanKind(Kind.INTERNAL)
         .startSpan();
+    Meter sampleMeter = OpenTelemetry.getMeterProvider()
+        .get("io.opentelemetry.example.metrics", "0.5");
+    DoubleCounter timeCounter = sampleMeter.doubleCounterBuilder("some_method_time_usage")
+        .setDescription("should measure some method execution time")
+        .setUnit("second")
+        .build();
     try (Scope scope = tracer.withSpan(span)) {
-      Meter sampleMeter = OpenTelemetry.getMeterProvider()
-          .get("io.opentelemetry.example.metrics", "0.5");
-      DoubleCounter timeCounter = sampleMeter.doubleCounterBuilder("some_method_time_usage")
-          .setDescription("should measure some method execution time")
-          .setUnit("second")
-          .build();
       Long timeStart = System.currentTimeMillis();
       superLongMethod();
       Long timeEnd = System.currentTimeMillis();
