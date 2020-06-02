@@ -10,7 +10,7 @@ import io.opentelemetry.metrics.Meter;
  * Setting {@link LongValueObserver.Callback} a callback that gets executed every collection interval.
  * Useful for expensive measurements that would be wastefully to calculate each request.
  */
-public class ObserverMeterExample {
+public class LongValueObserverExample {
 
   public static void main(String[] args) {
     Meter sampleMeter = OpenTelemetry.getMeterProvider()
