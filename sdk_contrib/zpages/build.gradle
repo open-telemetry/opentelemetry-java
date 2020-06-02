@@ -1,0 +1,18 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry - zPages'
+ext.moduleName = "io.opentelemetry.sdk.contrib.zpages"
+
+dependencies {
+    api project(':opentelemetry-api'),
+            project(':opentelemetry-sdk')
+
+    implementation libraries.guava
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+}

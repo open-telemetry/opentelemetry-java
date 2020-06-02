@@ -40,6 +40,7 @@ include ":opentelemetry-all",
         ":opentelemetry-sdk-contrib-otproto",
         ":opentelemetry-sdk-contrib-testbed",
         ":opentelemetry-sdk-contrib-jaeger-remote-sampler",
+        ":opentelemetry-sdk-contrib-zpages",
         ":opentelemetry-bom"
 
 rootProject.children.each {
