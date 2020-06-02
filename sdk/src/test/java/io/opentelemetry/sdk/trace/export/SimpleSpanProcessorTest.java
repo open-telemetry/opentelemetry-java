@@ -78,6 +78,11 @@ public class SimpleSpanProcessorTest {
     Map<String, String> options = new HashMap<>();
     options.put("otel.ssp.export.sampled", "false");
     SimpleSpanProcessor.Builder config = SimpleSpanProcessor.newBuilder(spanExporter);
+    /*
+    We are trying to spy a final class. To allow this, we need to create a resource file
+    ./mockito-extensions/org.mockito.plugins.MockMaker with content "mock-maker-inline".
+    https://www.javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/plugins/MockMaker.html
+    */
     SimpleSpanProcessor.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigTester.getNamingDot());
     Mockito.verify(spy).setExportOnlySampled(false);

@@ -114,6 +114,11 @@ public class BatchSpanProcessorTest {
     options.put("otel.bsp.export.timeout", "78");
     options.put("otel.bsp.export.sampled", "false");
     BatchSpanProcessor.Builder config = BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0));
+    /*
+    We are trying to spy a final class. To allow this, we need to create a resource file
+    ./mockito-extensions/org.mockito.plugins.MockMaker with content "mock-maker-inline".
+    https://www.javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/plugins/MockMaker.html
+    */
     BatchSpanProcessor.Builder spy = Mockito.spy(config);
     spy.fromConfigMap(options, ConfigTester.getNamingDot()).build();
     Mockito.verify(spy).setScheduleDelayMillis(12);

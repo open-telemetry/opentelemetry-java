@@ -154,8 +154,7 @@ public class ConfigBuilderTest {
     map.put("loWer_cAsE", "4");
     Map<String, String> normalized = NamingConvention.DOT.normalize(map);
     assertThat(normalized.size()).isEqualTo(2);
-    assertThat(normalized.get("lower.case")).isNotEmpty();
-    assertThat(normalized.get("lower_case")).isNotEmpty();
+    assertThat(normalized).containsExactly("lower.case", "3", "lower_case", "4");
   }
 
   @Test
@@ -167,7 +166,7 @@ public class ConfigBuilderTest {
     map.put("loWer_cAsE", "4");
     Map<String, String> normalized = NamingConvention.ENV_VAR.normalize(map);
     assertThat(normalized.size()).isEqualTo(1);
-    assertThat(normalized.get("lower.case")).isNotEmpty();
+    assertThat(normalized).containsExactly("lower.case", "3");
   }
 
   @Test
@@ -195,6 +194,7 @@ public class ConfigBuilderTest {
     map.put("boolf", "false");
     map.put("string", "random");
     assertThat(ConfigBuilder.getIntProperty("int", map)).isNotNull();
+    assertThat(ConfigBuilder.getIntProperty("int", map)).isEqualTo(1);
     assertThat(ConfigBuilder.getIntProperty("long", map)).isNull();
     assertThat(ConfigBuilder.getIntProperty("boolt", map)).isNull();
     assertThat(ConfigBuilder.getIntProperty("boolf", map)).isNull();
@@ -211,6 +211,7 @@ public class ConfigBuilderTest {
     map.put("boolf", "false");
     map.put("string", "random");
     assertThat(ConfigBuilder.getLongProperty("int", map)).isNotNull();
+    assertThat(ConfigBuilder.getLongProperty("int", map)).isEqualTo(1);
     assertThat(ConfigBuilder.getLongProperty("long", map)).isNull();
     assertThat(ConfigBuilder.getLongProperty("boolt", map)).isNull();
     assertThat(ConfigBuilder.getLongProperty("boolf", map)).isNull();
