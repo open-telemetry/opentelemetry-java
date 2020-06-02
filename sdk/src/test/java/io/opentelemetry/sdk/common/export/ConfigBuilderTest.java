@@ -29,7 +29,6 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-
 /** Tests for {@link io.opentelemetry.sdk.common.export.ConfigBuilder}. */
 @RunWith(JUnit4.class)
 public class ConfigBuilderTest {
