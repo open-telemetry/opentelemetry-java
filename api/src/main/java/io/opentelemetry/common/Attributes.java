@@ -20,7 +20,6 @@ import static io.opentelemetry.internal.Utils.checkArgument;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.internal.Utils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -63,7 +62,7 @@ public abstract class Attributes<T> {
 
       if (checkType) {
         checkNotNull(key, "You cannot provide null keys for creation of attributes.");
-        Utils.checkArgument(type.isAssignableFrom(value.getClass()), errorMessage);
+        checkArgument(type.isAssignableFrom(value.getClass()), errorMessage);
       }
 
       // todo: skip here, favoring the first, or use the TreeMap's built in replacement to favor the
