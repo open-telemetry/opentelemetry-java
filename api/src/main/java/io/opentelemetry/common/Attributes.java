@@ -16,9 +16,12 @@
 
 package io.opentelemetry.common;
 
+import static io.opentelemetry.internal.Utils.checkArgument;
+import static io.opentelemetry.internal.Utils.checkNotNull;
+
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.internal.Utils;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -41,17 +44,33 @@ public abstract class Attributes<T> {
   /** Iterates over all the key-value pairs of attributes contained by this instance. */
   public abstract void forEach(AttributeConsumer<T> consumer);
 
+  private static <T> Attributes<T> sortAndFilter(Object... data) {
+    return sortAndFilter(/* checkType= */ false, null, data);
+  }
+
   @SuppressWarnings("unchecked")
-  private static <T> Attributes<T> sortAndFilter(List<Object> data) {
-    // note: this is possibly not the most memory-efficient possible implementation, but it works.
+  private static <T> Attributes<T> sortAndFilter(boolean checkType, Class<T> type, Object[] data) {
+    checkArgument(
+        data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
+    String errorMessage = "All values must be of type: " + type;
+
+    // note: this is possibly not the most memory-efficient possible implementation, but it works
+    // for starters.
     TreeMap<String, T> sorter = new TreeMap<>();
-    for (int i = 0; i < data.size(); i++) {
-      String key = (String) data.get(i++);
+    for (int i = 0; i < data.length; i++) {
+      String key = (String) data[i++];
+      Object value = data[i];
+
+      if (checkType) {
+        checkNotNull(key, "You cannot provide null keys for creation of attributes.");
+        Utils.checkArgument(type.isAssignableFrom(value.getClass()), errorMessage);
+      }
+
       // todo: skip here, favoring the first, or use the TreeMap's built in replacement to favor the
       // last? Or, final option, disallow duplicate keys and throw an exception like guava's
       // ImmutableMap.
       if (!sorter.containsKey(key)) {
-        sorter.put(key, (T) data.get(i));
+        sorter.put(key, (T) value);
       }
     }
     List<Object> sortedData = new ArrayList<>(sorter.size() * 2);
@@ -70,7 +89,7 @@ public abstract class Attributes<T> {
 
   /** An {@link Attributes} instance with a single key-value pair. */
   public static <T> Attributes<T> of(String key, T value) {
-    return sortAndFilter(Arrays.asList(key, value));
+    return sortAndFilter(key, value);
   }
 
   /**
@@ -78,10 +97,7 @@ public abstract class Attributes<T> {
    * Duplicate keys will be removed.
    */
   public static <T> Attributes<T> of(String key1, T value1, String key2, T value2) {
-    return sortAndFilter(
-        Arrays.asList(
-            key1, value1,
-            key2, value2));
+    return sortAndFilter(key1, value1, key2, value2);
   }
 
   /**
@@ -90,11 +106,7 @@ public abstract class Attributes<T> {
    */
   public static <T> Attributes<T> of(
       String key1, T value1, String key2, T value2, String key3, T value3) {
-    return sortAndFilter(
-        Arrays.asList(
-            key1, value1,
-            key2, value2,
-            key3, value3));
+    return sortAndFilter(key1, value1, key2, value2, key3, value3);
   }
 
   /**
@@ -103,12 +115,7 @@ public abstract class Attributes<T> {
    */
   public static <T> Attributes<T> of(
       String key1, T value1, String key2, T value2, String key3, T value3, String key4, T value4) {
-    return sortAndFilter(
-        Arrays.asList(
-            key1, value1,
-            key2, value2,
-            key3, value3,
-            key4, value4));
+    return sortAndFilter(key1, value1, key2, value2, key3, value3, key4, value4);
   }
 
   /**
@@ -127,12 +134,26 @@ public abstract class Attributes<T> {
       String key5,
       T value5) {
     return sortAndFilter(
-        Arrays.asList(
-            key1, value1,
-            key2, value2,
-            key3, value3,
-            key4, value4,
-            key5, value5));
+        key1, value1,
+        key2, value2,
+        key3, value3,
+        key4, value4,
+        key5, value5);
+  }
+
+  /**
+   * Create an {@link Attributes} instance with values of the given type.
+   *
+   * <p>The data MUST be in alternating key,value format, and the values must be of the specified
+   * type.
+   *
+   * @param valueType The type of the values contained in these Attributes.
+   * @param data The array of data, alternating key, value paris.
+   * @return A new instance.
+   * @throws IllegalArgumentException if any of the requirements are violated.
+   */
+  public static <T> Attributes<T> of(Class<T> valueType, Object... data) {
+    return sortAndFilter(/* checkType= */ true, valueType, data);
   }
 
   /** Creates a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
@@ -165,7 +186,7 @@ public abstract class Attributes<T> {
 
     /** javadoc me. */
     public Attributes<T> build() {
-      return sortAndFilter(Arrays.asList(data.toArray()));
+      return sortAndFilter(data.toArray());
     }
 
     /** javadoc me. */

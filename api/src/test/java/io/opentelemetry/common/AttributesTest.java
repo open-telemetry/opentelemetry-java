@@ -24,10 +24,14 @@ import io.opentelemetry.common.Attributes.AttributeConsumer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Unit tests for {@link Attributes}. */
 public class AttributesTest {
+  @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void forEach() {
@@ -114,5 +118,98 @@ public class AttributesTest {
             .build();
 
     assertThat(attributes).isEqualTo(Attributes.of("key1", "value1", "key2", "value2"));
+  }
+
+  @Test
+  public void varargsCreation() {
+    Attributes<Integer> attributes =
+        Attributes.of(
+            Integer.class,
+            "foo",
+            34,
+            "bar",
+            77,
+            "baz",
+            33,
+            "boom",
+            55,
+            "silly",
+            -99,
+            "overtheedge",
+            Integer.MAX_VALUE);
+    final AtomicInteger valuesSeen = new AtomicInteger(0);
+    attributes.forEach(
+        new AttributeConsumer<Integer>() {
+          @Override
+          public void consume(String key, Integer value) {
+            valuesSeen.incrementAndGet();
+          }
+        });
+    assertThat(valuesSeen.get()).isEqualTo(6);
+  }
+
+  @Test
+  public void varargsCreation_superType() {
+    Attributes<Number> attributes =
+        Attributes.of(
+            Number.class,
+            "foo",
+            34,
+            "bar",
+            77,
+            "baz",
+            33,
+            "boom",
+            55,
+            "silly",
+            -99,
+            "overtheedge",
+            Integer.MAX_VALUE);
+    final AtomicInteger valuesSeen = new AtomicInteger(0);
+    attributes.forEach(
+        new AttributeConsumer<Number>() {
+          @Override
+          public void consume(String key, Number value) {
+            valuesSeen.incrementAndGet();
+          }
+        });
+    assertThat(valuesSeen.get()).isEqualTo(6);
+  }
+
+  @Test
+  public void varargsCreation_badType() {
+    thrown.expect(IllegalArgumentException.class);
+    Attributes.of(
+        Integer.class,
+        "foo",
+        34,
+        "bar",
+        "badValue",
+        "baz",
+        33,
+        "boom",
+        55,
+        "silly",
+        -99,
+        "overtheedge",
+        Integer.MAX_VALUE);
+  }
+
+  @Test
+  public void varargsCreation_nonEvenArgs() {
+    thrown.expect(IllegalArgumentException.class);
+    Attributes.of(
+        Integer.class,
+        "foo",
+        34,
+        "bar",
+        "badValue",
+        "baz",
+        33,
+        "boom",
+        55,
+        "silly",
+        -99,
+        "overtheedge");
   }
 }
