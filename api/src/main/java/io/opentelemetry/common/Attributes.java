@@ -48,7 +48,8 @@ public abstract class Attributes<T> {
     for (int i = 0; i < data.size(); i++) {
       String key = (String) data.get(i++);
       // todo: skip here, favoring the first, or use the TreeMap's built in replacement to favor the
-      // last?
+      // last? Or, final option, disallow duplicate keys and throw an exception like guava's
+      // ImmutableMap.
       if (!sorter.containsKey(key)) {
         sorter.put(key, (T) data.get(i));
       }
@@ -74,6 +75,7 @@ public abstract class Attributes<T> {
 
   /**
    * An {@link Attributes} instance with two key-value pairs. Order of the keys is not preserved.
+   * Duplicate keys will be removed.
    */
   public static <T> Attributes<T> of(String key1, T value1, String key2, T value2) {
     return sortAndFilter(
@@ -84,6 +86,7 @@ public abstract class Attributes<T> {
 
   /**
    * An {@link Attributes} instance with three key-value pairs. Order of the keys is not preserved.
+   * Duplicate keys will be removed.
    */
   public static <T> Attributes<T> of(
       String key1, T value1, String key2, T value2, String key3, T value3) {
@@ -96,6 +99,7 @@ public abstract class Attributes<T> {
 
   /**
    * An {@link Attributes} instance with four key-value pairs. Order of the keys is not preserved.
+   * Duplicate keys will be removed.
    */
   public static <T> Attributes<T> of(
       String key1, T value1, String key2, T value2, String key3, T value3, String key4, T value4) {
@@ -109,6 +113,7 @@ public abstract class Attributes<T> {
 
   /**
    * An {@link Attributes} instance with five key-value pairs. Order of the keys is not preserved.
+   * Duplicate keys will be removed.
    */
   public static <T> Attributes<T> of(
       String key1,

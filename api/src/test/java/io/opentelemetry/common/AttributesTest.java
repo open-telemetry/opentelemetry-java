@@ -17,19 +17,21 @@
 package io.opentelemetry.common;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.common.AttributeValue.longAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import io.opentelemetry.common.Attributes.AttributeConsumer;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 
+/** Unit tests for {@link Attributes}. */
 public class AttributesTest {
 
   @Test
   public void forEach() {
-    final Set<String> keysSeen = new HashSet<>();
+    final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
     Attributes<AttributeValue> attributes =
         Attributes.of(
@@ -40,27 +42,27 @@ public class AttributesTest {
         new AttributeConsumer<AttributeValue>() {
           @Override
           public void consume(String key, AttributeValue value) {
-            keysSeen.add(key);
+            entriesSeen.put(key, value);
           }
         });
 
-    assertThat(keysSeen).containsExactly("key1", "key2");
+    assertThat(entriesSeen)
+        .containsExactly("key1", stringAttributeValue("value1"), "key2", longAttributeValue(333));
   }
 
   @Test
   public void forEach_singleAttribute() {
-    final Set<String> keysSeen = new HashSet<>();
+    final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
     Attributes<AttributeValue> attributes = Attributes.of("key", stringAttributeValue("value"));
     attributes.forEach(
         new AttributeConsumer<AttributeValue>() {
           @Override
           public void consume(String key, AttributeValue value) {
-            keysSeen.add(key);
+            entriesSeen.put(key, value);
           }
         });
-
-    assertThat(keysSeen).containsExactly("key");
+    assertThat(entriesSeen).containsExactly("key", stringAttributeValue("value"));
   }
 
   @Test
@@ -100,5 +102,17 @@ public class AttributesTest {
     Attributes<?> two = Attributes.of("key1", stringAttributeValue("value1"));
 
     assertThat(one).isEqualTo(two);
+  }
+
+  @Test
+  public void builder() {
+    Attributes<String> attributes =
+        Attributes.<String>newBuilder()
+            .addAttribute("key1", "value1")
+            .addAttribute("key2", "value2")
+            .addAttribute("key1", "value3")
+            .build();
+
+    assertThat(attributes).isEqualTo(Attributes.of("key1", "value1", "key2", "value2"));
   }
 }
