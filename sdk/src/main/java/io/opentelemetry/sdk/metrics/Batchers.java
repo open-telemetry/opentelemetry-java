@@ -53,6 +53,20 @@ final class Batchers {
         /* delta= */ false);
   }
 
+  static Batcher getDeltaAllLabels(
+      InstrumentDescriptor descriptor,
+      MeterProviderSharedState meterProviderSharedState,
+      MeterSharedState meterSharedState,
+      Aggregation defaultAggregation) {
+    return new AllLabels(
+        getDefaultMetricDescriptor(descriptor, defaultAggregation),
+        meterProviderSharedState.getResource(),
+        meterSharedState.getInstrumentationLibraryInfo(),
+        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
+        meterProviderSharedState.getClock(),
+        /* delta= */ true);
+  }
+
   private static final class Noop implements Batcher {
     private static final Noop INSTANCE = new Noop();
 
