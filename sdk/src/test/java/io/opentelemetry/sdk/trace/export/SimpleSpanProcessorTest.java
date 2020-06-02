@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
@@ -35,13 +36,16 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link SimpleSpanProcessor}. */
@@ -67,6 +71,21 @@ public class SimpleSpanProcessorTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     simpleSampledSpansProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+  }
+
+  @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.ssp.export.sampled", "false");
+    SimpleSpanProcessor.Builder config = SimpleSpanProcessor.newBuilder(spanExporter);
+    /*
+    We are trying to spy a final class. To allow this, we need to create a resource file
+    ./mockito-extensions/org.mockito.plugins.MockMaker with content "mock-maker-inline".
+    https://www.javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/plugins/MockMaker.html
+    */
+    SimpleSpanProcessor.Builder spy = Mockito.spy(config);
+    spy.fromConfigMap(options, ConfigTester.getNamingDot());
+    Mockito.verify(spy).setExportOnlySampled(false);
   }
 
   @Test

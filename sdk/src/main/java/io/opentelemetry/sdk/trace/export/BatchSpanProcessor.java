@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -371,47 +370,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
         this.setExportOnlySampled(boolValue);
       }
       return this;
-    }
-
-    /**
-     * Sets the configuration values from the given properties object for only the available keys.
-     *
-     * @param properties {@link Properties} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    public Builder readProperties(Properties properties) {
-      return super.readProperties(properties);
-    }
-
-    /**
-     * Sets the configuration values from environment variables for only the available keys. This
-     * method looks for the following keys:
-     *
-     * <ul>
-     *   <li>{@code OTEL_BSP_SCHEDULE_DELAY}: to set the delay interval between two consecutive
-     *       exports.
-     *   <li>{@code OTEL_BSP_MAX_QUEUE}: to set the maximum queue size.
-     *   <li>{@code OTEL_BSP_MAX_EXPORT_BATCH}: to set the maximum batch size.
-     *   <li>{@code OTEL_BSP_EXPORT_TIMEOUT}: to set the maximum allowed time to export data.
-     *   <li>{@code OTEL_BSP_EXPORT_SAMPLED}: to set whether only sampled spans should be exported.
-     * </ul>
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readEnvironmentVariables() {
-      return super.readEnvironmentVariables();
-    }
-
-    /**
-     * Sets the configuration values from system properties for only the available keys.
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readSystemProperties() {
-      return super.readSystemProperties();
     }
 
     // TODO: Consider to add support for constant Attributes and/or Resource.

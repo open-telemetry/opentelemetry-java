@@ -24,7 +24,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -199,37 +198,6 @@ public final class OtlpGrpcMetricExporter implements MetricExporter {
         this.setDeadlineMs(value);
       }
       return this;
-    }
-
-    /**
-     * Sets the configuration values from the given properties object for only the available keys.
-     *
-     * @param properties {@link Properties} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    public Builder readProperties(Properties properties) {
-      return super.readProperties(properties);
-    }
-
-    /**
-     * Sets the configuration values from environment variables for only the available keys.
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readEnvironmentVariables() {
-      return super.readEnvironmentVariables();
-    }
-
-    /**
-     * Sets the configuration values from system properties for only the available keys.
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readSystemProperties() {
-      return super.readSystemProperties();
     }
   }
 }
