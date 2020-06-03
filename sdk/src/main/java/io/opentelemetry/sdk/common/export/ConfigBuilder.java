@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
  * abstract class. For example, if your subclass is a ImmutableMap.Builder, then you would declare
  * it as
  *
- * <p>{@code ImmutableMap.Builder extends ConfigBuilder<ImmutableMap.Builder>}
+ * <p>{@code Foo.Builder extends ConfigBuilder<Foo.Builder>}
  *
  * @param <T> the type of the implementation.
  */
