@@ -29,8 +29,7 @@ import javax.annotation.Nullable;
  * Base class for all the config builder classes (SimpleSpanProcessor, BatchSpanProcessor, etc).
  *
  * <p>The type parameter on this class should be set to the type of the implementation of this
- * abstract class. For example, if your subclass is a ImmutableMap.Builder, then you would declare
- * it as
+ * abstract class. For example, if your subclass is a Foo.Builder, then you would declare it as
  *
  * <p>{@code Foo.Builder extends ConfigBuilder<Foo.Builder>}
  *
