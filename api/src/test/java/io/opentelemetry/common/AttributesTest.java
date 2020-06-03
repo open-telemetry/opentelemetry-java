@@ -139,6 +139,7 @@ public class AttributesTest {
             .addAttribute("double", 33.44, -44.33)
             .addAttribute("boolean", false, true)
             .addAttribute("boolean", "duplicateShouldBeRemoved")
+            .addAttribute("boolean", stringAttributeValue("dropped"))
             .build();
 
     assertThat(attributes)

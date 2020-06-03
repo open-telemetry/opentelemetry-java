@@ -106,6 +106,27 @@ public class LabelsTest {
   }
 
   @Test
+  public void threeLabels() {
+    Labels one =
+        Labels.of(
+            "key1", "value1",
+            "key2", "value2",
+            "key3", "value3");
+    assertThat(one).isNotNull();
+  }
+
+  @Test
+  public void fourLabels() {
+    Labels one =
+        Labels.of(
+            "key1", "value1",
+            "key2", "value2",
+            "key3", "value3",
+            "key4", "value4");
+    assertThat(one).isNotNull();
+  }
+
+  @Test
   public void builder() {
     Labels labels =
         Labels.newBuilder()
