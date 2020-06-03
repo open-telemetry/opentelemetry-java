@@ -17,19 +17,21 @@
 package io.opentelemetry.common;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.common.AttributeValue.arrayAttributeValue;
+import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
+import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 import static io.opentelemetry.common.AttributeValue.longAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
-import io.opentelemetry.common.Attributes.AttributeConsumer;
+import io.opentelemetry.common.ImmutableKeyValuePairs.KeyValueConsumer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-/** Unit tests for {@link Attributes}. */
+/** Unit tests for {@link Attributes}s. */
 public class AttributesTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -37,13 +39,13 @@ public class AttributesTest {
   public void forEach() {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
-    Attributes<AttributeValue> attributes =
+    Attributes attributes =
         Attributes.of(
             "key1", stringAttributeValue("value1"),
             "key2", AttributeValue.longAttributeValue(333));
 
     attributes.forEach(
-        new AttributeConsumer<AttributeValue>() {
+        new KeyValueConsumer<AttributeValue>() {
           @Override
           public void consume(String key, AttributeValue value) {
             entriesSeen.put(key, value);
@@ -58,9 +60,9 @@ public class AttributesTest {
   public void forEach_singleAttribute() {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
-    Attributes<AttributeValue> attributes = Attributes.of("key", stringAttributeValue("value"));
+    Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
     attributes.forEach(
-        new AttributeConsumer<AttributeValue>() {
+        new KeyValueConsumer<AttributeValue>() {
           @Override
           public void consume(String key, AttributeValue value) {
             entriesSeen.put(key, value);
@@ -72,9 +74,9 @@ public class AttributesTest {
   @Test
   public void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
-    Attributes<AttributeValue> emptyAttributes = Attributes.empty();
+    Attributes emptyAttributes = Attributes.empty();
     emptyAttributes.forEach(
-        new AttributeConsumer<AttributeValue>() {
+        new KeyValueConsumer<AttributeValue>() {
           @Override
           public void consume(String key, AttributeValue value) {
             sawSomething.set(true);
@@ -85,11 +87,11 @@ public class AttributesTest {
 
   @Test
   public void orderIndependentEquality() {
-    Attributes<?> one =
+    Attributes one =
         Attributes.of(
             "key1", stringAttributeValue("value1"),
             "key2", stringAttributeValue("value2"));
-    Attributes<?> two =
+    Attributes two =
         Attributes.of(
             "key2", stringAttributeValue("value2"),
             "key1", stringAttributeValue("value1"));
@@ -99,117 +101,52 @@ public class AttributesTest {
 
   @Test
   public void deduplication() {
-    Attributes<?> one =
+    Attributes one =
         Attributes.of(
             "key1", stringAttributeValue("value1"),
             "key1", stringAttributeValue("valueX"));
-    Attributes<?> two = Attributes.of("key1", stringAttributeValue("value1"));
+    Attributes two = Attributes.of("key1", stringAttributeValue("value1"));
 
     assertThat(one).isEqualTo(two);
   }
 
   @Test
   public void builder() {
-    Attributes<String> attributes =
-        Attributes.<String>newBuilder()
-            .addAttribute("key1", "value1")
-            .addAttribute("key2", "value2")
-            .addAttribute("key1", "value3")
+    Attributes attributes =
+        Attributes.newBuilder()
+            .addAttribute("string", "value1")
+            .addAttribute("long", 100)
+            .addAttribute("double", 33.44)
+            .addAttribute("boolean", false)
+            .addAttribute("boolean", "duplicateShouldBeRemoved")
             .build();
 
-    assertThat(attributes).isEqualTo(Attributes.of("key1", "value1", "key2", "value2"));
+    assertThat(attributes)
+        .isEqualTo(
+            Attributes.of(
+                "string", stringAttributeValue("value1"),
+                "long", longAttributeValue(100),
+                "double", doubleAttributeValue(33.44),
+                "boolean", booleanAttributeValue(false)));
   }
 
   @Test
-  public void varargsCreation() {
-    Attributes<Integer> attributes =
-        Attributes.of(
-            Integer.class,
-            "foo",
-            34,
-            "bar",
-            77,
-            "baz",
-            33,
-            "boom",
-            55,
-            "silly",
-            -99,
-            "overtheedge",
-            Integer.MAX_VALUE);
-    final AtomicInteger valuesSeen = new AtomicInteger(0);
-    attributes.forEach(
-        new AttributeConsumer<Integer>() {
-          @Override
-          public void consume(String key, Integer value) {
-            valuesSeen.incrementAndGet();
-          }
-        });
-    assertThat(valuesSeen.get()).isEqualTo(6);
-  }
+  public void builder_arrayTypes() {
+    Attributes attributes =
+        Attributes.newBuilder()
+            .addAttribute("string", "value1", "value2")
+            .addAttribute("long", 100L, 200L)
+            .addAttribute("double", 33.44, -44.33)
+            .addAttribute("boolean", false, true)
+            .addAttribute("boolean", "duplicateShouldBeRemoved")
+            .build();
 
-  @Test
-  public void varargsCreation_superType() {
-    Attributes<Number> attributes =
-        Attributes.of(
-            Number.class,
-            "foo",
-            34,
-            "bar",
-            77,
-            "baz",
-            33,
-            "boom",
-            55,
-            "silly",
-            -99,
-            "overtheedge",
-            Integer.MAX_VALUE);
-    final AtomicInteger valuesSeen = new AtomicInteger(0);
-    attributes.forEach(
-        new AttributeConsumer<Number>() {
-          @Override
-          public void consume(String key, Number value) {
-            valuesSeen.incrementAndGet();
-          }
-        });
-    assertThat(valuesSeen.get()).isEqualTo(6);
-  }
-
-  @Test
-  public void varargsCreation_badType() {
-    thrown.expect(IllegalArgumentException.class);
-    Attributes.of(
-        Integer.class,
-        "foo",
-        34,
-        "bar",
-        "badValue",
-        "baz",
-        33,
-        "boom",
-        55,
-        "silly",
-        -99,
-        "overtheedge",
-        Integer.MAX_VALUE);
-  }
-
-  @Test
-  public void varargsCreation_nonEvenArgs() {
-    thrown.expect(IllegalArgumentException.class);
-    Attributes.of(
-        Integer.class,
-        "foo",
-        34,
-        "bar",
-        "badValue",
-        "baz",
-        33,
-        "boom",
-        55,
-        "silly",
-        -99,
-        "overtheedge");
+    assertThat(attributes)
+        .isEqualTo(
+            Attributes.of(
+                "string", arrayAttributeValue("value1", "value2"),
+                "long", arrayAttributeValue(100L, 200L),
+                "double", arrayAttributeValue(33.44, -44.33),
+                "boolean", arrayAttributeValue(false, true)));
   }
 }
