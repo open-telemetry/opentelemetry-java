@@ -3,51 +3,55 @@ package io.opentelemetry.example.metrics;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.metrics.DoubleCounter;
+import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
-
+import java.io.File;
+import javax.swing.filechooser.FileSystemView;
 
 /**
- * Example of using {@link DoubleCounter} to measure execution time of method.
+ * Example of using {@link LongCounter} and {@link LongCounter.BoundLongCounter} to count used space by file  with specific extension.
  */
 public class DoubleCounterExample {
 
   private static final Tracer tracer =
       OpenTelemetry.getTracer("io.opentelemetry.example.metrics");
+  private static final Meter sampleMeter = OpenTelemetry.getMeterProvider()
+      .get("io.opentelemetry.example.metrics", "0.5");
+  private static final File directoryToCountIn = FileSystemView.getFileSystemView().getHomeDirectory();
+  private static final DoubleCounter methodCallCounter = sampleMeter
+      .doubleCounterBuilder("calculated_used_space")
+      .setDescription("should count space used by file extension")
+      .setUnit("MB")
+      .build();
 
   public static void main(String[] args) {
-    Span span = tracer.spanBuilder("superLongMethod")
+    Span span = tracer.spanBuilder("calculate space")
         .setSpanKind(Kind.INTERNAL)
         .startSpan();
-    Meter sampleMeter = OpenTelemetry.getMeterProvider()
-        .get("io.opentelemetry.example.metrics", "0.5");
-    DoubleCounter timeCounter = sampleMeter.doubleCounterBuilder("some_method_time_usage")
-        .setDescription("should measure some method execution time")
-        .setUnit("second")
-        .build();
+    DoubleCounterExample example = new DoubleCounterExample();
     try (Scope scope = tracer.withSpan(span)) {
-      Long timeStart = System.currentTimeMillis();
-      superLongMethod();
-      Long timeEnd = System.currentTimeMillis();
-      Double seconds = (timeEnd.doubleValue() - timeStart.doubleValue()) / 1000;
-      //we can add values to counter without addition label key-values pairs
-      timeCounter.add(seconds);
+      example.calculateSpaceUsedByFilesWithExtension("dll", directoryToCountIn);
     } catch (Exception e) {
-      Status status = Status.UNKNOWN.withDescription("Error while finding file");
+      Status status = Status.UNKNOWN.withDescription("Error while calculating used space");
       span.setStatus(status);
     } finally {
       span.end();
     }
   }
 
-  private static void superLongMethod() {
-    try {
-      Thread.sleep(3_125);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
+  public void calculateSpaceUsedByFilesWithExtension(String extension, File directory) {
+    File[] files = directory.listFiles();
+    if (files != null) {
+      for (File file : files) {
+        if (file.getName().endsWith("." + extension)) {
+          //we can add values to counter without addition label key-values pairs
+          methodCallCounter.add((double) file.length() / 1024);
+        }
+      }
     }
   }
 }
