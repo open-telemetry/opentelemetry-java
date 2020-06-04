@@ -28,7 +28,7 @@ public class LongCounterExample {
       .build();
   private static final File homeDirectory = FileSystemView.getFileSystemView().getHomeDirectory();
   //we can use BoundCounters to not specify labels each time
-  private static final BoundLongCounter directoryCounter = methodCallCounter
+  private static final BoundLongCounter homeDirectoryCounter = directoryCounter
       .bind("root directory", homeDirectory.getName());
 
   public static void main(String[] args) {
