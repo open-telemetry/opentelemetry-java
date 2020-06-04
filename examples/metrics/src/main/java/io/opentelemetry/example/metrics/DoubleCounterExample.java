@@ -13,7 +13,7 @@ import java.io.File;
 import javax.swing.filechooser.FileSystemView;
 
 /**
- * Example of using {@link DoubleCounter} and {@link DoubleCounter.BoundDoubleCounter} to count used space by file  with specific extension.
+ * Example of using {@link DoubleCounter} and {@link DoubleCounter.BoundDoubleCounter} to count disk space used by files with a specific extension.
  */
 public class DoubleCounterExample {
 
