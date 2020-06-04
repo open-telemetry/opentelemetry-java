@@ -30,6 +30,7 @@ import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link BatchSpanProcessor}. */
@@ -113,19 +113,31 @@ public class BatchSpanProcessorTest {
     options.put("otel.bsp.max.export.batch", "56");
     options.put("otel.bsp.export.timeout", "78");
     options.put("otel.bsp.export.sampled", "false");
-    BatchSpanProcessor.Builder config = BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0));
-    /*
-    We are trying to spy a final class. To allow this, we need to create a resource file
-    ./mockito-extensions/org.mockito.plugins.MockMaker with content "mock-maker-inline".
-    https://www.javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/plugins/MockMaker.html
-    */
-    BatchSpanProcessor.Builder spy = Mockito.spy(config);
-    spy.fromConfigMap(options, ConfigTester.getNamingDot()).build();
-    Mockito.verify(spy).setScheduleDelayMillis(12);
-    Mockito.verify(spy).setMaxQueueSize(34);
-    Mockito.verify(spy).setMaxExportBatchSize(56);
-    Mockito.verify(spy).setExporterTimeoutMillis(78);
-    Mockito.verify(spy).setExportOnlySampled(false);
+    BatchSpanProcessor.Builder config =
+        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0))
+            .fromConfigMap(options, ConfigTester.getNamingDot());
+    assertThat(config.getScheduleDelayMillis()).isEqualTo(12);
+    assertThat(config.getMaxQueueSize()).isEqualTo(34);
+    assertThat(config.getMaxExportBatchSize()).isEqualTo(56);
+    assertThat(config.getExporterTimeoutMillis()).isEqualTo(78);
+    assertThat(config.getExportOnlySampled()).isEqualTo(false);
+  }
+
+  @Test
+  public void configTest_EmptyOptions() {
+    BatchSpanProcessor.Builder config =
+        BatchSpanProcessor.newBuilder(new WaitingSpanExporter(0))
+            .fromConfigMap(Collections.<String, String>emptyMap(), ConfigTester.getNamingDot());
+    assertThat(config.getScheduleDelayMillis())
+        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_SCHEDULE_DELAY_MILLIS);
+    assertThat(config.getMaxQueueSize())
+        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_MAX_QUEUE_SIZE);
+    assertThat(config.getMaxExportBatchSize())
+        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_MAX_EXPORT_BATCH_SIZE);
+    assertThat(config.getExporterTimeoutMillis())
+        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_EXPORT_TIMEOUT_MILLIS);
+    assertThat(config.getExportOnlySampled())
+        .isEqualTo(BatchSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }
 
   @Test

@@ -321,11 +321,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
     private static final String KEY_EXPORT_TIMEOUT_MILLIS = "otel.bsp.export.timeout";
     private static final String KEY_SAMPLED = "otel.bsp.export.sampled";
 
-    private static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
-    private static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
-    private static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
-    private static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
-    private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
+    @VisibleForTesting static final long DEFAULT_SCHEDULE_DELAY_MILLIS = 5000;
+    @VisibleForTesting static final int DEFAULT_MAX_QUEUE_SIZE = 2048;
+    @VisibleForTesting static final int DEFAULT_MAX_EXPORT_BATCH_SIZE = 512;
+    @VisibleForTesting static final int DEFAULT_EXPORT_TIMEOUT_MILLIS = 30_000;
+    @VisibleForTesting static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
 
     private final SpanExporter spanExporter;
     private long scheduleDelayMillis = DEFAULT_SCHEDULE_DELAY_MILLIS;
@@ -344,7 +344,6 @@ public final class BatchSpanProcessor implements SpanProcessor {
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
      */
-    @VisibleForTesting
     @Override
     protected Builder fromConfigMap(
         Map<String, String> configMap, Builder.NamingConvention namingConvention) {
@@ -379,13 +378,18 @@ public final class BatchSpanProcessor implements SpanProcessor {
      *
      * <p>Default value is {@code true}.
      *
-     * @param sampled report only sampled spans.
+     * @param exportOnlySampled if {@code true} report only sampled spans.
      * @return this.
      * @see BatchSpanProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
      */
-    public Builder setExportOnlySampled(boolean sampled) {
-      this.exportOnlySampled = sampled;
+    public Builder setExportOnlySampled(boolean exportOnlySampled) {
+      this.exportOnlySampled = exportOnlySampled;
       return this;
+    }
+
+    @VisibleForTesting
+    boolean getExportOnlySampled() {
+      return exportOnlySampled;
     }
 
     /**
@@ -403,6 +407,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return this;
     }
 
+    @VisibleForTesting
+    long getScheduleDelayMillis() {
+      return scheduleDelayMillis;
+    }
+
     /**
      * Sets the maximum time an exporter will be allowed to run before being cancelled.
      *
@@ -415,6 +424,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
     public Builder setExporterTimeoutMillis(int exporterTimeoutMillis) {
       this.exporterTimeoutMillis = exporterTimeoutMillis;
       return this;
+    }
+
+    @VisibleForTesting
+    int getExporterTimeoutMillis() {
+      return exporterTimeoutMillis;
     }
 
     /**
@@ -435,6 +449,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
       return this;
     }
 
+    @VisibleForTesting
+    int getMaxQueueSize() {
+      return maxQueueSize;
+    }
+
     /**
      * Sets the maximum batch size for every export. This must be smaller or equal to {@code
      * maxQueuedSpans}.
@@ -449,6 +468,11 @@ public final class BatchSpanProcessor implements SpanProcessor {
       Utils.checkArgument(maxExportBatchSize > 0, "maxExportBatchSize must be positive.");
       this.maxExportBatchSize = maxExportBatchSize;
       return this;
+    }
+
+    @VisibleForTesting
+    int getMaxExportBatchSize() {
+      return maxExportBatchSize;
     }
 
     /**

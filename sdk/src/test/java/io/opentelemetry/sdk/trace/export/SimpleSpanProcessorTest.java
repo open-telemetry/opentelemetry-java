@@ -45,7 +45,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link SimpleSpanProcessor}. */
@@ -77,15 +76,19 @@ public class SimpleSpanProcessorTest {
   public void configTest() {
     Map<String, String> options = new HashMap<>();
     options.put("otel.ssp.export.sampled", "false");
-    SimpleSpanProcessor.Builder config = SimpleSpanProcessor.newBuilder(spanExporter);
-    /*
-    We are trying to spy a final class. To allow this, we need to create a resource file
-    ./mockito-extensions/org.mockito.plugins.MockMaker with content "mock-maker-inline".
-    https://www.javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/plugins/MockMaker.html
-    */
-    SimpleSpanProcessor.Builder spy = Mockito.spy(config);
-    spy.fromConfigMap(options, ConfigTester.getNamingDot());
-    Mockito.verify(spy).setExportOnlySampled(false);
+    SimpleSpanProcessor.Builder config =
+        SimpleSpanProcessor.newBuilder(spanExporter)
+            .fromConfigMap(options, ConfigTester.getNamingDot());
+    assertThat(config.getExportOnlySampled()).isEqualTo(false);
+  }
+
+  @Test
+  public void configTest_EmptyOptions() {
+    SimpleSpanProcessor.Builder config =
+        SimpleSpanProcessor.newBuilder(spanExporter)
+            .fromConfigMap(Collections.<String, String>emptyMap(), ConfigTester.getNamingDot());
+    assertThat(config.getExportOnlySampled())
+        .isEqualTo(SimpleSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }
 
   @Test
