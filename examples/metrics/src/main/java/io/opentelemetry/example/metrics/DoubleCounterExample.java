@@ -55,7 +55,8 @@ public class DoubleCounterExample {
       for (File file : files) {
         for (String extension : extensions) {
           if (file.getName().endsWith("." + extension)) {
-            //we can add values to counter without addition label key-values pairs
+            // we can add values to the counter for specific labels
+            // the label key is "file_extension", its value is the name of the extension
             diskSpaceCounter.add((double) file.length() / 1_000_000, "file_extension", extension);
           }
         }
