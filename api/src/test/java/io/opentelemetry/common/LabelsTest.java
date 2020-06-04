@@ -130,9 +130,9 @@ public class LabelsTest {
   public void builder() {
     Labels labels =
         Labels.newBuilder()
-            .addLabel("key1", "value1")
-            .addLabel("key2", "value2")
-            .addLabel("key1", "duplicateShouldBeIgnored")
+            .setLabel("key1", "value1")
+            .setLabel("key2", "value2")
+            .setLabel("key1", "duplicateShouldBeIgnored")
             .build();
 
     assertThat(labels)

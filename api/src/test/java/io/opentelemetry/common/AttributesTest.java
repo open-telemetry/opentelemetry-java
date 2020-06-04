@@ -114,11 +114,11 @@ public class AttributesTest {
   public void builder() {
     Attributes attributes =
         Attributes.newBuilder()
-            .addAttribute("string", "value1")
-            .addAttribute("long", 100)
-            .addAttribute("double", 33.44)
-            .addAttribute("boolean", false)
-            .addAttribute("boolean", "duplicateShouldBeRemoved")
+            .setAttribute("string", "value1")
+            .setAttribute("long", 100)
+            .setAttribute("double", 33.44)
+            .setAttribute("boolean", false)
+            .setAttribute("boolean", "duplicateShouldBeRemoved")
             .build();
 
     assertThat(attributes)
@@ -134,12 +134,12 @@ public class AttributesTest {
   public void builder_arrayTypes() {
     Attributes attributes =
         Attributes.newBuilder()
-            .addAttribute("string", "value1", "value2")
-            .addAttribute("long", 100L, 200L)
-            .addAttribute("double", 33.44, -44.33)
-            .addAttribute("boolean", false, true)
-            .addAttribute("boolean", "duplicateShouldBeRemoved")
-            .addAttribute("boolean", stringAttributeValue("dropped"))
+            .setAttribute("string", "value1", "value2")
+            .setAttribute("long", 100L, 200L)
+            .setAttribute("double", 33.44, -44.33)
+            .setAttribute("boolean", false, true)
+            .setAttribute("boolean", "duplicateShouldBeRemoved")
+            .setAttribute("boolean", stringAttributeValue("dropped"))
             .build();
 
     assertThat(attributes)

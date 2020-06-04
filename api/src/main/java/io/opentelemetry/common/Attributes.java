@@ -154,7 +154,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
      *
      * @return this Builder
      */
-    public Builder addAttribute(String key, AttributeValue value) {
+    public Builder setAttribute(String key, AttributeValue value) {
       data.add(key);
       data.add(value);
       return this;
@@ -165,7 +165,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
      *
      * @return this Builder
      */
-    public Builder addAttribute(String key, String value) {
+    public Builder setAttribute(String key, String value) {
       data.add(key);
       data.add(stringAttributeValue(value));
       return this;
@@ -176,7 +176,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
      *
      * @return this Builder
      */
-    public Builder addAttribute(String key, long value) {
+    public Builder setAttribute(String key, long value) {
       data.add(key);
       data.add(longAttributeValue(value));
       return this;
@@ -187,7 +187,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
      *
      * @return this Builder
      */
-    public Builder addAttribute(String key, double value) {
+    public Builder setAttribute(String key, double value) {
       data.add(key);
       data.add(doubleAttributeValue(value));
       return this;
@@ -198,7 +198,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
      *
      * @return this Builder
      */
-    public Builder addAttribute(String key, boolean value) {
+    public Builder setAttribute(String key, boolean value) {
       data.add(key);
       data.add(booleanAttributeValue(value));
       return this;
@@ -209,7 +209,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
      *
      * @return this Builder
      */
-    public Builder addAttribute(String key, String... value) {
+    public Builder setAttribute(String key, String... value) {
       data.add(key);
       data.add(arrayAttributeValue(value));
       return this;
@@ -220,7 +220,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
      *
      * @return this Builder
      */
-    public Builder addAttribute(String key, Long... value) {
+    public Builder setAttribute(String key, Long... value) {
       data.add(key);
       data.add(arrayAttributeValue(value));
       return this;
@@ -231,7 +231,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
      *
      * @return this Builder
      */
-    public Builder addAttribute(String key, Double... value) {
+    public Builder setAttribute(String key, Double... value) {
       data.add(key);
       data.add(arrayAttributeValue(value));
       return this;
@@ -242,7 +242,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
      *
      * @return this Builder
      */
-    public Builder addAttribute(String key, Boolean... value) {
+    public Builder setAttribute(String key, Boolean... value) {
       data.add(key);
       data.add(arrayAttributeValue(value));
       return this;
