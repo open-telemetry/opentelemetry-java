@@ -37,7 +37,7 @@ public class LongCounterExample {
         .startSpan();
     LongCounterExample example = new LongCounterExample();
     try (Scope scope = tracer.withSpan(span)) {
-      directoryCounter.add(1);// count root directory
+      homeDirectoryCounter.add(1); // count root directory
       example.findFile("file_to_find.txt", homeDirectory);
     } catch (Exception e) {
       Status status = Status.UNKNOWN.withDescription("Error while finding file");
