@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.sherter.google-java-format'  apply false
+    id 'com.github.sherter.google-java-format' apply false
     id "com.jfrog.artifactory" apply false
 }
 
@@ -14,7 +14,7 @@ subprojects {
     version = "0.1.0-SNAPSHOT"
 
     ext {
-        opentelemetryVersion = "0.5.0-SNAPSHOT"
+        opentelemetryVersion = "0.6.0-SNAPSHOT"
         grpcVersion = '1.24.0' // CURRENT_GRPC_VERSION
         protobufVersion = '3.10.0'
         protocVersion = protobufVersion
