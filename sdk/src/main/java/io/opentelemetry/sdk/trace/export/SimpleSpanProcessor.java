@@ -114,9 +114,9 @@ public final class SimpleSpanProcessor implements SpanProcessor {
 
     private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
 
-    private static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
+    @VisibleForTesting static final boolean DEFAULT_EXPORT_ONLY_SAMPLED = true;
     private final SpanExporter spanExporter;
-    private boolean sampled = DEFAULT_EXPORT_ONLY_SAMPLED;
+    private boolean exportOnlySampled = DEFAULT_EXPORT_ONLY_SAMPLED;
 
     private Builder(SpanExporter spanExporter) {
       this.spanExporter = Objects.requireNonNull(spanExporter, "spanExporter");
@@ -133,7 +133,6 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      * @param configMap {@link Map} holding the configuration values.
      * @return this.
      */
-    @VisibleForTesting
     @Override
     protected Builder fromConfigMap(
         Map<String, String> configMap, NamingConvention namingConvention) {
@@ -150,13 +149,17 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      *
      * <p>Default value is {@code true}.
      *
-     * @see SimpleSpanProcessor.Builder#DEFAULT_EXPORT_ONLY_SAMPLED
-     * @param sampled report only sampled spans.
+     * @param exportOnlySampled if {@code true} report only sampled spans.
      * @return this.
      */
-    public Builder setExportOnlySampled(boolean sampled) {
-      this.sampled = sampled;
+    public Builder setExportOnlySampled(boolean exportOnlySampled) {
+      this.exportOnlySampled = exportOnlySampled;
       return this;
+    }
+
+    @VisibleForTesting
+    boolean getExportOnlySampled() {
+      return exportOnlySampled;
     }
 
     // TODO: Add metrics for total exported spans.
@@ -170,7 +173,7 @@ public final class SimpleSpanProcessor implements SpanProcessor {
      * @throws NullPointerException if the {@code spanExporter} is {@code null}.
      */
     public SimpleSpanProcessor build() {
-      return new SimpleSpanProcessor(spanExporter, sampled);
+      return new SimpleSpanProcessor(spanExporter, exportOnlySampled);
     }
   }
 }
