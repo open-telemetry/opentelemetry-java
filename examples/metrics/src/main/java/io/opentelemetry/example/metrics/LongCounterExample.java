@@ -23,7 +23,7 @@ public class LongCounterExample {
       .get("io.opentelemetry.example.metrics", "0.5");
   private static final LongCounter methodCallCounter = sampleMeter
       .longCounterBuilder("directories_search_count")
-      .setDescription("should count directories searched")
+      .setDescription("Counts directories accessed while searching for files.")
       .setUnit("unit")
       .build();
   private static final File homeDirectory = FileSystemView.getFileSystemView().getHomeDirectory();
