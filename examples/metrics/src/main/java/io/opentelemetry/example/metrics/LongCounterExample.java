@@ -53,7 +53,9 @@ public class LongCounterExample {
     if (files != null) {
       for (File file : files) {
         if (file.isDirectory()) {
-          directoryCounter.add(1);
+          // we don't have to specify the value for the "root directory" label again
+          // since this is a BoundLongCounter with pre-set labels
+          homeDirectoryCounter.add(1);
           findFile(name, file);
         } else if (name.equalsIgnoreCase(file.getName())) {
           System.out.println(file.getParentFile());
