@@ -21,7 +21,7 @@ public class LongCounterExample {
       OpenTelemetry.getTracer("io.opentelemetry.example.metrics", "0.5");
   private static final Meter sampleMeter = OpenTelemetry.getMeterProvider()
       .get("io.opentelemetry.example.metrics", "0.5");
-  private static final LongCounter methodCallCounter = sampleMeter
+  private static final LongCounter directoryCounter = sampleMeter
       .longCounterBuilder("directories_search_count")
       .setDescription("Counts directories accessed while searching for files.")
       .setUnit("unit")
