@@ -16,7 +16,7 @@ public class LongValueObserverExample {
     Meter sampleMeter = OpenTelemetry.getMeterProvider()
         .get("io.opentelemetry.example.metrics", "0.5");
     LongValueObserver observer = sampleMeter.longValueObserverBuilder("jvm_memory_usage")
-        .setDescription("should meter jvm memory usage")
+        .setDescription("Reports JVM memory usage.")
         .setUnit("byte")
         .build();
 
