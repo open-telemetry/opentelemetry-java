@@ -56,7 +56,7 @@ public class DoubleCounterExample {
         for (String extension : extensions) {
           if (file.getName().endsWith("." + extension)) {
             //we can add values to counter without addition label key-values pairs
-            methodCallCounter.add((double) file.length() / 1_000_000, "file_extension", extension);
+            diskSpaceCounter.add((double) file.length() / 1_000_000, "file_extension", extension);
           }
         }
       }
