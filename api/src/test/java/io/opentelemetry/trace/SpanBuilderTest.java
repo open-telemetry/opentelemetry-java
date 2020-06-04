@@ -19,9 +19,8 @@ package io.opentelemetry.trace;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Span.Kind;
-import java.util.Collections;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -41,8 +40,7 @@ public class SpanBuilderTest {
     spanBuilder.setParent(DefaultSpan.createRandom().getContext());
     spanBuilder.setNoParent();
     spanBuilder.addLink(DefaultSpan.createRandom().getContext());
-    spanBuilder.addLink(
-        DefaultSpan.createRandom().getContext(), Collections.<String, AttributeValue>emptyMap());
+    spanBuilder.addLink(DefaultSpan.createRandom().getContext(), Attributes.empty());
     spanBuilder.addLink(
         new Link() {
           private final SpanContext spanContext = DefaultSpan.createRandom().getContext();
@@ -53,8 +51,8 @@ public class SpanBuilderTest {
           }
 
           @Override
-          public Map<String, AttributeValue> getAttributes() {
-            return Collections.emptyMap();
+          public Attributes getAttributes() {
+            return Attributes.empty();
           }
         });
     spanBuilder.setAttribute("key", "value");

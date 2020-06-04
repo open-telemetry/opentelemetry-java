@@ -17,8 +17,8 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.internal.Utils;
-import java.util.Map;
 import java.util.Random;
 import javax.annotation.concurrent.Immutable;
 
@@ -108,13 +108,13 @@ public final class DefaultSpan implements Span {
   }
 
   @Override
-  public void addEvent(String name, Map<String, AttributeValue> attributes) {
+  public void addEvent(String name, Attributes attributes) {
     Utils.checkNotNull(name, "name");
     Utils.checkNotNull(attributes, "attributes");
   }
 
   @Override
-  public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
+  public void addEvent(String name, Attributes attributes, long timestamp) {
     Utils.checkNotNull(name, "name");
     Utils.checkNotNull(attributes, "attributes");
     Utils.checkArgument(timestamp >= 0, "Negative timestamp");

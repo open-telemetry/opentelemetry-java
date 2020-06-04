@@ -40,6 +40,14 @@ abstract class ImmutableKeyValuePairs<V> {
     return Collections.emptyList();
   }
 
+  public int size() {
+    return data().size() / 2;
+  }
+
+  public boolean isEmpty() {
+    return data().isEmpty();
+  }
+
   /** Iterates over all the key-value pairs of attributes contained by this instance. */
   @SuppressWarnings("unchecked")
   public void forEach(KeyValueConsumer<V> consumer) {

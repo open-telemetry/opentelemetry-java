@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -28,8 +29,6 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.concurrent.Immutable;
@@ -213,8 +212,7 @@ public interface SpanData {
   @AutoValue
   abstract class Link implements io.opentelemetry.trace.Link {
 
-    private static final Map<String, AttributeValue> DEFAULT_ATTRIBUTE_COLLECTION =
-        Collections.emptyMap();
+    private static final Attributes DEFAULT_ATTRIBUTE_COLLECTION = Attributes.empty();
     private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
 
     /**
@@ -237,11 +235,8 @@ public interface SpanData {
      * @return a new immutable {@code Event<T>}
      * @since 0.1.0
      */
-    public static Link create(SpanContext spanContext, Map<String, AttributeValue> attributes) {
-      return new AutoValue_SpanData_Link(
-          spanContext,
-          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
-          attributes.size());
+    public static Link create(SpanContext spanContext, Attributes attributes) {
+      return new AutoValue_SpanData_Link(spanContext, attributes, attributes.size());
     }
 
     /**
@@ -254,11 +249,8 @@ public interface SpanData {
      * @since 0.1.0
      */
     public static Link create(
-        SpanContext spanContext, Map<String, AttributeValue> attributes, int totalAttributeCount) {
-      return new AutoValue_SpanData_Link(
-          spanContext,
-          Collections.unmodifiableMap(new LinkedHashMap<>(attributes)),
-          totalAttributeCount);
+        SpanContext spanContext, Attributes attributes, int totalAttributeCount) {
+      return new AutoValue_SpanData_Link(spanContext, attributes, totalAttributeCount);
     }
 
     /**

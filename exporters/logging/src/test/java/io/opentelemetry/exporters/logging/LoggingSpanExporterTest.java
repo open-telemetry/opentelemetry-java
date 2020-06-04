@@ -18,10 +18,10 @@ package io.opentelemetry.exporters.logging;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -74,7 +74,7 @@ public class LoggingSpanExporterTest {
                     EventImpl.create(
                         epochNanos + 500,
                         "somethingHappenedHere",
-                        singletonMap("important", AttributeValue.booleanAttributeValue(true)))))
+                        Attributes.of("important", AttributeValue.booleanAttributeValue(true)))))
             .setTotalRecordedEvents(1)
             .setTotalRecordedLinks(0)
             .build();

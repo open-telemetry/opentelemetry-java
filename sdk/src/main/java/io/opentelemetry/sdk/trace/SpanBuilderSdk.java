@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -120,7 +121,7 @@ final class SpanBuilderSdk implements Span.Builder {
   }
 
   @Override
-  public Span.Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes) {
+  public Span.Builder addLink(SpanContext spanContext, Attributes attributes) {
     int totalAttributeCount = attributes.size();
     addLink(
         Link.create(

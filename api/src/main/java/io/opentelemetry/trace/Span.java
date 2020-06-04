@@ -17,7 +17,7 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.common.AttributeValue;
-import java.util.Map;
+import io.opentelemetry.common.Attributes;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -163,7 +163,7 @@ public interface Span {
    *     the {@code Span} as for {@code setAttribute()}.
    * @since 0.1.0
    */
-  void addEvent(String name, Map<String, AttributeValue> attributes);
+  void addEvent(String name, Attributes attributes);
 
   /**
    * Adds an event to the {@code Span}.
@@ -179,7 +179,7 @@ public interface Span {
    * @param timestamp the explicit event timestamp in nanos since epoch.
    * @since 0.1.0
    */
-  void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp);
+  void addEvent(String name, Attributes attributes, long timestamp);
 
   /**
    * Adds an event to the {@code Span}.
@@ -439,7 +439,7 @@ public interface Span {
      * @see #addLink(Link)
      * @since 0.1.0
      */
-    Builder addLink(SpanContext spanContext, Map<String, AttributeValue> attributes);
+    Builder addLink(SpanContext spanContext, Attributes attributes);
 
     /**
      * Adds a {@link Link} to the newly created {@code Span}.

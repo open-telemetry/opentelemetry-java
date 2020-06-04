@@ -17,8 +17,7 @@
 package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.AttributeValue;
-import java.util.Map;
+import io.opentelemetry.common.Attributes;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -40,8 +39,7 @@ public abstract class EventImpl implements SpanData.Event {
    * @return a new immutable {@code Event<T>}
    * @since 0.1.0
    */
-  public static EventImpl create(
-      long epochNanos, String name, Map<String, AttributeValue> attributes) {
+  public static EventImpl create(long epochNanos, String name, Attributes attributes) {
     return new AutoValue_EventImpl(name, attributes, epochNanos, attributes.size());
   }
 
@@ -56,10 +54,7 @@ public abstract class EventImpl implements SpanData.Event {
    * @since 0.1.0
    */
   public static EventImpl create(
-      long epochNanos,
-      String name,
-      Map<String, AttributeValue> attributes,
-      int totalAttributeCount) {
+      long epochNanos, String name, Attributes attributes, int totalAttributeCount) {
     return new AutoValue_EventImpl(name, attributes, epochNanos, totalAttributeCount);
   }
 
