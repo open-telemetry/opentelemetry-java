@@ -24,7 +24,7 @@ public class DoubleCounterExample {
       .get("io.opentelemetry.example.metrics", "0.5");
   private static final File directoryToCountIn = FileSystemView.getFileSystemView()
       .getHomeDirectory();
-  private static final DoubleCounter methodCallCounter = sampleMeter
+  private static final DoubleCounter diskSpaceCounter = sampleMeter
       .doubleCounterBuilder("calculated_used_space")
       .setDescription("Counts disk space used by file extension.")
       .setUnit("MB")
