@@ -29,17 +29,17 @@ import javax.annotation.concurrent.ThreadSafe;
 /**
  * A {@link SpanProcessor} implementation for the traceZ zPage.
  *
- * <p>Configuration options for {@link io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor} can
+ * <p>Configuration options for {@link io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor} can
  * be read from system properties, environment variables, or {@link java.util.Properties} objects.
  *
  * <p>For system properties and {@link java.util.Properties} objects, {@link
- * io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor} will look for the following names:
+ * io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor} will look for the following names:
  *
  * <ul>
  *   <li>{@code otel.ssp.export.sampled}: sets whether only sampled spans should be exported.
  * </ul>
  *
- * <p>For environment variables, {@link io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor}
+ * <p>For environment variables, {@link io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor}
  * will look for the following names:
  *
  * <ul>
@@ -47,17 +47,17 @@ import javax.annotation.concurrent.ThreadSafe;
  * </ul>
  */
 @ThreadSafe
-public final class TraceZSpanProcessor implements SpanProcessor {
+public final class TracezSpanProcessor implements SpanProcessor {
   private final Map<SpanId, ReadableSpan> runningSpanCache;
   private final Map<SpanId, ReadableSpan> completedSpanCache;
   private final boolean sampled;
 
   /**
-   * Constructor for {@link io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor}.
+   * Constructor for {@link io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor}.
    *
    * @param sampled report only sampled spans.
    */
-  public TraceZSpanProcessor(boolean sampled) {
+  public TracezSpanProcessor(boolean sampled) {
     runningSpanCache = new HashMap<>();
     completedSpanCache = new HashMap<>();
     this.sampled = sampled;
@@ -65,9 +65,6 @@ public final class TraceZSpanProcessor implements SpanProcessor {
 
   @Override
   public void onStart(ReadableSpan span) {
-    if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
-      return;
-    }
     synchronized (this) {
       runningSpanCache.put(span.getSpanContext().getSpanId(), span);
     }
@@ -80,13 +77,12 @@ public final class TraceZSpanProcessor implements SpanProcessor {
 
   @Override
   public void onEnd(ReadableSpan span) {
-    if (sampled && !span.getSpanContext().getTraceFlags().isSampled()) {
-      return;
-    }
+    SpanId id = span.getSpanContext().getSpanId();
     synchronized (this) {
-      SpanId id = span.getSpanContext().getSpanId();
       runningSpanCache.remove(id);
-      completedSpanCache.put(id, span);
+      if (!sampled || span.getSpanContext().getTraceFlags().isSampled()) {
+        completedSpanCache.put(id, span);
+      }
     }
   }
 
@@ -107,9 +103,9 @@ public final class TraceZSpanProcessor implements SpanProcessor {
 
   /**
    * Returns a Collection of all running spans for {@link
-   * io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor}.
+   * io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor}.
    *
-   * @return a Collection of {@link io.opentelemetry.sdk.trace.ReadableSpan}.\
+   * @return a Collection of {@link io.opentelemetry.sdk.trace.ReadableSpan}.
    */
   public Collection<ReadableSpan> getRunningSpans() {
     synchronized (this) {
@@ -119,9 +115,9 @@ public final class TraceZSpanProcessor implements SpanProcessor {
 
   /**
    * Returns a Collection of all completed spans for {@link
-   * io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor}.
+   * io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor}.
    *
-   * @return a Collection of {@link io.opentelemetry.sdk.trace.ReadableSpan}.\
+   * @return a Collection of {@link io.opentelemetry.sdk.trace.ReadableSpan}.
    */
   public Collection<ReadableSpan> getCompletedSpans() {
     synchronized (this) {
@@ -130,15 +126,15 @@ public final class TraceZSpanProcessor implements SpanProcessor {
   }
 
   /**
-   * Returns a new Builder for {@link io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor}.
+   * Returns a new Builder for {@link io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor}.
    *
-   * @return a new {@link io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor}.\
+   * @return a new {@link io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor}.
    */
   public static Builder newBuilder() {
     return new Builder();
   }
 
-  /** Builder class for {@link io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor}. */
+  /** Builder class for {@link io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor}. */
   public static final class Builder extends ConfigBuilder<Builder> {
 
     private static final String KEY_SAMPLED = "otel.ssp.export.sampled";
@@ -185,12 +181,12 @@ public final class TraceZSpanProcessor implements SpanProcessor {
     }
 
     /**
-     * Returns a new {@link io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor}.
+     * Returns a new {@link io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor}.
      *
-     * @return a new {@link io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor}.
+     * @return a new {@link io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor}.
      */
-    public io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor build() {
-      return new io.opentelemetry.sdk.contrib.zpages.TraceZSpanProcessor(sampled);
+    public io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor build() {
+      return new io.opentelemetry.sdk.contrib.zpages.TracezSpanProcessor(sampled);
     }
   }
 }

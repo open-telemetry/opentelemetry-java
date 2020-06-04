@@ -34,9 +34,9 @@ import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-/** Unit tests for {@link TraceZSpanProcessor}. */
+/** Unit tests for {@link TracezSpanProcessor}. */
 @RunWith(JUnit4.class)
-public final class TraceZSpanProcessorTest {
+public final class TracezSpanProcessorTest {
   @Mock private ReadableSpan readableSpan;
   private static final SpanContext SAMPLED_SPAN_CONTEXT =
       SpanContext.create(
@@ -47,7 +47,7 @@ public final class TraceZSpanProcessorTest {
   private static final SpanContext NOT_SAMPLED_SPAN_CONTEXT = SpanContext.getInvalid();
 
   private static void assertSpanCacheSizes(
-      TraceZSpanProcessor spanProcessor, int runningSpanCacheSize, int completedSpanCacheSize) {
+      TracezSpanProcessor spanProcessor, int runningSpanCacheSize, int completedSpanCacheSize) {
     Collection<ReadableSpan> runningSpans = spanProcessor.getRunningSpans();
     Collection<ReadableSpan> completedSpans = spanProcessor.getCompletedSpans();
     assertThat(runningSpans.size()).isEqualTo(runningSpanCacheSize);
@@ -61,7 +61,7 @@ public final class TraceZSpanProcessorTest {
 
   @Test
   public void onStart_sampledSpan_inCache() {
-    TraceZSpanProcessor spanProcessor = TraceZSpanProcessor.newBuilder().build();
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
     /* Return a sampled span, which should be added to the running cache by default */
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     spanProcessor.onStart(readableSpan);
@@ -70,7 +70,7 @@ public final class TraceZSpanProcessorTest {
 
   @Test
   public void onEnd_sampledSpan_inCache() {
-    TraceZSpanProcessor spanProcessor = TraceZSpanProcessor.newBuilder().build();
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
     /* Return a sampled span, which should be added to the completed cache upon ending */
     when(readableSpan.getSpanContext()).thenReturn(SAMPLED_SPAN_CONTEXT);
     spanProcessor.onStart(readableSpan);
@@ -79,11 +79,21 @@ public final class TraceZSpanProcessorTest {
   }
 
   @Test
-  public void onStart_notSampledSpan_notInCache() {
-    TraceZSpanProcessor spanProcessor = TraceZSpanProcessor.newBuilder().build();
+  public void onStart_notSampledSpan_inCache() {
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
     /* Return a non-sampled span, which should not be added to the running cache by default */
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onStart(readableSpan);
+    assertSpanCacheSizes(spanProcessor, 1, 0);
+  }
+
+  @Test
+  public void onEnd_notSampledSpan_notInCache() {
+    TracezSpanProcessor spanProcessor = TracezSpanProcessor.newBuilder().build();
+    /* Return a non-sampled span, which should not be added to the running cache by default */
+    when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
+    spanProcessor.onStart(readableSpan);
+    spanProcessor.onEnd(readableSpan);
     assertSpanCacheSizes(spanProcessor, 0, 0);
   }
 
@@ -92,12 +102,14 @@ public final class TraceZSpanProcessorTest {
     /* Initialize a TraceZSpanProcessor that only looks at sampled spans */
     Properties properties = new Properties();
     properties.setProperty("otel.ssp.export.sampled", "true");
-    TraceZSpanProcessor spanProcessor =
-        TraceZSpanProcessor.newBuilder().readProperties(properties).build();
+    TracezSpanProcessor spanProcessor =
+        TracezSpanProcessor.newBuilder().readProperties(properties).build();
 
-    /* Return a non-sampled span, which should not be added to the running cache */
+    /* Return a non-sampled span, which should not be added to the completed cache */
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);
     spanProcessor.onStart(readableSpan);
+    assertSpanCacheSizes(spanProcessor, 1, 0);
+    spanProcessor.onEnd(readableSpan);
     assertSpanCacheSizes(spanProcessor, 0, 0);
   }
 
@@ -106,8 +118,8 @@ public final class TraceZSpanProcessorTest {
     /* Initialize a TraceZSpanProcessor that looks at all spans */
     Properties properties = new Properties();
     properties.setProperty("otel.ssp.export.sampled", "false");
-    TraceZSpanProcessor spanProcessor =
-        TraceZSpanProcessor.newBuilder().readProperties(properties).build();
+    TracezSpanProcessor spanProcessor =
+        TracezSpanProcessor.newBuilder().readProperties(properties).build();
 
     /* Return a non-sampled span, which should be added to the caches */
     when(readableSpan.getSpanContext()).thenReturn(NOT_SAMPLED_SPAN_CONTEXT);

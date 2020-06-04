@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="https://opentelemetry.io/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <title>TraceZ</title>
+    <style>
+        body{font-family: "Roboto", sans-serif; font-size: 14px; background-color: #F2F4EC;}
+        h1{color: #363636; text-align: center; margin-bottom: 20px;}
+        h2{color: #363636; text-align: center; margin-top: 30px;}
+        p{padding: 0 0.5em; color: #363636;}
+        tr.bg-color{background-color: #4b5fab;}
+        table{margin: 0 auto;}
+        th{padding: 0 1em; line-height: 2.0}
+        td{padding: 0 1em; line-height: 2.0}
+        .border-right-white{border-right: 1px solid #fff;}
+        .border-left-white{border-left: 1px solid #fff;}
+        .border-left-dark{border-left: 1px solid #363636;}
+        th.header-text{color: #fff; line-height: 3.0;}
+        .align-center{text-align: center;}
+        td.bg-white{background-color: #fff;}
+    </style>
+</head>
+<body>
+    <img style="height: 90px;" src="https://opentelemetry.io/img/logos/opentelemetry-horizontal-color.png" />
+    <h1>TraceZ Summary</h1>
+    <table style="border-spacing: 0; border: 1px solid #363636;">
+        <tr class="bg-color">
+            <th colspan=1 class="header-text"><b>Span Name</b></th>
+            <th colspan=1 class="header-text border-left-white"><b>Running</b></th>
+            <th colspan=9 class="header-text border-left-white"><b>Latency Samples</b></th>
+            <th colspan=1 class="header-text border-left-white"><b>Error Samples</b></th>
+        </tr>
+        <tr class="bg-color">
+            <th colspan=1></th>
+            <th colspan=1 class="border-left-white"></th>
+            <th colspan=1 class="border-left-white align-center" style="color: #fff;"><b>>1us</b></th>
+            <th colspan=1 class="border-left-white align-center" style="color: #fff;"><b>>10us</b></th>
+            <th colspan=1 class="border-left-white align-center" style="color: #fff;"><b>>100us</b></th>
+            <th colspan=1 class="border-left-white align-center" style="color: #fff;"><b>>1ms</b></th>
+            <th colspan=1 class="border-left-white align-center" style="color: #fff;"><b>>10ms</b></th>
+            <th colspan=1 class="border-left-white align-center" style="color: #fff;"><b>>100ms</b></th>
+            <th colspan=1 class="border-left-white align-center" style="color: #fff;"><b>>1s</b></th>
+            <th colspan=1 class="border-left-white align-center" style="color: #fff;"><b>>10s</b></th>
+            <th colspan=1 class="border-left-white align-center" style="color: #fff;"><b>>100s</b></th>
+            <th colspan=1 class="border-left-white"></th>
+        </tr>
+        <tr style="background-color: #fff;">
+            <td>a really long span name</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+        </tr>
+        <tr style="background-color: #f0f0f0;">
+            <td>another really long span name</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+        </tr>
+        <tr style="background-color: #fff;">
+            <td>yet another really long span name</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+            <td class="align-center border-left-dark">0</td>
+        </tr>
+    </table>
+    <h2>Span Details</h2>
+    <p class="align-center"><b>Span Name: a really long span name</b></p>
+    <p class="align-center"><b>Number of latency samples: 5</b></p>
+</body>
+</html>
