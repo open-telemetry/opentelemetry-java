@@ -49,7 +49,7 @@ public class DoubleCounterExample {
       for (File file : files) {
         if (file.getName().endsWith("." + extension)) {
           //we can add values to counter without addition label key-values pairs
-          methodCallCounter.add((double) file.length() / 1024);
+          methodCallCounter.add((double) file.length() / 1_000_000);
         }
       }
     }
