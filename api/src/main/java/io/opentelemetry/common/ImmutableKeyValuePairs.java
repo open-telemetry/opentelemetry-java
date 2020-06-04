@@ -20,23 +20,22 @@ import static io.opentelemetry.internal.Utils.checkArgument;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An immutable set of key-value pairs. Can be iterated over using the {@link
- * #forEach(KeyValueConsumer)} method.
+ * An immutable set of key-value pairs. Keys are only {@link String} typed. Can be iterated over
+ * using the {@link #forEach(KeyValueConsumer)} method.
  *
- * @param <T> The type of the values contained in this.
+ * @param <V> The type of the values contained in this.
  * @see Labels
  * @see Attributes
  */
 @Immutable
-public interface ImmutableKeyValuePairs<T> {
+public interface ImmutableKeyValuePairs<V> {
   /** Iterates over all the key-value pairs of attributes contained by this instance. */
-  void forEach(KeyValueConsumer<T> consumer);
+  void forEach(KeyValueConsumer<V> consumer);
 
   /**
    * Used for iterating over the key-value pairs contained by an {@link ImmutableKeyValuePairs}
@@ -49,33 +48,59 @@ public interface ImmutableKeyValuePairs<T> {
   class Helper {
     private Helper() {}
 
-    @SuppressWarnings("unchecked")
     static <T> List<Object> sortAndFilter(Object[] data) {
       checkArgument(
           data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
 
-      // note: this is possibly not the most memory-efficient possible implementation, but it works
-      // for starters.
-      TreeMap<String, T> sorter = new TreeMap<>();
-      for (int i = 0; i < data.length; i++) {
-        String key = (String) data[i++];
-        Object value = data[i];
+      quickSort(data, 0, data.length - 2);
+      return Arrays.asList(dedupe(data));
+    }
 
-        checkNotNull(key, "You cannot provide null keys for creation of attributes.");
+    private static void quickSort(Object[] data, int leftIndex, int rightIndex) {
+      if (leftIndex >= rightIndex) {
+        return;
+      }
 
-        // todo: skip here, favoring the first, or use the TreeMap's built in replacement to favor
-        // the last? Or, final option, disallow duplicate keys and throw an exception like guava's
-        // ImmutableMap.
-        if (!sorter.containsKey(key)) {
-          sorter.put(key, (T) value);
+      String pivotKey = (String) data[rightIndex];
+      int counter = leftIndex;
+
+      for (int i = leftIndex; i <= rightIndex; i += 2) {
+        if (((String) data[i]).compareTo(pivotKey) <= 0) {
+          swap(data, counter, i);
+          counter += 2;
         }
       }
-      List<Object> sortedData = new ArrayList<>(sorter.size() * 2);
-      for (Entry<String, T> entry : sorter.entrySet()) {
-        sortedData.add(entry.getKey());
-        sortedData.add(entry.getValue());
+
+      quickSort(data, leftIndex, counter - 4);
+      quickSort(data, counter, rightIndex);
+    }
+
+    private static Object[] dedupe(Object[] data) {
+      List<Object> result = new ArrayList<>(data.length);
+      Object previousKey = null;
+
+      for (int i = 0; i < data.length; i += 2) {
+        Object key = data[i];
+        Object value = data[i + 1];
+        checkNotNull(key, "You cannot provide null keys for creation of attributes.");
+        if (key.equals(previousKey)) {
+          continue;
+        }
+        previousKey = key;
+        result.add(key);
+        result.add(value);
       }
-      return sortedData;
+      return result.toArray();
+    }
+
+    private static void swap(Object[] data, int a, int b) {
+      Object keyA = data[a];
+      Object valueA = data[a + 1];
+      data[a] = data[b];
+      data[a + 1] = data[b + 1];
+
+      data[b] = keyA;
+      data[b + 1] = valueA;
     }
   }
 }

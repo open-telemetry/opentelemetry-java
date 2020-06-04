@@ -84,11 +84,13 @@ public class LabelsTest {
   public void orderIndependentEquality() {
     Labels one =
         Labels.of(
+            "key3", "value3",
             "key1", "value1",
             "key2", "value2");
     Labels two =
         Labels.of(
             "key2", "value2",
+            "key3", "value3",
             "key1", "value1");
 
     assertThat(one).isEqualTo(two);
@@ -110,8 +112,8 @@ public class LabelsTest {
     Labels one =
         Labels.of(
             "key1", "value1",
-            "key2", "value2",
-            "key3", "value3");
+            "key3", "value3",
+            "key2", "value2");
     assertThat(one).isNotNull();
   }
 

@@ -131,8 +131,8 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
 
     @Override
     public void forEach(KeyValueConsumer<AttributeValue> consumer) {
-      for (int i = 0; i < data().size(); i++) {
-        consumer.consume((String) data().get(i), (AttributeValue) data().get(++i));
+      for (int i = 0; i < data().size(); i += 2) {
+        consumer.consume((String) data().get(i), (AttributeValue) data().get(i + 1));
       }
     }
   }

@@ -116,8 +116,8 @@ public abstract class Labels implements ImmutableKeyValuePairs<String> {
 
     @Override
     public void forEach(KeyValueConsumer<String> consumer) {
-      for (int i = 0; i < data().size(); i++) {
-        consumer.consume((String) data().get(i), (String) data().get(++i));
+      for (int i = 0; i < data().size(); i += 2) {
+        consumer.consume((String) data().get(i), (String) data().get(i + 1));
       }
     }
   }
