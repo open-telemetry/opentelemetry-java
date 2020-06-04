@@ -20,7 +20,6 @@ import static io.opentelemetry.internal.Utils.checkArgument;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -53,7 +52,7 @@ public interface ImmutableKeyValuePairs<V> {
           data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
 
       quickSort(data, 0, data.length - 2);
-      return Arrays.asList(dedupe(data));
+      return dedupe(data);
     }
 
     private static void quickSort(Object[] data, int leftIndex, int rightIndex) {
@@ -75,7 +74,7 @@ public interface ImmutableKeyValuePairs<V> {
       quickSort(data, counter, rightIndex);
     }
 
-    private static Object[] dedupe(Object[] data) {
+    private static List<Object> dedupe(Object[] data) {
       List<Object> result = new ArrayList<>(data.length);
       Object previousKey = null;
 
@@ -90,7 +89,7 @@ public interface ImmutableKeyValuePairs<V> {
         result.add(key);
         result.add(value);
       }
-      return result.toArray();
+      return result;
     }
 
     private static void swap(Object[] data, int a, int b) {
