@@ -24,7 +24,7 @@ public class DoubleCounterExample {
   private static final File directoryToCountIn = FileSystemView.getFileSystemView().getHomeDirectory();
   private static final DoubleCounter methodCallCounter = sampleMeter
       .doubleCounterBuilder("calculated_used_space")
-      .setDescription("should count space used by file extension")
+      .setDescription("Counts disk space used by file extension.")
       .setUnit("MB")
       .build();
 
