@@ -19,7 +19,7 @@ import javax.swing.filechooser.FileSystemView;
 public class DoubleCounterExample {
 
   private static final Tracer tracer =
-      OpenTelemetry.getTracer("io.opentelemetry.example.metrics");
+      OpenTelemetry.getTracer("io.opentelemetry.example.metrics", "0.5");
   private static final Meter sampleMeter = OpenTelemetry.getMeterProvider()
       .get("io.opentelemetry.example.metrics", "0.5");
   private static final File directoryToCountIn = FileSystemView.getFileSystemView()
