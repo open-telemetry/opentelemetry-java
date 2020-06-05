@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.LongSumObserver.ResultLongSumObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -46,9 +46,9 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void init() {
  *     cpuObserver.setCallback(
- *         new LongSumObserver.Callback<ResultLongSumObserver>() {
+ *         new LongSumObserver.Callback<LongResult>() {
  *          {@literal @}Override
- *           public void update(ResultLongSumObserver result) {
+ *           public void update(LongResult result) {
  *             // Get system cpu usage
  *             result.observe(cpuIdle, "state", "idle");
  *             result.observe(cpuUser, "state", "user");
@@ -61,9 +61,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongSumObserver extends AsynchronousInstrument<ResultLongSumObserver> {
+public interface LongSumObserver extends AsynchronousInstrument<LongResult> {
   @Override
-  void setCallback(Callback<ResultLongSumObserver> callback);
+  void setCallback(Callback<LongResult> callback);
 
   /** Builder class for {@link LongSumObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {
@@ -78,10 +78,5 @@ public interface LongSumObserver extends AsynchronousInstrument<ResultLongSumObs
 
     @Override
     LongSumObserver build();
-  }
-
-  /** The result for the {@link AsynchronousInstrument.Callback}. */
-  interface ResultLongSumObserver {
-    void observe(long sum, String... keyValueLabelPairs);
   }
 }

@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.DoubleValueObserver.ResultDoubleValueObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -43,9 +43,9 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void init() {
  *     cpuObserver.setCallback(
- *         new DoubleValueObserver.Callback<ResultDoubleValueObserver>() {
+ *         new DoubleValueObserver.Callback<DoubleResult>() {
  *          {@literal @}Override
- *           public void update(ResultDoubleValueObserver result) {
+ *           public void update(DoubleResult result) {
  *             // Get system cpu temperature
  *             result.observe(cpuTemperature);
  *           }
@@ -57,9 +57,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.5.0
  */
 @ThreadSafe
-public interface DoubleValueObserver extends AsynchronousInstrument<ResultDoubleValueObserver> {
+public interface DoubleValueObserver extends AsynchronousInstrument<DoubleResult> {
   @Override
-  void setCallback(Callback<ResultDoubleValueObserver> callback);
+  void setCallback(Callback<DoubleResult> callback);
 
   /** Builder class for {@link DoubleValueObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {
@@ -74,10 +74,5 @@ public interface DoubleValueObserver extends AsynchronousInstrument<ResultDouble
 
     @Override
     DoubleValueObserver build();
-  }
-
-  /** The result for the {@link Callback}. */
-  interface ResultDoubleValueObserver {
-    void observe(double sum, String... keyValueLabelPairs);
   }
 }

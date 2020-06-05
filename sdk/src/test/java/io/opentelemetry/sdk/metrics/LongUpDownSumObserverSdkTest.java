@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.LongUpDownSumObserver.ResultLongUpDownSumObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -77,9 +77,9 @@ public class LongUpDownSumObserverSdkTest {
             .setUnit("ms")
             .build();
     longUpDownSumObserver.setCallback(
-        new Callback<ResultLongUpDownSumObserver>() {
+        new Callback<LongResult>() {
           @Override
-          public void update(ResultLongUpDownSumObserver result) {
+          public void update(LongResult result) {
             // Do nothing.
           }
         });
@@ -102,9 +102,9 @@ public class LongUpDownSumObserverSdkTest {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk.longUpDownSumObserverBuilder("testObserver").build();
     longUpDownSumObserver.setCallback(
-        new Callback<ResultLongUpDownSumObserver>() {
+        new Callback<LongResult>() {
           @Override
-          public void update(ResultLongUpDownSumObserver result) {
+          public void update(LongResult result) {
             result.observe(12, "k", "v");
           }
         });

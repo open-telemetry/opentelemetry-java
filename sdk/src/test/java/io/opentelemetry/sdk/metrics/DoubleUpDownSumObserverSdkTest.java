@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.DoubleUpDownSumObserver.ResultDoubleUpDownSumObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -77,9 +77,9 @@ public class DoubleUpDownSumObserverSdkTest {
             .setUnit("ms")
             .build();
     doubleUpDownSumObserver.setCallback(
-        new Callback<ResultDoubleUpDownSumObserver>() {
+        new Callback<DoubleResult>() {
           @Override
-          public void update(ResultDoubleUpDownSumObserver result) {
+          public void update(DoubleResult result) {
             // Do nothing.
           }
         });
@@ -102,9 +102,9 @@ public class DoubleUpDownSumObserverSdkTest {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk.doubleUpDownSumObserverBuilder("testObserver").build();
     doubleUpDownSumObserver.setCallback(
-        new Callback<ResultDoubleUpDownSumObserver>() {
+        new Callback<DoubleResult>() {
           @Override
-          public void update(ResultDoubleUpDownSumObserver result) {
+          public void update(DoubleResult result) {
             result.observe(12.1d, "k", "v");
           }
         });

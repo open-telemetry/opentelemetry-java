@@ -17,13 +17,12 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleValueObserver;
-import io.opentelemetry.metrics.DoubleValueObserver.ResultDoubleValueObserver;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractDoubleAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class DoubleValueObserverSdk extends AbstractAsynchronousInstrument<ResultDoubleValueObserver>
+final class DoubleValueObserverSdk extends AbstractDoubleAsynchronousInstrument
     implements DoubleValueObserver {
 
   DoubleValueObserverSdk(
@@ -42,11 +41,6 @@ final class DoubleValueObserverSdk extends AbstractAsynchronousInstrument<Result
                 meterProviderSharedState,
                 meterSharedState,
                 Aggregations.minMaxSumCount())));
-  }
-
-  @Override
-  ResultDoubleValueObserver newResult(ActiveBatcher activeBatcher) {
-    return new ResultDoubleValueObserverSdk(activeBatcher);
   }
 
   static final class Builder
@@ -72,23 +66,6 @@ final class DoubleValueObserverSdk extends AbstractAsynchronousInstrument<Result
               getInstrumentDescriptor(InstrumentType.VALUE_OBSERVER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
-    }
-  }
-
-  private static final class ResultDoubleValueObserverSdk implements ResultDoubleValueObserver {
-
-    private final ActiveBatcher activeBatcher;
-
-    private ResultDoubleValueObserverSdk(ActiveBatcher activeBatcher) {
-      this.activeBatcher = activeBatcher;
-    }
-
-    @Override
-    public void observe(double sum, String... keyValueLabelPairs) {
-      Aggregator aggregator = activeBatcher.getAggregator();
-      aggregator.recordDouble(sum);
-      activeBatcher.batch(
-          LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
     }
   }
 }

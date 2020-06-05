@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.DoubleUpDownSumObserver.ResultDoubleUpDownSumObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -46,9 +46,9 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void init() {
  *     memoryObserver.setCallback(
- *         new DoubleUpDownSumObserver.Callback<ResultDoubleUpDownSumObserver>() {
+ *         new DoubleUpDownSumObserver.Callback<DoubleResult>() {
  *          {@literal @}Override
- *           public void update(ResultDoubleUpDownSumObserver result) {
+ *           public void update(DoubleResult result) {
  *             // Get system memory usage
  *             result.observe(memoryUsed, "state", "used");
  *             result.observe(memoryFree, "state", "free");
@@ -61,10 +61,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface DoubleUpDownSumObserver
-    extends AsynchronousInstrument<ResultDoubleUpDownSumObserver> {
+public interface DoubleUpDownSumObserver extends AsynchronousInstrument<DoubleResult> {
   @Override
-  void setCallback(Callback<ResultDoubleUpDownSumObserver> callback);
+  void setCallback(Callback<DoubleResult> callback);
 
   /** Builder class for {@link DoubleUpDownSumObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {
@@ -79,10 +78,5 @@ public interface DoubleUpDownSumObserver
 
     @Override
     DoubleUpDownSumObserver build();
-  }
-
-  /** The result for the {@link Callback}. */
-  interface ResultDoubleUpDownSumObserver {
-    void observe(double sum, String... keyValueLabelPairs);
   }
 }

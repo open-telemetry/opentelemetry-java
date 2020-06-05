@@ -19,7 +19,7 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.DoubleValueObserver.ResultDoubleValueObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -111,9 +111,9 @@ public class DoubleValueObserverTest {
             .setConstantLabels(CONSTANT_LABELS)
             .build();
     doubleValueObserver.setCallback(
-        new Callback<ResultDoubleValueObserver>() {
+        new Callback<DoubleResult>() {
           @Override
-          public void update(ResultDoubleValueObserver result) {}
+          public void update(DoubleResult result) {}
         });
   }
 }

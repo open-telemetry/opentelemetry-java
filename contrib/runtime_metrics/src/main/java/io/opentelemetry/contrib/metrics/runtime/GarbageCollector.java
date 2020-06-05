@@ -18,8 +18,8 @@ package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
+import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import io.opentelemetry.metrics.LongSumObserver;
-import io.opentelemetry.metrics.LongSumObserver.ResultLongSumObserver;
 import io.opentelemetry.metrics.Meter;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -68,9 +68,9 @@ public final class GarbageCollector {
     }
 
     gcMetric.setCallback(
-        new Callback<ResultLongSumObserver>() {
+        new Callback<LongResult>() {
           @Override
-          public void update(ResultLongSumObserver resultLongObserver) {
+          public void update(LongResult resultLongObserver) {
             for (int i = 0; i < garbageCollectors.size(); i++) {
               resultLongObserver.observe(
                   garbageCollectors.get(i).getCollectionTime(), labelSets.get(i));

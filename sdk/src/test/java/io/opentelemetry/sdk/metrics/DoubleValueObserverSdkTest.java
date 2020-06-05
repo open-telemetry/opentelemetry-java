@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.DoubleValueObserver.ResultDoubleValueObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -80,9 +80,9 @@ public class DoubleValueObserverSdkTest {
             .setUnit("ms")
             .build();
     doubleValueObserver.setCallback(
-        new Callback<ResultDoubleValueObserver>() {
+        new Callback<DoubleResult>() {
           @Override
-          public void update(ResultDoubleValueObserver result) {
+          public void update(DoubleResult result) {
             // Do nothing.
           }
         });
@@ -105,9 +105,9 @@ public class DoubleValueObserverSdkTest {
     DoubleValueObserverSdk doubleValueObserver =
         testSdk.doubleValueObserverBuilder("testObserver").build();
     doubleValueObserver.setCallback(
-        new Callback<ResultDoubleValueObserver>() {
+        new Callback<DoubleResult>() {
           @Override
-          public void update(ResultDoubleValueObserver result) {
+          public void update(DoubleResult result) {
             result.observe(12.1d, "k", "v");
           }
         });
