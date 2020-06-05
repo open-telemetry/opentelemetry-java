@@ -17,6 +17,7 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.AsynchronousInstrument;
+import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.Collections;
 import java.util.List;
@@ -24,8 +25,8 @@ import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 
-abstract class AbstractAsynchronousInstrument<T> extends AbstractInstrument
-    implements AsynchronousInstrument<T> {
+abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.Result>
+    extends AbstractInstrument implements AsynchronousInstrument<T> {
   @Nullable private volatile Callback<T> metricUpdater = null;
   private final ReentrantLock collectLock = new ReentrantLock();
 
@@ -67,6 +68,72 @@ abstract class AbstractAsynchronousInstrument<T> extends AbstractInstrument
         MeterProviderSharedState meterProviderSharedState,
         MeterSharedState meterSharedState) {
       super(name, meterProviderSharedState, meterSharedState);
+    }
+  }
+
+  static class AbstractLongAsynchronousInstrument
+      extends AbstractAsynchronousInstrument<LongResult> {
+    AbstractLongAsynchronousInstrument(
+        InstrumentDescriptor descriptor,
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState,
+        ActiveBatcher activeBatcher) {
+      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+    }
+
+    @Override
+    LongResultSdk newResult(ActiveBatcher activeBatcher) {
+      return new LongResultSdk(activeBatcher);
+    }
+
+    private static final class LongResultSdk implements LongResult {
+
+      private final ActiveBatcher activeBatcher;
+
+      private LongResultSdk(ActiveBatcher activeBatcher) {
+        this.activeBatcher = activeBatcher;
+      }
+
+      @Override
+      public void observe(long sum, String... keyValueLabelPairs) {
+        Aggregator aggregator = activeBatcher.getAggregator();
+        aggregator.recordLong(sum);
+        activeBatcher.batch(
+            LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
+      }
+    }
+  }
+
+  static class AbstractDoubleAsynchronousInstrument
+      extends AbstractAsynchronousInstrument<DoubleResult> {
+    AbstractDoubleAsynchronousInstrument(
+        InstrumentDescriptor descriptor,
+        MeterProviderSharedState meterProviderSharedState,
+        MeterSharedState meterSharedState,
+        ActiveBatcher activeBatcher) {
+      super(descriptor, meterProviderSharedState, meterSharedState, activeBatcher);
+    }
+
+    @Override
+    DoubleResultSdk newResult(ActiveBatcher activeBatcher) {
+      return new DoubleResultSdk(activeBatcher);
+    }
+
+    private static final class DoubleResultSdk implements DoubleResult {
+
+      private final ActiveBatcher activeBatcher;
+
+      private DoubleResultSdk(ActiveBatcher activeBatcher) {
+        this.activeBatcher = activeBatcher;
+      }
+
+      @Override
+      public void observe(double sum, String... keyValueLabelPairs) {
+        Aggregator aggregator = activeBatcher.getAggregator();
+        aggregator.recordDouble(sum);
+        activeBatcher.batch(
+            LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
+      }
     }
   }
 }

@@ -19,7 +19,7 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.DoubleUpDownSumObserver.ResultDoubleUpDownSumObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -112,9 +112,9 @@ public class DoubleUpDownSumObserverTest {
             .setConstantLabels(CONSTANT_LABELS)
             .build();
     doubleUpDownSumObserver.setCallback(
-        new Callback<ResultDoubleUpDownSumObserver>() {
+        new Callback<DoubleResult>() {
           @Override
-          public void update(ResultDoubleUpDownSumObserver result) {}
+          public void update(DoubleResult result) {}
         });
   }
 }

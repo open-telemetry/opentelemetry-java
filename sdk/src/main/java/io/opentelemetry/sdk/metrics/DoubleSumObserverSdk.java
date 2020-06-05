@@ -17,13 +17,12 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.DoubleSumObserver;
-import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleSumObserver;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractDoubleAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument<ResultDoubleSumObserver>
+final class DoubleSumObserverSdk extends AbstractDoubleAsynchronousInstrument
     implements DoubleSumObserver {
 
   DoubleSumObserverSdk(
@@ -37,11 +36,6 @@ final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument<ResultDo
         new ActiveBatcher(
             Batchers.getCumulativeAllLabels(
                 descriptor, meterProviderSharedState, meterSharedState, Aggregations.lastValue())));
-  }
-
-  @Override
-  ResultDoubleSumObserver newResult(ActiveBatcher activeBatcher) {
-    return new ResultDoubleSumObserverSdk(activeBatcher);
   }
 
   static final class Builder
@@ -67,23 +61,6 @@ final class DoubleSumObserverSdk extends AbstractAsynchronousInstrument<ResultDo
               getInstrumentDescriptor(InstrumentType.SUM_OBSERVER, InstrumentValueType.DOUBLE),
               getMeterProviderSharedState(),
               getMeterSharedState()));
-    }
-  }
-
-  private static final class ResultDoubleSumObserverSdk implements ResultDoubleSumObserver {
-
-    private final ActiveBatcher activeBatcher;
-
-    private ResultDoubleSumObserverSdk(ActiveBatcher activeBatcher) {
-      this.activeBatcher = activeBatcher;
-    }
-
-    @Override
-    public void observe(double sum, String... keyValueLabelPairs) {
-      Aggregator aggregator = activeBatcher.getAggregator();
-      aggregator.recordDouble(sum);
-      activeBatcher.batch(
-          LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
     }
   }
 }

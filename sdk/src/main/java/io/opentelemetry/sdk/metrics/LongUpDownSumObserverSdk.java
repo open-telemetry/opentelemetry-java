@@ -17,14 +17,12 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LongUpDownSumObserver;
-import io.opentelemetry.metrics.LongUpDownSumObserver.ResultLongUpDownSumObserver;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractLongAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class LongUpDownSumObserverSdk
-    extends AbstractAsynchronousInstrument<ResultLongUpDownSumObserver>
+final class LongUpDownSumObserverSdk extends AbstractLongAsynchronousInstrument
     implements LongUpDownSumObserver {
   LongUpDownSumObserverSdk(
       InstrumentDescriptor descriptor,
@@ -37,11 +35,6 @@ final class LongUpDownSumObserverSdk
         new ActiveBatcher(
             Batchers.getCumulativeAllLabels(
                 descriptor, meterProviderSharedState, meterSharedState, Aggregations.lastValue())));
-  }
-
-  @Override
-  ResultLongUpDownSumObserver newResult(ActiveBatcher activeBatcher) {
-    return new ResultLongUpDownSumObserverSdk(activeBatcher);
   }
 
   static final class Builder
@@ -68,23 +61,6 @@ final class LongUpDownSumObserverSdk
                   InstrumentType.UP_DOWN_SUM_OBSERVER, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState()));
-    }
-  }
-
-  private static final class ResultLongUpDownSumObserverSdk implements ResultLongUpDownSumObserver {
-
-    private final ActiveBatcher activeBatcher;
-
-    private ResultLongUpDownSumObserverSdk(ActiveBatcher activeBatcher) {
-      this.activeBatcher = activeBatcher;
-    }
-
-    @Override
-    public void observe(long sum, String... keyValueLabelPairs) {
-      Aggregator aggregator = activeBatcher.getAggregator();
-      aggregator.recordLong(sum);
-      activeBatcher.batch(
-          LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
     }
   }
 }

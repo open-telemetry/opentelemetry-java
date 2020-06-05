@@ -409,7 +409,7 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleSumObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultDoubleSumObserver> callback) {
+    public void setCallback(Callback<DoubleResult> callback) {
       Utils.checkNotNull(callback, "callback");
     }
 
@@ -435,7 +435,7 @@ public final class DefaultMeter implements Meter {
     private NoopLongSumObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultLongSumObserver> callback) {
+    public void setCallback(Callback<LongResult> callback) {
       Utils.checkNotNull(callback, "callback");
     }
 
@@ -461,7 +461,7 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleUpDownSumObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultDoubleUpDownSumObserver> callback) {
+    public void setCallback(Callback<DoubleResult> callback) {
       Utils.checkNotNull(callback, "callback");
     }
 
@@ -487,7 +487,7 @@ public final class DefaultMeter implements Meter {
     private NoopLongUpDownSumObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultLongUpDownSumObserver> callback) {
+    public void setCallback(Callback<LongResult> callback) {
       Utils.checkNotNull(callback, "callback");
     }
 
@@ -513,7 +513,7 @@ public final class DefaultMeter implements Meter {
     private NoopDoubleValueObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultDoubleValueObserver> callback) {
+    public void setCallback(Callback<DoubleResult> callback) {
       Utils.checkNotNull(callback, "callback");
     }
 
@@ -539,7 +539,7 @@ public final class DefaultMeter implements Meter {
     private NoopLongValueObserver() {}
 
     @Override
-    public void setCallback(Callback<ResultLongValueObserver> callback) {
+    public void setCallback(Callback<LongResult> callback) {
       Utils.checkNotNull(callback, "callback");
     }
 

@@ -17,13 +17,12 @@
 package io.opentelemetry.sdk.metrics;
 
 import io.opentelemetry.metrics.LongValueObserver;
-import io.opentelemetry.metrics.LongValueObserver.ResultLongValueObserver;
-import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
+import io.opentelemetry.sdk.metrics.AbstractAsynchronousInstrument.AbstractLongAsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.view.Aggregations;
 
-final class LongValueObserverSdk extends AbstractAsynchronousInstrument<ResultLongValueObserver>
+final class LongValueObserverSdk extends AbstractLongAsynchronousInstrument
     implements LongValueObserver {
 
   LongValueObserverSdk(
@@ -42,11 +41,6 @@ final class LongValueObserverSdk extends AbstractAsynchronousInstrument<ResultLo
                 meterProviderSharedState,
                 meterSharedState,
                 Aggregations.minMaxSumCount())));
-  }
-
-  @Override
-  ResultLongValueObserver newResult(ActiveBatcher activeBatcher) {
-    return new ResultLongObserverSdk(activeBatcher);
   }
 
   static final class Builder
@@ -72,23 +66,6 @@ final class LongValueObserverSdk extends AbstractAsynchronousInstrument<ResultLo
               getInstrumentDescriptor(InstrumentType.VALUE_OBSERVER, InstrumentValueType.LONG),
               getMeterProviderSharedState(),
               getMeterSharedState()));
-    }
-  }
-
-  private static final class ResultLongObserverSdk implements ResultLongValueObserver {
-
-    private final ActiveBatcher activeBatcher;
-
-    private ResultLongObserverSdk(ActiveBatcher activeBatcher) {
-      this.activeBatcher = activeBatcher;
-    }
-
-    @Override
-    public void observe(long sum, String... keyValueLabelPairs) {
-      Aggregator aggregator = activeBatcher.getAggregator();
-      aggregator.recordLong(sum);
-      activeBatcher.batch(
-          LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
     }
   }
 }
