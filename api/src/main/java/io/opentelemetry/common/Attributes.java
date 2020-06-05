@@ -32,17 +32,16 @@ import javax.annotation.concurrent.Immutable;
  * attributes.
  */
 @Immutable
-public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValue> {
-  private static final Attributes EMPTY =
-      new Attributes() {
-        @Override
-        public void forEach(KeyValueConsumer<AttributeValue> consumer) {
-          // no-op
-        }
-      };
+public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> {
+  private static final Attributes EMPTY = new Attributes() {};
 
-  private static Attributes sortAndFilter(Object... data) {
-    return new AutoValue_Attributes_ArrayBackedAttributes(Helper.sortAndFilter(data));
+  @AutoValue
+  @Immutable
+  abstract static class ArrayBackedAttributes extends Attributes {
+    ArrayBackedAttributes() {}
+
+    @Override
+    abstract List<Object> data();
   }
 
   /** An {@link Attributes} instance with no attributes. */
@@ -52,7 +51,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
 
   /** An {@link Attributes} instance with a single key-value pair. */
   public static Attributes of(String key, AttributeValue value) {
-    return sortAndFilter(key, value);
+    return sortAndFilterToAttributes(key, value);
   }
 
   /**
@@ -61,7 +60,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
    */
   public static Attributes of(
       String key1, AttributeValue value1, String key2, AttributeValue value2) {
-    return sortAndFilter(key1, value1, key2, value2);
+    return sortAndFilterToAttributes(key1, value1, key2, value2);
   }
 
   /**
@@ -75,7 +74,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
       AttributeValue value2,
       String key3,
       AttributeValue value3) {
-    return sortAndFilter(key1, value1, key2, value2, key3, value3);
+    return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3);
   }
 
   /**
@@ -91,7 +90,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
       AttributeValue value3,
       String key4,
       AttributeValue value4) {
-    return sortAndFilter(key1, value1, key2, value2, key3, value3, key4, value4);
+    return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3, key4, value4);
   }
 
   /**
@@ -109,7 +108,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
       AttributeValue value4,
       String key5,
       AttributeValue value5) {
-    return sortAndFilter(
+    return sortAndFilterToAttributes(
         key1, value1,
         key2, value2,
         key3, value3,
@@ -117,24 +116,13 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
         key5, value5);
   }
 
+  private static Attributes sortAndFilterToAttributes(Object... data) {
+    return new AutoValue_Attributes_ArrayBackedAttributes(sortAndFilter(data));
+  }
+
   /** Creates a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
   public static Builder newBuilder() {
     return new Builder();
-  }
-
-  @AutoValue
-  @Immutable
-  abstract static class ArrayBackedAttributes extends Attributes {
-    abstract List<Object> data();
-
-    ArrayBackedAttributes() {}
-
-    @Override
-    public void forEach(KeyValueConsumer<AttributeValue> consumer) {
-      for (int i = 0; i < data().size(); i += 2) {
-        consumer.consume((String) data().get(i), (AttributeValue) data().get(i + 1));
-      }
-    }
   }
 
   /**
@@ -146,7 +134,7 @@ public abstract class Attributes implements ImmutableKeyValuePairs<AttributeValu
 
     /** Create the {@link Attributes} from this. */
     public Attributes build() {
-      return sortAndFilter(data.toArray());
+      return sortAndFilterToAttributes(data.toArray());
     }
 
     /**

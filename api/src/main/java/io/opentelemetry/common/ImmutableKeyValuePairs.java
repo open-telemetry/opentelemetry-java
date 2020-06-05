@@ -20,6 +20,7 @@ import static io.opentelemetry.internal.Utils.checkArgument;
 import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
@@ -32,74 +33,72 @@ import javax.annotation.concurrent.Immutable;
  * @see Attributes
  */
 @Immutable
-public interface ImmutableKeyValuePairs<V> {
-  /** Iterates over all the key-value pairs of attributes contained by this instance. */
-  void forEach(KeyValueConsumer<V> consumer);
+abstract class ImmutableKeyValuePairs<V> {
 
-  /**
-   * Used for iterating over the key-value pairs contained by an {@link ImmutableKeyValuePairs}
-   * instance.
-   */
-  interface KeyValueConsumer<T> {
-    void consume(String key, T value);
+  List<Object> data() {
+    return Collections.emptyList();
   }
 
-  class Helper {
-    private Helper() {}
+  /** Iterates over all the key-value pairs of attributes contained by this instance. */
+  @SuppressWarnings("unchecked")
+  public void forEach(KeyValueConsumer<V> consumer) {
+    for (int i = 0; i < data().size(); i += 2) {
+      consumer.consume((String) data().get(i), (V) data().get(i + 1));
+    }
+  }
 
-    static <T> List<Object> sortAndFilter(Object[] data) {
-      checkArgument(
-          data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
+  static List<Object> sortAndFilter(Object[] data) {
+    checkArgument(
+        data.length % 2 == 0, "You must provide an even number of key/value pair arguments.");
 
-      quickSort(data, 0, data.length - 2);
-      return dedupe(data);
+    quickSort(data, 0, data.length - 2);
+    return dedupe(data);
+  }
+
+  private static void quickSort(Object[] data, int leftIndex, int rightIndex) {
+    if (leftIndex >= rightIndex) {
+      return;
     }
 
-    private static void quickSort(Object[] data, int leftIndex, int rightIndex) {
-      if (leftIndex >= rightIndex) {
-        return;
+    String pivotKey = (String) data[rightIndex];
+    int counter = leftIndex;
+
+    for (int i = leftIndex; i <= rightIndex; i += 2) {
+      if (((String) data[i]).compareTo(pivotKey) <= 0) {
+        swap(data, counter, i);
+        counter += 2;
       }
+    }
 
-      String pivotKey = (String) data[rightIndex];
-      int counter = leftIndex;
+    quickSort(data, leftIndex, counter - 4);
+    quickSort(data, counter, rightIndex);
+  }
 
-      for (int i = leftIndex; i <= rightIndex; i += 2) {
-        if (((String) data[i]).compareTo(pivotKey) <= 0) {
-          swap(data, counter, i);
-          counter += 2;
-        }
+  private static List<Object> dedupe(Object[] data) {
+    List<Object> result = new ArrayList<>(data.length);
+    Object previousKey = null;
+
+    for (int i = 0; i < data.length; i += 2) {
+      Object key = data[i];
+      Object value = data[i + 1];
+      checkNotNull(key, "You cannot provide null keys for creation of attributes.");
+      if (key.equals(previousKey)) {
+        continue;
       }
-
-      quickSort(data, leftIndex, counter - 4);
-      quickSort(data, counter, rightIndex);
+      previousKey = key;
+      result.add(key);
+      result.add(value);
     }
+    return result;
+  }
 
-    private static List<Object> dedupe(Object[] data) {
-      List<Object> result = new ArrayList<>(data.length);
-      Object previousKey = null;
+  private static void swap(Object[] data, int a, int b) {
+    Object keyA = data[a];
+    Object valueA = data[a + 1];
+    data[a] = data[b];
+    data[a + 1] = data[b + 1];
 
-      for (int i = 0; i < data.length; i += 2) {
-        Object key = data[i];
-        Object value = data[i + 1];
-        checkNotNull(key, "You cannot provide null keys for creation of attributes.");
-        if (key.equals(previousKey)) {
-          continue;
-        }
-        previousKey = key;
-        result.add(key);
-        result.add(value);
-      }
-      return result;
-    }
-
-    private static void swap(Object[] data, int a, int b) {
-      Object keyA = data[a];
-      Object valueA = data[a + 1];
-      data[a] = data[b];
-      data[a + 1] = data[b + 1];
-
-      data[b] = keyA;
-      data[b + 1] = valueA;
-    }
+    data[b] = keyA;
+    data[b + 1] = valueA;
   }
 }

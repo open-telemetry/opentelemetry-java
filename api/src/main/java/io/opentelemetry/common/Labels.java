@@ -23,14 +23,18 @@ import javax.annotation.concurrent.Immutable;
 
 /** An immutable container for labels, which are pairs of {@link String}. */
 @Immutable
-public abstract class Labels implements ImmutableKeyValuePairs<String> {
-  private static final Labels EMPTY =
-      new Labels() {
-        @Override
-        public void forEach(KeyValueConsumer<String> consumer) {
-          // no-op
-        }
-      };
+public abstract class Labels extends ImmutableKeyValuePairs<String> {
+
+  private static final Labels EMPTY = new Labels() {};
+
+  @AutoValue
+  @Immutable
+  abstract static class ArrayBackedLabels extends Labels {
+    ArrayBackedLabels() {}
+
+    @Override
+    abstract List<Object> data();
+  }
 
   /** An {@link Labels} instance with no attributes. */
   public static Labels empty() {
@@ -39,7 +43,7 @@ public abstract class Labels implements ImmutableKeyValuePairs<String> {
 
   /** An {@link Labels} instance with a single key-value pair. */
   public static Labels of(String key, String value) {
-    return sortAndFilter(key, value);
+    return sortAndFilterToLabels(key, value);
   }
 
   /**
@@ -47,7 +51,7 @@ public abstract class Labels implements ImmutableKeyValuePairs<String> {
    * Duplicate keys will be removed.
    */
   public static Labels of(String key1, String value1, String key2, String value2) {
-    return sortAndFilter(key1, value1, key2, value2);
+    return sortAndFilterToLabels(key1, value1, key2, value2);
   }
 
   /**
@@ -56,7 +60,7 @@ public abstract class Labels implements ImmutableKeyValuePairs<String> {
    */
   public static Labels of(
       String key1, String value1, String key2, String value2, String key3, String value3) {
-    return sortAndFilter(key1, value1, key2, value2, key3, value3);
+    return sortAndFilterToLabels(key1, value1, key2, value2, key3, value3);
   }
 
   /**
@@ -72,7 +76,7 @@ public abstract class Labels implements ImmutableKeyValuePairs<String> {
       String value3,
       String key4,
       String value4) {
-    return sortAndFilter(key1, value1, key2, value2, key3, value3, key4, value4);
+    return sortAndFilterToLabels(key1, value1, key2, value2, key3, value3, key4, value4);
   }
 
   /**
@@ -90,7 +94,7 @@ public abstract class Labels implements ImmutableKeyValuePairs<String> {
       String value4,
       String key5,
       String value5) {
-    return sortAndFilter(
+    return sortAndFilterToLabels(
         key1, value1,
         key2, value2,
         key3, value3,
@@ -98,28 +102,13 @@ public abstract class Labels implements ImmutableKeyValuePairs<String> {
         key5, value5);
   }
 
+  private static Labels sortAndFilterToLabels(Object... data) {
+    return new AutoValue_Labels_ArrayBackedLabels(sortAndFilter(data));
+  }
+
   /** Creates a new {@link Builder} instance for creating arbitrary {@link Labels}. */
   public static Builder newBuilder() {
     return new Builder();
-  }
-
-  private static Labels sortAndFilter(Object... data) {
-    return new AutoValue_Labels_ArrayBackedLabels(Helper.sortAndFilter(data));
-  }
-
-  @AutoValue
-  @Immutable
-  abstract static class ArrayBackedLabels extends Labels {
-    abstract List<Object> data();
-
-    ArrayBackedLabels() {}
-
-    @Override
-    public void forEach(KeyValueConsumer<String> consumer) {
-      for (int i = 0; i < data().size(); i += 2) {
-        consumer.consume((String) data().get(i), (String) data().get(i + 1));
-      }
-    }
   }
 
   /**
@@ -130,7 +119,7 @@ public abstract class Labels implements ImmutableKeyValuePairs<String> {
 
     /** Create the {@link Labels} from this. */
     public Labels build() {
-      return sortAndFilter(data.toArray());
+      return sortAndFilterToLabels(data.toArray());
     }
 
     /**

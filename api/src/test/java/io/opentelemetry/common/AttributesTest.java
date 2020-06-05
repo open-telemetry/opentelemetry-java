@@ -23,7 +23,6 @@ import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 import static io.opentelemetry.common.AttributeValue.longAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
-import io.opentelemetry.common.ImmutableKeyValuePairs.KeyValueConsumer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
