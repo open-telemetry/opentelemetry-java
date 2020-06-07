@@ -17,11 +17,11 @@
 package io.opentelemetry.common;
 
 import static io.opentelemetry.internal.Utils.checkArgument;
-import static io.opentelemetry.internal.Utils.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -34,6 +34,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 abstract class ImmutableKeyValuePairs<V> {
+  private static final Logger logger = Logger.getLogger(ImmutableKeyValuePairs.class.getName());
 
   List<Object> data() {
     return Collections.emptyList();
@@ -81,7 +82,10 @@ abstract class ImmutableKeyValuePairs<V> {
     for (int i = 0; i < data.length; i += 2) {
       Object key = data[i];
       Object value = data[i + 1];
-      checkNotNull(key, "You cannot provide null keys for creation of attributes.");
+      if (key == null) {
+        logger.warning("Ignoring null key.");
+        continue;
+      }
       if (key.equals(previousKey)) {
         continue;
       }

@@ -28,8 +28,9 @@ import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * An immutable container for attributes. The type parameter denotes the type of the values of the
- * attributes.
+ * An immutable container for attributes.
+ *
+ * <p>The keys are {@link String}s and the values are {@link AttributeValue} instances.
  */
 @Immutable
 public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> {
@@ -44,19 +45,19 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
     abstract List<Object> data();
   }
 
-  /** An {@link Attributes} instance with no attributes. */
+  /** Returns a {@link Attributes} instance with no attributes. */
   public static Attributes empty() {
     return EMPTY;
   }
 
-  /** An {@link Attributes} instance with a single key-value pair. */
+  /** Returns a {@link Attributes} instance with a single key-value pair. */
   public static Attributes of(String key, AttributeValue value) {
     return sortAndFilterToAttributes(key, value);
   }
 
   /**
-   * An {@link Attributes} instance with two key-value pairs. Order of the keys is not preserved.
-   * Duplicate keys will be removed.
+   * Returns a {@link Attributes} instance with two key-value pairs. Order of the keys is not
+   * preserved. Duplicate keys will be removed.
    */
   public static Attributes of(
       String key1, AttributeValue value1, String key2, AttributeValue value2) {
@@ -64,8 +65,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
   }
 
   /**
-   * An {@link Attributes} instance with three key-value pairs. Order of the keys is not preserved.
-   * Duplicate keys will be removed.
+   * Returns a {@link Attributes} instance with three key-value pairs. Order of the keys is not
+   * preserved. Duplicate keys will be removed.
    */
   public static Attributes of(
       String key1,
@@ -78,8 +79,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
   }
 
   /**
-   * An {@link Attributes} instance with four key-value pairs. Order of the keys is not preserved.
-   * Duplicate keys will be removed.
+   * Returns a {@link Attributes} instance with four key-value pairs. Order of the keys is not
+   * preserved. Duplicate keys will be removed.
    */
   public static Attributes of(
       String key1,
@@ -94,8 +95,8 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
   }
 
   /**
-   * An {@link Attributes} instance with five key-value pairs. Order of the keys is not preserved.
-   * Duplicate keys will be removed.
+   * Returns a {@link Attributes} instance with five key-value pairs. Order of the keys is not
+   * preserved. Duplicate keys will be removed.
    */
   public static Attributes of(
       String key1,
@@ -138,7 +139,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
     }
 
     /**
-     * Add a bare {@link AttributeValue} to this.
+     * Sets a bare {@link AttributeValue} into this.
      *
      * @return this Builder
      */
@@ -149,7 +150,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
     }
 
     /**
-     * Add a String {@link AttributeValue} to this.
+     * Sets a String {@link AttributeValue} into this.
      *
      * @return this Builder
      */
@@ -160,7 +161,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
     }
 
     /**
-     * Add a long {@link AttributeValue} to this.
+     * Sets a long {@link AttributeValue} into this.
      *
      * @return this Builder
      */
@@ -171,7 +172,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
     }
 
     /**
-     * Add a double {@link AttributeValue} to this.
+     * Sets a double {@link AttributeValue} into this.
      *
      * @return this Builder
      */
@@ -182,7 +183,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
     }
 
     /**
-     * Add a boolean {@link AttributeValue} to this.
+     * Sets a boolean {@link AttributeValue} into this.
      *
      * @return this Builder
      */
@@ -193,7 +194,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
     }
 
     /**
-     * Add a String array {@link AttributeValue} to this.
+     * Sets a String array {@link AttributeValue} into this.
      *
      * @return this Builder
      */
@@ -204,7 +205,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
     }
 
     /**
-     * Add a Long array {@link AttributeValue} to this.
+     * Sets a Long array {@link AttributeValue} into this.
      *
      * @return this Builder
      */
@@ -215,7 +216,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
     }
 
     /**
-     * Add a Double array {@link AttributeValue} to this.
+     * Sets a Double array {@link AttributeValue} into this.
      *
      * @return this Builder
      */
@@ -226,7 +227,7 @@ public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> 
     }
 
     /**
-     * Add a Boolean array {@link AttributeValue} to this.
+     * Sets a Boolean array {@link AttributeValue} into this.
      *
      * @return this Builder
      */

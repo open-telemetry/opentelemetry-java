@@ -36,18 +36,18 @@ public abstract class Labels extends ImmutableKeyValuePairs<String> {
     abstract List<Object> data();
   }
 
-  /** An {@link Labels} instance with no attributes. */
+  /** Returns a {@link Labels} instance with no attributes. */
   public static Labels empty() {
     return EMPTY;
   }
 
-  /** An {@link Labels} instance with a single key-value pair. */
+  /** Returns a {@link Labels} instance with a single key-value pair. */
   public static Labels of(String key, String value) {
     return sortAndFilterToLabels(key, value);
   }
 
   /**
-   * An {@link Labels} instance with two key-value pairs. Order of the keys is not preserved.
+   * Returns a {@link Labels} instance with two key-value pairs. Order of the keys is not preserved.
    * Duplicate keys will be removed.
    */
   public static Labels of(String key1, String value1, String key2, String value2) {
@@ -55,8 +55,8 @@ public abstract class Labels extends ImmutableKeyValuePairs<String> {
   }
 
   /**
-   * An {@link Labels} instance with three key-value pairs. Order of the keys is not preserved.
-   * Duplicate keys will be removed.
+   * Returns a {@link Labels} instance with three key-value pairs. Order of the keys is not
+   * preserved. Duplicate keys will be removed.
    */
   public static Labels of(
       String key1, String value1, String key2, String value2, String key3, String value3) {
@@ -64,8 +64,8 @@ public abstract class Labels extends ImmutableKeyValuePairs<String> {
   }
 
   /**
-   * An {@link Labels} instance with four key-value pairs. Order of the keys is not preserved.
-   * Duplicate keys will be removed.
+   * Returns a {@link Labels} instance with four key-value pairs. Order of the keys is not
+   * preserved. Duplicate keys will be removed.
    */
   public static Labels of(
       String key1,
@@ -80,8 +80,8 @@ public abstract class Labels extends ImmutableKeyValuePairs<String> {
   }
 
   /**
-   * An {@link Labels} instance with five key-value pairs. Order of the keys is not preserved.
-   * Duplicate keys will be removed.
+   * Returns a {@link Labels} instance with five key-value pairs. Order of the keys is not
+   * preserved. Duplicate keys will be removed.
    */
   public static Labels of(
       String key1,
@@ -123,7 +123,7 @@ public abstract class Labels extends ImmutableKeyValuePairs<String> {
     }
 
     /**
-     * Add a single label to this Builder.
+     * Sets a single label into this Builder.
      *
      * @return this Builder
      */

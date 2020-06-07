@@ -17,8 +17,8 @@
 package io.opentelemetry.common;
 
 /**
- * Used for iterating over the key-value pairs contained by an {@link ImmutableKeyValuePairs}
- * instance. The key is always a {@link String}.
+ * Used for iterating over the key-value pairs in a key-value pair container, such as {@link
+ * Attributes} or {@link Labels}. The key is always a {@link String}.
  */
 public interface KeyValueConsumer<T> {
   void consume(String key, T value);
