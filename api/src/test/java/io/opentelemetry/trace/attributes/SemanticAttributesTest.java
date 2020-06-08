@@ -34,11 +34,13 @@ import org.junit.runners.JUnit4;
 public class SemanticAttributesTest {
 
   private Span span;
+  private Span.Builder builder;
 
   @Before
   public void setUp() {
     Tracer tracer = OpenTelemetry.getTracer("io.telemetry.api");
     span = tracer.spanBuilder("junit").startSpan();
+    builder = tracer.spanBuilder("junit-builder");
   }
 
   @Test
@@ -51,15 +53,20 @@ public class SemanticAttributesTest {
         keys.add(((StringAttributeSetter) attribute).key());
         ((StringAttributeSetter) attribute).set(span, "TestValue");
         ((StringAttributeSetter) attribute).set(span, null);
+        ((StringAttributeSetter) attribute).set(builder, "TestValue");
+        ((StringAttributeSetter) attribute).set(builder, null);
       } else if (attribute instanceof LongAttributeSetter) {
         keys.add(((LongAttributeSetter) attribute).key());
         ((LongAttributeSetter) attribute).set(span, 42L);
+        ((LongAttributeSetter) attribute).set(builder, 42L);
       } else if (attribute instanceof DoubleAttributeSetter) {
         keys.add(((DoubleAttributeSetter) attribute).key());
         ((DoubleAttributeSetter) attribute).set(span, 3.14);
+        ((DoubleAttributeSetter) attribute).set(builder, 3.14);
       } else if (attribute instanceof BooleanAttributeSetter) {
         keys.add(((BooleanAttributeSetter) attribute).key());
         ((BooleanAttributeSetter) attribute).set(span, true);
+        ((BooleanAttributeSetter) attribute).set(builder, true);
       }
     }
     assertThat(keys.size()).isEqualTo(fields.length);
