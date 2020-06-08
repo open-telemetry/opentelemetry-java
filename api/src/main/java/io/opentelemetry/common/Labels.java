@@ -25,7 +25,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class Labels extends ImmutableKeyValuePairs<String> {
 
-  private static final Labels EMPTY = new Labels() {};
+  private static final Labels EMPTY = Labels.newBuilder().build();
 
   @AutoValue
   @Immutable

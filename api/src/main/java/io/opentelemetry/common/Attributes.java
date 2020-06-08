@@ -34,7 +34,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> {
-  private static final Attributes EMPTY = new Attributes() {};
+  private static final Attributes EMPTY = Attributes.newBuilder().build();
 
   @AutoValue
   @Immutable
