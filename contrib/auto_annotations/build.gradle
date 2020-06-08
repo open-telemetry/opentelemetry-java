@@ -9,7 +9,7 @@ description = 'OpenTelemetry Contrib Auto Annotations'
 ext.moduleName = "io.opentelemetry.contrib.auto.annotations"
 
 dependencies {
-    implementation project(':opentelemetry-api')
+    implementation project(':opentelemetry-api') exclude group: 'io.grpc', module: 'grpc-context'
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
 }
