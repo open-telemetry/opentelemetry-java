@@ -18,16 +18,13 @@ package io.opentelemetry.trace.attributes;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.Span;
-import io.opentelemetry.trace.Tracer;
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mockito;
 
 /** Unit tests for {@link SemanticAttributes}. */
 @RunWith(JUnit4.class)
@@ -38,38 +35,75 @@ public class SemanticAttributesTest {
 
   @Before
   public void setUp() {
-    Tracer tracer = OpenTelemetry.getTracer("io.telemetry.api");
-    span = tracer.spanBuilder("junit").startSpan();
-    builder = tracer.spanBuilder("junit-builder");
+    span = Mockito.mock(Span.class);
+    builder = Mockito.mock(Span.Builder.class);
   }
 
   @Test
   public void shouldEnableSetAttributeOnSpan() throws IllegalAccessException {
-    Set<String> keys = new HashSet<>();
     Field[] fields = SemanticAttributes.class.getFields();
     for (Field field : fields) {
       Object attribute = field.get(null);
       if (attribute instanceof StringAttributeSetter) {
-        keys.add(((StringAttributeSetter) attribute).key());
-        ((StringAttributeSetter) attribute).set(span, "TestValue");
-        ((StringAttributeSetter) attribute).set(span, null);
-        ((StringAttributeSetter) attribute).set(builder, "TestValue");
-        ((StringAttributeSetter) attribute).set(builder, null);
+        setAndVerify((StringAttributeSetter) attribute, span, "TestValue");
+        setAndVerify((StringAttributeSetter) attribute, builder, "TestValue");
+        setAndVerify((StringAttributeSetter) attribute, span, null);
+        setAndVerify((StringAttributeSetter) attribute, builder, null);
       } else if (attribute instanceof LongAttributeSetter) {
-        keys.add(((LongAttributeSetter) attribute).key());
-        ((LongAttributeSetter) attribute).set(span, 42L);
-        ((LongAttributeSetter) attribute).set(builder, 42L);
+        setAndVerify((LongAttributeSetter) attribute, span, 42L);
+        setAndVerify((LongAttributeSetter) attribute, builder, 42L);
       } else if (attribute instanceof DoubleAttributeSetter) {
-        keys.add(((DoubleAttributeSetter) attribute).key());
-        ((DoubleAttributeSetter) attribute).set(span, 3.14);
-        ((DoubleAttributeSetter) attribute).set(builder, 3.14);
+        setAndVerify((DoubleAttributeSetter) attribute, span, 3.14);
+        setAndVerify((DoubleAttributeSetter) attribute, builder, 3.14);
       } else if (attribute instanceof BooleanAttributeSetter) {
-        keys.add(((BooleanAttributeSetter) attribute).key());
-        ((BooleanAttributeSetter) attribute).set(span, true);
-        ((BooleanAttributeSetter) attribute).set(builder, true);
+        setAndVerify((BooleanAttributeSetter) attribute, span, true);
+        setAndVerify((BooleanAttributeSetter) attribute, builder, true);
       }
     }
-    assertThat(keys.size()).isEqualTo(fields.length);
+  }
+
+  private static void setAndVerify(StringAttributeSetter setter, Span span, String value) {
+    setter.set(span, value);
+    Mockito.verify(span).setAttribute(setter.key(), value);
+  }
+
+  private static void setAndVerify(
+      StringAttributeSetter setter, Span.Builder spanBuilder, String value) {
+    setter.set(spanBuilder, value);
+    Mockito.verify(spanBuilder).setAttribute(setter.key(), value);
+  }
+
+  private static void setAndVerify(LongAttributeSetter setter, Span span, long value) {
+    setter.set(span, value);
+    Mockito.verify(span).setAttribute(setter.key(), value);
+  }
+
+  private static void setAndVerify(
+      LongAttributeSetter setter, Span.Builder spanBuilder, long value) {
+    setter.set(spanBuilder, value);
+    Mockito.verify(spanBuilder).setAttribute(setter.key(), value);
+  }
+
+  private static void setAndVerify(DoubleAttributeSetter setter, Span span, double value) {
+    setter.set(span, value);
+    Mockito.verify(span).setAttribute(setter.key(), value);
+  }
+
+  private static void setAndVerify(
+      DoubleAttributeSetter setter, Span.Builder spanBuilder, double value) {
+    setter.set(spanBuilder, value);
+    Mockito.verify(spanBuilder).setAttribute(setter.key(), value);
+  }
+
+  private static void setAndVerify(BooleanAttributeSetter setter, Span span, boolean value) {
+    setter.set(span, value);
+    Mockito.verify(span).setAttribute(setter.key(), value);
+  }
+
+  private static void setAndVerify(
+      BooleanAttributeSetter setter, Span.Builder spanBuilder, boolean value) {
+    setter.set(spanBuilder, value);
+    Mockito.verify(spanBuilder).setAttribute(setter.key(), value);
   }
 
   @Test
