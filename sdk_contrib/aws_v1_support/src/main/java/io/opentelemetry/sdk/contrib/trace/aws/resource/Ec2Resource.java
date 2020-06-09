@@ -39,9 +39,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class Ec2ResourcePopulator extends AwsResource {
+class Ec2Resource extends AwsResource {
 
-  private static final Logger logger = Logger.getLogger(Ec2ResourcePopulator.class.getName());
+  private static final Logger logger = Logger.getLogger(Ec2Resource.class.getName());
 
   private static final int TIMEOUT_MILLIS = 2000;
 
@@ -53,14 +53,14 @@ class Ec2ResourcePopulator extends AwsResource {
   private final URL hostnameUrl;
   private final URL tokenUrl;
 
-  Ec2ResourcePopulator() {
+  Ec2Resource() {
     // This is only for testing e.g., with a mock IMDS server and never in production so we just
     // read from a system property. This is similar to the AWS SDK.
     this(System.getProperty("otel.aws.imds.endpointOverride", DEFAULT_IMDS_ENDPOINT));
   }
 
   @VisibleForTesting
-  Ec2ResourcePopulator(String endpoint) {
+  Ec2Resource(String endpoint) {
     String urlBase = "http://" + endpoint;
     try {
       this.identityDocumentUrl = new URL(urlBase + "/latest/dynamic/instance-identity/document");
