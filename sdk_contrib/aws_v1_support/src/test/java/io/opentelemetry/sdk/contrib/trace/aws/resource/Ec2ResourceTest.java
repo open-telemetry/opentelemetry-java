@@ -39,7 +39,7 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-public class Ec2Resource {
+public class Ec2ResourceTest {
 
   // From https://docs.amazonaws.cn/en_us/AWSEC2/latest/UserGuide/instance-identity-documents.html
   private static final String IDENTITY_DOCUMENT =
@@ -64,11 +64,11 @@ public class Ec2Resource {
   @ClassRule
   public static WireMockClassRule server = new WireMockClassRule(wireMockConfig().dynamicPort());
 
-  private Ec2ResourcePopulator populator;
+  private Ec2Resource populator;
 
   @Before
   public void setUp() {
-    populator = new Ec2ResourcePopulator("localhost:" + server.port());
+    populator = new Ec2Resource("localhost:" + server.port());
   }
 
   @Test
