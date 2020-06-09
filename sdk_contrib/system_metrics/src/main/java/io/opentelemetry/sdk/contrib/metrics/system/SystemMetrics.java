@@ -24,8 +24,10 @@ import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import io.opentelemetry.metrics.Meter;
 import io.opentelemetry.sdk.metrics.export.IntervalMetricReader;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
@@ -44,13 +46,17 @@ public final class SystemMetrics {
   private final IntervalMetricReader intervalReader;
 
   private SystemMetrics(
-      Meter meter, MetricExporter exporter, Map<String, String> labels, int interval) {
+      Collection<MetricProducer> producers,
+      MetricExporter exporter,
+      Map<String, String> labels,
+      int interval) {
 
-    registerObservers(meter, labels);
+    registerObservers(labels);
     intervalReader =
         IntervalMetricReader.builder()
             .setExportIntervalMillis(interval)
             .setMetricExporter(exporter)
+            .setMetricProducers(producers)
             .build();
   }
 
@@ -58,7 +64,8 @@ public final class SystemMetrics {
     intervalReader.shutdown();
   }
 
-  void registerObservers(Meter meter, Map<String, String> labels) {
+  void registerObservers(Map<String, String> labels) {
+    Meter meter = OpenTelemetry.getMeterProvider().get(SystemMetrics.class.getName());
     SystemInfo systemInfo = new SystemInfo();
     OperatingSystem osInfo = systemInfo.getOperatingSystem();
 
@@ -176,14 +183,14 @@ public final class SystemMetrics {
 
   /** Add me. */
   public static final class Builder {
-    private Meter meter = OpenTelemetry.getMeterProvider().get(SystemMetrics.class.getName());
+    private Collection<MetricProducer> producers;
     private MetricExporter exporter;
     private Map<String, String> labels;
     private int interval;
 
     /** Add me. */
-    public Builder setMeter(Meter meter) {
-      this.meter = meter;
+    public Builder setMetricProducers(Collection<MetricProducer> producers) {
+      this.producers = producers;
       return this;
     }
 
@@ -208,7 +215,7 @@ public final class SystemMetrics {
 
     /** Add me. */
     public SystemMetrics build() {
-      return new SystemMetrics(meter, exporter, labels, interval);
+      return new SystemMetrics(producers, exporter, labels, interval);
     }
   }
 }
