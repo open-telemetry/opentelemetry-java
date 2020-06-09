@@ -137,6 +137,7 @@ configure(opentelemetryProjects) {
                 jmh_core                : "org.openjdk.jmh:jmh-core:${jmhVersion}",
                 jmh_bytecode            : "org.openjdk.jmh:jmh-generator-bytecode:${jmhVersion}",
                 jsr305                  : "com.google.code.findbugs:jsr305:${findBugsJsr305Version}",
+                oshi                    : "com.github.oshi:oshi-core:5.1.1",
                 prometheus_client       : "io.prometheus:simpleclient:${prometheusVersion}",
                 prometheus_client_common: "io.prometheus:simpleclient_common:${prometheusVersion}",
                 protobuf                : "com.google.protobuf:protobuf-java",
