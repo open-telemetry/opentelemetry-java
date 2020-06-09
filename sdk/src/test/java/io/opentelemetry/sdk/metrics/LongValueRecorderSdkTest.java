@@ -85,6 +85,34 @@ public class LongValueRecorderSdkTest {
   }
 
   @Test
+  public void collectMetrics_emptyCollectionCycle() {
+    LongValueRecorderSdk longMeasure =
+        testSdk
+            .longValueRecorderBuilder("testMeasure")
+            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setDescription("My very own counter")
+            .setUnit("ms")
+            .build();
+
+    longMeasure.bind("key", "value");
+    testClock.advanceNanos(SECOND_NANOS);
+
+    List<MetricData> metricDataList = longMeasure.collectAll();
+    assertThat(metricDataList)
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testMeasure",
+                    "My very own counter",
+                    "ms",
+                    Type.SUMMARY,
+                    Collections.singletonMap("sk1", "sv1")),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>emptyList()));
+  }
+
+  @Test
   public void collectMetrics_WithOneRecord() {
     LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testMeasure").build();
     testClock.advanceNanos(SECOND_NANOS);

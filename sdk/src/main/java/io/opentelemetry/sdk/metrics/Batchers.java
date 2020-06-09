@@ -138,7 +138,10 @@ final class Batchers {
       List<Point> points = new ArrayList<>(aggregatorMap.size());
       long epochNanos = clock.now();
       for (Map.Entry<Map<String, String>, Aggregator> entry : aggregatorMap.entrySet()) {
-        points.add(entry.getValue().toPoint(startEpochNanos, epochNanos, entry.getKey()));
+        Point point = entry.getValue().toPoint(startEpochNanos, epochNanos, entry.getKey());
+        if (point != null) {
+          points.add(point);
+        }
       }
       if (delta) {
         startEpochNanos = epochNanos;
