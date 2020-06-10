@@ -17,9 +17,8 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Event;
-import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /** Timed event. */
@@ -39,10 +38,7 @@ abstract class TimedEvent implements io.opentelemetry.sdk.trace.data.SpanData.Ev
    * @return an {@code TimedEvent}.
    */
   static TimedEvent create(
-      long epochNanos,
-      String name,
-      Map<String, AttributeValue> attributes,
-      int totalAttributeCount) {
+      long epochNanos, String name, Attributes attributes, int totalAttributeCount) {
     return new AutoValue_TimedEvent_RawTimedEvent(
         name, attributes, epochNanos, totalAttributeCount);
   }
@@ -70,7 +66,7 @@ abstract class TimedEvent implements io.opentelemetry.sdk.trace.data.SpanData.Ev
     }
 
     @Override
-    public Map<String, AttributeValue> getAttributes() {
+    public Attributes getAttributes() {
       return getEvent().getAttributes();
     }
 

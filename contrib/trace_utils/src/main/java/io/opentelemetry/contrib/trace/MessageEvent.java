@@ -17,10 +17,8 @@
 package io.opentelemetry.contrib.trace;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.trace.Event;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -68,7 +66,7 @@ public final class MessageEvent implements Event {
       AttributeValue.stringAttributeValue(Type.RECEIVED.name());
   private static final AttributeValue zeroAttributeValue = AttributeValue.longAttributeValue(0);
 
-  private final Map<String, AttributeValue> attributeValueMap;
+  private final Attributes attributes;
 
   /**
    * Returns a {@code MessageEvent} with the desired values.
@@ -85,21 +83,22 @@ public final class MessageEvent implements Event {
    */
   public static MessageEvent create(
       Type type, long messageId, long uncompressedSize, long compressedSize) {
-    Map<String, AttributeValue> attributeValueMap = new HashMap<>();
-    attributeValueMap.put(TYPE, type == Type.SENT ? sentAttributeValue : receivedAttributeValue);
-    attributeValueMap.put(
+    Attributes.Builder attributeBuilder = Attributes.newBuilder();
+    attributeBuilder.setAttribute(
+        TYPE, type == Type.SENT ? sentAttributeValue : receivedAttributeValue);
+    attributeBuilder.setAttribute(
         ID, messageId == 0 ? zeroAttributeValue : AttributeValue.longAttributeValue(messageId));
-    attributeValueMap.put(
+    attributeBuilder.setAttribute(
         UNCOMPRESSED_SIZE,
         uncompressedSize == 0
             ? zeroAttributeValue
             : AttributeValue.longAttributeValue(uncompressedSize));
-    attributeValueMap.put(
+    attributeBuilder.setAttribute(
         COMPRESSED_SIZE,
         compressedSize == 0
             ? zeroAttributeValue
             : AttributeValue.longAttributeValue(compressedSize));
-    return new MessageEvent(Collections.unmodifiableMap(attributeValueMap));
+    return new MessageEvent(attributeBuilder.build());
   }
 
   @Override
@@ -108,11 +107,11 @@ public final class MessageEvent implements Event {
   }
 
   @Override
-  public Map<String, AttributeValue> getAttributes() {
-    return attributeValueMap;
+  public Attributes getAttributes() {
+    return attributes;
   }
 
-  private MessageEvent(Map<String, AttributeValue> attributeValueMap) {
-    this.attributeValueMap = attributeValueMap;
+  private MessageEvent(Attributes attributes) {
+    this.attributes = attributes;
   }
 }

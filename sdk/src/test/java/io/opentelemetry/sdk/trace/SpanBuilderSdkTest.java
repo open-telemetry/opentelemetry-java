@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -83,8 +84,7 @@ public class SpanBuilderSdkTest {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
-    spanBuilder.addLink(
-        DefaultSpan.getInvalid().getContext(), Collections.<String, AttributeValue>emptyMap());
+    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
@@ -134,10 +134,11 @@ public class SpanBuilderSdkTest {
             .build();
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    Map<String, AttributeValue> attributes = new LinkedHashMap<>();
-    attributes.put("key0", AttributeValue.stringAttributeValue("str"));
-    attributes.put("key1", AttributeValue.stringAttributeValue("str"));
-    attributes.put("key2", AttributeValue.stringAttributeValue("str"));
+    Attributes attributes =
+        Attributes.of(
+            "key0", AttributeValue.stringAttributeValue("str"),
+            "key1", AttributeValue.stringAttributeValue("str"),
+            "key2", AttributeValue.stringAttributeValue("str"));
     spanBuilder.addLink(sampledSpanContext, attributes);
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
@@ -145,35 +146,11 @@ public class SpanBuilderSdkTest {
           .containsExactly(
               Link.create(
                   sampledSpanContext,
-                  Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str")),
+                  Attributes.of("key0", AttributeValue.stringAttributeValue("str")),
                   3));
     } finally {
       span.end();
       tracerSdkFactory.updateActiveTraceConfig(TraceConfig.getDefault());
-    }
-  }
-
-  @Test
-  public void changingAttributes_NoEffectAfterAddLink() {
-    Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
-    Map<String, AttributeValue> attributes = new LinkedHashMap<>();
-    attributes.put("key0", AttributeValue.stringAttributeValue("str"));
-    spanBuilder.addLink(sampledSpanContext, attributes);
-    RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
-    try {
-      assertThat(span.toSpanData().getLinks())
-          .containsExactly(
-              Link.create(
-                  sampledSpanContext,
-                  Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str"))));
-      attributes.remove("key0");
-      assertThat(span.toSpanData().getLinks())
-          .containsExactly(
-              Link.create(
-                  sampledSpanContext,
-                  Collections.singletonMap("key0", AttributeValue.stringAttributeValue("str"))));
-    } finally {
-      span.end();
     }
   }
 
@@ -184,8 +161,7 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.toSpanData().getLinks())
-          .containsExactly(
-              Link.create(sampledSpanContext, Collections.<String, AttributeValue>emptyMap()));
+          .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
       // Use a different sampledSpanContext to ensure no logic that avoids duplicate links makes
       // this test to pass.
       spanBuilder.addLink(
@@ -195,8 +171,7 @@ public class SpanBuilderSdkTest {
               TraceFlags.builder().setIsSampled(true).build(),
               TraceState.getDefault()));
       assertThat(span.toSpanData().getLinks())
-          .containsExactly(
-              Link.create(sampledSpanContext, Collections.<String, AttributeValue>emptyMap()));
+          .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
     } finally {
       span.end();
     }
@@ -217,7 +192,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void addLinkSpanContextAttributes_nullContext() {
     thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).addLink(null, Collections.<String, AttributeValue>emptyMap());
+    tracerSdk.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty());
   }
 
   @Test

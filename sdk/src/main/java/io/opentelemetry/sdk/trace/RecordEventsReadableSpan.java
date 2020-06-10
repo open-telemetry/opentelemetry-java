@@ -21,6 +21,8 @@ import static io.opentelemetry.common.AttributeValue.Type.STRING;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.KeyValueConsumer;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -320,18 +322,16 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name) {
-    addTimedEvent(
-        TimedEvent.create(clock.now(), name, Collections.<String, AttributeValue>emptyMap(), 0));
+    addTimedEvent(TimedEvent.create(clock.now(), name, Attributes.empty(), 0));
   }
 
   @Override
   public void addEvent(String name, long timestamp) {
-    addTimedEvent(
-        TimedEvent.create(timestamp, name, Collections.<String, AttributeValue>emptyMap(), 0));
+    addTimedEvent(TimedEvent.create(timestamp, name, Attributes.empty(), 0));
   }
 
   @Override
-  public void addEvent(String name, Map<String, AttributeValue> attributes) {
+  public void addEvent(String name, Attributes attributes) {
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         TimedEvent.create(
@@ -342,7 +342,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @Override
-  public void addEvent(String name, Map<String, AttributeValue> attributes, long timestamp) {
+  public void addEvent(String name, Attributes attributes, long timestamp) {
     int totalAttributeCount = attributes.size();
     addTimedEvent(
         TimedEvent.create(
@@ -362,24 +362,14 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     addTimedEvent(TimedEvent.create(timestamp, event));
   }
 
-  static Map<String, AttributeValue> copyAndLimitAttributes(
-      Map<String, AttributeValue> attributes, int limit) {
-    if (attributes.isEmpty()) {
-      return Collections.emptyMap();
+  static Attributes copyAndLimitAttributes(final Attributes attributes, final int limit) {
+    if (attributes.isEmpty() || attributes.size() <= limit) {
+      return attributes;
     }
 
-    if (attributes.size() <= limit) {
-      return Collections.unmodifiableMap(new HashMap<>(attributes));
-    }
-
-    Map<String, AttributeValue> temp = new HashMap<>();
-    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
-      if (temp.size() < limit) {
-        temp.put(entry.getKey(), entry.getValue());
-      }
-    }
-
-    return Collections.unmodifiableMap(temp);
+    Attributes.Builder temp = Attributes.newBuilder();
+    attributes.forEach(new LimitingAttributeConsumer(limit, temp));
+    return temp.build();
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
@@ -533,5 +523,23 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     return hasEnded
         ? Collections.unmodifiableMap(attributes)
         : Collections.unmodifiableMap(new HashMap<>(attributes));
+  }
+
+  private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
+    private final int limit;
+    private final Attributes.Builder builder;
+    private int added;
+
+    public LimitingAttributeConsumer(int limit, Attributes.Builder builder) {
+      this.limit = limit;
+      this.builder = builder;
+    }
+
+    @Override
+    public void consume(String key, AttributeValue value) {
+      if (added++ < limit) {
+        builder.setAttribute(key, value);
+      }
+    }
   }
 }

@@ -16,8 +16,7 @@
 
 package io.opentelemetry.trace;
 
-import io.opentelemetry.common.AttributeValue;
-import java.util.Map;
+import io.opentelemetry.common.Attributes;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -41,5 +40,5 @@ public interface Event {
    * @return the attributes of the {@code Event}.
    * @since 0.1.0
    */
-  Map<String, AttributeValue> getAttributes();
+  Attributes getAttributes();
 }
