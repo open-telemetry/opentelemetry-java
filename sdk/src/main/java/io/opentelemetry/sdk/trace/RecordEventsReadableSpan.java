@@ -42,7 +42,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -368,17 +367,8 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       return attributes;
     }
 
-    final Attributes.Builder temp = Attributes.newBuilder();
-    final AtomicInteger added = new AtomicInteger();
-    attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
-          @Override
-          public void consume(String key, AttributeValue value) {
-            if (added.incrementAndGet() <= limit) {
-              temp.setAttribute(key, value);
-            }
-          }
-        });
+    Attributes.Builder temp = Attributes.newBuilder();
+    attributes.forEach(new LimitingAttributeConsumer(limit, temp));
     return temp.build();
   }
 
@@ -533,5 +523,23 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     return hasEnded
         ? Collections.unmodifiableMap(attributes)
         : Collections.unmodifiableMap(new HashMap<>(attributes));
+  }
+
+  private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
+    private final int limit;
+    private final Attributes.Builder builder;
+    private int added;
+
+    public LimitingAttributeConsumer(int limit, Attributes.Builder builder) {
+      this.limit = limit;
+      this.builder = builder;
+    }
+
+    @Override
+    public void consume(String key, AttributeValue value) {
+      if (added++ < limit) {
+        builder.setAttribute(key, value);
+      }
+    }
   }
 }
