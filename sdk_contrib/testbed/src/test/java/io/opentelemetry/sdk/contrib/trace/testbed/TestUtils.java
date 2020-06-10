@@ -51,21 +51,21 @@ public final class TestUtils {
         spans,
         new Condition() {
           @Override
-          public boolean check(SpanData spanData) {
-            AttributeValue attrValue = spanData.getAttributes().get(key);
+          public boolean check(SpanData span) {
+            AttributeValue attrValue = span.getAttributes().get(key);
             if (attrValue == null) {
               return false;
             }
 
             switch (attrValue.getType()) {
-              case STRING:
-                return value.equals(attrValue.getStringValue());
-              case LONG:
-                return value.equals(attrValue.getLongValue());
               case BOOLEAN:
                 return value.equals(attrValue.getBooleanValue());
+              case STRING:
+                return value.equals(attrValue.getStringValue());
               case DOUBLE:
                 return value.equals(attrValue.getDoubleValue());
+              case LONG:
+                return value.equals(attrValue.getLongValue());
               case STRING_ARRAY:
                 return value.equals(attrValue.getStringArrayValue());
               case LONG_ARRAY:
@@ -75,7 +75,6 @@ public final class TestUtils {
               case DOUBLE_ARRAY:
                 return value.equals(attrValue.getDoubleArrayValue());
             }
-
             return false;
           }
         });
