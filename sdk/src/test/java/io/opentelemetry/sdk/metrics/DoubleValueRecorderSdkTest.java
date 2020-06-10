@@ -85,6 +85,33 @@ public class DoubleValueRecorderSdkTest {
   }
 
   @Test
+  public void collectMetrics_EmptyCollectionCycle() {
+    DoubleValueRecorderSdk doubleMeasure =
+        testSdk
+            .doubleValueRecorderBuilder("testMeasure")
+            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setDescription("My very own measure")
+            .setUnit("ms")
+            .build();
+    doubleMeasure.bind("key", "value");
+    testClock.advanceNanos(SECOND_NANOS);
+
+    List<MetricData> metricDataList = doubleMeasure.collectAll();
+    assertThat(metricDataList)
+        .containsExactly(
+            MetricData.create(
+                Descriptor.create(
+                    "testMeasure",
+                    "My very own measure",
+                    "ms",
+                    Type.SUMMARY,
+                    Collections.singletonMap("sk1", "sv1")),
+                RESOURCE,
+                INSTRUMENTATION_LIBRARY_INFO,
+                Collections.<Point>emptyList()));
+  }
+
+  @Test
   public void collectMetrics_WithOneRecord() {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk.doubleValueRecorderBuilder("testMeasure").build();
