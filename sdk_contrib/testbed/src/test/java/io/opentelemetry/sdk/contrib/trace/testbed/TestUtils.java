@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.contrib.trace.testbed;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.KeyValueConsumer;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
@@ -51,21 +53,21 @@ public final class TestUtils {
         spans,
         new Condition() {
           @Override
-          public boolean check(SpanData span) {
-            AttributeValue attrValue = span.getAttributes().get(key);
+          public boolean check(SpanData spanData) {
+            AttributeValue attrValue = findAttributeByKey(spanData, key);
             if (attrValue == null) {
               return false;
             }
 
             switch (attrValue.getType()) {
-              case BOOLEAN:
-                return value.equals(attrValue.getBooleanValue());
               case STRING:
                 return value.equals(attrValue.getStringValue());
-              case DOUBLE:
-                return value.equals(attrValue.getDoubleValue());
               case LONG:
                 return value.equals(attrValue.getLongValue());
+              case BOOLEAN:
+                return value.equals(attrValue.getBooleanValue());
+              case DOUBLE:
+                return value.equals(attrValue.getDoubleValue());
               case STRING_ARRAY:
                 return value.equals(attrValue.getStringArrayValue());
               case LONG_ARRAY:
@@ -75,9 +77,18 @@ public final class TestUtils {
               case DOUBLE_ARRAY:
                 return value.equals(attrValue.getDoubleArrayValue());
             }
+
             return false;
           }
         });
+  }
+
+  /** Find an AttributeValue by the key. */
+  public static AttributeValue findAttributeByKey(SpanData spanData, final String key) {
+    Attributes attributes = spanData.getAttributes();
+    KeyFindingConsumer consumer = new KeyFindingConsumer(key);
+    attributes.forEach(consumer);
+    return consumer.getResult();
   }
 
   /**
@@ -209,6 +220,26 @@ public final class TestUtils {
           .isTrue();
       assertThat(spans.get(spans.size() - 1).getTraceId()).isEqualTo(spans.get(i).getTraceId());
       assertThat(spans.get(spans.size() - 1).getSpanId()).isEqualTo(spans.get(i).getParentSpanId());
+    }
+  }
+
+  private static class KeyFindingConsumer implements KeyValueConsumer<AttributeValue> {
+    private final String key;
+    private AttributeValue result;
+
+    public KeyFindingConsumer(String key) {
+      this.key = key;
+    }
+
+    @Override
+    public void consume(String k, AttributeValue value) {
+      if (key.equals(k)) {
+        result = value;
+      }
+    }
+
+    public AttributeValue getResult() {
+      return result;
     }
   }
 }

@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace.data.test;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -29,9 +30,7 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -55,7 +54,7 @@ public abstract class TestSpanData implements SpanData {
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.<Link>emptyList())
         .setTotalRecordedLinks(0)
-        .setAttributes(Collections.<String, AttributeValue>emptyMap())
+        .setAttributes(Attributes.empty())
         .setEvents(Collections.<Event>emptyList())
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
@@ -75,8 +74,6 @@ public abstract class TestSpanData implements SpanData {
 
     abstract TestSpanData autoBuild();
 
-    abstract Map<String, AttributeValue> getAttributes();
-
     abstract List<Event> getEvents();
 
     abstract List<Link> getLinks();
@@ -89,7 +86,6 @@ public abstract class TestSpanData implements SpanData {
      */
     public TestSpanData build() {
       // make unmodifiable copies of any collections
-      setAttributes(Collections.unmodifiableMap(new HashMap<>(getAttributes())));
       setEvents(Collections.unmodifiableList(new ArrayList<>(getEvents())));
       setLinks(Collections.unmodifiableList(new ArrayList<>(getLinks())));
       return autoBuild();
@@ -192,7 +188,7 @@ public abstract class TestSpanData implements SpanData {
      * @see AttributeValue
      * @since 0.1.0
      */
-    public abstract Builder setAttributes(Map<String, AttributeValue> attributes);
+    public abstract Builder setAttributes(Attributes attributes);
 
     /**
      * Set timed events that are associated with this span. Must not be null, may be empty.

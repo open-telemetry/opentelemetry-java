@@ -39,9 +39,8 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Tracer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -516,13 +515,15 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @GuardedBy("lock")
-  private Map<String, AttributeValue> getImmutableAttributes() {
+  private Attributes getImmutableAttributes() {
     if (attributes == null || attributes.isEmpty()) {
-      return Collections.emptyMap();
+      return Attributes.empty();
     }
-    return hasEnded
-        ? Collections.unmodifiableMap(attributes)
-        : Collections.unmodifiableMap(new HashMap<>(attributes));
+    Attributes.Builder builder = Attributes.newBuilder();
+    for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
+      builder.setAttribute(entry.getKey(), entry.getValue());
+    }
+    return builder.build();
   }
 
   private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
