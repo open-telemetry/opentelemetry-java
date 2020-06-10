@@ -362,25 +362,13 @@ public class RecordEventsReadableSpanTest {
     }
     SpanData spanData = span.toSpanData();
     assertThat(spanData.getAttributes().size()).isEqualTo(14);
-    assertThat(
-            TestUtils.findByKey(spanData.getAttributes(), "ArrayStringKey")
-                .getStringArrayValue()
-                .size())
+    assertThat(spanData.getAttributes().get("ArrayStringKey").getStringArrayValue().size())
         .isEqualTo(4);
-    assertThat(
-            TestUtils.findByKey(spanData.getAttributes(), "ArrayLongKey")
-                .getLongArrayValue()
-                .size())
+    assertThat(spanData.getAttributes().get("ArrayLongKey").getLongArrayValue().size())
         .isEqualTo(5);
-    assertThat(
-            TestUtils.findByKey(spanData.getAttributes(), "ArrayDoubleKey")
-                .getDoubleArrayValue()
-                .size())
+    assertThat(spanData.getAttributes().get("ArrayDoubleKey").getDoubleArrayValue().size())
         .isEqualTo(5);
-    assertThat(
-            TestUtils.findByKey(spanData.getAttributes(), "ArrayBooleanKey")
-                .getBooleanArrayValue()
-                .size())
+    assertThat(spanData.getAttributes().get("ArrayBooleanKey").getBooleanArrayValue().size())
         .isEqualTo(4);
   }
 
@@ -518,13 +506,13 @@ public class RecordEventsReadableSpanTest {
       for (int i = 0; i < maxNumberOfAttributes / 2; i++) {
         int val = i + maxNumberOfAttributes * 3 / 2;
         AttributeValue expectedValue = AttributeValue.longAttributeValue(val);
-        assertThat(TestUtils.findByKey(spanData.getAttributes(), "MyStringAttributeKey" + i))
+        assertThat(spanData.getAttributes().get("MyStringAttributeKey" + i))
             .isEqualTo(expectedValue);
       }
       // Test that we have the newest re-added initial entries.
       for (int i = maxNumberOfAttributes / 2; i < maxNumberOfAttributes; i++) {
         AttributeValue expectedValue = AttributeValue.longAttributeValue(i);
-        assertThat(TestUtils.findByKey(spanData.getAttributes(), "MyStringAttributeKey" + i))
+        assertThat(spanData.getAttributes().get("MyStringAttributeKey" + i))
             .isEqualTo(expectedValue);
       }
     } finally {

@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.KeyValueConsumer;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.test.TestSpanData;
@@ -123,34 +122,6 @@ public final class TestUtils {
       return builder;
     } finally {
       tracerSdkFactory.updateActiveTraceConfig(originalConfig);
-    }
-  }
-
-  /** Find an AttributeValue by the key. */
-  public static AttributeValue findByKey(Attributes attributes, String key) {
-    KeyFindingConsumer consumer = new KeyFindingConsumer(key);
-    attributes.forEach(consumer);
-    return consumer.getResult();
-  }
-
-  private static class KeyFindingConsumer implements KeyValueConsumer<AttributeValue> {
-    private final String key;
-
-    private AttributeValue result;
-
-    public KeyFindingConsumer(String key) {
-      this.key = key;
-    }
-
-    @Override
-    public void consume(String k, AttributeValue value) {
-      if (key.equals(k)) {
-        result = value;
-      }
-    }
-
-    public AttributeValue getResult() {
-      return result;
     }
   }
 }

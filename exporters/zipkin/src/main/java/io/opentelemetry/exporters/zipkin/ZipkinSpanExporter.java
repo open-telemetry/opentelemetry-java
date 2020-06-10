@@ -36,10 +36,8 @@ import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -144,25 +142,23 @@ public final class ZipkinSpanExporter implements SpanExporter {
     }
 
     Attributes spanAttributes = spanData.getAttributes();
-    final Set<String> attributeKeys = new HashSet<>();
     spanAttributes.forEach(
         new KeyValueConsumer<AttributeValue>() {
           @Override
           public void consume(String key, AttributeValue value) {
-            attributeKeys.add(key);
             spanBuilder.putTag(key, attributeValueToString(value));
           }
         });
     Status status = spanData.getStatus();
     // for GRPC spans, include status code & description.
-    if (status != null && attributeKeys.contains(SemanticAttributes.RPC_SERVICE.key())) {
+    if (status != null && spanAttributes.get(SemanticAttributes.RPC_SERVICE.key()) != null) {
       spanBuilder.putTag(GRPC_STATUS_CODE, status.getCanonicalCode().toString());
       if (status.getDescription() != null) {
         spanBuilder.putTag(GRPC_STATUS_DESCRIPTION, status.getDescription());
       }
     }
     // add the error tag, if it isn't already in the source span.
-    if (status != null && !status.isOk() && !attributeKeys.contains(STATUS_ERROR)) {
+    if (status != null && !status.isOk() && spanAttributes.get(STATUS_ERROR) == null) {
       spanBuilder.putTag(STATUS_ERROR, status.getCanonicalCode().toString());
     }
 

@@ -20,8 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.KeyValueConsumer;
 import io.opentelemetry.exporters.inmemory.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
@@ -55,7 +53,7 @@ public final class TestUtils {
         new Condition() {
           @Override
           public boolean check(SpanData spanData) {
-            AttributeValue attrValue = findAttributeByKey(spanData, key);
+            AttributeValue attrValue = spanData.getAttributes().get(key);
             if (attrValue == null) {
               return false;
             }
@@ -82,14 +80,6 @@ public final class TestUtils {
             return false;
           }
         });
-  }
-
-  /** Find an AttributeValue by the key. */
-  public static AttributeValue findAttributeByKey(SpanData spanData, final String key) {
-    Attributes attributes = spanData.getAttributes();
-    KeyFindingConsumer consumer = new KeyFindingConsumer(key);
-    attributes.forEach(consumer);
-    return consumer.getResult();
   }
 
   /**
@@ -220,26 +210,6 @@ public final class TestUtils {
       assertTrue(spans.get(spans.size() - 1).getEndEpochNanos() >= spans.get(i).getEndEpochNanos());
       assertEquals(spans.get(spans.size() - 1).getTraceId(), spans.get(i).getTraceId());
       assertEquals(spans.get(spans.size() - 1).getSpanId(), spans.get(i).getParentSpanId());
-    }
-  }
-
-  private static class KeyFindingConsumer implements KeyValueConsumer<AttributeValue> {
-    private final String key;
-    private AttributeValue result;
-
-    public KeyFindingConsumer(String key) {
-      this.key = key;
-    }
-
-    @Override
-    public void consume(String k, AttributeValue value) {
-      if (key.equals(k)) {
-        result = value;
-      }
-    }
-
-    public AttributeValue getResult() {
-      return result;
     }
   }
 }

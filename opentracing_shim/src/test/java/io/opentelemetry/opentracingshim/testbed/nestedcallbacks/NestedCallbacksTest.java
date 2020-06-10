@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNull;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
-import io.opentelemetry.opentracingshim.testbed.TestUtils;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -65,8 +64,7 @@ public final class NestedCallbacksTest {
     assertEquals(3, attrs.size());
     for (int i = 1; i <= 3; i++) {
       assertEquals(
-          Integer.toString(i),
-          TestUtils.findAttributeByKey(spans.get(0), "key" + i).getStringValue());
+          Integer.toString(i), spans.get(0).getAttributes().get("key" + i).getStringValue());
     }
 
     assertNull(tracer.scopeManager().activeSpan());
