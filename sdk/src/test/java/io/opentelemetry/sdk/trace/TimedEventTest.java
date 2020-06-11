@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.trace.Event;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,9 +33,9 @@ public class TimedEventTest {
   private static final String NAME = "event";
   private static final String NAME_2 = "event2";
   private static final Attributes ATTRIBUTES =
-      Attributes.of("attribute", AttributeValue.stringAttributeValue("value"));
+      ImmutableAttributes.of("attribute", AttributeValue.stringAttributeValue("value"));
   private static final Attributes ATTRIBUTES_2 =
-      Attributes.of("attribute2", AttributeValue.stringAttributeValue("value2"));
+      ImmutableAttributes.of("attribute2", AttributeValue.stringAttributeValue("value2"));
   private static final Event EVENT =
       new Event() {
         @Override

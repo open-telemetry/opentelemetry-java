@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -84,7 +85,7 @@ public class SpanBuilderSdkTest {
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     spanBuilder.addLink(Link.create(DefaultSpan.getInvalid().getContext()));
     spanBuilder.addLink(DefaultSpan.getInvalid().getContext());
-    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), Attributes.empty());
+    spanBuilder.addLink(DefaultSpan.getInvalid().getContext(), ImmutableAttributes.empty());
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
@@ -135,7 +136,7 @@ public class SpanBuilderSdkTest {
     tracerSdkFactory.updateActiveTraceConfig(traceConfig);
     Span.Builder spanBuilder = tracerSdk.spanBuilder(SPAN_NAME);
     Attributes attributes =
-        Attributes.of(
+        ImmutableAttributes.of(
             "key0", AttributeValue.stringAttributeValue("str"),
             "key1", AttributeValue.stringAttributeValue("str"),
             "key2", AttributeValue.stringAttributeValue("str"));
@@ -146,7 +147,7 @@ public class SpanBuilderSdkTest {
           .containsExactly(
               Link.create(
                   sampledSpanContext,
-                  Attributes.of("key0", AttributeValue.stringAttributeValue("str")),
+                  ImmutableAttributes.of("key0", AttributeValue.stringAttributeValue("str")),
                   3));
     } finally {
       span.end();
@@ -161,7 +162,7 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       assertThat(span.toSpanData().getLinks())
-          .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
+          .containsExactly(Link.create(sampledSpanContext, ImmutableAttributes.empty()));
       // Use a different sampledSpanContext to ensure no logic that avoids duplicate links makes
       // this test to pass.
       spanBuilder.addLink(
@@ -171,7 +172,7 @@ public class SpanBuilderSdkTest {
               TraceFlags.builder().setIsSampled(true).build(),
               TraceState.getDefault()));
       assertThat(span.toSpanData().getLinks())
-          .containsExactly(Link.create(sampledSpanContext, Attributes.empty()));
+          .containsExactly(Link.create(sampledSpanContext, ImmutableAttributes.empty()));
     } finally {
       span.end();
     }
@@ -192,7 +193,7 @@ public class SpanBuilderSdkTest {
   @Test
   public void addLinkSpanContextAttributes_nullContext() {
     thrown.expect(NullPointerException.class);
-    tracerSdk.spanBuilder(SPAN_NAME).addLink(null, Attributes.empty());
+    tracerSdk.spanBuilder(SPAN_NAME).addLink(null, ImmutableAttributes.empty());
   }
 
   @Test

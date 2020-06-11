@@ -21,7 +21,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -74,7 +74,8 @@ public class LoggingSpanExporterTest {
                     EventImpl.create(
                         epochNanos + 500,
                         "somethingHappenedHere",
-                        Attributes.of("important", AttributeValue.booleanAttributeValue(true)))))
+                        ImmutableAttributes.of(
+                            "important", AttributeValue.booleanAttributeValue(true)))))
             .setTotalRecordedEvents(1)
             .setTotalRecordedLinks(0)
             .build();

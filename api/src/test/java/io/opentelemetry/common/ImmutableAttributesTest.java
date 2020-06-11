@@ -30,16 +30,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-/** Unit tests for {@link Attributes}s. */
-public class AttributesTest {
+/** Unit tests for {@link ImmutableAttributes}s. */
+public class ImmutableAttributesTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void forEach() {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
-    Attributes attributes =
-        Attributes.of(
+    ImmutableAttributes attributes =
+        ImmutableAttributes.of(
             "key1", stringAttributeValue("value1"),
             "key2", AttributeValue.longAttributeValue(333));
 
@@ -59,7 +59,7 @@ public class AttributesTest {
   public void forEach_singleAttribute() {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
-    Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
+    ImmutableAttributes attributes = ImmutableAttributes.of("key", stringAttributeValue("value"));
     attributes.forEach(
         new KeyValueConsumer<AttributeValue>() {
           @Override
@@ -73,7 +73,7 @@ public class AttributesTest {
   @Test
   public void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
-    Attributes emptyAttributes = Attributes.empty();
+    ImmutableAttributes emptyAttributes = ImmutableAttributes.empty();
     emptyAttributes.forEach(
         new KeyValueConsumer<AttributeValue>() {
           @Override
@@ -86,12 +86,12 @@ public class AttributesTest {
 
   @Test
   public void orderIndependentEquality() {
-    Attributes one =
-        Attributes.of(
+    ImmutableAttributes one =
+        ImmutableAttributes.of(
             "key1", stringAttributeValue("value1"),
             "key2", stringAttributeValue("value2"));
-    Attributes two =
-        Attributes.of(
+    ImmutableAttributes two =
+        ImmutableAttributes.of(
             "key2", stringAttributeValue("value2"),
             "key1", stringAttributeValue("value1"));
 
@@ -100,19 +100,19 @@ public class AttributesTest {
 
   @Test
   public void deduplication() {
-    Attributes one =
-        Attributes.of(
+    ImmutableAttributes one =
+        ImmutableAttributes.of(
             "key1", stringAttributeValue("value1"),
             "key1", stringAttributeValue("valueX"));
-    Attributes two = Attributes.of("key1", stringAttributeValue("value1"));
+    ImmutableAttributes two = ImmutableAttributes.of("key1", stringAttributeValue("value1"));
 
     assertThat(one).isEqualTo(two);
   }
 
   @Test
   public void builder() {
-    Attributes attributes =
-        Attributes.newBuilder()
+    ImmutableAttributes attributes =
+        ImmutableAttributes.newBuilder()
             .setAttribute("string", "value1")
             .setAttribute("long", 100)
             .setAttribute("double", 33.44)
@@ -122,7 +122,7 @@ public class AttributesTest {
 
     assertThat(attributes)
         .isEqualTo(
-            Attributes.of(
+            ImmutableAttributes.of(
                 "string", stringAttributeValue("value1"),
                 "long", longAttributeValue(100),
                 "double", doubleAttributeValue(33.44),
@@ -131,8 +131,8 @@ public class AttributesTest {
 
   @Test
   public void builder_arrayTypes() {
-    Attributes attributes =
-        Attributes.newBuilder()
+    ImmutableAttributes attributes =
+        ImmutableAttributes.newBuilder()
             .setAttribute("string", "value1", "value2")
             .setAttribute("long", 100L, 200L)
             .setAttribute("double", 33.44, -44.33)
@@ -143,7 +143,7 @@ public class AttributesTest {
 
     assertThat(attributes)
         .isEqualTo(
-            Attributes.of(
+            ImmutableAttributes.of(
                 "string", arrayAttributeValue("value1", "value2"),
                 "long", arrayAttributeValue(100L, 200L),
                 "double", arrayAttributeValue(33.44, -44.33),
@@ -152,31 +152,31 @@ public class AttributesTest {
 
   @Test
   public void get_Null() {
-    assertThat(Attributes.empty().get("foo")).isNull();
-    assertThat(Attributes.of("key", stringAttributeValue("value")).get("foo")).isNull();
+    assertThat(ImmutableAttributes.empty().get("foo")).isNull();
+    assertThat(ImmutableAttributes.of("key", stringAttributeValue("value")).get("foo")).isNull();
   }
 
   @Test
   public void get() {
-    assertThat(Attributes.of("key", stringAttributeValue("value")).get("key"))
+    assertThat(ImmutableAttributes.of("key", stringAttributeValue("value")).get("key"))
         .isEqualTo(stringAttributeValue("value"));
-    assertThat(Attributes.of("key", stringAttributeValue("value")).get("value")).isNull();
-    Attributes threeElements =
-        Attributes.of(
+    assertThat(ImmutableAttributes.of("key", stringAttributeValue("value")).get("value")).isNull();
+    ImmutableAttributes threeElements =
+        ImmutableAttributes.of(
             "string", stringAttributeValue("value"),
             "boolean", booleanAttributeValue(true),
             "long", longAttributeValue(1L));
     assertThat(threeElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
     assertThat(threeElements.get("string")).isEqualTo(stringAttributeValue("value"));
     assertThat(threeElements.get("long")).isEqualTo(longAttributeValue(1L));
-    Attributes twoElements =
-        Attributes.of(
+    ImmutableAttributes twoElements =
+        ImmutableAttributes.of(
             "string", stringAttributeValue("value"),
             "boolean", booleanAttributeValue(true));
     assertThat(twoElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
     assertThat(twoElements.get("string")).isEqualTo(stringAttributeValue("value"));
-    Attributes fourElements =
-        Attributes.of(
+    ImmutableAttributes fourElements =
+        ImmutableAttributes.of(
             "string", stringAttributeValue("value"),
             "boolean", booleanAttributeValue(true),
             "long", longAttributeValue(1L),

@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.trace.Span.Kind;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class SpanBuilderTest {
     spanBuilder.setParent(DefaultSpan.createRandom().getContext());
     spanBuilder.setNoParent();
     spanBuilder.addLink(DefaultSpan.createRandom().getContext());
-    spanBuilder.addLink(DefaultSpan.createRandom().getContext(), Attributes.empty());
+    spanBuilder.addLink(DefaultSpan.createRandom().getContext(), ImmutableAttributes.empty());
     spanBuilder.addLink(
         new Link() {
           private final SpanContext spanContext = DefaultSpan.createRandom().getContext();
@@ -52,7 +53,7 @@ public class SpanBuilderTest {
 
           @Override
           public Attributes getAttributes() {
-            return Attributes.empty();
+            return ImmutableAttributes.empty();
           }
         });
     spanBuilder.setAttribute("key", "value");

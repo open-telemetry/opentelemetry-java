@@ -16,225 +16,28 @@
 
 package io.opentelemetry.common;
 
-import static io.opentelemetry.common.AttributeValue.arrayAttributeValue;
-import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
-import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
-import static io.opentelemetry.common.AttributeValue.longAttributeValue;
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
-
-import com.google.auto.value.AutoValue;
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.Nullable;
 
 /**
- * An immutable container for attributes.
+ * An read-only container for String-keyed attributes.
  *
- * <p>The keys are {@link String}s and the values are {@link AttributeValue} instances.
+ * <p>See {@link ImmutableAttributes} for the default implementation.
  */
-@Immutable
-public abstract class Attributes extends ImmutableKeyValuePairs<AttributeValue> {
-  private static final Attributes EMPTY = Attributes.newBuilder().build();
+public interface Attributes {
+  /** The number of attributes contained in this. */
+  int size();
 
-  @AutoValue
-  @Immutable
-  abstract static class ArrayBackedAttributes extends Attributes {
-    ArrayBackedAttributes() {}
+  /** Whether there are any attributes contained in this. */
+  boolean isEmpty();
 
-    @Override
-    abstract List<Object> data();
-  }
-
-  /** Returns a {@link Attributes} instance with no attributes. */
-  public static Attributes empty() {
-    return EMPTY;
-  }
-
-  /** Returns a {@link Attributes} instance with a single key-value pair. */
-  public static Attributes of(String key, AttributeValue value) {
-    return sortAndFilterToAttributes(key, value);
-  }
+  /** Iterates over all the key-value pairs of attributes contained by this instance. */
+  void forEach(KeyValueConsumer<AttributeValue> consumer);
 
   /**
-   * Returns a {@link Attributes} instance with two key-value pairs. Order of the keys is not
-   * preserved. Duplicate keys will be removed.
+   * Returns the value of the given key, or null if the key does not exist.
+   *
+   * <p>Warning: currently implemented via a linear search, so O(n) performance.
    */
-  public static Attributes of(
-      String key1, AttributeValue value1, String key2, AttributeValue value2) {
-    return sortAndFilterToAttributes(key1, value1, key2, value2);
-  }
-
-  /**
-   * Returns a {@link Attributes} instance with three key-value pairs. Order of the keys is not
-   * preserved. Duplicate keys will be removed.
-   */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3) {
-    return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3);
-  }
-
-  /**
-   * Returns a {@link Attributes} instance with four key-value pairs. Order of the keys is not
-   * preserved. Duplicate keys will be removed.
-   */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3,
-      String key4,
-      AttributeValue value4) {
-    return sortAndFilterToAttributes(key1, value1, key2, value2, key3, value3, key4, value4);
-  }
-
-  /**
-   * Returns a {@link Attributes} instance with five key-value pairs. Order of the keys is not
-   * preserved. Duplicate keys will be removed.
-   */
-  public static Attributes of(
-      String key1,
-      AttributeValue value1,
-      String key2,
-      AttributeValue value2,
-      String key3,
-      AttributeValue value3,
-      String key4,
-      AttributeValue value4,
-      String key5,
-      AttributeValue value5) {
-    return sortAndFilterToAttributes(
-        key1, value1,
-        key2, value2,
-        key3, value3,
-        key4, value4,
-        key5, value5);
-  }
-
-  private static Attributes sortAndFilterToAttributes(Object... data) {
-    return new AutoValue_Attributes_ArrayBackedAttributes(sortAndFilter(data));
-  }
-
-  /** Creates a new {@link Builder} instance for creating arbitrary {@link Attributes}. */
-  public static Builder newBuilder() {
-    return new Builder();
-  }
-
-  /**
-   * Enables the creation of an {@link Attributes} instance with an arbitrary number of key-value
-   * pairs.
-   */
-  public static class Builder {
-    private final List<Object> data = new ArrayList<>();
-
-    /** Create the {@link Attributes} from this. */
-    public Attributes build() {
-      return sortAndFilterToAttributes(data.toArray());
-    }
-
-    /**
-     * Sets a bare {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
-    public Builder setAttribute(String key, AttributeValue value) {
-      data.add(key);
-      data.add(value);
-      return this;
-    }
-
-    /**
-     * Sets a String {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
-    public Builder setAttribute(String key, String value) {
-      data.add(key);
-      data.add(stringAttributeValue(value));
-      return this;
-    }
-
-    /**
-     * Sets a long {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
-    public Builder setAttribute(String key, long value) {
-      data.add(key);
-      data.add(longAttributeValue(value));
-      return this;
-    }
-
-    /**
-     * Sets a double {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
-    public Builder setAttribute(String key, double value) {
-      data.add(key);
-      data.add(doubleAttributeValue(value));
-      return this;
-    }
-
-    /**
-     * Sets a boolean {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
-    public Builder setAttribute(String key, boolean value) {
-      data.add(key);
-      data.add(booleanAttributeValue(value));
-      return this;
-    }
-
-    /**
-     * Sets a String array {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
-    public Builder setAttribute(String key, String... value) {
-      data.add(key);
-      data.add(arrayAttributeValue(value));
-      return this;
-    }
-
-    /**
-     * Sets a Long array {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
-    public Builder setAttribute(String key, Long... value) {
-      data.add(key);
-      data.add(arrayAttributeValue(value));
-      return this;
-    }
-
-    /**
-     * Sets a Double array {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
-    public Builder setAttribute(String key, Double... value) {
-      data.add(key);
-      data.add(arrayAttributeValue(value));
-      return this;
-    }
-
-    /**
-     * Sets a Boolean array {@link AttributeValue} into this.
-     *
-     * @return this Builder
-     */
-    public Builder setAttribute(String key, Boolean... value) {
-      data.add(key);
-      data.add(arrayAttributeValue(value));
-      return this;
-    }
-  }
+  @Nullable
+  AttributeValue get(String key);
 }

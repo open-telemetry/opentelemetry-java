@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.trace.data.test;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -54,7 +55,7 @@ public abstract class TestSpanData implements SpanData {
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.<Link>emptyList())
         .setTotalRecordedLinks(0)
-        .setAttributes(Attributes.empty())
+        .setAttributes(ImmutableAttributes.empty())
         .setEvents(Collections.<Event>emptyList())
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())

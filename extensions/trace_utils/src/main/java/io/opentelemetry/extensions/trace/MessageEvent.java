@@ -18,6 +18,7 @@ package io.opentelemetry.extensions.trace;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.trace.Event;
 import javax.annotation.concurrent.Immutable;
 
@@ -83,7 +84,7 @@ public final class MessageEvent implements Event {
    */
   public static MessageEvent create(
       Type type, long messageId, long uncompressedSize, long compressedSize) {
-    Attributes.Builder attributeBuilder = Attributes.newBuilder();
+    ImmutableAttributes.Builder attributeBuilder = ImmutableAttributes.newBuilder();
     attributeBuilder.setAttribute(
         TYPE, type == Type.SENT ? sentAttributeValue : receivedAttributeValue);
     attributeBuilder.setAttribute(

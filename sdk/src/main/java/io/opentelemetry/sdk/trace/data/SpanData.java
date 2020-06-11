@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -210,7 +211,7 @@ public interface SpanData {
   @AutoValue
   abstract class Link implements io.opentelemetry.trace.Link {
 
-    private static final Attributes DEFAULT_ATTRIBUTE_COLLECTION = Attributes.empty();
+    private static final Attributes DEFAULT_ATTRIBUTE_COLLECTION = ImmutableAttributes.empty();
     private static final int DEFAULT_ATTRIBUTE_COUNT = 0;
 
     /**

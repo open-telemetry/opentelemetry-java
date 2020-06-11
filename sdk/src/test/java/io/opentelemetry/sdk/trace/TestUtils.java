@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.test.TestSpanData;
@@ -28,7 +29,6 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -41,22 +41,10 @@ public final class TestUtils {
   /**
    * Generates some random attributes used for testing.
    *
-   * @return a map of String to AttributeValues
-   */
-  static Map<String, AttributeValue> generateRandomMapAttributes() {
-    Map<String, AttributeValue> result = new HashMap<>();
-    AttributeValue attribute = AttributeValue.stringAttributeValue(UUID.randomUUID().toString());
-    result.put(UUID.randomUUID().toString(), attribute);
-    return result;
-  }
-
-  /**
-   * Generates some random attributes used for testing.
-   *
    * @return some {@link io.opentelemetry.common.Attributes}
    */
   static Attributes generateRandomAttributes() {
-    return Attributes.of(
+    return ImmutableAttributes.of(
         UUID.randomUUID().toString(),
         AttributeValue.stringAttributeValue(UUID.randomUUID().toString()));
   }

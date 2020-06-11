@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.common.KeyValueConsumer;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -90,8 +91,8 @@ public class RecordEventsReadableSpanTest {
         "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
     attributes.put("MyLongAttributeKey", AttributeValue.longAttributeValue(123L));
     attributes.put("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(false));
-    Attributes.Builder builder =
-        Attributes.newBuilder()
+    ImmutableAttributes.Builder builder =
+        ImmutableAttributes.newBuilder()
             .setAttribute(
                 "MySingleStringAttributeKey",
                 AttributeValue.stringAttributeValue("MySingleStringAttributeValue"));
@@ -111,7 +112,7 @@ public class RecordEventsReadableSpanTest {
     SpanData spanData = span.toSpanData();
     verifySpanData(
         spanData,
-        Attributes.empty(),
+        ImmutableAttributes.empty(),
         Collections.<Event>emptyList(),
         Collections.singletonList(link),
         SPAN_NAME,
@@ -123,7 +124,8 @@ public class RecordEventsReadableSpanTest {
 
   @Test
   public void lazyLinksAreResolved() {
-    final Attributes attributes = Attributes.of("attr", AttributeValue.stringAttributeValue("val"));
+    final Attributes attributes =
+        ImmutableAttributes.of("attr", AttributeValue.stringAttributeValue("val"));
     io.opentelemetry.trace.Link link =
         new io.opentelemetry.trace.Link() {
           @Override
@@ -168,7 +170,8 @@ public class RecordEventsReadableSpanTest {
       spanDoWork(span, null);
       SpanData spanData = span.toSpanData();
       Event event =
-          TimedEvent.create(startEpochNanos + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+          TimedEvent.create(
+              startEpochNanos + NANOS_PER_SECOND, "event2", ImmutableAttributes.empty(), 0);
       verifySpanData(
           spanData,
           expectedAttributes,
@@ -197,7 +200,8 @@ public class RecordEventsReadableSpanTest {
     Mockito.verify(spanProcessor, Mockito.times(1)).onEnd(span);
     SpanData spanData = span.toSpanData();
     Event event =
-        TimedEvent.create(startEpochNanos + NANOS_PER_SECOND, "event2", Attributes.empty(), 0);
+        TimedEvent.create(
+            startEpochNanos + NANOS_PER_SECOND, "event2", ImmutableAttributes.empty(), 0);
     verifySpanData(
         spanData,
         expectedAttributes,
@@ -225,7 +229,7 @@ public class RecordEventsReadableSpanTest {
     SpanData spanData = span.toSpanData();
 
     thrown.expect(UnsupportedOperationException.class);
-    spanData.getEvents().add(EventImpl.create(1000, "test", Attributes.empty()));
+    spanData.getEvents().add(EventImpl.create(1000, "test", ImmutableAttributes.empty()));
   }
 
   @Test
@@ -434,13 +438,14 @@ public class RecordEventsReadableSpanTest {
 
           @Override
           public Attributes getAttributes() {
-            return Attributes.empty();
+            return ImmutableAttributes.empty();
           }
         };
     try {
       span.addEvent("event1");
       span.addEvent(
-          "event2", Attributes.of("e1key", AttributeValue.stringAttributeValue("e1Value")));
+          "event2",
+          ImmutableAttributes.of("e1key", AttributeValue.stringAttributeValue("e1Value")));
       span.addEvent(customEvent);
     } finally {
       span.end();
@@ -528,7 +533,7 @@ public class RecordEventsReadableSpanTest {
     RecordEventsReadableSpan span = createTestSpan(traceConfig);
     try {
       for (int i = 0; i < 2 * maxNumberOfEvents; i++) {
-        span.addEvent("event2", Attributes.empty());
+        span.addEvent("event2", ImmutableAttributes.empty());
         testClock.advanceMillis(MILLIS_PER_SECOND);
       }
       SpanData spanData = span.toSpanData();
@@ -539,7 +544,7 @@ public class RecordEventsReadableSpanTest {
             TimedEvent.create(
                 startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
                 "event2",
-                Attributes.empty(),
+                ImmutableAttributes.empty(),
                 0);
         assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
         assertThat(spanData.getTotalRecordedEvents()).isEqualTo(2 * maxNumberOfEvents);
@@ -554,7 +559,7 @@ public class RecordEventsReadableSpanTest {
           TimedEvent.create(
               startEpochNanos + (maxNumberOfEvents + i) * NANOS_PER_SECOND,
               "event2",
-              Attributes.empty(),
+              ImmutableAttributes.empty(),
               0);
       assertThat(spanData.getEvents().get(i)).isEqualTo(expectedEvent);
     }
@@ -623,7 +628,7 @@ public class RecordEventsReadableSpanTest {
       span.setAttribute(attribute.getKey(), attribute.getValue());
     }
     testClock.advanceMillis(MILLIS_PER_SECOND);
-    span.addEvent("event2", Attributes.empty());
+    span.addEvent("event2", ImmutableAttributes.empty());
     testClock.advanceMillis(MILLIS_PER_SECOND);
     span.updateName(SPAN_NEW_NAME);
     if (status != null) {
@@ -633,7 +638,7 @@ public class RecordEventsReadableSpanTest {
 
   private void verifySpanData(
       SpanData spanData,
-      Attributes attributes,
+      final Attributes attributes,
       List<Event> eventData,
       List<io.opentelemetry.trace.Link> links,
       String spanName,
@@ -649,13 +654,23 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     assertThat(spanData.getName()).isEqualTo(spanName);
-    assertThat(spanData.getAttributes()).isEqualTo(attributes);
     assertThat(spanData.getEvents()).isEqualTo(eventData);
     assertThat(spanData.getLinks()).isEqualTo(links);
     assertThat(spanData.getStartEpochNanos()).isEqualTo(startEpochNanos);
     assertThat(spanData.getEndEpochNanos()).isEqualTo(endEpochNanos);
     assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
     assertThat(spanData.getHasEnded()).isEqualTo(hasEnded);
+
+    // verify equality manually, since the implementations don't all equals with each other.
+    Attributes spanDataAttributes = spanData.getAttributes();
+    assertThat(spanDataAttributes.size()).isEqualTo(attributes.size());
+    spanDataAttributes.forEach(
+        new KeyValueConsumer<AttributeValue>() {
+          @Override
+          public void consume(String key, AttributeValue value) {
+            assertThat(attributes.get(key)).isEqualTo(value);
+          }
+        });
   }
 
   @Test
@@ -722,7 +737,7 @@ public class RecordEventsReadableSpanTest {
     SpanData result = readableSpan.toSpanData();
     verifySpanData(
         result,
-        attributes,
+        attributesWithCapacity,
         events,
         Collections.<io.opentelemetry.trace.Link>singletonList(link1),
         name,

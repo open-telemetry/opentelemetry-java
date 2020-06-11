@@ -18,6 +18,7 @@ package io.opentelemetry.opentracingshim;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.trace.Status;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
@@ -188,7 +189,7 @@ final class SpanShim extends BaseShimObject implements Span {
   }
 
   static Attributes convertToAttributes(Map<String, ?> fields) {
-    Attributes.Builder attributesBuilder = Attributes.newBuilder();
+    ImmutableAttributes.Builder attributesBuilder = ImmutableAttributes.newBuilder();
 
     for (Map.Entry<String, ?> entry : fields.entrySet()) {
       String key = entry.getKey();

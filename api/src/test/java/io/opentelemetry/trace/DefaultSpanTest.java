@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ImmutableAttributes;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -63,10 +64,11 @@ public class DefaultSpanTest {
     span.addEvent("event", 0);
     span.addEvent(
         "event",
-        Attributes.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
+        ImmutableAttributes.of(
+            "MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)));
     span.addEvent(
         "event",
-        Attributes.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)),
+        ImmutableAttributes.of("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(true)),
         0);
     span.addEvent(new TestEvent());
     span.addEvent(new TestEvent(), 0);
@@ -96,7 +98,7 @@ public class DefaultSpanTest {
 
     @Override
     public Attributes getAttributes() {
-      return Attributes.empty();
+      return ImmutableAttributes.empty();
     }
   }
 }

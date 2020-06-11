@@ -31,7 +31,7 @@ import javax.annotation.concurrent.Immutable;
  *
  * @param <V> The type of the values contained in this.
  * @see Labels
- * @see Attributes
+ * @see ImmutableAttributes
  */
 @Immutable
 abstract class ImmutableKeyValuePairs<V> {
