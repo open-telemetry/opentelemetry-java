@@ -102,6 +102,28 @@ public class IntervalMetricReaderTest {
     }
   }
 
+  @Test(timeout = 2000)
+  public void intervalExport_exporterThrowsException() {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
+    IntervalMetricReader intervalMetricReader =
+        IntervalMetricReader.builder()
+            .setExportIntervalMillis(100)
+            .setMetricExporter(waitingMetricExporter)
+            .setMetricProducers(Collections.singletonList(metricProducer))
+            .build();
+
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(1))
+          .containsExactly(Collections.singletonList(METRIC_DATA));
+
+      assertThat(waitingMetricExporter.waitForNumberOfExports(2))
+          .containsExactly(
+              Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
+    } finally {
+      intervalMetricReader.shutdown();
+    }
+  }
+
   @Test
   public void oneLastExportAfterShutdown() {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
@@ -126,15 +148,27 @@ public class IntervalMetricReaderTest {
 
     private final Object monitor = new Object();
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
+    private final boolean shouldThrow;
 
     @GuardedBy("monitor")
     private List<List<MetricData>> exportedMetrics = new ArrayList<>();
+
+    private WaitingMetricExporter() {
+      this(false);
+    }
+
+    private WaitingMetricExporter(boolean shouldThrow) {
+      this.shouldThrow = shouldThrow;
+    }
 
     @Override
     public ResultCode export(Collection<MetricData> metricList) {
       synchronized (monitor) {
         this.exportedMetrics.add(new ArrayList<>(metricList));
         monitor.notifyAll();
+      }
+      if (shouldThrow) {
+        throw new RuntimeException("Export Failed!");
       }
       return ResultCode.SUCCESS;
     }

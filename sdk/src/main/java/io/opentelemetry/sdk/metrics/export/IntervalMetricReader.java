@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -54,6 +56,8 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.3.0
  */
 public final class IntervalMetricReader {
+  private static final Logger logger = Logger.getLogger(IntervalMetricReader.class.getName());
+
   private final Exporter exporter;
   private final ScheduledExecutorService scheduler;
 
@@ -202,11 +206,15 @@ public final class IntervalMetricReader {
 
     @Override
     public void run() {
-      List<MetricData> metricsList = new ArrayList<>();
-      for (MetricProducer metricProducer : internalState.getMetricProducers()) {
-        metricsList.addAll(metricProducer.getAllMetrics());
+      try {
+        List<MetricData> metricsList = new ArrayList<>();
+        for (MetricProducer metricProducer : internalState.getMetricProducers()) {
+          metricsList.addAll(metricProducer.getAllMetrics());
+        }
+        internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Metric Exporter threw an Exception", e);
       }
-      internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
     }
 
     void shutdown() {
