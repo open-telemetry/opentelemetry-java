@@ -545,8 +545,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
     @Override
     public void consume(String key, AttributeValue value) {
-      if (added++ < limit) {
+      if (added < limit) {
         builder.setAttribute(key, value);
+        added++;
       }
     }
   }
