@@ -1,0 +1,44 @@
+plugins {
+    id "java"
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry Integration Tests'
+ext.moduleName = "io.opentelemetry.integration.tests"
+
+// create a single Jar with all dependencies
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+test.onlyIf {
+    property('enable.docker.tests') == "true" 
+}
+
+dependencies {
+    api project(':opentelemetry-api')
+
+    implementation platform(boms.protobuf),
+        libraries.grpc_protobuf,
+        libraries.protobuf,
+        libraries.protobuf_util
+
+    compile project(':opentelemetry-sdk'), 
+        project(':opentelemetry-exporters-jaeger'), 
+        "io.grpc:grpc-netty-shaded:${grpcVersion}"
+
+    testImplementation libraries.testcontainers,
+        libraries.awaitility,
+        libraries.rest_assured
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"
+
+    tasks.withType(Test) {
+        dependsOn fatJar
+        systemProperty 'archive.name', fatJar.outputs.files[0].path
+    }
+}
+
