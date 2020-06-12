@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.TestUtils;
@@ -35,7 +36,9 @@ import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,6 +70,25 @@ public class SimpleSpanProcessorTest {
   public void setUp() {
     MockitoAnnotations.initMocks(this);
     simpleSampledSpansProcessor = SimpleSpanProcessor.newBuilder(spanExporter).build();
+  }
+
+  @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.ssp.export.sampled", "false");
+    SimpleSpanProcessor.Builder config =
+        SimpleSpanProcessor.newBuilder(spanExporter)
+            .fromConfigMap(options, ConfigTester.getNamingDot());
+    assertThat(config.getExportOnlySampled()).isEqualTo(false);
+  }
+
+  @Test
+  public void configTest_EmptyOptions() {
+    SimpleSpanProcessor.Builder config =
+        SimpleSpanProcessor.newBuilder(spanExporter)
+            .fromConfigMap(Collections.<String, String>emptyMap(), ConfigTester.getNamingDot());
+    assertThat(config.getExportOnlySampled())
+        .isEqualTo(SimpleSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }
 
   @Test

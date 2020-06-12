@@ -34,7 +34,7 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
         meterProviderSharedState,
         meterSharedState,
         new ActiveBatcher(
-            getDefaultBatcher(
+            Batchers.getCumulativeAllLabels(
                 descriptor, meterProviderSharedState, meterSharedState, Aggregations.sum())));
   }
 

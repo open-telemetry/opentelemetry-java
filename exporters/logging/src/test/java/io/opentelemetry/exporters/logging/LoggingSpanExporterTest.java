@@ -18,14 +18,14 @@ package io.opentelemetry.exporters.logging;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertEquals;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -60,7 +60,7 @@ public class LoggingSpanExporterTest {
   public void returnCode() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     SpanData spanData =
-        SpanDataImpl.newBuilder()
+        TestSpanData.newBuilder()
             .setHasEnded(true)
             .setTraceId(new TraceId(1234L, 6789L))
             .setSpanId(new SpanId(9876L))
@@ -74,7 +74,7 @@ public class LoggingSpanExporterTest {
                     EventImpl.create(
                         epochNanos + 500,
                         "somethingHappenedHere",
-                        singletonMap("important", AttributeValue.booleanAttributeValue(true)))))
+                        Attributes.of("important", AttributeValue.booleanAttributeValue(true)))))
             .setTotalRecordedEvents(1)
             .setTotalRecordedLinks(0)
             .build();

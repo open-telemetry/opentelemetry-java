@@ -18,9 +18,9 @@ package io.opentelemetry.contrib.metrics.runtime;
 
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
+import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import io.opentelemetry.metrics.LongSumObserver;
 import io.opentelemetry.metrics.LongUpDownSumObserver;
-import io.opentelemetry.metrics.LongUpDownSumObserver.ResultLongUpDownSumObserver;
 import io.opentelemetry.metrics.Meter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -84,9 +84,9 @@ public final class MemoryPools {
     final String[] maxHeap = new String[] {TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, HEAP};
     final String[] maxNonHeap = new String[] {TYPE_LABEL_KEY, MAX, AREA_LABEL_KEY, NON_HEAP};
     areaMetric.setCallback(
-        new LongSumObserver.Callback<ResultLongUpDownSumObserver>() {
+        new LongSumObserver.Callback<LongResult>() {
           @Override
-          public void update(ResultLongUpDownSumObserver resultLongObserver) {
+          public void update(LongResult resultLongObserver) {
             MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
             MemoryUsage nonHeapUsage = memoryBean.getNonHeapMemoryUsage();
             resultLongObserver.observe(heapUsage.getUsed(), usedHeap);
@@ -117,9 +117,9 @@ public final class MemoryPools {
       maxLabelSets.add(new String[] {TYPE_LABEL_KEY, MAX, POOL_LABEL_KEY, pool.getName()});
     }
     poolMetric.setCallback(
-        new Callback<ResultLongUpDownSumObserver>() {
+        new Callback<LongResult>() {
           @Override
-          public void update(ResultLongUpDownSumObserver resultLongObserver) {
+          public void update(LongResult resultLongObserver) {
             for (int i = 0; i < poolBeans.size(); i++) {
               MemoryUsage poolUsage = poolBeans.get(i).getUsage();
               resultLongObserver.observe(poolUsage.getUsed(), usedLabelSets.get(i));

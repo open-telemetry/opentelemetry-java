@@ -13,8 +13,7 @@ dependencies {
     api libraries.protobuf,
             libraries.grpc_api,
             libraries.grpc_protobuf,
-            libraries.grpc_stub,
-            platform(boms.protobuf)
+            libraries.grpc_stub
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-14:4.0_r4@signature"

@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.DoubleSumObserver.ResultDoubleSumObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -57,33 +57,33 @@ public class DoubleSumObserverSdkTest {
 
   @Test
   public void collectMetrics_NoCallback() {
-    DoubleSumObserverSdk doubleObserver =
+    DoubleSumObserverSdk doubleSumObserver =
         testSdk
             .doubleSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My own DoubleSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(doubleObserver.collectAll()).isEmpty();
+    assertThat(doubleSumObserver.collectAll()).isEmpty();
   }
 
   @Test
   public void collectMetrics_NoRecords() {
-    DoubleSumObserverSdk doubleObserver =
+    DoubleSumObserverSdk doubleSumObserver =
         testSdk
             .doubleSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My own DoubleSumObserver")
             .setUnit("ms")
             .build();
-    doubleObserver.setCallback(
-        new Callback<ResultDoubleSumObserver>() {
+    doubleSumObserver.setCallback(
+        new Callback<DoubleResult>() {
           @Override
-          public void update(ResultDoubleSumObserver result) {
+          public void update(DoubleResult result) {
             // Do nothing.
           }
         });
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -99,16 +99,17 @@ public class DoubleSumObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    DoubleSumObserverSdk doubleObserver = testSdk.doubleSumObserverBuilder("testObserver").build();
-    doubleObserver.setCallback(
-        new Callback<ResultDoubleSumObserver>() {
+    DoubleSumObserverSdk doubleSumObserver =
+        testSdk.doubleSumObserverBuilder("testObserver").build();
+    doubleSumObserver.setCallback(
+        new Callback<DoubleResult>() {
           @Override
-          public void update(ResultDoubleSumObserver result) {
+          public void update(DoubleResult result) {
             result.observe(12.1d, "k", "v");
           }
         });
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -126,7 +127,7 @@ public class DoubleSumObserverSdkTest {
                         Collections.singletonMap("k", "v"),
                         12.1d))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(

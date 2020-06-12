@@ -22,8 +22,6 @@ import io.opentelemetry.metrics.Instrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
 import io.opentelemetry.sdk.metrics.common.InstrumentValueType;
 import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.view.Aggregation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -152,28 +150,5 @@ abstract class AbstractInstrument implements Instrument {
     final <I extends AbstractInstrument> I register(I instrument) {
       return getMeterSharedState().getInstrumentRegistry().register(instrument);
     }
-  }
-
-  static Descriptor getDefaultMetricDescriptor(
-      InstrumentDescriptor descriptor, Aggregation aggregation) {
-    return Descriptor.create(
-        descriptor.getName(),
-        descriptor.getDescription(),
-        aggregation.getUnit(descriptor.getUnit()),
-        aggregation.getDescriptorType(descriptor.getType(), descriptor.getValueType()),
-        descriptor.getConstantLabels());
-  }
-
-  static Batcher getDefaultBatcher(
-      InstrumentDescriptor descriptor,
-      MeterProviderSharedState meterProviderSharedState,
-      MeterSharedState meterSharedState,
-      Aggregation defaultAggregation) {
-    return Batchers.getCumulativeAllLabels(
-        getDefaultMetricDescriptor(descriptor, defaultAggregation),
-        meterProviderSharedState.getResource(),
-        meterSharedState.getInstrumentationLibraryInfo(),
-        defaultAggregation.getAggregatorFactory(descriptor.getValueType()),
-        meterProviderSharedState.getClock());
   }
 }

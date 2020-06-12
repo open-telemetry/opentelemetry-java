@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
@@ -28,13 +29,16 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 /** Unit tests for {@link IntervalMetricReader}. */
@@ -67,8 +71,40 @@ public class IntervalMetricReaderTest {
   }
 
   @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.imr.export.interval", "12");
+    IntervalMetricReader.Builder config = IntervalMetricReader.builder();
+    IntervalMetricReader.Builder spy = Mockito.spy(config);
+    spy.fromConfigMap(options, ConfigTester.getNamingDot());
+    Mockito.verify(spy).setExportIntervalMillis(12);
+  }
+
+  @Test
   public void intervalExport() {
     WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter();
+    IntervalMetricReader intervalMetricReader =
+        IntervalMetricReader.builder()
+            .setExportIntervalMillis(100)
+            .setMetricExporter(waitingMetricExporter)
+            .setMetricProducers(Collections.singletonList(metricProducer))
+            .build();
+
+    try {
+      assertThat(waitingMetricExporter.waitForNumberOfExports(1))
+          .containsExactly(Collections.singletonList(METRIC_DATA));
+
+      assertThat(waitingMetricExporter.waitForNumberOfExports(2))
+          .containsExactly(
+              Collections.singletonList(METRIC_DATA), Collections.singletonList(METRIC_DATA));
+    } finally {
+      intervalMetricReader.shutdown();
+    }
+  }
+
+  @Test(timeout = 2000)
+  public void intervalExport_exporterThrowsException() {
+    WaitingMetricExporter waitingMetricExporter = new WaitingMetricExporter(/* shouldThrow=*/ true);
     IntervalMetricReader intervalMetricReader =
         IntervalMetricReader.builder()
             .setExportIntervalMillis(100)
@@ -112,15 +148,27 @@ public class IntervalMetricReaderTest {
 
     private final Object monitor = new Object();
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
+    private final boolean shouldThrow;
 
     @GuardedBy("monitor")
     private List<List<MetricData>> exportedMetrics = new ArrayList<>();
+
+    private WaitingMetricExporter() {
+      this(false);
+    }
+
+    private WaitingMetricExporter(boolean shouldThrow) {
+      this.shouldThrow = shouldThrow;
+    }
 
     @Override
     public ResultCode export(Collection<MetricData> metricList) {
       synchronized (monitor) {
         this.exportedMetrics.add(new ArrayList<>(metricList));
         monitor.notifyAll();
+      }
+      if (shouldThrow) {
+        throw new RuntimeException("Export Failed!");
       }
       return ResultCode.SUCCESS;
     }

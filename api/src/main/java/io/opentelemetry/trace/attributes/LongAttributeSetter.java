@@ -60,4 +60,14 @@ public final class LongAttributeSetter {
   public void set(Span span, long value) {
     span.setAttribute(key(), value);
   }
+
+  /**
+   * Sets the attribute on the provided span builder.
+   *
+   * @param spanBuilder the span builder to add the attribute to
+   * @param value the value for this attribute
+   */
+  public void set(Span.Builder spanBuilder, long value) {
+    spanBuilder.setAttribute(key(), value);
+  }
 }

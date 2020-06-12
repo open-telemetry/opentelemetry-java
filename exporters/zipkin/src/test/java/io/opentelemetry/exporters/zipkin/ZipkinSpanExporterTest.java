@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
@@ -31,7 +32,7 @@ import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -71,10 +72,8 @@ public class ZipkinSpanExporterTest {
   private static final Map<String, AttributeValue> attributes = Collections.emptyMap();
   private static final List<Event> annotations =
       ImmutableList.<Event>of(
-          EventImpl.create(
-              1505855799_433901068L, "RECEIVED", Collections.<String, AttributeValue>emptyMap()),
-          EventImpl.create(
-              1505855799_459486280L, "SENT", Collections.<String, AttributeValue>emptyMap()));
+          EventImpl.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
+          EventImpl.create(1505855799_459486280L, "SENT", Attributes.empty()));
 
   @Test
   public void generateSpan_remoteParent() {
@@ -269,8 +268,8 @@ public class ZipkinSpanExporterTest {
     verify(mockSender).close();
   }
 
-  private static SpanDataImpl.Builder buildStandardSpan() {
-    return SpanDataImpl.newBuilder()
+  private static TestSpanData.Builder buildStandardSpan() {
+    return TestSpanData.newBuilder()
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
         .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))

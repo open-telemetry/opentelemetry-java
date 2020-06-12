@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.metrics.AsynchronousInstrument.Result;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -31,13 +32,13 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface AsynchronousInstrument<R> extends Instrument {
+public interface AsynchronousInstrument<R extends Result> extends Instrument {
   /**
    * A {@code Callback} for a {@code AsynchronousInstrument}.
    *
    * @since 0.1.0
    */
-  interface Callback<R> {
+  interface Callback<R extends Result> {
     void update(R result);
   }
 
@@ -56,5 +57,17 @@ public interface AsynchronousInstrument<R> extends Instrument {
   interface Builder extends Instrument.Builder {
     @Override
     AsynchronousInstrument<?> build();
+  }
+
+  interface Result {}
+
+  /** The result for the {@link Callback}. */
+  interface LongResult extends Result {
+    void observe(long value, String... keyValueLabelPairs);
+  }
+
+  /** The result for the {@link Callback}. */
+  interface DoubleResult extends Result {
+    void observe(double value, String... keyValueLabelPairs);
   }
 }

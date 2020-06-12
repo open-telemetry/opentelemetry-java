@@ -19,7 +19,7 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.LongValueObserver.ResultLongValueObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -112,9 +112,9 @@ public class LongValueObserverTest {
             .setConstantLabels(CONSTANT_LABELS)
             .build();
     longValueObserver.setCallback(
-        new Callback<ResultLongValueObserver>() {
+        new Callback<LongResult>() {
           @Override
-          public void update(ResultLongValueObserver result) {}
+          public void update(LongResult result) {}
         });
   }
 }

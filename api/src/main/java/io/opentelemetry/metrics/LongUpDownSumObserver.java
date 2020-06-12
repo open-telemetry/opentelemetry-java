@@ -16,7 +16,7 @@
 
 package io.opentelemetry.metrics;
 
-import io.opentelemetry.metrics.LongUpDownSumObserver.ResultLongUpDownSumObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -46,9 +46,9 @@ import javax.annotation.concurrent.ThreadSafe;
  *
  *   void init() {
  *     memoryObserver.setCallback(
- *         new LongUpDownSumObserver.Callback<LongObserver.ResultLongObserver>() {
+ *         new LongUpDownSumObserver.Callback<LongResult>() {
  *          {@literal @}Override
- *           public void update(ResultLongUpDownSumObserver result) {
+ *           public void update(LongResult result) {
  *             // Get system memory usage
  *             result.observe(memoryUsed, "state", "used");
  *             result.observe(memoryFree, "state", "free");
@@ -61,9 +61,9 @@ import javax.annotation.concurrent.ThreadSafe;
  * @since 0.1.0
  */
 @ThreadSafe
-public interface LongUpDownSumObserver extends AsynchronousInstrument<ResultLongUpDownSumObserver> {
+public interface LongUpDownSumObserver extends AsynchronousInstrument<LongResult> {
   @Override
-  void setCallback(Callback<ResultLongUpDownSumObserver> callback);
+  void setCallback(Callback<LongResult> callback);
 
   /** Builder class for {@link LongUpDownSumObserver}. */
   interface Builder extends AsynchronousInstrument.Builder {
@@ -78,10 +78,5 @@ public interface LongUpDownSumObserver extends AsynchronousInstrument<ResultLong
 
     @Override
     LongUpDownSumObserver build();
-  }
-
-  /** The result for the {@link Callback}. */
-  interface ResultLongUpDownSumObserver {
-    void observe(long sum, String... keyValueLabelPairs);
   }
 }

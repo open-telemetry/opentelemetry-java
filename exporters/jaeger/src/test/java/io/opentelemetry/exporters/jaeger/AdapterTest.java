@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
@@ -31,7 +32,7 @@ import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -42,7 +43,6 @@ import io.opentelemetry.trace.TraceState;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.junit.Test;
@@ -242,7 +242,7 @@ public class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
-        SpanDataImpl.newBuilder()
+        TestSpanData.newBuilder()
             .setHasEnded(true)
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
@@ -269,7 +269,7 @@ public class AdapterTest {
     long startMs = System.currentTimeMillis();
     long endMs = startMs + 900;
     SpanData span =
-        SpanDataImpl.newBuilder()
+        TestSpanData.newBuilder()
             .setHasEnded(true)
             .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
             .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
@@ -295,17 +295,17 @@ public class AdapterTest {
   private static EventImpl getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
-    ImmutableMap<String, AttributeValue> attributes = ImmutableMap.of("foo", valueS);
+    Attributes attributes = Attributes.of("foo", valueS);
     return EventImpl.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
     AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-    Map<String, AttributeValue> attributes = ImmutableMap.of("valueB", valueB);
+    Attributes attributes = Attributes.of("valueB", valueB);
 
     Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
-    return SpanDataImpl.newBuilder()
+    return TestSpanData.newBuilder()
         .setHasEnded(true)
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
@@ -313,7 +313,7 @@ public class AdapterTest {
         .setName("GET /api/endpoint")
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-        .setAttributes(attributes)
+        .setAttributes(Collections.singletonMap("valueB", valueB))
         .setEvents(Collections.<Event>singletonList(getTimedEvent()))
         .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))

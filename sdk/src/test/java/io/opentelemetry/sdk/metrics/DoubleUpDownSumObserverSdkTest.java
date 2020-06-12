@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.DoubleUpDownSumObserver.ResultDoubleUpDownSumObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -57,33 +57,33 @@ public class DoubleUpDownSumObserverSdkTest {
 
   @Test
   public void collectMetrics_NoCallback() {
-    DoubleUpDownSumObserverSdk doubleObserver =
+    DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My very own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(doubleObserver.collectAll()).isEmpty();
+    assertThat(doubleUpDownSumObserver.collectAll()).isEmpty();
   }
 
   @Test
   public void collectMetrics_NoRecords() {
-    DoubleUpDownSumObserverSdk doubleObserver =
+    DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My own DoubleUpDownSumObserver")
             .setUnit("ms")
             .build();
-    doubleObserver.setCallback(
-        new Callback<ResultDoubleUpDownSumObserver>() {
+    doubleUpDownSumObserver.setCallback(
+        new Callback<DoubleResult>() {
           @Override
-          public void update(ResultDoubleUpDownSumObserver result) {
+          public void update(DoubleResult result) {
             // Do nothing.
           }
         });
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -99,17 +99,17 @@ public class DoubleUpDownSumObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    DoubleUpDownSumObserverSdk doubleObserver =
+    DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk.doubleUpDownSumObserverBuilder("testObserver").build();
-    doubleObserver.setCallback(
-        new Callback<ResultDoubleUpDownSumObserver>() {
+    doubleUpDownSumObserver.setCallback(
+        new Callback<DoubleResult>() {
           @Override
-          public void update(ResultDoubleUpDownSumObserver result) {
+          public void update(DoubleResult result) {
             result.observe(12.1d, "k", "v");
           }
         });
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -127,7 +127,7 @@ public class DoubleUpDownSumObserverSdkTest {
                         Collections.singletonMap("k", "v"),
                         12.1d))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(doubleObserver.collectAll())
+    assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(

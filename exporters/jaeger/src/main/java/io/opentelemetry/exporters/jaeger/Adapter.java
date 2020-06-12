@@ -21,6 +21,8 @@ import com.google.gson.Gson;
 import com.google.protobuf.Timestamp;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.KeyValueConsumer;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -167,6 +169,26 @@ final class Adapter {
     for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
       tags.add(toKeyValue(entry.getKey(), entry.getValue()));
     }
+    return tags;
+  }
+
+  /**
+   * Converts a map of attributes into a collection of Jaeger's {@link Model.KeyValue}.
+   *
+   * @param attributes the span attributes
+   * @return a collection of Jaeger key values
+   * @see #toKeyValue(String, AttributeValue)
+   */
+  @VisibleForTesting
+  static Collection<Model.KeyValue> toKeyValues(Attributes attributes) {
+    final ArrayList<Model.KeyValue> tags = new ArrayList<>(attributes.size());
+    attributes.forEach(
+        new KeyValueConsumer<AttributeValue>() {
+          @Override
+          public void consume(String key, AttributeValue value) {
+            tags.add(toKeyValue(key, value));
+          }
+        });
     return tags;
   }
 

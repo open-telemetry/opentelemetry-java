@@ -17,9 +17,10 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -42,11 +43,22 @@ public final class TestUtils {
    *
    * @return a map of String to AttributeValues
    */
-  static Map<String, AttributeValue> generateRandomAttributes() {
+  static Map<String, AttributeValue> generateRandomMapAttributes() {
     Map<String, AttributeValue> result = new HashMap<>();
     AttributeValue attribute = AttributeValue.stringAttributeValue(UUID.randomUUID().toString());
     result.put(UUID.randomUUID().toString(), attribute);
     return result;
+  }
+
+  /**
+   * Generates some random attributes used for testing.
+   *
+   * @return some {@link io.opentelemetry.common.Attributes}
+   */
+  static Attributes generateRandomAttributes() {
+    return Attributes.of(
+        UUID.randomUUID().toString(),
+        AttributeValue.stringAttributeValue(UUID.randomUUID().toString()));
   }
 
   /**
@@ -56,7 +68,7 @@ public final class TestUtils {
    * @return A SpanData instance.
    */
   public static SpanData makeBasicSpan() {
-    return SpanDataImpl.newBuilder()
+    return TestSpanData.newBuilder()
         .setHasEnded(true)
         .setTraceId(TraceId.getInvalid())
         .setSpanId(SpanId.getInvalid())

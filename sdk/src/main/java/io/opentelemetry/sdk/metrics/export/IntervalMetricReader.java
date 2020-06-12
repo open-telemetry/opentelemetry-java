@@ -26,10 +26,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -55,6 +56,8 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.3.0
  */
 public final class IntervalMetricReader {
+  private static final Logger logger = Logger.getLogger(IntervalMetricReader.class.getName());
+
   private final Exporter exporter;
   private final ScheduledExecutorService scheduler;
 
@@ -179,37 +182,6 @@ public final class IntervalMetricReader {
       }
       return this;
     }
-
-    /**
-     * Sets the configuration values from the given properties object for only the available keys.
-     *
-     * @param properties {@link Properties} holding the configuration values.
-     * @return this.
-     */
-    @Override
-    public Builder readProperties(Properties properties) {
-      return super.readProperties(properties);
-    }
-
-    /**
-     * Sets the configuration values from environment variables for only the available keys.
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readEnvironmentVariables() {
-      return super.readEnvironmentVariables();
-    }
-
-    /**
-     * Sets the configuration values from system properties for only the available keys.
-     *
-     * @return this.
-     */
-    @Override
-    public Builder readSystemProperties() {
-      return super.readSystemProperties();
-    }
   }
 
   @SuppressWarnings("FutureReturnValueIgnored")
@@ -234,11 +206,15 @@ public final class IntervalMetricReader {
 
     @Override
     public void run() {
-      List<MetricData> metricsList = new ArrayList<>();
-      for (MetricProducer metricProducer : internalState.getMetricProducers()) {
-        metricsList.addAll(metricProducer.getAllMetrics());
+      try {
+        List<MetricData> metricsList = new ArrayList<>();
+        for (MetricProducer metricProducer : internalState.getMetricProducers()) {
+          metricsList.addAll(metricProducer.getAllMetrics());
+        }
+        internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Metric Exporter threw an Exception", e);
       }
-      internalState.getMetricExporter().export(Collections.unmodifiableList(metricsList));
     }
 
     void shutdown() {

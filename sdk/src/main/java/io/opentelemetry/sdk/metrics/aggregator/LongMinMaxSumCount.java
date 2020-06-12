@@ -51,13 +51,7 @@ public final class LongMinMaxSumCount extends AbstractAggregator {
   void doMergeAndReset(Aggregator target) {
     LongMinMaxSumCount other = (LongMinMaxSumCount) target;
 
-    thinger(other);
-  }
-
-  private void thinger(LongMinMaxSumCount other) {
     current.mergeAndReset(other.current);
-    //    LongSummary copy = current.copyAndReset();
-    //    other.current.update(copy);
   }
 
   @Nullable

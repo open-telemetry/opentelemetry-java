@@ -20,8 +20,10 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptyList;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -37,9 +39,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit tests for {@link SpanDataImpl}. */
+/** Unit tests for {@link TestSpanData}. */
 @RunWith(JUnit4.class)
-public class SpanDataImplTest {
+public class TestSpanDataTest {
 
   private static final long START_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3000) + 200;
   private static final long END_EPOCH_NANOS = TimeUnit.SECONDS.toNanos(3001) + 255;
@@ -79,9 +81,7 @@ public class SpanDataImplTest {
     SpanData spanData = createSpanDataWithMutableCollections();
 
     thrown.expect(UnsupportedOperationException.class);
-    spanData
-        .getEvents()
-        .add(EventImpl.create(1234, "foo", Collections.<String, AttributeValue>emptyMap()));
+    spanData.getEvents().add(EventImpl.create(1234, "foo", Attributes.empty()));
   }
 
   @Test
@@ -110,16 +110,13 @@ public class SpanDataImplTest {
 
   @Test
   public void timedEvent_defaultTotalAttributeCountIsZero() {
-    EventImpl event =
-        EventImpl.create(START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap());
+    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.empty());
     assertThat(event.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void timedEvent_canSetTotalAttributeCount() {
-    EventImpl event =
-        EventImpl.create(
-            START_EPOCH_NANOS, "foo", Collections.<String, AttributeValue>emptyMap(), 123);
+    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.empty(), 123);
     assertThat(event.getTotalAttributeCount()).isEqualTo(123);
   }
 
@@ -135,8 +132,8 @@ public class SpanDataImplTest {
     return Link.create(SpanContext.getInvalid());
   }
 
-  private static SpanDataImpl.Builder createBasicSpanBuilder() {
-    return SpanDataImpl.newBuilder()
+  private static TestSpanData.Builder createBasicSpanBuilder() {
+    return TestSpanData.newBuilder()
         .setHasEnded(true)
         .setSpanId(SpanId.getInvalid())
         .setTraceId(TraceId.getInvalid())

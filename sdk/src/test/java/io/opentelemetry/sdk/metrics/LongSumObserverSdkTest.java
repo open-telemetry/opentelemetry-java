@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.LongSumObserver.ResultLongSumObserver;
+import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -57,33 +57,33 @@ public class LongSumObserverSdkTest {
 
   @Test
   public void collectMetrics_NoCallback() {
-    LongSumObserverSdk longObserver =
+    LongSumObserverSdk longSumObserver =
         testSdk
             .longSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My own LongSumObserver")
             .setUnit("ms")
             .build();
-    assertThat(longObserver.collectAll()).isEmpty();
+    assertThat(longSumObserver.collectAll()).isEmpty();
   }
 
   @Test
   public void collectMetrics_NoRecords() {
-    LongSumObserverSdk longObserver =
+    LongSumObserverSdk longSumObserver =
         testSdk
             .longSumObserverBuilder("testObserver")
             .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
             .setDescription("My own LongSumObserver")
             .setUnit("ms")
             .build();
-    longObserver.setCallback(
-        new Callback<ResultLongSumObserver>() {
+    longSumObserver.setCallback(
+        new Callback<LongResult>() {
           @Override
-          public void update(ResultLongSumObserver result) {
+          public void update(LongResult result) {
             // Do nothing.
           }
         });
-    assertThat(longObserver.collectAll())
+    assertThat(longSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -99,16 +99,16 @@ public class LongSumObserverSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    LongSumObserverSdk longObserver = testSdk.longSumObserverBuilder("testObserver").build();
-    longObserver.setCallback(
-        new Callback<ResultLongSumObserver>() {
+    LongSumObserverSdk longSumObserver = testSdk.longSumObserverBuilder("testObserver").build();
+    longSumObserver.setCallback(
+        new Callback<LongResult>() {
           @Override
-          public void update(ResultLongSumObserver result) {
+          public void update(LongResult result) {
             result.observe(12, "k", "v");
           }
         });
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longObserver.collectAll())
+    assertThat(longSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
@@ -126,7 +126,7 @@ public class LongSumObserverSdkTest {
                         Collections.singletonMap("k", "v"),
                         12))));
     testClock.advanceNanos(SECOND_NANOS);
-    assertThat(longObserver.collectAll())
+    assertThat(longSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(

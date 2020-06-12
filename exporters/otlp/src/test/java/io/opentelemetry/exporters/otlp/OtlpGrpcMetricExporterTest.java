@@ -28,6 +28,7 @@ import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
 import io.opentelemetry.proto.metrics.v1.ResourceMetrics;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
+import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
@@ -38,13 +39,16 @@ import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mockito;
 
 /** Unit tests for {@link OtlpGrpcMetricExporter}. */
 @RunWith(JUnit4.class)
@@ -56,6 +60,12 @@ public class OtlpGrpcMetricExporterTest {
   private final ManagedChannel inProcessChannel =
       InProcessChannelBuilder.forName(serverName).directExecutor().build();
 
+  abstract static class ConfigBuilderTest extends ConfigBuilder<ConfigBuilderTest> {
+    public static NamingConvention getNaming() {
+      return NamingConvention.DOT;
+    }
+  }
+
   @Before
   public void setup() throws IOException {
     grpcCleanup.register(
@@ -65,6 +75,16 @@ public class OtlpGrpcMetricExporterTest {
             .build()
             .start());
     grpcCleanup.register(inProcessChannel);
+  }
+
+  @Test
+  public void configTest() {
+    Map<String, String> options = new HashMap<>();
+    options.put("otel.otlp.metric.timeout", "12");
+    OtlpGrpcMetricExporter.Builder config = OtlpGrpcMetricExporter.newBuilder();
+    OtlpGrpcMetricExporter.Builder spy = Mockito.spy(config);
+    spy.fromConfigMap(options, ConfigBuilderTest.getNaming());
+    Mockito.verify(spy).setDeadlineMs(12);
   }
 
   @Test

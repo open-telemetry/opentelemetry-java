@@ -20,11 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
-import io.opentelemetry.sdk.trace.data.SpanDataImpl;
+import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
@@ -63,10 +64,8 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final Map<String, AttributeValue> attributes = Collections.emptyMap();
   private static final List<Event> annotations =
       ImmutableList.<Event>of(
-          EventImpl.create(
-              RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Collections.<String, AttributeValue>emptyMap()),
-          EventImpl.create(
-              SENT_TIMESTAMP_NANOS, "SENT", Collections.<String, AttributeValue>emptyMap()));
+          EventImpl.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
+          EventImpl.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
@@ -156,8 +155,8 @@ public class ZipkinSpanExporterEndToEndHttpTest {
     assertThat(zipkinSpans.get(0)).isEqualTo(buildZipkinSpan());
   }
 
-  private static SpanDataImpl.Builder buildStandardSpan() {
-    return SpanDataImpl.newBuilder()
+  private static TestSpanData.Builder buildStandardSpan() {
+    return TestSpanData.newBuilder()
         .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
         .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
         .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
