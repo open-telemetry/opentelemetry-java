@@ -9,7 +9,7 @@ ext.moduleName = "io.opentelemetry.integration.tests"
 // create a single Jar with all dependencies
 task fatJar(type: Jar) {
     baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
 
@@ -20,13 +20,11 @@ test.onlyIf {
 dependencies {
     api project(':opentelemetry-api')
 
-    implementation platform(boms.protobuf),
+    implementation project(':opentelemetry-sdk'),
+        project(':opentelemetry-exporters-jaeger'), 
         libraries.grpc_protobuf,
         libraries.protobuf,
-        libraries.protobuf_util
-
-    compile project(':opentelemetry-sdk'), 
-        project(':opentelemetry-exporters-jaeger'), 
+        libraries.protobuf_util,
         "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     testImplementation libraries.testcontainers,
