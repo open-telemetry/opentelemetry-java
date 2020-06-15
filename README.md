@@ -7,6 +7,7 @@
 We hold regular meetings. See details at [community page](https://github.com/open-telemetry/community#java-sdk).
 
 ## Overview
+
 OpenTelemetry is a working name of a combined OpenCensus and OpenTracing
 project.
 
@@ -25,9 +26,10 @@ This project contains the following top level components:
 We would love to hear from the larger community: please provide feedback proactively.
 
 ### Note about extensions
-Both API and SDK extensions consist of various component which, for various reasons, are not deemed
-to be suitable for inclusion into the core artifact.
-We still aim to provide the same level of quality and guarantee for them, as for the core components.
+
+Both API and SDK extensions consist of various additional components which are excluded from the core artifacts
+to keep them from growing too large.
+We still aim to provide the same level of quality and guarantee for them as for the core components.
 Please don't hesitate to use them if you find them useful. 
 
 ## Project setup and contribute
@@ -36,8 +38,8 @@ Please refer to the [contribution guide](CONTRIBUTING.md)
 on how to setup and contribute!
 
 ## Quick Start
-Please refer to the [quick start guide](QUICKSTART.md) on how use the OpenTelemetry API.
 
+Please refer to the [quick start guide](QUICKSTART.md) on how use the OpenTelemetry API.
 
 ## Snapshots
 
