@@ -17,10 +17,18 @@ This project contains the following top level components:
   * [correlationcontext](/api/src/main/java/io/opentelemetry/correlationcontext): Collection of entries in the form of key-value pairs of data that can be propagated to provide contextual information.
   * [context](api/src/main/java/io/opentelemetry/context/): In-process and inter-process propagation layer.
   * [metrics](api/src/main/java/io/opentelemetry/metrics/): Metrics layer.
+* [extensions](extensions/): Additional extensions API, which are not part of the core API.
 * [sdk](sdk/): The reference implementation complying to the OpenTelemetry API.
+* [sdk_extensions](sdk_extensions/): Additional extensions to SDK.
 * [OpenTracing shim](opentracing_shim/): A bridge layer from OpenTelemetry to the OpenTracing API.
 
 We would love to hear from the larger community: please provide feedback proactively.
+
+### Note about extensions
+Both API and SDK extensions consist of various component which, for various reasons, are not deemed
+to be suitable for inclusion into the core artifact.
+We still aim to provide the same level of quality and guarantee for them, as for the core components.
+Please don't hesitate to use them if you find them useful. 
 
 ## Project setup and contribute
 

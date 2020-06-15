@@ -1,0 +1,18 @@
+plugins {
+    id "java"
+    id "maven-publish"
+
+    id "ru.vyarus.animalsniffer"
+}
+
+description = 'OpenTelemetry Extension Trace Utils'
+ext.moduleName = "io.opentelemetry.extension.trace"
+
+dependencies {
+    api project(':opentelemetry-api')
+
+    annotationProcessor libraries.auto_value
+
+    signature "org.codehaus.mojo.signature:java17:1.0@signature"
+    signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"
+}
