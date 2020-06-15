@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.trace.data.test;
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ImmutableAttributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -55,7 +55,7 @@ public abstract class TestSpanData implements SpanData {
         .setInstrumentationLibraryInfo(InstrumentationLibraryInfo.getEmpty())
         .setLinks(Collections.<Link>emptyList())
         .setTotalRecordedLinks(0)
-        .setAttributes(ImmutableAttributes.empty())
+        .setAttributes(Attributes.empty())
         .setEvents(Collections.<Event>emptyList())
         .setTotalRecordedEvents(0)
         .setResource(Resource.getEmpty())
@@ -189,7 +189,7 @@ public abstract class TestSpanData implements SpanData {
      * @see AttributeValue
      * @since 0.1.0
      */
-    public abstract Builder setAttributes(Attributes attributes);
+    public abstract Builder setAttributes(ReadableAttributes attributes);
 
     /**
      * Set timed events that are associated with this span. Must not be null, may be empty.

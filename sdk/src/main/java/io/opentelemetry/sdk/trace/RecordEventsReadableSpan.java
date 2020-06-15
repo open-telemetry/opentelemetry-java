@@ -22,8 +22,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.common.KeyValueConsumer;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -322,12 +322,12 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   @Override
   public void addEvent(String name) {
-    addTimedEvent(TimedEvent.create(clock.now(), name, ImmutableAttributes.empty(), 0));
+    addTimedEvent(TimedEvent.create(clock.now(), name, Attributes.empty(), 0));
   }
 
   @Override
   public void addEvent(String name, long timestamp) {
-    addTimedEvent(TimedEvent.create(timestamp, name, ImmutableAttributes.empty(), 0));
+    addTimedEvent(TimedEvent.create(timestamp, name, Attributes.empty(), 0));
   }
 
   @Override
@@ -367,7 +367,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       return attributes;
     }
 
-    ImmutableAttributes.Builder result = ImmutableAttributes.newBuilder();
+    Attributes.Builder result = Attributes.newBuilder();
     attributes.forEach(new LimitingAttributeConsumer(limit, result));
     return result.build();
   }
@@ -516,9 +516,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @GuardedBy("lock")
-  private Attributes getImmutableAttributes() {
+  private ReadableAttributes getImmutableAttributes() {
     if (attributes == null || attributes.isEmpty()) {
-      return ImmutableAttributes.empty();
+      return Attributes.empty();
     }
     // if the span has ended, then the attributes are unmodifiable,
     // so we can return them directly and save copying all the data.
@@ -526,7 +526,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       return attributes;
     }
     // otherwise, make a copy of the data into an immutable container.
-    ImmutableAttributes.Builder builder = ImmutableAttributes.newBuilder();
+    Attributes.Builder builder = Attributes.newBuilder();
     for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
     }
@@ -535,10 +535,10 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
   private static class LimitingAttributeConsumer implements KeyValueConsumer<AttributeValue> {
     private final int limit;
-    private final ImmutableAttributes.Builder builder;
+    private final Attributes.Builder builder;
     private int added;
 
-    public LimitingAttributeConsumer(int limit, ImmutableAttributes.Builder builder) {
+    public LimitingAttributeConsumer(int limit, Attributes.Builder builder) {
       this.limit = limit;
       this.builder = builder;
     }

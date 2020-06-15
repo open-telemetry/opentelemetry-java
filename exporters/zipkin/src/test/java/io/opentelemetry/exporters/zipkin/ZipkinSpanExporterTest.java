@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceConstants;
@@ -70,11 +69,11 @@ public class ZipkinSpanExporterTest {
   private static final String TRACE_ID = "d239036e7d5cec116b562147388b35bf";
   private static final String SPAN_ID = "9cc1e3049173be09";
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
-  private static final ImmutableAttributes attributes = ImmutableAttributes.empty();
+  private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
       ImmutableList.<Event>of(
-          EventImpl.create(1505855799_433901068L, "RECEIVED", ImmutableAttributes.empty()),
-          EventImpl.create(1505855799_459486280L, "SENT", ImmutableAttributes.empty()));
+          EventImpl.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
+          EventImpl.create(1505855799_459486280L, "SENT", Attributes.empty()));
 
   @Test
   public void generateSpan_remoteParent() {
@@ -141,7 +140,7 @@ public class ZipkinSpanExporterTest {
   @Test
   public void generateSpan_WithAttributes() {
     Attributes attributes =
-        ImmutableAttributes.newBuilder()
+        Attributes.newBuilder()
             .setAttribute("string", stringAttributeValue("string value"))
             .setAttribute("boolean", AttributeValue.booleanAttributeValue(false))
             .setAttribute("long", AttributeValue.longAttributeValue(9999L))
@@ -171,7 +170,7 @@ public class ZipkinSpanExporterTest {
   @Test
   public void generateSpan_AlreadyHasHttpStatusInfo() {
     Attributes attributeMap =
-        ImmutableAttributes.of(
+        Attributes.of(
             SemanticAttributes.HTTP_STATUS_CODE.key(),
             AttributeValue.longAttributeValue(404),
             SemanticAttributes.HTTP_STATUS_TEXT.key(),
@@ -199,7 +198,7 @@ public class ZipkinSpanExporterTest {
   @Test
   public void generateSpan_WithRpcErrorStatus() {
     Attributes attributeMap =
-        ImmutableAttributes.of(
+        Attributes.of(
             SemanticAttributes.RPC_SERVICE.key(), stringAttributeValue("my service name"));
 
     String errorMessage = "timeout";

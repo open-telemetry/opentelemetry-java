@@ -19,7 +19,7 @@ package io.opentelemetry.sdk.trace.data;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptyList;
 
-import io.opentelemetry.common.ImmutableAttributes;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.test.TestSpanData;
@@ -49,7 +49,7 @@ public class TestSpanDataTest {
     SpanData spanData = createBasicSpanBuilder().build();
 
     assertThat(spanData.getParentSpanId().isValid()).isFalse();
-    assertThat(spanData.getAttributes()).isEqualTo(ImmutableAttributes.empty());
+    assertThat(spanData.getAttributes()).isEqualTo(Attributes.empty());
     assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
     assertThat(spanData.getInstrumentationLibraryInfo())
@@ -70,7 +70,7 @@ public class TestSpanDataTest {
     SpanData spanData = createSpanDataWithMutableCollections();
 
     thrown.expect(UnsupportedOperationException.class);
-    spanData.getEvents().add(EventImpl.create(1234, "foo", ImmutableAttributes.empty()));
+    spanData.getEvents().add(EventImpl.create(1234, "foo", Attributes.empty()));
   }
 
   @Test
@@ -99,13 +99,13 @@ public class TestSpanDataTest {
 
   @Test
   public void timedEvent_defaultTotalAttributeCountIsZero() {
-    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", ImmutableAttributes.empty());
+    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.empty());
     assertThat(event.getTotalAttributeCount()).isEqualTo(0);
   }
 
   @Test
   public void timedEvent_canSetTotalAttributeCount() {
-    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", ImmutableAttributes.empty(), 123);
+    EventImpl event = EventImpl.create(START_EPOCH_NANOS, "foo", Attributes.empty(), 123);
     assertThat(event.getTotalAttributeCount()).isEqualTo(123);
   }
 

@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.test.TestSpanData;
@@ -44,7 +43,7 @@ public final class TestUtils {
    * @return some {@link io.opentelemetry.common.Attributes}
    */
   static Attributes generateRandomAttributes() {
-    return ImmutableAttributes.of(
+    return Attributes.of(
         UUID.randomUUID().toString(),
         AttributeValue.stringAttributeValue(UUID.randomUUID().toString()));
   }

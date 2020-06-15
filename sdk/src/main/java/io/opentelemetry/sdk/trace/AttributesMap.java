@@ -17,8 +17,8 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.KeyValueConsumer;
+import io.opentelemetry.common.ReadableAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
  * <p>Some APIs may have slightly different behaviors, like `put` which returns null if out of
  * capacity.
  */
-final class AttributesMap extends HashMap<String, AttributeValue> implements Attributes {
+final class AttributesMap extends HashMap<String, AttributeValue> implements ReadableAttributes {
 
   private final long capacity;
   private int totalAddedValues = 0;

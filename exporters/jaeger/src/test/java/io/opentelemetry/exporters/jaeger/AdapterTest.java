@@ -24,7 +24,6 @@ import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
 import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.resources.Resource;
@@ -261,7 +260,7 @@ public class AdapterTest {
   @Test
   public void testSpanError() {
     Attributes attributes =
-        ImmutableAttributes.of(
+        Attributes.of(
             "error.type",
             AttributeValue.stringAttributeValue(this.getClass().getName()),
             "error.message",
@@ -295,13 +294,13 @@ public class AdapterTest {
   private static EventImpl getTimedEvent() {
     long epochNanos = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     AttributeValue valueS = AttributeValue.stringAttributeValue("bar");
-    Attributes attributes = ImmutableAttributes.of("foo", valueS);
+    Attributes attributes = Attributes.of("foo", valueS);
     return EventImpl.create(epochNanos, "the log message", attributes);
   }
 
   private static SpanData getSpanData(long startMs, long endMs) {
     AttributeValue valueB = AttributeValue.booleanAttributeValue(true);
-    Attributes attributes = ImmutableAttributes.of("valueB", valueB);
+    Attributes attributes = Attributes.of("valueB", valueB);
 
     Link link = Link.create(createSpanContext(LINK_TRACE_ID, LINK_SPAN_ID), attributes);
 
@@ -313,7 +312,7 @@ public class AdapterTest {
         .setName("GET /api/endpoint")
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-        .setAttributes(ImmutableAttributes.of("valueB", valueB))
+        .setAttributes(Attributes.of("valueB", valueB))
         .setEvents(Collections.<Event>singletonList(getTimedEvent()))
         .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))

@@ -17,7 +17,7 @@
 package io.opentelemetry.sdk.trace;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -39,7 +39,7 @@ abstract class SpanWrapper implements SpanData {
 
   abstract List<Event> resolvedEvents();
 
-  abstract Attributes attributes();
+  abstract ReadableAttributes attributes();
 
   abstract int totalAttributeCount();
 
@@ -55,7 +55,7 @@ abstract class SpanWrapper implements SpanData {
       RecordEventsReadableSpan delegate,
       List<Link> links,
       List<Event> events,
-      Attributes attributes,
+      ReadableAttributes attributes,
       int totalAttributeCount,
       int totalRecordedEvents,
       Status status) {
@@ -114,7 +114,7 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public Attributes getAttributes() {
+  public ReadableAttributes getAttributes() {
     return attributes();
   }
 

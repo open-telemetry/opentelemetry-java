@@ -30,7 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-/** Unit tests for {@link ImmutableAttributes}s. */
+/** Unit tests for {@link Attributes}s. */
 public class ImmutableAttributesTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
@@ -38,8 +38,8 @@ public class ImmutableAttributesTest {
   public void forEach() {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
-    ImmutableAttributes attributes =
-        ImmutableAttributes.of(
+    Attributes attributes =
+        Attributes.of(
             "key1", stringAttributeValue("value1"),
             "key2", AttributeValue.longAttributeValue(333));
 
@@ -59,7 +59,7 @@ public class ImmutableAttributesTest {
   public void forEach_singleAttribute() {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
-    ImmutableAttributes attributes = ImmutableAttributes.of("key", stringAttributeValue("value"));
+    Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
     attributes.forEach(
         new KeyValueConsumer<AttributeValue>() {
           @Override
@@ -73,7 +73,7 @@ public class ImmutableAttributesTest {
   @Test
   public void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
-    ImmutableAttributes emptyAttributes = ImmutableAttributes.empty();
+    Attributes emptyAttributes = Attributes.empty();
     emptyAttributes.forEach(
         new KeyValueConsumer<AttributeValue>() {
           @Override
@@ -86,12 +86,12 @@ public class ImmutableAttributesTest {
 
   @Test
   public void orderIndependentEquality() {
-    ImmutableAttributes one =
-        ImmutableAttributes.of(
+    Attributes one =
+        Attributes.of(
             "key1", stringAttributeValue("value1"),
             "key2", stringAttributeValue("value2"));
-    ImmutableAttributes two =
-        ImmutableAttributes.of(
+    Attributes two =
+        Attributes.of(
             "key2", stringAttributeValue("value2"),
             "key1", stringAttributeValue("value1"));
 
@@ -100,19 +100,19 @@ public class ImmutableAttributesTest {
 
   @Test
   public void deduplication() {
-    ImmutableAttributes one =
-        ImmutableAttributes.of(
+    Attributes one =
+        Attributes.of(
             "key1", stringAttributeValue("value1"),
             "key1", stringAttributeValue("valueX"));
-    ImmutableAttributes two = ImmutableAttributes.of("key1", stringAttributeValue("value1"));
+    Attributes two = Attributes.of("key1", stringAttributeValue("value1"));
 
     assertThat(one).isEqualTo(two);
   }
 
   @Test
   public void builder() {
-    ImmutableAttributes attributes =
-        ImmutableAttributes.newBuilder()
+    Attributes attributes =
+        Attributes.newBuilder()
             .setAttribute("string", "value1")
             .setAttribute("long", 100)
             .setAttribute("double", 33.44)
@@ -122,7 +122,7 @@ public class ImmutableAttributesTest {
 
     assertThat(attributes)
         .isEqualTo(
-            ImmutableAttributes.of(
+            Attributes.of(
                 "string", stringAttributeValue("value1"),
                 "long", longAttributeValue(100),
                 "double", doubleAttributeValue(33.44),
@@ -131,8 +131,8 @@ public class ImmutableAttributesTest {
 
   @Test
   public void builder_arrayTypes() {
-    ImmutableAttributes attributes =
-        ImmutableAttributes.newBuilder()
+    Attributes attributes =
+        Attributes.newBuilder()
             .setAttribute("string", "value1", "value2")
             .setAttribute("long", 100L, 200L)
             .setAttribute("double", 33.44, -44.33)
@@ -143,7 +143,7 @@ public class ImmutableAttributesTest {
 
     assertThat(attributes)
         .isEqualTo(
-            ImmutableAttributes.of(
+            Attributes.of(
                 "string", arrayAttributeValue("value1", "value2"),
                 "long", arrayAttributeValue(100L, 200L),
                 "double", arrayAttributeValue(33.44, -44.33),
@@ -152,31 +152,31 @@ public class ImmutableAttributesTest {
 
   @Test
   public void get_Null() {
-    assertThat(ImmutableAttributes.empty().get("foo")).isNull();
-    assertThat(ImmutableAttributes.of("key", stringAttributeValue("value")).get("foo")).isNull();
+    assertThat(Attributes.empty().get("foo")).isNull();
+    assertThat(Attributes.of("key", stringAttributeValue("value")).get("foo")).isNull();
   }
 
   @Test
   public void get() {
-    assertThat(ImmutableAttributes.of("key", stringAttributeValue("value")).get("key"))
+    assertThat(Attributes.of("key", stringAttributeValue("value")).get("key"))
         .isEqualTo(stringAttributeValue("value"));
-    assertThat(ImmutableAttributes.of("key", stringAttributeValue("value")).get("value")).isNull();
-    ImmutableAttributes threeElements =
-        ImmutableAttributes.of(
+    assertThat(Attributes.of("key", stringAttributeValue("value")).get("value")).isNull();
+    Attributes threeElements =
+        Attributes.of(
             "string", stringAttributeValue("value"),
             "boolean", booleanAttributeValue(true),
             "long", longAttributeValue(1L));
     assertThat(threeElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
     assertThat(threeElements.get("string")).isEqualTo(stringAttributeValue("value"));
     assertThat(threeElements.get("long")).isEqualTo(longAttributeValue(1L));
-    ImmutableAttributes twoElements =
-        ImmutableAttributes.of(
+    Attributes twoElements =
+        Attributes.of(
             "string", stringAttributeValue("value"),
             "boolean", booleanAttributeValue(true));
     assertThat(twoElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
     assertThat(twoElements.get("string")).isEqualTo(stringAttributeValue("value"));
-    ImmutableAttributes fourElements =
-        ImmutableAttributes.of(
+    Attributes fourElements =
+        Attributes.of(
             "string", stringAttributeValue("value"),
             "boolean", booleanAttributeValue(true),
             "long", longAttributeValue(1L),

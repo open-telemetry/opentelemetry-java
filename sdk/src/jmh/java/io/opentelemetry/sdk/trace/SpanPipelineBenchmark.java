@@ -20,7 +20,6 @@ import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
@@ -74,8 +73,7 @@ public class SpanPipelineBenchmark {
             .setAttribute("key", "value")
             .addLink(new TestLink())
             .startSpan();
-    span.addEvent(
-        "started", ImmutableAttributes.of("operation", stringAttributeValue("some_work")));
+    span.addEvent("started", Attributes.of("operation", stringAttributeValue("some_work")));
     span.setAttribute("longAttribute", 33L);
     span.setAttribute("stringAttribute", "test_value");
     span.setAttribute("doubleAttribute", 4844.44d);
@@ -112,7 +110,7 @@ public class SpanPipelineBenchmark {
 
     @Override
     public Attributes getAttributes() {
-      return ImmutableAttributes.of("linkAttr", stringAttributeValue("linkValue"));
+      return Attributes.of("linkAttr", stringAttributeValue("linkValue"));
     }
   }
 
@@ -124,7 +122,7 @@ public class SpanPipelineBenchmark {
 
     @Override
     public Attributes getAttributes() {
-      return ImmutableAttributes.of("finalized", booleanAttributeValue(true));
+      return Attributes.of("finalized", booleanAttributeValue(true));
     }
   }
 }

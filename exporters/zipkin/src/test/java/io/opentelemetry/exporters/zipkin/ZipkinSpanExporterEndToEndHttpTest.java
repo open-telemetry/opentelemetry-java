@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.ImmutableAttributes;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
@@ -60,11 +59,11 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final long END_EPOCH_NANOS = 1505855799_465726528L;
   private static final long RECEIVED_TIMESTAMP_NANOS = 1505855799_433901068L;
   private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
-  private static final Attributes attributes = ImmutableAttributes.empty();
+  private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
       ImmutableList.<Event>of(
-          EventImpl.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", ImmutableAttributes.empty()),
-          EventImpl.create(SENT_TIMESTAMP_NANOS, "SENT", ImmutableAttributes.empty()));
+          EventImpl.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
+          EventImpl.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
 
   private static final String ENDPOINT_V1_SPANS = "/api/v1/spans";
   private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
