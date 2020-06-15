@@ -36,7 +36,8 @@ public interface ReadableAttributes {
   /**
    * Returns the value of the given key, or null if the key does not exist.
    *
-   * <p>Warning: currently implemented via a linear search, so O(n) performance.
+   * <p>Warning: currently may be implemented via a linear search, depending on implementation, so
+   * O(n) performance in the worst case.
    */
   @Nullable
   AttributeValue get(String key);
