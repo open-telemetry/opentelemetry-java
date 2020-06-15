@@ -21,7 +21,7 @@ import javax.annotation.Nullable;
 /**
  * A read-only container for String-keyed attributes.
  *
- * <p>See {@link ImmutableAttributes} for the default implementation.
+ * <p>See {@link Attributes} for the public API implementation.
  */
 public interface ReadableAttributes {
   /** The number of attributes contained in this. */
