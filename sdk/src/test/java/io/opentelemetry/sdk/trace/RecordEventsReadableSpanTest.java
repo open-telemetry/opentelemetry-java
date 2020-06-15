@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.KeyValueConsumer;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -76,7 +78,7 @@ public class RecordEventsReadableSpanTest {
   private final InstrumentationLibraryInfo instrumentationLibraryInfo =
       InstrumentationLibraryInfo.create("theName", null);
   private final Map<String, AttributeValue> attributes = new HashMap<>();
-  private final Map<String, AttributeValue> expectedAttributes = new HashMap<>();
+  private Attributes expectedAttributes;
   private final io.opentelemetry.trace.Link link = Link.create(spanContext);
   @Mock private SpanProcessor spanProcessor;
   @Rule public final ExpectedException thrown = ExpectedException.none();
@@ -88,10 +90,15 @@ public class RecordEventsReadableSpanTest {
         "MyStringAttributeKey", AttributeValue.stringAttributeValue("MyStringAttributeValue"));
     attributes.put("MyLongAttributeKey", AttributeValue.longAttributeValue(123L));
     attributes.put("MyBooleanAttributeKey", AttributeValue.booleanAttributeValue(false));
-    expectedAttributes.putAll(attributes);
-    expectedAttributes.put(
-        "MySingleStringAttributeKey",
-        AttributeValue.stringAttributeValue("MySingleStringAttributeValue"));
+    Attributes.Builder builder =
+        Attributes.newBuilder()
+            .setAttribute(
+                "MySingleStringAttributeKey",
+                AttributeValue.stringAttributeValue("MySingleStringAttributeValue"));
+    for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
+      builder.setAttribute(entry.getKey(), entry.getValue());
+    }
+    expectedAttributes = builder.build();
   }
 
   @Test
@@ -104,7 +111,7 @@ public class RecordEventsReadableSpanTest {
     SpanData spanData = span.toSpanData();
     verifySpanData(
         spanData,
-        Collections.<String, AttributeValue>emptyMap(),
+        Attributes.empty(),
         Collections.<Event>emptyList(),
         Collections.singletonList(link),
         SPAN_NAME,
@@ -219,29 +226,6 @@ public class RecordEventsReadableSpanTest {
 
     thrown.expect(UnsupportedOperationException.class);
     spanData.getEvents().add(EventImpl.create(1000, "test", Attributes.empty()));
-  }
-
-  @Test
-  public void toSpanData_endedSpanHasImmutableAttributes() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
-    span.end();
-    SpanData spanData = span.toSpanData();
-
-    thrown.expect(UnsupportedOperationException.class);
-    spanData.getAttributes().put("badKey", AttributeValue.stringAttributeValue("badValue"));
-  }
-
-  @Test
-  public void toSpanData_preEndedSpanHasImmutableAttributes() {
-    RecordEventsReadableSpan span = createTestSpan(Kind.INTERNAL);
-
-    SpanData spanData = span.toSpanData();
-    span.setAttribute("new", 333L);
-
-    assertThat(spanData.getAttributes()).isEmpty();
-
-    thrown.expect(UnsupportedOperationException.class);
-    spanData.getAttributes().put("badKey", AttributeValue.stringAttributeValue("badValue"));
   }
 
   @Test
@@ -408,7 +392,7 @@ public class RecordEventsReadableSpanTest {
     assertThat(span.toSpanData().getAttributes().size()).isEqualTo(2);
     span.setAttribute("emptyString", (String) null);
     span.setAttribute("emptyStringAttributeValue", (String) null);
-    assertThat(span.toSpanData().getAttributes()).isEmpty();
+    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
   @Test
@@ -435,7 +419,7 @@ public class RecordEventsReadableSpanTest {
     span.setAttribute("boolArrayAttribute", (AttributeValue) null);
     span.setAttribute("longArrayAttribute", (AttributeValue) null);
     span.setAttribute("doubleArrayAttribute", (AttributeValue) null);
-    assertThat(span.toSpanData().getAttributes()).isEmpty();
+    assertThat(span.toSpanData().getAttributes().isEmpty()).isTrue();
   }
 
   @Test
@@ -649,7 +633,7 @@ public class RecordEventsReadableSpanTest {
 
   private void verifySpanData(
       SpanData spanData,
-      Map<String, AttributeValue> attributes,
+      Attributes attributes,
       List<Event> eventData,
       List<io.opentelemetry.trace.Link> links,
       String spanName,
@@ -685,9 +669,15 @@ public class RecordEventsReadableSpanTest {
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();
     Resource resource = this.resource;
-    Map<String, AttributeValue> attributes = TestUtils.generateRandomMapAttributes();
-    AttributesMap attributesWithCapacity = new AttributesMap(32);
-    attributesWithCapacity.putAll(attributes);
+    Attributes attributes = TestUtils.generateRandomAttributes();
+    final AttributesMap attributesWithCapacity = new AttributesMap(32);
+    attributes.forEach(
+        new KeyValueConsumer<AttributeValue>() {
+          @Override
+          public void consume(String key, AttributeValue value) {
+            attributesWithCapacity.put(key, value);
+          }
+        });
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =

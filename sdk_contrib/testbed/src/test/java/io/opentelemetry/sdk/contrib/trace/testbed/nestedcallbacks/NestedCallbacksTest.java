@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.contrib.trace.testbed.TestUtils;
@@ -30,7 +30,6 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -59,8 +58,8 @@ public final class NestedCallbacksTest {
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0).getName()).isEqualTo("one");
 
-    Map<String, AttributeValue> attrs = spans.get(0).getAttributes();
-    assertThat(attrs).hasSize(3);
+    Attributes attrs = spans.get(0).getAttributes();
+    assertThat(attrs.size()).isEqualTo(3);
     for (int i = 1; i <= 3; i++) {
       assertThat(attrs.get("key" + i).getStringValue()).isEqualTo(Integer.toString(i));
     }

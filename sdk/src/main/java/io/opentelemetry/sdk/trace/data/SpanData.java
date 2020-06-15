@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -30,7 +29,6 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -124,7 +122,7 @@ public interface SpanData {
    * @return the attributes recorded for this {@code Span}.
    * @since 0.1.0
    */
-  Map<String, AttributeValue> getAttributes();
+  Attributes getAttributes();
 
   /**
    * Returns the timed events recorded for this {@code Span}.

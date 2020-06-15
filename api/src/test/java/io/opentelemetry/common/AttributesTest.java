@@ -149,4 +149,41 @@ public class AttributesTest {
                 "double", arrayAttributeValue(33.44, -44.33),
                 "boolean", arrayAttributeValue(false, true)));
   }
+
+  @Test
+  public void get_Null() {
+    assertThat(Attributes.empty().get("foo")).isNull();
+    assertThat(Attributes.of("key", stringAttributeValue("value")).get("foo")).isNull();
+  }
+
+  @Test
+  public void get() {
+    assertThat(Attributes.of("key", stringAttributeValue("value")).get("key"))
+        .isEqualTo(stringAttributeValue("value"));
+    assertThat(Attributes.of("key", stringAttributeValue("value")).get("value")).isNull();
+    Attributes threeElements =
+        Attributes.of(
+            "string", stringAttributeValue("value"),
+            "boolean", booleanAttributeValue(true),
+            "long", longAttributeValue(1L));
+    assertThat(threeElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
+    assertThat(threeElements.get("string")).isEqualTo(stringAttributeValue("value"));
+    assertThat(threeElements.get("long")).isEqualTo(longAttributeValue(1L));
+    Attributes twoElements =
+        Attributes.of(
+            "string", stringAttributeValue("value"),
+            "boolean", booleanAttributeValue(true));
+    assertThat(twoElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
+    assertThat(twoElements.get("string")).isEqualTo(stringAttributeValue("value"));
+    Attributes fourElements =
+        Attributes.of(
+            "string", stringAttributeValue("value"),
+            "boolean", booleanAttributeValue(true),
+            "long", longAttributeValue(1L),
+            "array", arrayAttributeValue("one", "two", "three"));
+    assertThat(fourElements.get("array")).isEqualTo(arrayAttributeValue("one", "two", "three"));
+    assertThat(threeElements.get("boolean")).isEqualTo(booleanAttributeValue(true));
+    assertThat(threeElements.get("string")).isEqualTo(stringAttributeValue("value"));
+    assertThat(threeElements.get("long")).isEqualTo(longAttributeValue(1L));
+  }
 }

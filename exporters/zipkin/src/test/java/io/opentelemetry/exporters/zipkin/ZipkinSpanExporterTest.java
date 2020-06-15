@@ -69,7 +69,7 @@ public class ZipkinSpanExporterTest {
   private static final String TRACE_ID = "d239036e7d5cec116b562147388b35bf";
   private static final String SPAN_ID = "9cc1e3049173be09";
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
-  private static final Map<String, AttributeValue> attributes = Collections.emptyMap();
+  private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
       ImmutableList.<Event>of(
           EventImpl.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
@@ -139,16 +139,18 @@ public class ZipkinSpanExporterTest {
 
   @Test
   public void generateSpan_WithAttributes() {
-    Map<String, AttributeValue> attributeMap = new HashMap<>();
-    attributeMap.put("string", stringAttributeValue("string value"));
-    attributeMap.put("boolean", AttributeValue.booleanAttributeValue(false));
-    attributeMap.put("long", AttributeValue.longAttributeValue(9999L));
-    attributeMap.put("double", AttributeValue.doubleAttributeValue(222.333));
-    attributeMap.put("booleanArray", AttributeValue.arrayAttributeValue(true, false));
-    attributeMap.put("stringArray", AttributeValue.arrayAttributeValue("Hello"));
-    attributeMap.put("doubleArray", AttributeValue.arrayAttributeValue(32.33d, -98.3d));
-    attributeMap.put("longArray", AttributeValue.arrayAttributeValue(33L, 999L));
-    SpanData data = buildStandardSpan().setAttributes(attributeMap).setKind(Kind.CLIENT).build();
+    Attributes attributes =
+        Attributes.newBuilder()
+            .setAttribute("string", stringAttributeValue("string value"))
+            .setAttribute("boolean", AttributeValue.booleanAttributeValue(false))
+            .setAttribute("long", AttributeValue.longAttributeValue(9999L))
+            .setAttribute("double", AttributeValue.doubleAttributeValue(222.333))
+            .setAttribute("booleanArray", AttributeValue.arrayAttributeValue(true, false))
+            .setAttribute("stringArray", AttributeValue.arrayAttributeValue("Hello"))
+            .setAttribute("doubleArray", AttributeValue.arrayAttributeValue(32.33d, -98.3d))
+            .setAttribute("longArray", AttributeValue.arrayAttributeValue(33L, 999L))
+            .build();
+    SpanData data = buildStandardSpan().setAttributes(attributes).setKind(Kind.CLIENT).build();
 
     assertThat(ZipkinSpanExporter.generateSpan(data, localEndpoint))
         .isEqualTo(
@@ -167,11 +169,14 @@ public class ZipkinSpanExporterTest {
 
   @Test
   public void generateSpan_AlreadyHasHttpStatusInfo() {
-    Map<String, AttributeValue> attributeMap = new HashMap<>();
-    attributeMap.put(
-        SemanticAttributes.HTTP_STATUS_CODE.key(), AttributeValue.longAttributeValue(404));
-    attributeMap.put(SemanticAttributes.HTTP_STATUS_TEXT.key(), stringAttributeValue("NOT FOUND"));
-    attributeMap.put("error", stringAttributeValue("A user provided error"));
+    Attributes attributeMap =
+        Attributes.of(
+            SemanticAttributes.HTTP_STATUS_CODE.key(),
+            AttributeValue.longAttributeValue(404),
+            SemanticAttributes.HTTP_STATUS_TEXT.key(),
+            stringAttributeValue("NOT FOUND"),
+            "error",
+            stringAttributeValue("A user provided error"));
     SpanData data =
         buildStandardSpan()
             .setAttributes(attributeMap)
@@ -192,8 +197,9 @@ public class ZipkinSpanExporterTest {
 
   @Test
   public void generateSpan_WithRpcErrorStatus() {
-    Map<String, AttributeValue> attributeMap = new HashMap<>();
-    attributeMap.put(SemanticAttributes.RPC_SERVICE.key(), stringAttributeValue("my service name"));
+    Attributes attributeMap =
+        Attributes.of(
+            SemanticAttributes.RPC_SERVICE.key(), stringAttributeValue("my service name"));
 
     String errorMessage = "timeout";
 
