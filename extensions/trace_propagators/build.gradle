@@ -6,7 +6,7 @@ plugins {
     id "me.champeau.gradle.jmh"
 }
 
-description = 'OpenTelemetry Extension Trace Propagators'
+description = 'OpenTelemetry Extension : Trace Propagators'
 ext.moduleName = "io.opentelemetry.extension.trace.propagation"
 
 dependencies {
