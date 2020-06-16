@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -54,6 +55,22 @@ abstract class ImmutableKeyValuePairs<V> {
     for (int i = 0; i < data().size(); i += 2) {
       consumer.consume((String) data().get(i), (V) data().get(i + 1));
     }
+  }
+
+  /**
+   * Returns the value of the given key, or null if the key does not exist.
+   *
+   * <p>Warning: currently implemented via a linear search, so O(n) performance.
+   */
+  @SuppressWarnings("unchecked")
+  @Nullable
+  public V get(String key) {
+    for (int i = 0; i < data().size(); i += 2) {
+      if (key.equals(data().get(i))) {
+        return (V) data().get(i + 1);
+      }
+    }
+    return null;
   }
 
   static List<Object> sortAndFilter(Object[] data) {

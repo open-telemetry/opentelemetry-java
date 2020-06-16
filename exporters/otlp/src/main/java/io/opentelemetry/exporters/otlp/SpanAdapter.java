@@ -86,7 +86,7 @@ final class SpanAdapter {
   }
 
   static Span toProtoSpan(SpanData spanData) {
-    Span.Builder builder = Span.newBuilder();
+    final Span.Builder builder = Span.newBuilder();
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(spanData.getTraceId()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(spanData.getSpanId()));
     // TODO: Set TraceState;
@@ -97,10 +97,15 @@ final class SpanAdapter {
     builder.setKind(toProtoSpanKind(spanData.getKind()));
     builder.setStartTimeUnixNano(spanData.getStartEpochNanos());
     builder.setEndTimeUnixNano(spanData.getEndEpochNanos());
-    for (Map.Entry<String, AttributeValue> resourceEntry : spanData.getAttributes().entrySet()) {
-      builder.addAttributes(
-          CommonAdapter.toProtoAttribute(resourceEntry.getKey(), resourceEntry.getValue()));
-    }
+    spanData
+        .getAttributes()
+        .forEach(
+            new KeyValueConsumer<AttributeValue>() {
+              @Override
+              public void consume(String key, AttributeValue value) {
+                builder.addAttributes(CommonAdapter.toProtoAttribute(key, value));
+              }
+            });
     builder.setDroppedAttributesCount(
         spanData.getTotalAttributeCount() - spanData.getAttributes().size());
     for (Event event : spanData.getEvents()) {

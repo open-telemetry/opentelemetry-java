@@ -19,7 +19,6 @@ package io.opentelemetry.exporters.zipkin;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -34,7 +33,6 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,7 +59,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final long END_EPOCH_NANOS = 1505855799_465726528L;
   private static final long RECEIVED_TIMESTAMP_NANOS = 1505855799_433901068L;
   private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
-  private static final Map<String, AttributeValue> attributes = Collections.emptyMap();
+  private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
       ImmutableList.<Event>of(
           EventImpl.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),

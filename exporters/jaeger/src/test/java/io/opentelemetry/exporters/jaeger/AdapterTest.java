@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.util.Durations;
 import com.google.protobuf.util.Timestamps;
 import io.opentelemetry.common.AttributeValue;
@@ -260,8 +259,8 @@ public class AdapterTest {
 
   @Test
   public void testSpanError() {
-    ImmutableMap<String, AttributeValue> attributes =
-        ImmutableMap.of(
+    Attributes attributes =
+        Attributes.of(
             "error.type",
             AttributeValue.stringAttributeValue(this.getClass().getName()),
             "error.message",
@@ -313,7 +312,7 @@ public class AdapterTest {
         .setName("GET /api/endpoint")
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
-        .setAttributes(Collections.singletonMap("valueB", valueB))
+        .setAttributes(Attributes.of("valueB", valueB))
         .setEvents(Collections.<Event>singletonList(getTimedEvent()))
         .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
