@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 /** Unit tests for {@link Attributes}s. */
-public class ImmutableAttributesTest {
+public class AttributesTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   @Test
