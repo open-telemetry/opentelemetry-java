@@ -25,6 +25,7 @@ include ":opentelemetry-all",
         ":opentelemetry-extension-runtime-metrics",
         ":opentelemetry-extension-trace-propagators",
         ":opentelemetry-extension-trace-utils",
+        ":opentelemetry-extension-logging-log4j2-extensions",
         ":opentelemetry-exporters-inmemory",
         ":opentelemetry-exporters-jaeger",
         ":opentelemetry-exporters-logging",
@@ -48,6 +49,7 @@ rootProject.children.each {
         .replace("opentelemetry-exporters-", "exporters/")
         .replace("opentelemetry-extension-", "extensions/")
         .replace("opentelemetry-sdk-extension-", "sdk_extensions/")
+        .replace("logging-", "logging/")
         .replace("opentelemetry-", "")
         .replace("-", "_") as File
 }
