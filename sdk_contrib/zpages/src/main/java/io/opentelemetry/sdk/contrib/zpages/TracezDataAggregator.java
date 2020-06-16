@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.contrib.zpages;
 
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.trace.Status.CanonicalCode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -232,6 +233,61 @@ public final class TracezDataAggregator {
           && span.getLatencyNanos() >= lowerBound
           && span.getLatencyNanos() < upperBound) {
         filteredSpans.add(span.toSpanData());
+      }
+    }
+    return filteredSpans;
+  }
+
+  /**
+   * Returns a Map of error span counts for {@link
+   * io.opentelemetry.sdk.contrib.zpages.TracezDataAggregator}.
+   *
+   * @return a Map of error span counts for each span name.
+   */
+  public Map<String, Integer> getErrorSpanCounts() {
+    Collection<ReadableSpan> allCompletedSpans = spanProcessor.getCompletedSpans();
+    Map<String, Integer> numErrorsPerName = new HashMap<>();
+    for (ReadableSpan span : allCompletedSpans) {
+      if (!span.toSpanData().getStatus().isOk()) {
+        Integer prevValue = numErrorsPerName.get(span.getName());
+        numErrorsPerName.put(span.getName(), prevValue != null ? prevValue + 1 : 1);
+      }
+    }
+    return numErrorsPerName;
+  }
+
+  /**
+   * Returns a List of error spans with a given span name for {@link
+   * io.opentelemetry.sdk.contrib.zpages.TracezDataAggregator}.
+   *
+   * @param spanName name to filter returned spans.
+   * @return a List of {@link io.opentelemetry.sdk.trace.data.SpanData}.
+   */
+  public List<SpanData> getErrorSpans(String spanName) {
+    Collection<ReadableSpan> allCompletedSpans = spanProcessor.getCompletedSpans();
+    List<SpanData> filteredSpans = new ArrayList<>();
+    for (ReadableSpan span : allCompletedSpans) {
+      if (span.getName().equals(spanName) && !span.toSpanData().getStatus().isOk()) {
+        filteredSpans.add(span.toSpanData());
+      }
+    }
+    return filteredSpans;
+  }
+
+  /**
+   * Returns a List of error spans with a given span name and canonical code for {@link
+   * io.opentelemetry.sdk.contrib.zpages.TracezDataAggregator}.
+   *
+   * @param spanName name to filter returned spans.
+   * @param errorCode canonical error code to filter returned spans.
+   * @return a List of {@link io.opentelemetry.sdk.trace.data.SpanData}.
+   */
+  public List<SpanData> getErrorSpans(String spanName, CanonicalCode errorCode) {
+    List<SpanData> allErrorSpans = getErrorSpans(spanName);
+    List<SpanData> filteredSpans = new ArrayList<>();
+    for (SpanData span : allErrorSpans) {
+      if (span.getStatus().getCanonicalCode().equals(errorCode)) {
+        filteredSpans.add(span);
       }
     }
     return filteredSpans;
