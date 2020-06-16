@@ -16,8 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
-import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -74,7 +74,7 @@ public interface DoubleUpDownSumObserver extends AsynchronousInstrument<DoubleRe
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Map<String, String> constantLabels);
+    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     DoubleUpDownSumObserver build();

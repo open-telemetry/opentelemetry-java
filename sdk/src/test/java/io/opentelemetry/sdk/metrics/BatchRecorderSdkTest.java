@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -70,7 +71,7 @@ public class BatchRecorderSdkTest {
         testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
     LongValueRecorderSdk longValueRecorder =
         testSdk.longValueRecorderBuilder("testLongValueRecorder").build();
-    LabelSetSdk labelSet = LabelSetSdk.create("key", "value");
+    Labels labelSet = Labels.of("key", "value");
 
     testSdk
         .newBatchRecorder("key", "value")
@@ -86,56 +87,36 @@ public class BatchRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testDoubleCounter",
-                    "",
-                    "1",
-                    Type.MONOTONIC_DOUBLE,
-                    Collections.<String, String>emptyMap()),
+                    "testDoubleCounter", "", "1", Type.MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
-                    DoublePoint.create(
-                        testClock.now(), testClock.now(), labelSet.getLabels(), 12.1d))));
+                    DoublePoint.create(testClock.now(), testClock.now(), labelSet, 12.1d))));
     assertThat(longCounter.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter",
-                    "",
-                    "1",
-                    Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
-                    LongPoint.create(testClock.now(), testClock.now(), labelSet.getLabels(), 12))));
+                    LongPoint.create(testClock.now(), testClock.now(), labelSet, 12))));
     assertThat(doubleUpDownCounter.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testDoubleUpDownCounter",
-                    "",
-                    "1",
-                    Type.NON_MONOTONIC_DOUBLE,
-                    Collections.<String, String>emptyMap()),
+                    "testDoubleUpDownCounter", "", "1", Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
-                    DoublePoint.create(
-                        testClock.now(), testClock.now(), labelSet.getLabels(), -12.1d))));
+                    DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d))));
     assertThat(longUpDownCounter.collectAll())
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testLongUpDownCounter",
-                    "",
-                    "1",
-                    Type.NON_MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                    "testLongUpDownCounter", "", "1", Type.NON_MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
-                    LongPoint.create(
-                        testClock.now(), testClock.now(), labelSet.getLabels(), -12))));
+                    LongPoint.create(testClock.now(), testClock.now(), labelSet, -12))));
   }
 }

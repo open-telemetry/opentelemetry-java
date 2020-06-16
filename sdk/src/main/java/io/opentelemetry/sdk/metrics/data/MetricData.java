@@ -17,11 +17,11 @@
 package io.opentelemetry.sdk.metrics.data;
 
 import com.google.auto.value.AutoValue;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -104,7 +104,7 @@ public abstract class MetricData {
      *
      * @return the labels associated with this {@code Point}.
      */
-    public abstract Map<String, String> getLabels();
+    public abstract Labels getLabels();
   }
 
   /**
@@ -126,7 +126,7 @@ public abstract class MetricData {
     public abstract long getValue();
 
     public static LongPoint create(
-        long startEpochNanos, long epochNanos, Map<String, String> labels, long value) {
+        long startEpochNanos, long epochNanos, Labels labels, long value) {
       return new AutoValue_MetricData_LongPoint(startEpochNanos, epochNanos, labels, value);
     }
   }
@@ -148,7 +148,7 @@ public abstract class MetricData {
     public abstract double getValue();
 
     public static DoublePoint create(
-        long startEpochNanos, long epochNanos, Map<String, String> labels, double value) {
+        long startEpochNanos, long epochNanos, Labels labels, double value) {
       return new AutoValue_MetricData_DoublePoint(startEpochNanos, epochNanos, labels, value);
     }
   }
@@ -188,7 +188,7 @@ public abstract class MetricData {
     public static SummaryPoint create(
         long startEpochNanos,
         long epochNanos,
-        Map<String, String> labels,
+        Labels labels,
         long count,
         double sum,
         List<ValueAtPercentile> percentileValues) {
@@ -313,14 +313,10 @@ public abstract class MetricData {
      * @return the constant labels associated with this metric descriptor.
      * @since 0.1.0
      */
-    public abstract Map<String, String> getConstantLabels();
+    public abstract Labels getConstantLabels();
 
     public static Descriptor create(
-        String name,
-        String description,
-        String unit,
-        Type type,
-        Map<String, String> constantLabels) {
+        String name, String description, String unit, Type type, Labels constantLabels) {
       return new AutoValue_MetricData_Descriptor(name, description, unit, type, constantLabels);
     }
   }

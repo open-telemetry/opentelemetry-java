@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleUpDownCounter;
 import io.opentelemetry.metrics.DoubleUpDownCounter.BoundDoubleUpDownCounter;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -61,7 +62,7 @@ public class DoubleUpDownCounterSdkTest {
     DoubleUpDownCounterSdk doubleUpDownCounter =
         testSdk
             .doubleUpDownCounterBuilder("testCounter")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -75,7 +76,7 @@ public class DoubleUpDownCounterSdkTest {
                 "My very own counter",
                 "ms",
                 Type.NON_MONOTONIC_DOUBLE,
-                Collections.singletonMap("sk1", "sv1")));
+                Labels.of("sk1", "sv1")));
     assertThat(metricData.getResource()).isEqualTo(RESOURCE);
     assertThat(metricData.getInstrumentationLibraryInfo()).isEqualTo(INSTRUMENTATION_LIBRARY_INFO);
     assertThat(metricData.getPoints()).isEmpty();
@@ -98,16 +99,13 @@ public class DoubleUpDownCounterSdkTest {
     assertThat(metricData.getPoints())
         .containsExactly(
             DoublePoint.create(
-                testClock.now() - SECOND_NANOS,
-                testClock.now(),
-                Collections.<String, String>emptyMap(),
-                12.1d));
+                testClock.now() - SECOND_NANOS, testClock.now(), Labels.empty(), 12.1d));
   }
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
-    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
+    Labels labelSet = Labels.of("K", "V");
+    Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
     DoubleUpDownCounterSdk doubleUpDownCounter =
         testSdk.doubleUpDownCounterBuilder("testCounter").build();
@@ -129,8 +127,8 @@ public class DoubleUpDownCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              DoublePoint.create(startTime, firstCollect, labelSet.getLabels(), 555.9d),
-              DoublePoint.create(startTime, firstCollect, emptyLabelSet.getLabels(), 33.5d));
+              DoublePoint.create(startTime, firstCollect, labelSet, 555.9d),
+              DoublePoint.create(startTime, firstCollect, emptyLabelSet, 33.5d));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
@@ -144,8 +142,8 @@ public class DoubleUpDownCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              DoublePoint.create(startTime, secondCollect, labelSet.getLabels(), 777.9d),
-              DoublePoint.create(startTime, secondCollect, emptyLabelSet.getLabels(), 44.5d));
+              DoublePoint.create(startTime, secondCollect, labelSet, 777.9d),
+              DoublePoint.create(startTime, secondCollect, emptyLabelSet, 44.5d));
     } finally {
       boundCounter.unbind();
     }
@@ -205,8 +203,7 @@ public class DoubleUpDownCounterSdkTest {
     assertThat(metricDataList).hasSize(1);
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
-            DoublePoint.create(
-                testClock.now(), testClock.now(), Collections.singletonMap("K", "V"), 80_000));
+            DoublePoint.create(testClock.now(), testClock.now(), Labels.of("K", "V"), 80_000));
   }
 
   @Test
@@ -237,25 +234,13 @@ public class DoubleUpDownCounterSdkTest {
     assertThat(metricDataList.get(0).getPoints())
         .containsExactly(
             DoublePoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[0], values[0]),
-                40_000),
+                testClock.now(), testClock.now(), Labels.of(keys[0], values[0]), 40_000),
             DoublePoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[1], values[1]),
-                40_000),
+                testClock.now(), testClock.now(), Labels.of(keys[1], values[1]), 40_000),
             DoublePoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[2], values[2]),
-                40_000),
+                testClock.now(), testClock.now(), Labels.of(keys[2], values[2]), 40_000),
             DoublePoint.create(
-                testClock.now(),
-                testClock.now(),
-                Collections.singletonMap(keys[3], values[3]),
-                40_000));
+                testClock.now(), testClock.now(), Labels.of(keys[3], values[3]), 40_000));
   }
 
   private static class OperationUpdaterWithBinding extends OperationUpdater {

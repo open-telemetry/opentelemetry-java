@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.LongValueRecorder;
 import io.opentelemetry.sdk.metrics.LongValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -43,10 +44,10 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
 
   @Override
   public void record(long value, String... labelKeyValuePairs) {
-    record(value, LabelSetSdk.create(labelKeyValuePairs));
+    record(value, Labels.of(labelKeyValuePairs));
   }
 
-  void record(long value, LabelSetSdk labelSet) {
+  void record(long value, Labels labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
     boundInstrument.record(value);
     boundInstrument.unbind();
@@ -54,7 +55,7 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
 
   @Override
   public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bind(LabelSetSdk.create(labelKeyValuePairs));
+    return bind(Labels.of(labelKeyValuePairs));
   }
 
   @Override

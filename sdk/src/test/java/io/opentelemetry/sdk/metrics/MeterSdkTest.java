@@ -18,8 +18,8 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.BatchRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -62,7 +62,7 @@ public class MeterSdkTest {
     LongCounterSdk longCounter =
         testSdk
             .longCounterBuilder("testLongCounter")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -71,7 +71,7 @@ public class MeterSdkTest {
     assertThat(
             testSdk
                 .longCounterBuilder("testLongCounter")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -87,7 +87,7 @@ public class MeterSdkTest {
     LongUpDownCounterSdk longUpDownCounter =
         testSdk
             .longUpDownCounterBuilder("testLongUpDownCounter")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -96,7 +96,7 @@ public class MeterSdkTest {
     assertThat(
             testSdk
                 .longUpDownCounterBuilder("testLongUpDownCounter")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -112,7 +112,7 @@ public class MeterSdkTest {
     LongValueRecorderSdk longValueRecorder =
         testSdk
             .longValueRecorderBuilder("testLongValueRecorder")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -121,7 +121,7 @@ public class MeterSdkTest {
     assertThat(
             testSdk
                 .longValueRecorderBuilder("testLongValueRecorder")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -137,7 +137,7 @@ public class MeterSdkTest {
     LongSumObserverSdk longObserver =
         testSdk
             .longSumObserverBuilder("testLongSumObserver")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -146,7 +146,7 @@ public class MeterSdkTest {
     assertThat(
             testSdk
                 .longSumObserverBuilder("testLongSumObserver")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -162,7 +162,7 @@ public class MeterSdkTest {
     LongUpDownSumObserverSdk longObserver =
         testSdk
             .longUpDownSumObserverBuilder("testLongUpDownSumObserver")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -171,7 +171,7 @@ public class MeterSdkTest {
     assertThat(
             testSdk
                 .longUpDownSumObserverBuilder("testLongUpDownSumObserver")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -187,7 +187,7 @@ public class MeterSdkTest {
     DoubleCounterSdk doubleCounter =
         testSdk
             .doubleCounterBuilder("testDoubleCounter")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -196,7 +196,7 @@ public class MeterSdkTest {
     assertThat(
             testSdk
                 .doubleCounterBuilder("testDoubleCounter")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -212,7 +212,7 @@ public class MeterSdkTest {
     DoubleUpDownCounterSdk doubleUpDownCounter =
         testSdk
             .doubleUpDownCounterBuilder("testDoubleUpDownCounter")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -221,7 +221,7 @@ public class MeterSdkTest {
     assertThat(
             testSdk
                 .doubleUpDownCounterBuilder("testDoubleUpDownCounter")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -237,7 +237,7 @@ public class MeterSdkTest {
     DoubleValueRecorderSdk doubleValueRecorder =
         testSdk
             .doubleValueRecorderBuilder("testDoubleValueRecorder")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own ValueRecorder")
             .setUnit("metric tonnes")
             .build();
@@ -246,7 +246,7 @@ public class MeterSdkTest {
     assertThat(
             testSdk
                 .doubleValueRecorderBuilder("testDoubleValueRecorder")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own ValueRecorder")
                 .setUnit("metric tonnes")
                 .build())
@@ -262,7 +262,7 @@ public class MeterSdkTest {
     DoubleSumObserverSdk doubleObserver =
         testSdk
             .doubleSumObserverBuilder("testDoubleSumObserver")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -271,7 +271,7 @@ public class MeterSdkTest {
     assertThat(
             testSdk
                 .doubleSumObserverBuilder("testDoubleSumObserver")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -287,7 +287,7 @@ public class MeterSdkTest {
     DoubleUpDownSumObserverSdk doubleObserver =
         testSdk
             .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver")
-            .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("metric tonnes")
             .build();
@@ -296,7 +296,7 @@ public class MeterSdkTest {
     assertThat(
             testSdk
                 .doubleUpDownSumObserverBuilder("testDoubleUpDownSumObserver")
-                .setConstantLabels(ImmutableMap.of("sk1", "sv1"))
+                .setConstantLabels(Labels.of("sk1", "sv1"))
                 .setDescription("My very own counter")
                 .setUnit("metric tonnes")
                 .build())
@@ -333,67 +333,40 @@ public class MeterSdkTest {
     assertThat(testSdk.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter",
-                    "",
-                    "1",
-                    Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
-                    LongPoint.create(
-                        testClock.now(),
-                        testClock.now(),
-                        Collections.<String, String>emptyMap(),
-                        10))),
+                    LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
             MetricData.create(
                 Descriptor.create(
-                    "testDoubleCounter",
-                    "",
-                    "1",
-                    Type.MONOTONIC_DOUBLE,
-                    Collections.<String, String>emptyMap()),
+                    "testDoubleCounter", "", "1", Type.MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
-                    DoublePoint.create(
-                        testClock.now(),
-                        testClock.now(),
-                        Collections.<String, String>emptyMap(),
-                        10.1))),
+                    DoublePoint.create(testClock.now(), testClock.now(), Labels.empty(), 10.1))),
             MetricData.create(
-                Descriptor.create(
-                    "testLongValueRecorder",
-                    "",
-                    "1",
-                    Type.SUMMARY,
-                    Collections.<String, String>emptyMap()),
+                Descriptor.create("testLongValueRecorder", "", "1", Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
                     SummaryPoint.create(
                         testClock.now(),
                         testClock.now(),
-                        Collections.<String, String>emptyMap(),
+                        Labels.empty(),
                         1,
                         10,
                         Arrays.asList(
                             ValueAtPercentile.create(0, 10), ValueAtPercentile.create(100, 10))))),
             MetricData.create(
-                Descriptor.create(
-                    "testDoubleValueRecorder",
-                    "",
-                    "1",
-                    Type.SUMMARY,
-                    Collections.<String, String>emptyMap()),
+                Descriptor.create("testDoubleValueRecorder", "", "1", Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
                     SummaryPoint.create(
                         testClock.now(),
                         testClock.now(),
-                        Collections.<String, String>emptyMap(),
+                        Labels.empty(),
                         1,
                         10.1d,
                         Arrays.asList(

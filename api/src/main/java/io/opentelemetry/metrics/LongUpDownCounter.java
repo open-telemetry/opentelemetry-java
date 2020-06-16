@@ -16,8 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.LongUpDownCounter.BoundLongUpDownCounter;
-import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -101,7 +101,7 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
     Builder setUnit(String unit);
 
     @Override
-    Builder setConstantLabels(Map<String, String> constantLabels);
+    Builder setConstantLabels(Labels constantLabels);
 
     @Override
     LongUpDownCounter build();

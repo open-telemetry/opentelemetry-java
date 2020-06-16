@@ -18,7 +18,7 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import java.util.Collections;
+import io.opentelemetry.common.Labels;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -38,6 +38,6 @@ public class NoopAggregatorTest {
     aggregator.recordLong(12);
     aggregator.recordDouble(12.1);
     aggregator.mergeToAndReset(aggregator);
-    assertThat(aggregator.toPoint(1, 2, Collections.<String, String>emptyMap())).isNull();
+    assertThat(aggregator.toPoint(1, 2, Labels.empty())).isNull();
   }
 }

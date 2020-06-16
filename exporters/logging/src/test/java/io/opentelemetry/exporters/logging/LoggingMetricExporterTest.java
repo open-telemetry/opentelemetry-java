@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
@@ -71,14 +72,14 @@ public class LoggingMetricExporterTest {
                     "A summarized test measure",
                     "ms",
                     Type.SUMMARY,
-                    ImmutableMap.of("foo", "bar", "baz", "zoom")),
+                    Labels.of("foo", "bar", "baz", "zoom")),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.<Point>singletonList(
                     SummaryPoint.create(
                         nowEpochNanos,
                         nowEpochNanos + 245,
-                        ImmutableMap.of("a", "b", "c", "d"),
+                        Labels.of("a", "b", "c", "d"),
                         1010,
                         50000,
                         Arrays.asList(
@@ -90,29 +91,26 @@ public class LoggingMetricExporterTest {
                     "A simple counter",
                     "one",
                     Type.MONOTONIC_LONG,
-                    ImmutableMap.of("alpha", "aleph", "beta", "bet")),
+                    Labels.of("alpha", "aleph", "beta", "bet")),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.<Point>singletonList(
                     LongPoint.create(
-                        nowEpochNanos,
-                        nowEpochNanos + 245,
-                        ImmutableMap.of("z", "y", "x", "w"),
-                        1010))),
+                        nowEpochNanos, nowEpochNanos + 245, Labels.of("z", "y", "x", "w"), 1010))),
             MetricData.create(
                 Descriptor.create(
                     "observedValue",
                     "an observer gauge",
                     "kb",
                     Type.NON_MONOTONIC_DOUBLE,
-                    ImmutableMap.of("uno", "eins", "dos", "zwei")),
+                    Labels.of("uno", "eins", "dos", "zwei")),
                 resource,
                 instrumentationLibraryInfo,
                 Collections.<Point>singletonList(
                     DoublePoint.create(
                         nowEpochNanos,
                         nowEpochNanos + 245,
-                        ImmutableMap.of("1", "2", "3", "4"),
+                        Labels.of("1", "2", "3", "4"),
                         33.7767)))));
   }
 

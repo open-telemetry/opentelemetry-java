@@ -16,6 +16,8 @@
 
 package io.opentelemetry.exporters.otlp;
 
+import io.opentelemetry.common.KeyValueConsumer;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.proto.common.v1.StringKeyValue;
 import io.opentelemetry.proto.metrics.v1.DoubleDataPoint;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
@@ -233,15 +235,18 @@ final class MetricAdapter {
   }
 
   @SuppressWarnings("MixedMutabilityReturnType")
-  static Collection<StringKeyValue> toProtoLabels(Map<String, String> labels) {
+  static Collection<StringKeyValue> toProtoLabels(Labels labels) {
     if (labels.isEmpty()) {
       return Collections.emptyList();
     }
-    List<StringKeyValue> result = new ArrayList<>(labels.size());
-    for (Map.Entry<String, String> entry : labels.entrySet()) {
-      result.add(
-          StringKeyValue.newBuilder().setKey(entry.getKey()).setValue(entry.getValue()).build());
-    }
+    final List<StringKeyValue> result = new ArrayList<>(labels.size());
+    labels.forEach(
+        new KeyValueConsumer<String>() {
+          @Override
+          public void consume(String key, String value) {
+            result.add(StringKeyValue.newBuilder().setKey(key).setValue(value).build());
+          }
+        });
     return result;
   }
 

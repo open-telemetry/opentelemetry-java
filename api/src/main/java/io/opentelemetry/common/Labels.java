@@ -102,6 +102,10 @@ public abstract class Labels extends ImmutableKeyValuePairs<String> {
         key5, value5);
   }
 
+  public static Labels of(String[] keyValueLabelPairs) {
+    return sortAndFilterToLabels((Object[]) keyValueLabelPairs);
+  }
+
   private static Labels sortAndFilterToLabels(Object... data) {
     return new AutoValue_Labels_ArrayBackedLabels(sortAndFilter(data));
   }

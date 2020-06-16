@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleValueRecorder;
 import io.opentelemetry.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -64,7 +65,7 @@ public class DoubleValueRecorderSdkTest {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
             .doubleValueRecorderBuilder("testMeasure")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();
@@ -78,7 +79,7 @@ public class DoubleValueRecorderSdkTest {
                     "My very own measure",
                     "ms",
                     Type.SUMMARY,
-                    Collections.singletonMap("sk1", "sv1")),
+                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>emptyList()));
@@ -89,7 +90,7 @@ public class DoubleValueRecorderSdkTest {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
             .doubleValueRecorderBuilder("testMeasure")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();
@@ -105,7 +106,7 @@ public class DoubleValueRecorderSdkTest {
                     "My very own measure",
                     "ms",
                     Type.SUMMARY,
-                    Collections.singletonMap("sk1", "sv1")),
+                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>emptyList()));
@@ -121,15 +122,14 @@ public class DoubleValueRecorderSdkTest {
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testMeasure", "", "1", Type.SUMMARY, Collections.<String, String>emptyMap()),
+                Descriptor.create("testMeasure", "", "1", Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
                     SummaryPoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
-                        Collections.<String, String>emptyMap(),
+                        Labels.empty(),
                         1,
                         12.1d,
                         valueAtPercentiles(12.1d, 12.1d)))));
@@ -137,8 +137,8 @@ public class DoubleValueRecorderSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
-    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
+    Labels labelSet = Labels.of("K", "V");
+    Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
     DoubleValueRecorderSdk doubleMeasure =
         testSdk.doubleValueRecorderBuilder("testMeasure").build();
@@ -162,14 +162,14 @@ public class DoubleValueRecorderSdkTest {
               SummaryPoint.create(
                   startTime,
                   firstCollect,
-                  emptyLabelSet.getLabels(),
+                  emptyLabelSet,
                   2,
                   -1.0d,
                   valueAtPercentiles(-13.1d, 12.1d)),
               SummaryPoint.create(
                   startTime,
                   firstCollect,
-                  labelSet.getLabels(),
+                  labelSet,
                   3,
                   323.3d,
                   valueAtPercentiles(-121.5d, 321.5d)));
@@ -188,14 +188,14 @@ public class DoubleValueRecorderSdkTest {
               SummaryPoint.create(
                   startTime,
                   secondCollect,
-                  emptyLabelSet.getLabels(),
+                  emptyLabelSet,
                   3,
                   16.0d,
                   valueAtPercentiles(-13.1d, 17d)),
               SummaryPoint.create(
                   startTime,
                   secondCollect,
-                  labelSet.getLabels(),
+                  labelSet,
                   4,
                   545.3d,
                   valueAtPercentiles(-121.5, 321.5d)));
@@ -263,7 +263,7 @@ public class DoubleValueRecorderSdkTest {
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap("K", "V"),
+                Labels.of("K", "V"),
                 8_000,
                 80_000,
                 valueAtPercentiles(9.0, 11.0)));
@@ -300,28 +300,28 @@ public class DoubleValueRecorderSdkTest {
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[0], values[0]),
+                Labels.of(keys[0], values[0]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[1], values[1]),
+                Labels.of(keys[1], values[1]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[2], values[2]),
+                Labels.of(keys[2], values[2]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[3], values[3]),
+                Labels.of(keys[3], values[3]),
                 4_000,
                 40_000d,
                 valueAtPercentiles(9.0, 11.0)));

@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.LongValueRecorder;
 import io.opentelemetry.metrics.LongValueRecorder.BoundLongValueRecorder;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -64,7 +65,7 @@ public class LongValueRecorderSdkTest {
     LongValueRecorderSdk longMeasure =
         testSdk
             .longValueRecorderBuilder("testMeasure")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -78,7 +79,7 @@ public class LongValueRecorderSdkTest {
                     "My very own counter",
                     "ms",
                     Type.SUMMARY,
-                    Collections.singletonMap("sk1", "sv1")),
+                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>emptyList()));
@@ -89,7 +90,7 @@ public class LongValueRecorderSdkTest {
     LongValueRecorderSdk longMeasure =
         testSdk
             .longValueRecorderBuilder("testMeasure")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
@@ -106,7 +107,7 @@ public class LongValueRecorderSdkTest {
                     "My very own counter",
                     "ms",
                     Type.SUMMARY,
-                    Collections.singletonMap("sk1", "sv1")),
+                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>emptyList()));
@@ -121,15 +122,14 @@ public class LongValueRecorderSdkTest {
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testMeasure", "", "1", Type.SUMMARY, Collections.<String, String>emptyMap()),
+                Descriptor.create("testMeasure", "", "1", Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
                     SummaryPoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
-                        Collections.<String, String>emptyMap(),
+                        Labels.empty(),
                         1,
                         12,
                         valueAtPercentiles(12, 12)))));
@@ -137,8 +137,8 @@ public class LongValueRecorderSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    LabelSetSdk labelSet = LabelSetSdk.create("K", "V");
-    LabelSetSdk emptyLabelSet = LabelSetSdk.create();
+    Labels labelSet = Labels.of("K", "V");
+    Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
     LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testMeasure").build();
     BoundLongValueRecorder boundMeasure = longMeasure.bind("K", "V");
@@ -160,19 +160,9 @@ public class LongValueRecorderSdkTest {
       assertThat(metricData.getPoints())
           .containsExactly(
               SummaryPoint.create(
-                  startTime,
-                  firstCollect,
-                  emptyLabelSet.getLabels(),
-                  2,
-                  -2,
-                  valueAtPercentiles(-14, 12)),
+                  startTime, firstCollect, emptyLabelSet, 2, -2, valueAtPercentiles(-14, 12)),
               SummaryPoint.create(
-                  startTime,
-                  firstCollect,
-                  labelSet.getLabels(),
-                  3,
-                  323,
-                  valueAtPercentiles(-121, 321)));
+                  startTime, firstCollect, labelSet, 3, 323, valueAtPercentiles(-121, 321)));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
@@ -187,19 +177,9 @@ public class LongValueRecorderSdkTest {
       assertThat(metricData.getPoints())
           .containsExactly(
               SummaryPoint.create(
-                  startTime,
-                  secondCollect,
-                  emptyLabelSet.getLabels(),
-                  3,
-                  15,
-                  valueAtPercentiles(-14, 17)),
+                  startTime, secondCollect, emptyLabelSet, 3, 15, valueAtPercentiles(-14, 17)),
               SummaryPoint.create(
-                  startTime,
-                  secondCollect,
-                  labelSet.getLabels(),
-                  4,
-                  545,
-                  valueAtPercentiles(-121, 321)));
+                  startTime, secondCollect, labelSet, 4, 545, valueAtPercentiles(-121, 321)));
     } finally {
       boundMeasure.unbind();
     }
@@ -265,7 +245,7 @@ public class LongValueRecorderSdkTest {
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap("K", "V"),
+                Labels.of("K", "V"),
                 16_000,
                 160_000,
                 valueAtPercentiles(9, 11)));
@@ -305,28 +285,28 @@ public class LongValueRecorderSdkTest {
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[0], values[0]),
+                Labels.of(keys[0], values[0]),
                 2_000,
                 20_000,
                 valueAtPercentiles(9, 11)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[1], values[1]),
+                Labels.of(keys[1], values[1]),
                 2_000,
                 20_000,
                 valueAtPercentiles(9, 11)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[2], values[2]),
+                Labels.of(keys[2], values[2]),
                 2_000,
                 20_000,
                 valueAtPercentiles(9, 11)),
             SummaryPoint.create(
                 testClock.now(),
                 testClock.now(),
-                Collections.singletonMap(keys[3], values[3]),
+                Labels.of(keys[3], values[3]),
                 2_000,
                 20_000,
                 valueAtPercentiles(9, 11)));
