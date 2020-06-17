@@ -105,18 +105,7 @@ final class MetricAdapter {
     if (descriptor.getConstantLabels().size() != 0) {
       constLabelNames = new ArrayList<>(descriptor.getConstantLabels().size());
       constLabelValues = new ArrayList<>(descriptor.getConstantLabels().size());
-      final List<String> finalConstLabelNames = constLabelNames;
-      final List<String> finalConstLabelValues = constLabelValues;
-      descriptor
-          .getConstantLabels()
-          .forEach(
-              new KeyValueConsumer<String>() {
-                @Override
-                public void consume(String key, String value) {
-                  finalConstLabelNames.add(toLabelName(key));
-                  finalConstLabelValues.add(value == null ? "" : value);
-                }
-              });
+      descriptor.getConstantLabels().forEach(new Consumer(constLabelNames, constLabelValues));
     }
 
     for (Point point : points) {
@@ -131,18 +120,7 @@ final class MetricAdapter {
         labelValues.addAll(constLabelValues);
 
         // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
-        final List<String> finalLabelNames = labelNames;
-        final List<String> finalLabelValues = labelValues;
-        point
-            .getLabels()
-            .forEach(
-                new KeyValueConsumer<String>() {
-                  @Override
-                  public void consume(String key, String value) {
-                    finalLabelNames.add(toLabelName(key));
-                    finalLabelValues.add(value == null ? "" : value);
-                  }
-                });
+        point.getLabels().forEach(new Consumer(labelNames, labelValues));
       }
 
       switch (descriptor.getType()) {
@@ -167,6 +145,22 @@ final class MetricAdapter {
   // Converts a label keys to a label names. Sanitizes the label keys.
   static String toLabelName(String labelKey) {
     return Collector.sanitizeMetricName(labelKey);
+  }
+
+  private static final class Consumer implements KeyValueConsumer<String> {
+    final List<String> labelNames;
+    final List<String> labelValues;
+
+    private Consumer(List<String> labelNames, List<String> labelValues) {
+      this.labelNames = labelNames;
+      this.labelValues = labelValues;
+    }
+
+    @Override
+    public void consume(String key, String value) {
+      labelNames.add(toLabelName(key));
+      labelValues.add(value == null ? "" : value);
+    }
   }
 
   private static void addSummarySamples(
