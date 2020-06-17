@@ -18,6 +18,7 @@ package io.opentelemetry.common;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;

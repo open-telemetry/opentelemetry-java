@@ -16,29 +16,9 @@
 
 package io.opentelemetry.common;
 
-import javax.annotation.Nullable;
-
 /**
  * A read-only container for String-keyed attributes.
  *
  * <p>See {@link Attributes} for the public API implementation.
  */
-public interface ReadableAttributes {
-  /** The number of attributes contained in this. */
-  int size();
-
-  /** Whether there are any attributes contained in this. */
-  boolean isEmpty();
-
-  /** Iterates over all the key-value pairs of attributes contained by this instance. */
-  void forEach(KeyValueConsumer<AttributeValue> consumer);
-
-  /**
-   * Returns the value of the given key, or null if the key does not exist.
-   *
-   * <p>Currently may be implemented via a linear search, depending on implementation, so O(n)
-   * performance in the worst case.
-   */
-  @Nullable
-  AttributeValue get(String key);
-}
+public interface ReadableAttributes extends ReadableKeyValuePairs<AttributeValue> {}
