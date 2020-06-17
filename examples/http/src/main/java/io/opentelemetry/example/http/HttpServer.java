@@ -21,6 +21,7 @@ import com.sun.net.httpserver.HttpHandler;
 import io.grpc.Context;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.exporters.logging.LoggingSpanExporter;
@@ -35,8 +36,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
 
 public class HttpServer {
 
@@ -95,9 +94,9 @@ public class HttpServer {
       System.out.println("Served Client: " + he.getRemoteAddress());
 
       // Generate an Event with an attribute
-      Map<String, AttributeValue> event = new HashMap<>();
-      event.put("answer", AttributeValue.stringAttributeValue(response));
-      span.addEvent("Finish Processing", event);
+      Attributes eventAttributes =
+          Attributes.of("answer", AttributeValue.stringAttributeValue(response));
+      span.addEvent("Finish Processing", eventAttributes);
 
       // Everything works fine in this example
       span.setStatus(Status.OK);
