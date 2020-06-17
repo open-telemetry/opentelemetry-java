@@ -20,9 +20,9 @@ import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.Tracer;
-import org.apache.logging.log4j.core.util.ContextDataProvider;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.logging.log4j.core.util.ContextDataProvider;
 
 public class TraceContextDataProvider implements ContextDataProvider {
   @Override

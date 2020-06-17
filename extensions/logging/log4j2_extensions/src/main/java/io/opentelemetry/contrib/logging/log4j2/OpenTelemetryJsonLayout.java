@@ -18,6 +18,8 @@ package io.opentelemetry.contrib.logging.log4j2;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -28,10 +30,8 @@ import org.apache.logging.log4j.core.util.StringBuilderWriter;
 import org.apache.logging.log4j.spi.StandardLevel;
 import org.apache.logging.log4j.util.ReadOnlyStringMap;
 import org.apache.logging.log4j.util.Strings;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-@Plugin(name="OpenTelemetryJsonLayout", category="Core", elementType="layout")
+@Plugin(name = "OpenTelemetryJsonLayout", category = "Core", elementType = "layout")
 public class OpenTelemetryJsonLayout extends AbstractStringLayout {
   JsonFactory factory = new JsonFactory();
 
@@ -90,8 +90,8 @@ public class OpenTelemetryJsonLayout extends AbstractStringLayout {
     }
   }
 
-  private static void writeRequestCorrelation(JsonGenerator generator, ReadOnlyStringMap contextData)
-      throws IOException {
+  private static void writeRequestCorrelation(
+      JsonGenerator generator, ReadOnlyStringMap contextData) throws IOException {
     generator.writeFieldName("traceid");
     generator.writeString(contextData.getValue("traceid").toString());
     generator.writeFieldName("spanid");

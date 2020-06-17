@@ -16,27 +16,24 @@
 
 package io.opentelemetry.contrib.logging.log4j2;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.google.gson.Gson;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
+import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.junit.LoggerContextRule;
 import org.apache.logging.log4j.test.appender.ListAppender;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-
 public class TraceContextDataProviderTest {
-  @Rule
-  public LoggerContextRule init = new LoggerContextRule("ContextDataProviderTestConfig.xml");
+  @Rule public LoggerContextRule init = new LoggerContextRule("ContextDataProviderTestConfig.xml");
 
   @Test
   public void testLayoutWrapperSync() {
@@ -100,5 +97,4 @@ public class TraceContextDataProviderTest {
     assertEquals(spanId, parsed.get("spanid"));
     assertEquals(1, Integer.parseInt(parsed.get("traceflags").toString()));
   }
-
 }

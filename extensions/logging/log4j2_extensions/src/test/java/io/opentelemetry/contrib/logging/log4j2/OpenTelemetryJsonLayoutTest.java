@@ -16,28 +16,25 @@
 
 package io.opentelemetry.contrib.logging.log4j2;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import com.google.gson.Gson;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
+import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.junit.LoggerContextRule;
 import org.apache.logging.log4j.test.appender.ListAppender;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-
 public class OpenTelemetryJsonLayoutTest {
-  @Rule
-  public LoggerContextRule init = new LoggerContextRule("OpenTelemetryJsonLayoutConfig.xml");
+  @Rule public LoggerContextRule init = new LoggerContextRule("OpenTelemetryJsonLayoutConfig.xml");
   private final Gson gson = new Gson();
 
   @Test
@@ -61,20 +58,17 @@ public class OpenTelemetryJsonLayoutTest {
     Map<?, ?> data = gson.fromJson(first, Map.class);
     assertEquals("test", data.get("body"));
     assertEquals("DefaultJsonLogger", data.get("name"));
-    Map<?, ?> time = (Map<?,?>) data.get("timestamp");
+    Map<?, ?> time = (Map<?, ?>) data.get("timestamp");
     double eventTime = (Double) time.get("millis");
     assertTrue(eventTime - logTime < 100);
     assertEquals("WARN", data.get("severitytext"));
     assertEquals(13, ((Double) data.get("severitynumber")).intValue());
     assertNull(data.get("traceid"));
 
-
     String second = messages.get(1);
     data = gson.fromJson(second, Map.class);
     assertEquals(span.getContext().getTraceId().toLowerBase16(), data.get("traceid"));
     assertEquals(span.getContext().getSpanId().toLowerBase16(), data.get("spanid"));
     assertEquals(span.getContext().getTraceFlags().toLowerBase16(), data.get("traceflags"));
-
   }
-
 }
