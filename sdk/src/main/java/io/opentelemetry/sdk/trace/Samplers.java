@@ -17,23 +17,20 @@
 package io.opentelemetry.sdk.trace;
 
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
-import static java.util.Collections.singletonMap;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
+import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.attributes.DoubleAttributeSetter;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -80,12 +77,11 @@ public final class Samplers {
    * @return A {@link Decision} with the attributes equivalent to {@code attributes} and {@link
    *     Decision#isSampled()} returning {@code isSampled}.
    */
-  public static final Decision decision(
-      boolean isSampled, @Nonnull Map<String, AttributeValue> attributes) {
+  public static Decision decision(boolean isSampled, Attributes attributes) {
     Objects.requireNonNull(attributes, "attributes");
     return attributes.isEmpty()
         ? emptyDecision(isSampled)
-        : DecisionImpl.create(isSampled, ImmutableMap.copyOf(attributes));
+        : DecisionImpl.create(isSampled, attributes);
   }
 
   /**
@@ -94,13 +90,13 @@ public final class Samplers {
    *
    * <p>This is meant for use by custom {@link Sampler} implementations.
    *
-   * <p>Use {@link #decision(boolean, Map)} if you need attributes.
+   * <p>Use {@link #decision(boolean, Attributes)} if you need attributes.
    *
    * @param isSampled The value to return from {@link Decision#isSampled()}.
    * @return A {@link Decision} with empty attributes and {@link Decision#isSampled()} returning
    *     {@code isSampled}.
    */
-  public static final Decision emptyDecision(boolean isSampled) {
+  public static Decision emptyDecision(boolean isSampled) {
     return isSampled ? EMPTY_SAMPLED_DECISION : EMPTY_NOT_SAMPLED_DECISION;
   }
 
@@ -146,8 +142,8 @@ public final class Samplers {
         @Nullable SpanContext parentContext,
         TraceId traceId,
         String name,
-        Span.Kind spanKind,
-        Map<String, AttributeValue> attributes,
+        Kind spanKind,
+        ReadableAttributes attributes,
         List<Link> parentLinks) {
       return EMPTY_SAMPLED_DECISION;
     }
@@ -168,8 +164,8 @@ public final class Samplers {
         @Nullable SpanContext parentContext,
         TraceId traceId,
         String name,
-        Span.Kind spanKind,
-        Map<String, AttributeValue> attributes,
+        Kind spanKind,
+        ReadableAttributes attributes,
         List<Link> parentLinks) {
       return EMPTY_NOT_SAMPLED_DECISION;
     }
@@ -228,8 +224,8 @@ public final class Samplers {
         @Nullable SpanContext parentContext,
         TraceId traceId,
         String name,
-        Span.Kind spanKind,
-        Map<String, AttributeValue> attributes,
+        Kind spanKind,
+        ReadableAttributes attributes,
         @Nullable List<Link> parentLinks) {
       // If the parent is sampled keep the sampling decision.
       if (parentContext != null && parentContext.getTraceFlags().isSampled()) {
@@ -272,7 +268,7 @@ public final class Samplers {
      */
     static Decision createWithProbability(boolean decision, double probability) {
       return new AutoValue_Samplers_DecisionImpl(
-          decision, singletonMap(SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
+          decision, Attributes.of(SAMPLING_PROBABILITY.key(), doubleAttributeValue(probability)));
     }
 
     /**
@@ -281,8 +277,7 @@ public final class Samplers {
      * @param decision sampling decision
      */
     static Decision createWithoutAttributes(boolean decision) {
-      return new AutoValue_Samplers_DecisionImpl(
-          decision, Collections.<String, AttributeValue>emptyMap());
+      return new AutoValue_Samplers_DecisionImpl(decision, Attributes.empty());
     }
 
     /**
@@ -291,7 +286,7 @@ public final class Samplers {
      * @param decision sampling decision
      * @param attributes attributes. Will not be copied, so do not modify afterwards.
      */
-    static Decision create(boolean decision, Map<String, AttributeValue> attributes) {
+    static Decision create(boolean decision, Attributes attributes) {
       return new AutoValue_Samplers_DecisionImpl(decision, attributes);
     }
 
@@ -299,6 +294,6 @@ public final class Samplers {
     public abstract boolean isSampled();
 
     @Override
-    public abstract Map<String, AttributeValue> getAttributes();
+    public abstract Attributes getAttributes();
   }
 }
