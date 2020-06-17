@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.trace;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.KeyValueConsumer;
 import io.opentelemetry.common.ReadableAttributes;
 import java.util.HashMap;
 import java.util.Map;

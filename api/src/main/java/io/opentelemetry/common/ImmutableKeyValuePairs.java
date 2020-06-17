@@ -34,22 +34,24 @@ import javax.annotation.concurrent.Immutable;
  * @see Attributes
  */
 @Immutable
-abstract class ImmutableKeyValuePairs<V> {
+abstract class ImmutableKeyValuePairs<V> implements ReadableKeyValuePairs<V> {
   private static final Logger logger = Logger.getLogger(ImmutableKeyValuePairs.class.getName());
 
   List<Object> data() {
     return Collections.emptyList();
   }
 
+  @Override
   public int size() {
     return data().size() / 2;
   }
 
+  @Override
   public boolean isEmpty() {
     return data().isEmpty();
   }
 
-  /** Iterates over all the key-value pairs of attributes contained by this instance. */
+  @Override
   @SuppressWarnings("unchecked")
   public void forEach(KeyValueConsumer<V> consumer) {
     for (int i = 0; i < data().size(); i += 2) {
@@ -57,13 +59,9 @@ abstract class ImmutableKeyValuePairs<V> {
     }
   }
 
-  /**
-   * Returns the value of the given key, or null if the key does not exist.
-   *
-   * <p>Warning: currently implemented via a linear search, so O(n) performance.
-   */
-  @SuppressWarnings("unchecked")
+  @Override
   @Nullable
+  @SuppressWarnings("unchecked")
   public V get(String key) {
     for (int i = 0; i < data().size(); i += 2) {
       if (key.equals(data().get(i))) {

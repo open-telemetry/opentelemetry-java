@@ -16,8 +16,8 @@
 
 package io.opentelemetry.exporters.otlp;
 
-import io.opentelemetry.common.KeyValueConsumer;
 import io.opentelemetry.common.Labels;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.proto.common.v1.StringKeyValue;
 import io.opentelemetry.proto.metrics.v1.DoubleDataPoint;
 import io.opentelemetry.proto.metrics.v1.InstrumentationLibraryMetrics;
