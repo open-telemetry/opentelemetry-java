@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -225,8 +226,7 @@ public class MetricAdapterTest {
     MetricData metricData =
         MetricData.create(
             descriptor,
-            Resource.create(
-                Collections.singletonMap("kr", AttributeValue.stringAttributeValue("vr"))),
+            Resource.create(Attributes.of("kr", AttributeValue.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("full", "version"),
             Collections.<Point>singletonList(
                 MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5)));

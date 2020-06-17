@@ -22,6 +22,7 @@ import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,9 +51,10 @@ public class AwsResourceTest {
 
     Resource resource = AwsResource.create(populator1, populator2);
     assertThat(resource.getAttributes())
-        .containsExactly(
-            "key1", stringAttributeValue("value3"),
-            "key2", booleanAttributeValue(true),
-            "key3", stringAttributeValue("value2"));
+        .isEqualTo(
+            Attributes.of(
+                "key1", stringAttributeValue("value3"),
+                "key2", booleanAttributeValue(true),
+                "key3", stringAttributeValue("value2")));
   }
 }

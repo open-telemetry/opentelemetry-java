@@ -170,7 +170,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   private static Endpoint chooseEndpoint(SpanData spanData, Endpoint localEndpoint) {
-    Map<String, AttributeValue> resourceAttributes = spanData.getResource().getAttributes();
+    ReadableAttributes resourceAttributes = spanData.getResource().getAttributes();
 
     // use the service.name from the Resource, if it's been set.
     AttributeValue serviceNameValue = resourceAttributes.get(ResourceConstants.SERVICE_NAME);

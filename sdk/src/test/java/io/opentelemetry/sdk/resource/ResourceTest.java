@@ -20,10 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,93 +33,119 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ResourceTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
-  private static final Resource DEFAULT_RESOURCE =
-      Resource.create(Collections.<String, AttributeValue>emptyMap());
+  private static final Resource DEFAULT_RESOURCE = Resource.create(Attributes.empty());
   private Resource resource1;
   private Resource resource2;
 
   @Before
   public void setUp() {
-    Map<String, AttributeValue> attributeMap1 = new HashMap<>();
-    attributeMap1.put("a", AttributeValue.stringAttributeValue("1"));
-    attributeMap1.put("b", AttributeValue.stringAttributeValue("2"));
-    Map<String, AttributeValue> attributeMap2 = new HashMap<>();
-    attributeMap2.put("a", AttributeValue.stringAttributeValue("1"));
-    attributeMap2.put("b", AttributeValue.stringAttributeValue("3"));
-    attributeMap2.put("c", AttributeValue.stringAttributeValue("4"));
-    resource1 = Resource.create(attributeMap1);
-    resource2 = Resource.create(attributeMap2);
+    Attributes attributes1 =
+        Attributes.of(
+            "a",
+            AttributeValue.stringAttributeValue("1"),
+            "b",
+            AttributeValue.stringAttributeValue("2"));
+    Attributes attribute2 =
+        Attributes.of(
+            "a",
+            AttributeValue.stringAttributeValue("1"),
+            "b",
+            AttributeValue.stringAttributeValue("3"),
+            "c",
+            AttributeValue.stringAttributeValue("4"));
+    resource1 = Resource.create(attributes1);
+    resource2 = Resource.create(attribute2);
   }
 
   @Test
   public void create() {
-    Map<String, AttributeValue> attributeMap = new HashMap<>();
-    attributeMap.put("a", AttributeValue.stringAttributeValue("1"));
-    attributeMap.put("b", AttributeValue.stringAttributeValue("2"));
-    Resource resource = Resource.create(attributeMap);
+    Attributes attributes =
+        Attributes.of(
+            "a",
+            AttributeValue.stringAttributeValue("1"),
+            "b",
+            AttributeValue.stringAttributeValue("2"));
+    Resource resource = Resource.create(attributes);
     assertThat(resource.getAttributes()).isNotNull();
     assertThat(resource.getAttributes().size()).isEqualTo(2);
-    assertThat(resource.getAttributes()).isEqualTo(attributeMap);
+    assertThat(resource.getAttributes()).isEqualTo(attributes);
 
-    Resource resource1 = Resource.create(Collections.<String, AttributeValue>emptyMap());
+    Resource resource1 = Resource.create(Attributes.empty());
     assertThat(resource1.getAttributes()).isNotNull();
-    assertThat(resource1.getAttributes()).isEmpty();
+    assertThat(resource1.getAttributes().isEmpty()).isTrue();
   }
 
   @Test
   public void testResourceEquals() {
-    Map<String, AttributeValue> attributeMap1 = new HashMap<>();
-    attributeMap1.put("a", AttributeValue.stringAttributeValue("1"));
-    attributeMap1.put("b", AttributeValue.stringAttributeValue("2"));
-    Map<String, AttributeValue> attributeMap2 = new HashMap<>();
-    attributeMap2.put("a", AttributeValue.stringAttributeValue("1"));
-    attributeMap2.put("b", AttributeValue.stringAttributeValue("3"));
-    attributeMap2.put("c", AttributeValue.stringAttributeValue("4"));
+    Attributes attribute1 =
+        Attributes.of(
+            "a",
+            AttributeValue.stringAttributeValue("1"),
+            "b",
+            AttributeValue.stringAttributeValue("2"));
+    Attributes attribute2 =
+        Attributes.of(
+            "a",
+            AttributeValue.stringAttributeValue("1"),
+            "b",
+            AttributeValue.stringAttributeValue("3"),
+            "c",
+            AttributeValue.stringAttributeValue("4"));
     new EqualsTester()
-        .addEqualityGroup(Resource.create(attributeMap1), Resource.create(attributeMap1))
-        .addEqualityGroup(Resource.create(attributeMap2))
+        .addEqualityGroup(Resource.create(attribute1), Resource.create(attribute1), resource1)
+        .addEqualityGroup(Resource.create(attribute2), resource2)
         .testEquals();
   }
 
   @Test
   public void testMergeResources() {
-    Map<String, AttributeValue> expectedAttributeMap = new HashMap<>();
-    expectedAttributeMap.put("a", AttributeValue.stringAttributeValue("1"));
-    expectedAttributeMap.put("b", AttributeValue.stringAttributeValue("2"));
-    expectedAttributeMap.put("c", AttributeValue.stringAttributeValue("4"));
+    Attributes expectedAttributes =
+        Attributes.of(
+            "a",
+            AttributeValue.stringAttributeValue("1"),
+            "b",
+            AttributeValue.stringAttributeValue("2"),
+            "c",
+            AttributeValue.stringAttributeValue("4"));
 
     Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(resource2);
-    assertThat(resource.getAttributes()).isEqualTo(expectedAttributeMap);
+    assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
   @Test
   public void testMergeResources_Resource1() {
-    Map<String, AttributeValue> expectedAttributeMap = new HashMap<>();
-    expectedAttributeMap.put("a", AttributeValue.stringAttributeValue("1"));
-    expectedAttributeMap.put("b", AttributeValue.stringAttributeValue("2"));
+    Attributes expectedAttributes =
+        Attributes.of(
+            "a",
+            AttributeValue.stringAttributeValue("1"),
+            "b",
+            AttributeValue.stringAttributeValue("2"));
 
     Resource resource = DEFAULT_RESOURCE.merge(resource1);
-    assertThat(resource.getAttributes()).isEqualTo(expectedAttributeMap);
+    assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
   @Test
   public void testMergeResources_Resource1_Null() {
-    Map<String, AttributeValue> expectedAttributeMap = new HashMap<>();
-    expectedAttributeMap.put("a", AttributeValue.stringAttributeValue("1"));
-    expectedAttributeMap.put("b", AttributeValue.stringAttributeValue("3"));
-    expectedAttributeMap.put("c", AttributeValue.stringAttributeValue("4"));
+    Attributes expectedAttributes =
+        Attributes.of(
+            "a", AttributeValue.stringAttributeValue("1"),
+            "b", AttributeValue.stringAttributeValue("3"),
+            "c", AttributeValue.stringAttributeValue("4"));
 
     Resource resource = DEFAULT_RESOURCE.merge(null).merge(resource2);
-    assertThat(resource.getAttributes()).isEqualTo(expectedAttributeMap);
+    assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 
   @Test
   public void testMergeResources_Resource2_Null() {
-    Map<String, AttributeValue> expectedAttributeMap = new HashMap<>();
-    expectedAttributeMap.put("a", AttributeValue.stringAttributeValue("1"));
-    expectedAttributeMap.put("b", AttributeValue.stringAttributeValue("2"));
-
+    Attributes expectedAttributes =
+        Attributes.of(
+            "a",
+            AttributeValue.stringAttributeValue("1"),
+            "b",
+            AttributeValue.stringAttributeValue("2"));
     Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(null);
-    assertThat(resource.getAttributes()).isEqualTo(expectedAttributeMap);
+    assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
   }
 }
