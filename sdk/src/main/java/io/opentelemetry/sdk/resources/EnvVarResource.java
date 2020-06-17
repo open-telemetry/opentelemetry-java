@@ -17,10 +17,7 @@
 package io.opentelemetry.sdk.resources;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.opentelemetry.common.AttributeValue;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import io.opentelemetry.common.Attributes;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -61,23 +58,21 @@ public final class EnvVarResource {
    * If a value contains whitespaces, =, or " characters, it must always be quoted.
    */
   @VisibleForTesting
-  static Map<String, AttributeValue> parseResourceAttributes(@Nullable String rawEnvAttributes) {
+  static Attributes parseResourceAttributes(@Nullable String rawEnvAttributes) {
     if (rawEnvAttributes == null) {
-      return Collections.emptyMap();
+      return Attributes.empty();
     } else {
-      Map<String, AttributeValue> attributes = new HashMap<>();
+      Attributes.Builder attrBuilders = Attributes.newBuilder();
       String[] rawAttributes = rawEnvAttributes.split(ATTRIBUTE_LIST_SPLITTER, -1);
       for (String rawAttribute : rawAttributes) {
         String[] keyValuePair = rawAttribute.split(ATTRIBUTE_KEY_VALUE_SPLITTER, -1);
         if (keyValuePair.length != 2) {
           continue;
         }
-        String key = keyValuePair[0].trim();
-        AttributeValue value =
-            AttributeValue.stringAttributeValue(keyValuePair[1].trim().replaceAll("^\"|\"$", ""));
-        attributes.put(key, value);
+        attrBuilders.setAttribute(
+            keyValuePair[0].trim(), keyValuePair[1].trim().replaceAll("^\"|\"$", ""));
       }
-      return Collections.unmodifiableMap(attributes);
+      return attrBuilders.build();
     }
   }
 }

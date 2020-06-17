@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -35,13 +36,18 @@ public abstract class AwsResource {
 
   @VisibleForTesting
   static Resource create(AwsResource... populators) {
-    Map<String, AttributeValue> resourceAttributes = new LinkedHashMap<>();
+    Map<String, AttributeValue> attrMap = new LinkedHashMap<>();
 
     for (AwsResource populator : populators) {
-      resourceAttributes.putAll(populator.createAttributes());
+      attrMap.putAll(populator.createAttributes());
     }
 
-    return Resource.create(resourceAttributes);
+    Attributes.Builder attrBuilder = Attributes.newBuilder();
+    for (Map.Entry<String, AttributeValue> attr : attrMap.entrySet()) {
+      attrBuilder.setAttribute(attr.getKey(), attr.getValue());
+    }
+
+    return Resource.create(attrBuilder.build());
   }
 
   /** Retrurns a {@link Map} of attributes for constructing a {@link Resource}. */

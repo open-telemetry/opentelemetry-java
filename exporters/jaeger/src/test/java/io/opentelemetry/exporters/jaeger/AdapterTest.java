@@ -318,7 +318,7 @@ public class AdapterTest {
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
-        .setResource(Resource.create(Collections.<String, AttributeValue>emptyMap()))
+        .setResource(Resource.create(Attributes.empty()))
         .setStatus(Status.OK)
         .build();
   }

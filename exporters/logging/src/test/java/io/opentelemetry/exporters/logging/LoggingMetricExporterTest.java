@@ -18,8 +18,8 @@ package io.opentelemetry.exporters.logging;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -61,7 +61,7 @@ public class LoggingMetricExporterTest {
 
     long nowEpochNanos = System.currentTimeMillis() * 1000 * 1000;
     Resource resource =
-        Resource.create(ImmutableMap.of("host", AttributeValue.stringAttributeValue("localhost")));
+        Resource.create(Attributes.of("host", AttributeValue.stringAttributeValue("localhost")));
     InstrumentationLibraryInfo instrumentationLibraryInfo =
         InstrumentationLibraryInfo.create("manualInstrumentation", "1.0");
     exporter.export(

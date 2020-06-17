@@ -18,7 +18,6 @@ package io.opentelemetry.exporters.zipkin;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
-import static java.util.Collections.singletonMap;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -127,7 +126,7 @@ public class ZipkinSpanExporterTest {
   public void generateSpan_ResourceServiceNameMapping() {
     final Resource resource =
         Resource.create(
-            singletonMap(
+            Attributes.of(
                 ResourceConstants.SERVICE_NAME, stringAttributeValue("super-zipkin-service")));
     SpanData data = buildStandardSpan().setResource(resource).build();
 

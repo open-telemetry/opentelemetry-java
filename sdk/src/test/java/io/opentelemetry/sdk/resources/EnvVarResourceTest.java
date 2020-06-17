@@ -19,9 +19,7 @@ package io.opentelemetry.sdk.resources;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
-import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.common.AttributeValue;
-import java.util.Map;
+import io.opentelemetry.common.Attributes;
 import org.junit.Test;
 
 /** Tests for the {@link EnvVarResource}. */
@@ -29,48 +27,44 @@ public class EnvVarResourceTest {
 
   @Test
   public void parseResourceAttributes_null() {
-    Map<String, AttributeValue> result = EnvVarResource.parseResourceAttributes(null);
-    assertThat(result).isEmpty();
+    assertThat(EnvVarResource.parseResourceAttributes(null).isEmpty()).isTrue();
   }
 
   @Test
   public void parseResourceAttributes_empty() {
-    Map<String, AttributeValue> result = EnvVarResource.parseResourceAttributes("");
-    assertThat(result).isEmpty();
+    assertThat(EnvVarResource.parseResourceAttributes("").isEmpty()).isTrue();
   }
 
   @Test
   public void parseResourceAttributes_malformed() {
-    Map<String, AttributeValue> result = EnvVarResource.parseResourceAttributes("value/foo");
-    assertThat(result).isEmpty();
+    assertThat(EnvVarResource.parseResourceAttributes("value/foo").isEmpty()).isTrue();
   }
 
   @Test
   public void parseResourceAttributes_single() {
-    Map<String, AttributeValue> result = EnvVarResource.parseResourceAttributes("value=foo");
-    assertThat(result).isEqualTo(ImmutableMap.of("value", stringAttributeValue("foo")));
+    Attributes result = EnvVarResource.parseResourceAttributes("value=foo");
+    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
 
   @Test
   public void parseResourceAttributes_multi() {
-    Map<String, AttributeValue> result =
-        EnvVarResource.parseResourceAttributes("value=foo, other=bar");
+    Attributes result = EnvVarResource.parseResourceAttributes("value=foo, other=bar");
     assertThat(result)
         .isEqualTo(
-            ImmutableMap.of(
+            Attributes.of(
                 "value", stringAttributeValue("foo"),
                 "other", stringAttributeValue("bar")));
   }
 
   @Test
   public void parseResourceAttributes_whitespace() {
-    Map<String, AttributeValue> result = EnvVarResource.parseResourceAttributes(" value = foo ");
-    assertThat(result).isEqualTo(ImmutableMap.of("value", stringAttributeValue("foo")));
+    Attributes result = EnvVarResource.parseResourceAttributes(" value = foo ");
+    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
 
   @Test
   public void parseResourceAttributes_quotes() {
-    Map<String, AttributeValue> result = EnvVarResource.parseResourceAttributes("value=\"foo\"");
-    assertThat(result).isEqualTo(ImmutableMap.of("value", stringAttributeValue("foo")));
+    Attributes result = EnvVarResource.parseResourceAttributes("value=\"foo\"");
+    assertThat(result).isEqualTo(Attributes.of("value", stringAttributeValue("foo")));
   }
 }
