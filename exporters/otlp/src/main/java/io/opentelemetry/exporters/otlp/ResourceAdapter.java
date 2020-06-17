@@ -17,7 +17,7 @@
 package io.opentelemetry.exporters.otlp;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.common.KeyValueConsumer;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.proto.resource.v1.Resource;
 
 final class ResourceAdapter {
