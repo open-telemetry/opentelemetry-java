@@ -24,7 +24,21 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.logging.log4j.core.util.ContextDataProvider;
 
+/**
+ * This ContextDataProvider is loaded via the ServiceProvider facility. {@link #supplyContextData()}
+ * is called when a log entry is created.
+ */
 public class TraceContextDataProvider implements ContextDataProvider {
+  /**
+   * This method is called on the creation of a log event, and is called in the same thread as
+   * the call to the logger. This allows us to pull out request correlation information and make
+   * it available to a layout, even if the logger is using an
+   * {@link org.apache.logging.log4j.core.appender.AsyncAppender}
+   *
+   * @return A map containing string versions of the traceid, spanid, and traceflags which can
+   * then be accessed from layout components
+   * @see OpenTelemetryJsonLayout
+   */
   @Override
   public Map<String, String> supplyContextData() {
     Tracer tracer = OpenTelemetry.getTracerProvider().get("ot_prototype_logging");

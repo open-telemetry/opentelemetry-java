@@ -31,6 +31,13 @@ import org.apache.logging.log4j.spi.StandardLevel;
 import org.apache.logging.log4j.util.ReadOnlyStringMap;
 import org.apache.logging.log4j.util.Strings;
 
+/**
+ * This class implements a JSON layout for Log4j 2.x that will include request correlation
+ * information in the form of traceid, spanid, and traceflags fields. The format is provisional,
+ * but is designed to mirror the
+ * <a href="https://github.com/open-telemetry/oteps/blob/master/text/logs/0097-log-data-model.md">
+ * Log Data Model</a>
+ */
 @Plugin(name = "OpenTelemetryJsonLayout", category = "Core", elementType = "layout")
 public class OpenTelemetryJsonLayout extends AbstractStringLayout {
   JsonFactory factory = new JsonFactory();
