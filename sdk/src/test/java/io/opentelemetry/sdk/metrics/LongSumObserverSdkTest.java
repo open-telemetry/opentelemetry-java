@@ -105,7 +105,7 @@ public class LongSumObserverSdkTest {
         new Callback<LongResult>() {
           @Override
           public void update(LongResult result) {
-            result.observe(12, "k", "v");
+            result.observe(12, Labels.of("k", "v"));
           }
         });
     testClock.advanceNanos(SECOND_NANOS);

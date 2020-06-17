@@ -106,7 +106,7 @@ public class DoubleUpDownSumObserverSdkTest {
         new Callback<DoubleResult>() {
           @Override
           public void update(DoubleResult result) {
-            result.observe(12.1d, "k", "v");
+            result.observe(12.1d, Labels.of("k", "v"));
           }
         });
     testClock.advanceNanos(SECOND_NANOS);

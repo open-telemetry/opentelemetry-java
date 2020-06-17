@@ -96,11 +96,10 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
       }
 
       @Override
-      public void observe(long sum, String... keyValueLabelPairs) {
+      public void observe(long sum, Labels labels) {
         Aggregator aggregator = activeBatcher.getAggregator();
         aggregator.recordLong(sum);
-        activeBatcher.batch(
-            Labels.of(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
+        activeBatcher.batch(labels, aggregator, /* mappedAggregator= */ false);
       }
     }
   }
@@ -129,11 +128,10 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
       }
 
       @Override
-      public void observe(double sum, String... keyValueLabelPairs) {
+      public void observe(double sum, Labels labels) {
         Aggregator aggregator = activeBatcher.getAggregator();
         aggregator.recordDouble(sum);
-        activeBatcher.batch(
-            Labels.of(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
+        activeBatcher.batch(labels, aggregator, /* mappedAggregator= */ false);
       }
     }
   }
