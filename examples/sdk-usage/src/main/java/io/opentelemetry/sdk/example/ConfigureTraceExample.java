@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;

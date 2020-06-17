@@ -52,8 +52,8 @@ public final class TestUtils {
         spans,
         new Condition() {
           @Override
-          public boolean check(SpanData span) {
-            AttributeValue attrValue = span.getAttributes().get(key);
+          public boolean check(SpanData spanData) {
+            AttributeValue attrValue = spanData.getAttributes().get(key);
             if (attrValue == null) {
               return false;
             }

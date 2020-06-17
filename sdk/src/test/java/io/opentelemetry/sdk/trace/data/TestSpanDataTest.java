@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.trace.data;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptyList;
 
-import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
@@ -30,8 +29,6 @@ import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,20 +49,12 @@ public class TestSpanDataTest {
     SpanData spanData = createBasicSpanBuilder().build();
 
     assertThat(spanData.getParentSpanId().isValid()).isFalse();
-    assertThat(spanData.getAttributes()).isEqualTo(Collections.<String, AttributeValue>emptyMap());
+    assertThat(spanData.getAttributes()).isEqualTo(Attributes.empty());
     assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
     assertThat(spanData.getInstrumentationLibraryInfo())
         .isSameInstanceAs(InstrumentationLibraryInfo.getEmpty());
     assertThat(spanData.getHasRemoteParent()).isFalse();
-  }
-
-  @Test
-  public void unmodifiableAttributes() {
-    SpanData spanData = createSpanDataWithMutableCollections();
-
-    thrown.expect(UnsupportedOperationException.class);
-    spanData.getAttributes().put("foo", AttributeValue.longAttributeValue(555));
   }
 
   @Test
@@ -124,7 +113,6 @@ public class TestSpanDataTest {
     return createBasicSpanBuilder()
         .setLinks(new ArrayList<Link>())
         .setEvents(new ArrayList<SpanData.Event>())
-        .setAttributes(new HashMap<String, AttributeValue>())
         .build();
   }
 

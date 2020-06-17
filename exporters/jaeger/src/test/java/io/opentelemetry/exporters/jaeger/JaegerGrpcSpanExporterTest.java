@@ -31,7 +31,7 @@ import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Collector.PostSpansRequest;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.CollectorServiceGrpc;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Model;
-import io.opentelemetry.sdk.contrib.otproto.TraceProtoUtils;
+import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.test.TestSpanData;

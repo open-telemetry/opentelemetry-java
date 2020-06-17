@@ -68,8 +68,7 @@ public class SpanAdapterTest {
                 .setKind(Kind.SERVER)
                 .setStartEpochNanos(12345)
                 .setEndEpochNanos(12349)
-                .setAttributes(
-                    Collections.singletonMap("key", AttributeValue.booleanAttributeValue(true)))
+                .setAttributes(Attributes.of("key", AttributeValue.booleanAttributeValue(true)))
                 .setTotalAttributeCount(2)
                 .setEvents(
                     Collections.<Event>singletonList(
