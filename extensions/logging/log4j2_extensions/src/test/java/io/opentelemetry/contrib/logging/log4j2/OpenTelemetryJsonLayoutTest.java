@@ -38,7 +38,7 @@ public class OpenTelemetryJsonLayoutTest {
   private final Gson gson = new Gson();
 
   @Test
-  public void testOTJsonLayoutDefaults() {
+  public void testOpenTelemetryJsonLayoutDefaults() {
     Logger logger = init.getLogger("DefaultJsonLogger");
     ListAppender appender = init.getListAppender("Defaults");
     double logTime = System.currentTimeMillis();
