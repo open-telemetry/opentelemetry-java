@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
 import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -60,7 +61,7 @@ public class LongUpDownSumObserverSdkTest {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk
             .longUpDownSumObserverBuilder("testObserver")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongUpDownSumObserver")
             .setUnit("ms")
             .build();
@@ -72,7 +73,7 @@ public class LongUpDownSumObserverSdkTest {
     LongUpDownSumObserverSdk longUpDownSumObserver =
         testSdk
             .longUpDownSumObserverBuilder("testObserver")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongUpDownSumObserver")
             .setUnit("ms")
             .build();
@@ -91,7 +92,7 @@ public class LongUpDownSumObserverSdkTest {
                     "My own LongUpDownSumObserver",
                     "ms",
                     Type.NON_MONOTONIC_LONG,
-                    Collections.singletonMap("sk1", "sv1")),
+                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>emptyList()));
@@ -112,37 +113,27 @@ public class LongUpDownSumObserverSdkTest {
     assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver",
-                    "",
-                    "1",
-                    Type.NON_MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                Descriptor.create("testObserver", "", "1", Type.NON_MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
                     LongPoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
-                        Collections.singletonMap("k", "v"),
+                        Labels.of("k", "v"),
                         12))));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longUpDownSumObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver",
-                    "",
-                    "1",
-                    Type.NON_MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                Descriptor.create("testObserver", "", "1", Type.NON_MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.<Point>singletonList(
                     LongPoint.create(
                         testClock.now() - 2 * SECOND_NANOS,
                         testClock.now(),
-                        Collections.singletonMap("k", "v"),
+                        Labels.of("k", "v"),
                         12))));
   }
 }

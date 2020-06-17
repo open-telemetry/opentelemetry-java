@@ -17,9 +17,9 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import java.util.Map;
 
 public final class DoubleSumAggregator extends AbstractAggregator {
 
@@ -51,7 +51,7 @@ public final class DoubleSumAggregator extends AbstractAggregator {
   }
 
   @Override
-  public Point toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
+  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
     return DoublePoint.create(startEpochNanos, epochNanos, labels, current.get());
   }
 

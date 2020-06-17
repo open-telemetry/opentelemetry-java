@@ -18,11 +18,11 @@ package io.opentelemetry.sdk.metrics.aggregator;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
@@ -34,40 +34,22 @@ public class DoubleMinMaxSumCountTest {
   public void testRecordings() {
     Aggregator aggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
 
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap())).isNull();
+    assertThat(aggregator.toPoint(0, 100, Labels.empty())).isNull();
 
     aggregator.recordDouble(100);
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
+    assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                1,
-                100,
-                createPercentiles(100d, 100d)));
+            SummaryPoint.create(0, 100, Labels.empty(), 1, 100, createPercentiles(100d, 100d)));
 
     aggregator.recordDouble(50);
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
+    assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                2,
-                150,
-                createPercentiles(50d, 100d)));
+            SummaryPoint.create(0, 100, Labels.empty(), 2, 150, createPercentiles(50d, 100d)));
 
     aggregator.recordDouble(-75);
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
+    assertThat(aggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                3,
-                75,
-                createPercentiles(-75d, 100d)));
+            SummaryPoint.create(0, 100, Labels.empty(), 3, 75, createPercentiles(-75d, 100d)));
   }
 
   @Test
@@ -78,17 +60,11 @@ public class DoubleMinMaxSumCountTest {
     Aggregator mergedToAggregator = DoubleMinMaxSumCount.getFactory().getAggregator();
     aggregator.mergeToAndReset(mergedToAggregator);
 
-    assertThat(mergedToAggregator.toPoint(0, 100, Collections.<String, String>emptyMap()))
+    assertThat(mergedToAggregator.toPoint(0, 100, Labels.empty()))
         .isEqualTo(
-            SummaryPoint.create(
-                0,
-                100,
-                Collections.<String, String>emptyMap(),
-                1,
-                100,
-                createPercentiles(100d, 100d)));
+            SummaryPoint.create(0, 100, Labels.empty(), 1, 100, createPercentiles(100d, 100d)));
 
-    assertThat(aggregator.toPoint(0, 100, Collections.<String, String>emptyMap())).isNull();
+    assertThat(aggregator.toPoint(0, 100, Labels.empty())).isNull();
   }
 
   @Test
@@ -134,12 +110,11 @@ public class DoubleMinMaxSumCountTest {
     // make sure everything gets merged when all the aggregation is done.
     aggregator.mergeToAndReset(summarizer);
 
-    SummaryPoint actual =
-        (SummaryPoint) summarizer.toPoint(0, 100, Collections.<String, String>emptyMap());
+    SummaryPoint actual = (SummaryPoint) summarizer.toPoint(0, 100, Labels.empty());
     assertThat(actual).isNotNull();
     assertThat(actual.getStartEpochNanos()).isEqualTo(0);
     assertThat(actual.getEpochNanos()).isEqualTo(100);
-    assertThat(actual.getLabels()).isEqualTo(Collections.emptyMap());
+    assertThat(actual.getLabels()).isEqualTo(Labels.empty());
     assertThat(actual.getCount()).isEqualTo(numberOfThreads * numberOfUpdates);
     assertThat(actual.getSum()).isWithin(0.001).of(102000d);
     List<ValueAtPercentile> percentileValues = actual.getPercentileValues();

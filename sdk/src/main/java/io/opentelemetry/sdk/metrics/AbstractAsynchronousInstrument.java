@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -99,7 +100,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
         Aggregator aggregator = activeBatcher.getAggregator();
         aggregator.recordLong(sum);
         activeBatcher.batch(
-            LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
+            Labels.of(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
       }
     }
   }
@@ -132,7 +133,7 @@ abstract class AbstractAsynchronousInstrument<T extends AsynchronousInstrument.R
         Aggregator aggregator = activeBatcher.getAggregator();
         aggregator.recordDouble(sum);
         activeBatcher.batch(
-            LabelSetSdk.create(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
+            Labels.of(keyValueLabelPairs), aggregator, /* mappedAggregator= */ false);
       }
     }
   }

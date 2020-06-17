@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics.data;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
@@ -47,14 +48,14 @@ public class MetricDataTest {
           "metric_description",
           "ms",
           Descriptor.Type.MONOTONIC_LONG,
-          Collections.singletonMap("key_const", "value_const"));
+          Labels.of("key_const", "value_const"));
   private static final Descriptor DOUBLE_METRIC_DESCRIPTOR =
       Descriptor.create(
           "metric_name",
           "metric_description",
           "ms",
           Descriptor.Type.NON_MONOTONIC_DOUBLE,
-          Collections.singletonMap("key_const", "value_const"));
+          Labels.of("key_const", "value_const"));
   private static final long START_EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(1000);
   private static final long EPOCH_NANOS = TimeUnit.MILLISECONDS.toNanos(2000);
   private static final long LONG_VALUE = 10;
@@ -65,15 +66,14 @@ public class MetricDataTest {
       ValueAtPercentile.create(100.0, DOUBLE_VALUE);
   private static final LongPoint LONG_POINT =
       MetricData.LongPoint.create(
-          START_EPOCH_NANOS, EPOCH_NANOS, Collections.singletonMap("key", "value"), LONG_VALUE);
+          START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), LONG_VALUE);
   private static final DoublePoint DOUBLE_POINT =
-      DoublePoint.create(
-          START_EPOCH_NANOS, EPOCH_NANOS, Collections.singletonMap("key", "value"), DOUBLE_VALUE);
+      DoublePoint.create(START_EPOCH_NANOS, EPOCH_NANOS, Labels.of("key", "value"), DOUBLE_VALUE);
   private static final SummaryPoint SUMMARY_POINT =
       SummaryPoint.create(
           START_EPOCH_NANOS,
           EPOCH_NANOS,
-          Collections.singletonMap("key", "value"),
+          Labels.of("key", "value"),
           LONG_VALUE,
           DOUBLE_VALUE,
           Arrays.asList(
@@ -140,7 +140,8 @@ public class MetricDataTest {
   public void metricData_LongPoints() {
     assertThat(LONG_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(LONG_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
-    assertThat(LONG_POINT.getLabels()).containsExactly("key", "value");
+    assertThat(LONG_POINT.getLabels().size()).isEqualTo(1);
+    assertThat(LONG_POINT.getLabels().get("key")).isEqualTo("value");
     assertThat(LONG_POINT.getValue()).isEqualTo(LONG_VALUE);
     MetricData metricData =
         MetricData.create(
@@ -155,7 +156,8 @@ public class MetricDataTest {
   public void metricData_SummaryPoints() {
     assertThat(SUMMARY_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(SUMMARY_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
-    assertThat(SUMMARY_POINT.getLabels()).containsExactly("key", "value");
+    assertThat(SUMMARY_POINT.getLabels().size()).isEqualTo(1);
+    assertThat(SUMMARY_POINT.getLabels().get("key")).isEqualTo("value");
     assertThat(SUMMARY_POINT.getCount()).isEqualTo(LONG_VALUE);
     assertThat(SUMMARY_POINT.getSum()).isEqualTo(DOUBLE_VALUE);
     assertThat(SUMMARY_POINT.getPercentileValues())
@@ -173,7 +175,8 @@ public class MetricDataTest {
   public void metricData_DoublePoints() {
     assertThat(DOUBLE_POINT.getStartEpochNanos()).isEqualTo(START_EPOCH_NANOS);
     assertThat(DOUBLE_POINT.getEpochNanos()).isEqualTo(EPOCH_NANOS);
-    assertThat(DOUBLE_POINT.getLabels()).containsExactly("key", "value");
+    assertThat(DOUBLE_POINT.getLabels().size()).isEqualTo(1);
+    assertThat(DOUBLE_POINT.getLabels().get("key")).isEqualTo("value");
     assertThat(DOUBLE_POINT.getValue()).isEqualTo(DOUBLE_VALUE);
     MetricData metricData =
         MetricData.create(

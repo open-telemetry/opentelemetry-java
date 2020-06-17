@@ -16,9 +16,9 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import java.util.Map;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -621,9 +621,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public B setConstantLabels(Map<String, String> constantLabels) {
-      Utils.checkMapKeysNotNull(
-          Utils.checkNotNull(constantLabels, "constantLabels"), "constantLabel");
+    public B setConstantLabels(Labels constantLabels) {
+      Utils.checkNotNull(constantLabels, "constantLabels");
       return getThis();
     }
 

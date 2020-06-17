@@ -16,8 +16,8 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.common.Labels;
 import java.util.Collections;
-import java.util.Map;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -59,7 +59,7 @@ public interface Instrument {
      * @param constantLabels the map of constant labels for the Instrument.
      * @return this.
      */
-    Builder setConstantLabels(Map<String, String> constantLabels);
+    Builder setConstantLabels(Labels constantLabels);
 
     /**
      * Builds and returns a {@code Instrument} with the desired options.

@@ -18,6 +18,7 @@ package io.opentelemetry.exporters.prometheus;
 
 import static io.prometheus.client.Collector.doubleToGoString;
 
+import io.opentelemetry.common.KeyValueConsumer;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
@@ -33,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Util methods to convert OpenTelemetry Metrics data models to Prometheus data models.
@@ -105,10 +105,18 @@ final class MetricAdapter {
     if (descriptor.getConstantLabels().size() != 0) {
       constLabelNames = new ArrayList<>(descriptor.getConstantLabels().size());
       constLabelValues = new ArrayList<>(descriptor.getConstantLabels().size());
-      for (Map.Entry<String, String> entry : descriptor.getConstantLabels().entrySet()) {
-        constLabelNames.add(toLabelName(entry.getKey()));
-        constLabelValues.add(entry.getValue() == null ? "" : entry.getValue());
-      }
+      final List<String> finalConstLabelNames = constLabelNames;
+      final List<String> finalConstLabelValues = constLabelValues;
+      descriptor
+          .getConstantLabels()
+          .forEach(
+              new KeyValueConsumer<String>() {
+                @Override
+                public void consume(String key, String value) {
+                  finalConstLabelNames.add(toLabelName(key));
+                  finalConstLabelValues.add(value == null ? "" : value);
+                }
+              });
     }
 
     for (Point point : points) {
@@ -122,12 +130,19 @@ final class MetricAdapter {
             new ArrayList<>(descriptor.getConstantLabels().size() + point.getLabels().size());
         labelValues.addAll(constLabelValues);
 
-        for (Map.Entry<String, String> entry : point.getLabels().entrySet()) {
-          // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
-          // for the same label key.
-          labelNames.add(toLabelName(entry.getKey()));
-          labelValues.add(entry.getValue() == null ? "" : entry.getValue());
-        }
+        // TODO: Use a cache(map) of converted label names to avoid sanitization multiple times
+        final List<String> finalLabelNames = labelNames;
+        final List<String> finalLabelValues = labelValues;
+        point
+            .getLabels()
+            .forEach(
+                new KeyValueConsumer<String>() {
+                  @Override
+                  public void consume(String key, String value) {
+                    finalLabelNames.add(toLabelName(key));
+                    finalLabelValues.add(value == null ? "" : value);
+                  }
+                });
       }
 
       switch (descriptor.getType()) {

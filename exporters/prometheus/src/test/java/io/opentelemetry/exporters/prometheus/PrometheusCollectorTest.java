@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
@@ -75,24 +76,23 @@ public class PrometheusCollectorTest {
                 "long_description",
                 "1",
                 Descriptor.Type.MONOTONIC_LONG,
-                Collections.singletonMap("kc", "vc")),
+                Labels.of("kc", "vc")),
             Resource.create(
                 Collections.singletonMap("kr", AttributeValue.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("grpc", "version"),
             Collections.<Point>singletonList(
-                MetricData.LongPoint.create(123, 456, Collections.singletonMap("kp", "vp"), 5))),
+                MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))),
         MetricData.create(
             Descriptor.create(
                 "name",
                 "double_description",
                 "1",
                 Descriptor.Type.MONOTONIC_DOUBLE,
-                Collections.singletonMap("kc", "vc")),
+                Labels.of("kc", "vc")),
             Resource.create(
                 Collections.singletonMap("kr", AttributeValue.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("http", "version"),
             Collections.<Point>singletonList(
-                MetricData.DoublePoint.create(
-                    123, 456, Collections.singletonMap("kp", "vp"), 3.5))));
+                MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 3.5))));
   }
 }

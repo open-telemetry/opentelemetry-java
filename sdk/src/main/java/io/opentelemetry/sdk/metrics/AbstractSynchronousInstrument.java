@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     extends AbstractInstrument {
-  private final ConcurrentHashMap<LabelSetSdk, B> boundLabels;
+  private final ConcurrentHashMap<Labels, B> boundLabels;
   private final ReentrantLock collectLock;
 
   AbstractSynchronousInstrument(
@@ -37,7 +38,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     collectLock = new ReentrantLock();
   }
 
-  final B bind(LabelSetSdk labelSet) {
+  final B bind(Labels labelSet) {
     B binding = boundLabels.get(labelSet);
     if (binding != null && binding.bind()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
@@ -71,7 +72,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     collectLock.lock();
     try {
       Batcher batcher = getActiveBatcher();
-      for (Map.Entry<LabelSetSdk, B> entry : boundLabels.entrySet()) {
+      for (Map.Entry<Labels, B> entry : boundLabels.entrySet()) {
         boolean unmappedEntry = entry.getValue().tryUnmap();
         if (unmappedEntry) {
           // If able to unmap then remove the record from the current Map. This can race with the

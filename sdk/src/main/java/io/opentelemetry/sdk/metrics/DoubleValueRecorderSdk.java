@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleValueRecorder;
 import io.opentelemetry.sdk.metrics.DoubleValueRecorderSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -43,10 +44,10 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
 
   @Override
   public void record(double delta, String... labelKeyValuePairs) {
-    record(delta, LabelSetSdk.create(labelKeyValuePairs));
+    record(delta, Labels.of(labelKeyValuePairs));
   }
 
-  void record(double value, LabelSetSdk labelSet) {
+  void record(double value, Labels labelSet) {
     BoundInstrument boundInstrument = bind(labelSet);
     boundInstrument.record(value);
     boundInstrument.unbind();
@@ -54,7 +55,7 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
 
   @Override
   public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bind(LabelSetSdk.create(labelKeyValuePairs));
+    return bind(Labels.of(labelKeyValuePairs));
   }
 
   @Override

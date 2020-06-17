@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -105,34 +106,16 @@ public class MeterSdkRegistryTest {
     assertThat(meterRegistry.getMetricProducer().getAllMetrics())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter",
-                    "",
-                    "1",
-                    Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
                 Resource.getEmpty(),
                 meterSdk1.getInstrumentationLibraryInfo(),
                 Collections.<Point>singletonList(
-                    LongPoint.create(
-                        testClock.now(),
-                        testClock.now(),
-                        Collections.<String, String>emptyMap(),
-                        10))),
+                    LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter",
-                    "",
-                    "1",
-                    Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
                 Resource.getEmpty(),
                 meterSdk2.getInstrumentationLibraryInfo(),
                 Collections.<Point>singletonList(
-                    LongPoint.create(
-                        testClock.now(),
-                        testClock.now(),
-                        Collections.<String, String>emptyMap(),
-                        10))));
+                    LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))));
   }
 }

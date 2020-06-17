@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.LongUpDownCounter;
 import io.opentelemetry.sdk.metrics.LongUpDownCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -40,10 +41,10 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInst
 
   @Override
   public void add(long increment, String... labelKeyValuePairs) {
-    add(increment, LabelSetSdk.create(labelKeyValuePairs));
+    add(increment, Labels.of(labelKeyValuePairs));
   }
 
-  public void add(long increment, LabelSetSdk labelSetSdk) {
+  public void add(long increment, Labels labelSetSdk) {
     BoundInstrument boundInstrument = bind(labelSetSdk);
     boundInstrument.add(increment);
     boundInstrument.unbind();
@@ -51,7 +52,7 @@ final class LongUpDownCounterSdk extends AbstractSynchronousInstrument<BoundInst
 
   @Override
   public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bind(LabelSetSdk.create(labelKeyValuePairs));
+    return bind(Labels.of(labelKeyValuePairs));
   }
 
   @Override

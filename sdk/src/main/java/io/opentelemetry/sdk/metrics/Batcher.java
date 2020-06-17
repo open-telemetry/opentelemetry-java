@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.List;
  *
  * <p>The only thread safe method in this class is {@link #getAggregator()}. An entire collection
  * cycle must be protected by a lock. A collection cycle is defined by multiple calls to {@link
- * #batch(LabelSetSdk, Aggregator, boolean)} followed by one {@link #completeCollectionCycle()};
+ * #batch(Labels, Aggregator, boolean)} followed by one {@link #completeCollectionCycle()};
  */
 interface Batcher {
 
@@ -40,15 +41,15 @@ interface Batcher {
 
   /**
    * Batches multiple entries together that are part of the same metric. It may remove labels from
-   * the {@link LabelSetSdk} and merge aggregations together.
+   * the {@link Labels} and merge aggregations together.
    *
-   * @param labelSet the {@link LabelSetSdk} associated with this {@code Aggregator}.
+   * @param labelSet the {@link Labels} associated with this {@code Aggregator}.
    * @param aggregator the {@link Aggregator} used to aggregate individual events for the given
    *     {@code LabelSetSdk}.
    * @param mappedAggregator {@code true} if the {@code Aggregator} is still in used by a binding.
    *     If {@code false} the {@code Batcher} can reuse the {@code Aggregator} instance.
    */
-  void batch(LabelSetSdk labelSet, Aggregator aggregator, boolean mappedAggregator);
+  void batch(Labels labelSet, Aggregator aggregator, boolean mappedAggregator);
 
   /**
    * Ends the current collection cycle and returns the list of metrics batched in this Batcher.
