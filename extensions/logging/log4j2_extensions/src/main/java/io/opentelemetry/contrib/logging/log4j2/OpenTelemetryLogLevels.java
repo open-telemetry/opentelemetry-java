@@ -17,9 +17,9 @@
 package io.opentelemetry.contrib.logging.log4j2;
 
 /**
- * This enumerates the log levels defined in the
- * <a href="https://github.com/open-telemetry/oteps/blob/master/text/logs/0097-log-data-model.md">
- * log data model</a>
+ * This enumerates the log levels defined in the <a
+ * href="https://github.com/open-telemetry/oteps/blob/master/text/logs/0097-log-data-model.md">log
+ * data model</a>
  */
 public enum OpenTelemetryLogLevels {
   UNSET(0),
