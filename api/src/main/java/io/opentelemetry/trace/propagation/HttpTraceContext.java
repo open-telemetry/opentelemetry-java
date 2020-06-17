@@ -125,6 +125,10 @@ public class HttpTraceContext implements HttpTextFormat {
     checkNotNull(getter, "getter");
 
     SpanContext spanContext = extractImpl(carrier, getter);
+    if (!spanContext.isValid()) {
+      return context;
+    }
+
     return TracingContextUtils.withSpan(DefaultSpan.create(spanContext), context);
   }
 
