@@ -29,5 +29,29 @@ Similarly request correlation flags can be added to the JsonLayout:
 </JsonLayout>
 ```
 
+# Open Telemetry JSON Layout
+
+This module also includes a layout component, though it's output format is 
+provisional and subject to change. To enable it, you must add 
+`io.opentelemetry.contrib.logging.log4j2` to the `packages` attribute of the
+`Configuration` element in your log4j configuration file. You can then use
+the `<OpenTelemetryJsonLayout/>` element as a layout. An example configuration
+to output to standard output would be:
+
+```xml
+<Configuration status="WARN" packages="io.opentelemetry.contrib.logging.log4j2">
+  <Appenders>
+    <Console name="stdout">
+      <OpenTelemetryJsonLayout/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Root level="info">
+      <AppenderRef ref="stdout"/>
+    </Root>
+  </Loggers>
+</Configuration>
+```
+
 [javadoc-image]: https://www.javadoc.io/badge/io.opentelemetry/opentelemetry-contrib-logging-log4j2-extensions.svg
 [javadoc-url]: https://www.javadoc.io/doc/io.opentelemetry/opentelemetry-contrib-logging-log4j2-extensions
