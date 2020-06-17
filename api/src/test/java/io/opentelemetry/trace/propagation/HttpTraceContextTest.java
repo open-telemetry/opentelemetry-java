@@ -58,7 +58,7 @@ public class HttpTraceContextTest {
   private static final String TRACEPARENT_HEADER_NOT_SAMPLED =
       "00-" + TRACE_ID_BASE16 + "-" + SPAN_ID_BASE16 + "-00";
   private static final Setter<Map<String, String>> setter = Map::put;
-  private static final Getter<Map<String, String>> getter = (carrier, key) -> carrier.get(key);
+  private static final Getter<Map<String, String>> getter = Map::get;
   // Encoding preserves the order which is the reverse order of adding.
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING = "bar=baz,foo=bar";
   private static final String TRACESTATE_NOT_DEFAULT_ENCODING_WITH_SPACES =
