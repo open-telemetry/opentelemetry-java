@@ -23,7 +23,7 @@ public class LongValueObserverExample {
             .build();
 
     observer.setCallback(
-        new LongValueObserver.Callback<LongResult>() {
+        new LongValueObserver.Callback<LongValueObserver.LongResult>() {
           @Override
           public void update(LongResult result) {
             result.observe(Runtime.getRuntime().totalMemory());

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -215,7 +216,7 @@ public class SpanBuilderSdkTest {
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
       SpanData spanData = span.toSpanData();
-      Attributes attrs = spanData.getAttributes();
+      ReadableAttributes attrs = spanData.getAttributes();
       assertThat(attrs.size()).isEqualTo(5);
       assertThat(attrs.get("string")).isEqualTo(AttributeValue.stringAttributeValue("value"));
       assertThat(attrs.get("long")).isEqualTo(AttributeValue.longAttributeValue(12345L));
@@ -240,7 +241,7 @@ public class SpanBuilderSdkTest {
 
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      Attributes attrs = span.toSpanData().getAttributes();
+      ReadableAttributes attrs = span.toSpanData().getAttributes();
       assertThat(attrs.size()).isEqualTo(5);
       assertThat(attrs.get("string")).isEqualTo(AttributeValue.stringAttributeValue("value"));
       assertThat(attrs.get("long")).isEqualTo(AttributeValue.longAttributeValue(12345L));
@@ -258,7 +259,7 @@ public class SpanBuilderSdkTest {
     span.setAttribute("boolean2", true);
     span.setAttribute("stringAttribute2", AttributeValue.stringAttributeValue("attrvalue"));
 
-    Attributes attrs = span.toSpanData().getAttributes();
+    ReadableAttributes attrs = span.toSpanData().getAttributes();
     assertThat(attrs.size()).isEqualTo(5);
     assertThat(attrs.get("string2")).isNull();
     assertThat(attrs.get("long2")).isNull();
@@ -310,7 +311,7 @@ public class SpanBuilderSdkTest {
     spanBuilder.setAttribute("key2", "value2");
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
 
-    Attributes beforeAttributes = span.toSpanData().getAttributes();
+    ReadableAttributes beforeAttributes = span.toSpanData().getAttributes();
     assertThat(beforeAttributes.size()).isEqualTo(2);
     assertThat(beforeAttributes.get("key1"))
         .isEqualTo(AttributeValue.stringAttributeValue("value1"));
@@ -319,7 +320,7 @@ public class SpanBuilderSdkTest {
 
     spanBuilder.setAttribute("key3", "value3");
 
-    Attributes afterAttributes = span.toSpanData().getAttributes();
+    ReadableAttributes afterAttributes = span.toSpanData().getAttributes();
     assertThat(afterAttributes.size()).isEqualTo(2);
     assertThat(afterAttributes.get("key1"))
         .isEqualTo(AttributeValue.stringAttributeValue("value1"));
@@ -402,7 +403,7 @@ public class SpanBuilderSdkTest {
     }
     RecordEventsReadableSpan span = (RecordEventsReadableSpan) spanBuilder.startSpan();
     try {
-      Attributes attrs = span.toSpanData().getAttributes();
+      ReadableAttributes attrs = span.toSpanData().getAttributes();
       assertThat(attrs.size()).isEqualTo(maxNumberOfAttrs);
       for (int i = 0; i < maxNumberOfAttrs; i++) {
         assertThat(attrs.get("key" + i)).isEqualTo(AttributeValue.longAttributeValue(i));

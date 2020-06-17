@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace.data;
 
 import com.google.auto.value.AutoValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
@@ -122,7 +123,7 @@ public interface SpanData {
    * @return the attributes recorded for this {@code Span}.
    * @since 0.1.0
    */
-  Attributes getAttributes();
+  ReadableAttributes getAttributes();
 
   /**
    * Returns the timed events recorded for this {@code Span}.

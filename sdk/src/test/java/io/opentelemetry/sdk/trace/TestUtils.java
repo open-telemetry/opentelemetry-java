@@ -28,7 +28,6 @@ import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.Tracer;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -37,18 +36,6 @@ import java.util.concurrent.TimeUnit;
 public final class TestUtils {
 
   private TestUtils() {}
-
-  /**
-   * Generates some random attributes used for testing.
-   *
-   * @return a map of String to AttributeValues
-   */
-  static Map<String, AttributeValue> generateRandomMapAttributes() {
-    Map<String, AttributeValue> result = new HashMap<>();
-    AttributeValue attribute = AttributeValue.stringAttributeValue(UUID.randomUUID().toString());
-    result.put(UUID.randomUUID().toString(), attribute);
-    return result;
-  }
 
   /**
    * Generates some random attributes used for testing.

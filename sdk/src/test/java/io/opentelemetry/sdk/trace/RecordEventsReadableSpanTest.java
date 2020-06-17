@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.KeyValueConsumer;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
@@ -633,7 +634,7 @@ public class RecordEventsReadableSpanTest {
 
   private void verifySpanData(
       SpanData spanData,
-      Attributes attributes,
+      final ReadableAttributes attributes,
       List<Event> eventData,
       List<io.opentelemetry.trace.Link> links,
       String spanName,
@@ -649,13 +650,23 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     assertThat(spanData.getName()).isEqualTo(spanName);
-    assertThat(spanData.getAttributes()).isEqualTo(attributes);
     assertThat(spanData.getEvents()).isEqualTo(eventData);
     assertThat(spanData.getLinks()).isEqualTo(links);
     assertThat(spanData.getStartEpochNanos()).isEqualTo(startEpochNanos);
     assertThat(spanData.getEndEpochNanos()).isEqualTo(endEpochNanos);
     assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
     assertThat(spanData.getHasEnded()).isEqualTo(hasEnded);
+
+    // verify equality manually, since the implementations don't all equals with each other.
+    ReadableAttributes spanDataAttributes = spanData.getAttributes();
+    assertThat(spanDataAttributes.size()).isEqualTo(attributes.size());
+    spanDataAttributes.forEach(
+        new KeyValueConsumer<AttributeValue>() {
+          @Override
+          public void consume(String key, AttributeValue value) {
+            assertThat(attributes.get(key)).isEqualTo(value);
+          }
+        });
   }
 
   @Test
@@ -722,7 +733,7 @@ public class RecordEventsReadableSpanTest {
     SpanData result = readableSpan.toSpanData();
     verifySpanData(
         result,
-        attributes,
+        attributesWithCapacity,
         events,
         Collections.<io.opentelemetry.trace.Link>singletonList(link1),
         name,
