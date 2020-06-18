@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.resource;
+package io.opentelemetry.sdk.resources;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.resources.Resource;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
