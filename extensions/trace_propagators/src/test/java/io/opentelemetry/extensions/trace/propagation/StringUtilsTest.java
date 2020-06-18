@@ -18,11 +18,13 @@ package io.opentelemetry.extensions.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class StringUtilsTest {
+  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void isNullOrEmpty() {
@@ -39,17 +41,14 @@ public class StringUtilsTest {
 
   @Test
   public void padLeft_throws_for_null_value() {
-    try {
-      StringUtils.padLeft(null, 10);
-      fail("Expected exception not");
-    } catch (NullPointerException expected) {
-    }
+    thrown.expect(NullPointerException.class);
+    StringUtils.padLeft(null, 10);
   }
 
   @Test
   public void padLeft_length_does_not_exceed_length() {
-    assertEquals(StringUtils.padLeft("value", 3), "value");
-    assertEquals(StringUtils.padLeft("value", -10), "value");
-    assertEquals(StringUtils.padLeft("value", 0), "value");
+    assertThat(StringUtils.padLeft("value", 3)).isEqualTo("value");
+    assertThat(StringUtils.padLeft("value", -10)).isEqualTo("value");
+    assertThat(StringUtils.padLeft("value", 0)).isEqualTo("value");
   }
 }
