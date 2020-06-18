@@ -65,7 +65,7 @@ public interface LongCounter extends SynchronousInstrument<BoundLongCounter> {
   void add(long increment, String... labelKeyValuePairs);
 
   @Override
-  BoundLongCounter bind(String... labelKeyValuePairs);
+  BoundLongCounter bind(Labels labels);
 
   /**
    * A {@code Bound Instrument} for a {@link LongCounter}.

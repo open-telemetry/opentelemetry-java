@@ -92,15 +92,6 @@ public class DoubleCounterTest {
   }
 
   @Test
-  public void noopBind_WithBadLabelSet() {
-    DoubleCounter doubleCounter =
-        meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("key/value");
-    doubleCounter.bind("key");
-  }
-
-  @Test
   public void add_DoesNotThrow() {
     DoubleCounter doubleCounter =
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
@@ -117,6 +108,13 @@ public class DoubleCounterTest {
   }
 
   @Test
+  public void preventNull_BindLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleCounterBuilder("metric").build().bind(null);
+  }
+
+  @Test
   public void bound_DoesNotThrow() {
     DoubleCounter doubleCounter =
         meter
@@ -125,7 +123,7 @@ public class DoubleCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundDoubleCounter bound = doubleCounter.bind();
+    BoundDoubleCounter bound = doubleCounter.bind(Labels.empty());
     bound.add(1.0);
     bound.unbind();
   }
@@ -139,7 +137,7 @@ public class DoubleCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundDoubleCounter bound = doubleCounter.bind();
+    BoundDoubleCounter bound = doubleCounter.bind(Labels.empty());
     try {
       thrown.expect(IllegalArgumentException.class);
       thrown.expectMessage("Counters can only increase");

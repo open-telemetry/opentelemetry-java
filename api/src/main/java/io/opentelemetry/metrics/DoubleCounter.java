@@ -65,7 +65,7 @@ public interface DoubleCounter extends SynchronousInstrument<BoundDoubleCounter>
   void add(double increment, String... labelKeyValuePairs);
 
   @Override
-  BoundDoubleCounter bind(String... labelKeyValuePairs);
+  BoundDoubleCounter bind(Labels labels);
 
   /**
    * A {@code Bound Instrument} for a {@link DoubleCounter}.

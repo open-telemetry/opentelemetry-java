@@ -60,10 +60,17 @@ public class LongValueRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
+  public void preventNull_BindLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.longValueRecorderBuilder("testRecorder").build().bind(null);
+  }
+
+  @Test
   public void collectMetrics_NoRecords() {
     LongValueRecorderSdk longMeasure =
         testSdk
-            .longValueRecorderBuilder("testMeasure")
+            .longValueRecorderBuilder("testRecorder")
             .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
@@ -74,7 +81,7 @@ public class LongValueRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testMeasure",
+                    "testRecorder",
                     "My very own counter",
                     "ms",
                     Type.SUMMARY,
@@ -88,13 +95,13 @@ public class LongValueRecorderSdkTest {
   public void collectMetrics_emptyCollectionCycle() {
     LongValueRecorderSdk longMeasure =
         testSdk
-            .longValueRecorderBuilder("testMeasure")
+            .longValueRecorderBuilder("testRecorder")
             .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
             .build();
 
-    longMeasure.bind("key", "value");
+    longMeasure.bind(Labels.of("key", "value"));
     testClock.advanceNanos(SECOND_NANOS);
 
     List<MetricData> metricDataList = longMeasure.collectAll();
@@ -102,7 +109,7 @@ public class LongValueRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testMeasure",
+                    "testRecorder",
                     "My very own counter",
                     "ms",
                     Type.SUMMARY,
@@ -114,14 +121,14 @@ public class LongValueRecorderSdkTest {
 
   @Test
   public void collectMetrics_WithOneRecord() {
-    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testMeasure").build();
+    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
     testClock.advanceNanos(SECOND_NANOS);
     longMeasure.record(12);
     List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testMeasure", "", "1", Type.SUMMARY, Labels.empty()),
+                Descriptor.create("testRecorder", "", "1", Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -139,8 +146,8 @@ public class LongValueRecorderSdkTest {
     Labels labelSet = Labels.of("K", "V");
     Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
-    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testMeasure").build();
-    BoundLongValueRecorder boundMeasure = longMeasure.bind("K", "V");
+    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
+    BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
       longMeasure.record(12);
@@ -186,9 +193,9 @@ public class LongValueRecorderSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet() {
-    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testMeasure").build();
-    BoundLongValueRecorder boundMeasure = longMeasure.bind("K", "v");
-    BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind("K", "v");
+    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
+    BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
+    BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind(Labels.of("K", "V"));
     try {
       assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
     } finally {
@@ -199,11 +206,11 @@ public class LongValueRecorderSdkTest {
 
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
-    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testMeasure").build();
-    BoundLongValueRecorder boundMeasure = longMeasure.bind("K", "v");
+    LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
+    BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
     try {
       longMeasure.collectAll();
-      BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind("K", "v");
+      BoundLongValueRecorder duplicateBoundMeasure = longMeasure.bind(Labels.of("K", "V"));
       try {
         assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
       } finally {
@@ -217,7 +224,7 @@ public class LongValueRecorderSdkTest {
   @Test
   public void stressTest() {
     final LongValueRecorderSdk longMeasure =
-        testSdk.longValueRecorderBuilder("testMeasure").build();
+        testSdk.longValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longMeasure).setCollectionIntervalMs(100);
@@ -233,7 +240,7 @@ public class LongValueRecorderSdkTest {
               2_000,
               1,
               new LongValueRecorderSdkTest.OperationUpdaterWithBinding(
-                  longMeasure.bind("K", "V"))));
+                  longMeasure.bind(Labels.of("K", "V")))));
     }
 
     stressTestBuilder.build().run();
@@ -255,7 +262,7 @@ public class LongValueRecorderSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final LongValueRecorderSdk longMeasure =
-        testSdk.longValueRecorderBuilder("testMeasure").build();
+        testSdk.longValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longMeasure).setCollectionIntervalMs(100);
@@ -273,7 +280,7 @@ public class LongValueRecorderSdkTest {
               1_000,
               2,
               new LongValueRecorderSdkTest.OperationUpdaterWithBinding(
-                  longMeasure.bind(keys[i], values[i]))));
+                  longMeasure.bind(Labels.of(keys[i], values[i])))));
     }
 
     stressTestBuilder.build().run();

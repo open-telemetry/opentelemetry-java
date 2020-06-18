@@ -57,10 +57,17 @@ public class DoubleUpDownCounterSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
+  public void preventNull_BindLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build().bind(null);
+  }
+
+  @Test
   public void collectMetrics_NoRecords() {
     DoubleUpDownCounterSdk doubleUpDownCounter =
         testSdk
-            .doubleUpDownCounterBuilder("testCounter")
+            .doubleUpDownCounterBuilder("testUpDownCounter")
             .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
@@ -71,7 +78,7 @@ public class DoubleUpDownCounterSdkTest {
     assertThat(metricData.getDescriptor())
         .isEqualTo(
             Descriptor.create(
-                "testCounter",
+                "testUpDownCounter",
                 "My very own counter",
                 "ms",
                 Type.NON_MONOTONIC_DOUBLE,
@@ -84,7 +91,7 @@ public class DoubleUpDownCounterSdkTest {
   @Test
   public void collectMetrics_WithOneRecord() {
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
     doubleUpDownCounter.add(12.1d);
     List<MetricData> metricDataList = doubleUpDownCounter.collectAll();
@@ -107,8 +114,8 @@ public class DoubleUpDownCounterSdkTest {
     Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
-    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind("K", "V");
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
       doubleUpDownCounter.add(12.1d);
@@ -151,9 +158,9 @@ public class DoubleUpDownCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
-    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind("K", "v");
-    BoundDoubleUpDownCounter duplicateBoundCounter = doubleUpDownCounter.bind("K", "v");
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
+    BoundDoubleUpDownCounter duplicateBoundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
     try {
       assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
     } finally {
@@ -165,11 +172,12 @@ public class DoubleUpDownCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
-    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind("K", "v");
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
+    BoundDoubleUpDownCounter boundCounter = doubleUpDownCounter.bind(Labels.of("K", "V"));
     try {
       doubleUpDownCounter.collectAll();
-      BoundDoubleUpDownCounter duplicateBoundCounter = doubleUpDownCounter.bind("K", "v");
+      BoundDoubleUpDownCounter duplicateBoundCounter =
+          doubleUpDownCounter.bind(Labels.of("K", "V"));
       try {
         assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
       } finally {
@@ -183,7 +191,7 @@ public class DoubleUpDownCounterSdkTest {
   @Test
   public void stressTest() {
     final DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleUpDownCounter).setCollectionIntervalMs(100);
@@ -194,7 +202,9 @@ public class DoubleUpDownCounterSdkTest {
               1_000, 2, new OperationUpdaterDirectCall(doubleUpDownCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterWithBinding(doubleUpDownCounter.bind("K", "V"))));
+              1_000,
+              2,
+              new OperationUpdaterWithBinding(doubleUpDownCounter.bind(Labels.of("K", "V")))));
     }
 
     stressTestBuilder.build().run();
@@ -210,7 +220,7 @@ public class DoubleUpDownCounterSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final DoubleUpDownCounterSdk doubleUpDownCounter =
-        testSdk.doubleUpDownCounterBuilder("testCounter").build();
+        testSdk.doubleUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleUpDownCounter).setCollectionIntervalMs(100);
@@ -224,7 +234,8 @@ public class DoubleUpDownCounterSdkTest {
           StressTestRunner.Operation.create(
               2_000,
               1,
-              new OperationUpdaterWithBinding(doubleUpDownCounter.bind(keys[i], values[i]))));
+              new OperationUpdaterWithBinding(
+                  doubleUpDownCounter.bind(Labels.of(keys[i], values[i])))));
     }
 
     stressTestBuilder.build().run();

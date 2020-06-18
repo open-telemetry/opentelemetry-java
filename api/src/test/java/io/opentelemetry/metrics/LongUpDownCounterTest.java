@@ -92,15 +92,6 @@ public class LongUpDownCounterTest {
   }
 
   @Test
-  public void noopBind_WithBadLabelSet() {
-    LongUpDownCounter longUpDownCounter =
-        meter.longUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("key/value");
-    longUpDownCounter.bind("key");
-  }
-
-  @Test
   public void addDoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
         meter
@@ -114,6 +105,13 @@ public class LongUpDownCounterTest {
   }
 
   @Test
+  public void preventNull_BindLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.longUpDownCounterBuilder("metric").build().bind(null);
+  }
+
+  @Test
   public void boundDoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
         meter
@@ -122,7 +120,7 @@ public class LongUpDownCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundLongUpDownCounter bound = longUpDownCounter.bind();
+    BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.empty());
     bound.add(1);
     bound.add(-1);
     bound.unbind();

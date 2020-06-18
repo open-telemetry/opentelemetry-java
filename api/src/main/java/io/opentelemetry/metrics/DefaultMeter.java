@@ -153,8 +153,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundDoubleCounter bind(String... labelKeyValuePairs) {
-      Utils.validateLabelPairs(labelKeyValuePairs);
+    public NoopBoundDoubleCounter bind(Labels labels) {
+      Utils.checkNotNull(labels, "labels");
       return NoopBoundDoubleCounter.INSTANCE;
     }
 
@@ -199,8 +199,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundLongCounter bind(String... labelKeyValuePairs) {
-      Utils.validateLabelPairs(labelKeyValuePairs);
+    public NoopBoundLongCounter bind(Labels labels) {
+      Utils.checkNotNull(labels, "labels");
       return NoopBoundLongCounter.INSTANCE;
     }
 
@@ -244,8 +244,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundDoubleUpDownCounter bind(String... labelKeyValuePairs) {
-      Utils.validateLabelPairs(labelKeyValuePairs);
+    public NoopBoundDoubleUpDownCounter bind(Labels labels) {
+      Utils.checkNotNull(labels, "labels");
       return NoopBoundDoubleUpDownCounter.INSTANCE;
     }
 
@@ -285,8 +285,8 @@ public final class DefaultMeter implements Meter {
     public void add(long increment, String... labelKeyValuePairs) {}
 
     @Override
-    public NoopBoundLongUpDownCounter bind(String... labelKeyValuePairs) {
-      Utils.validateLabelPairs(labelKeyValuePairs);
+    public NoopBoundLongUpDownCounter bind(Labels labels) {
+      Utils.checkNotNull(labels, "labels");
       return NoopBoundLongUpDownCounter.INSTANCE;
     }
 
@@ -328,8 +328,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundDoubleValueRecorder bind(String... labelKeyValuePairs) {
-      Utils.validateLabelPairs(labelKeyValuePairs);
+    public NoopBoundDoubleValueRecorder bind(Labels labels) {
+      Utils.checkNotNull(labels, "labels");
       return NoopBoundDoubleValueRecorder.INSTANCE;
     }
 
@@ -371,8 +371,8 @@ public final class DefaultMeter implements Meter {
     }
 
     @Override
-    public NoopBoundLongValueRecorder bind(String... labelKeyValuePairs) {
-      Utils.validateLabelPairs(labelKeyValuePairs);
+    public NoopBoundLongValueRecorder bind(Labels labels) {
+      Utils.checkNotNull(labels, "labels");
       return NoopBoundLongValueRecorder.INSTANCE;
     }
 

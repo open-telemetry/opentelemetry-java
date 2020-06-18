@@ -54,11 +54,6 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
   }
 
   @Override
-  public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bind(Labels.of(labelKeyValuePairs));
-  }
-
-  @Override
   BoundInstrument newBinding(Batcher batcher) {
     return new BoundInstrument(batcher);
   }

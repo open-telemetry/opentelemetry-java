@@ -54,11 +54,6 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
   }
 
   @Override
-  public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bind(Labels.of(labelKeyValuePairs));
-  }
-
-  @Override
   BoundInstrument newBinding(Batcher batcher) {
     return new BoundInstrument(batcher);
   }
