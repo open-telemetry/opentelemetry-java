@@ -43,7 +43,7 @@ final class Client {
     try (Scope ignored = tracer.withSpan(span)) {
       OpenTelemetry.getPropagators()
           .getHttpTextFormat()
-          .inject(Context.current(), message, (carrier, key, value) -> carrier.put(key, value));
+          .inject(Context.current(), message, Message::put);
       queue.put(message);
     } finally {
       span.end();
