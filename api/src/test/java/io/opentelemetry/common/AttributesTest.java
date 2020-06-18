@@ -43,7 +43,7 @@ public class AttributesTest {
             "key1", stringAttributeValue("value1"),
             "key2", AttributeValue.longAttributeValue(333));
 
-    attributes.forEach((key, value) -> entriesSeen.put(key, value));
+    attributes.forEach(entriesSeen::put);
 
     assertThat(entriesSeen)
         .containsExactly("key1", stringAttributeValue("value1"), "key2", longAttributeValue(333));
@@ -54,7 +54,7 @@ public class AttributesTest {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
     Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
-    attributes.forEach((key, value) -> entriesSeen.put(key, value));
+    attributes.forEach(entriesSeen::put);
     assertThat(entriesSeen).containsExactly("key", stringAttributeValue("value"));
   }
 

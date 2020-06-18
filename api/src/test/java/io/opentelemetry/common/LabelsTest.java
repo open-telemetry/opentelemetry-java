@@ -38,7 +38,7 @@ public class LabelsTest {
             "key1", "value1",
             "key2", "value2");
 
-    labels.forEach((key, value) -> entriesSeen.put(key, value));
+    labels.forEach(entriesSeen::put);
 
     assertThat(entriesSeen).containsExactly("key1", "value1", "key2", "value2");
   }
@@ -48,7 +48,7 @@ public class LabelsTest {
     final Map<String, String> entriesSeen = new HashMap<>();
 
     Labels labels = Labels.of("key", "value");
-    labels.forEach((key, value) -> entriesSeen.put(key, value));
+    labels.forEach(entriesSeen::put);
 
     assertThat(entriesSeen).containsExactly("key", "value");
   }
