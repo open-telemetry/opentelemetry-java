@@ -63,8 +63,7 @@ configure(opentelemetryProjects) {
         // (https://github.com/google/error-prone/issues/1253).
         it.options.errorprone.disable("NullableDereference") // "-Xep:NullableDereference:OFF"
 
-        // ExpectedExceptionRefactoring and TestExceptionRefactoring suggest using
-        // assertThrows, but assertThrows only works well with lambdas.
+        // We prefer ExpectedException to assertThrows
         it.options.errorprone.disable("ExpectedExceptionRefactoring")
         // "-Xep:ExpectedExceptionRefactoring:OFF"
 
@@ -165,7 +164,8 @@ configure(opentelemetryProjects) {
                 testcontainers          : 'org.testcontainers:testcontainers:1.13.0',
                 rest_assured            : 'io.rest-assured:rest-assured:4.2.0',
                 jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
-                zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}"  // Zipkin JUnit rule
+                zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
+                archunit                : 'com.tngtech.archunit:archunit-junit4:0.13.1' //Architectural constraints
         ]
     }
 

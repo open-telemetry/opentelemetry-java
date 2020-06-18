@@ -21,7 +21,6 @@ import static io.opentelemetry.extensions.trace.propagation.B3Propagator.COMBINE
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TracingContextUtils;
