@@ -19,9 +19,9 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.truth.Truth;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
@@ -31,7 +31,6 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,24 +63,23 @@ public class SamplersTest {
     Truth.assertThat(Samplers.emptyDecision(false)).isSameInstanceAs(Samplers.emptyDecision(false));
 
     Truth.assertThat(Samplers.emptyDecision(true).isSampled()).isTrue();
-    Truth.assertThat(Samplers.emptyDecision(true).getAttributes()).isEmpty();
+    Truth.assertThat(Samplers.emptyDecision(true).getAttributes().isEmpty()).isTrue();
     Truth.assertThat(Samplers.emptyDecision(false).isSampled()).isFalse();
-    Truth.assertThat(Samplers.emptyDecision(false).getAttributes()).isEmpty();
+    Truth.assertThat(Samplers.emptyDecision(false).getAttributes().isEmpty()).isTrue();
   }
 
   @Test
   public void samplingDecisionEmpty() {
-    Truth.assertThat(Samplers.decision(/*isSampled=*/ true, new HashMap<String, AttributeValue>()))
+    Truth.assertThat(Samplers.decision(/*isSampled=*/ true, Attributes.empty()))
         .isSameInstanceAs(Samplers.emptyDecision(true));
-    Truth.assertThat(
-            Samplers.decision(/*isSampled=*/ false, Collections.<String, AttributeValue>emptyMap()))
+    Truth.assertThat(Samplers.decision(/*isSampled=*/ false, Attributes.empty()))
         .isSameInstanceAs(Samplers.emptyDecision(false));
   }
 
   @Test
   public void samplingDecisionAttrs() {
-    final ImmutableMap<String, AttributeValue> attrs =
-        ImmutableMap.of(
+    final Attributes attrs =
+        Attributes.of(
             "foo", AttributeValue.longAttributeValue(42),
             "bar", AttributeValue.stringAttributeValue("baz"));
     final Decision sampledDecision = Samplers.decision(/*isSampled=*/ true, attrs);
@@ -103,7 +101,7 @@ public class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
+                    Attributes.empty(),
                     Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isTrue();
@@ -116,7 +114,7 @@ public class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
+                    Attributes.empty(),
                     Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isTrue();
@@ -129,7 +127,7 @@ public class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
+                    Attributes.empty(),
                     Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isTrue();
@@ -150,7 +148,7 @@ public class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
+                    Attributes.empty(),
                     Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isFalse();
@@ -163,7 +161,7 @@ public class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
+                    Attributes.empty(),
                     Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isFalse();
@@ -176,7 +174,7 @@ public class SamplersTest {
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
+                    Attributes.empty(),
                     Collections.<io.opentelemetry.trace.Link>emptyList())
                 .isSampled())
         .isFalse();
@@ -231,7 +229,7 @@ public class SamplersTest {
               idsGenerator.generateTraceId(),
               SPAN_NAME,
               SPAN_KIND,
-              Collections.<String, AttributeValue>emptyMap(),
+              Attributes.empty(),
               parentLinks)
           .isSampled()) {
         count++;
@@ -338,11 +336,12 @@ public class SamplersTest {
             notSampledtraceId,
             SPAN_NAME,
             SPAN_KIND,
-            Collections.<String, AttributeValue>emptyMap(),
+            Attributes.empty(),
             Collections.<io.opentelemetry.trace.Link>emptyList());
     assertThat(decision1.isSampled()).isFalse();
     assertThat(decision1.getAttributes())
-        .containsExactly(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
+        .isEqualTo(
+            Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     TraceId sampledtraceId =
@@ -372,10 +371,11 @@ public class SamplersTest {
             sampledtraceId,
             SPAN_NAME,
             SPAN_KIND,
-            Collections.<String, AttributeValue>emptyMap(),
+            Attributes.empty(),
             Collections.<io.opentelemetry.trace.Link>emptyList());
     assertThat(decision2.isSampled()).isTrue();
     assertThat(decision1.getAttributes())
-        .containsExactly(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
+        .isEqualTo(
+            Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
   }
 }

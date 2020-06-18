@@ -35,9 +35,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 import org.junit.Rule;
 import org.junit.Test;
@@ -495,8 +493,8 @@ public class SpanBuilderSdkTest {
                           @Nullable SpanContext parentContext,
                           TraceId traceId,
                           String name,
-                          Span.Kind spanKind,
-                          Map<String, AttributeValue> attributes,
+                          Kind spanKind,
+                          ReadableAttributes attributes,
                           List<io.opentelemetry.trace.Link> parentLinks) {
                         return new Decision() {
                           @Override
@@ -505,11 +503,9 @@ public class SpanBuilderSdkTest {
                           }
 
                           @Override
-                          public Map<String, AttributeValue> getAttributes() {
-                            Map<String, AttributeValue> attributes = new LinkedHashMap<>();
-                            attributes.put(
+                          public Attributes getAttributes() {
+                            return Attributes.of(
                                 samplerAttributeName, AttributeValue.stringAttributeValue("bar"));
-                            return attributes;
                           }
                         };
                       }

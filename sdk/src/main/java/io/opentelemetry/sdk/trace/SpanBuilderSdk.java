@@ -19,6 +19,8 @@ package io.opentelemetry.sdk.trace;
 import io.grpc.Context;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
@@ -39,7 +41,6 @@ import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
@@ -216,10 +217,7 @@ final class SpanBuilderSdk implements Span.Builder {
     // Avoid any possibility to modify the links list by adding links to the Builder after the
     // startSpan is called. If that happens all the links will be added in a new list.
     links = null;
-    Map<String, AttributeValue> immutableAttributes =
-        attributes == null
-            ? Collections.<String, AttributeValue>emptyMap()
-            : Collections.unmodifiableMap(attributes);
+    ReadableAttributes immutableAttributes = attributes == null ? Attributes.empty() : attributes;
     Decision samplingDecision =
         traceConfig
             .getSampler()
@@ -236,12 +234,18 @@ final class SpanBuilderSdk implements Span.Builder {
     if (!samplingDecision.isSampled()) {
       return DefaultSpan.create(spanContext);
     }
-    Map<String, AttributeValue> samplingAttributes = samplingDecision.getAttributes();
+    ReadableAttributes samplingAttributes = samplingDecision.getAttributes();
     if (!samplingAttributes.isEmpty()) {
       if (attributes == null) {
         attributes = new AttributesMap(traceConfig.getMaxNumberOfAttributes());
       }
-      attributes.putAll(samplingDecision.getAttributes());
+      samplingAttributes.forEach(
+          new KeyValueConsumer<AttributeValue>() {
+            @Override
+            public void consume(String key, AttributeValue value) {
+              attributes.put(key, value);
+            }
+          });
     }
 
     // Avoid any possibility to modify the attributes by adding attributes to the Builder after the
