@@ -22,7 +22,6 @@ import static io.opentelemetry.extensions.trace.propagation.B3Propagator.TRUE_IN
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
-import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;

@@ -86,7 +86,7 @@ public class SimpleSpanProcessorTest {
   public void configTest_EmptyOptions() {
     SimpleSpanProcessor.Builder config =
         SimpleSpanProcessor.newBuilder(spanExporter)
-            .fromConfigMap(Collections.<String, String>emptyMap(), ConfigTester.getNamingDot());
+            .fromConfigMap(Collections.emptyMap(), ConfigTester.getNamingDot());
     assertThat(config.getExportOnlySampled())
         .isEqualTo(SimpleSpanProcessor.Builder.DEFAULT_EXPORT_ONLY_SAMPLED);
   }

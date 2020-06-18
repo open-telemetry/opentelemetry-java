@@ -21,7 +21,6 @@ import static com.google.common.truth.Truth.assertThat;
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Getter;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
-import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -54,13 +53,7 @@ public class B3PropagatorTest {
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
   private static final TraceFlags SAMPLED_TRACE_OPTIONS =
       TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
-  private static final Setter<Map<String, String>> setter =
-      new Setter<Map<String, String>>() {
-        @Override
-        public void set(Map<String, String> carrier, String key, String value) {
-          carrier.put(key, value);
-        }
-      };
+  private static final Setter<Map<String, String>> setter = Map::put;
   private static final Getter<Map<String, String>> getter =
       new Getter<Map<String, String>>() {
         @Nullable
@@ -119,12 +112,7 @@ public class B3PropagatorTest {
             SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
             Context.current()),
         null,
-        new Setter<Map<String, String>>() {
-          @Override
-          public void set(Map<String, String> ignored, String key, String value) {
-            carrier.put(key, value);
-          }
-        });
+        (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
     assertThat(carrier).containsEntry(B3Propagator.TRACE_ID_HEADER, TRACE_ID_BASE16);
     assertThat(carrier).containsEntry(B3Propagator.SPAN_ID_HEADER, SPAN_ID_BASE16);
     assertThat(carrier).containsEntry(B3Propagator.SAMPLED_HEADER, "1");

@@ -71,16 +71,13 @@ public final class ErrorReportingTest {
   public void testCallbackError() {
     final Span span = tracer.spanBuilder("one").startSpan();
     executor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            try (Scope ignored = tracer.withSpan(span)) {
-              throw new RuntimeException("Invalid state");
-            } catch (Exception exc) {
-              span.setStatus(Status.UNKNOWN);
-            } finally {
-              span.end();
-            }
+        () -> {
+          try (Scope ignored = tracer.withSpan(span)) {
+            throw new RuntimeException("Invalid state");
+          } catch (Exception exc) {
+            span.setStatus(Status.UNKNOWN);
+          } finally {
+            span.end();
           }
         });
 
@@ -135,16 +132,13 @@ public final class ErrorReportingTest {
       // ScopedRunnable captures the active Span at this time.
       executor.submit(
           new ScopedRunnable(
-              new Runnable() {
-                @Override
-                public void run() {
-                  try {
-                    throw new RuntimeException("Invalid state");
-                  } catch (Exception exc) {
-                    tracer.getCurrentSpan().setStatus(Status.UNKNOWN);
-                  } finally {
-                    tracer.getCurrentSpan().end();
-                  }
+              () -> {
+                try {
+                  throw new RuntimeException("Invalid state");
+                } catch (Exception exc) {
+                  tracer.getCurrentSpan().setStatus(Status.UNKNOWN);
+                } finally {
+                  tracer.getCurrentSpan().end();
                 }
               },
               tracer));

@@ -21,14 +21,11 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -81,11 +78,8 @@ public class DoubleValueObserverSdkTest {
             .setUnit("ms")
             .build();
     doubleValueObserver.setCallback(
-        new Callback<DoubleResult>() {
-          @Override
-          public void update(DoubleResult result) {
-            // Do nothing.
-          }
+        result -> {
+          // Do nothing.
         });
     assertThat(doubleValueObserver.collectAll())
         .containsExactly(
@@ -98,20 +92,14 @@ public class DoubleValueObserverSdkTest {
                     Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>emptyList()));
+                Collections.emptyList()));
   }
 
   @Test
   public void collectMetrics_WithOneRecord() {
     DoubleValueObserverSdk doubleValueObserver =
         testSdk.doubleValueObserverBuilder("testObserver").build();
-    doubleValueObserver.setCallback(
-        new Callback<DoubleResult>() {
-          @Override
-          public void update(DoubleResult result) {
-            result.observe(12.1d, "k", "v");
-          }
-        });
+    doubleValueObserver.setCallback(result -> result.observe(12.1d, Labels.of("k", "v")));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleValueObserver.collectAll())
         .containsExactly(
@@ -119,7 +107,7 @@ public class DoubleValueObserverSdkTest {
                 Descriptor.create("testObserver", "", "1", Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
@@ -134,7 +122,7 @@ public class DoubleValueObserverSdkTest {
                 Descriptor.create("testObserver", "", "1", Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),

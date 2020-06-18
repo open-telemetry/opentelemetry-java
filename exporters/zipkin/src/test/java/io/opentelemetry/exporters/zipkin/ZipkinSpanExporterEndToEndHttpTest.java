@@ -23,7 +23,6 @@ import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.trace.Span.Kind;
@@ -61,7 +60,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
   private static final long SENT_TIMESTAMP_NANOS = 1505855799_459486280L;
   private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
-      ImmutableList.<Event>of(
+      ImmutableList.of(
           EventImpl.create(RECEIVED_TIMESTAMP_NANOS, "RECEIVED", Attributes.empty()),
           EventImpl.create(SENT_TIMESTAMP_NANOS, "SENT", Attributes.empty()));
 
@@ -167,7 +166,7 @@ public class ZipkinSpanExporterEndToEndHttpTest {
         .setAttributes(attributes)
         .setTotalAttributeCount(attributes.size())
         .setEvents(annotations)
-        .setLinks(Collections.<Link>emptyList())
+        .setLinks(Collections.emptyList())
         .setEndEpochNanos(END_EPOCH_NANOS)
         .setHasEnded(true);
   }

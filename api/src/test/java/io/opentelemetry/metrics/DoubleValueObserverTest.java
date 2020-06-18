@@ -19,8 +19,6 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
-import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -108,10 +106,6 @@ public class DoubleValueObserverTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    doubleValueObserver.setCallback(
-        new Callback<DoubleResult>() {
-          @Override
-          public void update(DoubleResult result) {}
-        });
+    doubleValueObserver.setCallback(result -> {});
   }
 }

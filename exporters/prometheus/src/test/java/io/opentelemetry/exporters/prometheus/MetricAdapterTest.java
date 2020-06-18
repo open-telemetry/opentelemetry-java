@@ -25,7 +25,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
@@ -59,7 +58,7 @@ public class MetricAdapterTest {
                 "full_name",
                 Descriptor.create(
                     "name", "description", "1", Descriptor.Type.MONOTONIC_LONG, Labels.empty()),
-                Collections.<MetricData.Point>emptyList()))
+                Collections.emptyList()))
         .isEmpty();
 
     assertThat(
@@ -67,7 +66,7 @@ public class MetricAdapterTest {
                 "full_name",
                 Descriptor.create(
                     "name", "description", "1", Descriptor.Type.NON_MONOTONIC_LONG, Labels.empty()),
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))))
         .containsExactly(
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 5));
@@ -81,7 +80,7 @@ public class MetricAdapterTest {
                     "1",
                     Descriptor.Type.NON_MONOTONIC_LONG,
                     Labels.of("kc", "vc")),
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))))
         .containsExactly(
             new Sample("full_name", ImmutableList.of("kc", "kp"), ImmutableList.of("vc", "vp"), 5));
@@ -95,7 +94,7 @@ public class MetricAdapterTest {
                     "1",
                     Descriptor.Type.MONOTONIC_LONG,
                     Labels.of("kc", "vc")),
-                ImmutableList.<Point>of(
+                ImmutableList.of(
                     MetricData.LongPoint.create(123, 456, Labels.empty(), 5),
                     MetricData.LongPoint.create(321, 654, Labels.of("kp", "vp"), 7))))
         .containsExactly(
@@ -114,7 +113,7 @@ public class MetricAdapterTest {
                     "1",
                     Descriptor.Type.NON_MONOTONIC_DOUBLE,
                     Labels.empty()),
-                Collections.<MetricData.Point>emptyList()))
+                Collections.emptyList()))
         .isEmpty();
 
     assertThat(
@@ -122,7 +121,7 @@ public class MetricAdapterTest {
                 "full_name",
                 Descriptor.create(
                     "name", "description", "1", Descriptor.Type.MONOTONIC_DOUBLE, Labels.empty()),
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5))))
         .containsExactly(
             new Sample("full_name", ImmutableList.of("kp"), ImmutableList.of("vp"), 5));
@@ -136,7 +135,7 @@ public class MetricAdapterTest {
                     "1",
                     Descriptor.Type.NON_MONOTONIC_DOUBLE,
                     Labels.of("kc", "vc")),
-                ImmutableList.<Point>of(
+                ImmutableList.of(
                     MetricData.DoublePoint.create(123, 456, Labels.empty(), 5),
                     MetricData.DoublePoint.create(321, 654, Labels.of("kp", "vp"), 7))))
         .containsExactly(
@@ -151,7 +150,7 @@ public class MetricAdapterTest {
                 "full_name",
                 Descriptor.create(
                     "name", "description", "1", Descriptor.Type.SUMMARY, Labels.empty()),
-                Collections.<MetricData.Point>emptyList()))
+                Collections.emptyList()))
         .isEmpty();
 
     assertThat(
@@ -159,7 +158,7 @@ public class MetricAdapterTest {
                 "full_name",
                 Descriptor.create(
                     "name", "description", "1", Descriptor.Type.SUMMARY, Labels.empty()),
-                ImmutableList.<Point>of(
+                ImmutableList.of(
                     MetricData.SummaryPoint.create(
                         321,
                         654,
@@ -181,14 +180,9 @@ public class MetricAdapterTest {
                 "full_name",
                 Descriptor.create(
                     "name", "description", "1", Descriptor.Type.SUMMARY, Labels.of("kc", "vc")),
-                ImmutableList.<Point>of(
+                ImmutableList.of(
                     MetricData.SummaryPoint.create(
-                        123,
-                        456,
-                        Labels.empty(),
-                        7,
-                        15.3,
-                        Collections.<MetricData.ValueAtPercentile>emptyList()),
+                        123, 456, Labels.empty(), 7, 15.3, Collections.emptyList()),
                     MetricData.SummaryPoint.create(
                         321,
                         654,
@@ -228,7 +222,7 @@ public class MetricAdapterTest {
             descriptor,
             Resource.create(Attributes.of("kr", AttributeValue.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("full", "version"),
-            Collections.<Point>singletonList(
+            Collections.singletonList(
                 MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 5)));
 
     assertThat(MetricAdapter.toMetricFamilySamples(metricData))

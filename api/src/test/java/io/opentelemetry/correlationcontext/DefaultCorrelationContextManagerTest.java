@@ -81,12 +81,9 @@ public final class DefaultCorrelationContextManagerTest {
   public void withContext() {
     assertThat(defaultCorrelationContextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    Scope wtm = defaultCorrelationContextManager.withContext(DIST_CONTEXT);
-    try {
+    try (Scope wtm = defaultCorrelationContextManager.withContext(DIST_CONTEXT)) {
       assertThat(defaultCorrelationContextManager.getCurrentContext())
           .isSameInstanceAs(DIST_CONTEXT);
-    } finally {
-      wtm.close();
     }
     assertThat(defaultCorrelationContextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
@@ -96,12 +93,9 @@ public final class DefaultCorrelationContextManagerTest {
   public void withContext_nullContext() {
     assertThat(defaultCorrelationContextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    Scope wtm = defaultCorrelationContextManager.withContext(null);
-    try {
+    try (Scope wtm = defaultCorrelationContextManager.withContext(null)) {
       assertThat(defaultCorrelationContextManager.getCurrentContext())
           .isSameInstanceAs(EmptyCorrelationContext.getInstance());
-    } finally {
-      wtm.close();
     }
     assertThat(defaultCorrelationContextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());
@@ -110,22 +104,15 @@ public final class DefaultCorrelationContextManagerTest {
   @Test
   public void withContextUsingWrap() {
     Runnable runnable;
-    Scope wtm = defaultCorrelationContextManager.withContext(DIST_CONTEXT);
-    try {
+    try (Scope wtm = defaultCorrelationContextManager.withContext(DIST_CONTEXT)) {
       assertThat(defaultCorrelationContextManager.getCurrentContext())
           .isSameInstanceAs(DIST_CONTEXT);
       runnable =
           Context.current()
               .wrap(
-                  new Runnable() {
-                    @Override
-                    public void run() {
+                  () ->
                       assertThat(defaultCorrelationContextManager.getCurrentContext())
-                          .isSameInstanceAs(DIST_CONTEXT);
-                    }
-                  });
-    } finally {
-      wtm.close();
+                          .isSameInstanceAs(DIST_CONTEXT));
     }
     assertThat(defaultCorrelationContextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());

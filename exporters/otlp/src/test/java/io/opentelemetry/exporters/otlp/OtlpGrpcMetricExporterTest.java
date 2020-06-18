@@ -34,7 +34,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
@@ -237,7 +236,7 @@ public class OtlpGrpcMetricExporterTest {
         Descriptor.create("name", "description", "1", Type.MONOTONIC_LONG, Labels.empty()),
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
-        Collections.<Point>singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
+        Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
   }
 
   private static final class FakeCollector extends MetricsServiceGrpc.MetricsServiceImplBase {

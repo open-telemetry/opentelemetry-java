@@ -70,34 +70,25 @@ public final class NestedCallbacksTest {
   private void submitCallbacks(final Span span) {
 
     executor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            try (Scope ignored = tracer.withSpan(span)) {
-              span.setAttribute("key1", "1");
+        () -> {
+          try (Scope ignored = tracer.withSpan(span)) {
+            span.setAttribute("key1", "1");
 
-              executor.submit(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      try (Scope ignored = tracer.withSpan(span)) {
-                        span.setAttribute("key2", "2");
+            executor.submit(
+                () -> {
+                  try (Scope ignored12 = tracer.withSpan(span)) {
+                    span.setAttribute("key2", "2");
 
-                        executor.submit(
-                            new Runnable() {
-                              @Override
-                              public void run() {
-                                try (Scope ignored = tracer.withSpan(span)) {
-                                  span.setAttribute("key3", "3");
-                                } finally {
-                                  span.end();
-                                }
-                              }
-                            });
-                      }
-                    }
-                  });
-            }
+                    executor.submit(
+                        () -> {
+                          try (Scope ignored1 = tracer.withSpan(span)) {
+                            span.setAttribute("key3", "3");
+                          } finally {
+                            span.end();
+                          }
+                        });
+                  }
+                });
           }
         });
   }

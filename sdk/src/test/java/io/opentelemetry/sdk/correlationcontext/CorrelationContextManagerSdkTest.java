@@ -82,12 +82,8 @@ public class CorrelationContextManagerSdkTest {
       runnable =
           Context.current()
               .wrap(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext);
-                    }
-                  });
+                  () ->
+                      assertThat(contextManager.getCurrentContext()).isSameInstanceAs(distContext));
     }
     assertThat(contextManager.getCurrentContext())
         .isSameInstanceAs(EmptyCorrelationContext.getInstance());

@@ -78,11 +78,7 @@ public final class TestUtils {
   public static Span.Builder startSpanWithSampler(
       TracerSdkProvider tracerSdkFactory, Tracer tracer, String spanName, Sampler sampler) {
     return startSpanWithSampler(
-        tracerSdkFactory,
-        tracer,
-        spanName,
-        sampler,
-        Collections.<String, AttributeValue>emptyMap());
+        tracerSdkFactory, tracer, spanName, sampler, Collections.emptyMap());
   }
 
   /**

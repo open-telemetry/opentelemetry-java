@@ -21,15 +21,12 @@ import static com.google.common.truth.Truth.assertThat;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.common.Labels;
-import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Rule;
@@ -78,11 +75,8 @@ public class DoubleUpDownSumObserverSdkTest {
             .setUnit("ms")
             .build();
     doubleUpDownSumObserver.setCallback(
-        new Callback<DoubleResult>() {
-          @Override
-          public void update(DoubleResult result) {
-            // Do nothing.
-          }
+        result -> {
+          // Do nothing.
         });
     assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
@@ -95,20 +89,14 @@ public class DoubleUpDownSumObserverSdkTest {
                     Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>emptyList()));
+                Collections.emptyList()));
   }
 
   @Test
   public void collectMetrics_WithOneRecord() {
     DoubleUpDownSumObserverSdk doubleUpDownSumObserver =
         testSdk.doubleUpDownSumObserverBuilder("testObserver").build();
-    doubleUpDownSumObserver.setCallback(
-        new Callback<DoubleResult>() {
-          @Override
-          public void update(DoubleResult result) {
-            result.observe(12.1d, "k", "v");
-          }
-        });
+    doubleUpDownSumObserver.setCallback(result -> result.observe(12.1d, Labels.of("k", "v")));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(doubleUpDownSumObserver.collectAll())
         .containsExactly(
@@ -117,7 +105,7 @@ public class DoubleUpDownSumObserverSdkTest {
                     "testObserver", "", "1", Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
@@ -131,7 +119,7 @@ public class DoubleUpDownSumObserverSdkTest {
                     "testObserver", "", "1", Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     DoublePoint.create(
                         testClock.now() - 2 * SECOND_NANOS,
                         testClock.now(),

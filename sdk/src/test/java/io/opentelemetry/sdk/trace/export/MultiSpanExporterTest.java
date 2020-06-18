@@ -51,8 +51,7 @@ public class MultiSpanExporterTest {
 
   @Test
   public void empty() {
-    SpanExporter multiSpanExporter =
-        MultiSpanExporter.create(Collections.<SpanExporter>emptyList());
+    SpanExporter multiSpanExporter = MultiSpanExporter.create(Collections.emptyList());
     multiSpanExporter.export(SPAN_LIST);
     multiSpanExporter.shutdown();
   }
@@ -121,7 +120,7 @@ public class MultiSpanExporterTest {
 
     doThrow(new IllegalArgumentException("No export for you."))
         .when(spanExporter1)
-        .export(ArgumentMatchers.<SpanData>anyList());
+        .export(ArgumentMatchers.anyList());
     when(spanExporter2.export(same(SPAN_LIST))).thenReturn(ResultCode.SUCCESS);
     assertThat(multiSpanExporter.export(SPAN_LIST)).isEqualTo(ResultCode.FAILURE);
     verify(spanExporter1).export(same(SPAN_LIST));
