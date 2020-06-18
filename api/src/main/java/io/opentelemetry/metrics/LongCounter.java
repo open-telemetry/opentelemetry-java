@@ -22,8 +22,8 @@ import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Counter is the most common synchronous instrument. This instrument supports an {@link #add(long,
- * String...)}` function for reporting an increment, and is restricted to non-negative increments.
- * The default aggregation is `Sum`.
+ * Labels)}` function for reporting an increment, and is restricted to non-negative increments. The
+ * default aggregation is `Sum`.
  *
  * <p>Example:
  *
@@ -59,10 +59,10 @@ public interface LongCounter extends SynchronousInstrument<BoundLongCounter> {
    * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
    * @param increment the value to add.
-   * @param labelKeyValuePairs the set of labels to be associated to this recording.
+   * @param labels the set of labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(long increment, String... labelKeyValuePairs);
+  void add(long increment, Labels labels);
 
   @Override
   BoundLongCounter bind(Labels labels);

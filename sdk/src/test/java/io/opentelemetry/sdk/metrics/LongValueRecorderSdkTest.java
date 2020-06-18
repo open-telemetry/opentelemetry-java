@@ -60,7 +60,14 @@ public class LongValueRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
-  public void preventNull_BindLabels() {
+  public void record_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.longValueRecorderBuilder("testRecorder").build().record(1, null);
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labels");
     testSdk.longValueRecorderBuilder("testRecorder").build().bind(null);
@@ -123,7 +130,7 @@ public class LongValueRecorderSdkTest {
   public void collectMetrics_WithOneRecord() {
     LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
     testClock.advanceNanos(SECOND_NANOS);
-    longMeasure.record(12);
+    longMeasure.record(12, Labels.empty());
     List<MetricData> metricDataList = longMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
@@ -143,20 +150,18 @@ public class LongValueRecorderSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    Labels labelSet = Labels.of("K", "V");
-    Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
     LongValueRecorderSdk longMeasure = testSdk.longValueRecorderBuilder("testRecorder").build();
     BoundLongValueRecorder boundMeasure = longMeasure.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
-      longMeasure.record(12);
+      longMeasure.record(12, Labels.empty());
       boundMeasure.record(123);
-      longMeasure.record(-14);
+      longMeasure.record(-14, Labels.empty());
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(321);
-      longMeasure.record(-121, "K", "V");
+      longMeasure.record(-121, Labels.of("K", "V"));
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = longMeasure.collectAll();
@@ -166,14 +171,19 @@ public class LongValueRecorderSdkTest {
       assertThat(metricData.getPoints())
           .containsExactly(
               SummaryPoint.create(
-                  startTime, firstCollect, emptyLabelSet, 2, -2, valueAtPercentiles(-14, 12)),
+                  startTime, firstCollect, Labels.empty(), 2, -2, valueAtPercentiles(-14, 12)),
               SummaryPoint.create(
-                  startTime, firstCollect, labelSet, 3, 323, valueAtPercentiles(-121, 321)));
+                  startTime,
+                  firstCollect,
+                  Labels.of("K", "V"),
+                  3,
+                  323,
+                  valueAtPercentiles(-121, 321)));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(222);
-      longMeasure.record(17);
+      longMeasure.record(17, Labels.empty());
 
       long secondCollect = testClock.now();
       metricDataList = longMeasure.collectAll();
@@ -183,9 +193,14 @@ public class LongValueRecorderSdkTest {
       assertThat(metricData.getPoints())
           .containsExactly(
               SummaryPoint.create(
-                  startTime, secondCollect, emptyLabelSet, 3, 15, valueAtPercentiles(-14, 17)),
+                  startTime, secondCollect, Labels.empty(), 3, 15, valueAtPercentiles(-14, 17)),
               SummaryPoint.create(
-                  startTime, secondCollect, labelSet, 4, 545, valueAtPercentiles(-121, 321)));
+                  startTime,
+                  secondCollect,
+                  Labels.of("K", "V"),
+                  4,
+                  545,
+                  valueAtPercentiles(-121, 321)));
     } finally {
       boundMeasure.unbind();
     }
@@ -351,7 +366,7 @@ public class LongValueRecorderSdkTest {
 
     @Override
     void update() {
-      longValueRecorder.record(11, key, value);
+      longValueRecorder.record(11, Labels.of(key, value));
     }
 
     @Override

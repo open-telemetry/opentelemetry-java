@@ -46,8 +46,8 @@ public enum MetricsTestOperationBuilder {
                     .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.add(5L, args);
+            public void perform(Labels labels) {
+              metric.add(5L, labels);
             }
 
             @Override
@@ -70,8 +70,8 @@ public enum MetricsTestOperationBuilder {
                     .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.add(5.0d, args);
+            public void perform(Labels labels) {
+              metric.add(5.0d, labels);
             }
 
             @Override
@@ -95,8 +95,8 @@ public enum MetricsTestOperationBuilder {
                     .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.record(5.0d, args);
+            public void perform(Labels labels) {
+              metric.record(5.0d, labels);
             }
 
             @Override
@@ -120,8 +120,8 @@ public enum MetricsTestOperationBuilder {
                     .bind(Labels.of("KEY", "VALUE"));
 
             @Override
-            public void perform(String... args) {
-              metric.record(5L, args);
+            public void perform(Labels labels) {
+              metric.record(5L, labels);
             }
 
             @Override
@@ -148,7 +148,7 @@ public enum MetricsTestOperationBuilder {
   }
 
   interface Operation {
-    abstract void perform(String... args);
+    abstract void perform(Labels labels);
 
     abstract void performBound();
   }

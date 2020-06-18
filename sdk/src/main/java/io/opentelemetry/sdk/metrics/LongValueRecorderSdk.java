@@ -43,12 +43,8 @@ final class LongValueRecorderSdk extends AbstractSynchronousInstrument<BoundInst
   }
 
   @Override
-  public void record(long value, String... labelKeyValuePairs) {
-    record(value, Labels.of(labelKeyValuePairs));
-  }
-
-  void record(long value, Labels labelSet) {
-    BoundInstrument boundInstrument = bind(labelSet);
+  public void record(long value, Labels labels) {
+    BoundInstrument boundInstrument = bind(labels);
     boundInstrument.record(value);
     boundInstrument.unbind();
   }

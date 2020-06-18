@@ -92,10 +92,17 @@ public class LongCounterTest {
   }
 
   @Test
+  public void add_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.longCounterBuilder("metric").build().add(1, null);
+  }
+
+  @Test
   public void add_DoesNotThrow() {
     LongCounter longCounter =
         meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    longCounter.add(1);
+    longCounter.add(1, Labels.empty());
   }
 
   @Test
@@ -104,11 +111,11 @@ public class LongCounterTest {
         meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Counters can only increase");
-    longCounter.add(-1);
+    longCounter.add(-1, Labels.empty());
   }
 
   @Test
-  public void preventNull_BindLabels() {
+  public void bound_PreventNullLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labels");
     meter.longCounterBuilder("metric").build().bind(null);

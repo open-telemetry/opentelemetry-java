@@ -92,7 +92,14 @@ public class DoubleUpDownCounterTest {
   }
 
   @Test
-  public void addDoesNotThrow() {
+  public void add_preventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleUpDownCounterBuilder("metric").build().bind(null);
+  }
+
+  @Test
+  public void add_DoesNotThrow() {
     DoubleUpDownCounter doubleUpDownCounter =
         meter
             .doubleUpDownCounterBuilder(NAME)
@@ -100,19 +107,19 @@ public class DoubleUpDownCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    doubleUpDownCounter.add(1.0);
-    doubleUpDownCounter.add(-1.0);
+    doubleUpDownCounter.add(1.0, Labels.empty());
+    doubleUpDownCounter.add(-1.0, Labels.empty());
   }
 
   @Test
-  public void preventNull_BindLabels() {
+  public void bound_PreventNullLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labels");
     meter.doubleUpDownCounterBuilder("metric").build().bind(null);
   }
 
   @Test
-  public void boundDoesNotThrow() {
+  public void bound_DoesNotThrow() {
     DoubleUpDownCounter doubleUpDownCounter =
         meter
             .doubleUpDownCounterBuilder(NAME)

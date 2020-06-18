@@ -91,7 +91,14 @@ public final class DoubleValueRecorderTest {
   }
 
   @Test
-  public void recordDoesNotThrow() {
+  public void record_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleValueRecorderBuilder("metric").build().record(1.0, null);
+  }
+
+  @Test
+  public void record_DoesNotThrow() {
     DoubleValueRecorder doubleValueRecorder =
         meter
             .doubleValueRecorderBuilder(NAME)
@@ -99,19 +106,19 @@ public final class DoubleValueRecorderTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    doubleValueRecorder.record(5.0);
-    doubleValueRecorder.record(-5.0);
+    doubleValueRecorder.record(5.0, Labels.empty());
+    doubleValueRecorder.record(-5.0, Labels.empty());
   }
 
   @Test
-  public void preventNull_BindLabels() {
+  public void bound_PreventNullLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labels");
     meter.doubleValueRecorderBuilder("metric").build().bind(null);
   }
 
   @Test
-  public void boundDoesNotThrow() {
+  public void bound_DoesNotThrow() {
     DoubleValueRecorder doubleValueRecorder =
         meter
             .doubleValueRecorderBuilder(NAME)

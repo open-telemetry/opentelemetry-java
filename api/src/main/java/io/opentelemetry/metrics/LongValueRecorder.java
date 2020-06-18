@@ -70,11 +70,11 @@ public interface LongValueRecorder extends SynchronousInstrument<BoundLongValueR
    * labels.
    *
    * @param value the measurement to record.
-   * @param labelKeyValuePairs the set of labels to be associated to this recording
+   * @param labels the set of labels to be associated to this recording
    * @throws IllegalArgumentException if value is negative.
    * @since 0.3.0
    */
-  void record(long value, String... labelKeyValuePairs);
+  void record(long value, Labels labels);
 
   @Override
   BoundLongValueRecorder bind(Labels labels);
