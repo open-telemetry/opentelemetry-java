@@ -28,7 +28,6 @@ import io.opentelemetry.proto.trace.v1.Span.SpanKind;
 import io.opentelemetry.proto.trace.v1.Status;
 import io.opentelemetry.proto.trace.v1.Status.StatusCode;
 import io.opentelemetry.sdk.trace.data.EventImpl;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.trace.Span.Kind;
@@ -71,7 +70,7 @@ public class SpanAdapterTest {
                 .setAttributes(Attributes.of("key", AttributeValue.booleanAttributeValue(true)))
                 .setTotalAttributeCount(2)
                 .setEvents(
-                    Collections.<Event>singletonList(
+                    Collections.singletonList(
                         EventImpl.create(12347, "my_event", Attributes.empty())))
                 .setTotalRecordedEvents(3)
                 .setLinks(Collections.singletonList(Link.create(SPAN_CONTEXT)))

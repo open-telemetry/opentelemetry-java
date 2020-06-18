@@ -82,20 +82,17 @@ public class LongMinMaxSumCountTest {
       final int index = i;
       Thread t =
           new Thread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  long update = updates[index];
-                  try {
-                    startingGun.await();
-                  } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                  }
-                  for (int j = 0; j < numberOfUpdates; j++) {
-                    aggregator.recordLong(update);
-                    if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                      aggregator.mergeToAndReset(summarizer);
-                    }
+              () -> {
+                long update = updates[index];
+                try {
+                  startingGun.await();
+                } catch (InterruptedException e) {
+                  throw new RuntimeException(e);
+                }
+                for (int j = 0; j < numberOfUpdates; j++) {
+                  aggregator.recordLong(update);
+                  if (ThreadLocalRandom.current().nextInt(10) == 0) {
+                    aggregator.mergeToAndReset(summarizer);
                   }
                 }
               });

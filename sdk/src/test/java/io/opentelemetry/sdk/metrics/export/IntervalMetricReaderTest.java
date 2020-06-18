@@ -49,7 +49,7 @@ public class IntervalMetricReaderTest {
           "my metric", "my metric description", "us", Type.MONOTONIC_LONG, Labels.empty());
 
   private static final List<Point> LONG_POINT_LIST =
-      Collections.<Point>singletonList(LongPoint.create(1000, 3000, Labels.empty(), 1234567));
+      Collections.singletonList(LongPoint.create(1000, 3000, Labels.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
       MetricData.create(

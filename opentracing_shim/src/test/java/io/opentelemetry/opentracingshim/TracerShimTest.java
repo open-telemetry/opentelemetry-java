@@ -77,8 +77,7 @@ public class TracerShimTest {
   @Test
   public void extract_nullContext() {
     SpanContext result =
-        tracerShim.extract(
-            Format.Builtin.TEXT_MAP, new TextMapAdapter(Collections.<String, String>emptyMap()));
+        tracerShim.extract(Format.Builtin.TEXT_MAP, new TextMapAdapter(Collections.emptyMap()));
     assertNull(result);
   }
 

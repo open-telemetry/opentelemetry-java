@@ -43,22 +43,16 @@ public class ContextUtilsTest {
   public void withScopedContext() {
     Context prevCtx = Context.current();
     Context ctx = Context.current().withValue(SIMPLE_KEY, "value1");
-    Scope scope = ContextUtils.withScopedContext(ctx);
-    try {
+    try (Scope scope = ContextUtils.withScopedContext(ctx)) {
       assertThat(scope).isNotNull();
       assertThat(Context.current()).isEqualTo(ctx);
 
       Context ctx2 = Context.current().withValue(SIMPLE_KEY, "value2");
-      Scope scope2 = ContextUtils.withScopedContext(ctx2);
-      try {
+      try (Scope scope2 = ContextUtils.withScopedContext(ctx2)) {
         assertThat(scope2).isNotNull();
         assertThat(Context.current()).isEqualTo(ctx2);
-      } finally {
-        scope2.close();
       }
       assertThat(Context.current()).isEqualTo(ctx);
-    } finally {
-      scope.close();
     }
     assertThat(Context.current()).isEqualTo(prevCtx);
   }

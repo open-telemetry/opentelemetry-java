@@ -47,13 +47,7 @@ public class AwsXRayPropagatorTest {
   private static final TraceFlags SAMPLED_TRACE_FLAG =
       TraceFlags.builder().setIsSampled(true).build();
 
-  private static final HttpTextFormat.Setter<Map<String, String>> setter =
-      new HttpTextFormat.Setter<Map<String, String>>() {
-        @Override
-        public void set(Map<String, String> carrier, String key, String value) {
-          carrier.put(key, value);
-        }
-      };
+  private static final HttpTextFormat.Setter<Map<String, String>> setter = Map::put;
   private static final HttpTextFormat.Getter<Map<String, String>> getter =
       new HttpTextFormat.Getter<Map<String, String>>() {
         @Nullable

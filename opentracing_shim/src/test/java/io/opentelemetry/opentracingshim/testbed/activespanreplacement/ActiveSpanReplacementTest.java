@@ -81,31 +81,28 @@ public class ActiveSpanReplacementTest {
   private void submitAnotherTask(final Span initialSpan) {
 
     executor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            // Create a new Span for this task
-            Span taskSpan = tracer.buildSpan("task").start();
-            try (Scope scope = tracer.scopeManager().activate(taskSpan)) {
+        () -> {
+          // Create a new Span for this task
+          Span taskSpan = tracer.buildSpan("task").start();
+          try (Scope scope = tracer.scopeManager().activate(taskSpan)) {
 
-              // Simulate work strictly related to the initial Span
-              // and finish it.
-              try (Scope initialScope = tracer.scopeManager().activate(initialSpan)) {
-                sleep(50);
-              } finally {
-                initialSpan.finish();
-              }
-
-              // Restore the span for this task and create a subspan
-              Span subTaskSpan = tracer.buildSpan("subtask").start();
-              try (Scope subTaskScope = tracer.scopeManager().activate(subTaskSpan)) {
-                sleep(50);
-              } finally {
-                subTaskSpan.finish();
-              }
+            // Simulate work strictly related to the initial Span
+            // and finish it.
+            try (Scope initialScope = tracer.scopeManager().activate(initialSpan)) {
+              sleep(50);
             } finally {
-              taskSpan.finish();
+              initialSpan.finish();
             }
+
+            // Restore the span for this task and create a subspan
+            Span subTaskSpan = tracer.buildSpan("subtask").start();
+            try (Scope subTaskScope = tracer.scopeManager().activate(subTaskSpan)) {
+              sleep(50);
+            } finally {
+              subTaskSpan.finish();
+            }
+          } finally {
+            taskSpan.finish();
           }
         });
   }

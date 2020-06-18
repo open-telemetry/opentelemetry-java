@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.extensions.trace.testbed.multiplecallbacks;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Tracer;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,19 +38,16 @@ class Client {
     final Span parent = tracer.getCurrentSpan();
 
     return executor.submit(
-        new Callable<Object>() {
-          @Override
-          public Object call() throws Exception {
-            Span span = tracer.spanBuilder("subtask").setParent(parent).startSpan();
-            try (Scope subtaskScope = tracer.withSpan(span)) {
-              // Simulate work - make sure we finish *after* the parent Span.
-              parentDoneLatch.await();
-            } finally {
-              span.end();
-            }
-
-            return message + "::response";
+        () -> {
+          Span span = tracer.spanBuilder("subtask").setParent(parent).startSpan();
+          try (Scope subtaskScope = tracer.withSpan(span)) {
+            // Simulate work - make sure we finish *after* the parent Span.
+            parentDoneLatch.await();
+          } finally {
+            span.end();
           }
+
+          return message + "::response";
         });
   }
 }

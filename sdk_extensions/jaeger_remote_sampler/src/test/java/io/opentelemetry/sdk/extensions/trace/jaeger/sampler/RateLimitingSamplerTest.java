@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
-import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
@@ -60,7 +59,7 @@ public class RateLimitingSamplerTest {
                 SPAN_NAME,
                 SPAN_KIND,
                 Attributes.empty(),
-                Collections.<Link>emptyList())
+                Collections.emptyList())
             .isSampled());
     assertTrue(
         sampler
@@ -70,7 +69,7 @@ public class RateLimitingSamplerTest {
                 SPAN_NAME,
                 SPAN_KIND,
                 Attributes.empty(),
-                Collections.<Link>emptyList())
+                Collections.emptyList())
             .isSampled());
   }
 
@@ -84,7 +83,7 @@ public class RateLimitingSamplerTest {
             SPAN_NAME,
             SPAN_KIND,
             Attributes.empty(),
-            Collections.<Link>emptyList());
+            Collections.emptyList());
     assertTrue(decision.isSampled());
     assertFalse(
         sampler
@@ -94,7 +93,7 @@ public class RateLimitingSamplerTest {
                 SPAN_NAME,
                 SPAN_KIND,
                 Attributes.empty(),
-                Collections.<Link>emptyList())
+                Collections.emptyList())
             .isSampled());
     assertEquals(2, decision.getAttributes().size());
     assertEquals(

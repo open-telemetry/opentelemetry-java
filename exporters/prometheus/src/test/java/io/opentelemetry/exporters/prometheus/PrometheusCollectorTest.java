@@ -26,7 +26,6 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.export.MetricProducer;
 import io.opentelemetry.sdk.resources.Resource;
 import io.prometheus.client.CollectorRegistry;
@@ -80,7 +79,7 @@ public class PrometheusCollectorTest {
                 Labels.of("kc", "vc")),
             Resource.create(Attributes.of("kr", AttributeValue.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("grpc", "version"),
-            Collections.<Point>singletonList(
+            Collections.singletonList(
                 MetricData.LongPoint.create(123, 456, Labels.of("kp", "vp"), 5))),
         MetricData.create(
             Descriptor.create(
@@ -91,7 +90,7 @@ public class PrometheusCollectorTest {
                 Labels.of("kc", "vc")),
             Resource.create(Attributes.of("kr", AttributeValue.stringAttributeValue("vr"))),
             InstrumentationLibraryInfo.create("http", "version"),
-            Collections.<Point>singletonList(
+            Collections.singletonList(
                 MetricData.DoublePoint.create(123, 456, Labels.of("kp", "vp"), 3.5))));
   }
 }

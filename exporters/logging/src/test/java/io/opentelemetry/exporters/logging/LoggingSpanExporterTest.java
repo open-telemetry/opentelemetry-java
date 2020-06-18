@@ -24,7 +24,6 @@ import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
@@ -70,7 +69,7 @@ public class LoggingSpanExporterTest {
             .setName("testSpan")
             .setKind(Kind.INTERNAL)
             .setEvents(
-                Collections.<Event>singletonList(
+                Collections.singletonList(
                     EventImpl.create(
                         epochNanos + 500,
                         "somethingHappenedHere",

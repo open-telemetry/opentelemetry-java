@@ -289,6 +289,12 @@ configure(opentelemetryProjects) {
         animalsnifferTest {
             enabled = false
         }
+        // If JMH enabled ignore animalsniffer.
+        plugins.withId("me.champeau.gradle.jmh") {
+            animalsnifferJmh {
+                enabled = false
+            }
+        }
     }
 
     plugins.withId("me.champeau.gradle.jmh") {

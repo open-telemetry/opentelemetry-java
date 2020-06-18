@@ -19,8 +19,6 @@ package io.opentelemetry.metrics;
 import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
-import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import java.util.Arrays;
 import org.junit.Rule;
 import org.junit.Test;
@@ -109,10 +107,6 @@ public class LongValueObserverTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    longValueObserver.setCallback(
-        new Callback<LongResult>() {
-          @Override
-          public void update(LongResult result) {}
-        });
+    longValueObserver.setCallback(result -> {});
   }
 }
