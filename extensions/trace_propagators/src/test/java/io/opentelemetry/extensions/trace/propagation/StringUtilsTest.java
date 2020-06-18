@@ -17,7 +17,6 @@
 package io.opentelemetry.extensions.trace.propagation;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,7 +35,7 @@ public class StringUtilsTest {
 
   @Test
   public void padLeft() {
-    assertEquals(StringUtils.padLeft("value", 10), "00000value");
+    assertThat(StringUtils.padLeft("value", 10)).isEqualTo("00000value");
   }
 
   @Test
