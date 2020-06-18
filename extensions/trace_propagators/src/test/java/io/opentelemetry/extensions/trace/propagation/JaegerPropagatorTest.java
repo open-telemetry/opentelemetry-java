@@ -63,13 +63,7 @@ public class JaegerPropagatorTest {
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
   private static final TraceFlags SAMPLED_TRACE_OPTIONS =
       TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);
-  private static final HttpTextFormat.Setter<Map<String, String>> setter =
-      new HttpTextFormat.Setter<Map<String, String>>() {
-        @Override
-        public void set(Map<String, String> carrier, String key, String value) {
-          carrier.put(key, value);
-        }
-      };
+  private static final HttpTextFormat.Setter<Map<String, String>> setter = Map::put;
   private static final HttpTextFormat.Getter<Map<String, String>> getter =
       new HttpTextFormat.Getter<Map<String, String>>() {
         @Nullable
@@ -133,12 +127,7 @@ public class JaegerPropagatorTest {
             SpanContext.create(TRACE_ID, SPAN_ID, SAMPLED_TRACE_OPTIONS, TRACE_STATE_DEFAULT),
             Context.current()),
         null,
-        new Setter<Map<String, String>>() {
-          @Override
-          public void set(Map<String, String> ignored, String key, String value) {
-            carrier.put(key, value);
-          }
-        });
+        (Setter<Map<String, String>>) (ignored, key, value) -> carrier.put(key, value));
 
     assertThat(carrier)
         .containsEntry(

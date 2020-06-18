@@ -23,7 +23,6 @@ import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 import static io.opentelemetry.common.AttributeValue.longAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
-import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,13 +43,7 @@ public class AttributesTest {
             "key1", stringAttributeValue("value1"),
             "key2", AttributeValue.longAttributeValue(333));
 
-    attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
-          @Override
-          public void consume(String key, AttributeValue value) {
-            entriesSeen.put(key, value);
-          }
-        });
+    attributes.forEach((key, value) -> entriesSeen.put(key, value));
 
     assertThat(entriesSeen)
         .containsExactly("key1", stringAttributeValue("value1"), "key2", longAttributeValue(333));
@@ -61,13 +54,7 @@ public class AttributesTest {
     final Map<String, AttributeValue> entriesSeen = new HashMap<>();
 
     Attributes attributes = Attributes.of("key", stringAttributeValue("value"));
-    attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
-          @Override
-          public void consume(String key, AttributeValue value) {
-            entriesSeen.put(key, value);
-          }
-        });
+    attributes.forEach((key, value) -> entriesSeen.put(key, value));
     assertThat(entriesSeen).containsExactly("key", stringAttributeValue("value"));
   }
 
@@ -75,13 +62,7 @@ public class AttributesTest {
   public void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
     Attributes emptyAttributes = Attributes.empty();
-    emptyAttributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
-          @Override
-          public void consume(String key, AttributeValue value) {
-            sawSomething.set(true);
-          }
-        });
+    emptyAttributes.forEach((key, value) -> sawSomething.set(true));
     assertThat(sawSomething.get()).isFalse();
   }
 

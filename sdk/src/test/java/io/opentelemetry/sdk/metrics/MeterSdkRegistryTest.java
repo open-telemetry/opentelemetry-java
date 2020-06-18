@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Rule;
@@ -109,13 +108,13 @@ public class MeterSdkRegistryTest {
                 Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
                 Resource.getEmpty(),
                 meterSdk1.getInstrumentationLibraryInfo(),
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
             MetricData.create(
                 Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
                 Resource.getEmpty(),
                 meterSdk2.getInstrumentationLibraryInfo(),
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))));
   }
 }

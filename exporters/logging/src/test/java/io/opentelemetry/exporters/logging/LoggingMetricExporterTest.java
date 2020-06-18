@@ -27,7 +27,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -75,7 +74,7 @@ public class LoggingMetricExporterTest {
                     Labels.of("foo", "bar", "baz", "zoom")),
                 resource,
                 instrumentationLibraryInfo,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     SummaryPoint.create(
                         nowEpochNanos,
                         nowEpochNanos + 245,
@@ -94,7 +93,7 @@ public class LoggingMetricExporterTest {
                     Labels.of("alpha", "aleph", "beta", "bet")),
                 resource,
                 instrumentationLibraryInfo,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     LongPoint.create(
                         nowEpochNanos, nowEpochNanos + 245, Labels.of("z", "y", "x", "w"), 1010))),
             MetricData.create(
@@ -106,7 +105,7 @@ public class LoggingMetricExporterTest {
                     Labels.of("uno", "eins", "dos", "zwei")),
                 resource,
                 instrumentationLibraryInfo,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     DoublePoint.create(
                         nowEpochNanos,
                         nowEpochNanos + 245,

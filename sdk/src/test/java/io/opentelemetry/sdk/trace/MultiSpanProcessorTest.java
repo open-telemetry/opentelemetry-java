@@ -51,8 +51,7 @@ public class MultiSpanProcessorTest {
 
   @Test
   public void empty() {
-    SpanProcessor multiSpanProcessor =
-        MultiSpanProcessor.create(Collections.<SpanProcessor>emptyList());
+    SpanProcessor multiSpanProcessor = MultiSpanProcessor.create(Collections.emptyList());
     multiSpanProcessor.onStart(readableSpan);
     multiSpanProcessor.onEnd(readableSpan);
     multiSpanProcessor.shutdown();

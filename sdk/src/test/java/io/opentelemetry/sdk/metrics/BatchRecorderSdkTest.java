@@ -28,7 +28,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Rule;
@@ -90,7 +89,7 @@ public class BatchRecorderSdkTest {
                     "testDoubleCounter", "", "1", Type.MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), labelSet, 12.1d))));
     assertThat(longCounter.collectAll())
         .containsExactly(
@@ -98,7 +97,7 @@ public class BatchRecorderSdkTest {
                 Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), labelSet, 12))));
     assertThat(doubleUpDownCounter.collectAll())
         .containsExactly(
@@ -107,7 +106,7 @@ public class BatchRecorderSdkTest {
                     "testDoubleUpDownCounter", "", "1", Type.NON_MONOTONIC_DOUBLE, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     DoublePoint.create(testClock.now(), testClock.now(), labelSet, -12.1d))));
     assertThat(longUpDownCounter.collectAll())
         .containsExactly(
@@ -116,7 +115,7 @@ public class BatchRecorderSdkTest {
                     "testLongUpDownCounter", "", "1", Type.NON_MONOTONIC_LONG, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     LongPoint.create(testClock.now(), testClock.now(), labelSet, -12))));
   }
 }

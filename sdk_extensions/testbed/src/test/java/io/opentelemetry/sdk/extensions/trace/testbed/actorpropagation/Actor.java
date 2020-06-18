@@ -20,7 +20,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -48,26 +47,23 @@ final class Actor implements AutoCloseable {
     final Span parent = tracer.getCurrentSpan();
     phaser.register();
     return executor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            Span child =
-                tracer
-                    .spanBuilder("received")
-                    .setParent(parent)
-                    .setSpanKind(Kind.CONSUMER)
-                    .startSpan();
-            try (Scope ignored = tracer.withSpan(child)) {
-              phaser.arriveAndAwaitAdvance(); // child tracer started
-              child.addEvent("received " + message);
-              phaser.arriveAndAwaitAdvance(); // assert size
-            } finally {
-              child.end();
-            }
-
-            phaser.arriveAndAwaitAdvance(); // child tracer finished
+        () -> {
+          Span child =
+              tracer
+                  .spanBuilder("received")
+                  .setParent(parent)
+                  .setSpanKind(Kind.CONSUMER)
+                  .startSpan();
+          try (Scope ignored = tracer.withSpan(child)) {
+            phaser.arriveAndAwaitAdvance(); // child tracer started
+            child.addEvent("received " + message);
             phaser.arriveAndAwaitAdvance(); // assert size
+          } finally {
+            child.end();
           }
+
+          phaser.arriveAndAwaitAdvance(); // child tracer finished
+          phaser.arriveAndAwaitAdvance(); // assert size
         });
   }
 
@@ -75,24 +71,21 @@ final class Actor implements AutoCloseable {
     final Span parent = tracer.getCurrentSpan();
     phaser.register();
     return executor.submit(
-        new Callable<String>() {
-          @Override
-          public String call() {
-            Span span =
-                tracer
-                    .spanBuilder("received")
-                    .setParent(parent)
-                    .setSpanKind(Kind.CONSUMER)
-                    .startSpan();
-            try {
-              phaser.arriveAndAwaitAdvance(); // child tracer started
-              phaser.arriveAndAwaitAdvance(); // assert size
-              return "received " + message;
-            } finally {
-              span.end();
-              phaser.arriveAndAwaitAdvance(); // child tracer finished
-              phaser.arriveAndAwaitAdvance(); // assert size
-            }
+        () -> {
+          Span span =
+              tracer
+                  .spanBuilder("received")
+                  .setParent(parent)
+                  .setSpanKind(Kind.CONSUMER)
+                  .startSpan();
+          try {
+            phaser.arriveAndAwaitAdvance(); // child tracer started
+            phaser.arriveAndAwaitAdvance(); // assert size
+            return "received " + message;
+          } finally {
+            span.end();
+            phaser.arriveAndAwaitAdvance(); // child tracer finished
+            phaser.arriveAndAwaitAdvance(); // assert size
           }
         });
   }

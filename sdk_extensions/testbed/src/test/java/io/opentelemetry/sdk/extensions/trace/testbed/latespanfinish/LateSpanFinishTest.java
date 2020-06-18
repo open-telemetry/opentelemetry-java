@@ -72,33 +72,27 @@ public final class LateSpanFinishTest {
   private void submitTasks(final Span parentSpan) {
 
     executor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            /* Alternative to calling activate() is to pass it manually to asChildOf() for each
-             * created Span. */
-            try (Scope scope = tracer.withSpan(parentSpan)) {
-              Span childSpan = tracer.spanBuilder("task1").startSpan();
-              try (Scope childScope = tracer.withSpan(childSpan)) {
-                TestUtils.sleep(55);
-              } finally {
-                childSpan.end();
-              }
+        () -> {
+          /* Alternative to calling activate() is to pass it manually to asChildOf() for each
+           * created Span. */
+          try (Scope scope = tracer.withSpan(parentSpan)) {
+            Span childSpan = tracer.spanBuilder("task1").startSpan();
+            try (Scope childScope = tracer.withSpan(childSpan)) {
+              TestUtils.sleep(55);
+            } finally {
+              childSpan.end();
             }
           }
         });
 
     executor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            try (Scope scope = tracer.withSpan(parentSpan)) {
-              Span childSpan = tracer.spanBuilder("task2").startSpan();
-              try (Scope childScope = tracer.withSpan(childSpan)) {
-                TestUtils.sleep(85);
-              } finally {
-                childSpan.end();
-              }
+        () -> {
+          try (Scope scope = tracer.withSpan(parentSpan)) {
+            Span childSpan = tracer.spanBuilder("task2").startSpan();
+            try (Scope childScope = tracer.withSpan(childSpan)) {
+              TestUtils.sleep(85);
+            } finally {
+              childSpan.end();
             }
           }
         });

@@ -186,13 +186,10 @@ public class RateLimiterTest {
     for (int w = 0; w < numWorkers; ++w) {
       Future<?> future =
           executorService.submit(
-              new Runnable() {
-                @Override
-                public void run() {
-                  for (int i = 0; i < creditsPerWorker * 2; ++i) {
-                    if (limiter.checkCredit(1)) {
-                      count.getAndIncrement(); // count allowed operations
-                    }
+              () -> {
+                for (int i = 0; i < creditsPerWorker * 2; ++i) {
+                  if (limiter.checkCredit(1)) {
+                    count.getAndIncrement(); // count allowed operations
                   }
                 }
               });

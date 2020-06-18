@@ -80,20 +80,17 @@ public class DoubleMinMaxSumCountTest {
       final int index = i;
       Thread t =
           new Thread(
-              new Runnable() {
-                @Override
-                public void run() {
-                  double update = updates[index];
-                  try {
-                    startingGun.await();
-                  } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                  }
-                  for (int j = 0; j < numberOfUpdates; j++) {
-                    aggregator.recordDouble(update);
-                    if (ThreadLocalRandom.current().nextInt(10) == 0) {
-                      aggregator.mergeToAndReset(summarizer);
-                    }
+              () -> {
+                double update = updates[index];
+                try {
+                  startingGun.await();
+                } catch (InterruptedException e) {
+                  throw new RuntimeException(e);
+                }
+                for (int j = 0; j < numberOfUpdates; j++) {
+                  aggregator.recordDouble(update);
+                  if (ThreadLocalRandom.current().nextInt(10) == 0) {
+                    aggregator.mergeToAndReset(summarizer);
                   }
                 }
               });

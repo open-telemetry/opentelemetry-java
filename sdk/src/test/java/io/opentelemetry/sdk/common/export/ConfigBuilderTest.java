@@ -102,29 +102,25 @@ public class ConfigBuilderTest {
 
   @Test
   public void nullValue_BooleanProperty() {
-    Boolean booleanProperty =
-        ConfigBuilder.getBooleanProperty("boolean", Collections.<String, String>emptyMap());
+    Boolean booleanProperty = ConfigBuilder.getBooleanProperty("boolean", Collections.emptyMap());
     assertThat(booleanProperty).isNull();
   }
 
   @Test
   public void nullValue_LongProperty() {
-    Long longProperty =
-        ConfigBuilder.getLongProperty("long", Collections.<String, String>emptyMap());
+    Long longProperty = ConfigBuilder.getLongProperty("long", Collections.emptyMap());
     assertThat(longProperty).isNull();
   }
 
   @Test
   public void nullValue_IntProperty() {
-    Integer intProperty =
-        ConfigBuilder.getIntProperty("int", Collections.<String, String>emptyMap());
+    Integer intProperty = ConfigBuilder.getIntProperty("int", Collections.emptyMap());
     assertThat(intProperty).isNull();
   }
 
   @Test
   public void nullValue_DoubleProperty() {
-    Double doubleProperty =
-        ConfigBuilder.getDoubleProperty("double", Collections.<String, String>emptyMap());
+    Double doubleProperty = ConfigBuilder.getDoubleProperty("double", Collections.emptyMap());
     assertThat(doubleProperty).isNull();
   }
 
@@ -238,10 +234,6 @@ public class ConfigBuilderTest {
 
     public static NamingConvention getNamingDot() {
       return NamingConvention.DOT;
-    }
-
-    public static NamingConvention getNamingEnv() {
-      return NamingConvention.ENV_VAR;
     }
 
     @Override

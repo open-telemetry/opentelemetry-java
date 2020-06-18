@@ -38,7 +38,6 @@ import io.opentelemetry.proto.metrics.v1.SummaryDataPoint.ValueAtPercentile;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Test;
@@ -75,10 +74,7 @@ public class MetricAdapterTest {
 
   @Test
   public void toProtoValueAtPercentiles() {
-    assertThat(
-            MetricAdapter.toProtoValueAtPercentiles(
-                Collections.<MetricData.ValueAtPercentile>emptyList()))
-        .isEmpty();
+    assertThat(MetricAdapter.toProtoValueAtPercentiles(Collections.emptyList())).isEmpty();
     assertThat(
             MetricAdapter.toProtoValueAtPercentiles(
                 Collections.singletonList(MetricData.ValueAtPercentile.create(0.9, 1.1))))
@@ -95,11 +91,10 @@ public class MetricAdapterTest {
 
   @Test
   public void toInt64DataPoints() {
-    assertThat(MetricAdapter.toInt64DataPoints(Collections.<MetricData.Point>emptyList()))
-        .isEmpty();
+    assertThat(MetricAdapter.toInt64DataPoints(Collections.emptyList())).isEmpty();
     assertThat(
             MetricAdapter.toInt64DataPoints(
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5))))
         .containsExactly(
             Int64DataPoint.newBuilder()
@@ -112,7 +107,7 @@ public class MetricAdapterTest {
                 .build());
     assertThat(
             MetricAdapter.toInt64DataPoints(
-                ImmutableList.<Point>of(
+                ImmutableList.of(
                     MetricData.LongPoint.create(123, 456, Labels.empty(), 5),
                     MetricData.LongPoint.create(321, 654, Labels.of("k", "v"), 7))))
         .containsExactly(
@@ -133,11 +128,10 @@ public class MetricAdapterTest {
 
   @Test
   public void toDoubleDataPoints() {
-    assertThat(MetricAdapter.toDoubleDataPoints(Collections.<MetricData.Point>emptyList()))
-        .isEmpty();
+    assertThat(MetricAdapter.toDoubleDataPoints(Collections.emptyList())).isEmpty();
     assertThat(
             MetricAdapter.toDoubleDataPoints(
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1))))
         .containsExactly(
             DoubleDataPoint.newBuilder()
@@ -150,7 +144,7 @@ public class MetricAdapterTest {
                 .build());
     assertThat(
             MetricAdapter.toDoubleDataPoints(
-                ImmutableList.<Point>of(
+                ImmutableList.of(
                     MetricData.DoublePoint.create(123, 456, Labels.empty(), 5.1),
                     MetricData.DoublePoint.create(321, 654, Labels.of("k", "v"), 7.1))))
         .containsExactly(
@@ -171,11 +165,10 @@ public class MetricAdapterTest {
 
   @Test
   public void toSummaryDataPoints() {
-    assertThat(MetricAdapter.toSummaryDataPoints(Collections.<MetricData.Point>emptyList()))
-        .isEmpty();
+    assertThat(MetricAdapter.toSummaryDataPoints(Collections.emptyList())).isEmpty();
     assertThat(
             MetricAdapter.toSummaryDataPoints(
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     MetricData.SummaryPoint.create(
                         123,
                         456,
@@ -198,14 +191,9 @@ public class MetricAdapterTest {
                 .build());
     assertThat(
             MetricAdapter.toSummaryDataPoints(
-                ImmutableList.<Point>of(
+                ImmutableList.of(
                     MetricData.SummaryPoint.create(
-                        123,
-                        456,
-                        Labels.empty(),
-                        7,
-                        15.3,
-                        Collections.<MetricData.ValueAtPercentile>emptyList()),
+                        123, 456, Labels.empty(), 7, 15.3, Collections.emptyList()),
                     MetricData.SummaryPoint.create(
                         321,
                         654,
@@ -283,7 +271,7 @@ public class MetricAdapterTest {
                         Labels.of("k", "v")),
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
-                    Collections.<Point>singletonList(
+                    Collections.singletonList(
                         MetricData.LongPoint.create(123, 456, Labels.of("k", "v"), 5)))))
         .isEqualTo(
             Metric.newBuilder()
@@ -319,7 +307,7 @@ public class MetricAdapterTest {
                         Labels.of("k", "v")),
                     Resource.getEmpty(),
                     InstrumentationLibraryInfo.getEmpty(),
-                    Collections.<Point>singletonList(
+                    Collections.singletonList(
                         MetricData.DoublePoint.create(123, 456, Labels.of("k", "v"), 5.1)))))
         .isEqualTo(
             Metric.newBuilder()
@@ -389,25 +377,19 @@ public class MetricAdapterTest {
             MetricAdapter.toProtoResourceMetrics(
                 ImmutableList.of(
                     MetricData.create(
-                        descriptor,
-                        resource,
-                        instrumentationLibraryInfo,
-                        Collections.<Point>emptyList()),
+                        descriptor, resource, instrumentationLibraryInfo, Collections.emptyList()),
                     MetricData.create(
-                        descriptor,
-                        resource,
-                        instrumentationLibraryInfo,
-                        Collections.<Point>emptyList()),
+                        descriptor, resource, instrumentationLibraryInfo, Collections.emptyList()),
                     MetricData.create(
                         descriptor,
                         Resource.getEmpty(),
                         instrumentationLibraryInfo,
-                        Collections.<Point>emptyList()),
+                        Collections.emptyList()),
                     MetricData.create(
                         descriptor,
                         Resource.getEmpty(),
                         InstrumentationLibraryInfo.getEmpty(),
-                        Collections.<Point>emptyList()))))
+                        Collections.emptyList()))))
         .containsExactly(
             ResourceMetrics.newBuilder()
                 .setResource(resourceProto)

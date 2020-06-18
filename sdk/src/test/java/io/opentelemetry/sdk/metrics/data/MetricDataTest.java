@@ -23,7 +23,6 @@ import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -88,7 +87,7 @@ public class MetricDataTest {
         null,
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
-        Collections.<Point>singletonList(DOUBLE_POINT));
+        Collections.singletonList(DOUBLE_POINT));
   }
 
   @Test
@@ -99,7 +98,7 @@ public class MetricDataTest {
         LONG_METRIC_DESCRIPTOR,
         null,
         InstrumentationLibraryInfo.getEmpty(),
-        Collections.<Point>singletonList(DOUBLE_POINT));
+        Collections.singletonList(DOUBLE_POINT));
   }
 
   @Test
@@ -107,10 +106,7 @@ public class MetricDataTest {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("instrumentationLibraryInfo");
     MetricData.create(
-        LONG_METRIC_DESCRIPTOR,
-        Resource.getEmpty(),
-        null,
-        Collections.<Point>singletonList(DOUBLE_POINT));
+        LONG_METRIC_DESCRIPTOR, Resource.getEmpty(), null, Collections.singletonList(DOUBLE_POINT));
   }
 
   @Test
@@ -128,7 +124,7 @@ public class MetricDataTest {
             LONG_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
-            Collections.<Point>emptyList());
+            Collections.emptyList());
     assertThat(metricData.getDescriptor()).isEqualTo(LONG_METRIC_DESCRIPTOR);
     assertThat(metricData.getResource()).isEqualTo(Resource.getEmpty());
     assertThat(metricData.getInstrumentationLibraryInfo())
@@ -148,7 +144,7 @@ public class MetricDataTest {
             LONG_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
-            Collections.<Point>singletonList(LONG_POINT));
+            Collections.singletonList(LONG_POINT));
     assertThat(metricData.getPoints()).containsExactly(LONG_POINT);
   }
 
@@ -167,7 +163,7 @@ public class MetricDataTest {
             DOUBLE_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
-            Collections.<Point>singletonList(SUMMARY_POINT));
+            Collections.singletonList(SUMMARY_POINT));
     assertThat(metricData.getPoints()).containsExactly(SUMMARY_POINT);
   }
 
@@ -183,7 +179,7 @@ public class MetricDataTest {
             DOUBLE_METRIC_DESCRIPTOR,
             Resource.getEmpty(),
             InstrumentationLibraryInfo.getEmpty(),
-            Collections.<Point>singletonList(DOUBLE_POINT));
+            Collections.singletonList(DOUBLE_POINT));
     assertThat(metricData.getPoints()).containsExactly(DOUBLE_POINT);
   }
 }
