@@ -20,6 +20,7 @@ import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -38,8 +39,9 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     collectLock = new ReentrantLock();
   }
 
-  final B bind(Labels labelSet) {
-    B binding = boundLabels.get(labelSet);
+  public B bind(Labels labels) {
+    Objects.requireNonNull(labels, "labels");
+    B binding = boundLabels.get(labels);
     if (binding != null && binding.bind()) {
       // At this moment it is guaranteed that the Bound is in the map and will not be removed.
       return binding;
@@ -48,7 +50,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
     // Missing entry or no longer mapped, try to add a new entry.
     binding = newBinding(getActiveBatcher());
     while (true) {
-      B oldBound = boundLabels.putIfAbsent(labelSet, binding);
+      B oldBound = boundLabels.putIfAbsent(labels, binding);
       if (oldBound != null) {
         if (oldBound.bind()) {
           // At this moment it is guaranteed that the Bound is in the map and will not be removed.
@@ -56,7 +58,7 @@ abstract class AbstractSynchronousInstrument<B extends AbstractBoundInstrument>
         }
         // Try to remove the oldBound. This will race with the collect method, but only one will
         // succeed.
-        boundLabels.remove(labelSet, oldBound);
+        boundLabels.remove(labels, oldBound);
         continue;
       }
       return binding;

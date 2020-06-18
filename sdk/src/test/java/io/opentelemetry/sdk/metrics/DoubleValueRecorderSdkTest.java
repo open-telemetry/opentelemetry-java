@@ -60,10 +60,17 @@ public class DoubleValueRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
+  public void preventNull_BindLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.doubleValueRecorderBuilder("testRecorder").build().bind(null);
+  }
+
+  @Test
   public void collectMetrics_NoRecords() {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
-            .doubleValueRecorderBuilder("testMeasure")
+            .doubleValueRecorderBuilder("testRecorder")
             .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
@@ -74,7 +81,7 @@ public class DoubleValueRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testMeasure",
+                    "testRecorder",
                     "My very own measure",
                     "ms",
                     Type.SUMMARY,
@@ -88,12 +95,12 @@ public class DoubleValueRecorderSdkTest {
   public void collectMetrics_EmptyCollectionCycle() {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk
-            .doubleValueRecorderBuilder("testMeasure")
+            .doubleValueRecorderBuilder("testRecorder")
             .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own measure")
             .setUnit("ms")
             .build();
-    doubleMeasure.bind("key", "value");
+    doubleMeasure.bind(Labels.of("key", "value"));
     testClock.advanceNanos(SECOND_NANOS);
 
     List<MetricData> metricDataList = doubleMeasure.collectAll();
@@ -101,7 +108,7 @@ public class DoubleValueRecorderSdkTest {
         .containsExactly(
             MetricData.create(
                 Descriptor.create(
-                    "testMeasure",
+                    "testRecorder",
                     "My very own measure",
                     "ms",
                     Type.SUMMARY,
@@ -114,14 +121,14 @@ public class DoubleValueRecorderSdkTest {
   @Test
   public void collectMetrics_WithOneRecord() {
     DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
     testClock.advanceNanos(SECOND_NANOS);
     doubleMeasure.record(12.1d);
     List<MetricData> metricDataList = doubleMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
             MetricData.create(
-                Descriptor.create("testMeasure", "", "1", Type.SUMMARY, Labels.empty()),
+                Descriptor.create("testRecorder", "", "1", Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
                 Collections.singletonList(
@@ -140,8 +147,8 @@ public class DoubleValueRecorderSdkTest {
     Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
     DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
-    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind("K", "V");
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
       doubleMeasure.record(12.1d);
@@ -206,9 +213,9 @@ public class DoubleValueRecorderSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
-    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind("K", "v");
-    BoundDoubleValueRecorder duplicateBoundMeasure = doubleMeasure.bind("K", "v");
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
+    BoundDoubleValueRecorder duplicateBoundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
     try {
       assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
     } finally {
@@ -220,11 +227,11 @@ public class DoubleValueRecorderSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
-    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind("K", "v");
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
+    BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
     try {
       doubleMeasure.collectAll();
-      BoundDoubleValueRecorder duplicateBoundMeasure = doubleMeasure.bind("K", "v");
+      BoundDoubleValueRecorder duplicateBoundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
       try {
         assertThat(duplicateBoundMeasure).isEqualTo(boundMeasure);
       } finally {
@@ -238,7 +245,7 @@ public class DoubleValueRecorderSdkTest {
   @Test
   public void stressTest() {
     final DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleMeasure).setCollectionIntervalMs(100);
@@ -251,7 +258,7 @@ public class DoubleValueRecorderSdkTest {
               new DoubleValueRecorderSdkTest.OperationUpdaterDirectCall(doubleMeasure, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              1_000, 2, new OperationUpdaterWithBinding(doubleMeasure.bind("K", "V"))));
+              1_000, 2, new OperationUpdaterWithBinding(doubleMeasure.bind(Labels.of("K", "V")))));
     }
 
     stressTestBuilder.build().run();
@@ -273,7 +280,7 @@ public class DoubleValueRecorderSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final DoubleValueRecorderSdk doubleMeasure =
-        testSdk.doubleValueRecorderBuilder("testMeasure").build();
+        testSdk.doubleValueRecorderBuilder("testRecorder").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(doubleMeasure).setCollectionIntervalMs(100);
@@ -288,7 +295,9 @@ public class DoubleValueRecorderSdkTest {
 
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterWithBinding(doubleMeasure.bind(keys[i], values[i]))));
+              2_000,
+              1,
+              new OperationUpdaterWithBinding(doubleMeasure.bind(Labels.of(keys[i], values[i])))));
     }
 
     stressTestBuilder.build().run();

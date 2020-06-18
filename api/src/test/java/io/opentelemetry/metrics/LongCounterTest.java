@@ -92,15 +92,6 @@ public class LongCounterTest {
   }
 
   @Test
-  public void noopBind_WithBadLabelSet() {
-    LongCounter longCounter =
-        meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("key/value");
-    longCounter.bind("key");
-  }
-
-  @Test
   public void add_DoesNotThrow() {
     LongCounter longCounter =
         meter.longCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
@@ -117,6 +108,13 @@ public class LongCounterTest {
   }
 
   @Test
+  public void preventNull_BindLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.longCounterBuilder("metric").build().bind(null);
+  }
+
+  @Test
   public void bound_DoesNotThrow() {
     LongCounter longCounter =
         meter
@@ -125,7 +123,7 @@ public class LongCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundLongCounter bound = longCounter.bind();
+    BoundLongCounter bound = longCounter.bind(Labels.empty());
     bound.add(1);
     bound.unbind();
   }
@@ -139,7 +137,7 @@ public class LongCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundLongCounter bound = longCounter.bind();
+    BoundLongCounter bound = longCounter.bind(Labels.empty());
     try {
       thrown.expect(IllegalArgumentException.class);
       thrown.expectMessage("Counters can only increase");

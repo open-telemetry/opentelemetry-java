@@ -92,15 +92,6 @@ public class DoubleUpDownCounterTest {
   }
 
   @Test
-  public void noopBind_WithBadLabelSet() {
-    DoubleUpDownCounter doubleUpDownCounter =
-        meter.doubleUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("key/value");
-    doubleUpDownCounter.bind("key");
-  }
-
-  @Test
   public void addDoesNotThrow() {
     DoubleUpDownCounter doubleUpDownCounter =
         meter
@@ -114,6 +105,13 @@ public class DoubleUpDownCounterTest {
   }
 
   @Test
+  public void preventNull_BindLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleUpDownCounterBuilder("metric").build().bind(null);
+  }
+
+  @Test
   public void boundDoesNotThrow() {
     DoubleUpDownCounter doubleUpDownCounter =
         meter
@@ -122,7 +120,7 @@ public class DoubleUpDownCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind();
+    BoundDoubleUpDownCounter bound = doubleUpDownCounter.bind(Labels.empty());
     bound.add(1.0);
     bound.add(-1.0);
     bound.unbind();

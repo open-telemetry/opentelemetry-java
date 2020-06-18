@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.trace.export;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.Utils;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
@@ -158,7 +159,8 @@ public final class BatchSpanProcessor implements SpanProcessor {
                   "The number of spans dropped by the BatchSpanProcessor due to high throughput.")
               .build();
       droppedSpans =
-          droppedSpansCounter.bind("spanProcessorType", BatchSpanProcessor.class.getSimpleName());
+          droppedSpansCounter.bind(
+              Labels.of("spanProcessorType", BatchSpanProcessor.class.getSimpleName()));
     }
 
     private static final BoundLongCounter droppedSpans;

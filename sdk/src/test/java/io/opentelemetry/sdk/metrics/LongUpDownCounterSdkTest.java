@@ -57,10 +57,17 @@ public class LongUpDownCounterSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
+  public void preventNull_BindLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.longUpDownCounterBuilder("testUpDownCounter").build().bind(null);
+  }
+
+  @Test
   public void collectMetrics_NoRecords() {
     LongUpDownCounterSdk longUpDownCounter =
         testSdk
-            .longUpDownCounterBuilder("testCounter")
+            .longUpDownCounterBuilder("testUpDownCounter")
             .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My very own counter")
             .setUnit("ms")
@@ -71,7 +78,7 @@ public class LongUpDownCounterSdkTest {
     assertThat(metricData.getDescriptor())
         .isEqualTo(
             Descriptor.create(
-                "testCounter",
+                "testUpDownCounter",
                 "My very own counter",
                 "ms",
                 Type.NON_MONOTONIC_LONG,
@@ -84,7 +91,7 @@ public class LongUpDownCounterSdkTest {
   @Test
   public void collectMetrics_WithOneRecord() {
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
     longUpDownCounter.add(12);
     List<MetricData> metricDataList = longUpDownCounter.collectAll();
@@ -104,8 +111,8 @@ public class LongUpDownCounterSdkTest {
     Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
-    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind("K", "V");
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
       longUpDownCounter.add(12, emptyLabelSet);
@@ -148,9 +155,9 @@ public class LongUpDownCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet() {
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
-    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind("K", "v");
-    BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind("K", "v");
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
+    BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
     try {
       assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
     } finally {
@@ -162,11 +169,11 @@ public class LongUpDownCounterSdkTest {
   @Test
   public void sameBound_ForSameLabelSet_InDifferentCollectionCycles() {
     LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
-    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind("K", "v");
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
+    BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
     try {
       longUpDownCounter.collectAll();
-      BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind("K", "v");
+      BoundLongUpDownCounter duplicateBoundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
       try {
         assertThat(duplicateBoundCounter).isEqualTo(boundCounter);
       } finally {
@@ -180,7 +187,7 @@ public class LongUpDownCounterSdkTest {
   @Test
   public void stressTest() {
     final LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longUpDownCounter).setCollectionIntervalMs(100);
@@ -191,7 +198,9 @@ public class LongUpDownCounterSdkTest {
               2_000, 1, new OperationUpdaterDirectCall(longUpDownCounter, "K", "V")));
       stressTestBuilder.addOperation(
           StressTestRunner.Operation.create(
-              2_000, 1, new OperationUpdaterWithBinding(longUpDownCounter.bind("K", "V"))));
+              2_000,
+              1,
+              new OperationUpdaterWithBinding(longUpDownCounter.bind(Labels.of("K", "V")))));
     }
 
     stressTestBuilder.build().run();
@@ -207,7 +216,7 @@ public class LongUpDownCounterSdkTest {
     final String[] keys = {"Key_1", "Key_2", "Key_3", "Key_4"};
     final String[] values = {"Value_1", "Value_2", "Value_3", "Value_4"};
     final LongUpDownCounterSdk longUpDownCounter =
-        testSdk.longUpDownCounterBuilder("testCounter").build();
+        testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
 
     StressTestRunner.Builder stressTestBuilder =
         StressTestRunner.builder().setInstrument(longUpDownCounter).setCollectionIntervalMs(100);
@@ -221,7 +230,8 @@ public class LongUpDownCounterSdkTest {
           StressTestRunner.Operation.create(
               1_000,
               2,
-              new OperationUpdaterWithBinding(longUpDownCounter.bind(keys[i], values[i]))));
+              new OperationUpdaterWithBinding(
+                  longUpDownCounter.bind(Labels.of(keys[i], values[i])))));
     }
 
     stressTestBuilder.build().run();

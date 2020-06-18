@@ -77,7 +77,7 @@ public interface LongValueRecorder extends SynchronousInstrument<BoundLongValueR
   void record(long value, String... labelKeyValuePairs);
 
   @Override
-  BoundLongValueRecorder bind(String... labelKeyValuePairs);
+  BoundLongValueRecorder bind(Labels labels);
 
   /**
    * A {@code Bound Instrument} for a {@link LongValueRecorder}.

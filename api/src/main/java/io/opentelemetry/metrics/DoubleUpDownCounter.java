@@ -68,7 +68,7 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
   void add(double increment, String... labelKeyValuePairs);
 
   @Override
-  BoundDoubleUpDownCounter bind(String... labelKeyValuePairs);
+  BoundDoubleUpDownCounter bind(Labels labels);
 
   /**
    * A {@code Bound Instrument} for a {@link DoubleUpDownCounter}.

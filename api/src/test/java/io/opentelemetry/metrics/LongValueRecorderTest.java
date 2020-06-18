@@ -104,6 +104,13 @@ public final class LongValueRecorderTest {
   }
 
   @Test
+  public void preventNull_BindLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.longValueRecorderBuilder("metric").build().bind(null);
+  }
+
+  @Test
   public void boundDoesNotThrow() {
     LongValueRecorder longValueRecorder =
         meter
@@ -112,7 +119,7 @@ public final class LongValueRecorderTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundLongValueRecorder bound = longValueRecorder.bind();
+    BoundLongValueRecorder bound = longValueRecorder.bind(Labels.empty());
     bound.record(5);
     bound.record(-5);
     bound.unbind();

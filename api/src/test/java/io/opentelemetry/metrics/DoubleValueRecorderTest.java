@@ -104,6 +104,13 @@ public final class DoubleValueRecorderTest {
   }
 
   @Test
+  public void preventNull_BindLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleValueRecorderBuilder("metric").build().bind(null);
+  }
+
+  @Test
   public void boundDoesNotThrow() {
     DoubleValueRecorder doubleValueRecorder =
         meter
@@ -112,7 +119,7 @@ public final class DoubleValueRecorderTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundDoubleValueRecorder bound = doubleValueRecorder.bind();
+    BoundDoubleValueRecorder bound = doubleValueRecorder.bind(Labels.empty());
     bound.record(5.0);
     bound.record(-5.0);
     bound.unbind();
