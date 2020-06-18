@@ -92,10 +92,17 @@ public class DoubleCounterTest {
   }
 
   @Test
+  public void add_preventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleCounterBuilder("metric").build().add(1.0, null);
+  }
+
+  @Test
   public void add_DoesNotThrow() {
     DoubleCounter doubleCounter =
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    doubleCounter.add(1.0);
+    doubleCounter.add(1.0, Labels.empty());
   }
 
   @Test
@@ -104,11 +111,11 @@ public class DoubleCounterTest {
         meter.doubleCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Counters can only increase");
-    doubleCounter.add(-1.0);
+    doubleCounter.add(-1.0, Labels.empty());
   }
 
   @Test
-  public void preventNull_BindLabels() {
+  public void bound_PreventNullLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labels");
     meter.doubleCounterBuilder("metric").build().bind(null);

@@ -62,10 +62,10 @@ public interface DoubleUpDownCounter extends SynchronousInstrument<BoundDoubleUp
    * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
    * @param increment the value to add.
-   * @param labelKeyValuePairs the labels to be associated to this recording.
+   * @param labels the labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(double increment, String... labelKeyValuePairs);
+  void add(double increment, Labels labels);
 
   @Override
   BoundDoubleUpDownCounter bind(Labels labels);

@@ -43,12 +43,8 @@ final class DoubleValueRecorderSdk extends AbstractSynchronousInstrument<BoundIn
   }
 
   @Override
-  public void record(double delta, String... labelKeyValuePairs) {
-    record(delta, Labels.of(labelKeyValuePairs));
-  }
-
-  void record(double value, Labels labelSet) {
-    BoundInstrument boundInstrument = bind(labelSet);
+  public void record(double value, Labels labels) {
+    BoundInstrument boundInstrument = bind(labels);
     boundInstrument.record(value);
     boundInstrument.unbind();
   }

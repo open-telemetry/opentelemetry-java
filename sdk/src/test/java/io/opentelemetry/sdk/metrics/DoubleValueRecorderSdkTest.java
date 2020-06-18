@@ -60,7 +60,14 @@ public class DoubleValueRecorderSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
-  public void preventNull_BindLabels() {
+  public void record_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.doubleValueRecorderBuilder("testRecorder").build().record(1.0, null);
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labels");
     testSdk.doubleValueRecorderBuilder("testRecorder").build().bind(null);
@@ -123,7 +130,7 @@ public class DoubleValueRecorderSdkTest {
     DoubleValueRecorderSdk doubleMeasure =
         testSdk.doubleValueRecorderBuilder("testRecorder").build();
     testClock.advanceNanos(SECOND_NANOS);
-    doubleMeasure.record(12.1d);
+    doubleMeasure.record(12.1d, Labels.empty());
     List<MetricData> metricDataList = doubleMeasure.collectAll();
     assertThat(metricDataList)
         .containsExactly(
@@ -143,21 +150,19 @@ public class DoubleValueRecorderSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    Labels labelSet = Labels.of("K", "V");
-    Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
     DoubleValueRecorderSdk doubleMeasure =
         testSdk.doubleValueRecorderBuilder("testRecorder").build();
     BoundDoubleValueRecorder boundMeasure = doubleMeasure.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleMeasure.record(12.1d);
+      doubleMeasure.record(12.1d, Labels.empty());
       boundMeasure.record(123.3d);
-      doubleMeasure.record(-13.1d);
+      doubleMeasure.record(-13.1d, Labels.empty());
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(321.5d);
-      doubleMeasure.record(-121.5d, "K", "V");
+      doubleMeasure.record(-121.5d, Labels.of("K", "V"));
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = doubleMeasure.collectAll();
@@ -168,14 +173,14 @@ public class DoubleValueRecorderSdkTest {
               SummaryPoint.create(
                   startTime,
                   firstCollect,
-                  emptyLabelSet,
+                  Labels.empty(),
                   2,
                   -1.0d,
                   valueAtPercentiles(-13.1d, 12.1d)),
               SummaryPoint.create(
                   startTime,
                   firstCollect,
-                  labelSet,
+                  Labels.of("K", "V"),
                   3,
                   323.3d,
                   valueAtPercentiles(-121.5d, 321.5d)));
@@ -183,7 +188,7 @@ public class DoubleValueRecorderSdkTest {
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(222d);
-      doubleMeasure.record(17d);
+      doubleMeasure.record(17d, Labels.empty());
 
       long secondCollect = testClock.now();
       metricDataList = doubleMeasure.collectAll();
@@ -194,14 +199,14 @@ public class DoubleValueRecorderSdkTest {
               SummaryPoint.create(
                   startTime,
                   secondCollect,
-                  emptyLabelSet,
+                  Labels.empty(),
                   3,
                   16.0d,
                   valueAtPercentiles(-13.1d, 17d)),
               SummaryPoint.create(
                   startTime,
                   secondCollect,
-                  labelSet,
+                  Labels.of("K", "V"),
                   4,
                   545.3d,
                   valueAtPercentiles(-121.5, 321.5d)));
@@ -367,7 +372,7 @@ public class DoubleValueRecorderSdkTest {
 
     @Override
     void update() {
-      doubleValueRecorder.record(9.0, key, value);
+      doubleValueRecorder.record(9.0, Labels.of(key, value));
     }
 
     @Override

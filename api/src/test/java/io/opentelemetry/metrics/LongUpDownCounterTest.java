@@ -92,7 +92,14 @@ public class LongUpDownCounterTest {
   }
 
   @Test
-  public void addDoesNotThrow() {
+  public void add_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.longUpDownCounterBuilder("metric").build().add(1, null);
+  }
+
+  @Test
+  public void add_DoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
         meter
             .longUpDownCounterBuilder(NAME)
@@ -100,19 +107,19 @@ public class LongUpDownCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    longUpDownCounter.add(1);
-    longUpDownCounter.add(-1);
+    longUpDownCounter.add(1, Labels.empty());
+    longUpDownCounter.add(-1, Labels.empty());
   }
 
   @Test
-  public void preventNull_BindLabels() {
+  public void bound_PreventNullLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labels");
     meter.longUpDownCounterBuilder("metric").build().bind(null);
   }
 
   @Test
-  public void boundDoesNotThrow() {
+  public void bound_DoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
         meter
             .longUpDownCounterBuilder(NAME)

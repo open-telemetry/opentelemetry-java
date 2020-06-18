@@ -97,10 +97,10 @@ public class MeterSdkRegistryTest {
   public void metricProducer_GetAllMetrics() {
     MeterSdk meterSdk1 = meterRegistry.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
     LongCounterSdk longCounter1 = meterSdk1.longCounterBuilder("testLongCounter").build();
-    longCounter1.add(10);
+    longCounter1.add(10, Labels.empty());
     MeterSdk meterSdk2 = meterRegistry.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
     LongCounterSdk longCounter2 = meterSdk2.longCounterBuilder("testLongCounter").build();
-    longCounter2.add(10);
+    longCounter2.add(10, Labels.empty());
 
     assertThat(meterRegistry.getMetricProducer().getAllMetrics())
         .containsExactly(

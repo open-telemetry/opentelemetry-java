@@ -62,10 +62,10 @@ public interface LongUpDownCounter extends SynchronousInstrument<BoundLongUpDown
    * <p>The value added is associated with the current {@code Context} and provided set of labels.
    *
    * @param increment the value to add.
-   * @param labelKeyValuePairs the set of labels to be associated to this recording.
+   * @param labels the set of labels to be associated to this recording.
    * @since 0.1.0
    */
-  void add(long increment, String... labelKeyValuePairs);
+  void add(long increment, Labels labels);
 
   @Override
   BoundLongUpDownCounter bind(Labels labels);

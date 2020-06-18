@@ -316,16 +316,16 @@ public class MeterSdkTest {
   @Test
   public void collectAll() {
     LongCounterSdk longCounter = testSdk.longCounterBuilder("testLongCounter").build();
-    longCounter.add(10);
+    longCounter.add(10, Labels.empty());
     LongValueRecorderSdk longValueRecorder =
         testSdk.longValueRecorderBuilder("testLongValueRecorder").build();
-    longValueRecorder.record(10);
+    longValueRecorder.record(10, Labels.empty());
     // LongSumObserver longObserver = testSdk.longSumObserverBuilder("testLongSumObserver").build();
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testDoubleCounter").build();
-    doubleCounter.add(10.1);
+    doubleCounter.add(10.1, Labels.empty());
     DoubleValueRecorderSdk doubleValueRecorder =
         testSdk.doubleValueRecorderBuilder("testDoubleValueRecorder").build();
-    doubleValueRecorder.record(10.1);
+    doubleValueRecorder.record(10.1, Labels.empty());
     // DoubleSumObserver doubleObserver =
     // testSdk.doubleSumObserverBuilder("testDoubleSumObserver").build();
 

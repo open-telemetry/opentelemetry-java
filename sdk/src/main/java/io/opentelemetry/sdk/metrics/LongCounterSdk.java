@@ -40,12 +40,8 @@ final class LongCounterSdk extends AbstractSynchronousInstrument<BoundInstrument
   }
 
   @Override
-  public void add(long increment, String... labelKeyValuePairs) {
-    add(increment, Labels.of(labelKeyValuePairs));
-  }
-
-  void add(long increment, Labels labelSet) {
-    BoundInstrument boundInstrument = bind(labelSet);
+  public void add(long increment, Labels labels) {
+    BoundInstrument boundInstrument = bind(labels);
     try {
       boundInstrument.add(increment);
     } finally {

@@ -56,7 +56,14 @@ public class DoubleCounterSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
-  public void preventNull_BindLabels() {
+  public void add_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.doubleCounterBuilder("testCounter").build().add(1.0, null);
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labels");
     testSdk.doubleCounterBuilder("testCounter").build().bind(null);
@@ -91,7 +98,7 @@ public class DoubleCounterSdkTest {
   public void collectMetrics_WithOneRecord() {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
-    doubleCounter.add(12.1d);
+    doubleCounter.add(12.1d, Labels.empty());
     List<MetricData> metricDataList = doubleCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
@@ -108,20 +115,18 @@ public class DoubleCounterSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    Labels labelSet = Labels.of("K", "V");
-    Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
     BoundDoubleCounter boundCounter = doubleCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
-      doubleCounter.add(12.1d);
+      doubleCounter.add(12.1d, Labels.empty());
       boundCounter.add(123.3d);
-      doubleCounter.add(21.4d);
+      doubleCounter.add(21.4d, Labels.empty());
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(321.5d);
-      doubleCounter.add(111.1d, "K", "V");
+      doubleCounter.add(111.1d, Labels.of("K", "V"));
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = doubleCounter.collectAll();
@@ -130,13 +135,13 @@ public class DoubleCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              DoublePoint.create(startTime, firstCollect, labelSet, 555.9d),
-              DoublePoint.create(startTime, firstCollect, emptyLabelSet, 33.5d));
+              DoublePoint.create(startTime, firstCollect, Labels.of("K", "V"), 555.9d),
+              DoublePoint.create(startTime, firstCollect, Labels.empty(), 33.5d));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(222d);
-      doubleCounter.add(11d);
+      doubleCounter.add(11d, Labels.empty());
 
       long secondCollect = testClock.now();
       metricDataList = doubleCounter.collectAll();
@@ -145,8 +150,8 @@ public class DoubleCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              DoublePoint.create(startTime, secondCollect, labelSet, 777.9d),
-              DoublePoint.create(startTime, secondCollect, emptyLabelSet, 44.5d));
+              DoublePoint.create(startTime, secondCollect, Labels.of("K", "V"), 777.9d),
+              DoublePoint.create(startTime, secondCollect, Labels.empty(), 44.5d));
     } finally {
       boundCounter.unbind();
     }
@@ -187,7 +192,7 @@ public class DoubleCounterSdkTest {
     DoubleCounterSdk doubleCounter = testSdk.doubleCounterBuilder("testCounter").build();
 
     thrown.expect(IllegalArgumentException.class);
-    doubleCounter.add(-45.77d);
+    doubleCounter.add(-45.77d, Labels.empty());
   }
 
   @Test
@@ -290,7 +295,7 @@ public class DoubleCounterSdkTest {
 
     @Override
     void update() {
-      doubleCounter.add(11.0, key, value);
+      doubleCounter.add(11.0, Labels.of(key, value));
     }
 
     @Override

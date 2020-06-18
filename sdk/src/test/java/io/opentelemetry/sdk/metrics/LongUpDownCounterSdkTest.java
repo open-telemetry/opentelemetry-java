@@ -57,7 +57,14 @@ public class LongUpDownCounterSdkTest {
       new MeterSdk(meterProviderSharedState, INSTRUMENTATION_LIBRARY_INFO);
 
   @Test
-  public void preventNull_BindLabels() {
+  public void add_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    testSdk.longUpDownCounterBuilder("testCounter").build().add(1, null);
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
     thrown.expect(NullPointerException.class);
     thrown.expectMessage("labels");
     testSdk.longUpDownCounterBuilder("testUpDownCounter").build().bind(null);
@@ -93,7 +100,7 @@ public class LongUpDownCounterSdkTest {
     LongUpDownCounterSdk longUpDownCounter =
         testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
     testClock.advanceNanos(SECOND_NANOS);
-    longUpDownCounter.add(12);
+    longUpDownCounter.add(12, Labels.empty());
     List<MetricData> metricDataList = longUpDownCounter.collectAll();
     assertThat(metricDataList).hasSize(1);
     MetricData metricData = metricDataList.get(0);
@@ -107,21 +114,19 @@ public class LongUpDownCounterSdkTest {
 
   @Test
   public void collectMetrics_WithMultipleCollects() {
-    Labels labelSet = Labels.of("K", "V");
-    Labels emptyLabelSet = Labels.empty();
     long startTime = testClock.now();
     LongUpDownCounterSdk longUpDownCounter =
         testSdk.longUpDownCounterBuilder("testUpDownCounter").build();
     BoundLongUpDownCounter boundCounter = longUpDownCounter.bind(Labels.of("K", "V"));
     try {
       // Do some records using bounds and direct calls and bindings.
-      longUpDownCounter.add(12, emptyLabelSet);
+      longUpDownCounter.add(12, Labels.empty());
       boundCounter.add(123);
-      longUpDownCounter.add(21, emptyLabelSet);
+      longUpDownCounter.add(21, Labels.empty());
       // Advancing time here should not matter.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(321);
-      longUpDownCounter.add(111, labelSet);
+      longUpDownCounter.add(111, Labels.of("K", "V"));
 
       long firstCollect = testClock.now();
       List<MetricData> metricDataList = longUpDownCounter.collectAll();
@@ -130,13 +135,13 @@ public class LongUpDownCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              LongPoint.create(startTime, firstCollect, labelSet, 555),
-              LongPoint.create(startTime, firstCollect, emptyLabelSet, 33));
+              LongPoint.create(startTime, firstCollect, Labels.of("K", "V"), 555),
+              LongPoint.create(startTime, firstCollect, Labels.empty(), 33));
 
       // Repeat to prove we keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundCounter.add(222);
-      longUpDownCounter.add(11, emptyLabelSet);
+      longUpDownCounter.add(11, Labels.empty());
 
       long secondCollect = testClock.now();
       metricDataList = longUpDownCounter.collectAll();
@@ -145,8 +150,8 @@ public class LongUpDownCounterSdkTest {
       assertThat(metricData.getPoints()).hasSize(2);
       assertThat(metricData.getPoints())
           .containsExactly(
-              LongPoint.create(startTime, secondCollect, labelSet, 777),
-              LongPoint.create(startTime, secondCollect, emptyLabelSet, 44));
+              LongPoint.create(startTime, secondCollect, Labels.of("K", "V"), 777),
+              LongPoint.create(startTime, secondCollect, Labels.empty(), 44));
     } finally {
       boundCounter.unbind();
     }
@@ -282,7 +287,7 @@ public class LongUpDownCounterSdkTest {
 
     @Override
     void update() {
-      longUpDownCounter.add(11, key, value);
+      longUpDownCounter.add(11, Labels.of(key, value));
     }
 
     @Override
