@@ -285,6 +285,12 @@ configure(opentelemetryProjects) {
         maxHeapSize = '1500m'
     }
 
+    plugins.withId("ru.vyarus.animalsniffer") {
+        animalsnifferTest {
+            enabled = false
+        }
+    }
+
     plugins.withId("me.champeau.gradle.jmh") {
         // Always include the jmhreport plugin and run it after jmh task.
         pluginManager.apply "io.morethan.jmhreport"
