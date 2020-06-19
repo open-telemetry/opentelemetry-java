@@ -38,7 +38,7 @@ public abstract class Entry {
   public static final int MAX_KEY_LENGTH = 255;
 
   /**
-   * The maximum length for a entry value. The value is {@value #MAX_LENGTH}.
+   * The maximum length for a entry value. The value is {@value #MAX_VALUE_LENGTH}.
    *
    * @since 0.1.0
    */
