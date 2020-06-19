@@ -33,8 +33,8 @@ import org.junit.runners.JUnit4;
 public final class DefaultCorrelationContextManagerTest {
   private static final CorrelationContextManager defaultCorrelationContextManager =
       DefaultCorrelationContextManager.getInstance();
-  private static final EntryKey KEY = EntryKey.create("key");
-  private static final EntryValue VALUE = EntryValue.create("value");
+  private static final String KEY = "key";
+  private static final String VALUE = "value";
 
   private static final CorrelationContext DIST_CONTEXT =
       new CorrelationContext() {
@@ -46,7 +46,7 @@ public final class DefaultCorrelationContextManagerTest {
         }
 
         @Override
-        public EntryValue getEntryValue(EntryKey entryKey) {
+        public String getEntryValue(String entryKey) {
           return VALUE;
         }
       };
