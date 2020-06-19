@@ -24,7 +24,9 @@ import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
+import java.io.FileInputStream;
 import java.util.Objects;
+import java.util.Properties;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -45,6 +47,26 @@ public abstract class Resource {
   private static final String ERROR_MESSAGE_INVALID_VALUE =
       " should be a ASCII string with a length not exceed " + MAX_LENGTH + " characters.";
   private static final Resource EMPTY = create(Attributes.empty());
+  private static final Resource TELEMETRY_SDK =
+      create(
+          Attributes.newBuilder()
+              .setAttribute("telemetry.sdk.name", "opentelemetry")
+              .setAttribute("telemetry.sdk.language", "java")
+              .setAttribute("telemetry.sdk.version", readVersion())
+              .build());
+
+  @Nullable
+  private static String readVersion() {
+    Properties properties = new Properties();
+    try {
+      properties.load(
+          new FileInputStream(Resource.class.getResource("version.properties").getFile()));
+    } catch (Exception e) {
+      // we left the attribute empty
+      return null;
+    }
+    return properties.getProperty("version");
+  }
 
   Resource() {}
 
@@ -56,6 +78,16 @@ public abstract class Resource {
    */
   public static Resource getEmpty() {
     return EMPTY;
+  }
+
+  /**
+   * Returns the telemetry sdk {@link Resource}.
+   *
+   * @return a {@code Resource} with telemetry sdk attributes.
+   * @since 0.6.0
+   */
+  public static Resource getTelemetrySdk() {
+    return TELEMETRY_SDK;
   }
 
   /**

@@ -21,6 +21,8 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.common.testing.EqualsTester;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
+import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -146,5 +148,16 @@ public class ResourceTest {
             AttributeValue.stringAttributeValue("2"));
     Resource resource = DEFAULT_RESOURCE.merge(resource1).merge(null);
     assertThat(resource.getAttributes()).isEqualTo(expectedAttributes);
+  }
+
+  @Test
+  public void testSdkTelemetryResources() {
+    Resource resource = Resource.getTelemetrySdk();
+    ReadableAttributes attributes = resource.getAttributes();
+    String[] keys = {"telemetry.sdk.name", "telemetry.sdk.language", "telemetry.sdk.version"};
+    attributes.forEach((key, value) -> assertThat(Arrays.asList(keys).contains(key)).isTrue());
+    assertThat(attributes.get(keys[0]))
+        .isEqualTo(AttributeValue.stringAttributeValue("opentelemetry"));
+    assertThat(attributes.get(keys[1])).isEqualTo(AttributeValue.stringAttributeValue("java"));
   }
 }

@@ -30,3 +30,10 @@ animalsniffer {
             sourceSets.main
     ]
 }
+
+processResources {
+    new File(
+            projectDir.getAbsolutePath() + File.separator + ["src", "main", "resources"].join(File.separator),
+            "version.properties"
+    ).text = "version=$version"
+}
