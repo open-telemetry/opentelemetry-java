@@ -1,6 +1,7 @@
 package io.opentelemetry.example.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.metrics.LongCounter;
 import io.opentelemetry.metrics.LongCounter.BoundLongCounter;
@@ -31,7 +32,7 @@ public class LongCounterExample {
   private static final File homeDirectory = FileSystemView.getFileSystemView().getHomeDirectory();
   // we can use BoundCounters to not specify labels each time
   private static final BoundLongCounter homeDirectoryCounter =
-      directoryCounter.bind("root directory", homeDirectory.getName());
+      directoryCounter.bind(Labels.of("root directory", homeDirectory.getName()));
 
   public static void main(String[] args) {
     Span span = tracer.spanBuilder("workflow").setSpanKind(Kind.INTERNAL).startSpan();
