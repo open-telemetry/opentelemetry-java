@@ -16,10 +16,16 @@
 
 package io.opentelemetry.sdk.contrib.zpages;
 
+import static com.google.common.html.HtmlEscapers.htmlEscaper;
+
 import com.google.common.base.Charsets;
-import com.google.common.html.HtmlEscapers;
+import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.contrib.zpages.TracezDataAggregator.LatencyBoundaries;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.SpanData.Event;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.Status.CanonicalCode;
 import java.io.BufferedWriter;
 import java.io.OutputStream;
@@ -28,6 +34,9 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Formatter;
@@ -36,6 +45,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 final class TracezZPageHandler extends ZPageHandler {
   private enum SampleType {
@@ -71,7 +81,11 @@ final class TracezZPageHandler extends ZPageHandler {
 
   private static final String TRACEZ_URL = "/tracez";
   // Background color used for zebra striping rows of summary table
-  private static final String ZEBRA_STRIPE_COLOR = "#f0f0f0";
+  private static final String ZEBRA_STRIPE_COLOR = "#e6e6e6";
+  // Color for sampled traceIds
+  private static final String SAMPLED_TRACE_ID_COLOR = "#c1272d";
+  // Color for not sampled traceIds
+  private static final String NOT_SAMPLED_TRACE_ID_COLOR = "black";
   // Query string parameter name for span name
   private static final String PARAM_SPAN_NAME = "zspanname";
   // Query string parameter name for type to display
@@ -84,7 +98,7 @@ final class TracezZPageHandler extends ZPageHandler {
   private static final String PARAM_SAMPLE_SUB_TYPE = "zsubtype";
   @javax.annotation.Nullable private final TracezDataAggregator dataAggregator;
   // Map from LatencyBoundaries to human readable string on the UI
-  private static final Map<LatencyBoundaries, String> LATENCY_BOUNDARIES_STRING_MAP =
+  private static final ImmutableMap<LatencyBoundaries, String> LATENCY_BOUNDARIES_STRING_MAP =
       buildLatencyBoundariesStringMap();
 
   private TracezZPageHandler(TracezDataAggregator dataAggregator) {
@@ -114,7 +128,7 @@ final class TracezZPageHandler extends ZPageHandler {
   private static void emitHtmlStyle(PrintWriter out) {
     out.write("<style>");
     out.write(ZPageStyle.style);
-    out.write("</style");
+    out.write("</style>");
   }
 
   /**
@@ -213,7 +227,7 @@ final class TracezZPageHandler extends ZPageHandler {
         out.write("<tr>");
       }
       zebraStripe = !zebraStripe;
-      formatter.format("<td>%s</td>", HtmlEscapers.htmlEscaper().escape(spanName));
+      formatter.format("<td>%s</td>", htmlEscaper().escape(spanName));
 
       // Running spans column
       int numOfRunningSpans =
@@ -240,19 +254,177 @@ final class TracezZPageHandler extends ZPageHandler {
       // subtype 0 means all errors
       emitSummaryTableCell(out, formatter, spanName, numOfErrorSamples, SampleType.ERROR, 0);
     }
+    out.write("</table>");
   }
 
   private static void emitSpanNameAndCount(
       Formatter formatter, String spanName, int count, SampleType type) {
     formatter.format(
-        "<p class=\"align-center\"><b> Span Name: %s </b></p>",
-        HtmlEscapers.htmlEscaper().escape(spanName));
+        "<p class=\"align-center\"><b> Span Name: %s </b></p>", htmlEscaper().escape(spanName));
     formatter.format(
         "<p class=\"align-center\"><b> Number of %s: %d </b></p>",
         type == SampleType.RUNNING
             ? "running"
             : type == SampleType.LATENCY ? "latency samples" : "error samples",
         count);
+  }
+
+  private static void emitSpanDetails(
+      PrintWriter out, Formatter formatter, Collection<SpanData> spans) {
+    out.write("<table style=\"border-spacing: 0; border: 1px solid #363636;\">");
+    out.write("<tr class=\"bg-color\">");
+    out.write(
+        "<td style=\"color: #fff;\"><pre class=\"no-margin wrap-text\"><b>When</b></pre></td>");
+    out.write(
+        "<td class=\"border-left-white\" style=\"color: #fff;\">"
+            + "<pre class=\"no-margin wrap-text\"><b>Elapsed(s)</b></pre></td>");
+    out.write("<td class=\"border-left-white\"></td>");
+    out.write("</tr>");
+    boolean zebraStripe = false;
+    for (SpanData span : spans) {
+      zebraStripe = emitSingleSpan(out, formatter, span, zebraStripe);
+    }
+    out.write("</table>");
+  }
+
+  private static boolean emitSingleSpan(
+      PrintWriter out, Formatter formatter, SpanData span, boolean zebraStripe) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTimeInMillis(TimeUnit.NANOSECONDS.toMillis(span.getStartEpochNanos()));
+    long microsField = TimeUnit.NANOSECONDS.toMicros(span.getStartEpochNanos());
+    String elapsedSecondsStr =
+        span.getHasEnded()
+            ? String.format("%.6f", (span.getEndEpochNanos() - span.getStartEpochNanos()) * 1.0e-9)
+            : String.format("%s", "");
+    formatter.format(
+        "<tr style=\"background-color: %s;\">", zebraStripe ? ZEBRA_STRIPE_COLOR : "#fff");
+    formatter.format(
+        "<td class=\"align-right\"><pre class=\"no-margin wrap-text\"><b>"
+            + "%04d/%02d/%02d-%02d:%02d:%02d.%06d</b></pre></td>",
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH) + 1,
+        calendar.get(Calendar.DAY_OF_MONTH),
+        calendar.get(Calendar.HOUR_OF_DAY),
+        calendar.get(Calendar.MINUTE),
+        calendar.get(Calendar.SECOND),
+        microsField);
+    formatter.format(
+        "<td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\"><b>%s</b></pre></td>",
+        elapsedSecondsStr);
+    formatter.format(
+        "<td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\"><b>"
+            + "TraceId: <b style=\"color:%s;\">%s</b> "
+            + " | SpanId: %s | ParentSpanId: %s</b></pre></td>",
+        span.getTraceFlags().isSampled() ? SAMPLED_TRACE_ID_COLOR : NOT_SAMPLED_TRACE_ID_COLOR,
+        span.getTraceId().toLowerBase16(),
+        span.getSpanId().toLowerBase16(),
+        (span.getParentSpanId() == null
+            ? SpanId.getInvalid().toLowerBase16()
+            : span.getParentSpanId().toLowerBase16()));
+    out.write("</tr>");
+    zebraStripe = !zebraStripe;
+
+    int lastEntryDayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
+
+    long lastEpochNanos = span.getStartEpochNanos();
+    List<Event> timedEvents = new ArrayList<>(span.getEvents());
+    Collections.sort(timedEvents, new EventComparator());
+    for (Event event : timedEvents) {
+      calendar.setTimeInMillis(TimeUnit.NANOSECONDS.toMillis(event.getEpochNanos()));
+      formatter.format(
+          "<tr style=\"background-color: %s;\">", zebraStripe ? ZEBRA_STRIPE_COLOR : "#fff");
+      emitSingleEvent(out, formatter, event, calendar, lastEntryDayOfYear, lastEpochNanos);
+      out.write("</tr>");
+      if (calendar.get(Calendar.DAY_OF_YEAR) != lastEntryDayOfYear) {
+        lastEntryDayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
+      }
+      lastEpochNanos = event.getEpochNanos();
+      zebraStripe = !zebraStripe;
+    }
+    formatter.format(
+        "<tr style=\"background-color: %s;\"><td></td><td class=\"border-left-dark\">"
+            + "</td><td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\">",
+        zebraStripe ? ZEBRA_STRIPE_COLOR : "#fff");
+    Status status = span.getStatus();
+    if (status != null) {
+      formatter.format("%s | ", htmlEscaper().escape(status.toString()));
+    }
+    formatter.format("%s</pre></td>", htmlEscaper().escape(renderAttributes(span.getAttributes())));
+    zebraStripe = !zebraStripe;
+    return zebraStripe;
+  }
+
+  private static void emitSingleEvent(
+      PrintWriter out,
+      Formatter formatter,
+      Event event,
+      Calendar calendar,
+      int lastEntryDayOfYear,
+      long lastEpochNanos) {
+    if (calendar.get(Calendar.DAY_OF_YEAR) == lastEntryDayOfYear) {
+      out.write("<td class=\"align-right\"><pre class=\"no-margin wrap-text\">");
+    } else {
+      formatter.format(
+          "<td class=\"align-right\"><pre class=\"no-margin wrap-text\">%04d/%02d/%02d-",
+          calendar.get(Calendar.YEAR),
+          calendar.get(Calendar.MONTH) + 1,
+          calendar.get(Calendar.DAY_OF_MONTH));
+    }
+
+    // Special printing so that durations smaller than one second
+    // are left padded with blanks instead of '0' characters.
+    // E.g.,
+    //        Number                  Printout
+    //        ---------------------------------
+    //        0.000534                  .   534
+    //        1.000534                 1.000534
+    long deltaMicros = TimeUnit.NANOSECONDS.toMicros(event.getEpochNanos() - lastEpochNanos);
+    String deltaString;
+    if (deltaMicros >= 1000000) {
+      deltaString = String.format("%.6f", (deltaMicros / 1000000.0));
+    } else {
+      deltaString = String.format("%1s.%6d", "", deltaMicros);
+    }
+
+    long microsField = TimeUnit.NANOSECONDS.toMicros(event.getEpochNanos());
+    formatter.format(
+        "%02d:%02d:%02d.%06d</pre></td> "
+            + "<td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\">%s</pre></td>"
+            + "<td class=\"border-left-dark\"><pre class=\"no-margin wrap-text\">%s</pre></td>",
+        calendar.get(Calendar.HOUR_OF_DAY),
+        calendar.get(Calendar.MINUTE),
+        calendar.get(Calendar.SECOND),
+        microsField,
+        deltaString,
+        htmlEscaper().escape(renderEvent(event)));
+  }
+
+  private static String renderAttributes(Map<String, AttributeValue> attributes) {
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append("Attributes:{");
+    boolean first = true;
+    for (Map.Entry<String, AttributeValue> entry : attributes.entrySet()) {
+      if (first) {
+        first = false;
+      } else {
+        stringBuilder.append(", ");
+      }
+      stringBuilder.append(entry.getKey());
+      stringBuilder.append("=");
+      stringBuilder.append(entry.getValue().toString());
+    }
+    stringBuilder.append("}");
+    return stringBuilder.toString();
+  }
+
+  private static String renderEvent(Event event) {
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append(event.getName());
+    if (!event.getAttributes().isEmpty()) {
+      stringBuilder.append(" | ");
+      stringBuilder.append(renderAttributes(event.getAttributes()));
+    }
+    return stringBuilder.toString();
   }
 
   /**
@@ -312,6 +484,8 @@ final class TracezZPageHandler extends ZPageHandler {
                 return;
               }
               // Display error based span
+              spans = dataAggregator.getErrorSpans(spanName);
+              Collections.sort(spans, new SpanDataComparator(/* incremental= */ false));
             }
           }
         }
@@ -319,7 +493,7 @@ final class TracezZPageHandler extends ZPageHandler {
         emitSpanNameAndCount(formatter, spanName, spans == null ? 0 : spans.size(), type);
 
         if (spans != null) {
-          // emit span details
+          emitSpanDetails(out, formatter, spans);
         }
       }
     }
@@ -380,12 +554,21 @@ final class TracezZPageHandler extends ZPageHandler {
     throw new IllegalArgumentException("No value string available for: " + latencyBoundaries);
   }
 
-  private static Map<LatencyBoundaries, String> buildLatencyBoundariesStringMap() {
+  private static ImmutableMap<LatencyBoundaries, String> buildLatencyBoundariesStringMap() {
     Map<LatencyBoundaries, String> latencyBoundariesMap = new HashMap<>();
     for (LatencyBoundaries latencyBoundaries : LatencyBoundaries.values()) {
       latencyBoundariesMap.put(latencyBoundaries, latencyBoundariesToString(latencyBoundaries));
     }
-    return Collections.unmodifiableMap(latencyBoundariesMap);
+    return ImmutableMap.copyOf(latencyBoundariesMap);
+  }
+
+  private static final class EventComparator implements Comparator<Event>, Serializable {
+    private static final long serialVersionUID = 0;
+
+    @Override
+    public int compare(Event e1, Event e2) {
+      return Long.compare(e1.getEpochNanos(), e2.getEpochNanos());
+    }
   }
 
   private static final class SpanDataComparator implements Comparator<SpanData>, Serializable {
@@ -401,21 +584,11 @@ final class TracezZPageHandler extends ZPageHandler {
       this.incremental = incremental;
     }
 
-    private static int compareLongs(long x, long y) {
-      if (x < y) {
-        return -1;
-      } else if (x == y) {
-        return 0;
-      } else {
-        return 1;
-      }
-    }
-
     @Override
     public int compare(SpanData s1, SpanData s2) {
       return incremental
-          ? compareLongs(s1.getStartEpochNanos(), s2.getStartEpochNanos())
-          : compareLongs(s2.getStartEpochNanos(), s1.getEndEpochNanos());
+          ? Long.compare(s1.getStartEpochNanos(), s2.getStartEpochNanos())
+          : Long.compare(s2.getStartEpochNanos(), s1.getEndEpochNanos());
     }
   }
 }

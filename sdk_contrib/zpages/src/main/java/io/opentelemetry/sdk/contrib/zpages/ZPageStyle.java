@@ -23,7 +23,7 @@ final class ZPageStyle {
   /** Style here will be applied to the generated HTML pages for all zPages. */
   static String style =
       "body{font-family: \"Roboto\", sans-serif; font-size: 14px;"
-          + "background-color: #F2F4EC;}"
+          + "background-color: #fff;}"
           + "h1{color: #363636; text-align: center; margin-bottom 20px;}"
           + "h2{color: #363636; text-align: center; margin-top: 30px;}"
           + "p{padding: 0 0.5em; color: #363636;}"
@@ -36,5 +36,8 @@ final class ZPageStyle {
           + ".border-left-dark{border-left: 1px solid #363636;}"
           + "th.header-text{color: #fff; line-height: 3.0;}"
           + ".align-center{text-align: center;}"
+          + ".align-right{text-align: right;}"
+          + "pre.no-margin{margin: 0;}"
+          + "pre.wrap-text{white-space:pre-wrap;}"
           + "td.bg-white{background-color: #fff;}";
 }
