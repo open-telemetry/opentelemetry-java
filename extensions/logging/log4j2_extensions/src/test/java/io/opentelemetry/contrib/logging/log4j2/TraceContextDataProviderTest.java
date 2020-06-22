@@ -16,8 +16,7 @@
 
 package io.opentelemetry.contrib.logging.log4j2;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.gson.Gson;
 import io.opentelemetry.OpenTelemetry;
@@ -47,12 +46,15 @@ public class TraceContextDataProviderTest {
       logger.warn("hello");
     }
     final List<String> events = appender.getMessages();
-    assertEquals(2, events.size());
+    assertThat(events.size())
+        .isEqualTo(2);
     String withTrace = events.get(1);
-    assertTrue(withTrace.contains(traceId));
+    assertThat(withTrace)
+        .contains(traceId);
 
     String withoutTrace = events.get(0);
-    assertTrue(withoutTrace.contains("traceid=''"));
+    assertThat(withoutTrace)
+        .contains("traceid=''");
   }
 
   @Test
@@ -67,11 +69,12 @@ public class TraceContextDataProviderTest {
     }
     Thread.sleep(15); // Default wait for log4j is 10ms
     final List<String> events = appender.getMessages();
-    assertEquals(1, events.size());
+    assertThat(events.size())
+        .isEqualTo(1);
     String withTrace = events.get(0);
 
-    String expected = String.format("traceid='%s'", traceId);
-    assertTrue(withTrace.contains(expected));
+    assertThat(withTrace)
+        .contains(String.format("traceid='%s'", traceId));
   }
 
   @Test
@@ -86,15 +89,17 @@ public class TraceContextDataProviderTest {
       logger.warn("hello");
     }
     final List<String> events = appender.getMessages();
-    assertEquals(1, events.size());
+    assertThat(events.size())
+        .isEqualTo(1);
     String withTrace = events.get(0);
 
     Gson gson = new Gson();
     Map<?, ?> parsed = gson.fromJson(withTrace, Map.class);
-    assertTrue(parsed.containsKey("traceid"));
-    assertTrue(parsed.containsKey("spanid"));
-    assertEquals(traceId, parsed.get("traceid"));
-    assertEquals(spanId, parsed.get("spanid"));
-    assertEquals(1, Integer.parseInt(parsed.get("traceflags").toString()));
+    assertThat(parsed)
+        .containsEntry("traceid", traceId);
+    assertThat(parsed)
+        .containsEntry("spanid", spanId);
+    assertThat(parsed)
+        .containsEntry("traceflags", "01");
   }
 }

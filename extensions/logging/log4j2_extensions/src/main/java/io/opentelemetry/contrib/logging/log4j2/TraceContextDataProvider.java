@@ -16,10 +16,9 @@
 
 package io.opentelemetry.contrib.logging.log4j2;
 
-import io.opentelemetry.OpenTelemetry;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.Tracer;
+import io.opentelemetry.trace.TracingContextUtils;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.logging.log4j.core.util.ContextDataProvider;
@@ -41,8 +40,7 @@ public class TraceContextDataProvider implements ContextDataProvider {
    */
   @Override
   public Map<String, String> supplyContextData() {
-    Tracer tracer = OpenTelemetry.getTracerProvider().get("ot_prototype_logging");
-    Span span = tracer.getCurrentSpan();
+    Span span = TracingContextUtils.getCurrentSpan();
     Map<String, String> map = new HashMap<>();
     if (span != null && span.isRecording()) {
       SpanContext context = span.getContext();
