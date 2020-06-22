@@ -16,9 +16,7 @@
 
 package io.opentelemetry.contrib.logging.log4j2;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.gson.Gson;
 import io.opentelemetry.OpenTelemetry;
@@ -56,19 +54,29 @@ public class OpenTelemetryJsonLayoutTest {
     List<String> messages = appender.getMessages();
     String first = messages.get(0);
     Map<?, ?> data = gson.fromJson(first, Map.class);
-    assertEquals("test", data.get("body"));
-    assertEquals("DefaultJsonLogger", data.get("name"));
+    assertThat(data.get("body"))
+        .isEqualTo("test");
+    assertThat(data.get("name"))
+        .isEqualTo("DefaultJsonLogger");
     Map<?, ?> time = (Map<?, ?>) data.get("timestamp");
     double eventTime = (Double) time.get("millis");
-    assertTrue(eventTime - logTime < 100);
-    assertEquals("WARN", data.get("severitytext"));
-    assertEquals(13, ((Double) data.get("severitynumber")).intValue());
-    assertNull(data.get("traceid"));
+    assertThat(eventTime - logTime)
+        .isAtMost(100);
+    assertThat(data.get("severitytext"))
+        .isEqualTo("WARN");
+    assertThat(data.get("severitynumber"))
+        .isEqualTo(13);
+
+    assertThat(data.get("traceid"))
+        .isNull();
 
     String second = messages.get(1);
     data = gson.fromJson(second, Map.class);
-    assertEquals(span.getContext().getTraceId().toLowerBase16(), data.get("traceid"));
-    assertEquals(span.getContext().getSpanId().toLowerBase16(), data.get("spanid"));
-    assertEquals(span.getContext().getTraceFlags().toLowerBase16(), data.get("traceflags"));
+    assertThat(span.getContext().getTraceId().toLowerBase16())
+        .isEqualTo(data.get("traceid"));
+    assertThat(span.getContext().getSpanId().toLowerBase16())
+        .isEqualTo(data.get("spanid"));
+    assertThat(span.getContext().getTraceFlags().toLowerBase16())
+        .isEqualTo(data.get("traceflags"));
   }
 }

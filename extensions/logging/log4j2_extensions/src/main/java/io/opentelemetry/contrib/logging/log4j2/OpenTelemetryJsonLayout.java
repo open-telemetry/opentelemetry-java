@@ -50,6 +50,7 @@ public class OpenTelemetryJsonLayout extends AbstractStringLayout {
   public String toSerializable(LogEvent event) {
     StringBuilderWriter writer = new StringBuilderWriter();
     try {
+      ReadOnlyStringMap contextData = event.getContextData();
       JsonGenerator generator = factory.createGenerator(writer);
       generator.writeStartObject();
       writeTimestamp(generator, event.getInstant());
@@ -66,8 +67,8 @@ public class OpenTelemetryJsonLayout extends AbstractStringLayout {
       generator.writeFieldName("severitynumber");
       generator.writeNumber(decodeSeverity(event.getLevel()));
 
-      if (event.getContextData().containsKey("traceid")) {
-        writeRequestCorrelation(generator, event.getContextData());
+      if (contextData.containsKey("traceid")) {
+        writeRequestCorrelation(generator, contextData);
       }
       generator.writeEndObject();
       generator.close();
