@@ -185,7 +185,7 @@ public class DoubleValueRecorderSdkTest {
                   323.3d,
                   valueAtPercentiles(-121.5d, 321.5d)));
 
-      // Repeat to prove we keep previous values.
+      // Repeat to prove we don't keep previous values.
       testClock.advanceNanos(SECOND_NANOS);
       boundMeasure.record(222d);
       doubleMeasure.record(17d, Labels.empty());
@@ -197,19 +197,19 @@ public class DoubleValueRecorderSdkTest {
       assertThat(metricData.getPoints())
           .containsExactly(
               SummaryPoint.create(
-                  startTime,
+                  startTime + SECOND_NANOS,
                   secondCollect,
                   Labels.empty(),
-                  3,
-                  16.0d,
-                  valueAtPercentiles(-13.1d, 17d)),
+                  1,
+                  17.0d,
+                  valueAtPercentiles(17d, 17d)),
               SummaryPoint.create(
-                  startTime,
+                  startTime + SECOND_NANOS,
                   secondCollect,
                   Labels.of("K", "V"),
-                  4,
-                  545.3d,
-                  valueAtPercentiles(-121.5, 321.5d)));
+                  1,
+                  222.0d,
+                  valueAtPercentiles(222.0, 222.0d)));
     } finally {
       boundMeasure.unbind();
     }
