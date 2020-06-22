@@ -129,6 +129,11 @@ public class JaegerRemoteSamplerTest {
             .getDescription()
             .matches(
                 "JaegerRemoteSampler\\{Probability\\{probability=0.001, idUpperBound=.*\\}\\}"));
+
+    // wait until the sampling strategy is retrieved before exiting test method
+    Awaitility.await()
+        .atMost(10, TimeUnit.SECONDS)
+        .until(samplerIsType(sampler, RateLimitingSampler.class));
   }
 
   static Callable<Boolean> samplerIsType(
