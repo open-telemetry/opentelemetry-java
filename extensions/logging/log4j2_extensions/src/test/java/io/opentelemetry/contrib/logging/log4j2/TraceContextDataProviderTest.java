@@ -46,15 +46,12 @@ public class TraceContextDataProviderTest {
       logger.warn("hello");
     }
     final List<String> events = appender.getMessages();
-    assertThat(events.size())
-        .isEqualTo(2);
+    assertThat(events.size()).isEqualTo(2);
     String withTrace = events.get(1);
-    assertThat(withTrace)
-        .contains(traceId);
+    assertThat(withTrace).contains(traceId);
 
     String withoutTrace = events.get(0);
-    assertThat(withoutTrace)
-        .contains("traceid=''");
+    assertThat(withoutTrace).contains("traceid=''");
   }
 
   @Test
@@ -69,12 +66,10 @@ public class TraceContextDataProviderTest {
     }
     Thread.sleep(15); // Default wait for log4j is 10ms
     final List<String> events = appender.getMessages();
-    assertThat(events.size())
-        .isEqualTo(1);
+    assertThat(events.size()).isEqualTo(1);
     String withTrace = events.get(0);
 
-    assertThat(withTrace)
-        .contains(String.format("traceid='%s'", traceId));
+    assertThat(withTrace).contains(String.format("traceid='%s'", traceId));
   }
 
   @Test
@@ -89,17 +84,13 @@ public class TraceContextDataProviderTest {
       logger.warn("hello");
     }
     final List<String> events = appender.getMessages();
-    assertThat(events.size())
-        .isEqualTo(1);
+    assertThat(events.size()).isEqualTo(1);
     String withTrace = events.get(0);
 
     Gson gson = new Gson();
     Map<?, ?> parsed = gson.fromJson(withTrace, Map.class);
-    assertThat(parsed)
-        .containsEntry("traceid", traceId);
-    assertThat(parsed)
-        .containsEntry("spanid", spanId);
-    assertThat(parsed)
-        .containsEntry("traceflags", "01");
+    assertThat(parsed).containsEntry("traceid", traceId);
+    assertThat(parsed).containsEntry("spanid", spanId);
+    assertThat(parsed).containsEntry("traceflags", "01");
   }
 }

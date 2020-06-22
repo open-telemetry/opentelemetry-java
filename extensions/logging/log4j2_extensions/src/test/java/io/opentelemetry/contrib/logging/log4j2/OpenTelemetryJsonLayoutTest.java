@@ -54,29 +54,20 @@ public class OpenTelemetryJsonLayoutTest {
     List<String> messages = appender.getMessages();
     String first = messages.get(0);
     Map<?, ?> data = gson.fromJson(first, Map.class);
-    assertThat(data.get("body"))
-        .isEqualTo("test");
-    assertThat(data.get("name"))
-        .isEqualTo("DefaultJsonLogger");
+    assertThat(data.get("body")).isEqualTo("test");
+    assertThat(data.get("name")).isEqualTo("DefaultJsonLogger");
     Map<?, ?> time = (Map<?, ?>) data.get("timestamp");
     double eventTime = (Double) time.get("millis");
-    assertThat(eventTime - logTime)
-        .isAtMost(100);
-    assertThat(data.get("severitytext"))
-        .isEqualTo("WARN");
-    assertThat(data.get("severitynumber"))
-        .isEqualTo(13);
+    assertThat(eventTime - logTime).isAtMost(100);
+    assertThat(data.get("severitytext")).isEqualTo("WARN");
+    assertThat(data.get("severitynumber")).isEqualTo(13);
 
-    assertThat(data.get("traceid"))
-        .isNull();
+    assertThat(data.get("traceid")).isNull();
 
     String second = messages.get(1);
     data = gson.fromJson(second, Map.class);
-    assertThat(span.getContext().getTraceId().toLowerBase16())
-        .isEqualTo(data.get("traceid"));
-    assertThat(span.getContext().getSpanId().toLowerBase16())
-        .isEqualTo(data.get("spanid"));
-    assertThat(span.getContext().getTraceFlags().toLowerBase16())
-        .isEqualTo(data.get("traceflags"));
+    assertThat(span.getContext().getTraceId().toLowerBase16()).isEqualTo(data.get("traceid"));
+    assertThat(span.getContext().getSpanId().toLowerBase16()).isEqualTo(data.get("spanid"));
+    assertThat(span.getContext().getTraceFlags().toLowerBase16()).isEqualTo(data.get("traceflags"));
   }
 }
