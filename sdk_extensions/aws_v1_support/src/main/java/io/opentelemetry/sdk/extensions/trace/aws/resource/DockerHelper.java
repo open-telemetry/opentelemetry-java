@@ -14,27 +14,31 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.sdk.extensions.trace.aws.resource.utils;
+package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
 
-public class DockerUtil {
+class DockerHelper {
 
-  private static final Logger logger = Logger.getLogger(DockerUtil.class.getName());
+  private static final Logger logger = Logger.getLogger(DockerHelper.class.getName());
   private static final int CONTAINER_ID_LENGTH = 64;
   private static final String DEFAULT_CGROUP_PATH = "/proc/self/cgroup";
-  private static final DockerUtil INSTANCE = new DockerUtil();
 
-  private DockerUtil() {}
+  private final String cgroupPath;
 
-  public static DockerUtil getInstance() {
-    return INSTANCE;
+  DockerHelper() {
+    this(DEFAULT_CGROUP_PATH);
+  }
+
+  @VisibleForTesting
+  DockerHelper(String cgroupPath) {
+    this.cgroupPath = cgroupPath;
   }
 
   /**
@@ -42,10 +46,9 @@ public class DockerUtil {
    *
    * @return docker container ID
    */
-  @Nullable
   @SuppressWarnings("DefaultCharset")
   public String getContainerId() {
-    try (BufferedReader br = new BufferedReader(new FileReader(DEFAULT_CGROUP_PATH))) {
+    try (BufferedReader br = new BufferedReader(new FileReader(cgroupPath))) {
       String line;
       while ((line = br.readLine()) != null) {
         if (line.length() > CONTAINER_ID_LENGTH) {
@@ -58,6 +61,6 @@ public class DockerUtil {
       logger.log(Level.WARNING, "Unable to read container id: " + e.getMessage());
     }
 
-    return null;
+    return "";
   }
 }

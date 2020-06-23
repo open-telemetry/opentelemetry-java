@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.extensions.trace.aws.resource;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.sdk.extensions.trace.aws.resource.utils.DockerUtil;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,8 +31,7 @@ public abstract class AwsResource {
    * environment, e.g., metadata for the instance if the app is running on EC2.
    */
   public static Resource create() {
-    return create(
-        new Ec2Resource(), new EcsResource(DockerUtil.getInstance()), new BeanstalkResource());
+    return create(new Ec2Resource(), new EcsResource(), new BeanstalkResource());
   }
 
   @VisibleForTesting

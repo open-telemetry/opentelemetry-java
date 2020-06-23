@@ -21,6 +21,7 @@ import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.resources.ResourceConstants;
@@ -30,7 +31,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class BeanstalkResource extends AwsResource {
+class BeanstalkResource extends AwsResource {
 
   private static final Logger logger = Logger.getLogger(BeanstalkResource.class.getName());
 
@@ -40,9 +41,20 @@ public class BeanstalkResource extends AwsResource {
   private static final String BEANSTALK_CONF_PATH = "/var/elasticbeanstalk/xray/environment.conf";
   private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
+  private final String configPath;
+
+  BeanstalkResource() {
+    this(BEANSTALK_CONF_PATH);
+  }
+
+  @VisibleForTesting
+  BeanstalkResource(String configPath) {
+    this.configPath = configPath;
+  }
+
   @Override
   Map<String, AttributeValue> createAttributes() {
-    File configFile = new File(BEANSTALK_CONF_PATH);
+    File configFile = new File(configPath);
     if (!configFile.exists()) {
       return ImmutableMap.of();
     }
@@ -53,7 +65,8 @@ public class BeanstalkResource extends AwsResource {
       parser.nextToken();
 
       if (!parser.isExpectedStartObjectToken()) {
-        throw new IOException("Invalid Beanstalk config:" + BEANSTALK_CONF_PATH);
+        logger.log(Level.WARNING, "Invalid Beanstalk config: ", configPath);
+        return resourceAttributes.build();
       }
 
       while (parser.nextToken() != JsonToken.END_OBJECT) {

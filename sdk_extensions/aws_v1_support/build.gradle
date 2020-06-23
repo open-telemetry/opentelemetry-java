@@ -17,8 +17,6 @@ dependencies {
             platform(boms.guava)
 
     testImplementation 'com.github.tomakehurst:wiremock-jre8:2.26.3'
-    testImplementation 'org.powermock:powermock-module-junit4:2.0.7'
-    testImplementation 'org.powermock:powermock-api-mockito2:2.0.7'
 
     signature "org.codehaus.mojo.signature:java17:1.0@signature"
     signature "net.sf.androidscents.signature:android-api-level-24:7.0_r2@signature"

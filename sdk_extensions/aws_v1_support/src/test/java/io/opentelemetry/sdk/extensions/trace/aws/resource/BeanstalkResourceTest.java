@@ -16,54 +16,55 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static org.junit.Assert.assertEquals;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
+import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.IOException;
 import java.util.Map;
-import org.junit.After;
-import org.junit.Before;
+import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.junit.rules.TemporaryFolder;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(BeanstalkResource.class)
 public class BeanstalkResourceTest {
 
-  private BeanstalkResource populator;
+  @Rule public TemporaryFolder tempFolder = new TemporaryFolder();
 
-  @Before
-  public void setUp() throws Exception {
-    File file = new File("tempFile");
-    PrintStream ps = new PrintStream(new FileOutputStream(file));
-    ps.println(
-        "{\"deployment_id\":4,\"version_label\":\"2\",\""
-            + "environment_name\":\"HttpSubscriber-env\"}");
-    whenNew(File.class).withAnyArguments().thenReturn(file);
+  @Test
+  public void testCreateAttributes() throws IOException {
+    File file = tempFolder.newFile("beanstalk.config");
+    FileUtils.writeStringToFile(
+        file,
+        "{\"noise\": \"noise\", \"deployment_id\":4,\""
+            + "version_label\":\"2\",\"environment_name\":\"HttpSubscriber-env\"}");
+    BeanstalkResource populator = new BeanstalkResource(file.getPath());
+    Map<String, AttributeValue> metadata = populator.createAttributes();
 
-    populator = new BeanstalkResource();
-  }
-
-  @After
-  public void release() {
-    new File("tempFile").delete();
+    assertThat(metadata.size()).isEqualTo(3);
+    assertThat(metadata.get(ResourceConstants.SERVICE_INSTANCE).getStringValue()).isEqualTo("4");
+    assertThat(metadata.get(ResourceConstants.SERVICE_VERSION).getStringValue()).isEqualTo("2");
+    assertThat(metadata.get(ResourceConstants.SERVICE_NAMESPACE).getStringValue())
+        .isEqualTo("HttpSubscriber-env");
   }
 
   @Test
-  public void testCreateAttributes() {
-
+  public void testConfigFileMissing() throws IOException {
+    BeanstalkResource populator = new BeanstalkResource("a_file_never_existing");
     Map<String, AttributeValue> metadata = populator.createAttributes();
+    assertThat(metadata.size()).isEqualTo(0);
+  }
 
-    assertEquals(3, metadata.size());
-    assertEquals("4", metadata.get(ResourceConstants.SERVICE_INSTANCE).getStringValue());
-    assertEquals("2", metadata.get(ResourceConstants.SERVICE_VERSION).getStringValue());
-    assertEquals(
-        "HttpSubscriber-env", metadata.get(ResourceConstants.SERVICE_NAMESPACE).getStringValue());
+  @Test
+  public void testBadConfigFile() throws IOException {
+    File file = tempFolder.newFile("beanstalk.config");
+    FileUtils.writeStringToFile(
+        file,
+        "\"deployment_id\":4,\"version_label\":\"2\",\""
+            + "environment_name\":\"HttpSubscriber-env\"}");
+    BeanstalkResource populator = new BeanstalkResource(file.getPath());
+    Map<String, AttributeValue> metadata = populator.createAttributes();
+    assertThat(metadata.size()).isEqualTo(0);
   }
 }
