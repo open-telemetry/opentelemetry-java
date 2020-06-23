@@ -70,10 +70,10 @@ class BeanstalkResource extends AwsResource {
       }
 
       while (parser.nextToken() != JsonToken.END_OBJECT) {
-        String value = parser.nextTextValue();
+        parser.nextValue();
+        String value = parser.getText();
         switch (parser.getCurrentName()) {
           case DEVELOPMENT_ID:
-            value = Long.toString(parser.getLongValue());
             resourceAttributes.put(ResourceConstants.SERVICE_INSTANCE, stringAttributeValue(value));
             break;
           case VERSION_LABEL:
