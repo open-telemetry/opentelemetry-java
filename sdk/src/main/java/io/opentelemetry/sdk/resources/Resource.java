@@ -24,7 +24,6 @@ import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.internal.Utils;
-import java.io.FileInputStream;
 import java.util.Objects;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -57,15 +56,16 @@ public abstract class Resource {
 
   @Nullable
   private static String readVersion() {
+
     Properties properties = new Properties();
     try {
       properties.load(
-          new FileInputStream(Resource.class.getResource("version.properties").getFile()));
+          Resource.class.getResourceAsStream("/io/opentelemetry/sdk/version.properties"));
     } catch (Exception e) {
       // we left the attribute empty
       return null;
     }
-    return properties.getProperty("version");
+    return properties.getProperty("sdk.version");
   }
 
   Resource() {}
