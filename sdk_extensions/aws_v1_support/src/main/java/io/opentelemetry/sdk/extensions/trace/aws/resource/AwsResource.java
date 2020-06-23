@@ -31,7 +31,7 @@ public abstract class AwsResource {
    * environment, e.g., metadata for the instance if the app is running on EC2.
    */
   public static Resource create() {
-    return create(new Ec2Resource());
+    return create(new Ec2Resource(), new EcsResource(), new BeanstalkResource());
   }
 
   @VisibleForTesting
