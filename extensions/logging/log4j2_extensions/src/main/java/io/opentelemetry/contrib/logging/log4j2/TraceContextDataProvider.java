@@ -42,7 +42,7 @@ public class TraceContextDataProvider implements ContextDataProvider {
   public Map<String, String> supplyContextData() {
     Span span = TracingContextUtils.getCurrentSpan();
     Map<String, String> map = new HashMap<>();
-    if (span != null && span.isRecording()) {
+    if (span != null && span.getContext().isValid()) {
       SpanContext context = span.getContext();
       if (context != null && context.isValid()) {
         map.put("traceid", span.getContext().getTraceId().toLowerBase16());
