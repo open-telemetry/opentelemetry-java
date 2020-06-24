@@ -16,18 +16,14 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
-
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,20 +49,19 @@ class BeanstalkResource extends AwsResource {
   }
 
   @Override
-  Map<String, AttributeValue> createAttributes() {
+  Attributes createAttributes() {
     File configFile = new File(configPath);
     if (!configFile.exists()) {
-      return ImmutableMap.of();
+      return Attributes.empty();
     }
 
-    ImmutableMap.Builder<String, AttributeValue> resourceAttributes = ImmutableMap.builder();
-
+    Attributes.Builder attrBuilders = Attributes.newBuilder();
     try (JsonParser parser = JSON_FACTORY.createParser(configFile)) {
       parser.nextToken();
 
       if (!parser.isExpectedStartObjectToken()) {
         logger.log(Level.WARNING, "Invalid Beanstalk config: ", configPath);
-        return resourceAttributes.build();
+        return attrBuilders.build();
       }
 
       while (parser.nextToken() != JsonToken.END_OBJECT) {
@@ -74,14 +69,13 @@ class BeanstalkResource extends AwsResource {
         String value = parser.getText();
         switch (parser.getCurrentName()) {
           case DEVELOPMENT_ID:
-            resourceAttributes.put(ResourceConstants.SERVICE_INSTANCE, stringAttributeValue(value));
+            attrBuilders.setAttribute(ResourceConstants.SERVICE_INSTANCE, value);
             break;
           case VERSION_LABEL:
-            resourceAttributes.put(ResourceConstants.SERVICE_VERSION, stringAttributeValue(value));
+            attrBuilders.setAttribute(ResourceConstants.SERVICE_VERSION, value);
             break;
           case ENVIRONMENT_NAME:
-            resourceAttributes.put(
-                ResourceConstants.SERVICE_NAMESPACE, stringAttributeValue(value));
+            attrBuilders.setAttribute(ResourceConstants.SERVICE_NAMESPACE, value);
             break;
           default:
             parser.skipChildren();
@@ -89,9 +83,9 @@ class BeanstalkResource extends AwsResource {
       }
     } catch (IOException e) {
       logger.log(Level.WARNING, "Could not parse Beanstalk config.", e);
-      return ImmutableMap.of();
+      return Attributes.empty();
     }
 
-    return resourceAttributes.build();
+    return attrBuilders.build();
   }
 }

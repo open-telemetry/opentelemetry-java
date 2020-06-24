@@ -16,15 +16,12 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
-
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,7 +32,6 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,77 +66,6 @@ class Ec2Resource extends AwsResource {
       // Can only happen when overriding the endpoint in testing so just throw.
       throw new IllegalArgumentException("Illegal endpoint: " + endpoint, e);
     }
-  }
-
-  @Override
-  Map<String, AttributeValue> createAttributes() {
-    String token = fetchToken();
-
-    // If token is empty, either IMDSv2 isn't enabled or an unexpected failure happened. We can
-    // still get data if IMDSv1 is enabled.
-    String identity = fetchIdentity(token);
-    if (identity.isEmpty()) {
-      // If no identity document, assume we are not actually running on EC2.
-      return ImmutableMap.of();
-    }
-
-    String hostname = fetchHostname(token);
-
-    ImmutableMap.Builder<String, AttributeValue> resourceAttributes = ImmutableMap.builder();
-
-    try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
-      parser.nextToken();
-
-      if (!parser.isExpectedStartObjectToken()) {
-        throw new IOException("Invalid JSON:" + identity);
-      }
-
-      while (parser.nextToken() != JsonToken.END_OBJECT) {
-        String value = parser.nextTextValue();
-        switch (parser.getCurrentName()) {
-          case "instanceId":
-            resourceAttributes.put(ResourceConstants.HOST_ID, stringAttributeValue(value));
-            break;
-          case "availabilityZone":
-            resourceAttributes.put(ResourceConstants.CLOUD_ZONE, stringAttributeValue(value));
-            break;
-          case "instanceType":
-            resourceAttributes.put(ResourceConstants.HOST_TYPE, stringAttributeValue(value));
-            break;
-          case "imageId":
-            resourceAttributes.put(ResourceConstants.HOST_IMAGE_ID, stringAttributeValue(value));
-            break;
-          case "accountId":
-            resourceAttributes.put(ResourceConstants.CLOUD_ACCOUNT, stringAttributeValue(value));
-            break;
-          case "region":
-            resourceAttributes.put(ResourceConstants.CLOUD_REGION, stringAttributeValue(value));
-            break;
-          default:
-            parser.skipChildren();
-        }
-      }
-    } catch (IOException e) {
-      logger.log(Level.WARNING, "Could not parse identity document, resource not filled.", e);
-      return ImmutableMap.of();
-    }
-
-    resourceAttributes.put(ResourceConstants.HOST_HOSTNAME, stringAttributeValue(hostname));
-    resourceAttributes.put(ResourceConstants.HOST_NAME, stringAttributeValue(hostname));
-
-    return resourceAttributes.build();
-  }
-
-  private String fetchToken() {
-    return fetchString("PUT", tokenUrl, "", /* includeTtl= */ true);
-  }
-
-  private String fetchIdentity(String token) {
-    return fetchString("GET", identityDocumentUrl, token, /* includeTtl= */ false);
-  }
-
-  private String fetchHostname(String token) {
-    return fetchString("GET", hostnameUrl, token, /* includeTtl= */ false);
   }
 
   // Generic HTTP fetch function for IMDS.
@@ -209,5 +134,76 @@ class Ec2Resource extends AwsResource {
     } catch (UnsupportedEncodingException e) {
       throw new IllegalStateException("UTF-8 not supported can't happen.", e);
     }
+  }
+
+  @Override
+  Attributes createAttributes() {
+    String token = fetchToken();
+
+    // If token is empty, either IMDSv2 isn't enabled or an unexpected failure happened. We can
+    // still get data if IMDSv1 is enabled.
+    String identity = fetchIdentity(token);
+    if (identity.isEmpty()) {
+      // If no identity document, assume we are not actually running on EC2.
+      return Attributes.empty();
+    }
+
+    String hostname = fetchHostname(token);
+
+    Attributes.Builder attrBuilders = Attributes.newBuilder();
+
+    try (JsonParser parser = JSON_FACTORY.createParser(identity)) {
+      parser.nextToken();
+
+      if (!parser.isExpectedStartObjectToken()) {
+        throw new IOException("Invalid JSON:" + identity);
+      }
+
+      while (parser.nextToken() != JsonToken.END_OBJECT) {
+        String value = parser.nextTextValue();
+        switch (parser.getCurrentName()) {
+          case "instanceId":
+            attrBuilders.setAttribute(ResourceConstants.HOST_ID, value);
+            break;
+          case "availabilityZone":
+            attrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, value);
+            break;
+          case "instanceType":
+            attrBuilders.setAttribute(ResourceConstants.HOST_TYPE, value);
+            break;
+          case "imageId":
+            attrBuilders.setAttribute(ResourceConstants.HOST_IMAGE_ID, value);
+            break;
+          case "accountId":
+            attrBuilders.setAttribute(ResourceConstants.CLOUD_ACCOUNT, value);
+            break;
+          case "region":
+            attrBuilders.setAttribute(ResourceConstants.CLOUD_REGION, value);
+            break;
+          default:
+            parser.skipChildren();
+        }
+      }
+    } catch (IOException e) {
+      logger.log(Level.WARNING, "Could not parse identity document, resource not filled.", e);
+      return Attributes.empty();
+    }
+
+    attrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, hostname);
+    attrBuilders.setAttribute(ResourceConstants.HOST_NAME, hostname);
+
+    return attrBuilders.build();
+  }
+
+  private String fetchToken() {
+    return fetchString("PUT", tokenUrl, "", /* includeTtl= */ true);
+  }
+
+  private String fetchIdentity(String token) {
+    return fetchString("GET", identityDocumentUrl, token, /* includeTtl= */ false);
+  }
+
+  private String fetchHostname(String token) {
+    return fetchString("GET", hostnameUrl, token, /* includeTtl= */ false);
   }
 }

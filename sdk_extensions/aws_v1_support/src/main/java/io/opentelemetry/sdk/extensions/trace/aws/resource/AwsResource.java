@@ -19,9 +19,8 @@ package io.opentelemetry.sdk.extensions.trace.aws.resource;
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.resources.Resource;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /** Populates the attributes for creating a {@link Resource} that is running in AWS. */
 public abstract class AwsResource {
@@ -36,20 +35,21 @@ public abstract class AwsResource {
 
   @VisibleForTesting
   static Resource create(AwsResource... populators) {
-    Map<String, AttributeValue> attrMap = new LinkedHashMap<>();
-
+    final Attributes.Builder attrBuilder = Attributes.newBuilder();
     for (AwsResource populator : populators) {
-      attrMap.putAll(populator.createAttributes());
-    }
-
-    Attributes.Builder attrBuilder = Attributes.newBuilder();
-    for (Map.Entry<String, AttributeValue> attr : attrMap.entrySet()) {
-      attrBuilder.setAttribute(attr.getKey(), attr.getValue());
+      Attributes attrs = populator.createAttributes();
+      attrs.forEach(
+          new KeyValueConsumer<AttributeValue>() {
+            @Override
+            public void consume(String key, AttributeValue value) {
+              attrBuilder.setAttribute(key, value);
+            }
+          });
     }
 
     return Resource.create(attrBuilder.build());
   }
 
-  /** Retrurns a {@link Map} of attributes for constructing a {@link Resource}. */
-  abstract Map<String, AttributeValue> createAttributes();
+  /** Retrurns a {@link Attributes} for constructing a {@link Resource}. */
+  abstract Attributes createAttributes();
 }

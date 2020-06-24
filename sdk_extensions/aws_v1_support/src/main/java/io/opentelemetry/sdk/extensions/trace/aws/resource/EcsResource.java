@@ -16,12 +16,9 @@
 
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -35,44 +32,42 @@ class EcsResource extends AwsResource {
 
   private static final String ECS_METADATA_KEY_V4 = "ECS_CONTAINER_METADATA_URI_V4";
   private static final String ECS_METADATA_KEY_V3 = "ECS_CONTAINER_METADATA_URI";
-  private static final String CONTAINER_ID = "container.id";
 
-  private final DockerHelper dockerHelper;
-  private final String uriV3;
-  private final String uriV4;
+  private final Map<String, String> sysEnv;
 
   EcsResource() {
-    this(
-        new DockerHelper(), System.getenv(ECS_METADATA_KEY_V3), System.getenv(ECS_METADATA_KEY_V4));
+    this(System.getenv());
   }
 
   @VisibleForTesting
-  EcsResource(DockerHelper dockerHelper, String uriV3, String uriV4) {
-    this.dockerHelper = dockerHelper;
-    this.uriV3 = uriV3;
-    this.uriV4 = uriV4;
+  EcsResource(Map<String, String> sysEnv) {
+    this.sysEnv = sysEnv;
   }
 
   @Override
-  Map<String, AttributeValue> createAttributes() {
-    // Check whether we are actually on ECS
-    if ((Strings.isNullOrEmpty(uriV3) && Strings.isNullOrEmpty(uriV4))) {
-      return ImmutableMap.of();
+  Attributes createAttributes() {
+    if (!isOnEcs()) {
+      return Attributes.empty();
     }
 
-    ImmutableMap.Builder<String, AttributeValue> resourceAttributes = ImmutableMap.builder();
+    Attributes.Builder attrBuilders = Attributes.newBuilder();
     try {
       String hostName = InetAddress.getLocalHost().getHostName();
-      resourceAttributes.put(ResourceConstants.CONTAINER_NAME, stringAttributeValue(hostName));
+      attrBuilders.setAttribute(ResourceConstants.CONTAINER_NAME, hostName);
+
     } catch (UnknownHostException e) {
       logger.log(Level.WARNING, "Could not get docker container name from hostname.", e);
     }
 
-    String containerId = dockerHelper.getContainerId();
-    if (!Strings.isNullOrEmpty(containerId)) {
-      resourceAttributes.put(CONTAINER_ID, stringAttributeValue(containerId));
+    return attrBuilders.build();
+  }
+
+  private boolean isOnEcs() {
+    if (sysEnv == null) {
+      return false;
     }
 
-    return resourceAttributes.build();
+    return (!Strings.isNullOrEmpty(sysEnv.get(ECS_METADATA_KEY_V3))
+        || !Strings.isNullOrEmpty(sysEnv.get(ECS_METADATA_KEY_V4)));
   }
 }

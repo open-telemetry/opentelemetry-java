@@ -17,13 +17,14 @@
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
-import io.opentelemetry.common.AttributeValue;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -35,36 +36,36 @@ public class BeanstalkResourceTest {
   @Test
   public void testCreateAttributes() throws IOException {
     File file = tempFolder.newFile("beanstalk.config");
-    FileUtils.writeStringToFile(
-        file,
+    String content =
         "{\"noise\": \"noise\", \"deployment_id\":4,\""
-            + "version_label\":\"2\",\"environment_name\":\"HttpSubscriber-env\"}");
+            + "version_label\":\"2\",\"environment_name\":\"HttpSubscriber-env\"}";
+    Files.write(content.getBytes(Charsets.UTF_8), file);
     BeanstalkResource populator = new BeanstalkResource(file.getPath());
-    Map<String, AttributeValue> metadata = populator.createAttributes();
-
-    assertThat(metadata.size()).isEqualTo(3);
-    assertThat(metadata.get(ResourceConstants.SERVICE_INSTANCE).getStringValue()).isEqualTo("4");
-    assertThat(metadata.get(ResourceConstants.SERVICE_VERSION).getStringValue()).isEqualTo("2");
-    assertThat(metadata.get(ResourceConstants.SERVICE_NAMESPACE).getStringValue())
-        .isEqualTo("HttpSubscriber-env");
+    Attributes attributes = populator.createAttributes();
+    assertThat(attributes)
+        .isEqualTo(
+            Attributes.of(
+                ResourceConstants.SERVICE_INSTANCE, stringAttributeValue("4"),
+                ResourceConstants.SERVICE_VERSION, stringAttributeValue("2"),
+                ResourceConstants.SERVICE_NAMESPACE, stringAttributeValue("HttpSubscriber-env")));
   }
 
   @Test
   public void testConfigFileMissing() throws IOException {
     BeanstalkResource populator = new BeanstalkResource("a_file_never_existing");
-    Map<String, AttributeValue> metadata = populator.createAttributes();
-    assertThat(metadata.size()).isEqualTo(0);
+    Attributes attributes = populator.createAttributes();
+    assertThat(attributes.isEmpty()).isTrue();
   }
 
   @Test
   public void testBadConfigFile() throws IOException {
     File file = tempFolder.newFile("beanstalk.config");
-    FileUtils.writeStringToFile(
-        file,
+    String content =
         "\"deployment_id\":4,\"version_label\":\"2\",\""
-            + "environment_name\":\"HttpSubscriber-env\"}");
+            + "environment_name\":\"HttpSubscriber-env\"}";
+    Files.write(content.getBytes(Charsets.UTF_8), file);
     BeanstalkResource populator = new BeanstalkResource(file.getPath());
-    Map<String, AttributeValue> metadata = populator.createAttributes();
-    assertThat(metadata.size()).isEqualTo(0);
+    Attributes attributes = populator.createAttributes();
+    assertThat(attributes.isEmpty()).isTrue();
   }
 }

@@ -17,49 +17,52 @@
 package io.opentelemetry.sdk.extensions.trace.aws.resource;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.when;
+import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 public class EcsResourceTest {
+  private static final String ECS_METADATA_KEY_V4 = "ECS_CONTAINER_METADATA_URI_V4";
+  private static final String ECS_METADATA_KEY_V3 = "ECS_CONTAINER_METADATA_URI";
 
   @Rule public MockitoRule mocks = MockitoJUnit.rule();
 
-  @Mock private DockerHelper mockDockerHelper;
-
   @Test
   public void testCreateAttributes() throws UnknownHostException {
-    when(mockDockerHelper.getContainerId()).thenReturn("0123456789A");
-    EcsResource populator = new EcsResource(mockDockerHelper, "ecs_metadata_v3_uri", null);
-    Map<String, AttributeValue> metadata = populator.createAttributes();
-    assertThat(metadata.get(ResourceConstants.CONTAINER_NAME).getStringValue())
-        .isEqualTo(InetAddress.getLocalHost().getHostName());
-    assertThat(metadata.get("container.id").getStringValue()).isEqualTo("0123456789A");
+    Map<String, String> mockSysEnv = new HashMap<>();
+    mockSysEnv.put(ECS_METADATA_KEY_V3, "ecs_metadata_v3_uri");
+    EcsResource populator = new EcsResource(mockSysEnv);
+    Attributes attributes = populator.createAttributes();
+    assertThat(attributes)
+        .isEqualTo(
+            Attributes.of(
+                ResourceConstants.CONTAINER_NAME,
+                stringAttributeValue(InetAddress.getLocalHost().getHostName())));
   }
 
   @Test
   public void testNotOnEcs() {
-    when(mockDockerHelper.getContainerId()).thenReturn("0123456789A");
-    EcsResource populator = new EcsResource(mockDockerHelper, "", null);
-    Map<String, AttributeValue> metadata = populator.createAttributes();
-    assertThat(metadata.size()).isEqualTo(0);
+    Map<String, String> mockSysEnv = new HashMap<>();
+    mockSysEnv.put(ECS_METADATA_KEY_V3, "");
+    mockSysEnv.put(ECS_METADATA_KEY_V4, "");
+    EcsResource populator = new EcsResource(mockSysEnv);
+    Attributes attributes = populator.createAttributes();
+    assertThat(attributes.isEmpty()).isTrue();
   }
 
   @Test
-  public void testContainerIdMissing() {
-    when(mockDockerHelper.getContainerId()).thenReturn("");
-    EcsResource populator = new EcsResource(mockDockerHelper, null, "ecs_metadata_v4_uri");
-    Map<String, AttributeValue> metadata = populator.createAttributes();
-    assertThat(metadata.size()).isEqualTo(1);
-    assertThat(metadata.get("container.id")).isNull();
+  public void testNullSysEnv() {
+    EcsResource populator = new EcsResource(null);
+    Attributes attributes = populator.createAttributes();
+    assertThat(attributes.isEmpty()).isTrue();
   }
 }
