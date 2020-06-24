@@ -94,10 +94,10 @@ public class JaegerPropagator implements HttpTextFormat {
     SpanContext spanContext = span.getContext();
 
     char[] chars = new char[PROPAGATION_HEADER_SIZE];
-    TraceId.copyLowerBase16Into(spanContext.getTraceId(), chars, 0);
+    TraceId.copyLowerBase16Into(spanContext.traceId(), chars, 0);
 
     chars[SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
-    SpanId.copyLowerBase16Into(spanContext.getSpanId(), chars, SPAN_ID_OFFSET);
+    SpanId.copyLowerBase16Into(spanContext.spanId(), chars, SPAN_ID_OFFSET);
     chars[PARENT_SPAN_ID_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;
     chars[PARENT_SPAN_ID_OFFSET] = DEPRECATED_PARENT_SPAN;
     chars[SAMPLED_FLAG_OFFSET - 1] = PROPAGATION_HEADER_DELIMITER;

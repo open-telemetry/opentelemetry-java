@@ -91,12 +91,12 @@ abstract class SpanWrapper implements SpanData {
 
   @Override
   public byte[] getTraceId() {
-    return delegate().getContext().getTraceId();
+    return delegate().getContext().traceId();
   }
 
   @Override
   public byte[] getSpanId() {
-    return delegate().getContext().getSpanId();
+    return delegate().getContext().spanId();
   }
 
   @Override
