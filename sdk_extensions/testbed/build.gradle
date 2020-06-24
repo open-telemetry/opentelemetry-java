@@ -11,7 +11,7 @@ dependencies {
     implementation project(':opentelemetry-api'),
             project(':opentelemetry-sdk'),
             project(':opentelemetry-exporters-inmemory'),
-            project(':opentelemetry-contrib-trace-propagators'),
+            project(':opentelemetry-extension-trace-propagators'),
             libraries.awaitility,
             libraries.guava
 

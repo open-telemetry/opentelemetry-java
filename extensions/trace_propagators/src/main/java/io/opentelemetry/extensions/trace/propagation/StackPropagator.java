@@ -14,32 +14,37 @@
  * limitations under the License.
  */
 
-package io.opentelemetry.contrib.trace.propagation;
+package io.opentelemetry.extensions.trace.propagation;
 
 import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
 
-/**
- * Implementation of a composite propagator for trace.
- */
+/** Implementation of a composite propagator for trace. TODO: Include Text + Trace in the name. */
 @Immutable
 public class StackPropagator implements HttpTextFormat {
   private final HttpTextFormat[] propagators;
   private final List<String> propagatorsFields;
 
-  public StackPropagator(HttpTextFormat... propagators) {
-    this.propagators = propagators;
+  private StackPropagator(List<HttpTextFormat> propagatorList) {
+    this.propagators = new HttpTextFormat[propagatorList.size()];
+    propagatorList.toArray(this.propagators);
 
     List<String> fields = new ArrayList<>();
     for (HttpTextFormat propagator : propagators) {
       fields.addAll(propagator.fields());
     }
     this.propagatorsFields = Collections.unmodifiableList(fields);
+  }
+
+  /** Hello. */
+  public static Builder builder() {
+    return new Builder();
   }
 
   @Override
@@ -64,5 +69,27 @@ public class StackPropagator implements HttpTextFormat {
     }
 
     return context;
+  }
+
+  /** Hello. */
+  public static class Builder {
+    private final List<HttpTextFormat> propagators;
+
+    private Builder() {
+      propagators = new ArrayList<>();
+    }
+
+    /** Hello. */
+    public Builder addPropagator(HttpTextFormat textPropagator) {
+      Objects.requireNonNull(textPropagator, "textPropagator");
+
+      propagators.add(textPropagator);
+      return this;
+    }
+
+    /** Hello. */
+    public StackPropagator build() {
+      return new StackPropagator(propagators);
+    }
   }
 }
