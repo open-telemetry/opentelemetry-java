@@ -69,12 +69,12 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
   @Override
   public String toTraceId() {
-    return TraceId.toLowerBase16(context.getTraceId());
+    return TraceId.toLowerBase16(context.traceId());
   }
 
   @Override
   public String toSpanId() {
-    return SpanId.toLowerBase16(context.getSpanId());
+    return SpanId.toLowerBase16(context.spanId());
   }
 
   @Override

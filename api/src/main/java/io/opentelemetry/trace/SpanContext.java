@@ -86,7 +86,24 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   @SuppressWarnings("mutable")
-  public abstract byte[] getTraceId();
+  abstract byte[] getTraceId();
+
+  /**
+   * Returns the trace identifier associated with this {@code SpanContext}.
+   *
+   * @return the trace identifier associated with this {@code SpanContext}.
+   * @since 0.1.0
+   */
+  public byte[] traceId() {
+    byte[] result = new byte[16];
+    copyTraceId(result, 0);
+    return result;
+  }
+
+  /** javadoc me. */
+  public void copyTraceId(byte[] destination, int destOffset) {
+    System.arraycopy(getTraceId(), 0, destination, destOffset, 16);
+  }
 
   /**
    * Returns the span identifier associated with this {@code SpanContext}.
@@ -95,7 +112,24 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   @SuppressWarnings("mutable")
-  public abstract byte[] getSpanId();
+  abstract byte[] getSpanId();
+
+  /**
+   * Returns the span identifier associated with this {@code SpanContext}.
+   *
+   * @return the span identifier associated with this {@code SpanContext}.
+   * @since 0.1.0
+   */
+  public byte[] spanId() {
+    byte[] result = new byte[8];
+    copySpanId(result, 0);
+    return result;
+  }
+
+  /** javadoc me. */
+  public void copySpanId(byte[] destination, int destOffset) {
+    System.arraycopy(getSpanId(), 0, destination, destOffset, 8);
+  }
 
   /**
    * Returns the {@code TraceFlags} associated with this {@code SpanContext}.

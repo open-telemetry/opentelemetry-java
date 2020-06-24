@@ -16,7 +16,7 @@
 
 package io.opentelemetry.opentracingshim.testbed;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 import io.opentelemetry.common.AttributeValue;
@@ -179,8 +179,8 @@ public final class TestUtils {
     for (int i = 0; i < spans.size() - 1; i++) {
       // TODO - Include nanos in this comparison.
       assertTrue(spans.get(spans.size() - 1).getEndEpochNanos() >= spans.get(i).getEndEpochNanos());
-      assertEquals(spans.get(spans.size() - 1).getTraceId(), spans.get(i).getTraceId());
-      assertEquals(spans.get(spans.size() - 1).getSpanId(), spans.get(i).getParentSpanId());
+      assertArrayEquals(spans.get(spans.size() - 1).getTraceId(), spans.get(i).getTraceId());
+      assertArrayEquals(spans.get(spans.size() - 1).getSpanId(), spans.get(i).getParentSpanId());
     }
   }
 }
