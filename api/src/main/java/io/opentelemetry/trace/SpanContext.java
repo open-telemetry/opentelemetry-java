@@ -17,6 +17,7 @@
 package io.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
+import java.util.Arrays;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -95,14 +96,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public byte[] traceId() {
-    byte[] result = new byte[16];
-    copyTraceId(result, 0);
-    return result;
-  }
-
-  /** javadoc me. */
-  public void copyTraceId(byte[] destination, int destOffset) {
-    System.arraycopy(getTraceId(), 0, destination, destOffset, 16);
+    return Arrays.copyOf(getTraceId(), 16);
   }
 
   /**
@@ -121,14 +115,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public byte[] spanId() {
-    byte[] result = new byte[8];
-    copySpanId(result, 0);
-    return result;
-  }
-
-  /** javadoc me. */
-  public void copySpanId(byte[] destination, int destOffset) {
-    System.arraycopy(getSpanId(), 0, destination, destOffset, 8);
+    return Arrays.copyOf(getSpanId(), 8);
   }
 
   /**

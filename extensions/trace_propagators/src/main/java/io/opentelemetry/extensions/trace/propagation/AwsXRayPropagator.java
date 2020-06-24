@@ -26,7 +26,6 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -172,7 +171,6 @@ public class AwsXRayPropagator implements HttpTextFormat {
       }
       // TODO: Put the arbitrary TraceHeader keys in OT trace state
     }
-    System.out.println("traceId = " + Arrays.toString(traceId));
     if (!TraceId.isValid(traceId)) {
       logger.info(
           "Invalid TraceId in X-Ray trace header: '"

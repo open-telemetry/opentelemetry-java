@@ -34,7 +34,6 @@ public final class TraceId implements Comparable<TraceId> {
   private static final int SIZE = 16;
   private static final int BASE16_SIZE = 2 * BigendianEncoding.LONG_BASE16;
   private static final long INVALID_ID = 0;
-  private static final byte[] INVALID = new byte[16];
 
   // The internal representation of the TraceId.
   private final long idHi;
@@ -77,7 +76,7 @@ public final class TraceId implements Comparable<TraceId> {
    * @since 0.1.0
    */
   public static byte[] getInvalid() {
-    return INVALID;
+    return new byte[16];
   }
 
   /**

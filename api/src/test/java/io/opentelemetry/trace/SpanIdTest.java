@@ -72,7 +72,6 @@ public class SpanIdTest {
   @Test
   public void spanId_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
-    tester.addEqualityGroup(SpanId.getInvalid(), SpanId.getInvalid());
     tester.addEqualityGroup(
         first, SpanId.fromBytes(Arrays.copyOf(firstBytes, firstBytes.length), 0));
     tester.addEqualityGroup(
