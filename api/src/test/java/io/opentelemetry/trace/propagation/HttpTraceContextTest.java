@@ -44,9 +44,9 @@ class HttpTraceContextTest {
   private static final TraceState TRACE_STATE_NOT_DEFAULT =
       TraceState.builder().set("foo", "bar").set("bar", "baz").build();
   private static final String TRACE_ID_BASE16 = "ff000000000000000000000000000041";
-  private static final TraceId TRACE_ID = TraceId.fromLowerBase16(TRACE_ID_BASE16, 0);
+  private static final byte[] TRACE_ID = TraceId.bytesFromLowerBase16(TRACE_ID_BASE16, 0);
   private static final String SPAN_ID_BASE16 = "ff00000000000041";
-  private static final SpanId SPAN_ID = SpanId.fromLowerBase16(SPAN_ID_BASE16, 0);
+  private static final byte[] SPAN_ID = SpanId.bytesFromLowerBase16(SPAN_ID_BASE16, 0);
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
   private static final TraceFlags SAMPLED_TRACE_OPTIONS =
       TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);

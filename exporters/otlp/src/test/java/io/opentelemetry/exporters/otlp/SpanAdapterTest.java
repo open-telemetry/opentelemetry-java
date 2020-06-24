@@ -34,7 +34,6 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
@@ -43,13 +42,14 @@ import org.junit.jupiter.api.Test;
 class SpanAdapterTest {
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};
-  private static final TraceId TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES, 0);
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
-  private static final SpanId SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES, 0);
   private static final TraceState TRACE_STATE = TraceState.builder().build();
   private static final SpanContext SPAN_CONTEXT =
       SpanContext.create(
-          TRACE_ID, SPAN_ID, TraceFlags.builder().setIsSampled(true).build(), TRACE_STATE);
+          TRACE_ID_BYTES,
+          SPAN_ID_BYTES,
+          TraceFlags.builder().setIsSampled(true).build(),
+          TRACE_STATE);
 
   @Test
   void toProtoSpan() {
@@ -57,8 +57,8 @@ class SpanAdapterTest {
         SpanAdapter.toProtoSpan(
             TestSpanData.newBuilder()
                 .setHasEnded(true)
-                .setTraceId(TRACE_ID)
-                .setSpanId(SPAN_ID)
+                .setTraceId(TRACE_ID_BYTES)
+                .setSpanId(SPAN_ID_BYTES)
                 .setParentSpanId(SpanId.getInvalid())
                 .setName("GET /api/endpoint")
                 .setKind(Kind.SERVER)

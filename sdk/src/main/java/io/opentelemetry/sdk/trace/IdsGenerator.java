@@ -29,12 +29,12 @@ public interface IdsGenerator {
    *
    * @return a new valid {@code SpanId}.
    */
-  SpanId generateSpanId();
+  byte[] generateSpanId();
 
   /**
    * Generates a new valid {@code TraceId}.
    *
    * @return a new valid {@code TraceId}.
    */
-  TraceId generateTraceId();
+  byte[] generateTraceId();
 }

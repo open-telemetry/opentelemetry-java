@@ -37,11 +37,11 @@ import org.junit.jupiter.api.Test;
 class AwsXRayPropagatorTest {
 
   private static final String TRACE_ID_BASE16 = "8a3c60f7d188f8fa79d48a391a778fa6";
-  private static final TraceId TRACE_ID = TraceId.fromLowerBase16(TRACE_ID_BASE16, 0);
+  private static final byte[] TRACE_ID = TraceId.bytesFromLowerBase16(TRACE_ID_BASE16, 0);
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.getDefault();
 
   private static final String SPAN_ID_BASE16 = "53995c3f42cd8ad8";
-  private static final SpanId SPAN_ID = SpanId.fromLowerBase16(SPAN_ID_BASE16, 0);
+  private static final byte[] SPAN_ID = SpanId.bytesFromLowerBase16(SPAN_ID_BASE16, 0);
   private static final TraceFlags SAMPLED_TRACE_FLAG =
       TraceFlags.builder().setIsSampled(true).build();
 

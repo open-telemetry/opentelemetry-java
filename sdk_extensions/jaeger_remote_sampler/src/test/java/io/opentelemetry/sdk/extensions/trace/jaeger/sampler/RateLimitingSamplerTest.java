@@ -35,8 +35,8 @@ import org.junit.jupiter.api.Test;
 class RateLimitingSamplerTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
-  private final TraceId traceId = new TraceId(150, 150);
-  private final SpanId parentSpanId = new SpanId(250);
+  private final byte[] traceId = TraceId.fromLongs(150, 150);
+  private final byte[] parentSpanId = SpanId.fromLong(250);
   private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
       SpanContext.create(

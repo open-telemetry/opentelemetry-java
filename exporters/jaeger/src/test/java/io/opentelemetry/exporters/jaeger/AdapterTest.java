@@ -227,9 +227,11 @@ class AdapterTest {
 
     // verify
     assertEquals(
-        TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(SPAN_ID, 0)), spanRef.getSpanId());
+        TraceProtoUtils.toProtoSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0)),
+        spanRef.getSpanId());
     assertEquals(
-        TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)), spanRef.getTraceId());
+        TraceProtoUtils.toProtoTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0)),
+        spanRef.getTraceId());
     assertEquals(Model.SpanRefType.FOLLOWS_FROM, spanRef.getRefType());
   }
 
@@ -240,8 +242,8 @@ class AdapterTest {
     SpanData span =
         TestSpanData.newBuilder()
             .setHasEnded(true)
-            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0))
+            .setSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0))
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -267,8 +269,8 @@ class AdapterTest {
     SpanData span =
         TestSpanData.newBuilder()
             .setHasEnded(true)
-            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0))
+            .setSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0))
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -303,9 +305,9 @@ class AdapterTest {
 
     return TestSpanData.newBuilder()
         .setHasEnded(true)
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
-        .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
+        .setTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0))
+        .setSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0))
+        .setParentSpanId(SpanId.bytesFromLowerBase16(PARENT_SPAN_ID, 0))
         .setName("GET /api/endpoint")
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -322,8 +324,8 @@ class AdapterTest {
 
   private static SpanContext createSpanContext(String traceId, String spanId) {
     return SpanContext.create(
-        TraceId.fromLowerBase16(traceId, 0),
-        SpanId.fromLowerBase16(spanId, 0),
+        TraceId.bytesFromLowerBase16(traceId, 0),
+        SpanId.bytesFromLowerBase16(spanId, 0),
         TraceFlags.builder().build(),
         TraceState.builder().build());
   }
@@ -343,10 +345,10 @@ class AdapterTest {
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.FOLLOWS_FROM.equals(spanRef.getRefType())) {
         assertEquals(
-            TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(LINK_TRACE_ID, 0)),
+            TraceProtoUtils.toProtoTraceId(TraceId.bytesFromLowerBase16(LINK_TRACE_ID, 0)),
             spanRef.getTraceId());
         assertEquals(
-            TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(LINK_SPAN_ID, 0)),
+            TraceProtoUtils.toProtoSpanId(SpanId.bytesFromLowerBase16(LINK_SPAN_ID, 0)),
             spanRef.getSpanId());
         found = true;
       }
@@ -359,10 +361,10 @@ class AdapterTest {
     for (Model.SpanRef spanRef : jaegerSpan.getReferencesList()) {
       if (Model.SpanRefType.CHILD_OF.equals(spanRef.getRefType())) {
         assertEquals(
-            TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)),
+            TraceProtoUtils.toProtoTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0)),
             spanRef.getTraceId());
         assertEquals(
-            TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0)),
+            TraceProtoUtils.toProtoSpanId(SpanId.bytesFromLowerBase16(PARENT_SPAN_ID, 0)),
             spanRef.getSpanId());
         found = true;
       }

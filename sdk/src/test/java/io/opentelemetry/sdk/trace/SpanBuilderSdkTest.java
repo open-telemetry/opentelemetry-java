@@ -47,8 +47,8 @@ class SpanBuilderSdkTest {
   private static final String SPAN_NAME = "span_name";
   private final SpanContext sampledSpanContext =
       SpanContext.create(
-          new TraceId(1000, 1000),
-          new SpanId(3000),
+          TraceId.fromLongs(1000, 1000),
+          SpanId.fromLong(3000),
           TraceFlags.builder().setIsSampled(true).build(),
           TraceState.getDefault());
 
@@ -162,8 +162,8 @@ class SpanBuilderSdkTest {
       // this test to pass.
       spanBuilder.addLink(
           SpanContext.create(
-              new TraceId(2000, 2000),
-              new SpanId(4000),
+              TraceId.fromLongs(2000, 2000),
+              SpanId.fromLong(4000),
               TraceFlags.builder().setIsSampled(true).build(),
               TraceState.getDefault()));
       assertThat(span.toSpanData().getLinks())
@@ -553,7 +553,7 @@ class SpanBuilderSdkTest {
                       @Override
                       public SamplingResult shouldSample(
                           @Nullable SpanContext parentContext,
-                          TraceId traceId,
+                          byte[] traceId,
                           String name,
                           Kind spanKind,
                           ReadableAttributes attributes,
@@ -756,7 +756,7 @@ class SpanBuilderSdkTest {
             tracerSdk.spanBuilder(SPAN_NAME).setParent(parent.getContext()).startSpan();
     try {
       assertThat(span.getContext().getTraceId()).isNotEqualTo(parent.getContext().getTraceId());
-      assertFalse(span.toSpanData().getParentSpanId().isValid());
+      assertFalse(SpanId.isValid(span.toSpanData().getParentSpanId()));
     } finally {
       span.end();
     }

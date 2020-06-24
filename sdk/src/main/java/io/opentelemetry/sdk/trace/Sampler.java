@@ -51,7 +51,7 @@ public interface Sampler {
    */
   SamplingResult shouldSample(
       @Nullable SpanContext parentContext,
-      TraceId traceId,
+      byte[] traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,
@@ -76,7 +76,7 @@ public interface Sampler {
   }
 
   /**
-   * Sampling result returned by {@link Sampler#shouldSample(SpanContext, TraceId, String, Kind,
+   * Sampling result returned by {@link Sampler#shouldSample(SpanContext, byte[], String, Kind,
    * ReadableAttributes, List)}.
    *
    * @since 0.1.0

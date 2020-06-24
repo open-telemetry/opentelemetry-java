@@ -26,6 +26,7 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -93,14 +94,14 @@ public class AwsXRayPropagator implements HttpTextFormat {
 
     SpanContext spanContext = span.getContext();
 
-    String otTraceId = spanContext.getTraceId().toLowerBase16();
+    String otTraceId = TraceId.toLowerBase16(spanContext.getTraceId());
     String xrayTraceId =
         TRACE_ID_VERSION
             + TRACE_ID_DELIMITER
             + otTraceId.substring(0, TRACE_ID_FIRST_PART_LENGTH)
             + TRACE_ID_DELIMITER
             + otTraceId.substring(TRACE_ID_FIRST_PART_LENGTH);
-    String parentId = spanContext.getSpanId().toLowerBase16();
+    String parentId = SpanId.toLowerBase16(spanContext.getSpanId());
     char samplingFlag = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     // TODO: Add OT trace state to the X-Ray trace header
 
@@ -138,8 +139,8 @@ public class AwsXRayPropagator implements HttpTextFormat {
       return SpanContext.getInvalid();
     }
 
-    TraceId traceId = TraceId.getInvalid();
-    SpanId spanId = SpanId.getInvalid();
+    byte[] traceId = TraceId.getInvalid();
+    byte[] spanId = SpanId.getInvalid();
     TraceFlags traceFlags = TraceFlags.getDefault();
 
     int pos = 0;
@@ -175,8 +176,8 @@ public class AwsXRayPropagator implements HttpTextFormat {
       }
       // TODO: Put the arbitrary TraceHeader keys in OT trace state
     }
-
-    if (!traceId.isValid()) {
+    System.out.println("traceId = " + Arrays.toString(traceId));
+    if (!TraceId.isValid(traceId)) {
       logger.fine(
           "Invalid TraceId in X-Ray trace header: '"
               + TRACE_HEADER_KEY
@@ -186,7 +187,7 @@ public class AwsXRayPropagator implements HttpTextFormat {
       return SpanContext.getInvalid();
     }
 
-    if (!spanId.isValid()) {
+    if (!SpanId.isValid(spanId)) {
       logger.fine(
           "Invalid ParentId in X-Ray trace header: '"
               + TRACE_HEADER_KEY
@@ -209,7 +210,7 @@ public class AwsXRayPropagator implements HttpTextFormat {
     return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault());
   }
 
-  private static TraceId parseTraceId(String xrayTraceId) {
+  private static byte[] parseTraceId(String xrayTraceId) {
     if (xrayTraceId.length() != TRACE_ID_LENGTH) {
       return TraceId.getInvalid();
     }
@@ -231,19 +232,20 @@ public class AwsXRayPropagator implements HttpTextFormat {
 
     try {
       // X-Ray trace id format is 1-{8 digit hex}-{24 digit hex}
-      return TraceId.fromLowerBase16(epochPart + uniquePart, 0);
+      return TraceId.bytesFromLowerBase16(epochPart + uniquePart, 0);
     } catch (Exception e) {
+      e.printStackTrace();
       return TraceId.getInvalid();
     }
   }
 
-  private static SpanId parseSpanId(String xrayParentId) {
+  private static byte[] parseSpanId(String xrayParentId) {
     if (xrayParentId.length() != PARENT_ID_LENGTH) {
       return SpanId.getInvalid();
     }
 
     try {
-      return SpanId.fromLowerBase16(xrayParentId, 0);
+      return SpanId.bytesFromLowerBase16(xrayParentId, 0);
     } catch (Exception e) {
       return SpanId.getInvalid();
     }

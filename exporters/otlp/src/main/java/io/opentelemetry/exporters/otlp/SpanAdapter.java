@@ -91,7 +91,7 @@ final class SpanAdapter {
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(spanData.getTraceId()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(spanData.getSpanId()));
     // TODO: Set TraceState;
-    if (spanData.getParentSpanId().isValid()) {
+    if (SpanId.isValid(spanData.getParentSpanId())) {
       builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(spanData.getParentSpanId()));
     }
     builder.setName(spanData.getName());
