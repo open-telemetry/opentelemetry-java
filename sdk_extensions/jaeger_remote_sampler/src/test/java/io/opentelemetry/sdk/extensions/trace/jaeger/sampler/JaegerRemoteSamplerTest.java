@@ -24,7 +24,6 @@ import static org.mockito.Mockito.verify;
 import io.grpc.ManagedChannel;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import io.grpc.stub.StreamObserver;
 import io.grpc.testing.GrpcCleanupRule;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling;
 import io.opentelemetry.exporters.jaeger.proto.api_v2.Sampling.RateLimitingSamplingStrategy;
@@ -111,10 +110,7 @@ public class JaegerRemoteSamplerTest {
         .until(samplerIsType(sampler, RateLimitingSampler.class));
 
     // verify
-    verify(service)
-        .getSamplingStrategy(
-            requestCaptor.capture(),
-            ArgumentMatchers.<StreamObserver<SamplingStrategyResponse>>any());
+    verify(service).getSamplingStrategy(requestCaptor.capture(), ArgumentMatchers.any());
     Assert.assertEquals(SERVICE_NAME, requestCaptor.getValue().getServiceName());
     Assert.assertTrue(sampler.getSampler() instanceof RateLimitingSampler);
     Assert.assertEquals(
@@ -133,15 +129,15 @@ public class JaegerRemoteSamplerTest {
             .getDescription()
             .matches(
                 "JaegerRemoteSampler\\{Probability\\{probability=0.001, idUpperBound=.*\\}\\}"));
+
+    // wait until the sampling strategy is retrieved before exiting test method
+    Awaitility.await()
+        .atMost(10, TimeUnit.SECONDS)
+        .until(samplerIsType(sampler, RateLimitingSampler.class));
   }
 
   static Callable<Boolean> samplerIsType(
       final JaegerRemoteSampler sampler, final Class<? extends Sampler> expected) {
-    return new Callable<Boolean>() {
-      @Override
-      public Boolean call() {
-        return sampler.getSampler().getClass().equals(expected);
-      }
-    };
+    return () -> sampler.getSampler().getClass().equals(expected);
   }
 }

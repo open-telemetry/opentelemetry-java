@@ -22,7 +22,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
@@ -60,7 +60,7 @@ public final class NestedCallbacksTest {
     assertEquals(1, spans.size());
     assertEquals("one", spans.get(0).getName());
 
-    Attributes attrs = spans.get(0).getAttributes();
+    ReadableAttributes attrs = spans.get(0).getAttributes();
     assertEquals(3, attrs.size());
     for (int i = 1; i <= 3; i++) {
       assertEquals(
@@ -73,34 +73,25 @@ public final class NestedCallbacksTest {
   private void submitCallbacks(final Span span) {
 
     executor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            try (Scope scope = tracer.scopeManager().activate(span)) {
-              span.setTag("key1", "1");
+        () -> {
+          try (Scope scope = tracer.scopeManager().activate(span)) {
+            span.setTag("key1", "1");
 
-              executor.submit(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      try (Scope scope = tracer.scopeManager().activate(span)) {
-                        span.setTag("key2", "2");
+            executor.submit(
+                () -> {
+                  try (Scope scope12 = tracer.scopeManager().activate(span)) {
+                    span.setTag("key2", "2");
 
-                        executor.submit(
-                            new Runnable() {
-                              @Override
-                              public void run() {
-                                try (Scope scope = tracer.scopeManager().activate(span)) {
-                                  span.setTag("key3", "3");
-                                } finally {
-                                  span.finish();
-                                }
-                              }
-                            });
-                      }
-                    }
-                  });
-            }
+                    executor.submit(
+                        () -> {
+                          try (Scope scope1 = tracer.scopeManager().activate(span)) {
+                            span.setTag("key3", "3");
+                          } finally {
+                            span.finish();
+                          }
+                        });
+                  }
+                });
           }
         });
   }

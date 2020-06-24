@@ -1,6 +1,7 @@
 package io.opentelemetry.example.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.metrics.DoubleCounter;
 import io.opentelemetry.metrics.Meter;
@@ -57,7 +58,8 @@ public class DoubleCounterExample {
           if (file.getName().endsWith("." + extension)) {
             // we can add values to the counter for specific labels
             // the label key is "file_extension", its value is the name of the extension
-            diskSpaceCounter.add((double) file.length() / 1_000_000, "file_extension", extension);
+            diskSpaceCounter.add(
+                (double) file.length() / 1_000_000, Labels.of("file_extension", extension));
           }
         }
       }

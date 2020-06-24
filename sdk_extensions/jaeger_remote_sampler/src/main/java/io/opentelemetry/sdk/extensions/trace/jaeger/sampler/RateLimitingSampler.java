@@ -18,6 +18,8 @@ package io.opentelemetry.sdk.extensions.trace.jaeger.sampler;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.internal.MillisClock;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
@@ -25,9 +27,7 @@ import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceId;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
@@ -41,7 +41,8 @@ class RateLimitingSampler implements Sampler {
 
   private final double maxTracesPerSecond;
   private final RateLimiter rateLimiter;
-  private final Map<String, AttributeValue> attributes;
+  private final Decision onDecision;
+  private final Decision offDecision;
 
   /**
    * Creates rate limiting sampler.
@@ -52,9 +53,12 @@ class RateLimitingSampler implements Sampler {
     this.maxTracesPerSecond = maxTracesPerSecond;
     double maxBalance = maxTracesPerSecond < 1.0 ? 1.0 : maxTracesPerSecond;
     this.rateLimiter = new RateLimiter(maxTracesPerSecond, maxBalance, MillisClock.getInstance());
-    this.attributes = new LinkedHashMap<>();
-    attributes.put(SAMPLER_TYPE, AttributeValue.stringAttributeValue(TYPE));
-    attributes.put(SAMPLER_PARAM, AttributeValue.doubleAttributeValue(maxTracesPerSecond));
+    Attributes attributes =
+        Attributes.of(
+            SAMPLER_TYPE, AttributeValue.stringAttributeValue(TYPE),
+            SAMPLER_PARAM, AttributeValue.doubleAttributeValue(maxTracesPerSecond));
+    this.onDecision = Samplers.decision(true, attributes);
+    this.offDecision = Samplers.decision(false, attributes);
   }
 
   @Override
@@ -63,9 +67,8 @@ class RateLimitingSampler implements Sampler {
       TraceId traceId,
       String name,
       Kind spanKind,
-      Map<String, AttributeValue> attributes,
+      ReadableAttributes attributes,
       List<Link> parentLinks) {
-    boolean sampled = this.rateLimiter.checkCredit(1.0);
     if (parentContext != null && parentContext.getTraceFlags().isSampled()) {
       return Samplers.alwaysOn()
           .shouldSample(parentContext, traceId, name, spanKind, attributes, parentLinks);
@@ -78,7 +81,7 @@ class RateLimitingSampler implements Sampler {
         }
       }
     }
-    return new SamplingDecision(sampled, this.attributes);
+    return this.rateLimiter.checkCredit(1.0) ? onDecision : offDecision;
   }
 
   @Override

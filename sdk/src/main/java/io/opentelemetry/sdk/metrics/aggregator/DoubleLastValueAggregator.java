@@ -16,9 +16,9 @@
 
 package io.opentelemetry.sdk.metrics.aggregator;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.DoublePoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
@@ -60,7 +60,7 @@ public final class DoubleLastValueAggregator extends AbstractAggregator {
 
   @Override
   @Nullable
-  public Point toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
+  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
     @Nullable Double currentValue = current.get();
     return currentValue == null
         ? null

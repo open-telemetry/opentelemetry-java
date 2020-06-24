@@ -19,7 +19,6 @@ package io.opentelemetry.sdk.extensions.trace.testbed.listenerperrequest;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.Tracer;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -35,14 +34,11 @@ final class Client {
   /** Async execution. */
   private Future<Object> execute(final Object message, final ResponseListener responseListener) {
     return executor.submit(
-        new Callable<Object>() {
-          @Override
-          public Object call() {
-            // send via wire and get response
-            Object response = message + ":response";
-            responseListener.onResponse(response);
-            return response;
-          }
+        () -> {
+          // send via wire and get response
+          Object response = message + ":response";
+          responseListener.onResponse(response);
+          return response;
         });
   }
 

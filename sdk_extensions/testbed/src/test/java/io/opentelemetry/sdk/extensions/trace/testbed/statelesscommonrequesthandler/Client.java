@@ -17,7 +17,6 @@
 package io.opentelemetry.sdk.extensions.trace.testbed.statelesscommonrequesthandler;
 
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -35,17 +34,14 @@ final class Client {
   public Future<String> send(final Object message) {
 
     return executor.submit(
-        new Callable<String>() {
-          @Override
-          public String call() {
-            TestUtils.sleep();
-            requestHandler.beforeRequest(message);
+        () -> {
+          TestUtils.sleep();
+          requestHandler.beforeRequest(message);
 
-            TestUtils.sleep();
-            requestHandler.afterResponse(message);
+          TestUtils.sleep();
+          requestHandler.afterResponse(message);
 
-            return message + ":response";
-          }
+          return message + ":response";
         });
   }
 }

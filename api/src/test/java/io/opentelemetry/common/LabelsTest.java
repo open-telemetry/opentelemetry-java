@@ -38,13 +38,7 @@ public class LabelsTest {
             "key1", "value1",
             "key2", "value2");
 
-    labels.forEach(
-        new KeyValueConsumer<String>() {
-          @Override
-          public void consume(String key, String value) {
-            entriesSeen.put(key, value);
-          }
-        });
+    labels.forEach(entriesSeen::put);
 
     assertThat(entriesSeen).containsExactly("key1", "value1", "key2", "value2");
   }
@@ -54,13 +48,7 @@ public class LabelsTest {
     final Map<String, String> entriesSeen = new HashMap<>();
 
     Labels labels = Labels.of("key", "value");
-    labels.forEach(
-        new KeyValueConsumer<String>() {
-          @Override
-          public void consume(String key, String value) {
-            entriesSeen.put(key, value);
-          }
-        });
+    labels.forEach(entriesSeen::put);
 
     assertThat(entriesSeen).containsExactly("key", "value");
   }
@@ -69,13 +57,7 @@ public class LabelsTest {
   public void forEach_empty() {
     final AtomicBoolean sawSomething = new AtomicBoolean(false);
     Labels emptyLabels = Labels.empty();
-    emptyLabels.forEach(
-        new KeyValueConsumer<String>() {
-          @Override
-          public void consume(String key, String value) {
-            sawSomething.set(true);
-          }
-        });
+    emptyLabels.forEach((key, value) -> sawSomething.set(true));
     assertThat(sawSomething.get()).isFalse();
   }
 

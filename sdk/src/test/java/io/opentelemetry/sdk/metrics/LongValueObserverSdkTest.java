@@ -19,14 +19,13 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
-import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
+import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import io.opentelemetry.sdk.resources.Resource;
@@ -47,8 +46,7 @@ public class LongValueObserverSdkTest {
   private static final long SECOND_NANOS = 1_000_000_000;
   private static final Resource RESOURCE =
       Resource.create(
-          Collections.singletonMap(
-              "resource_key", AttributeValue.stringAttributeValue("resource_value")));
+          Attributes.of("resource_key", AttributeValue.stringAttributeValue("resource_value")));
   private static final InstrumentationLibraryInfo INSTRUMENTATION_LIBRARY_INFO =
       InstrumentationLibraryInfo.create(
           "io.opentelemetry.sdk.metrics.LongValueObserverSdkTest", null);
@@ -63,7 +61,7 @@ public class LongValueObserverSdkTest {
     LongValueObserverSdk longValueObserver =
         testSdk
             .longValueObserverBuilder("testObserver")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongValueObserver")
             .setUnit("ms")
             .build();
@@ -75,16 +73,13 @@ public class LongValueObserverSdkTest {
     LongValueObserverSdk longValueObserver =
         testSdk
             .longValueObserverBuilder("testObserver")
-            .setConstantLabels(Collections.singletonMap("sk1", "sv1"))
+            .setConstantLabels(Labels.of("sk1", "sv1"))
             .setDescription("My own LongValueObserver")
             .setUnit("ms")
             .build();
     longValueObserver.setCallback(
-        new Callback<LongResult>() {
-          @Override
-          public void update(LongResult result) {
-            // Do nothing.
-          }
+        result -> {
+          // Do nothing.
         });
     assertThat(longValueObserver.collectAll())
         .containsExactly(
@@ -94,36 +89,29 @@ public class LongValueObserverSdkTest {
                     "My own LongValueObserver",
                     "ms",
                     Type.SUMMARY,
-                    Collections.singletonMap("sk1", "sv1")),
+                    Labels.of("sk1", "sv1")),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>emptyList()));
+                Collections.emptyList()));
   }
 
   @Test
   public void collectMetrics_WithOneRecord() {
     LongValueObserverSdk longValueObserver =
         testSdk.longValueObserverBuilder("testObserver").build();
-    longValueObserver.setCallback(
-        new Callback<LongResult>() {
-          @Override
-          public void update(LongResult result) {
-            result.observe(12, "k", "v");
-          }
-        });
+    longValueObserver.setCallback(result -> result.observe(12, Labels.of("k", "v")));
     testClock.advanceNanos(SECOND_NANOS);
     assertThat(longValueObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Type.SUMMARY, Collections.<String, String>emptyMap()),
+                Descriptor.create("testObserver", "", "1", Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
-                        Collections.singletonMap("k", "v"),
+                        Labels.of("k", "v"),
                         1,
                         12,
                         valueAtPercentiles(12, 12)))));
@@ -131,15 +119,14 @@ public class LongValueObserverSdkTest {
     assertThat(longValueObserver.collectAll())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testObserver", "", "1", Type.SUMMARY, Collections.<String, String>emptyMap()),
+                Descriptor.create("testObserver", "", "1", Type.SUMMARY, Labels.empty()),
                 RESOURCE,
                 INSTRUMENTATION_LIBRARY_INFO,
-                Collections.<Point>singletonList(
+                Collections.singletonList(
                     SummaryPoint.create(
                         testClock.now() - SECOND_NANOS,
                         testClock.now(),
-                        Collections.singletonMap("k", "v"),
+                        Labels.of("k", "v"),
                         1,
                         12,
                         valueAtPercentiles(12, 12)))));

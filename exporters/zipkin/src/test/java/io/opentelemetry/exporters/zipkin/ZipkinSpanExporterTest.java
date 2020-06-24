@@ -18,7 +18,6 @@ package io.opentelemetry.exporters.zipkin;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
-import static java.util.Collections.singletonMap;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +30,6 @@ import io.opentelemetry.sdk.resources.ResourceConstants;
 import io.opentelemetry.sdk.trace.data.EventImpl;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
-import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.sdk.trace.data.test.TestSpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
@@ -71,7 +69,7 @@ public class ZipkinSpanExporterTest {
   private static final String PARENT_SPAN_ID = "8b03ab423da481c5";
   private static final Attributes attributes = Attributes.empty();
   private static final List<Event> annotations =
-      ImmutableList.<Event>of(
+      ImmutableList.of(
           EventImpl.create(1505855799_433901068L, "RECEIVED", Attributes.empty()),
           EventImpl.create(1505855799_459486280L, "SENT", Attributes.empty()));
 
@@ -127,7 +125,7 @@ public class ZipkinSpanExporterTest {
   public void generateSpan_ResourceServiceNameMapping() {
     final Resource resource =
         Resource.create(
-            singletonMap(
+            Attributes.of(
                 ResourceConstants.SERVICE_NAME, stringAttributeValue("super-zipkin-service")));
     SpanData data = buildStandardSpan().setResource(resource).build();
 
@@ -229,7 +227,7 @@ public class ZipkinSpanExporterTest {
     when(mockEncoder.encode(buildZipkinSpan(Span.Kind.SERVER))).thenReturn(someBytes);
     when(mockSender.sendSpans(Collections.singletonList(someBytes))).thenReturn(mockZipkinCall);
     ResultCode resultCode =
-        zipkinSpanExporter.export(Collections.<SpanData>singleton(buildStandardSpan().build()));
+        zipkinSpanExporter.export(Collections.singleton(buildStandardSpan().build()));
 
     verify(mockZipkinCall).execute();
     assertThat(resultCode).isEqualTo(ResultCode.SUCCESS);
@@ -246,7 +244,7 @@ public class ZipkinSpanExporterTest {
     when(mockZipkinCall.execute()).thenThrow(new IOException());
 
     ResultCode resultCode =
-        zipkinSpanExporter.export(Collections.<SpanData>singleton(buildStandardSpan().build()));
+        zipkinSpanExporter.export(Collections.singleton(buildStandardSpan().build()));
 
     assertThat(resultCode).isEqualTo(ResultCode.FAILURE);
   }
@@ -288,7 +286,7 @@ public class ZipkinSpanExporterTest {
         .setAttributes(attributes)
         .setTotalAttributeCount(attributes.size())
         .setEvents(annotations)
-        .setLinks(Collections.<Link>emptyList())
+        .setLinks(Collections.emptyList())
         .setEndEpochNanos(1505855799_465726528L)
         .setHasEnded(true);
   }

@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics.export;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.common.export.ConfigBuilderTest.ConfigTester;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -45,15 +46,10 @@ import org.mockito.MockitoAnnotations;
 public class IntervalMetricReaderTest {
   private static final MetricData.Descriptor METRIC_DESCRIPTOR =
       MetricData.Descriptor.create(
-          "my metric",
-          "my metric description",
-          "us",
-          Type.MONOTONIC_LONG,
-          Collections.<String, String>emptyMap());
+          "my metric", "my metric description", "us", Type.MONOTONIC_LONG, Labels.empty());
 
   private static final List<Point> LONG_POINT_LIST =
-      Collections.<Point>singletonList(
-          LongPoint.create(1000, 3000, Collections.<String, String>emptyMap(), 1234567));
+      Collections.singletonList(LongPoint.create(1000, 3000, Labels.empty(), 1234567));
 
   private static final MetricData METRIC_DATA =
       MetricData.create(

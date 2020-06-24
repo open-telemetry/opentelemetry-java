@@ -22,7 +22,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.EvictingQueue;
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.KeyValueConsumer;
+import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.resources.Resource;
@@ -366,9 +367,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       return attributes;
     }
 
-    Attributes.Builder temp = Attributes.newBuilder();
-    attributes.forEach(new LimitingAttributeConsumer(limit, temp));
-    return temp.build();
+    Attributes.Builder result = Attributes.newBuilder();
+    attributes.forEach(new LimitingAttributeConsumer(limit, result));
+    return result.build();
   }
 
   private void addTimedEvent(TimedEvent timedEvent) {
@@ -515,10 +516,16 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   }
 
   @GuardedBy("lock")
-  private Attributes getImmutableAttributes() {
+  private ReadableAttributes getImmutableAttributes() {
     if (attributes == null || attributes.isEmpty()) {
       return Attributes.empty();
     }
+    // if the span has ended, then the attributes are unmodifiable,
+    // so we can return them directly and save copying all the data.
+    if (hasEnded) {
+      return attributes;
+    }
+    // otherwise, make a copy of the data into an immutable container.
     Attributes.Builder builder = Attributes.newBuilder();
     for (Entry<String, AttributeValue> entry : attributes.entrySet()) {
       builder.setAttribute(entry.getKey(), entry.getValue());
@@ -538,8 +545,9 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
 
     @Override
     public void consume(String key, AttributeValue value) {
-      if (added++ < limit) {
+      if (added < limit) {
         builder.setAttribute(key, value);
+        added++;
       }
     }
   }

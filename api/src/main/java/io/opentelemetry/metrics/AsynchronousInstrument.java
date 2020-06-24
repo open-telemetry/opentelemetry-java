@@ -16,6 +16,7 @@
 
 package io.opentelemetry.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument.Result;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -63,11 +64,11 @@ public interface AsynchronousInstrument<R extends Result> extends Instrument {
 
   /** The result for the {@link Callback}. */
   interface LongResult extends Result {
-    void observe(long value, String... keyValueLabelPairs);
+    void observe(long value, Labels labels);
   }
 
   /** The result for the {@link Callback}. */
   interface DoubleResult extends Result {
-    void observe(double value, String... keyValueLabelPairs);
+    void observe(double value, Labels labels);
   }
 }

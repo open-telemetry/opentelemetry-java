@@ -23,9 +23,7 @@ import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.CorrelationContextManager;
 import io.opentelemetry.correlationcontext.EmptyCorrelationContext;
 import io.opentelemetry.correlationcontext.Entry;
-import io.opentelemetry.correlationcontext.EntryKey;
 import io.opentelemetry.correlationcontext.EntryMetadata;
-import io.opentelemetry.correlationcontext.EntryValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -36,14 +34,14 @@ import org.junit.runners.JUnit4;
  */
 @RunWith(JUnit4.class)
 public class ScopedCorrelationContextTest {
-  private static final EntryKey KEY_1 = EntryKey.create("key 1");
-  private static final EntryKey KEY_2 = EntryKey.create("key 2");
-  private static final EntryKey KEY_3 = EntryKey.create("key 3");
+  private static final String KEY_1 = "key 1";
+  private static final String KEY_2 = "key 2";
+  private static final String KEY_3 = "key 3";
 
-  private static final EntryValue VALUE_1 = EntryValue.create("value 1");
-  private static final EntryValue VALUE_2 = EntryValue.create("value 2");
-  private static final EntryValue VALUE_3 = EntryValue.create("value 3");
-  private static final EntryValue VALUE_4 = EntryValue.create("value 4");
+  private static final String VALUE_1 = "value 1";
+  private static final String VALUE_2 = "value 2";
+  private static final String VALUE_3 = "value 3";
+  private static final String VALUE_4 = "value 4";
 
   private static final EntryMetadata METADATA_UNLIMITED_PROPAGATION =
       EntryMetadata.create(EntryMetadata.EntryTtl.UNLIMITED_PROPAGATION);

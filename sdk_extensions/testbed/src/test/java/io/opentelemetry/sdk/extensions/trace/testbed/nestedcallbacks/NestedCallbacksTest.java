@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import io.opentelemetry.common.Attributes;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.exporters.inmemory.InMemoryTracing;
 import io.opentelemetry.sdk.extensions.trace.testbed.TestUtils;
@@ -58,7 +58,7 @@ public final class NestedCallbacksTest {
     assertThat(spans).hasSize(1);
     assertThat(spans.get(0).getName()).isEqualTo("one");
 
-    Attributes attrs = spans.get(0).getAttributes();
+    ReadableAttributes attrs = spans.get(0).getAttributes();
     assertThat(attrs.size()).isEqualTo(3);
     for (int i = 1; i <= 3; i++) {
       assertThat(attrs.get("key" + i).getStringValue()).isEqualTo(Integer.toString(i));
@@ -70,34 +70,25 @@ public final class NestedCallbacksTest {
   private void submitCallbacks(final Span span) {
 
     executor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            try (Scope ignored = tracer.withSpan(span)) {
-              span.setAttribute("key1", "1");
+        () -> {
+          try (Scope ignored = tracer.withSpan(span)) {
+            span.setAttribute("key1", "1");
 
-              executor.submit(
-                  new Runnable() {
-                    @Override
-                    public void run() {
-                      try (Scope ignored = tracer.withSpan(span)) {
-                        span.setAttribute("key2", "2");
+            executor.submit(
+                () -> {
+                  try (Scope ignored12 = tracer.withSpan(span)) {
+                    span.setAttribute("key2", "2");
 
-                        executor.submit(
-                            new Runnable() {
-                              @Override
-                              public void run() {
-                                try (Scope ignored = tracer.withSpan(span)) {
-                                  span.setAttribute("key3", "3");
-                                } finally {
-                                  span.end();
-                                }
-                              }
-                            });
-                      }
-                    }
-                  });
-            }
+                    executor.submit(
+                        () -> {
+                          try (Scope ignored1 = tracer.withSpan(span)) {
+                            span.setAttribute("key3", "3");
+                          } finally {
+                            span.end();
+                          }
+                        });
+                  }
+                });
           }
         });
   }

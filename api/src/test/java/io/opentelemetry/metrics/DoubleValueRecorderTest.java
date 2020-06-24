@@ -17,10 +17,9 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleValueRecorder.BoundDoubleValueRecorder;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,8 +34,7 @@ public final class DoubleValueRecorderTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Map<String, String> CONSTANT_LABELS =
-      Collections.singletonMap("key", "value");
+  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
 
   private final Meter meter = OpenTelemetry.getMeter("DoubleValueRecorderTest");
 
@@ -93,20 +91,14 @@ public final class DoubleValueRecorderTest {
   }
 
   @Test
-  public void recordDoesNotThrow() {
-    DoubleValueRecorder doubleValueRecorder =
-        meter
-            .doubleValueRecorderBuilder(NAME)
-            .setDescription(DESCRIPTION)
-            .setUnit(UNIT)
-            .setConstantLabels(CONSTANT_LABELS)
-            .build();
-    doubleValueRecorder.record(5.0);
-    doubleValueRecorder.record(-5.0);
+  public void record_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleValueRecorderBuilder("metric").build().record(1.0, null);
   }
 
   @Test
-  public void boundDoesNotThrow() {
+  public void record_DoesNotThrow() {
     DoubleValueRecorder doubleValueRecorder =
         meter
             .doubleValueRecorderBuilder(NAME)
@@ -114,7 +106,27 @@ public final class DoubleValueRecorderTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundDoubleValueRecorder bound = doubleValueRecorder.bind();
+    doubleValueRecorder.record(5.0, Labels.empty());
+    doubleValueRecorder.record(-5.0, Labels.empty());
+  }
+
+  @Test
+  public void bound_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.doubleValueRecorderBuilder("metric").build().bind(null);
+  }
+
+  @Test
+  public void bound_DoesNotThrow() {
+    DoubleValueRecorder doubleValueRecorder =
+        meter
+            .doubleValueRecorderBuilder(NAME)
+            .setDescription(DESCRIPTION)
+            .setUnit(UNIT)
+            .setConstantLabels(CONSTANT_LABELS)
+            .build();
+    BoundDoubleValueRecorder bound = doubleValueRecorder.bind(Labels.empty());
     bound.record(5.0);
     bound.record(-5.0);
     bound.unbind();

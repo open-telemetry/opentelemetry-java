@@ -50,18 +50,15 @@ final class Promise<T> {
   void success(final T result) {
     for (final SuccessCallback<T> callback : successCallbacks) {
       context.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              Span childSpan = tracer.spanBuilder("success").setParent(parentSpan).startSpan();
-              childSpan.setAttribute("component", "success");
-              try (Scope ignored = tracer.withSpan(childSpan)) {
-                callback.accept(result);
-              } finally {
-                childSpan.end();
-              }
-              context.getPhaser().arriveAndAwaitAdvance(); // trace reported
+          () -> {
+            Span childSpan = tracer.spanBuilder("success").setParent(parentSpan).startSpan();
+            childSpan.setAttribute("component", "success");
+            try (Scope ignored = tracer.withSpan(childSpan)) {
+              callback.accept(result);
+            } finally {
+              childSpan.end();
             }
+            context.getPhaser().arriveAndAwaitAdvance(); // trace reported
           });
     }
   }
@@ -70,18 +67,15 @@ final class Promise<T> {
   void error(final Throwable error) {
     for (final ErrorCallback callback : errorCallbacks) {
       context.submit(
-          new Runnable() {
-            @Override
-            public void run() {
-              Span childSpan = tracer.spanBuilder("error").setParent(parentSpan).startSpan();
-              childSpan.setAttribute("component", "error");
-              try (Scope ignored = tracer.withSpan(childSpan)) {
-                callback.accept(error);
-              } finally {
-                childSpan.end();
-              }
-              context.getPhaser().arriveAndAwaitAdvance(); // trace reported
+          () -> {
+            Span childSpan = tracer.spanBuilder("error").setParent(parentSpan).startSpan();
+            childSpan.setAttribute("component", "error");
+            try (Scope ignored = tracer.withSpan(childSpan)) {
+              callback.accept(error);
+            } finally {
+              childSpan.end();
             }
+            context.getPhaser().arriveAndAwaitAdvance(); // trace reported
           });
     }
   }

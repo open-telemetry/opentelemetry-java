@@ -45,7 +45,7 @@ public class EmptyCorrelationContext implements CorrelationContext {
 
   @Nullable
   @Override
-  public EntryValue getEntryValue(EntryKey entryKey) {
+  public String getEntryValue(String entryKey) {
     return null;
   }
 

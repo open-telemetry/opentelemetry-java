@@ -313,12 +313,12 @@ public class AdapterTest {
         .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
         .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
         .setAttributes(Attributes.of("valueB", valueB))
-        .setEvents(Collections.<Event>singletonList(getTimedEvent()))
+        .setEvents(Collections.singletonList(getTimedEvent()))
         .setTotalRecordedEvents(1)
         .setLinks(Collections.singletonList(link))
         .setTotalRecordedLinks(1)
         .setKind(Span.Kind.SERVER)
-        .setResource(Resource.create(Collections.<String, AttributeValue>emptyMap()))
+        .setResource(Resource.create(Attributes.empty()))
         .setStatus(Status.OK)
         .build();
   }

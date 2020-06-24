@@ -76,33 +76,27 @@ public final class LateSpanFinishTest {
   private void submitTasks(final Span parentSpan) {
 
     executor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            /* Alternative to calling activate() is to pass it manually to asChildOf() for each
-             * created Span. */
-            try (Scope scope = tracer.scopeManager().activate(parentSpan)) {
-              Span childSpan = tracer.buildSpan("task1").start();
-              try (Scope childScope = tracer.scopeManager().activate(childSpan)) {
-                sleep(55);
-              } finally {
-                childSpan.finish();
-              }
+        () -> {
+          /* Alternative to calling activate() is to pass it manually to asChildOf() for each
+           * created Span. */
+          try (Scope scope = tracer.scopeManager().activate(parentSpan)) {
+            Span childSpan = tracer.buildSpan("task1").start();
+            try (Scope childScope = tracer.scopeManager().activate(childSpan)) {
+              sleep(55);
+            } finally {
+              childSpan.finish();
             }
           }
         });
 
     executor.submit(
-        new Runnable() {
-          @Override
-          public void run() {
-            try (Scope scope = tracer.scopeManager().activate(parentSpan)) {
-              Span childSpan = tracer.buildSpan("task2").start();
-              try (Scope childScope = tracer.scopeManager().activate(childSpan)) {
-                sleep(85);
-              } finally {
-                childSpan.finish();
-              }
+        () -> {
+          try (Scope scope = tracer.scopeManager().activate(parentSpan)) {
+            Span childSpan = tracer.buildSpan("task2").start();
+            try (Scope childScope = tracer.scopeManager().activate(childSpan)) {
+              sleep(85);
+            } finally {
+              childSpan.finish();
             }
           }
         });

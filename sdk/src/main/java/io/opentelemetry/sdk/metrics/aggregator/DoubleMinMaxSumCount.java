@@ -17,11 +17,11 @@
 package io.opentelemetry.sdk.metrics.aggregator;
 
 import com.google.errorprone.annotations.concurrent.GuardedBy;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.data.MetricData.SummaryPoint;
 import io.opentelemetry.sdk.metrics.data.MetricData.ValueAtPercentile;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -55,7 +55,7 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
 
   @Nullable
   @Override
-  public Point toPoint(long startEpochNanos, long epochNanos, Map<String, String> labels) {
+  public Point toPoint(long startEpochNanos, long epochNanos, Labels labels) {
     return current.toPoint(startEpochNanos, epochNanos, labels);
   }
 
@@ -125,8 +125,7 @@ public final class DoubleMinMaxSumCount extends AbstractAggregator {
     }
 
     @Nullable
-    private SummaryPoint toPoint(
-        long startEpochNanos, long epochNanos, Map<String, String> labels) {
+    private SummaryPoint toPoint(long startEpochNanos, long epochNanos, Labels labels) {
       lock.readLock().lock();
       try {
         return count == 0

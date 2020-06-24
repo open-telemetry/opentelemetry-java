@@ -18,6 +18,7 @@ package io.opentelemetry.sdk.metrics;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -40,7 +41,7 @@ public class InstrumentRegistryTest {
           "name",
           "description",
           "1",
-          Collections.singletonMap("key_2", "value_2"),
+          Labels.of("key_2", "value_2"),
           InstrumentType.COUNTER,
           InstrumentValueType.LONG);
   private static final InstrumentDescriptor OTHER_INSTRUMENT_DESCRIPTOR =
@@ -48,7 +49,7 @@ public class InstrumentRegistryTest {
           "name",
           "other_description",
           "1",
-          Collections.singletonMap("key_2", "value_2"),
+          Labels.of("key_2", "value_2"),
           InstrumentType.COUNTER,
           InstrumentValueType.LONG);
   private static final MeterProviderSharedState METER_PROVIDER_SHARED_STATE =

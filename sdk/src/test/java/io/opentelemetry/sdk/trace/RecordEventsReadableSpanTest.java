@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.KeyValueConsumer;
+import io.opentelemetry.common.ReadableAttributes;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
 import io.opentelemetry.sdk.resources.Resource;
@@ -112,7 +112,7 @@ public class RecordEventsReadableSpanTest {
     verifySpanData(
         spanData,
         Attributes.empty(),
-        Collections.<Event>emptyList(),
+        Collections.emptyList(),
         Collections.singletonList(link),
         SPAN_NAME,
         startEpochNanos,
@@ -633,7 +633,7 @@ public class RecordEventsReadableSpanTest {
 
   private void verifySpanData(
       SpanData spanData,
-      Attributes attributes,
+      final ReadableAttributes attributes,
       List<Event> eventData,
       List<io.opentelemetry.trace.Link> links,
       String spanName,
@@ -649,13 +649,17 @@ public class RecordEventsReadableSpanTest {
     assertThat(spanData.getResource()).isEqualTo(resource);
     assertThat(spanData.getInstrumentationLibraryInfo()).isEqualTo(instrumentationLibraryInfo);
     assertThat(spanData.getName()).isEqualTo(spanName);
-    assertThat(spanData.getAttributes()).isEqualTo(attributes);
     assertThat(spanData.getEvents()).isEqualTo(eventData);
     assertThat(spanData.getLinks()).isEqualTo(links);
     assertThat(spanData.getStartEpochNanos()).isEqualTo(startEpochNanos);
     assertThat(spanData.getEndEpochNanos()).isEqualTo(endEpochNanos);
     assertThat(spanData.getStatus().getCanonicalCode()).isEqualTo(status.getCanonicalCode());
     assertThat(spanData.getHasEnded()).isEqualTo(hasEnded);
+
+    // verify equality manually, since the implementations don't all equals with each other.
+    ReadableAttributes spanDataAttributes = spanData.getAttributes();
+    assertThat(spanDataAttributes.size()).isEqualTo(attributes.size());
+    spanDataAttributes.forEach((key, value) -> assertThat(attributes.get(key)).isEqualTo(value));
   }
 
   @Test
@@ -671,13 +675,7 @@ public class RecordEventsReadableSpanTest {
     Resource resource = this.resource;
     Attributes attributes = TestUtils.generateRandomAttributes();
     final AttributesMap attributesWithCapacity = new AttributesMap(32);
-    attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
-          @Override
-          public void consume(String key, AttributeValue value) {
-            attributesWithCapacity.put(key, value);
-          }
-        });
+    attributes.forEach(attributesWithCapacity::put);
     Attributes event1Attributes = TestUtils.generateRandomAttributes();
     Attributes event2Attributes = TestUtils.generateRandomAttributes();
     SpanContext context =
@@ -697,7 +695,7 @@ public class RecordEventsReadableSpanTest {
             clock,
             resource,
             attributesWithCapacity,
-            Collections.<io.opentelemetry.trace.Link>singletonList(link1),
+            Collections.singletonList(link1),
             1,
             0);
     long startEpochNanos = clock.now();
@@ -713,7 +711,7 @@ public class RecordEventsReadableSpanTest {
     long endEpochNanos = clock.now();
 
     List<Event> events =
-        Arrays.<Event>asList(
+        Arrays.asList(
             TimedEvent.create(
                 firstEventEpochNanos, "event1", event1Attributes, event1Attributes.size()),
             TimedEvent.create(
@@ -722,9 +720,9 @@ public class RecordEventsReadableSpanTest {
     SpanData result = readableSpan.toSpanData();
     verifySpanData(
         result,
-        attributes,
+        attributesWithCapacity,
         events,
-        Collections.<io.opentelemetry.trace.Link>singletonList(link1),
+        Collections.singletonList(link1),
         name,
         startEpochNanos,
         endEpochNanos,
@@ -740,12 +738,9 @@ public class RecordEventsReadableSpanTest {
     ExecutorService es = Executors.newSingleThreadExecutor();
     Future<?> modifierFuture =
         es.submit(
-            new Runnable() {
-              @Override
-              public void run() {
-                for (int i = 0; i < 5096 * 5; ++i) {
-                  span.setAttribute("hey" + i, "");
-                }
+            () -> {
+              for (int i = 0; i < 5096 * 5; ++i) {
+                span.setAttribute("hey" + i, "");
               }
             });
     try {

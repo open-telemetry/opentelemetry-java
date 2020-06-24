@@ -17,12 +17,9 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
-import io.opentelemetry.metrics.AsynchronousInstrument.Callback;
-import io.opentelemetry.metrics.AsynchronousInstrument.DoubleResult;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -37,8 +34,7 @@ public class DoubleSumObserverTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Map<String, String> CONSTANT_LABELS =
-      Collections.singletonMap("key", "value");
+  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
 
   private final Meter meter = OpenTelemetry.getMeter("DoubleSumObserverTest");
 
@@ -110,10 +106,6 @@ public class DoubleSumObserverTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    doubleSumObserver.setCallback(
-        new Callback<DoubleResult>() {
-          @Override
-          public void update(DoubleResult result) {}
-        });
+    doubleSumObserver.setCallback(result -> {});
   }
 }

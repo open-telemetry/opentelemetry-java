@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.metrics.aggregator.Aggregator;
@@ -76,7 +77,7 @@ final class Batchers {
     }
 
     @Override
-    public void batch(LabelSetSdk labelSet, Aggregator aggregator, boolean mappedAggregator) {}
+    public void batch(Labels labelSet, Aggregator aggregator, boolean mappedAggregator) {}
 
     @Override
     public List<MetricData> completeCollectionCycle() {
@@ -90,7 +91,7 @@ final class Batchers {
     private final InstrumentationLibraryInfo instrumentationLibraryInfo;
     private final Clock clock;
     private final AggregatorFactory aggregatorFactory;
-    private Map<Map<String, String>, Aggregator> aggregatorMap;
+    private Map<Labels, Aggregator> aggregatorMap;
     private long startEpochNanos;
     private final boolean delta;
 
@@ -117,18 +118,16 @@ final class Batchers {
     }
 
     @Override
-    public final void batch(
-        LabelSetSdk labelSet, Aggregator aggregator, boolean unmappedAggregator) {
-      Map<String, String> labels = labelSet.getLabels();
-      Aggregator currentAggregator = aggregatorMap.get(labels);
+    public final void batch(Labels labelSet, Aggregator aggregator, boolean unmappedAggregator) {
+      Aggregator currentAggregator = aggregatorMap.get(labelSet);
       if (currentAggregator == null) {
         // This aggregator is not mapped, we can use this instance.
         if (unmappedAggregator) {
-          aggregatorMap.put(labels, aggregator);
+          aggregatorMap.put(labelSet, aggregator);
           return;
         }
         currentAggregator = aggregatorFactory.getAggregator();
-        aggregatorMap.put(labels, currentAggregator);
+        aggregatorMap.put(labelSet, currentAggregator);
       }
       aggregator.mergeToAndReset(currentAggregator);
     }
@@ -137,7 +136,7 @@ final class Batchers {
     public final List<MetricData> completeCollectionCycle() {
       List<Point> points = new ArrayList<>(aggregatorMap.size());
       long epochNanos = clock.now();
-      for (Map.Entry<Map<String, String>, Aggregator> entry : aggregatorMap.entrySet()) {
+      for (Map.Entry<Labels, Aggregator> entry : aggregatorMap.entrySet()) {
         Point point = entry.getValue().toPoint(startEpochNanos, epochNanos, entry.getKey());
         if (point != null) {
           points.add(point);

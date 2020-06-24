@@ -19,6 +19,7 @@ package io.opentelemetry.sdk.metrics;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.sdk.common.Clock;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.TestClock;
@@ -26,7 +27,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import org.junit.Rule;
@@ -97,42 +97,24 @@ public class MeterSdkRegistryTest {
   public void metricProducer_GetAllMetrics() {
     MeterSdk meterSdk1 = meterRegistry.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_1");
     LongCounterSdk longCounter1 = meterSdk1.longCounterBuilder("testLongCounter").build();
-    longCounter1.add(10);
+    longCounter1.add(10, Labels.empty());
     MeterSdk meterSdk2 = meterRegistry.get("io.opentelemetry.sdk.metrics.MeterSdkRegistryTest_2");
     LongCounterSdk longCounter2 = meterSdk2.longCounterBuilder("testLongCounter").build();
-    longCounter2.add(10);
+    longCounter2.add(10, Labels.empty());
 
     assertThat(meterRegistry.getMetricProducer().getAllMetrics())
         .containsExactly(
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter",
-                    "",
-                    "1",
-                    Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
                 Resource.getEmpty(),
                 meterSdk1.getInstrumentationLibraryInfo(),
-                Collections.<Point>singletonList(
-                    LongPoint.create(
-                        testClock.now(),
-                        testClock.now(),
-                        Collections.<String, String>emptyMap(),
-                        10))),
+                Collections.singletonList(
+                    LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))),
             MetricData.create(
-                Descriptor.create(
-                    "testLongCounter",
-                    "",
-                    "1",
-                    Type.MONOTONIC_LONG,
-                    Collections.<String, String>emptyMap()),
+                Descriptor.create("testLongCounter", "", "1", Type.MONOTONIC_LONG, Labels.empty()),
                 Resource.getEmpty(),
                 meterSdk2.getInstrumentationLibraryInfo(),
-                Collections.<Point>singletonList(
-                    LongPoint.create(
-                        testClock.now(),
-                        testClock.now(),
-                        Collections.<String, String>emptyMap(),
-                        10))));
+                Collections.singletonList(
+                    LongPoint.create(testClock.now(), testClock.now(), Labels.empty(), 10))));
   }
 }

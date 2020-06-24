@@ -19,9 +19,8 @@ package io.opentelemetry.sdk.trace;
 import static com.google.common.truth.Truth.assertThat;
 import static io.opentelemetry.common.AttributeValue.doubleAttributeValue;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.truth.Truth;
 import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.trace.Sampler.Decision;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
@@ -31,7 +30,6 @@ import io.opentelemetry.trace.TraceFlags;
 import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,131 +58,130 @@ public class SamplersTest {
 
   @Test
   public void emptySamplingDecision() {
-    Truth.assertThat(Samplers.emptyDecision(true)).isSameInstanceAs(Samplers.emptyDecision(true));
-    Truth.assertThat(Samplers.emptyDecision(false)).isSameInstanceAs(Samplers.emptyDecision(false));
+    assertThat(Samplers.emptyDecision(true)).isSameInstanceAs(Samplers.emptyDecision(true));
+    assertThat(Samplers.emptyDecision(false)).isSameInstanceAs(Samplers.emptyDecision(false));
 
-    Truth.assertThat(Samplers.emptyDecision(true).isSampled()).isTrue();
-    Truth.assertThat(Samplers.emptyDecision(true).getAttributes()).isEmpty();
-    Truth.assertThat(Samplers.emptyDecision(false).isSampled()).isFalse();
-    Truth.assertThat(Samplers.emptyDecision(false).getAttributes()).isEmpty();
+    assertThat(Samplers.emptyDecision(true).isSampled()).isTrue();
+    assertThat(Samplers.emptyDecision(true).getAttributes().isEmpty()).isTrue();
+    assertThat(Samplers.emptyDecision(false).isSampled()).isFalse();
+    assertThat(Samplers.emptyDecision(false).getAttributes().isEmpty()).isTrue();
   }
 
   @Test
   public void samplingDecisionEmpty() {
-    Truth.assertThat(Samplers.decision(/*isSampled=*/ true, new HashMap<String, AttributeValue>()))
+    assertThat(Samplers.decision(/*isSampled=*/ true, Attributes.empty()))
         .isSameInstanceAs(Samplers.emptyDecision(true));
-    Truth.assertThat(
-            Samplers.decision(/*isSampled=*/ false, Collections.<String, AttributeValue>emptyMap()))
+    assertThat(Samplers.decision(/*isSampled=*/ false, Attributes.empty()))
         .isSameInstanceAs(Samplers.emptyDecision(false));
   }
 
   @Test
   public void samplingDecisionAttrs() {
-    final ImmutableMap<String, AttributeValue> attrs =
-        ImmutableMap.of(
+    final Attributes attrs =
+        Attributes.of(
             "foo", AttributeValue.longAttributeValue(42),
             "bar", AttributeValue.stringAttributeValue("baz"));
     final Decision sampledDecision = Samplers.decision(/*isSampled=*/ true, attrs);
-    Truth.assertThat(sampledDecision.isSampled()).isTrue();
-    Truth.assertThat(sampledDecision.getAttributes()).isEqualTo(attrs);
+    assertThat(sampledDecision.isSampled()).isTrue();
+    assertThat(sampledDecision.getAttributes()).isEqualTo(attrs);
 
     final Decision notSampledDecision = Samplers.decision(/*isSampled=*/ false, attrs);
-    Truth.assertThat(notSampledDecision.isSampled()).isFalse();
-    Truth.assertThat(notSampledDecision.getAttributes()).isEqualTo(attrs);
+    assertThat(notSampledDecision.isSampled()).isFalse();
+    assertThat(notSampledDecision.getAttributes()).isEqualTo(attrs);
   }
 
   @Test
   public void alwaysOnSampler() {
     // Sampled parent.
-    Truth.assertThat(
+    assertThat(
             Samplers.alwaysOn()
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
-                    Collections.<io.opentelemetry.trace.Link>emptyList())
+                    Attributes.empty(),
+                    Collections.emptyList())
                 .isSampled())
         .isTrue();
 
     // Not sampled parent.
-    Truth.assertThat(
+    assertThat(
             Samplers.alwaysOn()
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
-                    Collections.<io.opentelemetry.trace.Link>emptyList())
+                    Attributes.empty(),
+                    Collections.emptyList())
                 .isSampled())
         .isTrue();
 
     // Null parent.
-    Truth.assertThat(
+    assertThat(
             Samplers.alwaysOn()
                 .shouldSample(
                     null,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
-                    Collections.<io.opentelemetry.trace.Link>emptyList())
+                    Attributes.empty(),
+                    Collections.emptyList())
                 .isSampled())
         .isTrue();
   }
 
   @Test
   public void alwaysOnSampler_GetDescription() {
-    Truth.assertThat(Samplers.alwaysOn().getDescription()).isEqualTo("AlwaysOnSampler");
+    assertThat(Samplers.alwaysOn().getDescription()).isEqualTo("AlwaysOnSampler");
   }
 
   @Test
   public void alwaysOffSampler() {
     // Sampled parent.
-    Truth.assertThat(
+    assertThat(
             Samplers.alwaysOff()
                 .shouldSample(
                     sampledSpanContext,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
-                    Collections.<io.opentelemetry.trace.Link>emptyList())
+                    Attributes.empty(),
+                    Collections.emptyList())
                 .isSampled())
         .isFalse();
 
     // Not sampled parent.
-    Truth.assertThat(
+    assertThat(
             Samplers.alwaysOff()
                 .shouldSample(
                     notSampledSpanContext,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
-                    Collections.<io.opentelemetry.trace.Link>emptyList())
+                    Attributes.empty(),
+                    Collections.emptyList())
                 .isSampled())
         .isFalse();
 
     // Null parent.
-    Truth.assertThat(
+    assertThat(
             Samplers.alwaysOff()
                 .shouldSample(
                     null,
                     traceId,
                     SPAN_NAME,
                     SPAN_KIND,
-                    Collections.<String, AttributeValue>emptyMap(),
-                    Collections.<io.opentelemetry.trace.Link>emptyList())
+                    Attributes.empty(),
+                    Collections.emptyList())
                 .isSampled())
         .isFalse();
   }
 
   @Test
   public void alwaysOffSampler_GetDescription() {
-    Truth.assertThat(Samplers.alwaysOff().getDescription()).isEqualTo("AlwaysOffSampler");
+    assertThat(Samplers.alwaysOff().getDescription()).isEqualTo("AlwaysOffSampler");
   }
 
   @Test
@@ -231,7 +228,7 @@ public class SamplersTest {
               idsGenerator.generateTraceId(),
               SPAN_NAME,
               SPAN_KIND,
-              Collections.<String, AttributeValue>emptyMap(),
+              Attributes.empty(),
               parentLinks)
           .isSampled()) {
         count++;
@@ -247,44 +244,26 @@ public class SamplersTest {
   public void probabilitySampler_DifferentProbabilities_NotSampledParent() {
     final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample,
-        notSampledSpanContext,
-        Collections.<io.opentelemetry.trace.Link>emptyList(),
-        0.5);
+        fiftyPercentSample, notSampledSpanContext, Collections.emptyList(), 0.5);
     final Sampler twentyPercentSample = Samplers.Probability.create(0.2);
     assertSamplerSamplesWithProbability(
-        twentyPercentSample,
-        notSampledSpanContext,
-        Collections.<io.opentelemetry.trace.Link>emptyList(),
-        0.2);
+        twentyPercentSample, notSampledSpanContext, Collections.emptyList(), 0.2);
     final Sampler twoThirdsSample = Samplers.Probability.create(2.0 / 3.0);
     assertSamplerSamplesWithProbability(
-        twoThirdsSample,
-        notSampledSpanContext,
-        Collections.<io.opentelemetry.trace.Link>emptyList(),
-        2.0 / 3.0);
+        twoThirdsSample, notSampledSpanContext, Collections.emptyList(), 2.0 / 3.0);
   }
 
   @Test
   public void probabilitySampler_DifferentProbabilities_SampledParent() {
     final Sampler fiftyPercentSample = Samplers.Probability.create(0.5);
     assertSamplerSamplesWithProbability(
-        fiftyPercentSample,
-        sampledSpanContext,
-        Collections.<io.opentelemetry.trace.Link>emptyList(),
-        1.0);
+        fiftyPercentSample, sampledSpanContext, Collections.emptyList(), 1.0);
     final Sampler twentyPercentSample = Samplers.Probability.create(0.2);
     assertSamplerSamplesWithProbability(
-        twentyPercentSample,
-        sampledSpanContext,
-        Collections.<io.opentelemetry.trace.Link>emptyList(),
-        1.0);
+        twentyPercentSample, sampledSpanContext, Collections.emptyList(), 1.0);
     final Sampler twoThirdsSample = Samplers.Probability.create(2.0 / 3.0);
     assertSamplerSamplesWithProbability(
-        twoThirdsSample,
-        sampledSpanContext,
-        Collections.<io.opentelemetry.trace.Link>emptyList(),
-        1.0);
+        twoThirdsSample, sampledSpanContext, Collections.emptyList(), 1.0);
   }
 
   @Test
@@ -338,11 +317,12 @@ public class SamplersTest {
             notSampledtraceId,
             SPAN_NAME,
             SPAN_KIND,
-            Collections.<String, AttributeValue>emptyMap(),
-            Collections.<io.opentelemetry.trace.Link>emptyList());
+            Attributes.empty(),
+            Collections.emptyList());
     assertThat(decision1.isSampled()).isFalse();
     assertThat(decision1.getAttributes())
-        .containsExactly(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
+        .isEqualTo(
+            Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
     TraceId sampledtraceId =
@@ -372,10 +352,11 @@ public class SamplersTest {
             sampledtraceId,
             SPAN_NAME,
             SPAN_KIND,
-            Collections.<String, AttributeValue>emptyMap(),
-            Collections.<io.opentelemetry.trace.Link>emptyList());
+            Attributes.empty(),
+            Collections.emptyList());
     assertThat(decision2.isSampled()).isTrue();
     assertThat(decision1.getAttributes())
-        .containsExactly(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001));
+        .isEqualTo(
+            Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
   }
 }

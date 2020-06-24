@@ -17,11 +17,10 @@
 package io.opentelemetry.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.internal.StringUtils;
 import io.opentelemetry.metrics.LongUpDownCounter.BoundLongUpDownCounter;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -36,8 +35,7 @@ public class LongUpDownCounterTest {
   private static final String NAME = "name";
   private static final String DESCRIPTION = "description";
   private static final String UNIT = "1";
-  private static final Map<String, String> CONSTANT_LABELS =
-      Collections.singletonMap("key", "value");
+  private static final Labels CONSTANT_LABELS = Labels.of("key", "value");
 
   private final Meter meter = OpenTelemetry.getMeter("LongUpDownCounterTest");
 
@@ -94,16 +92,14 @@ public class LongUpDownCounterTest {
   }
 
   @Test
-  public void noopBind_WithBadLabelSet() {
-    LongUpDownCounter longUpDownCounter =
-        meter.longUpDownCounterBuilder(NAME).setDescription(DESCRIPTION).setUnit(UNIT).build();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("key/value");
-    longUpDownCounter.bind("key");
+  public void add_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.longUpDownCounterBuilder("metric").build().add(1, null);
   }
 
   @Test
-  public void addDoesNotThrow() {
+  public void add_DoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
         meter
             .longUpDownCounterBuilder(NAME)
@@ -111,12 +107,19 @@ public class LongUpDownCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    longUpDownCounter.add(1);
-    longUpDownCounter.add(-1);
+    longUpDownCounter.add(1, Labels.empty());
+    longUpDownCounter.add(-1, Labels.empty());
   }
 
   @Test
-  public void boundDoesNotThrow() {
+  public void bound_PreventNullLabels() {
+    thrown.expect(NullPointerException.class);
+    thrown.expectMessage("labels");
+    meter.longUpDownCounterBuilder("metric").build().bind(null);
+  }
+
+  @Test
+  public void bound_DoesNotThrow() {
     LongUpDownCounter longUpDownCounter =
         meter
             .longUpDownCounterBuilder(NAME)
@@ -124,7 +127,7 @@ public class LongUpDownCounterTest {
             .setUnit(UNIT)
             .setConstantLabels(CONSTANT_LABELS)
             .build();
-    BoundLongUpDownCounter bound = longUpDownCounter.bind();
+    BoundLongUpDownCounter bound = longUpDownCounter.bind(Labels.empty());
     bound.add(1);
     bound.add(-1);
     bound.unbind();

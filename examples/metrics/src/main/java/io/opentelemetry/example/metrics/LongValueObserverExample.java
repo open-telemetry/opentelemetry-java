@@ -1,6 +1,7 @@
 package io.opentelemetry.example.metrics;
 
 import io.opentelemetry.OpenTelemetry;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.AsynchronousInstrument.LongResult;
 import io.opentelemetry.metrics.LongValueObserver;
 import io.opentelemetry.metrics.Meter;
@@ -23,10 +24,10 @@ public class LongValueObserverExample {
             .build();
 
     observer.setCallback(
-        new LongValueObserver.Callback<LongResult>() {
+        new LongValueObserver.Callback<LongValueObserver.LongResult>() {
           @Override
           public void update(LongResult result) {
-            result.observe(Runtime.getRuntime().totalMemory());
+            result.observe(Runtime.getRuntime().totalMemory(), Labels.empty());
           }
         });
     // someWork();

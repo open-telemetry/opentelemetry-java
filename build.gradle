@@ -63,8 +63,7 @@ configure(opentelemetryProjects) {
         // (https://github.com/google/error-prone/issues/1253).
         it.options.errorprone.disable("NullableDereference") // "-Xep:NullableDereference:OFF"
 
-        // ExpectedExceptionRefactoring and TestExceptionRefactoring suggest using
-        // assertThrows, but assertThrows only works well with lambdas.
+        // We prefer ExpectedException to assertThrows
         it.options.errorprone.disable("ExpectedExceptionRefactoring")
         // "-Xep:ExpectedExceptionRefactoring:OFF"
 
@@ -88,6 +87,13 @@ configure(opentelemetryProjects) {
     compileTestJava {
         // serialVersionUID is basically guaranteed to be useless in tests
         options.compilerArgs += ["-Xlint:-serial"]
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+
+        // Disable Java7 checks in test sources
+        options.errorprone.disable("Java7ApiChecker")
+        // Disable AndroidJdkLibs checks in test sources
+        options.errorprone.disable("AndroidJdkLibsChecker")
     }
 
     jar.manifest {
@@ -158,7 +164,8 @@ configure(opentelemetryProjects) {
                 testcontainers          : 'org.testcontainers:testcontainers:1.13.0',
                 rest_assured            : 'io.rest-assured:rest-assured:4.2.0',
                 jaeger_client           : 'io.jaegertracing:jaeger-client:1.2.0', // Jaeger Client
-                zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}"  // Zipkin JUnit rule
+                zipkin_junit            : "io.zipkin.zipkin2:zipkin-junit:${zipkinVersion}",  // Zipkin JUnit rule
+                archunit                : 'com.tngtech.archunit:archunit-junit4:0.13.1' //Architectural constraints
         ]
     }
 
@@ -276,6 +283,18 @@ configure(opentelemetryProjects) {
             showStackTraces = true
         }
         maxHeapSize = '1500m'
+    }
+
+    plugins.withId("ru.vyarus.animalsniffer") {
+        animalsnifferTest {
+            enabled = false
+        }
+        // If JMH enabled ignore animalsniffer.
+        plugins.withId("me.champeau.gradle.jmh") {
+            animalsnifferJmh {
+                enabled = false
+            }
+        }
     }
 
     plugins.withId("me.champeau.gradle.jmh") {

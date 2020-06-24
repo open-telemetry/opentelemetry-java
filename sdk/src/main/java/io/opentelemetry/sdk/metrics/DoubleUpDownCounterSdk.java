@@ -16,6 +16,7 @@
 
 package io.opentelemetry.sdk.metrics;
 
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.metrics.DoubleUpDownCounter;
 import io.opentelemetry.sdk.metrics.DoubleUpDownCounterSdk.BoundInstrument;
 import io.opentelemetry.sdk.metrics.common.InstrumentType;
@@ -39,19 +40,10 @@ final class DoubleUpDownCounterSdk extends AbstractSynchronousInstrument<BoundIn
   }
 
   @Override
-  public void add(double increment, String... labelKeyValuePairs) {
-    add(increment, LabelSetSdk.create(labelKeyValuePairs));
-  }
-
-  public void add(double increment, LabelSetSdk labelSetSdk) {
-    BoundInstrument boundInstrument = bind(labelSetSdk);
+  public void add(double increment, Labels labels) {
+    BoundInstrument boundInstrument = bind(labels);
     boundInstrument.add(increment);
     boundInstrument.unbind();
-  }
-
-  @Override
-  public BoundInstrument bind(String... labelKeyValuePairs) {
-    return bind(LabelSetSdk.create(labelKeyValuePairs));
   }
 
   @Override

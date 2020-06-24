@@ -20,8 +20,8 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import io.opentelemetry.common.AttributeValue;
 import io.opentelemetry.common.AttributeValue.Type;
-import io.opentelemetry.common.Attributes;
-import io.opentelemetry.common.KeyValueConsumer;
+import io.opentelemetry.common.ReadableAttributes;
+import io.opentelemetry.common.ReadableKeyValuePairs.KeyValueConsumer;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.resources.ResourceConstants;
 import io.opentelemetry.sdk.trace.data.SpanData;
@@ -141,7 +141,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
       spanBuilder.parentId(spanData.getParentSpanId().toLowerBase16());
     }
 
-    Attributes spanAttributes = spanData.getAttributes();
+    ReadableAttributes spanAttributes = spanData.getAttributes();
     spanAttributes.forEach(
         new KeyValueConsumer<AttributeValue>() {
           @Override
@@ -170,7 +170,7 @@ public final class ZipkinSpanExporter implements SpanExporter {
   }
 
   private static Endpoint chooseEndpoint(SpanData spanData, Endpoint localEndpoint) {
-    Map<String, AttributeValue> resourceAttributes = spanData.getResource().getAttributes();
+    ReadableAttributes resourceAttributes = spanData.getResource().getAttributes();
 
     // use the service.name from the Resource, if it's been set.
     AttributeValue serviceNameValue = resourceAttributes.get(ResourceConstants.SERVICE_NAME);

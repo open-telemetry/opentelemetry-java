@@ -23,6 +23,7 @@ import io.grpc.Status.Code;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.testing.GrpcCleanupRule;
+import io.opentelemetry.common.Labels;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.MetricsServiceGrpc;
@@ -33,7 +34,6 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor;
 import io.opentelemetry.sdk.metrics.data.MetricData.Descriptor.Type;
 import io.opentelemetry.sdk.metrics.data.MetricData.LongPoint;
-import io.opentelemetry.sdk.metrics.data.MetricData.Point;
 import io.opentelemetry.sdk.metrics.export.MetricExporter.ResultCode;
 import io.opentelemetry.sdk.resources.Resource;
 import java.io.IOException;
@@ -233,16 +233,10 @@ public class OtlpGrpcMetricExporterTest {
     long startNs = TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis());
     long endNs = startNs + TimeUnit.MILLISECONDS.toNanos(900);
     return MetricData.create(
-        Descriptor.create(
-            "name",
-            "description",
-            "1",
-            Type.MONOTONIC_LONG,
-            Collections.<String, String>emptyMap()),
+        Descriptor.create("name", "description", "1", Type.MONOTONIC_LONG, Labels.empty()),
         Resource.getEmpty(),
         InstrumentationLibraryInfo.getEmpty(),
-        Collections.<Point>singletonList(
-            LongPoint.create(startNs, endNs, Collections.singletonMap("k", "v"), 5)));
+        Collections.singletonList(LongPoint.create(startNs, endNs, Labels.of("k", "v"), 5)));
   }
 
   private static final class FakeCollector extends MetricsServiceGrpc.MetricsServiceImplBase {
