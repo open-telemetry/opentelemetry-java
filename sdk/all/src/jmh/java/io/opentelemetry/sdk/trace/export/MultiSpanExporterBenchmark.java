@@ -79,8 +79,8 @@ public class MultiSpanExporterBenchmark {
     for (int i = 0; i < spans.length; i++) {
       spans[i] =
           TestSpanData.newBuilder()
-              .setTraceId(new TraceId(1, 1))
-              .setSpanId(new SpanId(1))
+              .setTraceId(TraceId.fromLongs(1, 1))
+              .setSpanId(SpanId.fromLong(1))
               .setName("noop")
               .setKind(Span.Kind.CLIENT)
               .setStartEpochNanos(1)

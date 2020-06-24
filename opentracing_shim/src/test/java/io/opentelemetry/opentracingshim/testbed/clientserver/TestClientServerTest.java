@@ -20,6 +20,7 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSi
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -71,7 +72,7 @@ class TestClientServerTest {
     assertEquals(2, finished.size());
 
     finished = sortByStartTime(finished);
-    assertEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
+    assertArrayEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
     assertEquals(Kind.CLIENT, finished.get(0).getKind());
     assertEquals(Kind.SERVER, finished.get(1).getKind());
 

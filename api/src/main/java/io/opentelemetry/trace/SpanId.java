@@ -17,6 +17,8 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.internal.Utils;
+import java.util.Arrays;
+import java.util.Random;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
@@ -32,7 +34,7 @@ public final class SpanId implements Comparable<SpanId> {
   private static final int SIZE = 8;
   private static final int BASE16_SIZE = 2 * SIZE;
   private static final long INVALID_ID = 0;
-  private static final SpanId INVALID = new SpanId(INVALID_ID);
+  private static final byte[] INVALID = new byte[8];
 
   // The internal representation of the SpanId.
   private final long id;
@@ -70,7 +72,7 @@ public final class SpanId implements Comparable<SpanId> {
    * @return the invalid {@code SpanId}.
    * @since 0.1.0
    */
-  public static SpanId getInvalid() {
+  public static byte[] getInvalid() {
     return INVALID;
   }
 
@@ -90,6 +92,13 @@ public final class SpanId implements Comparable<SpanId> {
   public static SpanId fromBytes(byte[] src, int srcOffset) {
     Utils.checkNotNull(src, "src");
     return new SpanId(BigendianEncoding.longFromByteArray(src, srcOffset));
+  }
+
+  /** javadoc me. */
+  public static byte[] fromLong(long id) {
+    byte[] result = new byte[8];
+    BigendianEncoding.longToByteArray(id, result, 0);
+    return result;
   }
 
   /**
@@ -119,9 +128,13 @@ public final class SpanId implements Comparable<SpanId> {
    *     srcOffset}.
    * @since 0.1.0
    */
-  public static SpanId fromLowerBase16(CharSequence src, int srcOffset) {
+  public static byte[] bytesFromLowerBase16(CharSequence src, int srcOffset) {
     Utils.checkNotNull(src, "src");
-    return new SpanId(BigendianEncoding.longFromBase16String(src, srcOffset));
+    byte[] result = new byte[8];
+    // todo: optimize me
+    long value = BigendianEncoding.longFromBase16String(src, srcOffset);
+    BigendianEncoding.longToByteArray(value, result, 0);
+    return result;
   }
 
   /**
@@ -138,6 +151,12 @@ public final class SpanId implements Comparable<SpanId> {
     BigendianEncoding.longToBase16String(id, dest, destOffset);
   }
 
+  /** javadoc me. */
+  public static void copyLowerBase16Into(byte[] spanId, char[] dest, int destOffset) {
+    BigendianEncoding.longToBase16String(
+        BigendianEncoding.longFromByteArray(spanId, 0), dest, destOffset);
+  }
+
   /**
    * Returns whether the span identifier is valid. A valid span identifier is an 8-byte array with
    * at least one non-zero byte.
@@ -149,6 +168,11 @@ public final class SpanId implements Comparable<SpanId> {
     return id != INVALID_ID;
   }
 
+  /** javadoc me. */
+  public static boolean isValid(byte[] spanId) {
+    return (spanId.length == SpanId.getSize()) && !Arrays.equals(spanId, SpanId.getInvalid());
+  }
+
   /**
    * Returns the lowercase base16 encoding of this {@code SpanId}.
    *
@@ -158,6 +182,13 @@ public final class SpanId implements Comparable<SpanId> {
   public String toLowerBase16() {
     char[] chars = new char[BASE16_SIZE];
     copyLowerBase16To(chars, 0);
+    return new String(chars);
+  }
+
+  /** javadoc me. */
+  public static String toLowerBase16(byte[] spanId) {
+    char[] chars = new char[BASE16_SIZE];
+    copyLowerBase16Into(spanId, chars, 0);
     return new String(chars);
   }
 

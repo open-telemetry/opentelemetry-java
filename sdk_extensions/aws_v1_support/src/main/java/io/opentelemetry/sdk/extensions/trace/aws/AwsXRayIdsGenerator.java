@@ -18,7 +18,6 @@ package io.opentelemetry.sdk.extensions.trace.aws;
 
 import io.opentelemetry.sdk.trace.IdsGenerator;
 import io.opentelemetry.sdk.trace.RandomIdsGenerator;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceId;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -38,12 +37,12 @@ public class AwsXRayIdsGenerator implements IdsGenerator {
   private static final RandomIdsGenerator RANDOM_IDS_GENERATOR = new RandomIdsGenerator();
 
   @Override
-  public SpanId generateSpanId() {
+  public byte[] generateSpanId() {
     return RANDOM_IDS_GENERATOR.generateSpanId();
   }
 
   @Override
-  public TraceId generateTraceId() {
+  public byte[] generateTraceId() {
     // hi - 4 bytes timestamp, 4 bytes random
     // low - 8 bytes random.
     // Since we include timestamp, impossible to be invalid.
@@ -54,6 +53,6 @@ public class AwsXRayIdsGenerator implements IdsGenerator {
 
     long lowRandom = random.nextLong();
 
-    return new TraceId(timestampSecs << 32 | hiRandom, lowRandom);
+    return TraceId.fromLongs(timestampSecs << 32 | hiRandom, lowRandom);
   }
 }

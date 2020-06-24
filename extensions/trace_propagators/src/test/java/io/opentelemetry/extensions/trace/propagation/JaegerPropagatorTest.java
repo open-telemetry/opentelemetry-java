@@ -48,13 +48,14 @@ class JaegerPropagatorTest {
   private static final long TRACE_ID_HI = 77L;
   private static final long TRACE_ID_LOW = 22L;
   private static final String TRACE_ID_BASE16 = "000000000000004d0000000000000016";
-  private static final TraceId TRACE_ID = new TraceId(TRACE_ID_HI, TRACE_ID_LOW);
+  private static final byte[] TRACE_ID = TraceId.fromLongs(TRACE_ID_HI, TRACE_ID_LOW);
   private static final long SHORT_TRACE_ID_HI = 0L;
   private static final long SHORT_TRACE_ID_LOW = 2322222L;
-  private static final TraceId SHORT_TRACE_ID = new TraceId(SHORT_TRACE_ID_HI, SHORT_TRACE_ID_LOW);
+  private static final byte[] SHORT_TRACE_ID =
+      TraceId.fromLongs(SHORT_TRACE_ID_HI, SHORT_TRACE_ID_LOW);
   private static final String SPAN_ID_BASE16 = "0000000000017c29";
   private static final long SPAN_ID_LONG = 97321L;
-  private static final SpanId SPAN_ID = new SpanId(SPAN_ID_LONG);
+  private static final byte[] SPAN_ID = SpanId.fromLong(SPAN_ID_LONG);
   private static final long DEPRECATED_PARENT_SPAN_LONG = 0L;
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
   private static final TraceFlags SAMPLED_TRACE_OPTIONS =

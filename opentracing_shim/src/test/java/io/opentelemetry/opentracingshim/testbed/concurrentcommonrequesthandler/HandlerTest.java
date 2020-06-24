@@ -18,6 +18,7 @@ package io.opentelemetry.opentracingshim.testbed.concurrentcommonrequesthandler;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByName;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -30,6 +31,7 @@ import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanId;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -73,8 +75,8 @@ class HandlerTest {
     }
 
     assertNotEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
-    assertFalse(finished.get(0).getParentSpanId().isValid());
-    assertFalse(finished.get(1).getParentSpanId().isValid());
+    assertFalse(SpanId.isValid(finished.get(0).getParentSpanId()));
+    assertFalse(SpanId.isValid(finished.get(1).getParentSpanId()));
 
     assertNull(tracer.scopeManager().activeSpan());
   }
@@ -134,9 +136,9 @@ class HandlerTest {
     assertNotNull(parent);
 
     // now there is parent/child relation between first and second span:
-    assertEquals(parent.getSpanId(), finished.get(1).getParentSpanId());
+    assertArrayEquals(parent.getSpanId(), finished.get(1).getParentSpanId());
 
     // third span should not have parent, but it has, damn it
-    assertEquals(parent.getSpanId(), finished.get(2).getParentSpanId());
+    assertArrayEquals(parent.getSpanId(), finished.get(2).getParentSpanId());
   }
 }

@@ -34,9 +34,7 @@ import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
@@ -210,15 +208,15 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
-    TraceId traceId;
-    SpanId spanId = idsGenerator.generateSpanId();
+    byte[] traceId;
+    byte[] spanId = idsGenerator.generateSpanId();
     TraceState traceState = TraceState.getDefault();
     if (!parentContext.isValid()) {
       // New root span.
       traceId = idsGenerator.generateTraceId();
     } else {
       // New child span.
-      traceId = parentContext.getTraceId();
+      traceId = parentContext.traceId();
       traceState = parentContext.getTraceState();
     }
     List<io.opentelemetry.trace.Link> immutableLinks =
@@ -272,7 +270,7 @@ final class SpanBuilderSdk implements Span.Builder {
         spanName,
         instrumentationLibraryInfo,
         spanKind,
-        parentContext.getSpanId(),
+        parentContext.spanId(),
         parentContext.isRemote(),
         traceConfig,
         spanProcessor,

@@ -94,8 +94,8 @@ class JaegerGrpcSpanExporterTest {
     SpanData span =
         TestSpanData.newBuilder()
             .setHasEnded(true)
-            .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-            .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+            .setTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0))
+            .setSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0))
             .setName("GET /api/endpoint")
             .setStartEpochNanos(TimeUnit.MILLISECONDS.toNanos(startMs))
             .setEndEpochNanos(TimeUnit.MILLISECONDS.toNanos(endMs))
@@ -120,10 +120,10 @@ class JaegerGrpcSpanExporterTest {
     assertEquals(1, batch.getSpansCount());
     assertEquals("GET /api/endpoint", batch.getSpans(0).getOperationName());
     assertEquals(
-        TraceProtoUtils.toProtoTraceId(TraceId.fromLowerBase16(TRACE_ID, 0)),
+        TraceProtoUtils.toProtoTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0)),
         batch.getSpans(0).getTraceId());
     assertEquals(
-        TraceProtoUtils.toProtoSpanId(SpanId.fromLowerBase16(SPAN_ID, 0)),
+        TraceProtoUtils.toProtoSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0)),
         batch.getSpans(0).getSpanId());
     assertEquals("test", batch.getProcess().getServiceName());
     assertEquals(3, batch.getProcess().getTagsCount());

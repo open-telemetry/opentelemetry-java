@@ -59,7 +59,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext create(
-      TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState traceState) {
+      byte[] traceId, byte[] spanId, TraceFlags traceFlags, TraceState traceState) {
     return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ false);
   }
 
@@ -75,7 +75,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState traceState) {
+      byte[] traceId, byte[] spanId, TraceFlags traceFlags, TraceState traceState) {
     return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ true);
   }
 
@@ -85,7 +85,25 @@ public abstract class SpanContext {
    * @return the trace identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public abstract TraceId getTraceId();
+  @SuppressWarnings("mutable")
+  abstract byte[] getTraceId();
+
+  /**
+   * Returns the trace identifier associated with this {@code SpanContext}.
+   *
+   * @return the trace identifier associated with this {@code SpanContext}.
+   * @since 0.1.0
+   */
+  public byte[] traceId() {
+    byte[] result = new byte[16];
+    copyTraceId(result, 0);
+    return result;
+  }
+
+  /** javadoc me. */
+  public void copyTraceId(byte[] destination, int destOffset) {
+    System.arraycopy(getTraceId(), 0, destination, destOffset, 16);
+  }
 
   /**
    * Returns the span identifier associated with this {@code SpanContext}.
@@ -93,7 +111,25 @@ public abstract class SpanContext {
    * @return the span identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public abstract SpanId getSpanId();
+  @SuppressWarnings("mutable")
+  abstract byte[] getSpanId();
+
+  /**
+   * Returns the span identifier associated with this {@code SpanContext}.
+   *
+   * @return the span identifier associated with this {@code SpanContext}.
+   * @since 0.1.0
+   */
+  public byte[] spanId() {
+    byte[] result = new byte[8];
+    copySpanId(result, 0);
+    return result;
+  }
+
+  /** javadoc me. */
+  public void copySpanId(byte[] destination, int destOffset) {
+    System.arraycopy(getSpanId(), 0, destination, destOffset, 8);
+  }
 
   /**
    * Returns the {@code TraceFlags} associated with this {@code SpanContext}.
@@ -118,7 +154,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public boolean isValid() {
-    return getTraceId().isValid() && getSpanId().isValid();
+    return TraceId.isValid(getTraceId()) && SpanId.isValid(getSpanId());
   }
 
   /**
