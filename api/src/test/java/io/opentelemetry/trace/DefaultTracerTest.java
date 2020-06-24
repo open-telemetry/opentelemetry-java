@@ -37,12 +37,9 @@ public class DefaultTracerTest {
   private static final String SPAN_NAME = "MySpanName";
   private static final byte[] firstBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
+  private static final byte[] spanBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final SpanContext spanContext =
-      SpanContext.create(
-          TraceId.fromBytes(firstBytes, 0),
-          SpanId.fromBytes(firstBytes, 8),
-          TraceFlags.getDefault(),
-          TraceState.getDefault());
+      SpanContext.create(firstBytes, spanBytes, TraceFlags.getDefault(), TraceState.getDefault());
 
   @Rule public final ExpectedException thrown = ExpectedException.none();
 

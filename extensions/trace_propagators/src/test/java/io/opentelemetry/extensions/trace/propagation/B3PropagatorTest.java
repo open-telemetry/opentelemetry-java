@@ -44,12 +44,12 @@ public class B3PropagatorTest {
 
   private static final TraceState TRACE_STATE_DEFAULT = TraceState.builder().build();
   private static final String TRACE_ID_BASE16 = "ff000000000000000000000000000041";
-  private static final TraceId TRACE_ID = TraceId.fromLowerBase16(TRACE_ID_BASE16, 0);
+  private static final byte[] TRACE_ID = TraceId.bytesFromLowerBase16(TRACE_ID_BASE16, 0);
   private static final String SHORT_TRACE_ID_BASE16 = "ff00000000000000";
-  private static final TraceId SHORT_TRACE_ID =
-      TraceId.fromLowerBase16(StringUtils.padLeft(SHORT_TRACE_ID_BASE16, 32), 0);
+  private static final byte[] SHORT_TRACE_ID =
+      TraceId.bytesFromLowerBase16(StringUtils.padLeft(SHORT_TRACE_ID_BASE16, 32), 0);
   private static final String SPAN_ID_BASE16 = "ff00000000000041";
-  private static final SpanId SPAN_ID = SpanId.fromLowerBase16(SPAN_ID_BASE16, 0);
+  private static final byte[] SPAN_ID = SpanId.bytesFromLowerBase16(SPAN_ID_BASE16, 0);
   private static final byte SAMPLED_TRACE_OPTIONS_BYTES = 1;
   private static final TraceFlags SAMPLED_TRACE_OPTIONS =
       TraceFlags.fromByte(SAMPLED_TRACE_OPTIONS_BYTES);

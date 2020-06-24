@@ -92,8 +92,8 @@ public class PropagatorContextInjectBenchmark {
       TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
       TraceState traceStateDefault = TraceState.builder().build();
       return SpanContext.create(
-          TraceId.fromLowerBase16(traceId, 0),
-          SpanId.fromLowerBase16(spanId, 0),
+          TraceId.bytesFromLowerBase16(traceId, 0),
+          SpanId.bytesFromLowerBase16(spanId, 0),
           sampledTraceOptions,
           traceStateDefault);
     }

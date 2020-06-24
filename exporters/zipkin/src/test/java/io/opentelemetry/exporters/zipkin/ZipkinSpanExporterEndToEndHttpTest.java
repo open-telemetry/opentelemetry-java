@@ -154,9 +154,9 @@ public class ZipkinSpanExporterEndToEndHttpTest {
 
   private static TestSpanData.Builder buildStandardSpan() {
     return TestSpanData.newBuilder()
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
-        .setParentSpanId(SpanId.fromLowerBase16(PARENT_SPAN_ID, 0))
+        .setTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0))
+        .setSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0))
+        .setParentSpanId(SpanId.bytesFromLowerBase16(PARENT_SPAN_ID, 0))
         .setTraceFlags(TraceFlags.builder().setIsSampled(true).build())
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)

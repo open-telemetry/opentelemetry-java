@@ -33,18 +33,19 @@ public class TraceIdTest {
   private static final byte[] secondBytes =
       new byte[] {(byte) 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'A'};
   private static final TraceId first = TraceId.fromBytes(firstBytes, 0);
+
   private static final TraceId second =
       new TraceId(
           ByteBuffer.wrap(secondBytes).getLong(), ByteBuffer.wrap(secondBytes, 8, 8).getLong());
 
   @Test
   public void invalidTraceId() {
-    assertThat(TraceId.getInvalid().getTraceRandomPart()).isEqualTo(0);
+    assertThat(TraceId.getTraceIdRandomPart(TraceId.getInvalid())).isEqualTo(0);
   }
 
   @Test
   public void isValid() {
-    assertThat(TraceId.getInvalid().isValid()).isFalse();
+    assertThat(TraceId.isValid(TraceId.getInvalid())).isFalse();
     assertThat(first.isValid()).isTrue();
     assertThat(second.isValid()).isTrue();
   }
@@ -84,26 +85,30 @@ public class TraceIdTest {
 
   @Test
   public void fromLowerBase16() {
-    assertThat(TraceId.fromLowerBase16("00000000000000000000000000000000", 0))
+    assertThat(TraceId.bytesFromLowerBase16("00000000000000000000000000000000", 0))
         .isEqualTo(TraceId.getInvalid());
-    assertThat(TraceId.fromLowerBase16("00000000000000000000000000000061", 0)).isEqualTo(first);
-    assertThat(TraceId.fromLowerBase16("ff000000000000000000000000000041", 0)).isEqualTo(second);
+    assertThat(TraceId.bytesFromLowerBase16("00000000000000000000000000000061", 0))
+        .isEqualTo(firstBytes);
+    assertThat(TraceId.bytesFromLowerBase16("ff000000000000000000000000000041", 0))
+        .isEqualTo(secondBytes);
   }
 
   @Test
   public void fromLowerBase16_WithOffset() {
-    assertThat(TraceId.fromLowerBase16("XX00000000000000000000000000000000CC", 2))
+    assertThat(TraceId.bytesFromLowerBase16("XX00000000000000000000000000000000CC", 2))
         .isEqualTo(TraceId.getInvalid());
-    assertThat(TraceId.fromLowerBase16("YY00000000000000000000000000000061AA", 2)).isEqualTo(first);
-    assertThat(TraceId.fromLowerBase16("ZZff000000000000000000000000000041BB", 2))
-        .isEqualTo(second);
+    assertThat(TraceId.bytesFromLowerBase16("YY00000000000000000000000000000061AA", 2))
+        .isEqualTo(firstBytes);
+    assertThat(TraceId.bytesFromLowerBase16("ZZff000000000000000000000000000041BB", 2))
+        .isEqualTo(secondBytes);
   }
 
   @Test
   public void toLowerBase16() {
-    assertThat(TraceId.getInvalid().toLowerBase16()).isEqualTo("00000000000000000000000000000000");
-    assertThat(first.toLowerBase16()).isEqualTo("00000000000000000000000000000061");
-    assertThat(second.toLowerBase16()).isEqualTo("ff000000000000000000000000000041");
+    assertThat(TraceId.toLowerBase16(TraceId.getInvalid()))
+        .isEqualTo("00000000000000000000000000000000");
+    assertThat(TraceId.toLowerBase16(firstBytes)).isEqualTo("00000000000000000000000000000061");
+    assertThat(TraceId.toLowerBase16(secondBytes)).isEqualTo("ff000000000000000000000000000041");
   }
 
   @Test
@@ -126,8 +131,9 @@ public class TraceIdTest {
 
   @Test
   public void traceId_ToString() {
-    assertThat(TraceId.getInvalid().toString()).contains("00000000000000000000000000000000");
-    assertThat(first.toString()).contains("00000000000000000000000000000061");
-    assertThat(second.toString()).contains("ff000000000000000000000000000041");
+    assertThat(TraceId.toLowerBase16(TraceId.getInvalid()))
+        .contains("00000000000000000000000000000000");
+    assertThat(TraceId.toLowerBase16(firstBytes)).contains("00000000000000000000000000000061");
+    assertThat(TraceId.toLowerBase16(secondBytes)).contains("ff000000000000000000000000000041");
   }
 }

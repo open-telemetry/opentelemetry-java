@@ -30,7 +30,6 @@ import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.trace.Link;
 import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.TraceId;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -80,7 +79,7 @@ public class JaegerRemoteSampler implements Sampler {
   @Override
   public Decision shouldSample(
       @Nullable SpanContext parentContext,
-      TraceId traceId,
+      byte[] traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,

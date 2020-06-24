@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.trace.Span.Kind;
+import io.opentelemetry.trace.SpanId;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -73,8 +74,8 @@ public class HandlerTest {
     }
 
     assertNotEquals(finished.get(0).getTraceId(), finished.get(1).getTraceId());
-    assertFalse(finished.get(0).getParentSpanId().isValid());
-    assertFalse(finished.get(1).getParentSpanId().isValid());
+    assertFalse(SpanId.isValid(finished.get(0).getParentSpanId()));
+    assertFalse(SpanId.isValid(finished.get(1).getParentSpanId()));
 
     assertNull(tracer.scopeManager().activeSpan());
   }

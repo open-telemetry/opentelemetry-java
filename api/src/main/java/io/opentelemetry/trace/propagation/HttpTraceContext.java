@@ -93,9 +93,13 @@ public class HttpTraceContext implements HttpTextFormat {
     chars[0] = VERSION.charAt(0);
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
-    spanContext.getTraceId().copyLowerBase16To(chars, TRACE_ID_OFFSET);
+    byte[] traceId = spanContext.getTraceId();
+    TraceId.copyLowerBase16Into(traceId, chars, TRACE_ID_OFFSET);
+
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
-    spanContext.getSpanId().copyLowerBase16To(chars, SPAN_ID_OFFSET);
+
+    byte[] spanId = spanContext.getSpanId();
+    SpanId.copyLowerBase16Into(spanId, chars, SPAN_ID_OFFSET);
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars));
@@ -173,8 +177,8 @@ public class HttpTraceContext implements HttpTextFormat {
     }
 
     try {
-      TraceId traceId = TraceId.fromLowerBase16(traceparent, TRACE_ID_OFFSET);
-      SpanId spanId = SpanId.fromLowerBase16(traceparent, SPAN_ID_OFFSET);
+      byte[] traceId = TraceId.bytesFromLowerBase16(traceparent, TRACE_ID_OFFSET);
+      byte[] spanId = SpanId.bytesFromLowerBase16(traceparent, SPAN_ID_OFFSET);
       TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
       return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
     } catch (IllegalArgumentException e) {

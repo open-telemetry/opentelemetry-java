@@ -140,7 +140,7 @@ public final class Samplers {
     @Override
     public Decision shouldSample(
         @Nullable SpanContext parentContext,
-        TraceId traceId,
+        byte[] traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
@@ -162,7 +162,7 @@ public final class Samplers {
     @Override
     public Decision shouldSample(
         @Nullable SpanContext parentContext,
-        TraceId traceId,
+        byte[] traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
@@ -222,7 +222,7 @@ public final class Samplers {
     @Override
     public final Decision shouldSample(
         @Nullable SpanContext parentContext,
-        TraceId traceId,
+        byte[] traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
@@ -246,7 +246,7 @@ public final class Samplers {
       // while allowing for a (very) small chance of *not* sampling if the id == Long.MAX_VALUE.
       // This is considered a reasonable tradeoff for the simplicity/performance requirements (this
       // code is executed in-line for every Span creation).
-      return Math.abs(traceId.getTraceRandomPart()) < getIdUpperBound()
+      return Math.abs(TraceId.getTraceIdRandomPart(traceId)) < getIdUpperBound()
           ? getPositiveDecision()
           : getNegativeDecision();
     }

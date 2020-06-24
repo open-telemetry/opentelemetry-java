@@ -59,7 +59,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext create(
-      TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState traceState) {
+      byte[] traceId, byte[] spanId, TraceFlags traceFlags, TraceState traceState) {
     return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ false);
   }
 
@@ -75,7 +75,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      TraceId traceId, SpanId spanId, TraceFlags traceFlags, TraceState traceState) {
+      byte[] traceId, byte[] spanId, TraceFlags traceFlags, TraceState traceState) {
     return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ true);
   }
 
@@ -85,7 +85,8 @@ public abstract class SpanContext {
    * @return the trace identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public abstract TraceId getTraceId();
+  @SuppressWarnings("mutable")
+  public abstract byte[] getTraceId();
 
   /**
    * Returns the span identifier associated with this {@code SpanContext}.
@@ -93,7 +94,8 @@ public abstract class SpanContext {
    * @return the span identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public abstract SpanId getSpanId();
+  @SuppressWarnings("mutable")
+  public abstract byte[] getSpanId();
 
   /**
    * Returns the {@code TraceFlags} associated with this {@code SpanContext}.
@@ -118,7 +120,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public boolean isValid() {
-    return getTraceId().isValid() && getSpanId().isValid();
+    return TraceId.isValid(getTraceId()) && SpanId.isValid(getSpanId());
   }
 
   /**

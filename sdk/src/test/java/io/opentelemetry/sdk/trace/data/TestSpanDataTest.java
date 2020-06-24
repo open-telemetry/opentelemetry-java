@@ -48,7 +48,7 @@ public class TestSpanDataTest {
   public void defaultValues() {
     SpanData spanData = createBasicSpanBuilder().build();
 
-    assertThat(spanData.getParentSpanId().isValid()).isFalse();
+    assertThat(SpanId.isValid(spanData.getParentSpanId())).isFalse();
     assertThat(spanData.getAttributes()).isEqualTo(Attributes.empty());
     assertThat(spanData.getEvents()).isEqualTo(emptyList());
     assertThat(spanData.getLinks()).isEqualTo(emptyList());
@@ -111,8 +111,8 @@ public class TestSpanDataTest {
 
   private static SpanData createSpanDataWithMutableCollections() {
     return createBasicSpanBuilder()
-        .setLinks(new ArrayList<Link>())
-        .setEvents(new ArrayList<SpanData.Event>())
+        .setLinks(new ArrayList<>())
+        .setEvents(new ArrayList<>())
         .build();
   }
 

@@ -106,11 +106,11 @@ public class PromisePropagationTest {
       String component = "component";
       SpanData parentSpanProto = TestUtils.getOneByAttr(finished, component, "example-promises");
       assertThat(parentSpanProto).isNotNull();
-      assertThat(parentSpanProto.getParentSpanId().isValid()).isFalse();
+      assertThat(SpanId.isValid(parentSpanProto.getParentSpanId())).isFalse();
       List<SpanData> successSpans = TestUtils.getByAttr(finished, component, "success");
       assertThat(successSpans).hasSize(2);
 
-      SpanId parentId = parentSpanProto.getSpanId();
+      byte[] parentId = parentSpanProto.getSpanId();
       for (SpanData span : successSpans) {
         assertThat(span.getParentSpanId()).isEqualTo(parentId);
       }

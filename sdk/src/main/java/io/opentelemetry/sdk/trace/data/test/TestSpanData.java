@@ -27,7 +27,6 @@ import io.opentelemetry.trace.Span.Kind;
 import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -98,7 +97,8 @@ public abstract class TestSpanData implements SpanData {
      * @param traceId the trace id.
      * @return this builder (for chaining).
      */
-    public abstract Builder setTraceId(TraceId traceId);
+    @SuppressWarnings("mutable")
+    public abstract Builder setTraceId(byte[] traceId);
 
     /**
      * Set the span id on this builder.
@@ -106,7 +106,8 @@ public abstract class TestSpanData implements SpanData {
      * @param spanId the span id.
      * @return this builder (for chaining).
      */
-    public abstract Builder setSpanId(SpanId spanId);
+    @SuppressWarnings("mutable")
+    public abstract Builder setSpanId(byte[] spanId);
 
     /**
      * Set the {@link TraceFlags} on this builder.
@@ -131,7 +132,7 @@ public abstract class TestSpanData implements SpanData {
      * @return this.
      * @since 0.1.0
      */
-    public abstract Builder setParentSpanId(SpanId parentSpanId);
+    public abstract Builder setParentSpanId(byte[] parentSpanId);
 
     /**
      * Set the {@link Resource} associated with this span. Must not be null.

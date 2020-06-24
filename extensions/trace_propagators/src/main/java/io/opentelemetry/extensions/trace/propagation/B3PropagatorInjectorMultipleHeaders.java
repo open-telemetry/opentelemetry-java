@@ -20,6 +20,8 @@ import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.Objects;
 import javax.annotation.concurrent.Immutable;
@@ -40,8 +42,9 @@ final class B3PropagatorInjectorMultipleHeaders implements B3PropagatorInjector 
     String sampled =
         spanContext.getTraceFlags().isSampled() ? B3Propagator.TRUE_INT : B3Propagator.FALSE_INT;
 
-    setter.set(carrier, B3Propagator.TRACE_ID_HEADER, spanContext.getTraceId().toLowerBase16());
-    setter.set(carrier, B3Propagator.SPAN_ID_HEADER, spanContext.getSpanId().toLowerBase16());
+    setter.set(
+        carrier, B3Propagator.TRACE_ID_HEADER, TraceId.toLowerBase16(spanContext.getTraceId()));
+    setter.set(carrier, B3Propagator.SPAN_ID_HEADER, SpanId.toLowerBase16(spanContext.getSpanId()));
     setter.set(carrier, B3Propagator.SAMPLED_HEADER, sampled);
   }
 }

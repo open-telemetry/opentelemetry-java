@@ -221,8 +221,8 @@ public class OtlpGrpcSpanExporterTest {
     long endNs = startNs + duration;
     return TestSpanData.newBuilder()
         .setHasEnded(true)
-        .setTraceId(TraceId.fromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.fromLowerBase16(SPAN_ID, 0))
+        .setTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0))
+        .setSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0))
         .setName("GET /api/endpoint")
         .setStartEpochNanos(startNs)
         .setEndEpochNanos(endNs)

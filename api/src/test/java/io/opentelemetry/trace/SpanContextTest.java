@@ -38,20 +38,17 @@ public class SpanContextTest {
   private static final TraceState EMPTY_TRACE_STATE = TraceState.builder().build();
   private static final SpanContext first =
       SpanContext.create(
-          TraceId.fromBytes(firstTraceIdBytes, 0),
-          SpanId.fromBytes(firstSpanIdBytes, 0),
-          TraceFlags.getDefault(),
-          FIRST_TRACE_STATE);
+          firstTraceIdBytes, firstSpanIdBytes, TraceFlags.getDefault(), FIRST_TRACE_STATE);
   private static final SpanContext second =
       SpanContext.create(
-          TraceId.fromBytes(secondTraceIdBytes, 0),
-          SpanId.fromBytes(secondSpanIdBytes, 0),
+          secondTraceIdBytes,
+          secondSpanIdBytes,
           TraceFlags.builder().setIsSampled(true).build(),
           SECOND_TRACE_STATE);
   private static final SpanContext remote =
       SpanContext.createFromRemoteParent(
-          TraceId.fromBytes(secondTraceIdBytes, 0),
-          SpanId.fromBytes(secondSpanIdBytes, 0),
+          secondTraceIdBytes,
+          secondSpanIdBytes,
           TraceFlags.builder().setIsSampled(true).build(),
           EMPTY_TRACE_STATE);
 
@@ -67,7 +64,7 @@ public class SpanContextTest {
     assertThat(SpanContext.getInvalid().isValid()).isFalse();
     assertThat(
             SpanContext.create(
-                    TraceId.fromBytes(firstTraceIdBytes, 0),
+                    firstTraceIdBytes,
                     SpanId.getInvalid(),
                     TraceFlags.getDefault(),
                     EMPTY_TRACE_STATE)
@@ -76,7 +73,7 @@ public class SpanContextTest {
     assertThat(
             SpanContext.create(
                     TraceId.getInvalid(),
-                    SpanId.fromBytes(firstSpanIdBytes, 0),
+                    firstSpanIdBytes,
                     TraceFlags.getDefault(),
                     EMPTY_TRACE_STATE)
                 .isValid())
@@ -87,14 +84,14 @@ public class SpanContextTest {
 
   @Test
   public void getTraceId() {
-    assertThat(first.getTraceId()).isEqualTo(TraceId.fromBytes(firstTraceIdBytes, 0));
-    assertThat(second.getTraceId()).isEqualTo(TraceId.fromBytes(secondTraceIdBytes, 0));
+    assertThat(first.getTraceId()).isEqualTo(firstTraceIdBytes);
+    assertThat(second.getTraceId()).isEqualTo(secondTraceIdBytes);
   }
 
   @Test
   public void getSpanId() {
-    assertThat(first.getSpanId()).isEqualTo(SpanId.fromBytes(firstSpanIdBytes, 0));
-    assertThat(second.getSpanId()).isEqualTo(SpanId.fromBytes(secondSpanIdBytes, 0));
+    assertThat(first.getSpanId()).isEqualTo(firstSpanIdBytes);
+    assertThat(second.getSpanId()).isEqualTo(secondSpanIdBytes);
   }
 
   @Test

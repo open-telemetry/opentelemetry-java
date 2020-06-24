@@ -35,30 +35,31 @@ public class SpanIdTest {
 
   @Test
   public void isValid() {
-    assertThat(SpanId.getInvalid().isValid()).isFalse();
-    assertThat(first.isValid()).isTrue();
-    assertThat(second.isValid()).isTrue();
+    assertThat(SpanId.isValid(SpanId.getInvalid())).isFalse();
+    assertThat(SpanId.isValid(firstBytes)).isTrue();
+    assertThat(SpanId.isValid(secondBytes)).isTrue();
   }
 
   @Test
   public void fromLowerBase16() {
-    assertThat(SpanId.fromLowerBase16("0000000000000000", 0)).isEqualTo(SpanId.getInvalid());
-    assertThat(SpanId.fromLowerBase16("0000000000000061", 0)).isEqualTo(first);
-    assertThat(SpanId.fromLowerBase16("ff00000000000041", 0)).isEqualTo(second);
+    assertThat(SpanId.bytesFromLowerBase16("0000000000000000", 0)).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanId.bytesFromLowerBase16("0000000000000061", 0)).isEqualTo(firstBytes);
+    assertThat(SpanId.bytesFromLowerBase16("ff00000000000041", 0)).isEqualTo(secondBytes);
   }
 
   @Test
   public void fromLowerBase16_WithOffset() {
-    assertThat(SpanId.fromLowerBase16("XX0000000000000000AA", 2)).isEqualTo(SpanId.getInvalid());
-    assertThat(SpanId.fromLowerBase16("YY0000000000000061BB", 2)).isEqualTo(first);
-    assertThat(SpanId.fromLowerBase16("ZZff00000000000041CC", 2)).isEqualTo(second);
+    assertThat(SpanId.bytesFromLowerBase16("XX0000000000000000AA", 2))
+        .isEqualTo(SpanId.getInvalid());
+    assertThat(SpanId.bytesFromLowerBase16("YY0000000000000061BB", 2)).isEqualTo(firstBytes);
+    assertThat(SpanId.bytesFromLowerBase16("ZZff00000000000041CC", 2)).isEqualTo(secondBytes);
   }
 
   @Test
   public void toLowerBase16() {
-    assertThat(SpanId.getInvalid().toLowerBase16()).isEqualTo("0000000000000000");
-    assertThat(first.toLowerBase16()).isEqualTo("0000000000000061");
-    assertThat(second.toLowerBase16()).isEqualTo("ff00000000000041");
+    assertThat(SpanId.toLowerBase16(SpanId.getInvalid())).isEqualTo("0000000000000000");
+    assertThat(SpanId.toLowerBase16(firstBytes)).isEqualTo("0000000000000061");
+    assertThat(SpanId.toLowerBase16(secondBytes)).isEqualTo("ff00000000000041");
   }
 
   @Test
@@ -81,8 +82,8 @@ public class SpanIdTest {
 
   @Test
   public void spanId_ToString() {
-    assertThat(SpanId.getInvalid().toString()).contains("0000000000000000");
-    assertThat(first.toString()).contains("0000000000000061");
-    assertThat(second.toString()).contains("ff00000000000041");
+    assertThat(SpanId.toLowerBase16(SpanId.getInvalid())).contains("0000000000000000");
+    assertThat(SpanId.toLowerBase16(firstBytes)).contains("0000000000000061");
+    assertThat(SpanId.toLowerBase16(secondBytes)).contains("ff00000000000041");
   }
 }

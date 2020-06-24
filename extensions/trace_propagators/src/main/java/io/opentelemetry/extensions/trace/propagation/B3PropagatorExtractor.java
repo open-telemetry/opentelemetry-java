@@ -53,8 +53,8 @@ interface B3PropagatorExtractor {
                 : NOT_SAMPLED_FLAGS;
 
         return SpanContext.createFromRemoteParent(
-            TraceId.fromLowerBase16(StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH), 0),
-            SpanId.fromLowerBase16(spanId, 0),
+            TraceId.bytesFromLowerBase16(StringUtils.padLeft(traceId, MAX_TRACE_ID_LENGTH), 0),
+            SpanId.bytesFromLowerBase16(spanId, 0),
             traceFlags,
             TraceState.getDefault());
       } catch (Exception e) {

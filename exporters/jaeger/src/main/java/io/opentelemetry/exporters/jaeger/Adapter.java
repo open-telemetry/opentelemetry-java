@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.extensions.otproto.TraceProtoUtils;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -84,7 +85,7 @@ final class Adapter {
     target.addAllReferences(toSpanRefs(span.getLinks()));
 
     // add the parent span
-    if (span.getParentSpanId().isValid()) {
+    if (SpanId.isValid(span.getParentSpanId())) {
       target.addReferences(
           Model.SpanRef.newBuilder()
               .setTraceId(TraceProtoUtils.toProtoTraceId(span.getTraceId()))

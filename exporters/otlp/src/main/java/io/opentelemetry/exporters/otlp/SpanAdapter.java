@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.data.SpanData.Link;
+import io.opentelemetry.trace.SpanId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -90,7 +91,7 @@ final class SpanAdapter {
     builder.setTraceId(TraceProtoUtils.toProtoTraceId(spanData.getTraceId()));
     builder.setSpanId(TraceProtoUtils.toProtoSpanId(spanData.getSpanId()));
     // TODO: Set TraceState;
-    if (spanData.getParentSpanId().isValid()) {
+    if (SpanId.isValid(spanData.getParentSpanId())) {
       builder.setParentSpanId(TraceProtoUtils.toProtoSpanId(spanData.getParentSpanId()));
     }
     builder.setName(spanData.getName());

@@ -30,6 +30,7 @@ import io.opentelemetry.opentracingshim.TraceShim;
 import io.opentelemetry.sdk.correlationcontext.CorrelationContextManagerSdk;
 import io.opentelemetry.sdk.trace.TracerSdkProvider;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.trace.SpanId;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -73,7 +74,7 @@ public class ActiveSpanReplacementTest {
 
     // initial task is not related in any way to those two tasks
     assertNotEquals(spans.get(0).getTraceId(), spans.get(1).getTraceId());
-    assertFalse(spans.get(0).getParentSpanId().isValid());
+    assertFalse(SpanId.isValid(spans.get(0).getParentSpanId()));
 
     assertNull(tracer.scopeManager().activeSpan());
   }
