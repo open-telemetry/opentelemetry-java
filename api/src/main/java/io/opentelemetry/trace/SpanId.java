@@ -34,7 +34,6 @@ public final class SpanId implements Comparable<SpanId> {
   private static final int SIZE = 8;
   private static final int BASE16_SIZE = 2 * SIZE;
   private static final long INVALID_ID = 0;
-  private static final byte[] INVALID = new byte[8];
 
   // The internal representation of the SpanId.
   private final long id;
@@ -73,7 +72,7 @@ public final class SpanId implements Comparable<SpanId> {
    * @since 0.1.0
    */
   public static byte[] getInvalid() {
-    return INVALID;
+    return new byte[8];
   }
 
   /**

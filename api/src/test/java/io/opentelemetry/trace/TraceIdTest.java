@@ -118,7 +118,6 @@ class TraceIdTest {
   @Test
   void traceId_EqualsAndHashCode() {
     EqualsTester tester = new EqualsTester();
-    tester.addEqualityGroup(TraceId.getInvalid(), TraceId.getInvalid());
     tester.addEqualityGroup(
         first, TraceId.fromBytes(Arrays.copyOf(firstBytes, firstBytes.length), 0));
     tester.addEqualityGroup(
