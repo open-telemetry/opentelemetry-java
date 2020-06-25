@@ -29,12 +29,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.google.common.truth.Truth.assertThat;
-import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
-import io.opentelemetry.common.AttributeValue;
+import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.ResourceConstants;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -79,17 +77,17 @@ public class Ec2ResourceTest {
             .willReturn(okJson(IDENTITY_DOCUMENT)));
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
-    Map<String, AttributeValue> metadata = populator.createAttributes();
-    assertThat(metadata)
-        .containsExactly(
-            ResourceConstants.HOST_ID, stringAttributeValue("i-1234567890abcdef0"),
-            ResourceConstants.CLOUD_ZONE, stringAttributeValue("us-west-2b"),
-            ResourceConstants.HOST_TYPE, stringAttributeValue("t2.micro"),
-            ResourceConstants.HOST_IMAGE_ID, stringAttributeValue("ami-5fb8c835"),
-            ResourceConstants.CLOUD_ACCOUNT, stringAttributeValue("123456789012"),
-            ResourceConstants.CLOUD_REGION, stringAttributeValue("us-west-2"),
-            ResourceConstants.HOST_HOSTNAME, stringAttributeValue("ec2-1-2-3-4"),
-            ResourceConstants.HOST_NAME, stringAttributeValue("ec2-1-2-3-4"));
+    Attributes attributes = populator.createAttributes();
+    Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
+    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_ID, "i-1234567890abcdef0");
+    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, "us-west-2b");
+    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_TYPE, "t2.micro");
+    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_IMAGE_ID, "ami-5fb8c835");
+    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ACCOUNT, "123456789012");
+    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_REGION, "us-west-2");
+    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, "ec2-1-2-3-4");
+    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_NAME, "ec2-1-2-3-4");
+    assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
     verify(
         putRequestedFor(urlEqualTo("/latest/api/token"))
@@ -110,17 +108,17 @@ public class Ec2ResourceTest {
             .willReturn(okJson(IDENTITY_DOCUMENT)));
     stubFor(any(urlPathEqualTo("/latest/meta-data/hostname")).willReturn(ok("ec2-1-2-3-4")));
 
-    Map<String, AttributeValue> metadata = populator.createAttributes();
-    assertThat(metadata)
-        .containsExactly(
-            ResourceConstants.HOST_ID, stringAttributeValue("i-1234567890abcdef0"),
-            ResourceConstants.CLOUD_ZONE, stringAttributeValue("us-west-2b"),
-            ResourceConstants.HOST_TYPE, stringAttributeValue("t2.micro"),
-            ResourceConstants.HOST_IMAGE_ID, stringAttributeValue("ami-5fb8c835"),
-            ResourceConstants.CLOUD_ACCOUNT, stringAttributeValue("123456789012"),
-            ResourceConstants.CLOUD_REGION, stringAttributeValue("us-west-2"),
-            ResourceConstants.HOST_HOSTNAME, stringAttributeValue("ec2-1-2-3-4"),
-            ResourceConstants.HOST_NAME, stringAttributeValue("ec2-1-2-3-4"));
+    Attributes attributes = populator.createAttributes();
+    Attributes.Builder expectedAttrBuilders = Attributes.newBuilder();
+    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_ID, "i-1234567890abcdef0");
+    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ZONE, "us-west-2b");
+    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_TYPE, "t2.micro");
+    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_IMAGE_ID, "ami-5fb8c835");
+    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_ACCOUNT, "123456789012");
+    expectedAttrBuilders.setAttribute(ResourceConstants.CLOUD_REGION, "us-west-2");
+    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_HOSTNAME, "ec2-1-2-3-4");
+    expectedAttrBuilders.setAttribute(ResourceConstants.HOST_NAME, "ec2-1-2-3-4");
+    assertThat(attributes).isEqualTo(expectedAttrBuilders.build());
 
     verify(
         putRequestedFor(urlEqualTo("/latest/api/token"))
@@ -137,8 +135,8 @@ public class Ec2ResourceTest {
         any(urlPathEqualTo("/latest/dynamic/instance-identity/document"))
             .willReturn(okJson("I'm not JSON")));
 
-    Map<String, AttributeValue> metadata = populator.createAttributes();
-    assertThat(metadata).isEmpty();
+    Attributes attributes = populator.createAttributes();
+    assertThat(attributes.isEmpty()).isTrue();
 
     verify(
         putRequestedFor(urlEqualTo("/latest/api/token"))

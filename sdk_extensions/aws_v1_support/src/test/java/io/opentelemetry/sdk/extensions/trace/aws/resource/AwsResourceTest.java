@@ -21,7 +21,6 @@ import static io.opentelemetry.common.AttributeValue.booleanAttributeValue;
 import static io.opentelemetry.common.AttributeValue.stringAttributeValue;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
 import io.opentelemetry.common.Attributes;
 import io.opentelemetry.sdk.resources.Resource;
 import org.junit.Rule;
@@ -42,19 +41,19 @@ public class AwsResourceTest {
   public void createsResource() {
     when(populator1.createAttributes())
         .thenReturn(
-            ImmutableMap.of(
+            Attributes.of(
                 "key1", stringAttributeValue("value1"), "key2", booleanAttributeValue(true)));
     when(populator2.createAttributes())
         .thenReturn(
-            ImmutableMap.of(
-                "key3", stringAttributeValue("value2"), "key1", stringAttributeValue("value3")));
+            Attributes.of(
+                "key3", stringAttributeValue("value3"), "key1", stringAttributeValue("value0")));
 
     Resource resource = AwsResource.create(populator1, populator2);
     assertThat(resource.getAttributes())
         .isEqualTo(
             Attributes.of(
-                "key1", stringAttributeValue("value3"),
+                "key1", stringAttributeValue("value1"),
                 "key2", booleanAttributeValue(true),
-                "key3", stringAttributeValue("value2")));
+                "key3", stringAttributeValue("value3")));
   }
 }
