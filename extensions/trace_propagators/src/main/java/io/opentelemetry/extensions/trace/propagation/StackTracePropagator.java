@@ -128,12 +128,16 @@ public class StackTracePropagator implements HttpTextFormat {
   public <C> Context extract(Context context, C carrier, Getter<C> getter) {
     for (int i = propagators.length - 1; i >= 0; i--) {
       context = propagators[i].extract(context, carrier, getter);
-      if (TracingContextUtils.getSpanWithoutDefault(context) != null) {
+      if (isSpanContextExtracted(context)) {
         break;
       }
     }
 
     return context;
+  }
+
+  private static boolean isSpanContextExtracted(Context context) {
+    return TracingContextUtils.getSpanWithoutDefault(context) != null;
   }
 
   /**
