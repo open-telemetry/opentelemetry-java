@@ -58,11 +58,4 @@ public class EcsResourceTest {
     Attributes attributes = populator.createAttributes();
     assertThat(attributes.isEmpty()).isTrue();
   }
-
-  @Test
-  public void testNullSysEnv() {
-    EcsResource populator = new EcsResource(null);
-    Attributes attributes = populator.createAttributes();
-    assertThat(attributes.isEmpty()).isTrue();
-  }
 }

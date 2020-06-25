@@ -63,10 +63,6 @@ class EcsResource extends AwsResource {
   }
 
   private boolean isOnEcs() {
-    if (sysEnv == null) {
-      return false;
-    }
-
     return (!Strings.isNullOrEmpty(sysEnv.get(ECS_METADATA_KEY_V3))
         || !Strings.isNullOrEmpty(sysEnv.get(ECS_METADATA_KEY_V4)));
   }
