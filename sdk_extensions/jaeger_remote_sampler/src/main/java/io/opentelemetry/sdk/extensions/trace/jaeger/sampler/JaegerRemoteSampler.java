@@ -79,7 +79,7 @@ public class JaegerRemoteSampler implements Sampler {
   @Override
   public SamplingResult shouldSample(
       @Nullable SpanContext parentContext,
-      byte[] traceId,
+      String traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,

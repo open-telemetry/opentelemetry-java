@@ -29,7 +29,7 @@ public final class RandomIdsGenerator implements IdsGenerator {
   private static final long INVALID_ID = 0;
 
   @Override
-  public byte[] generateSpanId() {
+  public String generateSpanId() {
     long id;
     ThreadLocalRandom random = ThreadLocalRandom.current();
     do {
@@ -39,7 +39,7 @@ public final class RandomIdsGenerator implements IdsGenerator {
   }
 
   @Override
-  public byte[] generateTraceId() {
+  public String generateTraceId() {
     long idHi;
     long idLo;
     ThreadLocalRandom random = ThreadLocalRandom.current();

@@ -17,7 +17,6 @@
 package io.opentelemetry.trace;
 
 import io.opentelemetry.internal.Utils;
-import java.util.Arrays;
 import java.util.Random;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -31,9 +30,10 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class TraceId implements Comparable<TraceId> {
 
-  private static final int SIZE = 16;
+  private static final int SIZE_IN_BYTES = 16;
   private static final int BASE16_SIZE = 2 * BigendianEncoding.LONG_BASE16;
   private static final long INVALID_ID = 0;
+  public static final String INVALID = "00000000000000000000000000000000";
 
   // The internal representation of the TraceId.
   private final long idHi;
@@ -66,7 +66,7 @@ public final class TraceId implements Comparable<TraceId> {
    * @since 0.1.0
    */
   public static int getSize() {
-    return SIZE;
+    return SIZE_IN_BYTES;
   }
 
   /**
@@ -75,8 +75,8 @@ public final class TraceId implements Comparable<TraceId> {
    * @return the invalid {@code TraceId}.
    * @since 0.1.0
    */
-  public static byte[] getInvalid() {
-    return new byte[16];
+  public static String getInvalid() {
+    return INVALID;
   }
 
   /**
@@ -85,7 +85,7 @@ public final class TraceId implements Comparable<TraceId> {
    * @param random the random number generator.
    * @return a new valid {@code TraceId}.
    */
-  static byte[] generateRandomId(Random random) {
+  static String generateRandomId(Random random) {
     long idHi;
     long idLo;
     do {
@@ -96,7 +96,7 @@ public final class TraceId implements Comparable<TraceId> {
     byte[] result = new byte[16];
     BigendianEncoding.longToByteArray(idHi, result, 0);
     BigendianEncoding.longToByteArray(idLo, result, 8);
-    return result;
+    return toLowerBase16(result);
   }
 
   /**
@@ -120,11 +120,11 @@ public final class TraceId implements Comparable<TraceId> {
   }
 
   /** javadoc me. */
-  public static byte[] fromLongs(long idHi, long idLo) {
+  public static String fromLongs(long idHi, long idLo) {
     byte[] result = new byte[16];
     BigendianEncoding.longToByteArray(idHi, result, 0);
     BigendianEncoding.longToByteArray(idLo, result, 8);
-    return result;
+    return toLowerBase16(result);
   }
 
   /**
@@ -212,8 +212,10 @@ public final class TraceId implements Comparable<TraceId> {
   }
 
   /** javadoc me. */
-  public static boolean isValid(byte[] traceId) {
-    return (traceId.length == TraceId.getSize()) && !Arrays.equals(traceId, TraceId.getInvalid());
+  public static boolean isValid(String traceId) {
+    return (traceId.length() == BASE16_SIZE)
+        && !traceId.equals(INVALID)
+        && BigendianEncoding.isValidBase16String(traceId);
   }
 
   /**
@@ -261,8 +263,9 @@ public final class TraceId implements Comparable<TraceId> {
     return idLo;
   }
 
-  public static long getTraceIdRandomPart(byte[] traceId) {
-    return BigendianEncoding.longFromByteArray(traceId, 8);
+  public static long getTraceIdRandomPart(String traceId) {
+    byte[] bytes = bytesFromLowerBase16(traceId, 0);
+    return BigendianEncoding.longFromByteArray(bytes, 8);
   }
 
   @Override

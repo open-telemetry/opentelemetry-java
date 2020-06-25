@@ -37,12 +37,12 @@ public class AwsXRayIdsGenerator implements IdsGenerator {
   private static final RandomIdsGenerator RANDOM_IDS_GENERATOR = new RandomIdsGenerator();
 
   @Override
-  public byte[] generateSpanId() {
+  public String generateSpanId() {
     return RANDOM_IDS_GENERATOR.generateSpanId();
   }
 
   @Override
-  public byte[] generateTraceId() {
+  public String generateTraceId() {
     // hi - 4 bytes timestamp, 4 bytes random
     // low - 8 bytes random.
     // Since we include timestamp, impossible to be invalid.

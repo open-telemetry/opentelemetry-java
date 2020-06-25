@@ -93,14 +93,14 @@ public class AwsXRayPropagator implements HttpTextFormat {
 
     SpanContext spanContext = span.getContext();
 
-    String otTraceId = TraceId.toLowerBase16(spanContext.traceId());
+    String otTraceId = spanContext.traceId();
     String xrayTraceId =
         TRACE_ID_VERSION
             + TRACE_ID_DELIMITER
             + otTraceId.substring(0, TRACE_ID_FIRST_PART_LENGTH)
             + TRACE_ID_DELIMITER
             + otTraceId.substring(TRACE_ID_FIRST_PART_LENGTH);
-    String parentId = SpanId.toLowerBase16(spanContext.spanId());
+    String parentId = spanContext.spanId();
     char samplingFlag = spanContext.getTraceFlags().isSampled() ? IS_SAMPLED : NOT_SAMPLED;
     // TODO: Add OT trace state to the X-Ray trace header
 
@@ -138,8 +138,8 @@ public class AwsXRayPropagator implements HttpTextFormat {
       return SpanContext.getInvalid();
     }
 
-    byte[] traceId = TraceId.getInvalid();
-    byte[] spanId = SpanId.getInvalid();
+    String traceId = TraceId.getInvalid();
+    String spanId = SpanId.getInvalid();
     TraceFlags traceFlags = TraceFlags.getDefault();
 
     int pos = 0;
@@ -208,7 +208,7 @@ public class AwsXRayPropagator implements HttpTextFormat {
     return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TraceState.getDefault());
   }
 
-  private static byte[] parseTraceId(String xrayTraceId) {
+  private static String parseTraceId(String xrayTraceId) {
     if (xrayTraceId.length() != TRACE_ID_LENGTH) {
       return TraceId.getInvalid();
     }
@@ -228,25 +228,16 @@ public class AwsXRayPropagator implements HttpTextFormat {
         xrayTraceId.substring(TRACE_ID_DELIMITER_INDEX_1 + 1, TRACE_ID_DELIMITER_INDEX_2);
     String uniquePart = xrayTraceId.substring(TRACE_ID_DELIMITER_INDEX_2 + 1, TRACE_ID_LENGTH);
 
-    try {
-      // X-Ray trace id format is 1-{8 digit hex}-{24 digit hex}
-      return TraceId.bytesFromLowerBase16(epochPart + uniquePart, 0);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return TraceId.getInvalid();
-    }
+    // X-Ray trace id format is 1-{8 digit hex}-{24 digit hex}
+    return epochPart + uniquePart;
   }
 
-  private static byte[] parseSpanId(String xrayParentId) {
+  private static String parseSpanId(String xrayParentId) {
     if (xrayParentId.length() != PARENT_ID_LENGTH) {
       return SpanId.getInvalid();
     }
 
-    try {
-      return SpanId.bytesFromLowerBase16(xrayParentId, 0);
-    } catch (Exception e) {
-      return SpanId.getInvalid();
-    }
+    return xrayParentId;
   }
 
   @Nullable

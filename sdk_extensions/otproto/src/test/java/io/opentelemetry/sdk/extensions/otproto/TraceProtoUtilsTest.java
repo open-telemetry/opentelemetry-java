@@ -24,6 +24,8 @@ import io.opentelemetry.proto.trace.v1.ConstantSampler.ConstantDecision;
 import io.opentelemetry.proto.trace.v1.ProbabilitySampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceId;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link TraceProtoUtils}. */
@@ -46,13 +48,15 @@ class TraceProtoUtilsTest {
   @Test
   void toProtoTraceId() {
     ByteString expected = ByteString.copyFrom(TRACE_ID_BYTES);
-    assertThat(TraceProtoUtils.toProtoTraceId(TRACE_ID_BYTES)).isEqualTo(expected);
+    assertThat(TraceProtoUtils.toProtoTraceId(TraceId.toLowerBase16(TRACE_ID_BYTES)))
+        .isEqualTo(expected);
   }
 
   @Test
   void toProtoSpanId() {
     ByteString expected = ByteString.copyFrom(SPAN_ID_BYTES);
-    assertThat(TraceProtoUtils.toProtoSpanId(SPAN_ID_BYTES)).isEqualTo(expected);
+    assertThat(TraceProtoUtils.toProtoSpanId(SpanId.toLowerBase16(SPAN_ID_BYTES)))
+        .isEqualTo(expected);
   }
 
   @Test

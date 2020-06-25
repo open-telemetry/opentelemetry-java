@@ -553,7 +553,7 @@ class SpanBuilderSdkTest {
                       @Override
                       public SamplingResult shouldSample(
                           @Nullable SpanContext parentContext,
-                          byte[] traceId,
+                          String traceId,
                           String name,
                           Kind spanKind,
                           ReadableAttributes attributes,

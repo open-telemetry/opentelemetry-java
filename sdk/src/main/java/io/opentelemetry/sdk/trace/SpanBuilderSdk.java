@@ -208,8 +208,8 @@ final class SpanBuilderSdk implements Span.Builder {
   @Override
   public Span startSpan() {
     SpanContext parentContext = parent(parentType, parent, remoteParent);
-    byte[] traceId;
-    byte[] spanId = idsGenerator.generateSpanId();
+    String traceId;
+    String spanId = idsGenerator.generateSpanId();
     TraceState traceState = TraceState.getDefault();
     if (parentContext == null || !parentContext.isValid()) {
       // New root span.

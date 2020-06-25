@@ -94,13 +94,15 @@ public class HttpTraceContext implements HttpTextFormat {
     chars[0] = VERSION.charAt(0);
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
-    byte[] traceId = spanContext.traceId();
-    TraceId.copyLowerBase16Into(traceId, chars, TRACE_ID_OFFSET);
+    String traceId = spanContext.traceId();
+
+    System.arraycopy(traceId.toCharArray(), 0, chars, TRACE_ID_OFFSET, TraceId.getSize() * 2);
 
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
 
-    byte[] spanId = spanContext.spanId();
-    SpanId.copyLowerBase16Into(spanId, chars, SPAN_ID_OFFSET);
+    String spanId = spanContext.spanId();
+
+    System.arraycopy(spanId.toCharArray(), 0, chars, SPAN_ID_OFFSET, SpanId.getSize() * 2);
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
@@ -182,10 +184,15 @@ public class HttpTraceContext implements HttpTextFormat {
     }
 
     try {
-      byte[] traceId = TraceId.bytesFromLowerBase16(traceparent, TRACE_ID_OFFSET);
-      byte[] spanId = SpanId.bytesFromLowerBase16(traceparent, SPAN_ID_OFFSET);
-      TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
-      return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+      String traceId =
+          traceparent.substring(TRACE_ID_OFFSET, TRACE_ID_OFFSET + (TraceId.getSize() * 2));
+      String spanId =
+          traceparent.substring(SPAN_ID_OFFSET, SPAN_ID_OFFSET + (SpanId.getSize() * 2));
+      if (TraceId.isValid(traceId) && SpanId.isValid(spanId)) {
+        TraceFlags traceFlags = TraceFlags.fromLowerBase16(traceparent, TRACE_OPTION_OFFSET);
+        return SpanContext.createFromRemoteParent(traceId, spanId, traceFlags, TRACE_STATE_DEFAULT);
+      }
+      return SpanContext.getInvalid();
     } catch (IllegalArgumentException e) {
       logger.info("Unparseable traceparent header. Returning INVALID span context.");
       return SpanContext.getInvalid();

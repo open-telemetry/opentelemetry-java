@@ -21,6 +21,8 @@ import io.opentelemetry.proto.trace.v1.ConstantSampler;
 import io.opentelemetry.sdk.trace.Sampler;
 import io.opentelemetry.sdk.trace.Samplers;
 import io.opentelemetry.sdk.trace.config.TraceConfig;
+import io.opentelemetry.trace.SpanId;
+import io.opentelemetry.trace.TraceId;
 
 /** Utilities for converting various objects to protobuf representations. */
 public final class TraceProtoUtils {
@@ -32,8 +34,8 @@ public final class TraceProtoUtils {
    * @param spanId the spanId to convert.
    * @return a ByteString representation.
    */
-  public static ByteString toProtoSpanId(byte[] spanId) {
-    return ByteString.copyFrom(spanId);
+  public static ByteString toProtoSpanId(String spanId) {
+    return ByteString.copyFrom(SpanId.bytesFromLowerBase16(spanId, 0));
   }
 
   /**
@@ -42,8 +44,8 @@ public final class TraceProtoUtils {
    * @param traceId the traceId to convert.
    * @return a ByteString representation.
    */
-  public static ByteString toProtoTraceId(byte[] traceId) {
-    return ByteString.copyFrom(traceId);
+  public static ByteString toProtoTraceId(String traceId) {
+    return ByteString.copyFrom(TraceId.bytesFromLowerBase16(traceId, 0));
   }
 
   /**

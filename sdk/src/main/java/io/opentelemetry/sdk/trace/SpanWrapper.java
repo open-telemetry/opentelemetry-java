@@ -92,13 +92,13 @@ abstract class SpanWrapper implements SpanData {
 
   @Override
   @Memoized
-  public byte[] getTraceId() {
+  public String getTraceId() {
     return delegate().getContext().traceId();
   }
 
   @Override
   @Memoized
-  public byte[] getSpanId() {
+  public String getSpanId() {
     return delegate().getContext().spanId();
   }
 
@@ -113,7 +113,7 @@ abstract class SpanWrapper implements SpanData {
   }
 
   @Override
-  public byte[] getParentSpanId() {
+  public String getParentSpanId() {
     return delegate().getParentSpanId();
   }
 

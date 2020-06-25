@@ -17,7 +17,6 @@
 package io.opentelemetry.trace;
 
 import com.google.auto.value.AutoValue;
-import java.util.Arrays;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -60,7 +59,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext create(
-      byte[] traceId, byte[] spanId, TraceFlags traceFlags, TraceState traceState) {
+      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState) {
     return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ false);
   }
 
@@ -76,7 +75,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      byte[] traceId, byte[] spanId, TraceFlags traceFlags, TraceState traceState) {
+      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState) {
     return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ true);
   }
 
@@ -87,7 +86,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   @SuppressWarnings("mutable")
-  abstract byte[] getTraceId();
+  abstract String getTraceId();
 
   /**
    * Returns the trace identifier associated with this {@code SpanContext}.
@@ -95,8 +94,8 @@ public abstract class SpanContext {
    * @return the trace identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public byte[] traceId() {
-    return Arrays.copyOf(getTraceId(), 16);
+  public String traceId() {
+    return getTraceId();
   }
 
   /**
@@ -106,7 +105,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   @SuppressWarnings("mutable")
-  abstract byte[] getSpanId();
+  abstract String getSpanId();
 
   /**
    * Returns the span identifier associated with this {@code SpanContext}.
@@ -114,8 +113,8 @@ public abstract class SpanContext {
    * @return the span identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  public byte[] spanId() {
-    return Arrays.copyOf(getSpanId(), 8);
+  public String spanId() {
+    return getSpanId();
   }
 
   /**

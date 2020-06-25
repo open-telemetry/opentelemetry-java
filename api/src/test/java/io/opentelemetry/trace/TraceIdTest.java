@@ -45,6 +45,8 @@ class TraceIdTest {
     assertThat(TraceId.isValid(TraceId.getInvalid())).isFalse();
     assertThat(first.isValid()).isTrue();
     assertThat(second.isValid()).isTrue();
+
+    assertThat(TraceId.isValid("000000000000004z0000000000000016")).isFalse();
   }
 
   @Test
@@ -82,7 +84,9 @@ class TraceIdTest {
 
   @Test
   void fromLowerBase16() {
-    assertThat(TraceId.bytesFromLowerBase16("00000000000000000000000000000000", 0))
+    assertThat(
+            TraceId.toLowerBase16(
+                TraceId.bytesFromLowerBase16("00000000000000000000000000000000", 0)))
         .isEqualTo(TraceId.getInvalid());
     assertThat(TraceId.bytesFromLowerBase16("00000000000000000000000000000061", 0))
         .isEqualTo(firstBytes);
@@ -92,7 +96,9 @@ class TraceIdTest {
 
   @Test
   void fromLowerBase16_WithOffset() {
-    assertThat(TraceId.bytesFromLowerBase16("XX00000000000000000000000000000000CC", 2))
+    assertThat(
+            TraceId.toLowerBase16(
+                TraceId.bytesFromLowerBase16("XX00000000000000000000000000000000CC", 2)))
         .isEqualTo(TraceId.getInvalid());
     assertThat(TraceId.bytesFromLowerBase16("YY00000000000000000000000000000061AA", 2))
         .isEqualTo(firstBytes);
@@ -102,8 +108,7 @@ class TraceIdTest {
 
   @Test
   void toLowerBase16() {
-    assertThat(TraceId.toLowerBase16(TraceId.getInvalid()))
-        .isEqualTo("00000000000000000000000000000000");
+    assertThat(TraceId.getInvalid()).isEqualTo("00000000000000000000000000000000");
     assertThat(TraceId.toLowerBase16(firstBytes)).isEqualTo("00000000000000000000000000000061");
     assertThat(TraceId.toLowerBase16(secondBytes)).isEqualTo("ff000000000000000000000000000041");
   }
@@ -127,8 +132,7 @@ class TraceIdTest {
 
   @Test
   void traceId_ToString() {
-    assertThat(TraceId.toLowerBase16(TraceId.getInvalid()))
-        .contains("00000000000000000000000000000000");
+    assertThat(TraceId.getInvalid()).contains("00000000000000000000000000000000");
     assertThat(TraceId.toLowerBase16(firstBytes)).contains("00000000000000000000000000000061");
     assertThat(TraceId.toLowerBase16(secondBytes)).contains("ff000000000000000000000000000041");
   }

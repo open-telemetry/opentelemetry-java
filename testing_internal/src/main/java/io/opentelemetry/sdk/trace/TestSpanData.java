@@ -98,7 +98,7 @@ public abstract class TestSpanData implements SpanData {
      * @return this builder (for chaining).
      */
     @SuppressWarnings("mutable")
-    public abstract Builder setTraceId(byte[] traceId);
+    public abstract Builder setTraceId(String traceId);
 
     /**
      * Set the span id on this builder.
@@ -107,7 +107,7 @@ public abstract class TestSpanData implements SpanData {
      * @return this builder (for chaining).
      */
     @SuppressWarnings("mutable")
-    public abstract Builder setSpanId(byte[] spanId);
+    public abstract Builder setSpanId(String spanId);
 
     /**
      * Set the {@link TraceFlags} on this builder.
@@ -132,7 +132,7 @@ public abstract class TestSpanData implements SpanData {
      * @return this.
      * @since 0.1.0
      */
-    public abstract Builder setParentSpanId(byte[] parentSpanId);
+    public abstract Builder setParentSpanId(String parentSpanId);
 
     /**
      * Set the {@link Resource} associated with this span. Must not be null.

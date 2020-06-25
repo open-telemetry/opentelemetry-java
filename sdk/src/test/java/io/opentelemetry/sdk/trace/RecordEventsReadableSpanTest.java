@@ -65,9 +65,9 @@ class RecordEventsReadableSpanTest {
   private static final long START_EPOCH_NANOS = 1000_123_789_654L;
 
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
-  private final byte[] traceId = idsGenerator.generateTraceId();
-  private final byte[] spanId = idsGenerator.generateSpanId();
-  private final byte[] parentSpanId = idsGenerator.generateSpanId();
+  private final String traceId = idsGenerator.generateTraceId();
+  private final String spanId = idsGenerator.generateSpanId();
+  private final String parentSpanId = idsGenerator.generateSpanId();
   private final SpanContext spanContext =
       SpanContext.create(traceId, spanId, TraceFlags.getDefault(), TraceState.getDefault());
   private final Resource resource = Resource.getEmpty();
@@ -734,7 +734,7 @@ class RecordEventsReadableSpanTest {
   private RecordEventsReadableSpan createTestSpan(
       Kind kind,
       TraceConfig config,
-      @Nullable byte[] parentSpanId,
+      @Nullable String parentSpanId,
       @Nullable AttributesMap attributes,
       List<io.opentelemetry.trace.Link> links) {
 
@@ -808,9 +808,9 @@ class RecordEventsReadableSpanTest {
   void testAsSpanData() {
     String name = "GreatSpan";
     Kind kind = Kind.SERVER;
-    byte[] traceId = this.traceId;
-    byte[] spanId = this.spanId;
-    byte[] parentSpanId = this.parentSpanId;
+    String traceId = this.traceId;
+    String spanId = this.spanId;
+    String parentSpanId = this.parentSpanId;
     TraceConfig traceConfig = TraceConfig.getDefault();
     SpanProcessor spanProcessor = NoopSpanProcessor.getInstance();
     TestClock clock = TestClock.create();

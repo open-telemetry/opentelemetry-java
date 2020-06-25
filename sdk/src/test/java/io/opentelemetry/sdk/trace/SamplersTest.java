@@ -28,6 +28,7 @@ import io.opentelemetry.sdk.trace.data.SpanData.Link;
 import io.opentelemetry.trace.Span;
 import io.opentelemetry.trace.SpanContext;
 import io.opentelemetry.trace.TraceFlags;
+import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import java.util.Collections;
 import java.util.List;
@@ -39,8 +40,8 @@ class SamplersTest {
   private static final Span.Kind SPAN_KIND = Span.Kind.INTERNAL;
   private static final int NUM_SAMPLE_TRIES = 1000;
   private final IdsGenerator idsGenerator = new RandomIdsGenerator();
-  private final byte[] traceId = idsGenerator.generateTraceId();
-  private final byte[] parentSpanId = idsGenerator.generateSpanId();
+  private final String traceId = idsGenerator.generateTraceId();
+  private final String parentSpanId = idsGenerator.generateSpanId();
   private final TraceState traceState = TraceState.builder().build();
   private final SpanContext sampledSpanContext =
       SpanContext.create(
@@ -383,25 +384,26 @@ class SamplersTest {
     final Sampler defaultProbability = Samplers.Probability.create(0.0001);
     // This traceId will not be sampled by the Probability Sampler because the last 8 bytes as long
     // is not less than probability * Long.MAX_VALUE;
-    byte[] notSampledtraceId =
-        new byte[] {
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          (byte) 0x8F,
-          (byte) 0xFF,
-          (byte) 0xFF,
-          (byte) 0xFF,
-          (byte) 0xFF,
-          (byte) 0xFF,
-          (byte) 0xFF,
-          (byte) 0xFF
-        };
+    String notSampledtraceId =
+        TraceId.toLowerBase16(
+            new byte[] {
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              (byte) 0x8F,
+              (byte) 0xFF,
+              (byte) 0xFF,
+              (byte) 0xFF,
+              (byte) 0xFF,
+              (byte) 0xFF,
+              (byte) 0xFF,
+              (byte) 0xFF
+            });
     SamplingResult samplingResult1 =
         defaultProbability.shouldSample(
             null,
@@ -416,25 +418,26 @@ class SamplersTest {
             Attributes.of(Samplers.SAMPLING_PROBABILITY.key(), doubleAttributeValue(0.0001)));
     // This traceId will be sampled by the Probability Sampler because the last 8 bytes as long
     // is less than probability * Long.MAX_VALUE;
-    byte[] sampledtraceId =
-        new byte[] {
-          (byte) 0x00,
-          (byte) 0x00,
-          (byte) 0xFF,
-          (byte) 0xFF,
-          (byte) 0xFF,
-          (byte) 0xFF,
-          (byte) 0xFF,
-          (byte) 0xFF,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0
-        };
+    String sampledtraceId =
+        TraceId.toLowerBase16(
+            new byte[] {
+              (byte) 0x00,
+              (byte) 0x00,
+              (byte) 0xFF,
+              (byte) 0xFF,
+              (byte) 0xFF,
+              (byte) 0xFF,
+              (byte) 0xFF,
+              (byte) 0xFF,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            });
     SamplingResult samplingResult2 =
         defaultProbability.shouldSample(
             null,

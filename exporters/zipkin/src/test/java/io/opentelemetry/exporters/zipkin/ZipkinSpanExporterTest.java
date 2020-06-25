@@ -33,10 +33,8 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.SpanData.Event;
 import io.opentelemetry.sdk.trace.export.SpanExporter.ResultCode;
 import io.opentelemetry.trace.Span.Kind;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.Status;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.attributes.SemanticAttributes;
 import java.io.IOException;
 import java.util.Collections;
@@ -273,9 +271,9 @@ class ZipkinSpanExporterTest {
 
   private static TestSpanData.Builder buildStandardSpan() {
     return TestSpanData.newBuilder()
-        .setTraceId(TraceId.bytesFromLowerBase16(TRACE_ID, 0))
-        .setSpanId(SpanId.bytesFromLowerBase16(SPAN_ID, 0))
-        .setParentSpanId(SpanId.bytesFromLowerBase16(PARENT_SPAN_ID, 0))
+        .setTraceId(TRACE_ID)
+        .setSpanId(SPAN_ID)
+        .setParentSpanId(PARENT_SPAN_ID)
         .setTraceFlags(TraceFlags.builder().setIsSampled(true).build())
         .setStatus(Status.OK)
         .setKind(Kind.SERVER)

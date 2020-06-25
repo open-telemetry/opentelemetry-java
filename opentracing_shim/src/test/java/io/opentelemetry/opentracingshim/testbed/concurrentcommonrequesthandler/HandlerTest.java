@@ -18,7 +18,6 @@ package io.opentelemetry.opentracingshim.testbed.concurrentcommonrequesthandler;
 
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.getOneByName;
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sortByStartTime;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -136,9 +135,9 @@ class HandlerTest {
     assertNotNull(parent);
 
     // now there is parent/child relation between first and second span:
-    assertArrayEquals(parent.getSpanId(), finished.get(1).getParentSpanId());
+    assertEquals(parent.getSpanId(), finished.get(1).getParentSpanId());
 
     // third span should not have parent, but it has, damn it
-    assertArrayEquals(parent.getSpanId(), finished.get(2).getParentSpanId());
+    assertEquals(parent.getSpanId(), finished.get(2).getParentSpanId());
   }
 }

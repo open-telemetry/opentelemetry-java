@@ -20,9 +20,7 @@ import io.grpc.Context;
 import io.opentelemetry.context.propagation.HttpTextFormat.Setter;
 import io.opentelemetry.trace.DefaultSpan;
 import io.opentelemetry.trace.SpanContext;
-import io.opentelemetry.trace.SpanId;
 import io.opentelemetry.trace.TraceFlags;
-import io.opentelemetry.trace.TraceId;
 import io.opentelemetry.trace.TraceState;
 import io.opentelemetry.trace.TracingContextUtils;
 import java.util.ArrayList;
@@ -83,11 +81,7 @@ public class HttpTraceContextInjectBenchmark {
     byte sampledTraceOptionsBytes = 1;
     TraceFlags sampledTraceOptions = TraceFlags.fromByte(sampledTraceOptionsBytes);
     TraceState traceStateDefault = TraceState.builder().build();
-    return SpanContext.create(
-        TraceId.bytesFromLowerBase16(traceId, 0),
-        SpanId.bytesFromLowerBase16(spanId, 0),
-        sampledTraceOptions,
-        traceStateDefault);
+    return SpanContext.create(traceId, spanId, sampledTraceOptions, traceStateDefault);
   }
 
   private static List<Context> createContexts(List<SpanContext> spanContexts) {

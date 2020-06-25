@@ -115,7 +115,7 @@ class PromisePropagationTest {
 
       assertThat(getByAttr(finished, component, "success")).hasSize(2);
 
-      byte[] parentId = spanExamplePromise.get(0).getSpanId();
+      String parentId = spanExamplePromise.get(0).getSpanId();
       for (SpanData span : getByAttr(finished, component, "success")) {
         assertThat(span.getParentSpanId()).isEqualTo(parentId);
       }

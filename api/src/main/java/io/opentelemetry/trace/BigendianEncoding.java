@@ -165,5 +165,16 @@ final class BigendianEncoding {
     dest[destOffset + 1] = ENCODING[b | 0x100];
   }
 
+  public static boolean isValidBase16String(String value) {
+    char[] chars = value.toCharArray();
+    for (char b : chars) {
+      // 48..57 && 97..102 are valid
+      if (!Character.isDigit(b) && (b < 97 || b > 102)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   private BigendianEncoding() {}
 }

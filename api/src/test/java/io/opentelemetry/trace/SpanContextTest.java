@@ -24,28 +24,32 @@ import org.junit.jupiter.api.Test;
 class SpanContextTest {
   private static final byte[] firstTraceIdBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
+  private static final String FIRST_TRACE_ID = TraceId.toLowerBase16(firstTraceIdBytes);
   private static final byte[] secondTraceIdBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, '0', 0, 0, 0, 0, 0, 0, 0, 0};
+  private static final String SECOND_TRACE_ID = TraceId.toLowerBase16(secondTraceIdBytes);
+
   private static final byte[] firstSpanIdBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
+  private static final String FIRST_SPAN_ID = SpanId.toLowerBase16(firstSpanIdBytes);
   private static final byte[] secondSpanIdBytes = new byte[] {'0', 0, 0, 0, 0, 0, 0, 0};
+  private static final String SECOND_SPAN_ID = SpanId.toLowerBase16(secondSpanIdBytes);
   private static final TraceState FIRST_TRACE_STATE =
       TraceState.builder().set("foo", "bar").build();
   private static final TraceState SECOND_TRACE_STATE =
       TraceState.builder().set("foo", "baz").build();
   private static final TraceState EMPTY_TRACE_STATE = TraceState.builder().build();
   private static final SpanContext first =
-      SpanContext.create(
-          firstTraceIdBytes, firstSpanIdBytes, TraceFlags.getDefault(), FIRST_TRACE_STATE);
+      SpanContext.create(FIRST_TRACE_ID, FIRST_SPAN_ID, TraceFlags.getDefault(), FIRST_TRACE_STATE);
   private static final SpanContext second =
       SpanContext.create(
-          secondTraceIdBytes,
-          secondSpanIdBytes,
+          SECOND_TRACE_ID,
+          SECOND_SPAN_ID,
           TraceFlags.builder().setIsSampled(true).build(),
           SECOND_TRACE_STATE);
   private static final SpanContext remote =
       SpanContext.createFromRemoteParent(
-          secondTraceIdBytes,
-          secondSpanIdBytes,
+          SECOND_TRACE_ID,
+          SECOND_SPAN_ID,
           TraceFlags.builder().setIsSampled(true).build(),
           EMPTY_TRACE_STATE);
 
@@ -61,18 +65,12 @@ class SpanContextTest {
     assertThat(SpanContext.getInvalid().isValid()).isFalse();
     assertThat(
             SpanContext.create(
-                    firstTraceIdBytes,
-                    SpanId.getInvalid(),
-                    TraceFlags.getDefault(),
-                    EMPTY_TRACE_STATE)
+                    FIRST_TRACE_ID, SpanId.getInvalid(), TraceFlags.getDefault(), EMPTY_TRACE_STATE)
                 .isValid())
         .isFalse();
     assertThat(
             SpanContext.create(
-                    TraceId.getInvalid(),
-                    firstSpanIdBytes,
-                    TraceFlags.getDefault(),
-                    EMPTY_TRACE_STATE)
+                    TraceId.getInvalid(), FIRST_SPAN_ID, TraceFlags.getDefault(), EMPTY_TRACE_STATE)
                 .isValid())
         .isFalse();
     assertThat(first.isValid()).isTrue();
@@ -81,14 +79,14 @@ class SpanContextTest {
 
   @Test
   void getTraceId() {
-    assertThat(first.getTraceId()).isEqualTo(firstTraceIdBytes);
-    assertThat(second.getTraceId()).isEqualTo(secondTraceIdBytes);
+    assertThat(first.getTraceId()).isEqualTo(FIRST_TRACE_ID);
+    assertThat(second.getTraceId()).isEqualTo(SECOND_TRACE_ID);
   }
 
   @Test
   void getSpanId() {
-    assertThat(first.getSpanId()).isEqualTo(firstSpanIdBytes);
-    assertThat(second.getSpanId()).isEqualTo(secondSpanIdBytes);
+    assertThat(first.getSpanId()).isEqualTo(FIRST_SPAN_ID);
+    assertThat(second.getSpanId()).isEqualTo(SECOND_SPAN_ID);
   }
 
   @Test

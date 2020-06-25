@@ -20,7 +20,6 @@ import static io.opentelemetry.opentracingshim.testbed.TestUtils.finishedSpansSi
 import static io.opentelemetry.opentracingshim.testbed.TestUtils.sleep;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -70,8 +69,8 @@ class ActiveSpanReplacementTest {
     assertEquals("task", spans.get(2).getName());
 
     // task/subtask are part of the same trace, and subtask is a child of task
-    assertArrayEquals(spans.get(1).getTraceId(), spans.get(2).getTraceId());
-    assertArrayEquals(spans.get(2).getSpanId(), spans.get(1).getParentSpanId());
+    assertEquals(spans.get(1).getTraceId(), spans.get(2).getTraceId());
+    assertEquals(spans.get(2).getSpanId(), spans.get(1).getParentSpanId());
 
     // initial task is not related in any way to those two tasks
     assertNotEquals(spans.get(0).getTraceId(), spans.get(1).getTraceId());

@@ -19,8 +19,6 @@ package io.opentelemetry.opentracingshim;
 import io.opentelemetry.correlationcontext.CorrelationContext;
 import io.opentelemetry.correlationcontext.Entry;
 import io.opentelemetry.correlationcontext.EntryMetadata;
-import io.opentelemetry.trace.SpanId;
-import io.opentelemetry.trace.TraceId;
 import io.opentracing.SpanContext;
 import java.util.Iterator;
 import java.util.Map;
@@ -69,12 +67,12 @@ final class SpanContextShim extends BaseShimObject implements SpanContext {
 
   @Override
   public String toTraceId() {
-    return TraceId.toLowerBase16(context.traceId());
+    return context.traceId();
   }
 
   @Override
   public String toSpanId() {
-    return SpanId.toLowerBase16(context.spanId());
+    return context.spanId();
   }
 
   @Override

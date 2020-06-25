@@ -44,15 +44,14 @@ public interface SpanData {
    * @return the trace id.
    */
   @SuppressWarnings("mutable")
-  byte[] getTraceId();
+  String getTraceId();
 
   /**
    * Gets the span id for this span.
    *
    * @return the span id.
    */
-  @SuppressWarnings("mutable")
-  byte[] getSpanId();
+  String getSpanId();
 
   /**
    * Gets the trace flags for this span.
@@ -75,8 +74,7 @@ public interface SpanData {
    * @return the parent {@code SpanId} or an invalid SpanId if this is a root {@code Span}.
    * @since 0.1.0
    */
-  @SuppressWarnings("mutable")
-  byte[] getParentSpanId();
+  String getParentSpanId();
 
   /**
    * Returns the resource of this {@code Span}.
