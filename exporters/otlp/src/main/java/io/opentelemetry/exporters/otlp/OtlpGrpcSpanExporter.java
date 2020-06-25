@@ -16,13 +16,21 @@
 
 package io.opentelemetry.exporters.otlp;
 
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+
+import com.google.common.base.Splitter;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
+import io.grpc.Metadata.Key;
+import io.grpc.stub.MetadataUtils;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.TraceServiceGrpc;
 import io.opentelemetry.sdk.common.export.ConfigBuilder;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -41,6 +49,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * <ul>
  *   <li>{@code otel.otlp.span.timeout}: to set the max waiting time allowed to send each span
  *       batch.
+ *   <li>{@code otel.otlp.endpoint}: to set the endpoint to connect to.
+ *   <li>{@code otel.otlp.use.tls}: to set use or not TLS.
+ *   <li>{@code otel.otlp.metadata} to set key-value pairs separated by semicolon to pass as request
+ *       metadata.
  * </ul>
  *
  * <p>For environment variables, {@link OtlpGrpcSpanExporter} will look for the following names:
@@ -48,6 +60,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * <ul>
  *   <li>{@code OTEL_OTLP_SPAN_TIMEOUT}: to set the max waiting time allowed to send each span
  *       batch.
+ *   <li>{@code OTEL_OTLP_ENDPOINT}: to set the endpoint to connect to.
+ *   <li>{@code OTEL_OTLP_USE_TLS}: to set use or not TLS.
+ *   <li>{@code OTEL_OTLP_METADATA}: to set key-value pairs separated by semicolon to pass as
+ *       request metadata.
  * </ul>
  */
 @ThreadSafe
@@ -146,11 +162,18 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
   /** Builder utility for this exporter. */
   public static class Builder extends ConfigBuilder<Builder> {
     private static final String KEY_SPAN_TIMEOUT = "otel.otlp.span.timeout";
+    private static final String KEY_ENDPOINT = "otel.otlp.endpoint";
+    private static final String KEY_USE_TLS = "otel.otlp.use.tls";
+    private static final String KEY_METADATA = "otel.otlp.metadata";
     private ManagedChannel channel;
     private long deadlineMs = 1_000; // 1 second
+    private String endpoint;
+    private boolean useTls;
+    private Metadata metadata;
 
     /**
-     * Sets the managed chanel to use when communicating with the backend. Required.
+     * Sets the managed chanel to use when communicating with the backend. Required if {@link
+     * Builder#endpoint} is not set. If {@link Builder#endpoint} is set then build the channel.
      *
      * @param channel the channel to use
      * @return this builder's instance
@@ -172,11 +195,66 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     }
 
     /**
+     * Sets the OTLP endpoint to connect to. Optional.
+     *
+     * @param endpoint endpoint to connect to
+     * @return this builder's instance
+     */
+    public Builder setEndpoint(String endpoint) {
+      this.endpoint = endpoint;
+      return this;
+    }
+
+    /**
+     * Sets use or not TLS, default is false. Optional. Applicable only if {@link Builder#endpoint}
+     * is set to build channel.
+     *
+     * @param useTls use TLS or not
+     * @return this builder's instance
+     */
+    public Builder setUseTls(boolean useTls) {
+      this.useTls = useTls;
+      return this;
+    }
+
+    /**
+     * Add header to request. Optional. Applicable only if {@link Builder#endpoint} is set to build
+     * channel.
+     *
+     * @param key header key
+     * @param value header value
+     * @return this builder's instance
+     */
+    public Builder addHeader(String key, String value) {
+      if (metadata == null) {
+        metadata = new Metadata();
+      }
+      metadata.put(Key.of(key, ASCII_STRING_MARSHALLER), value);
+      return this;
+    }
+
+    /**
      * Constructs a new instance of the exporter based on the builder's values.
      *
      * @return a new exporter's instance
      */
     public OtlpGrpcSpanExporter build() {
+      if (endpoint != null) {
+        final ManagedChannelBuilder<?> managedChannelBuilder =
+            ManagedChannelBuilder.forTarget(endpoint);
+
+        if (useTls) {
+          managedChannelBuilder.useTransportSecurity();
+        } else {
+          managedChannelBuilder.usePlaintext();
+        }
+
+        if (metadata != null) {
+          managedChannelBuilder.intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+        }
+
+        channel = managedChannelBuilder.build();
+      }
       return new OtlpGrpcSpanExporter(channel, deadlineMs);
     }
 
@@ -196,6 +274,27 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
       if (value != null) {
         this.setDeadlineMs(value);
       }
+      String endpointValue = getStringProperty(KEY_ENDPOINT, configMap);
+      if (endpointValue != null) {
+        this.setEndpoint(endpointValue);
+      }
+
+      Boolean useTlsValue = getBooleanProperty(KEY_USE_TLS, configMap);
+      if (useTlsValue != null) {
+        this.setUseTls(useTlsValue);
+      }
+
+      String metadataValue = getStringProperty(KEY_METADATA, configMap);
+      if (metadataValue != null) {
+        for (String keyValueString : Splitter.on(';').split(metadataValue)) {
+          final List<String> keyValue = Splitter.on('=').splitToList(keyValueString);
+          ;
+          if (keyValue.size() == 2) {
+            addHeader(keyValue.get(0), keyValue.get(1));
+          }
+        }
+      }
+
       return this;
     }
   }
