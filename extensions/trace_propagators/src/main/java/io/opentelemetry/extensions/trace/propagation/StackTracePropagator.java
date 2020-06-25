@@ -37,7 +37,7 @@ import javax.annotation.concurrent.Immutable;
  * trace propagator, returning immediately when a successful extraction happened.
  *
  * <pre>{@code
- * HttpTextFormat traceFormats = StackTraceTextPropagator.builder()
+ * HttpTextFormat traceFormats = StackTracePropagator.builder()
  *   .addPropagator(new MyCustomTracePropagator())
  *   .addPropagator(new JaegerPropagator())
  *   .addPropagator(new HttpTraceContext())
@@ -57,11 +57,11 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.6.0
  */
 @Immutable
-public class StackTraceTextPropagator implements HttpTextFormat {
+public class StackTracePropagator implements HttpTextFormat {
   private final HttpTextFormat[] propagators;
   private final List<String> propagatorsFields;
 
-  private StackTraceTextPropagator(List<HttpTextFormat> propagatorList) {
+  private StackTracePropagator(List<HttpTextFormat> propagatorList) {
     this.propagators = new HttpTextFormat[propagatorList.size()];
     propagatorList.toArray(this.propagators);
 
@@ -73,10 +73,10 @@ public class StackTraceTextPropagator implements HttpTextFormat {
   }
 
   /**
-   * Returns a {@link StackTraceTextPropagator.Builder} to create a new {@link
-   * StackTraceTextPropagator} object.
+   * Returns a {@link StackTracePropagator.Builder} to create a new {@link StackTracePropagator}
+   * object.
    *
-   * @return a {@link StackTraceTextPropagator.Builder}.
+   * @return a {@link StackTracePropagator.Builder}.
    * @since 0.6.0
    */
   public static Builder builder() {
@@ -137,7 +137,7 @@ public class StackTraceTextPropagator implements HttpTextFormat {
   }
 
   /**
-   * {@link Builder} is used to construct a new {@code StackTraceTextPropagator} object with the
+   * {@link Builder} is used to construct a new {@code StackTracePropagator} object with the
    * specified propagators.
    *
    * @since 0.6.0
@@ -168,13 +168,13 @@ public class StackTraceTextPropagator implements HttpTextFormat {
     }
 
     /**
-     * Builds a new {@code StackTraceTextPropagator} with the specified propagators.
+     * Builds a new {@code StackTracePropagator} with the specified propagators.
      *
-     * @return the newly created {@code StackTraceTextPropagator} instance.
+     * @return the newly created {@code StackTracePropagator} instance.
      * @since 0.6.0
      */
-    public StackTraceTextPropagator build() {
-      return new StackTraceTextPropagator(propagators);
+    public StackTracePropagator build() {
+      return new StackTracePropagator(propagators);
     }
   }
 }

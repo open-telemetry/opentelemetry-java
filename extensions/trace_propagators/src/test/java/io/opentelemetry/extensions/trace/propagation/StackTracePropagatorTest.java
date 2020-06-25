@@ -46,7 +46,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 @RunWith(JUnit4.class)
-public class StackTraceTextPropagatorTest {
+public class StackTracePropagatorTest {
   private static final HttpTextFormat PROPAGATOR1 = B3Propagator.getSingleHeaderPropagator();
   private static final HttpTextFormat PROPAGATOR2 = B3Propagator.getMultipleHeaderPropagator();
   private static final HttpTextFormat PROPAGATOR3 = new HttpTraceContext();
@@ -69,13 +69,13 @@ public class StackTraceTextPropagatorTest {
   @Test
   public void addPropagator_null() {
     thrown.expect(NullPointerException.class);
-    StackTraceTextPropagator.builder().addPropagator(null);
+    StackTracePropagator.builder().addPropagator(null);
   }
 
   @Test
   public void fields() {
     HttpTextFormat prop =
-        StackTraceTextPropagator.builder()
+        StackTracePropagator.builder()
             .addPropagator(new EmptyPropagator("foo", "bar"))
             .addPropagator(new EmptyPropagator("hello", "world"))
             .build();
@@ -88,7 +88,7 @@ public class StackTraceTextPropagatorTest {
   @Test
   public void fields_readOnly() {
     HttpTextFormat prop =
-        StackTraceTextPropagator.builder()
+        StackTracePropagator.builder()
             .addPropagator(new EmptyPropagator("foo", "bar"))
             .addPropagator(new EmptyPropagator("hello", "world"))
             .build();
@@ -100,7 +100,7 @@ public class StackTraceTextPropagatorTest {
 
   @Test
   public void inject_noPropagators() {
-    HttpTextFormat prop = StackTraceTextPropagator.builder().build();
+    HttpTextFormat prop = StackTracePropagator.builder().build();
     Map<String, String> carrier = new HashMap<>();
 
     Context context = Context.current();
@@ -111,7 +111,7 @@ public class StackTraceTextPropagatorTest {
   @Test
   public void inject_allFormats() {
     HttpTextFormat prop =
-        StackTraceTextPropagator.builder()
+        StackTracePropagator.builder()
             .addPropagator(PROPAGATOR1)
             .addPropagator(PROPAGATOR2)
             .addPropagator(PROPAGATOR3)
@@ -130,7 +130,7 @@ public class StackTraceTextPropagatorTest {
 
   @Test
   public void extract_noPropagators() {
-    HttpTextFormat prop = StackTraceTextPropagator.builder().build();
+    HttpTextFormat prop = StackTracePropagator.builder().build();
     Map<String, String> carrier = new HashMap<>();
 
     Context context = Context.current();
@@ -141,7 +141,7 @@ public class StackTraceTextPropagatorTest {
   @Test
   public void extract_found() {
     HttpTextFormat prop =
-        StackTraceTextPropagator.builder()
+        StackTracePropagator.builder()
             .addPropagator(PROPAGATOR1)
             .addPropagator(PROPAGATOR2)
             .addPropagator(PROPAGATOR3)
@@ -155,7 +155,7 @@ public class StackTraceTextPropagatorTest {
 
   @Test
   public void extract_notFound() {
-    HttpTextFormat prop = StackTraceTextPropagator.builder().addPropagator(PROPAGATOR1).build();
+    HttpTextFormat prop = StackTracePropagator.builder().addPropagator(PROPAGATOR1).build();
 
     Map<String, String> carrier = new HashMap<>();
     PROPAGATOR3.inject(withSpan(SPAN, Context.current()), carrier, Map::put);
@@ -166,7 +166,7 @@ public class StackTraceTextPropagatorTest {
   public void extract_stopWhenFound() {
     HttpTextFormat mockPropagator = Mockito.mock(HttpTextFormat.class);
     HttpTextFormat prop =
-        StackTraceTextPropagator.builder()
+        StackTracePropagator.builder()
             .addPropagator(mockPropagator)
             .addPropagator(PROPAGATOR3)
             .build();
