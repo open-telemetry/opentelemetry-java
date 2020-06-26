@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -167,9 +168,9 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
     private static final String KEY_METADATA = "otel.otlp.metadata";
     private ManagedChannel channel;
     private long deadlineMs = 1_000; // 1 second
-    private String endpoint;
+    @Nullable private String endpoint;
     private boolean useTls;
-    private Metadata metadata;
+    @Nullable private Metadata metadata;
 
     /**
      * Sets the managed chanel to use when communicating with the backend. Required if {@link
