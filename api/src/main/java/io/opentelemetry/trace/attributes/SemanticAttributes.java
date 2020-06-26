@@ -117,7 +117,7 @@ public final class SemanticAttributes {
   public static final StringAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH =
       StringAttributeSetter.create("http.response_content_length");
   /**
-   * The size of the uncompressed response payload body, in bytes. Only set for response that use
+   * The size of the uncompressed response payload body, in bytes. Only set for responses that use
    * transport encoding.
    */
   public static final StringAttributeSetter HTTP_RESPONSE_CONTENT_LENGTH_UNCOMPRESSED =
