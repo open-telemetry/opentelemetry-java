@@ -94,9 +94,11 @@ public class HttpTraceContext implements HttpTextFormat {
     chars[0] = VERSION.charAt(0);
     chars[1] = VERSION.charAt(1);
     chars[2] = TRACEPARENT_DELIMITER;
-    String traceId = (String) spanContext.getTraceId();
 
-    System.arraycopy(traceId.toCharArray(), 0, chars, TRACE_ID_OFFSET, TraceId.getSize() * 2);
+    CharSequence traceId = spanContext.getTraceId();
+    for (int i = 0; i < traceId.length(); i++) {
+      chars[TRACE_ID_OFFSET + i] = traceId.charAt(i);
+    }
 
     chars[SPAN_ID_OFFSET - 1] = TRACEPARENT_DELIMITER;
 
@@ -104,7 +106,7 @@ public class HttpTraceContext implements HttpTextFormat {
     for (int i = 0; i < spanId.length(); i++) {
       chars[SPAN_ID_OFFSET + i] = spanId.charAt(i);
     }
-    //    System.arraycopy(spanId.toCharArray(), 0, chars, SPAN_ID_OFFSET, SpanId.getSize() * 2);
+
     chars[TRACE_OPTION_OFFSET - 1] = TRACEPARENT_DELIMITER;
     spanContext.getTraceFlags().copyLowerBase16To(chars, TRACE_OPTION_OFFSET);
     setter.set(carrier, TRACE_PARENT, new String(chars, 0, TRACEPARENT_HEADER_SIZE));
