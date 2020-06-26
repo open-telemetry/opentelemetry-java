@@ -59,7 +59,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext create(
-      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState) {
+      CharSequence traceId, CharSequence spanId, TraceFlags traceFlags, TraceState traceState) {
     return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ false);
   }
 
@@ -75,7 +75,7 @@ public abstract class SpanContext {
    * @since 0.1.0
    */
   public static SpanContext createFromRemoteParent(
-      String traceId, String spanId, TraceFlags traceFlags, TraceState traceState) {
+      CharSequence traceId, CharSequence spanId, TraceFlags traceFlags, TraceState traceState) {
     return new AutoValue_SpanContext(traceId, spanId, traceFlags, traceState, /* remote=*/ true);
   }
 
@@ -85,18 +85,7 @@ public abstract class SpanContext {
    * @return the trace identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  @SuppressWarnings("mutable")
-  abstract String getTraceId();
-
-  /**
-   * Returns the trace identifier associated with this {@code SpanContext}.
-   *
-   * @return the trace identifier associated with this {@code SpanContext}.
-   * @since 0.1.0
-   */
-  public String traceId() {
-    return getTraceId();
-  }
+  public abstract CharSequence getTraceId();
 
   /**
    * Returns the span identifier associated with this {@code SpanContext}.
@@ -104,18 +93,7 @@ public abstract class SpanContext {
    * @return the span identifier associated with this {@code SpanContext}.
    * @since 0.1.0
    */
-  @SuppressWarnings("mutable")
-  abstract String getSpanId();
-
-  /**
-   * Returns the span identifier associated with this {@code SpanContext}.
-   *
-   * @return the span identifier associated with this {@code SpanContext}.
-   * @since 0.1.0
-   */
-  public String spanId() {
-    return getSpanId();
-  }
+  public abstract CharSequence getSpanId();
 
   /**
    * Returns the {@code TraceFlags} associated with this {@code SpanContext}.

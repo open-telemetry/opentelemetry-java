@@ -177,7 +177,7 @@ public final class Samplers {
     @Override
     public SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
-        String traceId,
+        CharSequence traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
@@ -199,7 +199,7 @@ public final class Samplers {
     @Override
     public SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
-        String traceId,
+        CharSequence traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,
@@ -293,7 +293,7 @@ public final class Samplers {
     @Override
     public final SamplingResult shouldSample(
         @Nullable SpanContext parentContext,
-        String traceId,
+        CharSequence traceId,
         String name,
         Kind spanKind,
         ReadableAttributes attributes,

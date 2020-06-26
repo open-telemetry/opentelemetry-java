@@ -24,15 +24,15 @@ import org.junit.jupiter.api.Test;
 class SpanContextTest {
   private static final byte[] firstTraceIdBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final String FIRST_TRACE_ID = TraceId.toLowerBase16(firstTraceIdBytes);
+  private static final CharSequence FIRST_TRACE_ID = TraceId.toLowerBase16(firstTraceIdBytes);
   private static final byte[] secondTraceIdBytes =
       new byte[] {0, 0, 0, 0, 0, 0, 0, '0', 0, 0, 0, 0, 0, 0, 0, 0};
-  private static final String SECOND_TRACE_ID = TraceId.toLowerBase16(secondTraceIdBytes);
+  private static final CharSequence SECOND_TRACE_ID = TraceId.toLowerBase16(secondTraceIdBytes);
 
   private static final byte[] firstSpanIdBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
-  private static final String FIRST_SPAN_ID = SpanId.toLowerBase16(firstSpanIdBytes);
+  private static final CharSequence FIRST_SPAN_ID = SpanId.toLowerBase16(firstSpanIdBytes);
   private static final byte[] secondSpanIdBytes = new byte[] {'0', 0, 0, 0, 0, 0, 0, 0};
-  private static final String SECOND_SPAN_ID = SpanId.toLowerBase16(secondSpanIdBytes);
+  private static final CharSequence SECOND_SPAN_ID = SpanId.toLowerBase16(secondSpanIdBytes);
   private static final TraceState FIRST_TRACE_STATE =
       TraceState.builder().set("foo", "bar").build();
   private static final TraceState SECOND_TRACE_STATE =
@@ -55,8 +55,10 @@ class SpanContextTest {
 
   @Test
   void invalidSpanContext() {
-    assertThat(SpanContext.getInvalid().getTraceId()).isEqualTo(TraceId.getInvalid());
-    assertThat(SpanContext.getInvalid().getSpanId()).isEqualTo(SpanId.getInvalid());
+    assertThat(SpanContext.getInvalid().getTraceId().toString())
+        .isEqualTo(TraceId.getInvalid().toString());
+    assertThat(SpanContext.getInvalid().getSpanId().toString())
+        .isEqualTo(SpanId.getInvalid().toString());
     assertThat(SpanContext.getInvalid().getTraceFlags()).isEqualTo(TraceFlags.getDefault());
   }
 
@@ -79,14 +81,14 @@ class SpanContextTest {
 
   @Test
   void getTraceId() {
-    assertThat(first.getTraceId()).isEqualTo(FIRST_TRACE_ID);
-    assertThat(second.getTraceId()).isEqualTo(SECOND_TRACE_ID);
+    assertThat(first.getTraceId().toString()).isEqualTo(FIRST_TRACE_ID.toString());
+    assertThat(second.getTraceId().toString()).isEqualTo(SECOND_TRACE_ID.toString());
   }
 
   @Test
   void getSpanId() {
-    assertThat(first.getSpanId()).isEqualTo(FIRST_SPAN_ID);
-    assertThat(second.getSpanId()).isEqualTo(SECOND_SPAN_ID);
+    assertThat(first.getSpanId().toString()).isEqualTo(FIRST_SPAN_ID.toString());
+    assertThat(second.getSpanId().toString()).isEqualTo(SECOND_SPAN_ID.toString());
   }
 
   @Test

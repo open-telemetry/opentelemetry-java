@@ -18,17 +18,12 @@ package io.opentelemetry.trace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.testing.EqualsTester;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link SpanId}. */
 class SpanIdTest {
   private static final byte[] firstBytes = new byte[] {0, 0, 0, 0, 0, 0, 0, 'a'};
   private static final byte[] secondBytes = new byte[] {(byte) 0xFF, 0, 0, 0, 0, 0, 0, 'A'};
-  private static final SpanId first = new SpanId(ByteBuffer.wrap(firstBytes).getLong());
-  private static final SpanId second = SpanId.fromBytes(secondBytes, 0);
 
   @Test
   void isValid() {
@@ -40,48 +35,32 @@ class SpanIdTest {
 
   @Test
   void fromLowerBase16() {
-    assertThat(SpanId.toLowerBase16(SpanId.bytesFromLowerBase16("0000000000000000", 0)))
-        .isEqualTo(SpanId.getInvalid());
+    assertThat(SpanId.toLowerBase16(SpanId.bytesFromLowerBase16("0000000000000000", 0)).toString())
+        .isEqualTo(SpanId.getInvalid().toString());
     assertThat(SpanId.bytesFromLowerBase16("0000000000000061", 0)).isEqualTo(firstBytes);
     assertThat(SpanId.bytesFromLowerBase16("ff00000000000041", 0)).isEqualTo(secondBytes);
   }
 
   @Test
   void fromLowerBase16_WithOffset() {
-    assertThat(SpanId.toLowerBase16(SpanId.bytesFromLowerBase16("XX0000000000000000AA", 2)))
-        .isEqualTo(SpanId.getInvalid());
+    assertThat(
+            SpanId.toLowerBase16(SpanId.bytesFromLowerBase16("XX0000000000000000AA", 2)).toString())
+        .isEqualTo(SpanId.getInvalid().toString());
     assertThat(SpanId.bytesFromLowerBase16("YY0000000000000061BB", 2)).isEqualTo(firstBytes);
     assertThat(SpanId.bytesFromLowerBase16("ZZff00000000000041CC", 2)).isEqualTo(secondBytes);
   }
 
   @Test
-  void toLowerBase16() {
-    assertThat(SpanId.getInvalid()).isEqualTo("0000000000000000");
-    assertThat(SpanId.toLowerBase16(firstBytes)).isEqualTo("0000000000000061");
-    assertThat(SpanId.toLowerBase16(secondBytes)).isEqualTo("ff00000000000041");
-  }
-
-  @Test
-  void spanId_CompareTo() {
-    assertThat(first.compareTo(second)).isGreaterThan(0);
-    assertThat(second.compareTo(first)).isLessThan(0);
-    assertThat(first.compareTo(SpanId.fromBytes(firstBytes, 0))).isEqualTo(0);
-  }
-
-  @Test
-  void spanId_EqualsAndHashCode() {
-    EqualsTester tester = new EqualsTester();
-    tester.addEqualityGroup(
-        first, SpanId.fromBytes(Arrays.copyOf(firstBytes, firstBytes.length), 0));
-    tester.addEqualityGroup(
-        second, SpanId.fromBytes(Arrays.copyOf(secondBytes, secondBytes.length), 0));
-    tester.testEquals();
+  public void toLowerBase16() {
+    assertThat(SpanId.getInvalid().toString()).isEqualTo("0000000000000000");
+    assertThat(SpanId.toLowerBase16(firstBytes).toString()).isEqualTo("0000000000000061");
+    assertThat(SpanId.toLowerBase16(secondBytes).toString()).isEqualTo("ff00000000000041");
   }
 
   @Test
   void spanId_ToString() {
-    assertThat(SpanId.getInvalid()).contains("0000000000000000");
-    assertThat(SpanId.toLowerBase16(firstBytes)).contains("0000000000000061");
-    assertThat(SpanId.toLowerBase16(secondBytes)).contains("ff00000000000041");
+    assertThat(SpanId.getInvalid().toString()).contains("0000000000000000");
+    assertThat(SpanId.toLowerBase16(firstBytes).toString()).contains("0000000000000061");
+    assertThat(SpanId.toLowerBase16(secondBytes).toString()).contains("ff00000000000041");
   }
 }

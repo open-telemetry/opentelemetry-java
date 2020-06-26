@@ -29,12 +29,12 @@ public interface IdsGenerator {
    *
    * @return a new valid {@code SpanId}.
    */
-  String generateSpanId();
+  CharSequence generateSpanId();
 
   /**
    * Generates a new valid {@code TraceId}.
    *
    * @return a new valid {@code TraceId}.
    */
-  String generateTraceId();
+  CharSequence generateTraceId();
 }

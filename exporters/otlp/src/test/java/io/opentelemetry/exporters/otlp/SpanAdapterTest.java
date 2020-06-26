@@ -43,9 +43,9 @@ import org.junit.jupiter.api.Test;
 class SpanAdapterTest {
   private static final byte[] TRACE_ID_BYTES =
       new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};
-  private static final String TRACE_ID = TraceId.toLowerBase16(TRACE_ID_BYTES);
+  private static final CharSequence TRACE_ID = TraceId.toLowerBase16(TRACE_ID_BYTES);
   private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
-  private static final String SPAN_ID = SpanId.toLowerBase16(SPAN_ID_BYTES);
+  private static final CharSequence SPAN_ID = SpanId.toLowerBase16(SPAN_ID_BYTES);
 
   private static final TraceState TRACE_STATE = TraceState.builder().build();
   private static final SpanContext SPAN_CONTEXT =

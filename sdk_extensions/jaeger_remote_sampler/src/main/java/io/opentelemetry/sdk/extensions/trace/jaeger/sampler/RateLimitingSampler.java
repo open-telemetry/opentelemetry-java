@@ -63,7 +63,7 @@ class RateLimitingSampler implements Sampler {
   @Override
   public SamplingResult shouldSample(
       @Nullable SpanContext parentContext,
-      String traceId,
+      CharSequence traceId,
       String name,
       Kind spanKind,
       ReadableAttributes attributes,

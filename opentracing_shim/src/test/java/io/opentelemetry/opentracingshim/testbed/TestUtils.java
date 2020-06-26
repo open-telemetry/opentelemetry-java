@@ -179,8 +179,12 @@ public final class TestUtils {
     for (int i = 0; i < spans.size() - 1; i++) {
       // TODO - Include nanos in this comparison.
       assertTrue(spans.get(spans.size() - 1).getEndEpochNanos() >= spans.get(i).getEndEpochNanos());
-      assertEquals(spans.get(spans.size() - 1).getTraceId(), spans.get(i).getTraceId());
-      assertEquals(spans.get(spans.size() - 1).getSpanId(), spans.get(i).getParentSpanId());
+      assertEquals(
+          spans.get(spans.size() - 1).getTraceId().toString(),
+          spans.get(i).getTraceId().toString());
+      assertEquals(
+          spans.get(spans.size() - 1).getSpanId().toString(),
+          spans.get(i).getParentSpanId().toString());
     }
   }
 }

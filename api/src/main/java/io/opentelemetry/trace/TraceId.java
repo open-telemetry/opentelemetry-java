@@ -18,46 +18,22 @@ package io.opentelemetry.trace;
 
 import io.opentelemetry.internal.Utils;
 import java.util.Random;
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * A class that represents a trace identifier. A valid trace identifier is a 16-byte array with at
- * least one non-zero byte.
+ * Helper methods for dealing with a trace identifier. A valid trace identifier is a 16-byte array
+ * with at least one non-zero byte.
  *
  * @since 0.1.0
  */
 @Immutable
-public final class TraceId implements Comparable<TraceId> {
-
+public final class TraceId {
   private static final int SIZE_IN_BYTES = 16;
   private static final int BASE16_SIZE = 2 * BigendianEncoding.LONG_BASE16;
   private static final long INVALID_ID = 0;
   public static final String INVALID = "00000000000000000000000000000000";
 
-  // The internal representation of the TraceId.
-  private final long idHi;
-  private final long idLo;
-
-  /**
-   * Constructs a {@code TraceId} whose representation is specified by two long values representing
-   * the lower and higher parts.
-   *
-   * <p>There is no restriction on the specified values, other than the already established validity
-   * rules applying to {@code TraceId}. Specifying 0 for both values will effectively make the new
-   * {@code TraceId} invalid.
-   *
-   * <p>This is equivalent to calling {@link #fromBytes(byte[], int)} with the specified values
-   * stored as big-endian.
-   *
-   * @param idHi the higher part of the {@code TraceId}.
-   * @param idLo the lower part of the {@code TraceId}.
-   * @since 0.1.0
-   */
-  public TraceId(long idHi, long idLo) {
-    this.idHi = idHi;
-    this.idLo = idLo;
-  }
+  private TraceId() {}
 
   /**
    * Returns the size in bytes of the {@code TraceId}.
@@ -75,7 +51,7 @@ public final class TraceId implements Comparable<TraceId> {
    * @return the invalid {@code TraceId}.
    * @since 0.1.0
    */
-  public static String getInvalid() {
+  public static CharSequence getInvalid() {
     return INVALID;
   }
 
@@ -85,7 +61,7 @@ public final class TraceId implements Comparable<TraceId> {
    * @param random the random number generator.
    * @return a new valid {@code TraceId}.
    */
-  static String generateRandomId(Random random) {
+  static CharSequence generateRandomId(Random random) {
     long idHi;
     long idLo;
     do {
@@ -100,47 +76,25 @@ public final class TraceId implements Comparable<TraceId> {
   }
 
   /**
-   * Returns a {@code TraceId} whose representation is copied from the {@code src} beginning at the
-   * {@code srcOffset} offset.
+   * Constructs a {@code TraceId} whose representation is specified by two long values representing
+   * the lower and higher parts.
    *
-   * @param src the buffer where the representation of the {@code TraceId} is copied.
-   * @param srcOffset the offset in the buffer where the representation of the {@code TraceId}
-   *     begins.
-   * @return a {@code TraceId} whose representation is copied from the buffer.
-   * @throws NullPointerException if {@code src} is null.
-   * @throws IndexOutOfBoundsException if {@code srcOffset+TraceId.getSize()} is greater than {@code
-   *     src.length}.
+   * <p>There is no restriction on the specified values, other than the already established validity
+   * rules applying to {@code TraceId}. Specifying 0 for both values will effectively make the new
+   * {@code TraceId} invalid.
+   *
+   * <p>This is equivalent to calling {@link #toLowerBase16(byte[])} with the specified values
+   * stored as big-endian.
+   *
+   * @param idHi the higher part of the {@code TraceId}.
+   * @param idLo the lower part of the {@code TraceId}.
    * @since 0.1.0
    */
-  public static TraceId fromBytes(byte[] src, int srcOffset) {
-    Utils.checkNotNull(src, "src");
-    return new TraceId(
-        BigendianEncoding.longFromByteArray(src, srcOffset),
-        BigendianEncoding.longFromByteArray(src, srcOffset + BigendianEncoding.LONG_BYTES));
-  }
-
-  /** javadoc me. */
-  public static String fromLongs(long idHi, long idLo) {
-    byte[] result = new byte[16];
-    BigendianEncoding.longToByteArray(idHi, result, 0);
-    BigendianEncoding.longToByteArray(idLo, result, 8);
-    return toLowerBase16(result);
-  }
-
-  /**
-   * Copies the byte array representations of the {@code TraceId} into the {@code dest} beginning at
-   * the {@code destOffset} offset.
-   *
-   * @param dest the destination buffer.
-   * @param destOffset the starting offset in the destination buffer.
-   * @throws NullPointerException if {@code dest} is null.
-   * @throws IndexOutOfBoundsException if {@code destOffset+TraceId.getSize()} is greater than
-   *     {@code dest.length}.
-   * @since 0.1.0
-   */
-  public void copyBytesTo(byte[] dest, int destOffset) {
-    BigendianEncoding.longToByteArray(idHi, dest, destOffset);
-    BigendianEncoding.longToByteArray(idLo, dest, destOffset + BigendianEncoding.LONG_BYTES);
+  public static CharSequence fromLongs(long idHi, long idLo) {
+    char[] chars = new char[BASE16_SIZE];
+    BigendianEncoding.longToBase16String(idHi, chars, 0);
+    BigendianEncoding.longToBase16String(idLo, chars, 16);
+    return new String(chars);
   }
 
   /**
@@ -155,26 +109,9 @@ public final class TraceId implements Comparable<TraceId> {
    *     srcOffset}.
    * @since 0.1.0
    */
-  public static TraceId fromLowerBase16(CharSequence src, int srcOffset) {
-    Utils.checkNotNull(src, "src");
-    return new TraceId(
-        BigendianEncoding.longFromBase16String(src, srcOffset),
-        BigendianEncoding.longFromBase16String(src, srcOffset + BigendianEncoding.LONG_BASE16));
-  }
-
-  /** javadoc me. */
   public static byte[] bytesFromLowerBase16(CharSequence src, int srcOffset) {
     Utils.checkNotNull(src, "src");
-    byte[] result = new byte[16];
-
-    // todo: optimize me
-    long hi = BigendianEncoding.longFromBase16String(src, srcOffset);
-    long lo =
-        BigendianEncoding.longFromBase16String(src, srcOffset + BigendianEncoding.LONG_BASE16);
-
-    BigendianEncoding.longToByteArray(hi, result, 0);
-    BigendianEncoding.longToByteArray(lo, result, 8);
-    return result;
+    return BigendianEncoding.bytesFromBase16(src, srcOffset, BASE16_SIZE);
   }
 
   /**
@@ -187,12 +124,6 @@ public final class TraceId implements Comparable<TraceId> {
    *     {@code dest.length}.
    * @since 0.1.0
    */
-  public void copyLowerBase16To(char[] dest, int destOffset) {
-    BigendianEncoding.longToBase16String(idHi, dest, destOffset);
-    BigendianEncoding.longToBase16String(idLo, dest, destOffset + BASE16_SIZE / 2);
-  }
-
-  /** javadoc me. */
   public static void copyLowerBase16Into(byte[] traceId, char[] dest, int destOffset) {
     BigendianEncoding.longToBase16String(
         BigendianEncoding.longFromByteArray(traceId, 0), dest, destOffset);
@@ -207,14 +138,9 @@ public final class TraceId implements Comparable<TraceId> {
    * @return {@code true} if the {@code TraceId} is valid.
    * @since 0.1.0
    */
-  public boolean isValid() {
-    return idHi != INVALID_ID || idLo != INVALID_ID;
-  }
-
-  /** javadoc me. */
-  public static boolean isValid(String traceId) {
+  public static boolean isValid(CharSequence traceId) {
     return (traceId.length() == BASE16_SIZE)
-        && !traceId.equals(INVALID)
+        && !INVALID.contentEquals(traceId)
         && BigendianEncoding.isValidBase16String(traceId);
   }
 
@@ -224,31 +150,10 @@ public final class TraceId implements Comparable<TraceId> {
    * @return the lowercase base16 encoding of this {@code TraceId}.
    * @since 0.1.0
    */
-  public String toLowerBase16() {
-    char[] chars = new char[BASE16_SIZE];
-    copyLowerBase16To(chars, 0);
-    return new String(chars);
-  }
-
-  /** javadoc me. */
-  public static String toLowerBase16(byte[] traceId) {
+  public static CharSequence toLowerBase16(byte[] traceId) {
     char[] chars = new char[BASE16_SIZE];
     copyLowerBase16Into(traceId, chars, 0);
     return new String(chars);
-  }
-
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (obj == this) {
-      return true;
-    }
-
-    if (!(obj instanceof TraceId)) {
-      return false;
-    }
-
-    TraceId that = (TraceId) obj;
-    return idHi == that.idHi && idLo == that.idLo;
   }
 
   /**
@@ -259,37 +164,7 @@ public final class TraceId implements Comparable<TraceId> {
    *
    * @return the rightmost 8 bytes of the trace-id as a long value.
    */
-  public long getTraceRandomPart() {
-    return idLo;
-  }
-
-  public static long getTraceIdRandomPart(String traceId) {
-    byte[] bytes = bytesFromLowerBase16(traceId, 0);
-    return BigendianEncoding.longFromByteArray(bytes, 8);
-  }
-
-  @Override
-  public int hashCode() {
-    // Copied from Arrays.hashCode(long[])
-    int result = 1;
-    result = 31 * result + ((int) (idHi ^ (idHi >>> 32)));
-    result = 31 * result + ((int) (idLo ^ (idLo >>> 32)));
-    return result;
-  }
-
-  @Override
-  public String toString() {
-    return "TraceId{traceId=" + toLowerBase16() + "}";
-  }
-
-  @Override
-  public int compareTo(TraceId that) {
-    if (idHi == that.idHi) {
-      if (idLo == that.idLo) {
-        return 0;
-      }
-      return idLo < that.idLo ? -1 : 1;
-    }
-    return idHi < that.idHi ? -1 : 1;
+  public static long getTraceIdRandomPart(CharSequence traceId) {
+    return BigendianEncoding.longFromBase16String(traceId, BigendianEncoding.LONG_BASE16);
   }
 }

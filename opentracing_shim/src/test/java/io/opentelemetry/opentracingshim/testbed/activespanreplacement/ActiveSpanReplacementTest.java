@@ -69,11 +69,11 @@ class ActiveSpanReplacementTest {
     assertEquals("task", spans.get(2).getName());
 
     // task/subtask are part of the same trace, and subtask is a child of task
-    assertEquals(spans.get(1).getTraceId(), spans.get(2).getTraceId());
-    assertEquals(spans.get(2).getSpanId(), spans.get(1).getParentSpanId());
+    assertEquals(spans.get(1).getTraceId().toString(), spans.get(2).getTraceId().toString());
+    assertEquals(spans.get(2).getSpanId().toString(), spans.get(1).getParentSpanId().toString());
 
     // initial task is not related in any way to those two tasks
-    assertNotEquals(spans.get(0).getTraceId(), spans.get(1).getTraceId());
+    assertNotEquals(spans.get(0).getTraceId().toString(), spans.get(1).getTraceId().toString());
     assertFalse(SpanId.isValid(spans.get(0).getParentSpanId()));
 
     assertNull(tracer.scopeManager().activeSpan());

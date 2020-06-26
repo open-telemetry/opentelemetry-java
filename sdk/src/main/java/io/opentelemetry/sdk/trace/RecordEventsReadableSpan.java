@@ -62,7 +62,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
   // Contains the identifiers associated with this Span.
   private final SpanContext context;
   // The parent SpanId of this span. Invalid if this is a root span.
-  private final String parentSpanId;
+  private final CharSequence parentSpanId;
   // True if the parent is on a different process.
   private final boolean hasRemoteParent;
   // Handler called when the span starts and ends.
@@ -114,7 +114,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      String parentSpanId,
+      CharSequence parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -164,7 +164,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
       String name,
       InstrumentationLibraryInfo instrumentationLibraryInfo,
       Kind kind,
-      @Nullable String parentSpanId,
+      @Nullable CharSequence parentSpanId,
       boolean hasRemoteParent,
       TraceConfig traceConfig,
       SpanProcessor spanProcessor,
@@ -503,7 +503,7 @@ final class RecordEventsReadableSpan implements ReadableSpan, Span {
     }
   }
 
-  String getParentSpanId() {
+  CharSequence getParentSpanId() {
     return parentSpanId;
   }
 

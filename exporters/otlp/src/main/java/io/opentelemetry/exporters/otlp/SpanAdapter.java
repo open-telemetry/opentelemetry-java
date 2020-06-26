@@ -157,8 +157,8 @@ final class SpanAdapter {
 
   static Span.Link toProtoSpanLink(Link link) {
     final Span.Link.Builder builder = Span.Link.newBuilder();
-    builder.setTraceId(TraceProtoUtils.toProtoTraceId(link.getContext().traceId()));
-    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().spanId()));
+    builder.setTraceId(TraceProtoUtils.toProtoTraceId((String) link.getContext().getTraceId()));
+    builder.setSpanId(TraceProtoUtils.toProtoSpanId(link.getContext().getSpanId()));
     // TODO: Set TraceState;
     Attributes attributes = link.getAttributes();
     attributes.forEach(
