@@ -35,7 +35,7 @@ public final class RandomIdsGenerator implements IdsGenerator {
     do {
       id = random.nextLong();
     } while (id == INVALID_ID);
-    return SpanId.fromLong(id);
+    return new SpanIdWrapper(id);
   }
 
   @Override
@@ -47,6 +47,80 @@ public final class RandomIdsGenerator implements IdsGenerator {
       idHi = random.nextLong();
       idLo = random.nextLong();
     } while (idHi == INVALID_ID && idLo == INVALID_ID);
-    return TraceId.fromLongs(idHi, idLo);
+    return new TraceIdWrapper(idHi, idLo);
+  }
+
+  private static final class TraceIdWrapper implements CharSequence {
+    private final long idHi;
+    private final long idLo;
+    private volatile CharSequence chars;
+
+    private TraceIdWrapper(long idHi, long idLo) {
+      this.idHi = idHi;
+      this.idLo = idLo;
+    }
+
+    @Override
+    public int length() {
+      return 32;
+    }
+
+    @Override
+    public char charAt(int index) {
+      return getCharSequence().charAt(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+      return getCharSequence().subSequence(start, end);
+    }
+
+    @Override
+    public String toString() {
+      return getCharSequence().toString();
+    }
+
+    private CharSequence getCharSequence() {
+      if (chars == null) {
+        chars = TraceId.fromLongs(idHi, idLo);
+      }
+      return chars;
+    }
+  }
+
+  private static final class SpanIdWrapper implements CharSequence {
+    private final long id;
+    private volatile CharSequence chars;
+
+    private SpanIdWrapper(long id) {
+      this.id = id;
+    }
+
+    @Override
+    public int length() {
+      return 16;
+    }
+
+    @Override
+    public char charAt(int index) {
+      return getCharSequence().charAt(index);
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+      return getCharSequence().subSequence(start, end);
+    }
+
+    @Override
+    public String toString() {
+      return getCharSequence().toString();
+    }
+
+    private CharSequence getCharSequence() {
+      if (chars == null) {
+        chars = SpanId.fromLong(id);
+      }
+      return chars;
+    }
   }
 }
