@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -227,7 +226,7 @@ public final class OtlpGrpcSpanExporter implements SpanExporter {
      * @param value header value
      * @return this builder's instance
      */
-    public Builder addHeader(@Nonnull String key, @Nonnull String value) {
+    public Builder addHeader(String key, String value) {
       if (metadata == null) {
         metadata = new Metadata();
       }
