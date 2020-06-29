@@ -162,18 +162,6 @@ public abstract class Resource {
         });
   }
 
-  private static void checkAttributes(ReadableAttributes attributes) {
-    attributes.forEach(
-        new KeyValueConsumer<AttributeValue>() {
-          @Override
-          public void consume(String key, AttributeValue value) {
-            Utils.checkArgument(
-                isValidAndNotEmpty(key), "Attribute key" + ERROR_MESSAGE_INVALID_CHARS);
-            Objects.requireNonNull(value, "Attribute value" + ERROR_MESSAGE_INVALID_VALUE);
-          }
-        });
-  }
-
   /**
    * Determines whether the given {@code String} is a valid printable ASCII string with a length not
    * exceed {@link #MAX_LENGTH} characters.
