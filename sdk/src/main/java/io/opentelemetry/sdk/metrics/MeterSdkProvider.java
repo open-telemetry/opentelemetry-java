@@ -87,7 +87,7 @@ public final class MeterSdkProvider implements MeterProvider {
   public static final class Builder {
 
     private Clock clock = MillisClock.getInstance();
-    private Resource resource = EnvVarResource.getResource();
+    private Resource resource = Resource.getTelemetrySdk().merge(EnvVarResource.getResource());
 
     private Builder() {}
 
